@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared;
 using System;
 using System.Threading;
@@ -8,24 +9,26 @@ namespace SCMM.Web.Server.Services
 {
     public class SteamRefreshHostedService : CronJobService
     {
+        private readonly ILogger<SteamRefreshHostedService> _logger;
         private readonly SteamClient _steamClient;
 
-        public SteamRefreshHostedService(IConfiguration configuration) 
+        public SteamRefreshHostedService(IConfiguration configuration, ILogger<SteamRefreshHostedService> logger) 
             : base(configuration[$"Jobs:{nameof(SteamRefreshHostedService)}"])
         {
+            _logger = logger;
             _steamClient = new SteamClient();
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
             /*
-            _log($"Refreshing market items for '{app.App.Id}'...");
+            _logger.LogInformation($"Refreshing market items for '{app.App.Id}'...");
             var fetched = 0;
             var total = await _steamClient.GetMarketSearchPaginated(request);
             if (total == 0)
                 return;
 
-            _log($"There are {total} market items to check for '{app.App.Id}'");
+            _logger.LogInformation($"There are {total} market items to check for '{app.App.Id}'");
             for (var i = 0; i <= total; i += PaginatedSearchPageSize)
             {
                 var start = i;
@@ -36,7 +39,7 @@ namespace SCMM.Web.Server.Services
                     .Subscribe(x =>
                     {
                         fetched += x.Count();
-                        _log($"Refreshing market items ({fetched}/{total})");
+                        _logger.LogInformation($"Refreshing market items ({fetched}/{total})");
                         foreach (var item in x)
                         {
                             FindOrAddMarketItem(profile, app, item.AssetDescription);
