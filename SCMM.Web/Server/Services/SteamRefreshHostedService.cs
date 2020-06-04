@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared;
-using System;
+using SCMM.Web.Server.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,7 +13,7 @@ namespace SCMM.Web.Server.Services
         private readonly SteamClient _steamClient;
 
         public SteamRefreshHostedService(IConfiguration configuration, ILogger<SteamRefreshHostedService> logger) 
-            : base(configuration[$"Jobs:{nameof(SteamRefreshHostedService)}"])
+            : base(configuration.GetJobConfiguration<SteamRefreshHostedService>())
         {
             _logger = logger;
             _steamClient = new SteamClient();
