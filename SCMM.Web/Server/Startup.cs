@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using System.Linq;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Models;
+using SCMM.Web.Server.Services;
 
 namespace SCMM.Web.Server
 {
@@ -41,6 +42,8 @@ namespace SCMM.Web.Server
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
+
+            services.AddHostedService<SteamRefreshHostedService>();
 
             services.AddControllersWithViews();
             services.AddRazorPages();

@@ -4,6 +4,8 @@ namespace SCMM.Steam.Shared.Requests
 {
     public class SteamInventoryPaginatedRequest : SteamPaginatedRequest
     {
+        public const int MaxPageSize = 5000;
+
         public string SteamId { get; set; }
 
         public string AppId { get; set; }

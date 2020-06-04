@@ -13,25 +13,14 @@ namespace SCMM.Steam.Shared
 {
     public class SteamClient
     {
-        private const int PaginatedSearchPageSize = 100;
-        private const int PaginatedHistoryPageSize = 500;
-        private const int RefreshPricingInterval = 360; // 6 hrs
-        private const int RefreshProfileInventoryTimerInterval = 300000; // 5 mins
-
         private readonly HttpClientHandler _httpHandler;
-        private readonly JsonSerializer _jsonSerializer;
         
         public SteamClient(CookieContainer cookies = null)
         {
             _httpHandler = new HttpClientHandler()
             {
                 UseCookies = (cookies != null),
-                CookieContainer = cookies
-            };
-            _jsonSerializer = new JsonSerializer()
-            {
-                Formatting = Formatting.Indented,
-                PreserveReferencesHandling = PreserveReferencesHandling.Objects
+                CookieContainer = (cookies ?? new CookieContainer())
             };
         }
 

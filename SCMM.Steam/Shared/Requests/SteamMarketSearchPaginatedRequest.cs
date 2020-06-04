@@ -4,6 +4,8 @@ namespace SCMM.Steam.Shared.Requests
 {
     public class SteamMarketSearchPaginatedRequest : SteamPaginatedRequest
     {
+        public const int MaxPageSize = 100;
+
         public string AppId { get; set; }
 
         public bool GetDescriptions { get; set; }
