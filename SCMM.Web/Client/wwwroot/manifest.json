@@ -1,6 +1,6 @@
 {
-  "name": "SCMM.Web",
-  "short_name": "SCMM.Web",
+  "name": "Steam Community Market Manager",
+  "short_name": "SCMM",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",

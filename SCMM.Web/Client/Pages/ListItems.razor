@@ -1,0 +1,57 @@
+@page "/items"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using SCMM.Web.Shared.Models.Steam
+@attribute [Authorize]
+@inject HttpClient Http
+
+<h1>Market Items</h1>
+<p>View all community market listings.</p>
+
+@if (items == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Supply</th>
+                <th>Demand</th>
+                <th>Lowest Buy Price</th>
+                <th>Last Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+            <tr style="background-color:@item.Description.BackgroundColour; color: @item.Description.ForegroundColour">
+                <td><img src="@item.Description.IconUrl" style="max-height:32px; max-width:32px" /></td>
+                <td>@item.Name</td>
+                <td>0</td>
+                <td>0</td>
+                <td>$0.00</td>
+                <td>@item.LastChecked.ToString()</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private SteamItemDTO[] items;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            items = await Http.GetFromJsonAsync<SteamItemDTO[]>("SteamItems");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+}
