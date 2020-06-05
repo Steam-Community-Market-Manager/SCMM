@@ -40,7 +40,7 @@ namespace SCMM.Web.Server
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 
-            services.AddHostedService<SteamRefreshHostedService>();
+            services.AddHostedService<CheckForNewSteamItemsJob>();
 
             services.AddControllersWithViews();
             services.AddRazorPages();

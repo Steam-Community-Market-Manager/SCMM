@@ -7,6 +7,9 @@ namespace SCMM.Steam.Shared.Models
         [JsonProperty("classid")]
         public string ClassId { get; set; }
 
+        [JsonProperty("appid")]
+        public string AppId { get; set; }
+
         [JsonProperty("market_name")]
         public string MarketName { get; set; }
 
@@ -15,6 +18,15 @@ namespace SCMM.Steam.Shared.Models
 
         [JsonProperty("marketable")]
         public bool Marketable { get; set; }
+
+        [JsonProperty("market_marketable_restriction")]
+        public int MarketMarketableRestriction { get; set; }
+
+        [JsonProperty("market_tradable_restriction")]
+        public int MarketTradableRestriction { get; set; }
+
+        [JsonProperty("tradable")]
+        public bool Tradable { get; set; }
 
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -30,5 +42,8 @@ namespace SCMM.Steam.Shared.Models
 
         [JsonProperty("icon_url_large")]
         public string IconUrlLarge { get; set; }
+
+        [JsonProperty("commodity")]
+        public bool Commodity { get; set; }
     }
 }

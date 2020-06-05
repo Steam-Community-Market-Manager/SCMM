@@ -9,7 +9,7 @@ namespace SCMM.Steam.Shared.Responses
         [JsonProperty("start")]
         public int Start { get; set; }
 
-        [JsonProperty("page_size")]
+        [JsonProperty("pagesize")]
         public int PageSize { get; set; }
 
         [JsonProperty("total_count")]

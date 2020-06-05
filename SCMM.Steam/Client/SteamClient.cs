@@ -11,6 +11,7 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Shared
 {
+    // TODO: Add error proper handling for "too many request"
     public class SteamClient
     {
         private readonly HttpClientHandler _httpHandler;
