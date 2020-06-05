@@ -10,7 +10,6 @@ using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
@@ -37,16 +36,19 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                 var steamClient = new SteamClient();
-                var steamApps = db.SteamApps.ToImmutableList();
+
+                var steamApps = db.SteamApps.ToList();
                 if (!steamApps.Any())
                 {
                     return;
                 }
+
                 var language = db.SteamLanguages.FirstOrDefault(x => x.Id.ToString() == Constants.DefaultLanguageId);
                 if (language == null)
                 {
                     return;
                 }
+
                 var currency = db.SteamCurrencies.FirstOrDefault(x => x.Id.ToString() == Constants.DefaultCurrencyId);
                 if (currency == null)
                 {
@@ -96,13 +98,13 @@ namespace SCMM.Web.Server.Services.Jobs
                     }
                 }
 
-                // Add a 10 second delay between requests to avoid "you've made too many requests recently" error
+                // Add a 10 second delay between requests to avoid "Too Many Requests" error
                 var newItems = await Observable.Interval(TimeSpan.FromSeconds(10))
                     .Zip(pageRequests, (x, y) => y)
                     .Select(x => Observable.FromAsync(() => steamClient.GetMarketSearchPaginated(x)))
                     .Merge()
                     .Where(x => x?.Success == true && x?.Results?.Count > 0)
-                    .SelectMany(x => GetOrCreateSteamItems(db, x.Results))
+                    .SelectMany(x => FindOrAddSteamItems(db, x.Results))
                     .Where(x => x?.IsTransient == true)
                     .ToList();
 
@@ -113,15 +115,15 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        public IEnumerable<SteamItem> GetOrCreateSteamItems(SteamDbContext db, IEnumerable<SteamMarketSearchItem> items)
+        public IEnumerable<SteamItem> FindOrAddSteamItems(SteamDbContext db, IEnumerable<SteamMarketSearchItem> items)
         {
             foreach (var item in items)
             {
-                yield return GetOrCreateSteamItem(db, item);
+                yield return FindOrAddSteamItem(db, item);
             }
         }
 
-        public SteamItem GetOrCreateSteamItem(SteamDbContext db, SteamMarketSearchItem item)
+        public SteamItem FindOrAddSteamItem(SteamDbContext db, SteamMarketSearchItem item)
         {
             if (String.IsNullOrEmpty(item?.AssetDescription.AppId))
             {

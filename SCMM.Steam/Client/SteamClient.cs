@@ -11,7 +11,7 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
-    // TODO: Add error proper handling for "too many request"
+    // TODO: Add error proper handling for StatusCode: 429, ReasonPhrase: 'Too Many Requests'
     public class SteamClient
     {
         private readonly HttpClientHandler _httpHandler;
