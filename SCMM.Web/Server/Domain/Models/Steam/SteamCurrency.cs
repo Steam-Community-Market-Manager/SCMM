@@ -1,11 +1,13 @@
-﻿using System;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace SCMM.Web.Shared.Models.Steam
+namespace SCMM.Web.Server.Domain.Models.Steam
 {
-    public class SteamCurrencyDTO : EntityDTO
+    public class SteamCurrency : Entity
     {
+        [Required]
         public string SteamId { get; set; }
 
+        [Required]
         public string Name { get; set; }
 
         public string PrefixText { get; set; }

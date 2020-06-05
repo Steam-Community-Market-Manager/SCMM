@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Steam.Shared
+﻿namespace SCMM.Steam.Shared
 {
     public static class SteamConstants
     {

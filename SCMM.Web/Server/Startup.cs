@@ -1,4 +1,3 @@
-using AspNet.Security.OpenId.Steam;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -8,8 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Models;
-using SCMM.Web.Server.Services;
+using SCMM.Web.Server.Domain.Models;
+using SCMM.Web.Server.Services.Jobs;
 
 namespace SCMM.Web.Server
 {

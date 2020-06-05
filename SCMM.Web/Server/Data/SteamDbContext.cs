@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SCMM.Web.Server.Models.Steam;
+using SCMM.Web.Server.Domain.Models.Steam;
 
 namespace SCMM.Web.Server.Data
 {
@@ -10,7 +10,7 @@ namespace SCMM.Web.Server.Data
         public DbSet<SteamApp> SteamApps { get; set; }
         public DbSet<SteamItem> SteamItems { get; set; }
 
-        public SteamDbContext(DbContextOptions<SteamDbContext> options) 
+        public SteamDbContext(DbContextOptions<SteamDbContext> options)
             : base(options)
         {
         }

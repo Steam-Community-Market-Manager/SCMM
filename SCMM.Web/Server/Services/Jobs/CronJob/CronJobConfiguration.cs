@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace SCMM.Web.Server.Configuration
+﻿namespace SCMM.Web.Server.Services.Jobs.CronJob
 {
-    public class JobConfiguration
+    public class CronJobConfiguration
     {
         public bool StartImmediately { get; set; }
         public string CronExpression { get; set; }

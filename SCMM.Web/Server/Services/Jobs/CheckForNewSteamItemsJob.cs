@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Models;
 using SCMM.Steam.Shared.Requests;
-using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Models.Steam;
+using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -16,14 +17,14 @@ using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Services
+namespace SCMM.Web.Server.Services.Jobs
 {
     public class CheckForNewSteamItemsJob : CronJobService
     {
         private readonly ILogger<CheckForNewSteamItemsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public CheckForNewSteamItemsJob(IConfiguration configuration, ILogger<CheckForNewSteamItemsJob> logger, IServiceScopeFactory scopeFactory) 
+        public CheckForNewSteamItemsJob(IConfiguration configuration, ILogger<CheckForNewSteamItemsJob> logger, IServiceScopeFactory scopeFactory)
             : base(configuration.GetJobConfiguration<CheckForNewSteamItemsJob>())
         {
             _logger = logger;

@@ -9,13 +9,13 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace SCMM.Steam.Shared
+namespace SCMM.Steam.Client
 {
     // TODO: Add error proper handling for "too many request"
     public class SteamClient
     {
         private readonly HttpClientHandler _httpHandler;
-        
+
         public SteamClient(CookieContainer cookies = null)
         {
             _httpHandler = new HttpClientHandler()
@@ -39,13 +39,15 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var xml = await response.Content.ReadAsStringAsync();
                 var xmlSerializer = new XmlSerializer(typeof(SteamProfileResponse));
                 using (var reader = new StringReader(xml))
                 {
-                    return (SteamProfileResponse) xmlSerializer.Deserialize(reader);
+                    return (SteamProfileResponse)xmlSerializer.Deserialize(reader);
                 }
             }
         }
@@ -56,7 +58,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var filters = JsonConvert.DeserializeObject<SteamMarketAppFiltersResponse>(
                     await response.Content.ReadAsStringAsync()
@@ -72,7 +76,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var inventory = JsonConvert.DeserializeObject<SteamInventoryPaginatedResponse>(
                     await response.Content.ReadAsStringAsync()
@@ -88,7 +94,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var history = JsonConvert.DeserializeObject<SteamMarketHistoryPaginatedResponse>(
                     await response.Content.ReadAsStringAsync()
@@ -104,7 +112,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 // TODO: Find a better way to look this up...
                 var html = await response.Content.ReadAsStringAsync();
@@ -120,7 +130,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var search = JsonConvert.DeserializeObject<SteamMarketSearchPaginatedResponse>(
                     await response.Content.ReadAsStringAsync()
@@ -136,7 +148,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var activity = JsonConvert.DeserializeObject<SteamMarketItemOrdersActivityResponse>(
                     await response.Content.ReadAsStringAsync()
@@ -152,7 +166,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var histogram = JsonConvert.DeserializeObject<SteamMarketItemOrdersHistogramResponse>(
                     await response.Content.ReadAsStringAsync()
@@ -168,7 +184,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var priceOverview = JsonConvert.DeserializeObject<SteamMarketPriceOverviewResponse>(
                     await response.Content.ReadAsStringAsync()
@@ -184,7 +202,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var priceHistory = JsonConvert.DeserializeObject<SteamMarketPriceHistoryResponse>(
                     await response.Content.ReadAsStringAsync()
@@ -200,7 +220,9 @@ namespace SCMM.Steam.Shared
             {
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
+                {
                     return null;
+                }
 
                 var image = await response.Content.ReadAsByteArrayAsync();
                 return image;

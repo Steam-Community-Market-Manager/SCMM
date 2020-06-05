@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace SCMM.Steam.Shared.Models
+﻿namespace SCMM.Steam.Shared.Models
 {
     public enum SteamMarketHistoryEventType
     {

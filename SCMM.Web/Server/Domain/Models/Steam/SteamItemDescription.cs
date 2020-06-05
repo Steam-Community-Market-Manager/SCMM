@@ -1,8 +1,7 @@
 ﻿using SCMM.Web.Server.Data.Types;
-using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SCMM.Web.Server.Models.Steam
+namespace SCMM.Web.Server.Domain.Models.Steam
 {
     public class SteamItemDescription : Entity
     {

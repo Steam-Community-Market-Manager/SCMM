@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using SCMM.Steam.Shared.Models;
-
-namespace SCMM.Steam.Shared.Response
+﻿namespace SCMM.Steam.Shared.Models
 {
     public class SteamMarketHistoryAssetDescription : SteamAssetDescription
     {

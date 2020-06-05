@@ -1,11 +1,10 @@
 ﻿using Cronos;
 using Microsoft.Extensions.Hosting;
-using SCMM.Web.Server.Configuration;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Services
+namespace SCMM.Web.Server.Services.Jobs.CronJob
 {
     public abstract class CronJobService : IHostedService, IDisposable
     {
@@ -14,7 +13,7 @@ namespace SCMM.Web.Server.Services
         private readonly CronExpression _expression;
         private readonly bool _startImmediately;
 
-        protected CronJobService(JobConfiguration configuration)
+        protected CronJobService(CronJobConfiguration configuration)
         {
             _expression = CronExpression.Parse(configuration.CronExpression);
             _startImmediately = configuration.StartImmediately;
@@ -34,7 +33,7 @@ namespace SCMM.Web.Server.Services
                 _timer = new System.Timers.Timer(delay.TotalMilliseconds);
                 _timer.Elapsed += async (sender, args) =>
                 {
-                    lock(_timerLock)
+                    lock (_timerLock)
                     {
                         if (_timer != null)
                         {

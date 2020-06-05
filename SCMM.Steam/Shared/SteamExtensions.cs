@@ -14,7 +14,10 @@ namespace SCMM.Steam.Shared
         {
             // Steam doesn't prefix their colours with a hash
             if (!String.IsNullOrEmpty(colour) && !colour.StartsWith("#"))
+            {
                 colour = $"#{colour}";
+            }
+
             return colour;
         }
     }

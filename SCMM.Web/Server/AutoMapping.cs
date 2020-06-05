@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using SCMM.Web.Server.Models.Steam;
-using SCMM.Web.Shared.Models.Steam;
+using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Shared.Domain.DTOs.Steam;
 
 namespace SCMM.Web.Server
 {

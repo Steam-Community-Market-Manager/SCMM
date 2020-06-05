@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-using SCMM.Web.Shared.Models.Steam;
+using SCMM.Web.Shared.Domain.DTOs.Steam;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace SCMM.Web.Server.Controllers
+namespace SCMM.Web.Server.API.Controllers
 {
     [Authorize]
     [ApiController]

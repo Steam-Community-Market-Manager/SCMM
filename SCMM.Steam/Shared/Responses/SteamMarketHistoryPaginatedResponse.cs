@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using SCMM.Steam.Shared.Models;
-using SCMM.Steam.Shared.Response;
 using System.Collections.Generic;
 
 namespace SCMM.Steam.Shared.Responses

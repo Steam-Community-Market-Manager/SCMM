@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace SCMM.Web.Server.Data.Migrations
+namespace SCMM.Web.Server.Data.Migrations.Identity
 {
     [DbContext(typeof(IdentityDbContext))]
     [Migration("00000000000000_CreateIdentitySchema")]

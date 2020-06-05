@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SCMM.Web.Server.Models.Steam
+namespace SCMM.Web.Server.Domain.Models.Steam
 {
     public class SteamItem : Entity
     {

@@ -24,7 +24,7 @@ namespace SCMM.Web.Server.Data.Types
         protected abstract T ConvertSingleValueToRuntime(string rawValue);
 
         protected abstract string ConvertSingleValueToPersistable(T value);
-   
+
         protected virtual string ValueSeperator
         {
             get => DefaultValueSeperator;

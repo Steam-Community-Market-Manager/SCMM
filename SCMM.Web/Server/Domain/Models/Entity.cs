@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SCMM.Web.Server.Models
+namespace SCMM.Web.Server.Domain.Models
 {
     public class Entity
     {

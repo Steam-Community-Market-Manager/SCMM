@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Web.Shared.Models
+namespace SCMM.Web.Shared.Domain.DTOs
 {
     public class EntityDTO
     {

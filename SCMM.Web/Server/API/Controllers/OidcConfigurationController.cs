@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace SCMM.Web.Server.Controllers
+namespace SCMM.Web.Server.API.Controllers
 {
     public class OidcConfigurationController : Controller
     {

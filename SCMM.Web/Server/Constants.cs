@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Server
+﻿namespace SCMM.Web.Server
 {
     public class Constants
     {

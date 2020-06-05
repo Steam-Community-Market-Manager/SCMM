@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace SCMM.Web.Server.Models.Steam
+namespace SCMM.Web.Server.Domain.Models.Steam
 {
     public class SteamApp : Entity
     {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Shared.Models.Steam
+﻿namespace SCMM.Web.Shared.Domain.DTOs.Steam
 {
     public class SteamItemDescriptionDTO : EntityDTO
     {

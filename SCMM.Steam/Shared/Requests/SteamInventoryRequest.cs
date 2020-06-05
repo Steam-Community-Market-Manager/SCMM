@@ -7,7 +7,7 @@ namespace SCMM.Steam.Shared.Requests
         public string SteamId { get; set; }
 
         public string AppId { get; set; }
-            
+
         public string AssetId { get; set; }
 
         public Uri Uri => new Uri(String.IsNullOrEmpty(AssetId)
