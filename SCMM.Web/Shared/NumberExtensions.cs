@@ -33,8 +33,8 @@ namespace SCMM.Web.Shared
         {
             const int HighSaturationThreshold = 500;
             var prefix = String.Empty;
-            if (quantity >= HighSaturationThreshold) prefix = "high 🡱";
-            if (quantity < HighSaturationThreshold) prefix = "low 🡳";
+            if (quantity >= HighSaturationThreshold) prefix = "🡱";
+            if (quantity < HighSaturationThreshold) prefix = "🡳";
             return ($"{prefix} {quantity}").Trim();
         }
 

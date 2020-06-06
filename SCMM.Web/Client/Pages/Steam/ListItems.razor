@@ -2,35 +2,67 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.Steam
+@using SCMM.Web.Shared
 @attribute [Authorize]
 @inject HttpClient Http
 
-@if (items == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <MatTable Items="@items" PageSize="25" Striped="true" AllowSelection="true" 
-              FilterByColumnName="Name" DebounceMilliseconds="150" >
-        <MatTableHeader>
-            <th></th>
-            <th>Name</th>
-            <th>Supply</th>
-            <th>Demand</th>
-            <th>Lowest Buy Price</th>
-            <th>Last Updated</th>
-        </MatTableHeader>
-        <MatTableRow>
-            <td><img src="@context.Description.IconUrl" style="max-height:32px; max-width:32px" /></td>
-            <td>@context.Name</td>
-            <td>0</td>
-            <td>0</td>
-            <td>$0.00</td>
-            <td>@context.LastChecked.ToString()</td>
-        </MatTableRow>
-    </MatTable>
-}
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+
+            @if (items == null)
+            {
+                <p><em>Loading...</em></p>
+            }
+            else
+            {
+                <MatDataTable Items="@items" Paginator="true" StickyHeader="true" PageSize="25" >
+                    <Columns>
+                        <MatDataTableColumn TItem="SteamItemDTO" Header="Icon" Value="@(i => i.Description.IconUrl)" Sort="false">
+                            <Template>
+                                <img src="@context.Description.IconUrl" style="max-width:24px; max-height:24px" />
+                            </Template>
+                        </MatDataTableColumn>
+                        <MatDataTableColumn TItem="SteamItemDTO" Header="Name" Value="@(i => i.Name)" Sort="true">
+                            <Template>
+                                @context.Name
+                            </Template>
+                        </MatDataTableColumn>
+                        <MatDataTableColumn TItem="SteamItemDTO" Header="Supply" Value="@(i => i.Supply)" Sort="true">
+                            <Template>
+                                @context.Supply.ToSaturationString(@context.Demand)
+                            </Template>
+                        </MatDataTableColumn>
+                        <MatDataTableColumn TItem="SteamItemDTO" Header="Demand" Value="@(i => i.Demand)" Sort="true">
+                            <Template>
+                                @context.Demand.ToSaturationString(@context.Supply)
+                            </Template>
+                        </MatDataTableColumn>
+                        <MatDataTableColumn TItem="SteamItemDTO" Header="Lowest Price" Value="@(i => i.SellLowestPrice)" Sort="true">
+                            <Template>
+                                @context.Currency.ToPriceString(context.SellLowestPrice)
+                            </Template>
+                        </MatDataTableColumn>
+                        <MatDataTableColumn TItem="SteamItemDTO" Header="Lowest Price Delta" Value="@(i => i.SellLowestDelta)" Sort="true">
+                            <Template>
+                                @context.Currency.ToPriceString(context.SellLowestDelta)
+                            </Template>
+                        </MatDataTableColumn>
+                        <MatDataTableColumn TItem="SteamItemDTO" Header="Last Updated" Value="@(i => i.LastChecked)" Sort="true">
+                            <Template>
+                                @context.LastCheckedAgo.ToDurationString()
+                            </Template>
+                        </MatDataTableColumn>
+                    </Columns>
+                </MatDataTable>
+            }
+
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <p>Statistics...</p>
+        </div>
+    </div>
+</div>
 
 @code {
 

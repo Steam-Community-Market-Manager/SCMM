@@ -30,7 +30,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<SteamItemDTO> Get()
         {
             return _db.SteamItems
-                .Include(x => x.App)
+                .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .OrderBy(x => x.Name)
                 .Select(x => _mapper.Map<SteamItemDTO>(x))
