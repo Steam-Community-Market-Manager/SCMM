@@ -1,3 +1,4 @@
+using MatBlazor;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,12 @@ namespace SCMM.Web.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
+
+            builder.Services.AddSingleton<MatTheme>(new MatTheme()
+            {
+                Primary = "#1b2838",
+                Secondary = "#5aa9d6"
+            });
 
             builder.Services.AddHttpClient("SCMM.Web.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();

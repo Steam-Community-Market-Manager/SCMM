@@ -1,0 +1,51 @@
+@page "/steam/items"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using SCMM.Web.Shared.Domain.DTOs.Steam
+@attribute [Authorize]
+@inject HttpClient Http
+
+@if (items == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <MatTable Items="@items" PageSize="25" Striped="true" AllowSelection="true" 
+              FilterByColumnName="Name" DebounceMilliseconds="150" >
+        <MatTableHeader>
+            <th></th>
+            <th>Name</th>
+            <th>Supply</th>
+            <th>Demand</th>
+            <th>Lowest Buy Price</th>
+            <th>Last Updated</th>
+        </MatTableHeader>
+        <MatTableRow>
+            <td><img src="@context.Description.IconUrl" style="max-height:32px; max-width:32px" /></td>
+            <td>@context.Name</td>
+            <td>0</td>
+            <td>0</td>
+            <td>$0.00</td>
+            <td>@context.LastChecked.ToString()</td>
+        </MatTableRow>
+    </MatTable>
+}
+
+@code {
+
+    private SteamItemDTO[] items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            items = await Http.GetFromJsonAsync<SteamItemDTO[]>("SteamItems");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+}

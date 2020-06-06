@@ -1,16 +1,57 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
 
-<div class="sidebar">
-    <NavMenu />
-</div>
+<MatDrawerContainer Style="width: 100vw; height: 100vh;">
+    <MatDrawer @bind-Opened="@Opened" Mode="@MatDrawerMode.Modal">
+        
+        <MatAppBarContainer>
+            <MatAppBar Fixed="true">
+                <MatAppBarRow>
+                    <MatAppBarSection>
+                        <MatAppBarTitle>SCMM</MatAppBarTitle>
+                    </MatAppBarSection>
+                </MatAppBarRow>
+            </MatAppBar>
+            <MatAppBarContent>
+                <NavMenuVertical />
+            </MatAppBarContent>
+        </MatAppBarContainer>
 
-<div class="main">
-    <div class="top-row px-4 auth">
-        <LoginDisplay />
-        <a href="https://steamcommunity.com/market/" target="_blank">Steam</a>
-    </div>
+    </MatDrawer>
+    <MatDrawerContent>
 
-    <div class="content px-4">
-        @Body
-    </div>
-</div>
+        <MatAppBarContainer>
+            <MatAppBar Fixed="true">
+                <MatAppBarRow>
+                    <MatAppBarSection>
+                        <MatHidden Breakpoint="@MatBreakpoint.MD" Direction="@MatHiddenDirection.Up">
+                            <ChildContent>
+                                <MatIconButton Icon="@MatIconNames.Menu" OnClick="@ToggleDraw"></MatIconButton>
+                            </ChildContent>
+                        </MatHidden>
+                        <MatAppBarTitle Class="px-3">SCMM</MatAppBarTitle>
+                        <NavMenuHorizontal />
+                    </MatAppBarSection>
+                    <MatAppBarSection Align="@MatAppBarSectionAlign.End">
+                        <NavMenuAuth />
+                    </MatAppBarSection>
+                </MatAppBarRow>
+            </MatAppBar>
+            <MatAppBarContent>
+                @Body
+            </MatAppBarContent>
+        </MatAppBarContainer>
+
+    </MatDrawerContent>
+</MatDrawerContainer>
+
+@code
+{
+    bool Opened = false;
+
+    void ToggleDraw()
+    {
+        Opened = !Opened;
+    }
+
+}
