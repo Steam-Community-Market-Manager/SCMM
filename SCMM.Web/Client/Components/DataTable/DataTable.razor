@@ -1,0 +1,64 @@
+﻿@namespace SCMM.Web.Client.Components.DataTable
+@typeparam TItem
+@inherits BaseDataTable<TItem>
+
+@{
+    var visibleItems = GetVisibleItems();
+    var renderedItems = GetRenderedItems(visibleItems);
+    var scrollResult = VirtualScrollHelper.GetResult(renderedItems, 52, 56, StickyHeader);
+}
+
+<div class="@ClassMapper.AsString()" style="@StyleMapper.AsString()" @ref="@Ref" id="@Id" @attributes="@Attributes">
+
+    <CascadingValue Value="@this">
+        
+        @Columns
+
+        <div class="mat-data-table-container" style="@(scrollResult.ScrollContainerStyle)">
+            <table class="mdc-data-table__table">
+                <DataTableHeader>
+                    @foreach (var column in columnItems)
+                    {
+                        <DataTableHeaderCell>
+                            @if (column.HeaderTemplate != null)
+                            {
+                                @column.HeaderTemplate
+                            }
+                            else
+                            {
+                                @column.Header
+                            }
+                        </DataTableHeaderCell>
+                    }
+                </DataTableHeader>
+                <DataTableContent>
+                    @foreach (var item in renderedItems.Skip(scrollResult.SkipItems).Take(scrollResult.TakeItems))
+                    {
+                        <DataTableRow TItem="@TItem" AllowSelection="@AllowSelection" RowItem="@item">
+                            @foreach (var column in columnItems)
+                            {
+                                <DataTableCell>
+                                    @if (column.Template != null)
+                                    {
+                                        @column.Template(item)
+                                    }
+                                    else if (@column.Value != null)
+                                    {
+                                        @column.Value(item)
+                                    }
+                                </DataTableCell>
+                            }
+                        </DataTableRow>
+                    }
+                </DataTableContent>
+            </table>
+        </div> 
+    
+    </CascadingValue>
+
+    @if (Paginator)
+    {
+        <MatPaginator PageSizeOptions="@PageSizeOptions" PageSize="@PageSize" PageLabel="@PageLabel" Length="@visibleItems.Count()" Page="@OnPageHandler"></MatPaginator>
+    }
+
+</div>

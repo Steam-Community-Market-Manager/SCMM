@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Steam;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,11 +28,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<SteamItemDTO> Get()
+        public IEnumerable<SteamItemDTO> Get(string filter = null)
         {
+            filter = filter?.Trim();
             return _db.SteamItems
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => String.IsNullOrEmpty(filter) || x.Name.Contains(filter))
                 .OrderBy(x => x.Name)
                 .Select(x => _mapper.Map<SteamItemDTO>(x))
                 .ToList();

@@ -8,9 +8,15 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
 
         public string Name { get; set; }
 
+        public SteamAppDTO App { get; set; }
+
         public SteamItemDescriptionDTO Description { get; set; }
 
         public SteamCurrencyDTO Currency { get; set; }
+
+        public SteamItemOrderDTO[] BuyOrders { get; set; }
+
+        public SteamItemOrderDTO[] SellOrders { get; set; }
 
         public int Supply { get; set; }
 

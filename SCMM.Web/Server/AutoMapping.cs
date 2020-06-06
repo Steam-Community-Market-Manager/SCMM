@@ -13,6 +13,7 @@ namespace SCMM.Web.Server
             CreateMap<SteamApp, SteamAppDTO>().ReverseMap();
             CreateMap<SteamItem, SteamItemDTO>().ReverseMap();
             CreateMap<SteamItemDescription, SteamItemDescriptionDTO>().ReverseMap();
+            CreateMap<SteamItemOrder, SteamItemOrderDTO>().ReverseMap();
         }
     }
 }

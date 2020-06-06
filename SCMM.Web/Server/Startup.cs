@@ -44,7 +44,7 @@ namespace SCMM.Web.Server
 
             services.AddHostedService<CheckForNewSteamItemsJob>();
             services.AddHostedService<ResolveMissingSteamItemIdsJob>();
-            services.AddHostedService<RefreshSteamItemOrdersJob>();
+            services.AddHostedService<UpdateSteamItemOrdersJob>();
 
             services.AddAutoMapper(typeof(Startup));
 

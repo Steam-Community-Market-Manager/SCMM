@@ -9,7 +9,5 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
         public string Name { get; set; }
 
         public string IconUrl { get; set; }
-
-        public ICollection<SteamItemDTO> Items { get; set; }
     }
 }

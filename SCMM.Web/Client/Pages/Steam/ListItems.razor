@@ -8,7 +8,7 @@
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
 
             @if (items == null)
             {
@@ -16,68 +16,165 @@
             }
             else
             {
-                <MatDataTable Items="@items" Paginator="true" StickyHeader="true" PageSize="25" >
+                <DataTable Items="@items" VirtualScroll="true" Paginator="true" PageSize="25" AllowSelection="true" SelectionChanged="@SelectionChangedEvent">
                     <Columns>
-                        <MatDataTableColumn TItem="SteamItemDTO" Header="Icon" Value="@(i => i.Description.IconUrl)" Sort="false">
+                        <DataTableColumn TItem="SteamItemDTO" Header="Icon" Value="@(i => i.Description.IconUrl)" Sort="false">
                             <Template>
                                 <img src="@context.Description.IconUrl" style="max-width:24px; max-height:24px" />
                             </Template>
-                        </MatDataTableColumn>
-                        <MatDataTableColumn TItem="SteamItemDTO" Header="Name" Value="@(i => i.Name)" Sort="true">
+                        </DataTableColumn>
+                        <DataTableColumn TItem="SteamItemDTO" Header="Name" Value="@(i => i.Name)" Sort="true">
                             <Template>
                                 @context.Name
                             </Template>
-                        </MatDataTableColumn>
-                        <MatDataTableColumn TItem="SteamItemDTO" Header="Supply" Value="@(i => i.Supply)" Sort="true">
+                        </DataTableColumn>
+                        <DataTableColumn TItem="SteamItemDTO" Header="Supply" Value="@(i => i.Supply)" Sort="true">
                             <Template>
                                 @context.Supply.ToSaturationString(@context.Demand)
                             </Template>
-                        </MatDataTableColumn>
-                        <MatDataTableColumn TItem="SteamItemDTO" Header="Demand" Value="@(i => i.Demand)" Sort="true">
+                        </DataTableColumn>
+                        <DataTableColumn TItem="SteamItemDTO" Header="Demand" Value="@(i => i.Demand)" Sort="true">
                             <Template>
                                 @context.Demand.ToSaturationString(@context.Supply)
                             </Template>
-                        </MatDataTableColumn>
-                        <MatDataTableColumn TItem="SteamItemDTO" Header="Lowest Price" Value="@(i => i.SellLowestPrice)" Sort="true">
+                        </DataTableColumn>
+                        <DataTableColumn TItem="SteamItemDTO" Header="Lowest Price" Value="@(i => i.SellLowestPrice)" Sort="true">
                             <Template>
                                 @context.Currency.ToPriceString(context.SellLowestPrice)
                             </Template>
-                        </MatDataTableColumn>
-                        <MatDataTableColumn TItem="SteamItemDTO" Header="Lowest Price Delta" Value="@(i => i.SellLowestDelta)" Sort="true">
+                        </DataTableColumn>
+                        <DataTableColumn TItem="SteamItemDTO" Header="Lowest Price Delta" Value="@(i => i.SellLowestDelta)" Sort="true">
                             <Template>
                                 @context.Currency.ToPriceString(context.SellLowestDelta)
                             </Template>
-                        </MatDataTableColumn>
-                        <MatDataTableColumn TItem="SteamItemDTO" Header="Last Updated" Value="@(i => i.LastChecked)" Sort="true">
-                            <Template>
-                                @context.LastCheckedAgo.ToDurationString()
-                            </Template>
-                        </MatDataTableColumn>
+                        </DataTableColumn>
                     </Columns>
-                </MatDataTable>
+                </DataTable>
             }
 
         </div>
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-            <p>Statistics...</p>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-7">
+            @if (selectedItem != null)
+            {
+                <div class="mat-layout-grid-inner">
+
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                        <div class="mat-elevation-z3" style="min-height:30vh">
+                            <div class="mat-layout-grid">
+                                <div class="mat-layout-grid-inner">
+                                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                                        <img src="@selectedItem.Description.IconLargeUrl" style="width:100%" />
+                                    </div>
+                                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                        <MatHeadline6>
+                                            @selectedItem.Name
+                                        </MatHeadline6>
+                                        <MatSubtitle2>
+                                            Workshop Item
+                                        </MatSubtitle2>
+                                        <MatBody2 Class="mb-0">
+                                            This is a skin for the Wood Storage Box item. You will be able to apply this skin when you craft the item in game.
+                                        </MatBody2>
+                                    </div>
+                                    <div class="mat-layout-grid-cell-span-12">
+                                        <MatChipSet>
+                                            <MatChip Label="Deployable"></MatChip>
+                                            <MatChip Label="Sheet Metal Door"></MatChip>
+                                            <MatChip Label="MDE"></MatChip>
+                                        </MatChipSet>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                        <div class="mat-elevation-z3" style="min-height:30vh">
+                            <MatList>
+                                @foreach (var order in selectedItem.SellOrders)
+                                {
+                                    <MatListItem>
+                                        @selectedItem.Currency.ToPriceString(order.Price) &nbsp;
+                                        <MatChip Label="@order.Quantity.ToString()"></MatChip>
+                                    </MatListItem>
+                                    @if (selectedItem.SellOrders.Last() != order)
+                                    {
+                                        <MatListDivider></MatListDivider>
+                                    }
+                                }
+                            </MatList>
+                            <MatCardActions>
+                                <MatCardActionButtons>
+                                    <MatButton Raised="true">Buy</MatButton>
+                                </MatCardActionButtons>
+                                <MatCardActionIcons>
+                                    <MatIconButton Icon="@MatIconNames.Refresh"></MatIconButton>
+                                </MatCardActionIcons>
+                            </MatCardActions>
+                        </div>
+                    </div>
+
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                        <div class="mat-elevation-z3" style="min-height:30vh">
+                            <MatList>
+                                @foreach (var order in selectedItem.BuyOrders)
+                                {
+                                    <MatListItem>
+                                        @selectedItem.Currency.ToPriceString(order.Price) &nbsp;
+                                        <MatChip Label="@order.Quantity.ToString()"></MatChip>
+                                    </MatListItem>
+                                    @if (selectedItem.BuyOrders.Last() != order)
+                                    {
+                                        <MatListDivider></MatListDivider>
+                                    }
+                                }
+                            </MatList>
+                            <MatCardActions>
+                                <MatCardActionButtons>
+                                    <MatButton Raised="true">Sell</MatButton>
+                                </MatCardActionButtons>
+                                <MatCardActionIcons>
+                                    <MatIconButton Icon="@MatIconNames.Refresh"></MatIconButton>
+                                </MatCardActionIcons>
+                            </MatCardActions>
+                        </div>
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <p>No item selected</p>
+            }
         </div>
     </div>
 </div>
 
 @code {
 
+    private string filter = "blackout";
     private SteamItemDTO[] items;
+    private SteamItemDTO selectedItem;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            items = await Http.GetFromJsonAsync<SteamItemDTO[]>("SteamItems");
+            items = await Http.GetFromJsonAsync<SteamItemDTO[]>($"SteamItems?filter={filter}");
         }
         catch (AccessTokenNotAvailableException exception)
         {
             exception.Redirect();
         }
+    }
+
+    public void SelectionChangedEvent(object row)
+    {
+        selectedItem = (row != null)
+            ? (SteamItemDTO) row
+            : null;
+
+        this.StateHasChanged();
     }
 
 }

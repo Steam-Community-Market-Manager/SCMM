@@ -15,13 +15,13 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class RefreshSteamItemOrdersJob : CronJobService
+    public class UpdateSteamItemOrdersJob : CronJobService
     {
-        private readonly ILogger<RefreshSteamItemOrdersJob> _logger;
+        private readonly ILogger<UpdateSteamItemOrdersJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public RefreshSteamItemOrdersJob(IConfiguration configuration, ILogger<RefreshSteamItemOrdersJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<RefreshSteamItemOrdersJob>())
+        public UpdateSteamItemOrdersJob(IConfiguration configuration, ILogger<UpdateSteamItemOrdersJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<UpdateSteamItemOrdersJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
