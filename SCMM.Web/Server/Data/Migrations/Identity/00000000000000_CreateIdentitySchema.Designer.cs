@@ -21,7 +21,7 @@ namespace SCMM.Web.Server.Data.Migrations.Identity
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.ApplicationUser", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -314,7 +314,7 @@ namespace SCMM.Web.Server.Data.Migrations.Identity
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Models.ApplicationUser", null)
+                    b.HasOne("SCMM.Web.Server.Domain.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -323,7 +323,7 @@ namespace SCMM.Web.Server.Data.Migrations.Identity
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Models.ApplicationUser", null)
+                    b.HasOne("SCMM.Web.Server.Domain.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -338,7 +338,7 @@ namespace SCMM.Web.Server.Data.Migrations.Identity
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SCMM.Web.Server.Models.ApplicationUser", null)
+                    b.HasOne("SCMM.Web.Server.Domain.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -347,7 +347,7 @@ namespace SCMM.Web.Server.Data.Migrations.Identity
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Models.ApplicationUser", null)
+                    b.HasOne("SCMM.Web.Server.Domain.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

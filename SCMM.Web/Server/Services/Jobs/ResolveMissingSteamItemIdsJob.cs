@@ -17,11 +17,11 @@ namespace SCMM.Web.Server.Services.Jobs
 {
     public class ResolveMissingSteamItemIdsJob : CronJobService
     {
-        private readonly ILogger<CheckForNewSteamItemsJob> _logger;
+        private readonly ILogger<ResolveMissingSteamItemIdsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public ResolveMissingSteamItemIdsJob(IConfiguration configuration, ILogger<CheckForNewSteamItemsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<CheckForNewSteamItemsJob>())
+        public ResolveMissingSteamItemIdsJob(IConfiguration configuration, ILogger<ResolveMissingSteamItemIdsJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<ResolveMissingSteamItemIdsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;

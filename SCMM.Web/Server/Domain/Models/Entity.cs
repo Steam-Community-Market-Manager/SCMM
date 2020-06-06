@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SCMM.Web.Server.Domain.Models
 {
@@ -8,6 +9,7 @@ namespace SCMM.Web.Server.Domain.Models
         [Key]
         public Guid Id { get; set; }
 
+        [NotMapped]
         public bool IsTransient => (Id == Guid.Empty);
     }
 }

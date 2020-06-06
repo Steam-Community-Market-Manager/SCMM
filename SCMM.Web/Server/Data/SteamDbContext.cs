@@ -22,11 +22,13 @@ namespace SCMM.Web.Server.Data
                 .HasMany(x => x.Items)
                 .WithOne(x => x.App);
             builder.Entity<SteamItem>()
+                .HasOne(x => x.Currency);
+            builder.Entity<SteamItem>()
                 .HasOne(x => x.Description);
             builder.Entity<SteamItem>()
-                .HasMany(x => x.BuyOrders);
+                .OwnsMany(x => x.BuyOrders);
             builder.Entity<SteamItem>()
-                .HasMany(x => x.SellOrders);
+                .OwnsMany(x => x.SellOrders);
             builder.Entity<SteamItemDescription>()
                 .OwnsOne(x => x.Tags);
         }

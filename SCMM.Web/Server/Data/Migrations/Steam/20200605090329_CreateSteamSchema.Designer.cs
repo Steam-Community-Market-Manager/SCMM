@@ -21,7 +21,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamApp", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamApp", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,7 +43,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamApps");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamCurrency", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamCurrency", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -64,7 +64,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamCurrencies");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamItem", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -96,7 +96,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamItems");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamItemDescription", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItemDescription", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -127,7 +127,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamItemDescription");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamItemOrder", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItemOrder", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,7 +154,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamItemOrder");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamLanguage", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamLanguage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -171,22 +171,22 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamLanguages");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamItem", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItem", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Models.Steam.SteamApp", "App")
+                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamApp", "App")
                         .WithMany("Items")
                         .HasForeignKey("AppId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SCMM.Web.Server.Models.Steam.SteamItemDescription", "Description")
+                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamItemDescription", "Description")
                         .WithMany()
                         .HasForeignKey("DescriptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamItemDescription", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItemDescription", b =>
                 {
                     b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableStringCollection", "Tags", b1 =>
                         {
@@ -205,13 +205,13 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         });
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Models.Steam.SteamItemOrder", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItemOrder", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Models.Steam.SteamItem", null)
+                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamItem", null)
                         .WithMany("BuyOrders")
                         .HasForeignKey("BuyOrderItemId");
 
-                    b.HasOne("SCMM.Web.Server.Models.Steam.SteamItem", null)
+                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamItem", null)
                         .WithMany("SellOrders")
                         .HasForeignKey("SellOrderItemId");
                 });
