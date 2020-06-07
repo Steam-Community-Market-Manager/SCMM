@@ -1,7 +1,7 @@
-@inject MatTheme Theme
+@inject Blazorise.Theme Theme
 
 <CascadingAuthenticationState>
-    <MatThemeProvider Theme="@Theme">
+    <Blazorise.ThemeProvider Theme="@Theme">
         <Router AppAssembly="@typeof(Program).Assembly">
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
@@ -12,16 +12,16 @@
                         }
                         else
                         {
-                            <p>You are not authorized to access this resource.</p>
+                            <Text>You are not authorized to access this resource.</Text>
                         }
                     </NotAuthorized>
                 </AuthorizeRouteView>
             </Found>
             <NotFound>
                 <LayoutView Layout="@typeof(MainLayout)">
-                    <p>Sorry, there's nothing at this address.</p>
+                    <Text>Sorry, there's nothing at this address.</Text>
                 </LayoutView>
             </NotFound>
         </Router>
-    </MatThemeProvider>
+    </Blazorise.ThemeProvider>
 </CascadingAuthenticationState>

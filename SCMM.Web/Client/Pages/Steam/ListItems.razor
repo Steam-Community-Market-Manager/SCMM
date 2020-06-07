@@ -6,155 +6,155 @@
 @attribute [Authorize]
 @inject HttpClient Http
 
-<div class="mat-layout-grid">
-    <div class="mat-layout-grid-inner">
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
+<Row>
+    <Column ColumnSize="ColumnSize.Is5">
+ 
+        @if (items == null)
+        {
+            <Text><em>Loading...</em></Text>
+        }
+        else
+        {
+            <DataGrid TItem="SteamItemDTO" Data="@items" SelectedRowChanged="@OnSelectionChanged" Narrow="true" Striped="true" ShowPager="true" PageSize="25">
+                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Description.IconUrl)" Caption="Icon">
+                    <DisplayTemplate>
+                        <img src="@((context as SteamItemDTO).Description.IconUrl)" style="max-width:24px; max-height:24px" />
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Name)" Caption="Name" Sortable="true">
+                    <DisplayTemplate>
+                        <Text Weight="TextWeight.Bold">@((context as SteamItemDTO).Name)</Text>
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Supply)" Caption="Supply" Sortable="true">
+                    <DisplayTemplate>
+                        <Text>@((context as SteamItemDTO).Supply.ToSaturationString(@context.Demand))</Text>
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Demand)" Caption="Demand" Sortable="true">
+                    <DisplayTemplate>
+                        <Text>@((context as SteamItemDTO).Demand.ToSaturationString(@context.Supply))</Text>
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.SellLowestPrice)" Caption="Lowest Price" Sortable="true">
+                    <DisplayTemplate>
+                        <Text>@((context as SteamItemDTO).Currency.ToPriceString(context.SellLowestPrice))</Text>
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.SellLowestDelta)" Caption="Lowest Price Delta" Sortable="true">
+                    <DisplayTemplate>
+                        <Text>@((context as SteamItemDTO).Currency.ToPriceString(context.SellLowestDelta))</Text>
+                    </DisplayTemplate>
+                </DataGridColumn>
+            </DataGrid>
+        }
 
-            @if (items == null)
-            {
-                <p><em>Loading...</em></p>
-            }
-            else
-            {
-                <DataTable Items="@items" VirtualScroll="true" Paginator="true" PageSize="25" AllowSelection="true" SelectionChanged="@SelectionChangedEvent">
-                    <Columns>
-                        <DataTableColumn TItem="SteamItemDTO" Header="Icon" Value="@(i => i.Description.IconUrl)" Sort="false">
-                            <Template>
-                                <img src="@context.Description.IconUrl" style="max-width:24px; max-height:24px" />
-                            </Template>
-                        </DataTableColumn>
-                        <DataTableColumn TItem="SteamItemDTO" Header="Name" Value="@(i => i.Name)" Sort="true">
-                            <Template>
-                                @context.Name
-                            </Template>
-                        </DataTableColumn>
-                        <DataTableColumn TItem="SteamItemDTO" Header="Supply" Value="@(i => i.Supply)" Sort="true">
-                            <Template>
-                                @context.Supply.ToSaturationString(@context.Demand)
-                            </Template>
-                        </DataTableColumn>
-                        <DataTableColumn TItem="SteamItemDTO" Header="Demand" Value="@(i => i.Demand)" Sort="true">
-                            <Template>
-                                @context.Demand.ToSaturationString(@context.Supply)
-                            </Template>
-                        </DataTableColumn>
-                        <DataTableColumn TItem="SteamItemDTO" Header="Lowest Price" Value="@(i => i.SellLowestPrice)" Sort="true">
-                            <Template>
-                                @context.Currency.ToPriceString(context.SellLowestPrice)
-                            </Template>
-                        </DataTableColumn>
-                        <DataTableColumn TItem="SteamItemDTO" Header="Lowest Price Delta" Value="@(i => i.SellLowestDelta)" Sort="true">
-                            <Template>
-                                @context.Currency.ToPriceString(context.SellLowestDelta)
-                            </Template>
-                        </DataTableColumn>
-                    </Columns>
-                </DataTable>
-            }
+    </Column>
+    <Column ColumnSize="ColumnSize.Is7">
 
-        </div>
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-7">
-            @if (selectedItem != null)
-            {
-                <div class="mat-layout-grid-inner">
-
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-                        <div class="mat-elevation-z3" style="min-height:30vh">
-                            <div class="mat-layout-grid">
-                                <div class="mat-layout-grid-inner">
-                                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-                                        <img src="@selectedItem.Description.IconLargeUrl" style="width:100%" />
-                                    </div>
-                                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                                        <MatHeadline6>
-                                            @selectedItem.Name
-                                        </MatHeadline6>
-                                        <MatSubtitle2>
-                                            Workshop Item
-                                        </MatSubtitle2>
-                                        <MatBody2 Class="mb-0">
-                                            This is a skin for the Wood Storage Box item. You will be able to apply this skin when you craft the item in game.
-                                        </MatBody2>
-                                    </div>
-                                    <div class="mat-layout-grid-cell-span-12">
-                                        <MatChipSet>
-                                            <MatChip Label="Deployable"></MatChip>
-                                            <MatChip Label="Sheet Metal Door"></MatChip>
-                                            <MatChip Label="MDE"></MatChip>
-                                        </MatChipSet>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        @if (selectedItem != null)
+        {
+            <Row>
+                <Column ColumnSize="ColumnSize.Is2">
+                    <img src="@selectedItem.Description.IconLargeUrl" />
+                </Column>
+                <Column ColumnSize="ColumnSize.Is10">
+                    <Heading Size="HeadingSize.Is3">
+                        @selectedItem.Name
+                    </Heading>
+                    <Paragraph>
+                        <Text>This is a skin for the Metal Facemask item. You will be able to apply this skin when you craft the item in game.</Text>
+                    </Paragraph>
+                    <div>
+                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Armour</Badge>
+                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Metal Facemask</Badge>
+                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Cloth</Badge>
+                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Blackout</Badge>
+                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">MDE</Badge>
+                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">50K+</Badge>
                     </div>
+                </Column>
+            </Row>
+            <Row>
+                <Column ColumnSize="ColumnSize.Is4">
+                    <LineChart @ref="lineChart" TItem="double" />
+                </Column>
+                <Column ColumnSize="ColumnSize.Is4">
+                    <Table Narrow="true">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHeaderCell>Buy Now Price</TableHeaderCell>
+                                <TableHeaderCell>Quantity</TableHeaderCell>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            @foreach (var order in selectedItem.SellOrders.OrderBy(x => x.Price))
+                            {
+                                <TableRow>
+                                    <TableRowCell>
+                                        <Text Weight="TextWeight.Bold">
+                                            @selectedItem.Currency.ToPriceString(order.Price)
+                                            @if (order.Price == selectedItem.SellOrders.Max(x => x.Price))
+                                            {
+                                                <span>or more</span>
+                                            }
+                                        </Text>
+                                    </TableRowCell>
+                                    <TableRowCell>@order.Quantity</TableRowCell>
+                                </TableRow>
+                            }
+                        </TableBody>
+                    </Table>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is4">
+                    <Table Narrow="true">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHeaderCell>Buy Asking Price</TableHeaderCell>
+                                <TableHeaderCell>Quantity</TableHeaderCell>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            @foreach (var order in selectedItem.BuyOrders.OrderByDescending(x => x.Price))
+                            {
+                                <TableRow>
+                                    <TableRowCell>
+                                        <Text Weight="TextWeight.Bold">
+                                            @selectedItem.Currency.ToPriceString(order.Price)
+                                            @if (order.Price == selectedItem.BuyOrders.Min(x => x.Price))
+                                            {
+                                                <span>or more</span>
+                                            }
+                                        </Text>
+                                    </TableRowCell>
+                                    <TableRowCell>@order.Quantity</TableRowCell>
+                                </TableRow>
+                            }
+                        </TableBody>
+                    </Table>
+                </Column>
+            </Row>
+            <Row>
+                <Column ColumnSize="ColumnSize.Is12">
+                    <LineChart @ref="lineChart" TItem="double" />
+                </Column>
+            </Row>
+        }
+        else
+        {
+            <Text>No item selected</Text>
+        }
 
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-                        <div class="mat-elevation-z3" style="min-height:30vh">
-                            <MatList>
-                                @foreach (var order in selectedItem.SellOrders)
-                                {
-                                    <MatListItem>
-                                        @selectedItem.Currency.ToPriceString(order.Price) &nbsp;
-                                        <MatChip Label="@order.Quantity.ToString()"></MatChip>
-                                    </MatListItem>
-                                    @if (selectedItem.SellOrders.Last() != order)
-                                    {
-                                        <MatListDivider></MatListDivider>
-                                    }
-                                }
-                            </MatList>
-                            <MatCardActions>
-                                <MatCardActionButtons>
-                                    <MatButton Raised="true">Buy</MatButton>
-                                </MatCardActionButtons>
-                                <MatCardActionIcons>
-                                    <MatIconButton Icon="@MatIconNames.Refresh"></MatIconButton>
-                                </MatCardActionIcons>
-                            </MatCardActions>
-                        </div>
-                    </div>
+    </Column>
+</Row>
 
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-                        <div class="mat-elevation-z3" style="min-height:30vh">
-                            <MatList>
-                                @foreach (var order in selectedItem.BuyOrders)
-                                {
-                                    <MatListItem>
-                                        @selectedItem.Currency.ToPriceString(order.Price) &nbsp;
-                                        <MatChip Label="@order.Quantity.ToString()"></MatChip>
-                                    </MatListItem>
-                                    @if (selectedItem.BuyOrders.Last() != order)
-                                    {
-                                        <MatListDivider></MatListDivider>
-                                    }
-                                }
-                            </MatList>
-                            <MatCardActions>
-                                <MatCardActionButtons>
-                                    <MatButton Raised="true">Sell</MatButton>
-                                </MatCardActionButtons>
-                                <MatCardActionIcons>
-                                    <MatIconButton Icon="@MatIconNames.Refresh"></MatIconButton>
-                                </MatCardActionIcons>
-                            </MatCardActions>
-                        </div>
-                    </div>
-
-                </div>
-            }
-            else
-            {
-                <p>No item selected</p>
-            }
-        </div>
-    </div>
-</div>
 
 @code {
 
     private string filter = "blackout";
     private SteamItemDTO[] items;
     private SteamItemDTO selectedItem;
+    LineChart<double> lineChart;
 
     protected override async Task OnInitializedAsync()
     {
@@ -168,13 +168,54 @@
         }
     }
 
-    public void SelectionChangedEvent(object row)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        selectedItem = (row != null)
-            ? (SteamItemDTO) row
-            : null;
+        if (firstRender)
+        {
+            await HandleRedraw();
+        }
+    }
 
-        this.StateHasChanged();
+    protected async void OnSelectionChanged(SteamItemDTO item)
+    {
+        selectedItem = item;
+        await HandleRedraw();
+    }
+
+    async Task HandleRedraw()
+    {
+        await lineChart.Clear();
+
+        await lineChart.AddLabel(Labels);
+
+        await lineChart.AddDataSet(GetLineChartDataset());
+
+        await lineChart.Update();
+    }
+
+    LineChartDataset<double> GetLineChartDataset()
+    {
+        return new LineChartDataset<double>
+        {
+            Label = "# of randoms",
+            Data = RandomizeData(),
+            BackgroundColor = backgroundColors,
+            BorderColor = borderColors,
+            Fill = true,
+            PointRadius = 2,
+            BorderDash = new List<int> { }
+        };
+    }
+
+    string[] Labels = { "Red", "Blue", "Yellow", "Green", "Purple", "Orange" };
+    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
+    List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
+
+    List<double> RandomizeData()
+    {
+        var r = new Random(DateTime.Now.Millisecond);
+
+        return new List<double> { r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble() };
     }
 
 }

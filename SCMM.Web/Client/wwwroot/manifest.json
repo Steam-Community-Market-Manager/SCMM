@@ -3,8 +3,8 @@
   "short_name": "SCMM",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#1b2838",
-  "theme_color": "#5aa9d6",
+  "background_color": "#1B2838",
+  "theme_color": "#171A21",
   "icons": [
     {
       "src": "icon-512.png",

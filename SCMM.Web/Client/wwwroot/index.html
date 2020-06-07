@@ -1,21 +1,31 @@
 ﻿<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <title>Steam Community Market Manager</title>
-        <base href="/" />
-        <link href="_content/MatBlazor/dist/matBlazor.css" rel="stylesheet" />
-        <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
-        <link href="css/app.css" rel="stylesheet" />
-        <link href="manifest.json" rel="manifest" />
-        <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-    </head>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Steam Community Market Manager</title>
+    <base href="/" />
+    <link href="css/material.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i|Roboto+Mono:300,400,700|Roboto+Slab:300,400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" rel="stylesheet" />
+    <link href="_content/Blazorise/blazorise.css" rel="stylesheet" />
+    <link href="_content/Blazorise.Material/blazorise.material.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+</head>
     <body>
         <app>Loading...</app>
         <script src="_framework/blazor.webassembly.js"></script>
         <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-        <script src="_content/MatBlazor/dist/matBlazor.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+        <script src="js/material.min.js"></script>
+        <script src="_content/Blazorise/blazorise.js"></script>
+        <script src="_content/Blazorise.Material/blazorise.material.js"></script>
+        <script src="_content/Blazorise.Charts/blazorise.charts.js"></script>
         <script>navigator.serviceWorker.register('service-worker.js');</script>
     </body>
 </html>

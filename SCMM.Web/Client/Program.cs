@@ -1,4 +1,7 @@
-using MatBlazor;
+using Blazorise;
+using Blazorise.Icons.FontAwesome;
+using Blazorise.Icons.Material;
+using Blazorise.Material;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,12 +16,23 @@ namespace SCMM.Web.Client
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            builder.RootComponents.Add<App>("app");
+            
+            builder.Services
+              .AddBlazorise(options =>
+              {
+                  options.ChangeTextOnKeyPress = true;
+              })
+              .AddMaterialProviders()
+              .AddMaterialIcons()
+              .AddFontAwesomeIcons();
 
-            builder.Services.AddSingleton<MatTheme>(new MatTheme()
+            builder.Services.AddSingleton<Theme>(new Theme()
             {
-                Primary = "#1b2838",
-                Secondary = "#5aa9d6"
+                ColorOptions = new ThemeColorOptions
+                {
+                    Primary = "#171A21",
+                    Secondary = "#1B2838"
+                }
             });
 
             builder.Services.AddHttpClient("SCMM.Web.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
@@ -29,7 +43,16 @@ namespace SCMM.Web.Client
 
             builder.Services.AddApiAuthorization();
 
-            await builder.Build().RunAsync();
+            builder.RootComponents.Add<App>("app");
+
+            var host = builder.Build();
+
+            host.Services
+              .UseMaterialProviders()
+              .UseMaterialIcons()
+              .UseFontAwesomeIcons();
+
+            await host.RunAsync();
         }
     }
 }

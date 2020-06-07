@@ -1,0 +1,54 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+<AuthorizeView>
+    <Authorized>
+        <BarItem>
+            <BarDropdown>
+                <BarDropdownToggle>
+                    @context.User.Identity.Name
+                </BarDropdownToggle>
+                <BarDropdownMenu>
+                    <BarDropdownItem Clicked="@ViewProfile">View Profile</BarDropdownItem>
+                    <BarDropdownItem Clicked="@Logout">Log out</BarDropdownItem>
+                </BarDropdownMenu>
+            </BarDropdown>
+        </BarItem>
+    </Authorized>
+    <NotAuthorized>
+        <BarItem Margin="Padding.Is1">
+            <Button Clicked="@Register" Color="Color.Primary" Size="ButtonSize.Small">Register</Button>
+        </BarItem>
+        <BarItem Margin="Padding.Is1">
+            <Button Clicked="@Login" Color="Color.Secondary" Size="ButtonSize.Small">Log in</Button>
+        </BarItem>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+
+    void ViewProfile()
+    {
+        Navigation.NavigateTo("authentication/profile");
+    }
+
+    void Register()
+    {
+        Navigation.NavigateTo("authentication/register");
+    }
+
+    void Login()
+    {
+        Navigation.NavigateTo("authentication/login");
+    }
+
+    async void Logout()
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("authentication/logout");
+    }
+
+}

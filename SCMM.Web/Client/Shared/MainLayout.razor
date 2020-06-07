@@ -1,59 +1,46 @@
 ﻿@inherits LayoutComponentBase
-@inject NavigationManager Navigation
 
-<MatDrawerContainer Style="width: 100vw; height: 100vh;">
-    <MatDrawer @bind-Opened="@Opened" Mode="@MatDrawerMode.Modal">
-        
-        <MatAppBarContainer>
-            <MatAppBar Fixed="true">
-                <MatAppBarRow>
-                    <MatAppBarSection>
-                        <MatAppBarTitle>SCMM</MatAppBarTitle>
-                    </MatAppBarSection>
-                </MatAppBarRow>
-            </MatAppBar>
-            <MatAppBarContent>
-                <NavMenuVertical />
-            </MatAppBarContent>
-        </MatAppBarContainer>
+<Layout>
+    <LayoutHeader Fixed="true">
+        <Bar Breakpoint="Breakpoint.Desktop" Background="Background.Dark" ThemeContrast="ThemeContrast.Dark">
+            <BarBrand>
+                <img src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/252490/820be4782639f9c4b64fa3ca7e6c26a95ae4fd1c.jpg" style="max-width:32px; max-height:32px" />
+            </BarBrand>
+            <BarToggler>
+            </BarToggler>
+            <BarMenu>
+                <BarStart>
+                    <AuthorizeView>
+                        <Authorized>
+                            <BarItem>
+                                <BarLink To="/steam/inventory">Your Inventory</BarLink>
+                            </BarItem>
+                            <BarItem>
+                                <BarLink To="/steam/history">Your History</BarLink>
+                            </BarItem>
+                        </Authorized>
+                    </AuthorizeView>
+                    <BarItem>
+                        <BarLink To="/steam/items">Marketplace</BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <BarLink To="/steam/store">Store</BarLink>
+                    </BarItem>
+                    <BarItem>
+                        <BarLink To="/steam/workshop">Workshop</BarLink>
+                    </BarItem>
+                </BarStart>
+                <BarEnd>
+                    <AuthenticationBarItem />
+                </BarEnd>
+            </BarMenu>
+        </Bar>
+    </LayoutHeader>
+    <LayoutContent>
+        <Container Fluid="true">
+            @Body
+        </Container>
+    </LayoutContent>
+</Layout>
 
-    </MatDrawer>
-    <MatDrawerContent>
 
-        <MatAppBarContainer>
-            <MatAppBar Fixed="true">
-                <MatAppBarRow>
-                    <MatAppBarSection>
-                        <MatHidden Breakpoint="@MatBreakpoint.MD" Direction="@MatHiddenDirection.Up">
-                            <ChildContent>
-                                <MatIconButton Icon="@MatIconNames.Menu" OnClick="@ToggleDraw"></MatIconButton>
-                            </ChildContent>
-                        </MatHidden>
-                        <MatAppBarTitle Class="pl-1 pr-3">
-                            <img src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/252490/820be4782639f9c4b64fa3ca7e6c26a95ae4fd1c.jpg" style="max-width:32px; max-height:32px" />
-                        </MatAppBarTitle>
-                        <NavMenuHorizontal />
-                    </MatAppBarSection>
-                    <MatAppBarSection Align="@MatAppBarSectionAlign.End">
-                        <NavMenuAuth />
-                    </MatAppBarSection>
-                </MatAppBarRow>
-            </MatAppBar>
-            <MatAppBarContent>
-                @Body
-            </MatAppBarContent>
-        </MatAppBarContainer>
-
-    </MatDrawerContent>
-</MatDrawerContainer>
-
-@code
-{
-    bool Opened = false;
-
-    void ToggleDraw()
-    {
-        Opened = !Opened;
-    }
-
-}
