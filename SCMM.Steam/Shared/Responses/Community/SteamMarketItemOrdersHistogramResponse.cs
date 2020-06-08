@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SCMM.Steam.Shared.Models;
 
-namespace SCMM.Steam.Shared.Responses
+namespace SCMM.Steam.Shared.Responses.Community
 {
     public class SteamMarketItemOrdersHistogramResponse : SteamResponse
     {

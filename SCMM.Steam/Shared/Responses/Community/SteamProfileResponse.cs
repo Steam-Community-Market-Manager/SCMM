@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace SCMM.Steam.Shared.Responses
+namespace SCMM.Steam.Shared.Responses.Community
 {
     // TODO: Why isn't there a json response for this?!
     [Serializable, XmlRoot("profile")]

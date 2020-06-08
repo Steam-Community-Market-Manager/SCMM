@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Steam.Shared.Requests
+namespace SCMM.Steam.Shared.Requests.Community
 {
     public class SteamEconomyImageRequest : SteamRequest
     {
@@ -13,7 +13,7 @@ namespace SCMM.Steam.Shared.Requests
         public string IconId { get; set; }
 
         public Uri Uri => new Uri(
-            $"{SteamConstants.SteamAssetUrl}/economy/image/{Uri.EscapeDataString(IconId)}"
+            $"{SteamConstants.SteamCommunityAssetUrl}/economy/image/{Uri.EscapeDataString(IconId)}"
         );
     }
 }

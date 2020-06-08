@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Steam.Shared.Requests
+namespace SCMM.Steam.Shared.Requests.Community
 {
     public class SteamInventoryPaginatedRequest : SteamPaginatedRequest
     {

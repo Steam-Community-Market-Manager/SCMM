@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using SCMM.Steam.Shared.Requests;
-using SCMM.Steam.Shared.Responses;
+using SCMM.Steam.Shared.Requests.Community;
+using SCMM.Steam.Shared.Responses.Community;
 using System;
 using System.IO;
 using System.Net;

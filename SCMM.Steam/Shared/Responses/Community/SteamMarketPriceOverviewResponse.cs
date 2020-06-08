@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SCMM.Steam.Shared.Responses
+namespace SCMM.Steam.Shared.Responses.Community
 {
     public class SteamMarketPriceOverviewResponse : SteamResponse
     {

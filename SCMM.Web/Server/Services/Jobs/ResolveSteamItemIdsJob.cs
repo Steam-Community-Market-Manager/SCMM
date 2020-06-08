@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Requests;
+using SCMM.Steam.Shared.Requests.Community;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -15,13 +16,13 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class ResolveMissingSteamItemIdsJob : CronJobService
+    public class ResolveSteamItemIdsJob : CronJobService
     {
-        private readonly ILogger<ResolveMissingSteamItemIdsJob> _logger;
+        private readonly ILogger<ResolveSteamItemIdsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public ResolveMissingSteamItemIdsJob(IConfiguration configuration, ILogger<ResolveMissingSteamItemIdsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<ResolveMissingSteamItemIdsJob>())
+        public ResolveSteamItemIdsJob(IConfiguration configuration, ILogger<ResolveSteamItemIdsJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<ResolveSteamItemIdsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;

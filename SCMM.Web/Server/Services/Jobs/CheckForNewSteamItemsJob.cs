@@ -5,6 +5,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Models;
 using SCMM.Steam.Shared.Requests;
+using SCMM.Steam.Shared.Requests.Community;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;

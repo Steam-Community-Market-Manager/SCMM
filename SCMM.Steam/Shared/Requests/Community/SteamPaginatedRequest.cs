@@ -1,4 +1,4 @@
-﻿namespace SCMM.Steam.Shared.Requests
+﻿namespace SCMM.Steam.Shared.Requests.Community
 {
     public abstract class SteamPaginatedRequest : SteamRequest
     {
