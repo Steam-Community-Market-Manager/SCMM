@@ -10,28 +10,10 @@
             </BarToggler>
             <BarMenu>
                 <BarStart>
-                    <AuthorizeView>
-                        <Authorized>
-                            <BarItem>
-                                <BarLink To="/steam/inventory">Your Inventory</BarLink>
-                            </BarItem>
-                            <BarItem>
-                                <BarLink To="/steam/history">Your History</BarLink>
-                            </BarItem>
-                        </Authorized>
-                    </AuthorizeView>
-                    <BarItem>
-                        <BarLink To="/steam/items">Marketplace</BarLink>
-                    </BarItem>
-                    <BarItem>
-                        <BarLink To="/steam/store">Store</BarLink>
-                    </BarItem>
-                    <BarItem>
-                        <BarLink To="/steam/workshop">Workshop</BarLink>
-                    </BarItem>
+                    <NavigationBarItems />
                 </BarStart>
                 <BarEnd>
-                    <AuthenticationBarItem />
+                    <AuthenticationBarItems />
                 </BarEnd>
             </BarMenu>
         </Bar>
@@ -42,5 +24,3 @@
         </Container>
     </LayoutContent>
 </Layout>
-
-
