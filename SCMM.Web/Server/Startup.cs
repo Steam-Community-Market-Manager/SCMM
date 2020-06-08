@@ -1,3 +1,4 @@
+using AspNet.Security.OpenId.Steam;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -40,7 +41,10 @@ namespace SCMM.Web.Server
 
             services.AddAuthentication()
                 .AddIdentityServerJwt()
-                .AddSteam();
+                .AddSteam(configuration =>
+                {
+                    configuration.ApplicationKey = Configuration.GetValue<string>("IdentityServer:Steam:ApplicationKey");
+                });
 
             services.AddHostedService<CheckForNewSteamItemsJob>();
             services.AddHostedService<ResolveSteamItemIdsJob>();
