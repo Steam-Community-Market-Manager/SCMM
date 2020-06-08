@@ -8,14 +8,15 @@
 
 <Row>
     <Column ColumnSize="ColumnSize.Is5">
- 
+
         @if (items == null)
         {
             <Text><em>Loading...</em></Text>
         }
         else
         {
-            <DataGrid TItem="SteamItemDTO" Data="@items" SelectedRowChanged="@OnSelectionChanged" Narrow="true" Striped="true" ShowPager="true" PageSize="25">
+            <TextEdit Text="@itemFilter" TextChanged="@OnItemFilterChanged" Placeholder="Search for item..." />
+            <DataGrid TItem="SteamItemDTO" Data="@items" SelectedRowChanged="@OnItemSelectionChanged" Narrow="true" Striped="true" ShowPager="true" PageSize="25">
                 <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Description.IconUrl)" Caption="Icon">
                     <DisplayTemplate>
                         <img src="@((context as SteamItemDTO).Description.IconUrl)" style="max-width:24px; max-height:24px" />
@@ -56,7 +57,7 @@
         {
             <Row>
                 <Column ColumnSize="ColumnSize.Is2">
-                    <img src="@selectedItem.Description.IconLargeUrl" />
+                    <img src="@selectedItem.Description.IconLargeUrl" style="max-width:128px; max-height:128px" />
                 </Column>
                 <Column ColumnSize="ColumnSize.Is10">
                     <Heading Size="HeadingSize.Is3">
@@ -65,21 +66,16 @@
                     <Paragraph>
                         <Text>This is a skin for the Metal Facemask item. You will be able to apply this skin when you craft the item in game.</Text>
                     </Paragraph>
-                    <div>
-                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Armour</Badge>
-                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Metal Facemask</Badge>
-                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Cloth</Badge>
-                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Blackout</Badge>
-                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">MDE</Badge>
-                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">50K+</Badge>
-                    </div>
+                    <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Armour</Badge>
+                    <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Metal Facemask</Badge>
+                    <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Cloth</Badge>
+                    <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">Blackout</Badge>
+                    <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">MDE</Badge>
+                    <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">50K+</Badge>
                 </Column>
             </Row>
             <Row>
-                <Column ColumnSize="ColumnSize.Is4">
-                    <LineChart @ref="lineChart" TItem="double" />
-                </Column>
-                <Column ColumnSize="ColumnSize.Is4">
+                <Column ColumnSize="ColumnSize.Is3">
                     <Table Narrow="true">
                         <TableHeader>
                             <TableRow>
@@ -106,7 +102,7 @@
                         </TableBody>
                     </Table>
                 </Column>
-                <Column ColumnSize="ColumnSize.Is4">
+                <Column ColumnSize="ColumnSize.Is3">
                     <Table Narrow="true">
                         <TableHeader>
                             <TableRow>
@@ -136,7 +132,7 @@
             </Row>
             <Row>
                 <Column ColumnSize="ColumnSize.Is12">
-                    <LineChart @ref="lineChart" TItem="double" />
+                    <LineChart @ref="priceHistory" TItem="double" />
                 </Column>
             </Row>
         }
@@ -151,16 +147,33 @@
 
 @code {
 
-    private string filter = "blackout";
+    private string itemFilter = "blackout";
     private SteamItemDTO[] items;
     private SteamItemDTO selectedItem;
-    LineChart<double> lineChart;
+    LineChart<double> priceHistory;
 
     protected override async Task OnInitializedAsync()
     {
+        await RefreshItems();
+    }
+
+    async void OnItemFilterChanged(string value)
+    {
+        itemFilter = value;
+        await RefreshItems();
+    }
+
+    async void OnItemSelectionChanged(SteamItemDTO item)
+    {
+        selectedItem = item;
+        await RedrawPriceHistory();
+    }
+
+    async Task RefreshItems()
+    {
         try
         {
-            items = await Http.GetFromJsonAsync<SteamItemDTO[]>($"SteamItems?filter={filter}");
+            items = await Http.GetFromJsonAsync<SteamItemDTO[]>($"SteamItems?filter={itemFilter}");
         }
         catch (AccessTokenNotAvailableException exception)
         {
@@ -168,54 +181,13 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    async Task RedrawPriceHistory()
     {
-        if (firstRender)
-        {
-            await HandleRedraw();
-        }
-    }
-
-    protected async void OnSelectionChanged(SteamItemDTO item)
-    {
-        selectedItem = item;
-        await HandleRedraw();
-    }
-
-    async Task HandleRedraw()
-    {
-        await lineChart.Clear();
-
-        await lineChart.AddLabel(Labels);
-
-        await lineChart.AddDataSet(GetLineChartDataset());
-
-        await lineChart.Update();
-    }
-
-    LineChartDataset<double> GetLineChartDataset()
-    {
-        return new LineChartDataset<double>
-        {
-            Label = "# of randoms",
-            Data = RandomizeData(),
-            BackgroundColor = backgroundColors,
-            BorderColor = borderColors,
-            Fill = true,
-            PointRadius = 2,
-            BorderDash = new List<int> { }
-        };
-    }
-
-    string[] Labels = { "Red", "Blue", "Yellow", "Green", "Purple", "Orange" };
-    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
-    List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f), ChartColor.FromRgba(54, 162, 235, 1f), ChartColor.FromRgba(255, 206, 86, 1f), ChartColor.FromRgba(75, 192, 192, 1f), ChartColor.FromRgba(153, 102, 255, 1f), ChartColor.FromRgba(255, 159, 64, 1f) };
-
-    List<double> RandomizeData()
-    {
-        var r = new Random(DateTime.Now.Millisecond);
-
-        return new List<double> { r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble() };
+        await priceHistory.Clear();
+        //await priceHistory.AddLabel(Labels);
+        //await priceHistory.AddDataSet(GetLineChartDataset());
+        //await priceHistory.AddDataSet(GetLineChartDataset());
+        await priceHistory.Update();
     }
 
 }
