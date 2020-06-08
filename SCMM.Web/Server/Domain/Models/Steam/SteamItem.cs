@@ -1,5 +1,4 @@
 ﻿using SCMM.Steam.Shared;
-using SCMM.Web.Shared;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -150,7 +149,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                 ResellTax = resellTax;
                 ResellProfit = (resellPrice - resellTax - lowestListPrice);
                 SellOrders.Clear();
-                foreach(var order in sellOrdersSorted)
+                foreach (var order in sellOrdersSorted)
                 {
                     SellOrders.Add(order);
                 }

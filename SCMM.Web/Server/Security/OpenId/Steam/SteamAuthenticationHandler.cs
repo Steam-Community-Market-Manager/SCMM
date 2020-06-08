@@ -4,6 +4,11 @@
  * for more information concerning the license and the contributors participating to this project.
  */
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -14,12 +19,6 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-using AspNet.Security.OpenId;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 
 namespace AspNet.Security.OpenId.Steam
 {

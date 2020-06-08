@@ -4,10 +4,10 @@
  * for more information concerning the license and the contributors participating to this project.
  */
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AspNet.Security.OpenId.Steam
 {

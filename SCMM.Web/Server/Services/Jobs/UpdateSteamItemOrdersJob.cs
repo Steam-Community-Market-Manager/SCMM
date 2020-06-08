@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
-using SCMM.Steam.Shared.Requests;
 using SCMM.Steam.Shared.Requests.Community;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
@@ -36,7 +34,8 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 var itemSteamIds = db.SteamItems
                     .Where(x => !String.IsNullOrEmpty(x.SteamId))
-                    .Select(x => new {
+                    .Select(x => new
+                    {
                         Id = x.Id,
                         SteamId = x.SteamId
                     })

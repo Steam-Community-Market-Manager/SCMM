@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SCMM.Web.Shared.Domain.DTOs.Steam
+﻿namespace SCMM.Web.Shared.Domain.DTOs.Steam
 {
     public class SteamAppDTO : EntityDTO
     {

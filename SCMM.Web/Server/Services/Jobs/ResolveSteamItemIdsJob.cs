@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
-using SCMM.Steam.Shared.Requests;
 using SCMM.Steam.Shared.Requests.Community;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
@@ -33,7 +32,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                
+
                 var itemsWithMissingIds = db.SteamItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
