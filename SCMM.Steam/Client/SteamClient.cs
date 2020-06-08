@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json;
-using SCMM.Steam.Shared.Requests.Community;
-using SCMM.Steam.Shared.Responses.Community;
+using SCMM.Steam.Shared.Requests.Community.Html;
+using SCMM.Steam.Shared.Requests.Community.Json;
+using SCMM.Steam.Shared.Requests.Community.Blob;
+using SCMM.Steam.Shared.Responses.Community.Json;
+using SCMM.Steam.Shared.Responses.Community.Xml;
 using System;
 using System.IO;
 using System.Net;
@@ -33,7 +36,7 @@ namespace SCMM.Steam.Client
             };
         }
 
-        public async Task<SteamProfileResponse> GetProfile(SteamProfileRequest request)
+        public async Task<SteamProfileXmlResponse> GetProfile(SteamProfilePageRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -44,15 +47,15 @@ namespace SCMM.Steam.Client
                 }
 
                 var xml = await response.Content.ReadAsStringAsync();
-                var xmlSerializer = new XmlSerializer(typeof(SteamProfileResponse));
+                var xmlSerializer = new XmlSerializer(typeof(SteamProfileXmlResponse));
                 using (var reader = new StringReader(xml))
                 {
-                    return (SteamProfileResponse)xmlSerializer.Deserialize(reader);
+                    return (SteamProfileXmlResponse)xmlSerializer.Deserialize(reader);
                 }
             }
         }
 
-        public async Task<SteamMarketAppFiltersResponse> GetInventoryPaginated(SteamMarketAppFiltersRequest request)
+        public async Task<SteamMarketAppFiltersJsonResponse> GetMarketAppFilters(SteamMarketAppFiltersJsonRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -62,7 +65,7 @@ namespace SCMM.Steam.Client
                     return null;
                 }
 
-                var filters = JsonConvert.DeserializeObject<SteamMarketAppFiltersResponse>(
+                var filters = JsonConvert.DeserializeObject<SteamMarketAppFiltersJsonResponse>(
                     await response.Content.ReadAsStringAsync()
                 );
 
@@ -70,7 +73,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamInventoryPaginatedResponse> GetInventoryPaginated(SteamInventoryPaginatedRequest request)
+        public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -80,7 +83,7 @@ namespace SCMM.Steam.Client
                     return null;
                 }
 
-                var inventory = JsonConvert.DeserializeObject<SteamInventoryPaginatedResponse>(
+                var inventory = JsonConvert.DeserializeObject<SteamInventoryPaginatedJsonResponse>(
                     await response.Content.ReadAsStringAsync()
                 );
 
@@ -88,7 +91,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamMarketHistoryPaginatedResponse> GetMarketHistoryPaginated(SteamMarketHistoryPaginatedRequest request)
+        public async Task<SteamMarketMyListingsPaginatedJsonResponse> GetMarketMyListingsPaginated(SteamMarketMyListingsPaginatedJsonRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -98,7 +101,25 @@ namespace SCMM.Steam.Client
                     return null;
                 }
 
-                var history = JsonConvert.DeserializeObject<SteamMarketHistoryPaginatedResponse>(
+                var listings = JsonConvert.DeserializeObject<SteamMarketMyListingsPaginatedJsonResponse>(
+                    await response.Content.ReadAsStringAsync()
+                );
+
+                return listings;
+            }
+        }
+
+        public async Task<SteamMarketMyHistoryPaginatedJsonResponse> GetMarketMyHistoryPaginated(SteamMarketMyHistoryPaginatedJsonRequest request)
+        {
+            using (var client = BuildSteamHttpClient(request.Uri))
+            {
+                var response = await client.GetAsync(request.Uri);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                var history = JsonConvert.DeserializeObject<SteamMarketMyHistoryPaginatedJsonResponse>(
                     await response.Content.ReadAsStringAsync()
                 );
 
@@ -106,7 +127,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<string> GetMarketListingItemNameId(SteamMarketListingRequest request)
+        public async Task<string> GetMarketListingItemNameId(SteamMarketListingPageRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -124,7 +145,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamMarketSearchPaginatedResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedRequest request)
+        public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedJsonRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -134,7 +155,7 @@ namespace SCMM.Steam.Client
                     return null;
                 }
 
-                var search = JsonConvert.DeserializeObject<SteamMarketSearchPaginatedResponse>(
+                var search = JsonConvert.DeserializeObject<SteamMarketSearchPaginatedJsonResponse>(
                     await response.Content.ReadAsStringAsync()
                 );
 
@@ -142,7 +163,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamMarketItemOrdersActivityResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityRequest request)
+        public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityJsonRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -152,7 +173,7 @@ namespace SCMM.Steam.Client
                     return null;
                 }
 
-                var activity = JsonConvert.DeserializeObject<SteamMarketItemOrdersActivityResponse>(
+                var activity = JsonConvert.DeserializeObject<SteamMarketItemOrdersActivityJsonResponse>(
                     await response.Content.ReadAsStringAsync()
                 );
 
@@ -160,7 +181,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamMarketItemOrdersHistogramResponse> GetMarketItemOrdersHistogram(SteamMarketItemOrdersHistogramRequest request)
+        public async Task<SteamMarketItemOrdersHistogramJsonResponse> GetMarketItemOrdersHistogram(SteamMarketItemOrdersHistogramJsonRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -170,7 +191,7 @@ namespace SCMM.Steam.Client
                     return null;
                 }
 
-                var histogram = JsonConvert.DeserializeObject<SteamMarketItemOrdersHistogramResponse>(
+                var histogram = JsonConvert.DeserializeObject<SteamMarketItemOrdersHistogramJsonResponse>(
                     await response.Content.ReadAsStringAsync()
                 );
 
@@ -178,7 +199,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamMarketPriceOverviewResponse> GetMarketPriceOverview(SteamMarketPriceOverviewRequest request)
+        public async Task<SteamMarketPriceOverviewJsonResponse> GetMarketPriceOverview(SteamMarketPriceOverviewJsonRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -188,7 +209,7 @@ namespace SCMM.Steam.Client
                     return null;
                 }
 
-                var priceOverview = JsonConvert.DeserializeObject<SteamMarketPriceOverviewResponse>(
+                var priceOverview = JsonConvert.DeserializeObject<SteamMarketPriceOverviewJsonResponse>(
                     await response.Content.ReadAsStringAsync()
                 );
 
@@ -196,7 +217,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<SteamMarketPriceHistoryResponse> GetMarketPriceHistory(SteamMarketPriceHistoryRequest request)
+        public async Task<SteamMarketPriceHistoryJsonResponse> GetMarketPriceHistory(SteamMarketPriceHistoryJsonRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {
@@ -206,7 +227,7 @@ namespace SCMM.Steam.Client
                     return null;
                 }
 
-                var priceHistory = JsonConvert.DeserializeObject<SteamMarketPriceHistoryResponse>(
+                var priceHistory = JsonConvert.DeserializeObject<SteamMarketPriceHistoryJsonResponse>(
                     await response.Content.ReadAsStringAsync()
                 );
 
@@ -214,7 +235,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<byte[]> GetEconomyImage(SteamEconomyImageRequest request)
+        public async Task<byte[]> GetEconomyImage(SteamEconomyImageBlobRequest request)
         {
             using (var client = BuildSteamHttpClient(request.Uri))
             {

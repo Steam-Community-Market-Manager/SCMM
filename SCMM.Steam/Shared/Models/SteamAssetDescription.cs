@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace SCMM.Steam.Shared.Models
 {
@@ -6,6 +7,12 @@ namespace SCMM.Steam.Shared.Models
     {
         [JsonProperty("classid")]
         public string ClassId { get; set; }
+
+        [JsonProperty("contextid")]
+        public string ContextId { get; set; }
+
+        [JsonProperty("instanceid")]
+        public string InstanceId { get; set; }
 
         [JsonProperty("appid")]
         public string AppId { get; set; }
@@ -45,5 +52,8 @@ namespace SCMM.Steam.Shared.Models
 
         [JsonProperty("commodity")]
         public bool Commodity { get; set; }
+
+        [JsonProperty("actions")]
+        public List<SteamAssetAction> Actions { get; set; }
     }
 }

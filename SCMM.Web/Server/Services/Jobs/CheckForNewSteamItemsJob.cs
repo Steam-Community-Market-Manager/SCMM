@@ -4,7 +4,8 @@ using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Models;
-using SCMM.Steam.Shared.Requests.Community;
+using SCMM.Steam.Shared.Requests.Community.Blob;
+using SCMM.Steam.Shared.Requests.Community.Json;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -57,10 +58,10 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 // TODO: Error handling
                 // TODO: Retry logic
-                var pageRequests = new List<SteamMarketSearchPaginatedRequest>();
+                var pageRequests = new List<SteamMarketSearchPaginatedJsonRequest>();
                 foreach (var app in steamApps)
                 {
-                    var appPageCountRequest = new SteamMarketSearchPaginatedRequest()
+                    var appPageCountRequest = new SteamMarketSearchPaginatedJsonRequest()
                     {
                         AppId = app.SteamId,
                         Start = 1,
@@ -74,12 +75,12 @@ namespace SCMM.Web.Server.Services.Jobs
                         .Select(x =>
                         {
                             var total = x.TotalCount;
-                            var pageSize = SteamMarketSearchPaginatedRequest.MaxPageSize;
-                            var requests = new List<SteamMarketSearchPaginatedRequest>();
+                            var pageSize = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
+                            var requests = new List<SteamMarketSearchPaginatedJsonRequest>();
                             for (var i = 0; i <= total; i += pageSize)
                             {
                                 requests.Add(
-                                    new SteamMarketSearchPaginatedRequest()
+                                    new SteamMarketSearchPaginatedJsonRequest()
                                     {
                                         AppId = app.SteamId,
                                         Start = i,
@@ -152,8 +153,8 @@ namespace SCMM.Web.Server.Services.Jobs
                     Name = item.AssetDescription.MarketNameHash,
                     BackgroundColour = item.AssetDescription.BackgroundColour.SteamColourToHexString(),
                     ForegroundColour = item.AssetDescription.NameColour.SteamColourToHexString(),
-                    IconUrl = new SteamEconomyImageRequest(item.AssetDescription.IconUrl).Uri.ToString(),
-                    IconLargeUrl = new SteamEconomyImageRequest(item.AssetDescription.IconUrlLarge).Uri.ToString()
+                    IconUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrl).Uri.ToString(),
+                    IconLargeUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrlLarge).Uri.ToString()
                 }
             });
 

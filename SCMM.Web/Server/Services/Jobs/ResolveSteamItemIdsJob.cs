@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
-using SCMM.Steam.Shared.Requests.Community;
+using SCMM.Steam.Shared.Requests.Community.Html;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -64,7 +64,7 @@ namespace SCMM.Web.Server.Services.Jobs
         public async Task<SteamItem> UpdateSteamItemId(SteamDbContext db, SteamItem item)
         {
             var itemNameId = await new SteamClient().GetMarketListingItemNameId(
-                new SteamMarketListingRequest()
+                new SteamMarketListingPageRequest()
                 {
                     AppId = item.App.SteamId,
                     MarketHashName = item.Description.Name,

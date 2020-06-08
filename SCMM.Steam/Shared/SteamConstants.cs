@@ -8,7 +8,12 @@
         public const string SteamCommunityMarketUrl = "https://steamcommunity.com/market/";
         public const string SteamCommunityAssetUrl = "https://steamcommunity-a.akamaihd.net/";
 
-        public const decimal FeeSteamMultiplier = 0.05m;
-        public const decimal FeePublisherMultiplier = 0.10m;
+        public const string DefaultContextId = "2";
+
+        public const decimal DefaultSteamFeeMultiplier = 0.05m;
+        public const decimal DefaultPublisherFeeMultiplier = 0.100000001490116119m;
+
+        public const string SteamActionViewWorkshopItem = "#Workshop_Commerce_ViewItem";
+        public const string SteamActionViewWorkshopItemRegex = @"filedetails\/\?id=(\d+)";
     }
 }

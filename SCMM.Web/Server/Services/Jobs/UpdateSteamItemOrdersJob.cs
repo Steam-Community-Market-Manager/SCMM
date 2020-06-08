@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
-using SCMM.Steam.Shared.Requests.Community;
+using SCMM.Steam.Shared.Requests.Community.Json;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -63,7 +63,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     UpdateSteamItemOrders(
                         item.Id,
                         currency.Id,
-                        new SteamMarketItemOrdersHistogramRequest()
+                        new SteamMarketItemOrdersHistogramJsonRequest()
                         {
                             ItemNameId = item.SteamId,
                             Language = language.SteamId,
@@ -75,7 +75,7 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        public async Task UpdateSteamItemOrders(Guid itemId, Guid currencyId, SteamMarketItemOrdersHistogramRequest request)
+        public async Task UpdateSteamItemOrders(Guid itemId, Guid currencyId, SteamMarketItemOrdersHistogramJsonRequest request)
         {
             using (var scope = _scopeFactory.CreateScope())
             {

@@ -89,8 +89,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                     ? (int)Math.Ceiling((decimal)sellOrdersSorted.Skip(1).Sum(y => y.Price) / (sellOrdersSorted.Length - 1))
                     : 0;
                 var resellPrice = secondLowestListPrice;
-                var resellTaxSteam = Math.Max(1, (int)Math.Round(resellPrice * SteamConstants.FeeSteamMultiplier, 0));
-                var resellTaxPublisher = Math.Max(1, (int)Math.Round(resellPrice * SteamConstants.FeePublisherMultiplier, 0));
+                var resellTaxSteam = Math.Max(1, (int)Math.Round(resellPrice * SteamConstants.DefaultSteamFeeMultiplier, 0));
+                var resellTaxPublisher = Math.Max(1, (int)Math.Round(resellPrice * SteamConstants.DefaultPublisherFeeMultiplier, 0));
                 var resellTax = (resellTaxSteam + resellTaxPublisher);
 
                 /*
