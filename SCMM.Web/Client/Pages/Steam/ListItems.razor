@@ -84,17 +84,11 @@
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            @foreach (var order in selectedItem.SellOrders.OrderBy(x => x.Price))
+                            @foreach (var order in selectedItem.SellOrders.OrderBy(x => x.Price).Take(5))
                             {
                                 <TableRow>
                                     <TableRowCell>
-                                        <Text Weight="TextWeight.Bold">
-                                            @selectedItem.Currency.ToPriceString(order.Price)
-                                            @if (order.Price == selectedItem.SellOrders.Max(x => x.Price))
-                                            {
-                                                <span>or more</span>
-                                            }
-                                        </Text>
+                                        <Text Weight="TextWeight.Bold">@selectedItem.Currency.ToPriceString(order.Price)</Text>
                                     </TableRowCell>
                                     <TableRowCell>@order.Quantity</TableRowCell>
                                 </TableRow>
@@ -111,17 +105,11 @@
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            @foreach (var order in selectedItem.BuyOrders.OrderByDescending(x => x.Price))
+                            @foreach (var order in selectedItem.BuyOrders.OrderByDescending(x => x.Price).Take(5))
                             {
                                 <TableRow>
                                     <TableRowCell>
-                                        <Text Weight="TextWeight.Bold">
-                                            @selectedItem.Currency.ToPriceString(order.Price)
-                                            @if (order.Price == selectedItem.BuyOrders.Min(x => x.Price))
-                                            {
-                                                <span>or more</span>
-                                            }
-                                        </Text>
+                                        <Text Weight="TextWeight.Bold">@selectedItem.Currency.ToPriceString(order.Price)</Text>
                                     </TableRowCell>
                                     <TableRowCell>@order.Quantity</TableRowCell>
                                 </TableRow>

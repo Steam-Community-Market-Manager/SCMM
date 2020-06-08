@@ -7,8 +7,10 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -95,23 +97,34 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var buyOrders = orders.BuyOrderTable.Select(x => new SteamItemOrder()
-                {
-                    Price = x.Price,
-                    Quantity = x.Quantity
-                });
-
-                var sellOrders = orders.SellOrderTable.Select(x => new SteamItemOrder()
-                {
-                    Price = x.Price,
-                    Quantity = x.Quantity
-                });
-
-                item.CurrencyId = currencyId;
-                item.RebuildOrders(buyOrders.ToArray(), sellOrders.ToArray());
                 item.LastChecked = DateTimeOffset.Now;
+                item.CurrencyId = currencyId;
+                item.RebuildOrders(
+                    ParseSteamItemOrdersFromGraph(orders.BuyOrderGraph), 
+                    ParseSteamItemOrdersFromGraph(orders.SellOrderGraph)
+                );
+
                 await db.SaveChangesAsync();
             }
+        }
+
+        private SteamItemOrder[] ParseSteamItemOrdersFromGraph(string[][] orderGraph)
+        {
+            var orders = new List<SteamItemOrder>();
+            var totalQuantity = 0;
+            for (int i = 0; i < orderGraph.Length; i++)
+            {
+                var price = Int32.Parse(orderGraph[i][0].Replace(",", "").Replace(".", ""));
+                var quantity = (Int32.Parse(orderGraph[i][1].Replace(",", "")) - totalQuantity);
+                orders.Add(new SteamItemOrder()
+                {
+                    Price = price,
+                    Quantity = quantity,
+                });
+                totalQuantity += quantity;
+            }
+
+            return orders.ToArray();
         }
     }
 }
