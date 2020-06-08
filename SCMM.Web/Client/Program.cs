@@ -16,7 +16,7 @@ namespace SCMM.Web.Client
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            
+
             builder.Services
               .AddBlazorise(options =>
               {
@@ -24,16 +24,8 @@ namespace SCMM.Web.Client
               })
               .AddMaterialProviders()
               .AddMaterialIcons()
-              .AddFontAwesomeIcons();
-
-            builder.Services.AddSingleton<Theme>(new Theme()
-            {
-                ColorOptions = new ThemeColorOptions
-                {
-                    Primary = "#171A21",
-                    Secondary = "#1B2838"
-                }
-            });
+              .AddFontAwesomeIcons()
+              .AddSteamTheme();
 
             builder.Services.AddHttpClient("SCMM.Web.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
