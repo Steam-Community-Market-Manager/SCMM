@@ -1,0 +1,23 @@
+﻿using System;
+
+namespace SCMM.Web.Shared.Domain.DTOs.Steam
+{
+    public class SteamAssetWorkshopFileDTO : EntityDTO
+    {
+        public string SteamId { get; set; }
+
+        public string CreatorSteamId { get; set; }
+
+        public DateTimeOffset CreatedOn { get; set; }
+
+        public DateTimeOffset UpdatedOn { get; set; }
+
+        public int Subscriptions { get; set; }
+
+        public int Favourited { get; set; }
+
+        public int Views { get; set; }
+
+        public DateTimeOffset? LastCheckedOn { get; set; }
+    }
+}

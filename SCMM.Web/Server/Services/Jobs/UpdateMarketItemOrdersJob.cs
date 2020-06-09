@@ -10,19 +10,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class UpdateSteamItemOrdersJob : CronJobService
+    public class UpdateMarketItemOrdersJob : CronJobService
     {
-        private readonly ILogger<UpdateSteamItemOrdersJob> _logger;
+        private readonly ILogger<UpdateMarketItemOrdersJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public UpdateSteamItemOrdersJob(IConfiguration configuration, ILogger<UpdateSteamItemOrdersJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<UpdateSteamItemOrdersJob>())
+        public UpdateMarketItemOrdersJob(IConfiguration configuration, ILogger<UpdateMarketItemOrdersJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<UpdateMarketItemOrdersJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -34,13 +33,16 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
-                var itemSteamIds = db.SteamItems
+                var fifteenMinutesAgo = (DateTimeOffset.Now - TimeSpan.FromMinutes(15));
+                var itemSteamIds = db.SteamMarketItems
                     .Where(x => !String.IsNullOrEmpty(x.SteamId))
+                    .Where(x => x.LastCheckedOn == null || x.LastCheckedOn < fifteenMinutesAgo)
                     .Select(x => new
                     {
                         Id = x.Id,
                         SteamId = x.SteamId
                     })
+                    .Take(100)
                     .ToList();
 
                 if (!itemSteamIds.Any())
@@ -62,7 +64,8 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 foreach (var item in itemSteamIds)
                 {
-                    UpdateSteamItemOrders(
+                    await UpdateSteamItemOrders(
+                        db,
                         item.Id,
                         currency.Id,
                         new SteamMarketItemOrdersHistogramJsonRequest()
@@ -73,50 +76,43 @@ namespace SCMM.Web.Server.Services.Jobs
                             NoRender = true
                         }
                     );
+
+                    await db.SaveChangesAsync();
                 }
             }
         }
 
-        public async Task UpdateSteamItemOrders(Guid itemId, Guid currencyId, SteamMarketItemOrdersHistogramJsonRequest request)
+        public async Task UpdateSteamItemOrders(SteamDbContext db, Guid itemId, Guid currencyId, SteamMarketItemOrdersHistogramJsonRequest request)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            var orders = await new SteamClient().GetMarketItemOrdersHistogram(request);
+            if (orders?.Success != true)
             {
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-
-                _logger.LogInformation($"Refreshing steam item orders (id: \"{itemId}\")...");
-                var orders = await new SteamClient().GetMarketItemOrdersHistogram(request);
-                if (orders?.Success != true)
-                {
-                    _logger.LogWarning($"Refresh of steam item orders (id: \"{itemId}\") failed");
-                    return;
-                }
-
-                var item = db.SteamItems.SingleOrDefault(x => x.Id == itemId);
-                if (item == null)
-                {
-                    return;
-                }
-
-                item.LastChecked = DateTimeOffset.Now;
-                item.CurrencyId = currencyId;
-                item.RebuildOrders(
-                    ParseSteamItemOrdersFromGraph(orders.BuyOrderGraph), 
-                    ParseSteamItemOrdersFromGraph(orders.SellOrderGraph)
-                );
-
-                await db.SaveChangesAsync();
+                return;
             }
+
+            var item = db.SteamMarketItems.SingleOrDefault(x => x.Id == itemId);
+            if (item == null)
+            {
+                return;
+            }
+
+            item.LastCheckedOn = DateTimeOffset.Now;
+            item.CurrencyId = currencyId;
+            item.RebuildOrders(
+                ParseSteamItemOrdersFromGraph(orders.BuyOrderGraph), 
+                ParseSteamItemOrdersFromGraph(orders.SellOrderGraph)
+            );
         }
 
-        private SteamItemOrder[] ParseSteamItemOrdersFromGraph(string[][] orderGraph)
+        private SteamMarketItemOrder[] ParseSteamItemOrdersFromGraph(string[][] orderGraph)
         {
-            var orders = new List<SteamItemOrder>();
+            var orders = new List<SteamMarketItemOrder>();
             var totalQuantity = 0;
             for (int i = 0; i < orderGraph.Length; i++)
             {
                 var price = Int32.Parse(orderGraph[i][0].Replace(",", "").Replace(".", ""));
                 var quantity = (Int32.Parse(orderGraph[i][1].Replace(",", "")) - totalQuantity);
-                orders.Add(new SteamItemOrder()
+                orders.Add(new SteamMarketItemOrder()
                 {
                     Price = price,
                     Quantity = quantity,

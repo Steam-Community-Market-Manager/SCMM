@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200609065037_InitialSchema")]
+    partial class InitialSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,9 +61,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<string>("IconUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("LastCheckedOn")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -69,6 +68,9 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<string>("SteamId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("WorkshopFileId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -137,7 +139,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset?>("LastCheckedOn")
+                    b.Property<DateTimeOffset>("LastChecked")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
@@ -208,9 +210,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                             b1.Property<int>("Favourited")
                                 .HasColumnType("int");
-
-                            b1.Property<DateTimeOffset?>("LastCheckedOn")
-                                .HasColumnType("datetimeoffset");
 
                             b1.Property<Guid>("SteamAssetDescriptionId")
                                 .HasColumnType("uniqueidentifier");

@@ -10,8 +10,8 @@ using SCMM.Web.Server.Data;
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(SteamDbContext))]
-    [Migration("20200606024108_SteamItemOrdersDerivedData")]
-    partial class SteamItemOrdersDerivedData
+    [Migration("20200609070725_LastCheckedOn")]
+    partial class LastCheckedOn
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -43,6 +43,43 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamApps");
                 });
 
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamAssetDescription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BackgroundColour")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ForegroundColour")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IconLargeUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IconUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("LastCheckedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SteamId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("WorkshopFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SteamAssetDescriptions");
+                });
+
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamCurrency", b =>
                 {
                     b.Property<Guid>("Id")
@@ -68,7 +105,26 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamCurrencies");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItem", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamLanguage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SteamId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SteamLanguages");
+                });
+
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -86,7 +142,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("LastChecked")
+                    b.Property<DateTimeOffset?>("LastCheckedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
@@ -122,63 +178,77 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.HasIndex("DescriptionId");
 
-                    b.ToTable("SteamItems");
+                    b.ToTable("SteamMarketItems");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItemDescription", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamAssetDescription", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableStringCollection", "Tags", b1 =>
+                        {
+                            b1.Property<Guid>("SteamAssetDescriptionId")
+                                .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("BackgroundColour")
-                        .HasColumnType("nvarchar(max)");
+                            b1.Property<string>("Serialised")
+                                .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ForegroundColour")
-                        .HasColumnType("nvarchar(max)");
+                            b1.HasKey("SteamAssetDescriptionId");
 
-                    b.Property<string>("IconLargeUrl")
-                        .HasColumnType("nvarchar(max)");
+                            b1.ToTable("SteamAssetDescriptions");
 
-                    b.Property<string>("IconUrl")
-                        .HasColumnType("nvarchar(max)");
+                            b1.WithOwner()
+                                .HasForeignKey("SteamAssetDescriptionId");
+                        });
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.OwnsOne("SCMM.Web.Server.Domain.Models.Steam.SteamAssetWorkshopFile", "WorkshopFile", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("SteamId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                            b1.Property<DateTimeOffset>("CreatedOn")
+                                .HasColumnType("datetimeoffset");
 
-                    b.HasKey("Id");
+                            b1.Property<string>("CreatorSteamId")
+                                .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("SteamItemDescription");
+                            b1.Property<int>("Favourited")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTimeOffset?>("LastCheckedOn")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<Guid>("SteamAssetDescriptionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("SteamId")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<int>("Subscriptions")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTimeOffset>("UpdatedOn")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<int>("Views")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("SteamAssetDescriptionId")
+                                .IsUnique();
+
+                            b1.ToTable("SteamAssetWorkshopFiles");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamAssetDescriptionId");
+                        });
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamLanguage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SteamId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SteamLanguages");
-                });
-
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItem", b =>
+            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItem", b =>
                 {
                     b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamApp", "App")
-                        .WithMany("Items")
+                        .WithMany("MarketItems")
                         .HasForeignKey("AppId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -187,13 +257,13 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .WithMany()
                         .HasForeignKey("CurrencyId");
 
-                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamItemDescription", "Description")
+                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamAssetDescription", "Description")
                         .WithMany()
                         .HasForeignKey("DescriptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("SCMM.Web.Server.Domain.Models.Steam.SteamItemOrder", "BuyOrders", b1 =>
+                    b.OwnsMany("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemOrder", "BuyOrders", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
@@ -205,20 +275,20 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                             b1.Property<int>("Quantity")
                                 .HasColumnType("int");
 
-                            b1.Property<Guid>("SteamItemId")
+                            b1.Property<Guid>("SteamMarketItemId")
                                 .HasColumnType("uniqueidentifier");
 
                             b1.HasKey("Id");
 
-                            b1.HasIndex("SteamItemId");
+                            b1.HasIndex("SteamMarketItemId");
 
-                            b1.ToTable("SteamItems_BuyOrders");
+                            b1.ToTable("SteamMarketItems_BuyOrders");
 
                             b1.WithOwner()
-                                .HasForeignKey("SteamItemId");
+                                .HasForeignKey("SteamMarketItemId");
                         });
 
-                    b.OwnsMany("SCMM.Web.Server.Domain.Models.Steam.SteamItemOrder", "SellOrders", b1 =>
+                    b.OwnsMany("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemOrder", "SellOrders", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
@@ -230,36 +300,17 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                             b1.Property<int>("Quantity")
                                 .HasColumnType("int");
 
-                            b1.Property<Guid>("SteamItemId")
+                            b1.Property<Guid>("SteamMarketItemId")
                                 .HasColumnType("uniqueidentifier");
 
                             b1.HasKey("Id");
 
-                            b1.HasIndex("SteamItemId");
+                            b1.HasIndex("SteamMarketItemId");
 
-                            b1.ToTable("SteamItems_SellOrders");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SteamItemId");
-                        });
-                });
-
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamItemDescription", b =>
-                {
-                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableStringCollection", "Tags", b1 =>
-                        {
-                            b1.Property<Guid>("SteamItemDescriptionId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Serialised")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("SteamItemDescriptionId");
-
-                            b1.ToTable("SteamItemDescription");
+                            b1.ToTable("SteamMarketItems_SellOrders");
 
                             b1.WithOwner()
-                                .HasForeignKey("SteamItemDescriptionId");
+                                .HasForeignKey("SteamMarketItemId");
                         });
                 });
 #pragma warning restore 612, 618

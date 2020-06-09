@@ -8,7 +8,9 @@ namespace SCMM.Web.Server.Data
         public DbSet<SteamLanguage> SteamLanguages { get; set; }
         public DbSet<SteamCurrency> SteamCurrencies { get; set; }
         public DbSet<SteamApp> SteamApps { get; set; }
-        public DbSet<SteamItem> SteamItems { get; set; }
+        public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
+        public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
+        public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
 
         public SteamDbContext(DbContextOptions<SteamDbContext> options)
             : base(options)
@@ -19,17 +21,19 @@ namespace SCMM.Web.Server.Data
         {
             base.OnModelCreating(builder);
             builder.Entity<SteamApp>()
-                .HasMany(x => x.Items)
+                .HasMany(x => x.MarketItems)
                 .WithOne(x => x.App);
-            builder.Entity<SteamItem>()
+            builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Currency);
-            builder.Entity<SteamItem>()
+            builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Description);
-            builder.Entity<SteamItem>()
+            builder.Entity<SteamMarketItem>()
                 .OwnsMany(x => x.BuyOrders);
-            builder.Entity<SteamItem>()
+            builder.Entity<SteamMarketItem>()
                 .OwnsMany(x => x.SellOrders);
-            builder.Entity<SteamItemDescription>()
+            builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.WorkshopFile);
+            builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Tags);
         }
     }

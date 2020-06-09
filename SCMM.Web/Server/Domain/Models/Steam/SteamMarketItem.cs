@@ -8,12 +8,12 @@ using System.Linq;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
 {
-    public class SteamItem : Entity
+    public class SteamMarketItem : Entity
     {
-        public SteamItem()
+        public SteamMarketItem()
         {
-            BuyOrders = new Collection<SteamItemOrder>();
-            SellOrders = new Collection<SteamItemOrder>();
+            BuyOrders = new Collection<SteamMarketItemOrder>();
+            SellOrders = new Collection<SteamMarketItemOrder>();
         }
 
         public string SteamId { get; set; }
@@ -29,15 +29,15 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         [Required]
         public Guid DescriptionId { get; set; }
 
-        public SteamItemDescription Description { get; set; }
+        public SteamAssetDescription Description { get; set; }
 
         public Guid? CurrencyId { get; set; }
 
         public SteamCurrency Currency { get; set; }
 
-        public ICollection<SteamItemOrder> BuyOrders { get; set; }
+        public ICollection<SteamMarketItemOrder> BuyOrders { get; set; }
 
-        public ICollection<SteamItemOrder> SellOrders { get; set; }
+        public ICollection<SteamMarketItemOrder> SellOrders { get; set; }
 
         public int Supply { get; set; }
 
@@ -59,11 +59,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         [NotMapped]
         public bool IsResellLoss => (ResellProfit < 0);
 
-        public DateTimeOffset LastChecked { get; set; }
+        public DateTimeOffset? LastCheckedOn { get; set; }
 
-        public TimeSpan LastCheckedAgo => (DateTimeOffset.Now - LastChecked);
-
-        public void RebuildOrders(SteamItemOrder[] buyOrders, SteamItemOrder[] sellOrders)
+        public void RebuildOrders(SteamMarketItemOrder[] buyOrders, SteamMarketItemOrder[] sellOrders)
         {
             if (buyOrders != null)
             {

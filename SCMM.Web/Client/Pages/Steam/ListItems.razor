@@ -16,35 +16,35 @@
         else
         {
             <TextEdit Text="@itemFilter" TextChanged="@OnItemFilterChanged" Placeholder="Search for item..." />
-            <DataGrid TItem="SteamItemDTO" Data="@items" SelectedRowChanged="@OnItemSelectionChanged" Narrow="true" Striped="true" ShowPager="true" PageSize="25">
-                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Description.IconUrl)" Caption="Icon">
+            <DataGrid TItem="SteamMarketItemDTO" Data="@items" SelectedRowChanged="@OnItemSelectionChanged" Narrow="true" Striped="true" ShowPager="true" PageSize="25">
+                <DataGridColumn TItem="SteamMarketItemDTO" Field="@nameof(SteamMarketItemDTO.Description.IconUrl)" Caption="Icon">
                     <DisplayTemplate>
-                        <img src="@((context as SteamItemDTO).Description.IconUrl)" style="max-width:24px; max-height:24px" />
+                        <img src="@((context as SteamMarketItemDTO).Description.IconUrl)" style="max-width:24px; max-height:24px" />
                     </DisplayTemplate>
                 </DataGridColumn>
-                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Name)" Caption="Name" Sortable="true">
+                <DataGridColumn TItem="SteamMarketItemDTO" Field="@nameof(SteamMarketItemDTO.Name)" Caption="Name" Sortable="true">
                     <DisplayTemplate>
-                        <Text Weight="TextWeight.Bold">@((context as SteamItemDTO).Name)</Text>
+                        <Text Weight="TextWeight.Bold">@((context as SteamMarketItemDTO).Name)</Text>
                     </DisplayTemplate>
                 </DataGridColumn>
-                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Supply)" Caption="Supply" Sortable="true">
+                <DataGridColumn TItem="SteamMarketItemDTO" Field="@nameof(SteamMarketItemDTO.Supply)" Caption="Supply" Sortable="true">
                     <DisplayTemplate>
-                        <Text>@((context as SteamItemDTO).Supply.ToSaturationString(@context.Demand))</Text>
+                        <Text>@((context as SteamMarketItemDTO).Supply.ToSaturationString(@context.Demand))</Text>
                     </DisplayTemplate>
                 </DataGridColumn>
-                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.Demand)" Caption="Demand" Sortable="true">
+                <DataGridColumn TItem="SteamMarketItemDTO" Field="@nameof(SteamMarketItemDTO.Demand)" Caption="Demand" Sortable="true">
                     <DisplayTemplate>
-                        <Text>@((context as SteamItemDTO).Demand.ToSaturationString(@context.Supply))</Text>
+                        <Text>@((context as SteamMarketItemDTO).Demand.ToSaturationString(@context.Supply))</Text>
                     </DisplayTemplate>
                 </DataGridColumn>
-                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.SellLowestPrice)" Caption="Lowest Price" Sortable="true">
+                <DataGridColumn TItem="SteamMarketItemDTO" Field="@nameof(SteamMarketItemDTO.SellLowestPrice)" Caption="Lowest Price" Sortable="true">
                     <DisplayTemplate>
-                        <Text>@((context as SteamItemDTO).Currency.ToPriceString(context.SellLowestPrice))</Text>
+                        <Text>@((context as SteamMarketItemDTO).Currency.ToPriceString(context.SellLowestPrice))</Text>
                     </DisplayTemplate>
                 </DataGridColumn>
-                <DataGridColumn TItem="SteamItemDTO" Field="@nameof(SteamItemDTO.SellLowestDelta)" Caption="Lowest Price Delta" Sortable="true">
+                <DataGridColumn TItem="SteamMarketItemDTO" Field="@nameof(SteamMarketItemDTO.SellLowestDelta)" Caption="Lowest Price Delta" Sortable="true">
                     <DisplayTemplate>
-                        <Text>@((context as SteamItemDTO).Currency.ToPriceString(context.SellLowestDelta))</Text>
+                        <Text>@((context as SteamMarketItemDTO).Currency.ToPriceString(context.SellLowestDelta))</Text>
                     </DisplayTemplate>
                 </DataGridColumn>
             </DataGrid>
@@ -136,8 +136,8 @@
 @code {
 
     private string itemFilter = "blackout";
-    private SteamItemDTO[] items;
-    private SteamItemDTO selectedItem;
+    private SteamMarketItemDTO[] items;
+    private SteamMarketItemDTO selectedItem;
     LineChart<double> priceHistory;
 
     protected override async Task OnInitializedAsync()
@@ -151,7 +151,7 @@
         await RefreshItems();
     }
 
-    async void OnItemSelectionChanged(SteamItemDTO item)
+    async void OnItemSelectionChanged(SteamMarketItemDTO item)
     {
         selectedItem = item;
         await RedrawPriceHistory();
@@ -161,7 +161,7 @@
     {
         try
         {
-            items = await Http.GetFromJsonAsync<SteamItemDTO[]>($"SteamItems?filter={itemFilter}");
+            items = await Http.GetFromJsonAsync<SteamMarketItemDTO[]>($"SteamItems?filter={itemFilter}");
         }
         catch (AccessTokenNotAvailableException exception)
         {

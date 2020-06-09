@@ -15,13 +15,13 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class ResolveSteamItemIdsJob : CronJobService
+    public class ResolveMarketItemIdsJob : CronJobService
     {
-        private readonly ILogger<ResolveSteamItemIdsJob> _logger;
+        private readonly ILogger<ResolveMarketItemIdsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public ResolveSteamItemIdsJob(IConfiguration configuration, ILogger<ResolveSteamItemIdsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<ResolveSteamItemIdsJob>())
+        public ResolveMarketItemIdsJob(IConfiguration configuration, ILogger<ResolveMarketItemIdsJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<ResolveMarketItemIdsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -33,7 +33,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
-                var itemsWithMissingIds = db.SteamItems
+                var itemsWithMissingIds = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .Where(x => String.IsNullOrEmpty(x.SteamId))
@@ -44,8 +44,6 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                // TODO: Error handling
-                // TODO: Retry logic
                 // Add a 30 second delay between requests to avoid "Too Many Requests" error
                 var updatedItems = await Observable.Interval(TimeSpan.FromSeconds(30))
                     .Zip(itemsWithMissingIds, (x, y) => y)
@@ -61,7 +59,7 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        public async Task<SteamItem> UpdateSteamItemId(SteamDbContext db, SteamItem item)
+        public async Task<SteamMarketItem> UpdateSteamItemId(SteamDbContext db, SteamMarketItem item)
         {
             var itemNameId = await new SteamClient().GetMarketListingItemNameId(
                 new SteamMarketListingPageRequest()

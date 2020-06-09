@@ -28,15 +28,15 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<SteamItemDTO> Get(string filter = null)
+        public IEnumerable<SteamMarketItemDTO> Get(string filter = null)
         {
             filter = filter?.Trim();
-            return _db.SteamItems
+            return _db.SteamMarketItems
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Name.Contains(filter))
                 .OrderBy(x => x.Name)
-                .Select(x => _mapper.Map<SteamItemDTO>(x))
+                .Select(x => _mapper.Map<SteamMarketItemDTO>(x))
                 .ToList();
         }
     }

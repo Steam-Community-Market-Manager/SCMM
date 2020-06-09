@@ -8,7 +8,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
     {
         public SteamApp()
         {
-            Items = new Collection<SteamItem>();
+            MarketItems = new Collection<SteamMarketItem>();
         }
 
         [Required]
@@ -19,6 +19,6 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public string IconUrl { get; set; }
 
-        public ICollection<SteamItem> Items { get; set; }
+        public ICollection<SteamMarketItem> MarketItems { get; set; }
     }
 }

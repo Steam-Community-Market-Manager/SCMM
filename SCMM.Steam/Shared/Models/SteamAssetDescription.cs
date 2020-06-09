@@ -17,6 +17,9 @@ namespace SCMM.Steam.Shared.Models
         [JsonProperty("appid")]
         public string AppId { get; set; }
 
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
         [JsonProperty("market_name")]
         public string MarketName { get; set; }
 

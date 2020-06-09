@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
@@ -13,19 +14,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class CheckForNewSteamItemsJob : CronJobService
+    public class CheckForNewMarketItemsJob : CronJobService
     {
-        private readonly ILogger<CheckForNewSteamItemsJob> _logger;
+        private readonly ILogger<CheckForNewMarketItemsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public CheckForNewSteamItemsJob(IConfiguration configuration, ILogger<CheckForNewSteamItemsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<CheckForNewSteamItemsJob>())
+        public CheckForNewMarketItemsJob(IConfiguration configuration, ILogger<CheckForNewMarketItemsJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<CheckForNewMarketItemsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -56,8 +57,6 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                // TODO: Error handling
-                // TODO: Retry logic
                 var pageRequests = new List<SteamMarketSearchPaginatedJsonRequest>();
                 foreach (var app in steamApps)
                 {
@@ -70,28 +69,28 @@ namespace SCMM.Web.Server.Services.Jobs
                         CurrencyId = currency.SteamId
                     };
 
-                    var appPageRequests = await steamClient.GetMarketSearchPaginated(appPageCountRequest).ToObservable()
-                        .Where(x => x?.Success == true && x?.TotalCount > 0)
-                        .Select(x =>
-                        {
-                            var total = x.TotalCount;
-                            var pageSize = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
-                            var requests = new List<SteamMarketSearchPaginatedJsonRequest>();
-                            for (var i = 0; i <= total; i += pageSize)
+                    var appPageCountResponse = await steamClient.GetMarketSearchPaginated(appPageCountRequest);
+                    if (appPageCountResponse?.Success != true || appPageCountResponse?.TotalCount <= 0)
+                    {
+                        continue;
+                    }
+
+                    var total = appPageCountResponse.TotalCount;
+                    var pageSize = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
+                    var appPageRequests = new List<SteamMarketSearchPaginatedJsonRequest>();
+                    for (var i = 0; i <= total; i += pageSize)
+                    {
+                        appPageRequests.Add(
+                            new SteamMarketSearchPaginatedJsonRequest()
                             {
-                                requests.Add(
-                                    new SteamMarketSearchPaginatedJsonRequest()
-                                    {
-                                        AppId = app.SteamId,
-                                        Start = i,
-                                        Count = Math.Min(total - i, pageSize),
-                                        Language = language.SteamId,
-                                        CurrencyId = currency.SteamId
-                                    }
-                                );
+                                AppId = app.SteamId,
+                                Start = i,
+                                Count = Math.Min(total - i, pageSize),
+                                Language = language.SteamId,
+                                CurrencyId = currency.SteamId
                             }
-                            return requests;
-                        });
+                        );
+                    }
 
                     if (appPageRequests.Any())
                     {
@@ -116,7 +115,7 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        public IEnumerable<SteamItem> FindOrAddSteamItems(SteamDbContext db, IEnumerable<SteamMarketSearchItem> items)
+        public IEnumerable<SteamMarketItem> FindOrAddSteamItems(SteamDbContext db, IEnumerable<SteamMarketSearchItem> items)
         {
             foreach (var item in items)
             {
@@ -124,7 +123,7 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        public SteamItem FindOrAddSteamItem(SteamDbContext db, SteamMarketSearchItem item)
+        public SteamMarketItem FindOrAddSteamItem(SteamDbContext db, SteamMarketSearchItem item)
         {
             if (String.IsNullOrEmpty(item?.AssetDescription.AppId))
             {
@@ -137,24 +136,39 @@ namespace SCMM.Web.Server.Services.Jobs
                 return null;
             }
 
-            var dbItem = db.SteamItems.FirstOrDefault(x => x.Description != null && x.Description.SteamId == item.AssetDescription.ClassId);
+            var dbItem = db.SteamMarketItems
+                .Include(x => x.Description)
+                .FirstOrDefault(x => x.Description != null && x.Description.SteamId == item.AssetDescription.ClassId);
+
             if (dbItem != null)
             {
                 return dbItem;
             }
 
-            dbApp.Items.Add(dbItem = new SteamItem()
+            var workshopFileId = (string) null;
+            var viewWorkshopAction = item.AssetDescription?.Actions?.FirstOrDefault(x => x.Name == SteamConstants.SteamActionViewWorkshopItem);
+            if (viewWorkshopAction != null)
+            {
+                var workshopFileIdGroups = Regex.Match(viewWorkshopAction.Link, SteamConstants.SteamActionViewWorkshopItemRegex).Groups;
+                workshopFileId = (workshopFileIdGroups.Count > 1) ? workshopFileIdGroups[1].Value : "0";
+            }
+
+            dbApp.MarketItems.Add(dbItem = new SteamMarketItem()
             {
                 App = dbApp,
                 Name = item.AssetDescription.MarketName,
-                Description = new SteamItemDescription()
+                Description = new Domain.Models.Steam.SteamAssetDescription()
                 {
                     SteamId = item.AssetDescription.ClassId,
                     Name = item.AssetDescription.MarketNameHash,
                     BackgroundColour = item.AssetDescription.BackgroundColour.SteamColourToHexString(),
                     ForegroundColour = item.AssetDescription.NameColour.SteamColourToHexString(),
                     IconUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrl).Uri.ToString(),
-                    IconLargeUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrlLarge).Uri.ToString()
+                    IconLargeUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrlLarge).Uri.ToString(),
+                    WorkshopFile = String.IsNullOrEmpty(workshopFileId) ? null : new SteamAssetWorkshopFile()
+                    {
+                        SteamId = workshopFileId
+                    }
                 }
             });
 

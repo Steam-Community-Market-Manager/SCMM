@@ -1,18 +1,19 @@
 ﻿using SCMM.Web.Server.Data.Types;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
 {
-    public class SteamItemDescription : Entity
+    public class SteamAssetDescription : Entity
     {
-        public SteamItemDescription()
+        public SteamAssetDescription()
         {
             Tags = new PersistableStringCollection();
         }
 
         [Required]
         public string SteamId { get; set; }
-
+        
         [Required]
         public string Name { get; set; }
 
@@ -24,6 +25,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public string IconLargeUrl { get; set; }
 
+        public SteamAssetWorkshopFile WorkshopFile { get; set; }
+
         public PersistableStringCollection Tags { get; set; }
+
+        public DateTimeOffset? LastCheckedOn { get; set; }
     }
 }

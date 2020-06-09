@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Shared.Domain.DTOs.Steam
 {
-    public class SteamItemDTO : EntityDTO
+    public class SteamMarketItemDTO : EntityDTO
     {
         public string SteamId { get; set; }
 
@@ -10,13 +10,13 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
 
         public SteamAppDTO App { get; set; }
 
-        public SteamItemDescriptionDTO Description { get; set; }
+        public SteamAssetDescriptionDTO Description { get; set; }
 
         public SteamCurrencyDTO Currency { get; set; }
 
-        public SteamItemOrderDTO[] BuyOrders { get; set; }
+        public SteamMarketItemOrderDTO[] BuyOrders { get; set; }
 
-        public SteamItemOrderDTO[] SellOrders { get; set; }
+        public SteamMarketItemOrderDTO[] SellOrders { get; set; }
 
         public int Supply { get; set; }
 
@@ -36,8 +36,6 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
 
         public bool IsResellLoss { get; set; }
 
-        public DateTimeOffset LastChecked { get; set; }
-
-        public TimeSpan LastCheckedAgo { get; set; }
+        public DateTimeOffset? LastCheckedOn { get; set; }
     }
 }

@@ -46,9 +46,9 @@ namespace SCMM.Web.Server
                     configuration.ApplicationKey = Configuration.GetValue<string>("IdentityServer:Steam:ApplicationKey");
                 });
 
-            services.AddHostedService<CheckForNewSteamItemsJob>();
-            services.AddHostedService<ResolveSteamItemIdsJob>();
-            services.AddHostedService<UpdateSteamItemOrdersJob>();
+            services.AddHostedService<CheckForNewMarketItemsJob>();
+            services.AddHostedService<ResolveMarketItemIdsJob>();
+            services.AddHostedService<UpdateMarketItemOrdersJob>();
 
             services.AddAutoMapper(typeof(Startup));
 
