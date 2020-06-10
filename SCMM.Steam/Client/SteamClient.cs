@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;

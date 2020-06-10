@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Json;
-using SCMM.Steam.Shared.Requests.Community.Json;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
