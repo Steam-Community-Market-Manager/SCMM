@@ -8,9 +8,4 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Requests\WebAPI\" />
-    <Folder Include="Responses\WebAPI\" />
-  </ItemGroup>
-
 </Project>

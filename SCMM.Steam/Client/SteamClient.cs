@@ -1,9 +1,8 @@
 ﻿using Newtonsoft.Json;
-using SCMM.Steam.Shared.Requests.Community.Html;
-using SCMM.Steam.Shared.Requests.Community.Json;
-using SCMM.Steam.Shared.Requests.Community.Blob;
-using SCMM.Steam.Shared.Responses.Community.Json;
-using SCMM.Steam.Shared.Responses.Community.Xml;
+using SCMM.Steam.Shared.Community.Requests.Html;
+using SCMM.Steam.Shared.Community.Requests.Json;
+using SCMM.Steam.Shared.Community.Responses.Json;
+using SCMM.Steam.Shared.Community.Responses.Xml;
 using System;
 using System.IO;
 using System.Net;

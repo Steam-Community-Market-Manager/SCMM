@@ -10,9 +10,12 @@ namespace SCMM.Web.Server
         {
             CreateMap<SteamCurrency, SteamCurrencyDTO>().ReverseMap();
             CreateMap<SteamLanguage, SteamLanguageDTO>().ReverseMap();
+            CreateMap<SteamProfile, SteamProfileDTO>().ReverseMap();
             CreateMap<SteamApp, SteamAppDTO>().ReverseMap();
+            CreateMap<SteamStoreItem, SteamStoreItemDTO>().ReverseMap();
             CreateMap<SteamMarketItem, SteamMarketItemDTO>().ReverseMap();
             CreateMap<SteamMarketItemOrder, SteamMarketItemOrderDTO>().ReverseMap();
+            CreateMap<SteamInventoryItem, SteamInventoryItemDTO>().ReverseMap();
             CreateMap<SteamAssetDescription, SteamAssetDescriptionDTO>().ReverseMap();
             CreateMap<SteamAssetWorkshopFile, SteamAssetWorkshopFileDTO>().ReverseMap();
         }

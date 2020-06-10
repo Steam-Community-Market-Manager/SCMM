@@ -2,16 +2,8 @@
 
 namespace SCMM.Web.Shared.Domain.DTOs.Steam
 {
-    public class SteamMarketItemDTO : EntityDTO
+    public class SteamMarketItemDTO : SteamItemDTO
     {
-        public string SteamId { get; set; }
-
-        public string Name { get; set; }
-
-        public SteamAppDTO App { get; set; }
-
-        public SteamAssetDescriptionDTO Description { get; set; }
-
         public SteamCurrencyDTO Currency { get; set; }
 
         public SteamMarketItemOrderDTO[] BuyOrders { get; set; }

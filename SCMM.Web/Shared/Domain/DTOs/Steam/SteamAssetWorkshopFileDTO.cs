@@ -6,7 +6,7 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
     {
         public string SteamId { get; set; }
 
-        public string CreatorSteamId { get; set; }
+        public SteamProfileDTO Creator { get; set; }
 
         public DateTimeOffset CreatedOn { get; set; }
 
