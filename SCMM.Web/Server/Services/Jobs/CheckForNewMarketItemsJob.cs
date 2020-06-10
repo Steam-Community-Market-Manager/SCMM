@@ -156,11 +156,10 @@ namespace SCMM.Web.Server.Services.Jobs
             dbApp.MarketItems.Add(dbItem = new SteamMarketItem()
             {
                 App = dbApp,
-                Name = item.AssetDescription.MarketName,
                 Description = new Domain.Models.Steam.SteamAssetDescription()
                 {
                     SteamId = item.AssetDescription.ClassId,
-                    Name = item.AssetDescription.MarketNameHash,
+                    Name = item.AssetDescription.MarketName,
                     BackgroundColour = item.AssetDescription.BackgroundColour.SteamColourToHexString(),
                     ForegroundColour = item.AssetDescription.NameColour.SteamColourToHexString(),
                     IconUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrl).Uri.ToString(),

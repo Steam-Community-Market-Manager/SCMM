@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SCMM.Web.Server.Domain.Models
 {
-    public class Entity
+    public abstract class Entity
     {
         [Key]
         public Guid Id { get; set; }

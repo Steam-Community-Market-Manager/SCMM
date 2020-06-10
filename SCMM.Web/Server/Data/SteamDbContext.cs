@@ -7,8 +7,11 @@ namespace SCMM.Web.Server.Data
     {
         public DbSet<SteamLanguage> SteamLanguages { get; set; }
         public DbSet<SteamCurrency> SteamCurrencies { get; set; }
+        public DbSet<SteamProfile> SteamProfiles { get; set; }
         public DbSet<SteamApp> SteamApps { get; set; }
+        public DbSet<SteamStoreItem> SteamStoreItems { get; set; }
         public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
+        public DbSet<SteamInventoryItem> SteamInventoryItems { get; set; }
         public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
         public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
 
@@ -20,9 +23,25 @@ namespace SCMM.Web.Server.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<SteamProfile>()
+                .HasMany(x => x.InventoryItems);
+            builder.Entity<SteamProfile>()
+                .HasMany(x => x.WorkshopFiles)
+                .WithOne(x => x.Creator);
+
+            builder.Entity<SteamApp>()
+                .HasMany(x => x.StoreItems)
+                .WithOne(x => x.App);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.MarketItems)
                 .WithOne(x => x.App);
+
+            builder.Entity<SteamStoreItem>()
+                .HasOne(x => x.Currency);
+            builder.Entity<SteamStoreItem>()
+                .HasOne(x => x.Description);
+
             builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Currency);
             builder.Entity<SteamMarketItem>()
@@ -31,8 +50,16 @@ namespace SCMM.Web.Server.Data
                 .OwnsMany(x => x.BuyOrders);
             builder.Entity<SteamMarketItem>()
                 .OwnsMany(x => x.SellOrders);
+
+            builder.Entity<SteamInventoryItem>()
+                .HasOne(x => x.App);
+            builder.Entity<SteamInventoryItem>()
+                .HasOne(x => x.Currency);
+            builder.Entity<SteamInventoryItem>()
+                .HasOne(x => x.Description);
+
             builder.Entity<SteamAssetDescription>()
-                .OwnsOne(x => x.WorkshopFile);
+                .HasOne(x => x.WorkshopFile);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Tags);
         }

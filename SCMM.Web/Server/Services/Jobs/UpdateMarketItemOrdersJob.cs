@@ -33,10 +33,9 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
-                var fifteenMinutesAgo = (DateTimeOffset.Now - TimeSpan.FromMinutes(15));
                 var itemSteamIds = db.SteamMarketItems
                     .Where(x => !String.IsNullOrEmpty(x.SteamId))
-                    .Where(x => x.LastCheckedOn == null || x.LastCheckedOn < fifteenMinutesAgo)
+                    .OrderBy(x => x.LastCheckedOn)
                     .Select(x => new
                     {
                         Id = x.Id,

@@ -2,34 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
 {
-    public class SteamMarketItem : Entity
+    public class SteamMarketItem : SteamItem
     {
         public SteamMarketItem()
         {
             BuyOrders = new Collection<SteamMarketItemOrder>();
             SellOrders = new Collection<SteamMarketItemOrder>();
         }
-
-        public string SteamId { get; set; }
-
-        [Required]
-        public Guid AppId { get; set; }
-
-        public SteamApp App { get; set; }
-
-        [Required]
-        public string Name { get; set; }
-
-        [Required]
-        public Guid DescriptionId { get; set; }
-
-        public SteamAssetDescription Description { get; set; }
 
         public Guid? CurrencyId { get; set; }
 
@@ -43,9 +27,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public int Demand { get; set; }
 
-        public int SellLowestPrice { get; set; }
+        public int BuyNowPrice { get; set; }
 
-        public int SellLowestDelta { get; set; }
+        public int BuyNowPriceDelta { get; set; }
 
         public int ResellPrice { get; set; }
 
@@ -141,8 +125,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                 */
 
                 Supply = sellOrders.Sum(y => y.Quantity);
-                SellLowestPrice = lowestListPrice;
-                SellLowestDelta = (secondLowestListPrice - lowestListPrice);
+                BuyNowPrice = lowestListPrice;
+                BuyNowPriceDelta = (secondLowestListPrice - lowestListPrice);
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
                 ResellProfit = (resellPrice - resellTax - lowestListPrice);

@@ -25,6 +25,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public string IconLargeUrl { get; set; }
 
+        public Guid? WorkshopFileId { get; set; }
+
         public SteamAssetWorkshopFile WorkshopFile { get; set; }
 
         public PersistableStringCollection Tags { get; set; }

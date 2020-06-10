@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200610030215_SteamItemHierarchy")]
+    partial class SteamItemHierarchy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,52 +75,9 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("WorkshopFileId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("WorkshopFileId");
 
                     b.ToTable("SteamAssetDescriptions");
-                });
-
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamAssetWorkshopFile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedOn")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Favourited")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("LastCheckedOn")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("SteamId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Subscriptions")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("UpdatedOn")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("Views")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatorId");
-
-                    b.ToTable("SteamAssetWorkshopFiles");
                 });
 
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamCurrency", b =>
@@ -170,9 +129,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("SteamProfileId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AppId");
@@ -180,8 +136,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasIndex("CurrencyId");
 
                     b.HasIndex("DescriptionId");
-
-                    b.HasIndex("SteamProfileId");
 
                     b.ToTable("SteamInventoryItems");
                 });
@@ -258,35 +212,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamMarketItems");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamProfile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AvatarLargeUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AvatarUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Country")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfileId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SteamId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SteamProfiles");
-                });
-
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamStoreItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -324,10 +249,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamAssetDescription", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamAssetWorkshopFile", "WorkshopFile")
-                        .WithMany()
-                        .HasForeignKey("WorkshopFileId");
-
                     b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableStringCollection", "Tags", b1 =>
                         {
                             b1.Property<Guid>("SteamAssetDescriptionId")
@@ -343,15 +264,51 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                             b1.WithOwner()
                                 .HasForeignKey("SteamAssetDescriptionId");
                         });
-                });
 
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamAssetWorkshopFile", b =>
-                {
-                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamProfile", "Creator")
-                        .WithMany("WorkshopFiles")
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.OwnsOne("SCMM.Web.Server.Domain.Models.Steam.SteamAssetWorkshopFile", "WorkshopFile", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<DateTimeOffset>("CreatedOn")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<string>("CreatorSteamId")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<int>("Favourited")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTimeOffset?>("LastCheckedOn")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<Guid>("SteamAssetDescriptionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("SteamId")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<int>("Subscriptions")
+                                .HasColumnType("int");
+
+                            b1.Property<DateTimeOffset>("UpdatedOn")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<int>("Views")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("SteamAssetDescriptionId")
+                                .IsUnique();
+
+                            b1.ToTable("SteamAssetWorkshopFiles");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamAssetDescriptionId");
+                        });
                 });
 
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamInventoryItem", b =>
@@ -371,10 +328,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .HasForeignKey("DescriptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamProfile", null)
-                        .WithMany("InventoryItems")
-                        .HasForeignKey("SteamProfileId");
                 });
 
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItem", b =>

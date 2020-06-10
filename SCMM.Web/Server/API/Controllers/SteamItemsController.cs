@@ -34,8 +34,8 @@ namespace SCMM.Web.Server.API.Controllers
             return _db.SteamMarketItems
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => String.IsNullOrEmpty(filter) || x.Name.Contains(filter))
-                .OrderBy(x => x.Name)
+                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
+                .OrderBy(x => x.Description.Name)
                 .Select(x => _mapper.Map<SteamMarketItemDTO>(x))
                 .ToList();
         }
