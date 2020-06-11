@@ -9,7 +9,6 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         [Required]
         public string SteamId { get; set; }
 
-        [Required]
         public Guid? CreatorId { get; set; }
 
         public SteamProfile Creator { get; set; }
