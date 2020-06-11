@@ -1,5 +1,4 @@
-﻿using SCMM.Web.Server.Data.Types;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
@@ -15,8 +14,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public DateTimeOffset CreatedOn { get; set; }
 
+        public DateTimeOffset AcceptedOn { get; set; }
+
         public DateTimeOffset UpdatedOn { get; set; }
-        
+
         public int Subscriptions { get; set; }
 
         public int Favourited { get; set; }

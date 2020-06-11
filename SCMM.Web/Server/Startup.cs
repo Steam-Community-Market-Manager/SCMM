@@ -53,7 +53,10 @@ namespace SCMM.Web.Server
             services.AddHostedService<CheckForNewMarketItemsJob>();
             services.AddHostedService<ResolveMarketItemIdsJob>();
             services.AddHostedService<UpdateMarketItemOrdersJob>();
-
+            services.AddHostedService<UpdateStoreItemWorkshopStatisticsJob>();
+            services.AddHostedService<UpdateAssetWorkshopStatisticsJob>();
+            services.AddHostedService<UpdateAppFiltersJob>();
+            
             services.AddAutoMapper(typeof(Startup));
 
             services.AddControllersWithViews();

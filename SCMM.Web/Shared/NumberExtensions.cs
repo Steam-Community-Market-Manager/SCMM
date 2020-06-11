@@ -9,7 +9,7 @@ namespace SCMM.Web.Shared
         public static string ToPriceString(this SteamCurrencyDTO currency, int price)
         {
             var negative = (price < 0) ? "-" : String.Empty;
-            return ($"{currency?.PrefixText} {negative}{Math.Round((decimal)Math.Abs(price) / 100, 2).ToString("F")} {currency?.SuffixText}").Trim();
+            return ($"{currency?.PrefixText} {negative}{Math.Round((decimal)Math.Abs(price) / 100, 2).ToString("#,##0.00")} {currency?.SuffixText}").Trim();
         }
 
         public static string ToRoIString(this int percentage)
@@ -37,6 +37,11 @@ namespace SCMM.Web.Shared
 
             var gcd = GCD(a, b);
             return $"{a / gcd}:{b / gcd}";
+        }
+
+        public static string ToQuantityString(this int quantity)
+        {
+            return quantity.ToString("#,##");
         }
 
         public static string ToSaturationString(this int quantity, int relativeToQuantity)

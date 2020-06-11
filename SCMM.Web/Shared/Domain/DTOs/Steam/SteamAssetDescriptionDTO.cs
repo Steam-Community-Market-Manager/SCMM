@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SCMM.Web.Shared.Domain.DTOs.Steam
 {
@@ -18,7 +19,7 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
 
         public SteamAssetWorkshopFileDTO WorkshopFile { get; set; }
 
-        public string[] Tags { get; set; }
+        public IDictionary<string, string> Tags { get; set; }
 
         public DateTimeOffset? LastCheckedOn { get; set; }
     }

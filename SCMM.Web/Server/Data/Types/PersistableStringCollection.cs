@@ -19,12 +19,12 @@ namespace SCMM.Web.Server.Data.Types
 
         protected override string ConvertSingleValueToRuntime(string rawValue)
         {
-            return rawValue;
+            return Uri.UnescapeDataString(rawValue);
         }
 
         protected override string ConvertSingleValueToPersistable(string value)
         {
-            return value;
+            return Uri.EscapeDataString(value);
         }
     }
 }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200611095842_SteamAppAssetFilter")]
+    partial class SteamAppAssetFilter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,9 +90,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("AcceptedOn")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset>("CreatedOn")
                         .HasColumnType("datetimeoffset");
@@ -304,6 +303,9 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.Property<Guid>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("FirstReleasedOn")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(max)");

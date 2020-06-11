@@ -7,5 +7,7 @@
         public string Name { get; set; }
 
         public string IconUrl { get; set; }
+
+        public SteamAssetFilterDTO[] Filters { get; set; }
     }
 }

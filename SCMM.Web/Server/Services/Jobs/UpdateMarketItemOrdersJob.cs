@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -63,7 +61,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 foreach (var item in itemSteamIds)
                 {
-                    await UpdateSteamItemOrders(
+                    await SteamService.UpdateSteamItemOrders(
                         db,
                         item.Id,
                         currency.Id,
@@ -79,52 +77,6 @@ namespace SCMM.Web.Server.Services.Jobs
                     await db.SaveChangesAsync();
                 }
             }
-        }
-
-        public async Task UpdateSteamItemOrders(SteamDbContext db, Guid itemId, Guid currencyId, SteamMarketItemOrdersHistogramJsonRequest request)
-        {
-            var orders = await new SteamCommunityClient().GetMarketItemOrdersHistogram(request);
-            if (orders?.Success != true)
-            {
-                return;
-            }
-
-            var item = db.SteamMarketItems.SingleOrDefault(x => x.Id == itemId);
-            if (item == null)
-            {
-                return;
-            }
-
-            item.LastCheckedOn = DateTimeOffset.Now;
-            item.CurrencyId = currencyId;
-            item.RebuildOrders(
-                ParseSteamItemOrdersFromGraph(orders.BuyOrderGraph), 
-                ParseSteamItemOrdersFromGraph(orders.SellOrderGraph)
-            );
-        }
-
-        private SteamMarketItemOrder[] ParseSteamItemOrdersFromGraph(string[][] orderGraph)
-        {
-            var orders = new List<SteamMarketItemOrder>();
-            if (orderGraph == null)
-            {
-                return orders.ToArray();
-            }
-
-            var totalQuantity = 0;
-            for (int i = 0; i < orderGraph.Length; i++)
-            {
-                var price = Int32.Parse(orderGraph[i][0].Replace(",", "").Replace(".", ""));
-                var quantity = (Int32.Parse(orderGraph[i][1].Replace(",", "")) - totalQuantity);
-                orders.Add(new SteamMarketItemOrder()
-                {
-                    Price = price,
-                    Quantity = quantity,
-                });
-                totalQuantity += quantity;
-            }
-
-            return orders.ToArray();
         }
     }
 }

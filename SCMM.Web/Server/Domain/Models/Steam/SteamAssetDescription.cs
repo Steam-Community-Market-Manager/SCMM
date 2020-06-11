@@ -8,7 +8,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
     {
         public SteamAssetDescription()
         {
-            Tags = new PersistableStringCollection();
+            Tags = new PersistableStringDictionary();
         }
 
         [Required]
@@ -29,7 +29,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public SteamAssetWorkshopFile WorkshopFile { get; set; }
 
-        public PersistableStringCollection Tags { get; set; }
+        public PersistableStringDictionary Tags { get; set; }
 
         public DateTimeOffset? LastCheckedOn { get; set; }
     }

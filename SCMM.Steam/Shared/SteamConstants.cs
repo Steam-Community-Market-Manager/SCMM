@@ -7,6 +7,10 @@
         public const string SteamCommunityAssetUrl = "https://steamcommunity-a.akamaihd.net/";
         public const string SteamWebApiUrl = "https://api.steampowered.com/";
 
+        public const string SteamAssetTagWorkshop = "workshop";
+        public const string SteamAssetTagCreator = "creator";
+        public const string SteamAssetTagAccepted = "accepted";
+
         public const string SteamActionViewWorkshopItem = "#Workshop_Commerce_ViewItem";
         public const string SteamActionViewWorkshopItemRegex = @"filedetails\/\?id=(\d+)";
 

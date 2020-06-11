@@ -31,6 +31,9 @@ namespace SCMM.Web.Server.Data
                 .WithOne(x => x.Creator);
 
             builder.Entity<SteamApp>()
+                .OwnsMany(x => x.Filters)
+                .OwnsOne(x => x.Options);
+            builder.Entity<SteamApp>()
                 .HasMany(x => x.StoreItems)
                 .WithOne(x => x.App);
             builder.Entity<SteamApp>()

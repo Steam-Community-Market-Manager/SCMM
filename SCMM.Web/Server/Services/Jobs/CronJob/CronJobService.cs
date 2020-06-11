@@ -47,7 +47,15 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
                     }
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        await DoWork(cancellationToken);
+                        try
+                        {
+                            await DoWork(cancellationToken);
+                        }
+                        catch(Exception ex)
+                        {
+                            // TODO: Log this?
+                            ex = ex;
+                        }
                     }
                     if (!cancellationToken.IsCancellationRequested)
                     {

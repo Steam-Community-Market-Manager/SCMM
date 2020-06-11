@@ -1,20 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
-using SCMM.Steam.Shared;
-using SCMM.Steam.Shared.Community.Models;
-using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,7 +99,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     .Select(x => Observable.FromAsync(() => steamClient.GetMarketSearchPaginated(x)))
                     .Merge()
                     .Where(x => x?.Success == true && x?.Results?.Count > 0)
-                    .SelectMany(x => FindOrAddSteamItems(db, x.Results))
+                    .SelectMany(x => SteamService.FindOrAddSteamItems(db, x.Results))
                     .Where(x => x?.IsTransient == true)
                     .ToList();
 
@@ -113,65 +108,6 @@ namespace SCMM.Web.Server.Services.Jobs
                     await db.SaveChangesAsync();
                 }
             }
-        }
-
-        public IEnumerable<SteamMarketItem> FindOrAddSteamItems(SteamDbContext db, IEnumerable<SteamMarketSearchItem> items)
-        {
-            foreach (var item in items)
-            {
-                yield return FindOrAddSteamItem(db, item);
-            }
-        }
-
-        public SteamMarketItem FindOrAddSteamItem(SteamDbContext db, SteamMarketSearchItem item)
-        {
-            if (String.IsNullOrEmpty(item?.AssetDescription.AppId))
-            {
-                return null;
-            }
-
-            var dbApp = db.SteamApps.FirstOrDefault(x => x.SteamId == item.AssetDescription.AppId);
-            if (dbApp == null)
-            {
-                return null;
-            }
-
-            var dbItem = db.SteamMarketItems
-                .Include(x => x.Description)
-                .FirstOrDefault(x => x.Description != null && x.Description.SteamId == item.AssetDescription.ClassId);
-
-            if (dbItem != null)
-            {
-                return dbItem;
-            }
-
-            var workshopFileId = (string) null;
-            var viewWorkshopAction = item.AssetDescription?.Actions?.FirstOrDefault(x => x.Name == SteamConstants.SteamActionViewWorkshopItem);
-            if (viewWorkshopAction != null)
-            {
-                var workshopFileIdGroups = Regex.Match(viewWorkshopAction.Link, SteamConstants.SteamActionViewWorkshopItemRegex).Groups;
-                workshopFileId = (workshopFileIdGroups.Count > 1) ? workshopFileIdGroups[1].Value : "0";
-            }
-
-            dbApp.MarketItems.Add(dbItem = new SteamMarketItem()
-            {
-                App = dbApp,
-                Description = new Domain.Models.Steam.SteamAssetDescription()
-                {
-                    SteamId = item.AssetDescription.ClassId,
-                    Name = item.AssetDescription.MarketName,
-                    BackgroundColour = item.AssetDescription.BackgroundColour.SteamColourToHexString(),
-                    ForegroundColour = item.AssetDescription.NameColour.SteamColourToHexString(),
-                    IconUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrl).Uri.ToString(),
-                    IconLargeUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrlLarge).Uri.ToString(),
-                    WorkshopFile = String.IsNullOrEmpty(workshopFileId) ? null : new SteamAssetWorkshopFile()
-                    {
-                        SteamId = workshopFileId
-                    }
-                }
-            });
-
-            return dbItem;
         }
     }
 }

@@ -2,10 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Steam.Client;
-using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Linq;
@@ -47,7 +45,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 // Add a 30 second delay between requests to avoid "Too Many Requests" error
                 var updatedItems = await Observable.Interval(TimeSpan.FromSeconds(30))
                     .Zip(itemsWithMissingIds, (x, y) => y)
-                    .Select(x => Observable.FromAsync(() => UpdateSteamItemId(db, x)))
+                    .Select(x => Observable.FromAsync(() => SteamService.UpdateSteamItemId(db, x)))
                     .Merge()
                     .Where(x => !String.IsNullOrEmpty(x.SteamId))
                     .ToList();
@@ -57,25 +55,6 @@ namespace SCMM.Web.Server.Services.Jobs
                     await db.SaveChangesAsync();
                 }
             }
-        }
-
-        public async Task<SteamMarketItem> UpdateSteamItemId(SteamDbContext db, SteamMarketItem item)
-        {
-            var itemNameId = await new SteamCommunityClient().GetMarketListingItemNameId(
-                new SteamMarketListingPageRequest()
-                {
-                    AppId = item.App.SteamId,
-                    MarketHashName = item.Description.Name,
-                }
-            );
-
-            if (!String.IsNullOrEmpty(itemNameId))
-            {
-                item.SteamId = itemNameId;
-                await db.SaveChangesAsync();
-            }
-
-            return item;
         }
     }
 }

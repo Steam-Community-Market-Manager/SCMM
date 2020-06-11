@@ -18,56 +18,62 @@
                     <TableBody>
                         @foreach (var item in items)
                         {
-                            <TableRow>
-                                <TableRowCell>
-                                    <img src="@item.Description.IconUrl" style="width:96px" />
-                                </TableRowCell>
-                                <TableRowCell>
-                                    <Heading Size="HeadingSize.Is4">
-                                        @item.Description.Name
-                                        @if (items.First() == item)
-                                        {
-                                            <i class="fas fa-award" style="color:gold"></i>
-                                        }
-                                        @if (items.Skip(1).First() == item)
-                                        {
-                                            <i class="fas fa-award" style="color:silver"></i>
-                                        }
-                                        @if (items.Skip(2).First() == item)
-                                        {
-                                            <i class="fas fa-award" style="color:chocolate"></i>
-                                        }
-                                    </Heading>
-                                    <Paragraph>
-                                        @foreach (var tag in item.Description.Tags)
-                                        {
-                                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">@tag</Badge>
-                                        }
-                                    </Paragraph>
-                                    <Paragraph>
-                                        <Button Color="Color.Success" Size="ButtonSize.Small">Buy Now</Button>
-                                        <Button Color="Color.Dark" Size="ButtonSize.Small">View</Button>
-                                    </Paragraph>
-                                </TableRowCell>
-                                <TableRowCell>
-                                    <Heading Size="HeadingSize.Is6">
-                                        <i class="fas fa-tag"></i>
-                                        @item.Currency.ToPriceString(item.StorePrice)
-                                    </Heading>
-                                </TableRowCell>
-                                <TableRowCell>
-                                    <Heading Size="HeadingSize.Is6">
-                                        <i class="fas fa-user"></i>
-                                        @item.Description.WorkshopFile.Subscriptions
-                                    </Heading>
-                                </TableRowCell>
-                                <TableRowCell>
-                                    <Heading Size="HeadingSize.Is6">
-                                        <i class="fas fa-eye"></i>
-                                        @item.Description.WorkshopFile.Views
-                                    </Heading>
-                                </TableRowCell>
-                            </TableRow>
+                        <TableRow>
+                            <TableRowCell>
+                                <img src="@item.Description.IconUrl" style="width:96px" />
+                            </TableRowCell>
+                            <TableRowCell>
+                                <Heading Size="HeadingSize.Is4">
+                                    @item.Description.Name
+                                    @if (items.First() == item)
+                                    {
+                                        <i class="fas fa-award" style="color:gold"></i>
+                                    }
+                                    @if (items.Skip(1).First() == item)
+                                    {
+                                        <i class="fas fa-award" style="color:silver"></i>
+                                    }
+                                    @if (items.Skip(2).First() == item)
+                                    {
+                                        <i class="fas fa-award" style="color:chocolate"></i>
+                                    }
+                                </Heading>
+                                <Paragraph>
+                                    @foreach (var tag in item.Description.Tags)
+                                    {
+                                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">@tag.Value</Badge>
+                                    }
+                                </Paragraph>
+                                <Paragraph>
+                                    <Button Color="Color.Success" Size="ButtonSize.Small">Buy Now</Button>
+                                    <Button Color="Color.Info" Size="ButtonSize.Small">View</Button>
+                                </Paragraph>
+                            </TableRowCell>
+                            <TableRowCell>
+                                <Heading Size="HeadingSize.Is6">
+                                    <i class="fas fa-tag"></i>
+                                    @item.Currency.ToPriceString(item.StorePrice)
+                                </Heading>
+                            </TableRowCell>
+                            <TableRowCell>
+                                <Heading Size="HeadingSize.Is6">
+                                    <i class="fas fa-user"></i>
+                                    @item.Description.WorkshopFile.Subscriptions.ToQuantityString()
+                                </Heading>
+                            </TableRowCell>
+                            <TableRowCell>
+                                <Heading Size="HeadingSize.Is6">
+                                    <i class="fas fa-heart"></i>
+                                    @item.Description.WorkshopFile.Favourited.ToQuantityString()
+                                </Heading>
+                            </TableRowCell>
+                            <TableRowCell>
+                                <Heading Size="HeadingSize.Is6">
+                                    <i class="fas fa-eye"></i>
+                                    @item.Description.WorkshopFile.Views.ToQuantityString()
+                                </Heading>
+                            </TableRowCell>
+                        </TableRow>
                         }
                     </TableBody>
                 </Table>
@@ -109,19 +115,22 @@
         await storeRankings.AddLabel(items.Select(x => x.Description.Name).ToArray());
         await storeRankings.AddDataSet(new BarChartDataset<double>
         {
-            Label = "Sales Rank",
+            Label = "Subscribers",
             Data = items.Select(x => (double) x.Description.WorkshopFile.Subscriptions).ToList(),
-            BackgroundColor = items.Select(x => ChartColor.FromRgba(255, 99, 132, 0.2f).ToString()).ToList(),
-            BorderColor = items.Select(x => ChartColor.FromRgba(255, 99, 132, 1f).ToString()).ToList()
+            BackgroundColor = items.Select(x => "#4caf50").ToList(),
+            BorderColor = items.Select(x => "#388e3c").ToList(),
+            HoverBackgroundColor = items.Select(x => "#4caf50").ToList(),
+            HoverBorderColor = items.Select(x => "#388e3c").ToList(),
         });
-        /*
         await storeRankings.AddDataSet(new BarChartDataset<double>
         {
             Label = "Views",
             Data = items.Select(x => (double) x.Description.WorkshopFile.Views).ToList(),
-            BackgroundColor = items.Select(x => ChartColor.FromRgba(54, 162, 235, 0.2f).ToString()).ToList(),
-            BorderColor = items.Select(x => ChartColor.FromRgba(54, 162, 235, 1f).ToString()).ToList()
-        });*/
+            BackgroundColor = items.Select(x => "#2196f3").ToList(),
+            BorderColor = items.Select(x => "#1976d2").ToList(),
+            HoverBackgroundColor = items.Select(x => "#2196f3").ToList(),
+            HoverBorderColor = items.Select(x => "#1976d2").ToList(),
+        });
         await storeRankings.Update();
     }
 

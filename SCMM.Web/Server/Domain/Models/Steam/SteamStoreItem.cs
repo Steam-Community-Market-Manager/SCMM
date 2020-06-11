@@ -9,7 +9,5 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public SteamCurrency Currency { get; set; }
 
         public int StorePrice { get; set; }
-
-        public DateTimeOffset? FirstReleasedOn { get; set; }
     }
 }

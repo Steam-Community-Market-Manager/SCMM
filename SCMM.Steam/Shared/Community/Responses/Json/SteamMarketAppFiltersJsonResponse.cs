@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using SCMM.Steam.Shared.Community.Models;
+using System.Collections.Generic;
 
 namespace SCMM.Steam.Shared.Community.Responses.Json
 {
@@ -7,6 +9,7 @@ namespace SCMM.Steam.Shared.Community.Responses.Json
         [JsonProperty("success")]
         public bool Success { get; set; }
 
-        // TODO: Implement this...
+        [JsonProperty("facets")]
+        public Dictionary<string, SteamAssetFilter> Facets { get; set; }
     }
 }

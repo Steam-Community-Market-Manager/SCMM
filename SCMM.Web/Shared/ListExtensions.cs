@@ -6,8 +6,7 @@ namespace SCMM.Web.Shared
 {
     public static class ListExtensions
     {
-        public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(
-                     this IEnumerable<TSource> source, int size)
+        public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(this IEnumerable<TSource> source, int size)
         {
             TSource[] bucket = null;
             var count = 0;

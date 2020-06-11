@@ -93,7 +93,7 @@ namespace SCMM.Steam.Shared
 			strAmount = strAmount.Replace(',', '.');
 
 			// strip the currency symbol, set .-- to .00
-			strAmount = Regex.Match(strAmount, @"([\d\.]+)").Groups.OfType<Capture>().FirstOrDefault()?.Value;
+			strAmount = Regex.Match(strAmount, @"([\d\.]+)").Groups.OfType<Capture>().LastOrDefault()?.Value;
 			strAmount = strAmount.Replace(".--", ".00");
 
 			// strip spaces
