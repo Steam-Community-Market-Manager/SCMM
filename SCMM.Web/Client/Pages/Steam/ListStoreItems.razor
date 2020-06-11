@@ -1,0 +1,128 @@
+@page "/steam/store"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using SCMM.Web.Shared.Domain.DTOs.Steam
+@using SCMM.Web.Shared
+@inject HttpClient Http
+
+<Container Fluid="true">
+    <Row>
+        <Column ColumnSize="ColumnSize.Is6">
+
+            @if (items == null)
+            {
+                <Text><em>Loading...</em></Text>
+            }
+            else
+            {
+                <Table Narrow="true">
+                    <TableBody>
+                        @foreach (var item in items)
+                        {
+                            <TableRow>
+                                <TableRowCell>
+                                    <img src="@item.Description.IconUrl" style="width:96px" />
+                                </TableRowCell>
+                                <TableRowCell>
+                                    <Heading Size="HeadingSize.Is4">
+                                        @item.Description.Name
+                                        @if (items.First() == item)
+                                        {
+                                            <i class="fas fa-award" style="color:gold"></i>
+                                        }
+                                        @if (items.Skip(1).First() == item)
+                                        {
+                                            <i class="fas fa-award" style="color:silver"></i>
+                                        }
+                                        @if (items.Skip(2).First() == item)
+                                        {
+                                            <i class="fas fa-award" style="color:chocolate"></i>
+                                        }
+                                    </Heading>
+                                    <Paragraph>
+                                        @foreach (var tag in item.Description.Tags)
+                                        {
+                                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">@tag</Badge>
+                                        }
+                                    </Paragraph>
+                                    <Paragraph>
+                                        <Button Color="Color.Success" Size="ButtonSize.Small">Buy Now</Button>
+                                        <Button Color="Color.Dark" Size="ButtonSize.Small">View</Button>
+                                    </Paragraph>
+                                </TableRowCell>
+                                <TableRowCell>
+                                    <Heading Size="HeadingSize.Is6">
+                                        <i class="fas fa-tag"></i>
+                                        @item.Currency.ToPriceString(item.StorePrice)
+                                    </Heading>
+                                </TableRowCell>
+                                <TableRowCell>
+                                    <Heading Size="HeadingSize.Is6">
+                                        <i class="fas fa-user"></i>
+                                        @item.Description.WorkshopFile.Subscriptions
+                                    </Heading>
+                                </TableRowCell>
+                                <TableRowCell>
+                                    <Heading Size="HeadingSize.Is6">
+                                        <i class="fas fa-eye"></i>
+                                        @item.Description.WorkshopFile.Views
+                                    </Heading>
+                                </TableRowCell>
+                            </TableRow>
+                        }
+                    </TableBody>
+                </Table>
+            }
+
+        </Column>
+        <Column ColumnSize="ColumnSize.Is6">
+            <BarChart @ref="storeRankings" TItem="double" Padding="Padding.Is2" />
+        </Column>
+    </Row>
+</Container>
+
+@code {
+
+    private SteamStoreItemDTO[] items;
+    BarChart<double> storeRankings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshItems();
+        await RedrawStoreRankings();
+    }
+
+    async Task RefreshItems()
+    {
+        try
+        {
+            items = await Http.GetFromJsonAsync<SteamStoreItemDTO[]>($"SteamStoreItems");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    async Task RedrawStoreRankings()
+    {
+        await storeRankings.Clear();
+        await storeRankings.AddLabel(items.Select(x => x.Description.Name).ToArray());
+        await storeRankings.AddDataSet(new BarChartDataset<double>
+        {
+            Label = "Sales Rank",
+            Data = items.Select(x => (double) x.Description.WorkshopFile.Subscriptions).ToList(),
+            BackgroundColor = items.Select(x => ChartColor.FromRgba(255, 99, 132, 0.2f).ToString()).ToList(),
+            BorderColor = items.Select(x => ChartColor.FromRgba(255, 99, 132, 1f).ToString()).ToList()
+        });
+        /*
+        await storeRankings.AddDataSet(new BarChartDataset<double>
+        {
+            Label = "Views",
+            Data = items.Select(x => (double) x.Description.WorkshopFile.Views).ToList(),
+            BackgroundColor = items.Select(x => ChartColor.FromRgba(54, 162, 235, 0.2f).ToString()).ToList(),
+            BorderColor = items.Select(x => ChartColor.FromRgba(54, 162, 235, 1f).ToString()).ToList()
+        });*/
+        await storeRankings.Update();
+    }
+
+}

@@ -61,7 +61,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
         public async Task<SteamMarketItem> UpdateSteamItemId(SteamDbContext db, SteamMarketItem item)
         {
-            var itemNameId = await new SteamClient().GetMarketListingItemNameId(
+            var itemNameId = await new SteamCommunityClient().GetMarketListingItemNameId(
                 new SteamMarketListingPageRequest()
                 {
                     AppId = item.App.SteamId,

@@ -37,7 +37,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                var steamClient = new SteamClient();
+                var steamClient = new SteamCommunityClient();
 
                 var steamApps = db.SteamApps.ToList();
                 if (!steamApps.Any())

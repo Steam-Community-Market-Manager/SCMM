@@ -83,7 +83,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
         public async Task UpdateSteamItemOrders(SteamDbContext db, Guid itemId, Guid currencyId, SteamMarketItemOrdersHistogramJsonRequest request)
         {
-            var orders = await new SteamClient().GetMarketItemOrdersHistogram(request);
+            var orders = await new SteamCommunityClient().GetMarketItemOrdersHistogram(request);
             if (orders?.Success != true)
             {
                 return;
@@ -106,6 +106,11 @@ namespace SCMM.Web.Server.Services.Jobs
         private SteamMarketItemOrder[] ParseSteamItemOrdersFromGraph(string[][] orderGraph)
         {
             var orders = new List<SteamMarketItemOrder>();
+            if (orderGraph == null)
+            {
+                return orders.ToArray();
+            }
+
             var totalQuantity = 0;
             for (int i = 0; i < orderGraph.Length; i++)
             {

@@ -3,15 +3,15 @@
 <AuthorizeView>
     <Authorized>
         <BarItem>
-            <BarLink Clicked="@ViewYourInventory">Your Inventory</BarLink>
+            <BarLink Clicked="@ViewInventory">Inventory</BarLink>
         </BarItem>
         <BarItem>
-            <BarLink Clicked="@ViewYourHistory">Your History</BarLink>
+            <BarLink Clicked="@ViewHistory">History</BarLink>
         </BarItem>
     </Authorized>
 </AuthorizeView>
 <BarItem>
-    <BarLink Clicked="@ViewMarketplace">Marketplace</BarLink>
+    <BarLink Clicked="@ViewMarket">Marketplace</BarLink>
 </BarItem>
 <BarItem>
     <BarLink Clicked="@ViewStore">Store</BarLink>
@@ -22,19 +22,19 @@
 
 @code{
 
-    void ViewYourInventory()
+    void ViewInventory()
     {
         Navigation.NavigateTo("steam/inventory");
     }
 
-    void ViewYourHistory()
+    void ViewHistory()
     {
         Navigation.NavigateTo("steam/history");
     }
 
-    void ViewMarketplace()
+    void ViewMarket()
     {
-        Navigation.NavigateTo("steam/items");
+        Navigation.NavigateTo("steam/market");
     }
 
     void ViewStore()

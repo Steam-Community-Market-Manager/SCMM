@@ -5,22 +5,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Steam;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [Authorize]
+    [AllowAnonymous]
     [ApiController]
     [Route("[controller]")]
-    public class SteamItemsController : ControllerBase
+    public class SteamStoreItemsController : ControllerBase
     {
-        private readonly ILogger<SteamItemsController> _logger;
+        private readonly ILogger<SteamStoreItemsController> _logger;
         private readonly SteamDbContext _db;
         private readonly IMapper _mapper;
 
-        public SteamItemsController(ILogger<SteamItemsController> logger, SteamDbContext db, IMapper mapper)
+        public SteamStoreItemsController(ILogger<SteamStoreItemsController> logger, SteamDbContext db, IMapper mapper)
         {
             _logger = logger;
             _db = db;
@@ -28,15 +27,16 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<SteamMarketItemDTO> Get(string filter = null)
+        public IEnumerable<SteamStoreItemDTO> Get(string filter = null)
         {
             filter = filter?.Trim();
-            return _db.SteamMarketItems
+            return _db.SteamStoreItems
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
-                .OrderBy(x => x.Description.Name)
-                .Select(x => _mapper.Map<SteamMarketItemDTO>(x))
+                .Include(x => x.Description.WorkshopFile)
+                .Include(x => x.Description.WorkshopFile.Creator)
+                .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
+                .Select(x => _mapper.Map<SteamStoreItemDTO>(x))
                 .ToList();
         }
     }

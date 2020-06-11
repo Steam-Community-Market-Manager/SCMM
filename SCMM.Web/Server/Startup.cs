@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models;
 using SCMM.Web.Server.Services.Jobs;
 
@@ -27,8 +27,7 @@ namespace SCMM.Web.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            var steamConfiguration = Configuration.GetSection("Steam").Get<SteamConfiguration>();
-            services.AddSingleton(steamConfiguration);
+            var steamConfiguration = Configuration.GetSteamConfiguration();
 
             services.AddDbContext<IdentityDbContext>(options =>
                 options.UseSqlServer(
@@ -50,6 +49,7 @@ namespace SCMM.Web.Server
                     configuration.ApplicationKey = steamConfiguration.ApplicationKey;
                 });
 
+            services.AddHostedService<CheckForNewStoreItemsJob>();
             services.AddHostedService<CheckForNewMarketItemsJob>();
             services.AddHostedService<ResolveMarketItemIdsJob>();
             services.AddHostedService<UpdateMarketItemOrdersJob>();
