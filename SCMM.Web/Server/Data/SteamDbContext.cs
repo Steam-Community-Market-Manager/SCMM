@@ -25,7 +25,8 @@ namespace SCMM.Web.Server.Data
             base.OnModelCreating(builder);
 
             builder.Entity<SteamProfile>()
-                .HasMany(x => x.InventoryItems);
+                .HasMany(x => x.InventoryItems)
+                .WithOne(x => x.Owner);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.WorkshopFiles)
                 .WithOne(x => x.Creator);
@@ -33,6 +34,12 @@ namespace SCMM.Web.Server.Data
             builder.Entity<SteamApp>()
                 .OwnsMany(x => x.Filters)
                 .OwnsOne(x => x.Options);
+            builder.Entity<SteamApp>()
+                .HasMany(x => x.Assets)
+                .WithOne(x => x.App);
+            builder.Entity<SteamApp>()
+                .HasMany(x => x.WorkshopFiles)
+                .WithOne(x => x.App);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.StoreItems)
                 .WithOne(x => x.App);

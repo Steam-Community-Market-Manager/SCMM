@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class ResolveMarketItemIdsJob : CronJobService
+    public class CheckForMissingMarketItemIdsJob : CronJobService
     {
-        private readonly ILogger<ResolveMarketItemIdsJob> _logger;
+        private readonly ILogger<CheckForMissingMarketItemIdsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public ResolveMarketItemIdsJob(IConfiguration configuration, ILogger<ResolveMarketItemIdsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<ResolveMarketItemIdsJob>())
+        public CheckForMissingMarketItemIdsJob(IConfiguration configuration, ILogger<CheckForMissingMarketItemIdsJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<CheckForMissingMarketItemIdsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -29,12 +29,14 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>(); 
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var itemsWithMissingIds = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .Where(x => String.IsNullOrEmpty(x.SteamId))
+                    .Take(10)
                     .ToList();
 
                 if (!itemsWithMissingIds.Any())
@@ -45,7 +47,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 // Add a 30 second delay between requests to avoid "Too Many Requests" error
                 var updatedItems = await Observable.Interval(TimeSpan.FromSeconds(30))
                     .Zip(itemsWithMissingIds, (x, y) => y)
-                    .Select(x => Observable.FromAsync(() => SteamService.UpdateSteamItemId(db, x)))
+                    .Select(x => Observable.FromAsync(() => steamService.UpdateSteamItemId(x)))
                     .Merge()
                     .Where(x => !String.IsNullOrEmpty(x.SteamId))
                     .ToList();

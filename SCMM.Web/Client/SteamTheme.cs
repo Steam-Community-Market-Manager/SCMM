@@ -67,8 +67,16 @@ namespace SCMM.Web.Client
     {
         public static void AddSteamTheme(this IServiceCollection services)
         {
-            services.AddSingleton<Theme, SteamTheme>();
-            services.AddScoped<IThemeGenerator, SteamThemeGenerator>();
+            //services.AddSingleton<Theme, SteamTheme>();
+            //services.AddScoped<IThemeGenerator, SteamThemeGenerator>();
+
+            services.AddSingleton<Theme>(new Theme()
+            {
+                BackgroundOptions = new ThemeBackgroundOptions()
+                {
+                    Primary = ThemeColors.Green._300.Value
+                }
+            });
         }
     }
 }

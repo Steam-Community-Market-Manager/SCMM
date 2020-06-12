@@ -31,9 +31,10 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                 var steamClient = new SteamCommunityClient();
-
+                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                
                 var steamApps = db.SteamApps.ToList();
                 if (!steamApps.Any())
                 {
@@ -99,7 +100,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     .Select(x => Observable.FromAsync(() => steamClient.GetMarketSearchPaginated(x)))
                     .Merge()
                     .Where(x => x?.Success == true && x?.Results?.Count > 0)
-                    .SelectMany(x => SteamService.FindOrAddSteamItems(db, x.Results))
+                    .SelectMany(x => steamService.FindOrAddSteamItems(x.Results))
                     .Where(x => x?.IsTransient == true)
                     .ToList();
 

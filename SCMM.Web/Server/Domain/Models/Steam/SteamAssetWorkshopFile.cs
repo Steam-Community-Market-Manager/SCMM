@@ -8,6 +8,11 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         [Required]
         public string SteamId { get; set; }
 
+        [Required]
+        public Guid AppId { get; set; }
+
+        public SteamApp App { get; set; }
+
         public Guid? CreatorId { get; set; }
 
         public SteamProfile Creator { get; set; }

@@ -10,13 +10,15 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
     {
         private System.Timers.Timer _timer;
         private readonly object _timerLock = new object();
-        private readonly CronExpression _expression;
         private readonly bool _startImmediately;
+        private readonly CronExpression _expression;
 
         protected CronJobService(CronJobConfiguration configuration)
         {
-            _expression = CronExpression.Parse(configuration.CronExpression);
             _startImmediately = configuration.StartImmediately;
+            _expression = !String.IsNullOrEmpty(configuration.CronExpression)
+                ? CronExpression.Parse(configuration.CronExpression)
+                : null;
         }
 
         public virtual async Task StartAsync(CancellationToken cancellationToken)
@@ -26,8 +28,8 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
 
         protected virtual async Task ScheduleJob(CancellationToken cancellationToken, bool immediately = false)
         {
-            var next = _expression.GetNextOccurrence(DateTimeOffset.Now, TimeZoneInfo.Local);
-            if (next.HasValue || immediately)
+            var next = _expression?.GetNextOccurrence(DateTimeOffset.Now, TimeZoneInfo.Local);
+            if ((next.HasValue == true && next > DateTimeOffset.Now) || immediately)
             {
                 var delay = (immediately ? TimeSpan.FromSeconds(1) : (next.Value - DateTimeOffset.Now));
                 _timer = new System.Timers.Timer(delay.TotalMilliseconds);
@@ -51,10 +53,10 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
                         {
                             await DoWork(cancellationToken);
                         }
-                        catch(Exception ex)
+                        catch(Exception)
                         {
                             // TODO: Log this?
-                            ex = ex;
+                            throw;
                         }
                     }
                     if (!cancellationToken.IsCancellationRequested)

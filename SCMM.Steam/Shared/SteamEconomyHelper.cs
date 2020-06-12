@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Shared
 {
@@ -11,8 +9,68 @@ namespace SCMM.Steam.Shared
     /// </summary>
     public static class SteamEconomyHelper
 	{
-		public const decimal DefaultSteamFeeMultiplier = 0.05m;
+		public const decimal DefaultSteamFeeMultiplier = 0.03m;
 		public const decimal DefaultPublisherFeeMultiplier = 0.100000001490116119m;
+
+		public static int GetQuantityValueAsInt(string strAmount)
+        {
+			if (String.IsNullOrEmpty(strAmount))
+			{
+				return 0;
+			}
+
+			strAmount = new string(strAmount.Where(c => char.IsDigit(c)).ToArray());
+			return int.Parse(strAmount);
+		}
+
+		public static int GetPriceValueAsInt(string strAmount)
+		{
+			var nAmount = 0;
+			if (String.IsNullOrEmpty(strAmount))
+			{
+				return 0;
+			}
+
+			// Users may enter either comma or period for the decimal mark and digit group separators.
+			strAmount = strAmount.Replace(',', '.');
+
+			// strip the currency symbol, set .-- to .00
+			strAmount = strAmount.Replace(".--", ".00");
+			strAmount = new string(strAmount.Where(c => char.IsDigit(c) || c == '.').ToArray());
+
+			// strip spaces
+			strAmount = strAmount.Replace(" ", String.Empty);
+
+			// Remove all but the last period so that entries like "1,147.6" work
+			if (strAmount.IndexOf('.') != -1)
+			{
+				var splitAmount = strAmount.Split('.');
+				var strLastSegment = splitAmount.Length > 0 ? splitAmount[splitAmount.Length - 1] : null;
+
+				if (!String.IsNullOrEmpty(strLastSegment) && strLastSegment.Length == 3 && Int32.Parse(splitAmount[splitAmount.Length - 2]) != 0)
+				{
+					// Looks like the user only entered thousands separators. Remove all commas and periods.
+					// Ensures an entry like "1,147" is not treated as "1.147"
+					//
+					// Users may be surprised to find that "1.147" is treated as "1,147". "1.147" is either an error or the user
+					// really did mean one thousand one hundred and forty seven since no currencies can be split into more than
+					// hundredths. If it was an error, the user should notice in the next step of the dialog and can go back and
+					// correct it. If they happen to not notice, it is better that we list the item at a higher price than
+					// intended instead of lower than intended (which we would have done if we accepted the 1.147 value as is).
+					strAmount = String.Join(String.Empty, splitAmount);
+				}
+				else
+				{
+					strAmount = String.Join(String.Empty, splitAmount.Take(splitAmount.Length - 1)) + '.' + strLastSegment;
+				}
+			}
+
+			var flAmount = float.Parse(strAmount) * 100;
+			nAmount = (int)Math.Floor(flAmount + 0.000001f); // round down
+
+			nAmount = Math.Max(nAmount, 0);
+			return nAmount;
+		}
 
 		/*
 		public static int CalculateFeeAmount(int amount, int publisherFee)
@@ -79,55 +137,6 @@ namespace SCMM.Steam.Shared
 		fees: nSteamFee + nPublisherFee,
 		amount: parseInt(nAmountToSend)
 			};
-		}
-
-		public static int GetPriceValueAsInt(string strAmount)
-		{
-			var nAmount = 0;
-			if (String.IsNullOrEmpty(strAmount))
-			{
-				return 0;
-			}
-
-			// Users may enter either comma or period for the decimal mark and digit group separators.
-			strAmount = strAmount.Replace(',', '.');
-
-			// strip the currency symbol, set .-- to .00
-			strAmount = Regex.Match(strAmount, @"([\d\.]+)").Groups.OfType<Capture>().LastOrDefault()?.Value;
-			strAmount = strAmount.Replace(".--", ".00");
-
-			// strip spaces
-			strAmount = strAmount.Replace(" ", String.Empty);
-
-			// Remove all but the last period so that entries like "1,147.6" work
-			if (strAmount.IndexOf('.') != -1)
-			{
-				var splitAmount = strAmount.Split('.');
-				var strLastSegment = splitAmount.Length > 0 ? splitAmount[splitAmount.Length - 1] : null;
-
-				if (!String.IsNullOrEmpty(strLastSegment) && strLastSegment.Length == 3 && Int32.Parse(splitAmount[splitAmount.Length - 2]) != 0)
-				{
-					// Looks like the user only entered thousands separators. Remove all commas and periods.
-					// Ensures an entry like "1,147" is not treated as "1.147"
-					//
-					// Users may be surprised to find that "1.147" is treated as "1,147". "1.147" is either an error or the user
-					// really did mean one thousand one hundred and forty seven since no currencies can be split into more than
-					// hundredths. If it was an error, the user should notice in the next step of the dialog and can go back and
-					// correct it. If they happen to not notice, it is better that we list the item at a higher price than
-					// intended instead of lower than intended (which we would have done if we accepted the 1.147 value as is).
-					strAmount = String.Join(String.Empty, splitAmount);
-				}
-				else
-				{
-					strAmount = String.Join(String.Empty, splitAmount.Skip(1)) + '.' + strLastSegment;
-				}
-			}
-
-			var flAmount = float.Parse(strAmount) * 100;
-			nAmount = (int) Math.Floor(flAmount + 0.000001f); // round down
-
-			nAmount = Math.Max(nAmount, 0);
-			return nAmount;
 		}
 		*/
 	}

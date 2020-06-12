@@ -37,6 +37,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var commnityClient = new SteamCommunityClient();
+                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                 var assetDescriptions = db.SteamAssetDescriptions
                     .Where(x => x.WorkshopFile.SteamId != null)
@@ -66,8 +67,8 @@ namespace SCMM.Web.Server.Services.Jobs
 
                     foreach (var item in assetWorkshopJoined)
                     {
-                        await SteamService.UpdateAssetWorkshopStatistics(
-                            db, item.AssetDescription, item.PublishedFile, _steamConfiguration.ApplicationKey
+                        await steamService.UpdateAssetDescription(
+                            item.AssetDescription, item.PublishedFile
                         );
                     }
 

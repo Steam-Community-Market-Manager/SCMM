@@ -26,6 +26,11 @@
                             <Text Weight="TextWeight.Bold">@((context as SteamMarketItemDTO).Description.Name)</Text>
                         </DisplayTemplate>
                     </DataGridColumn>
+                    <DataGridColumn TItem="SteamMarketItemDTO" Field="@nameof(SteamMarketItemDTO.Description.WorkshopFile.Subscriptions)" Caption="Rarity" Sortable="true">
+                        <DisplayTemplate>
+                            <Text>@((context as SteamMarketItemDTO).Description.WorkshopFile?.Subscriptions.ToQuantityString())</Text>
+                        </DisplayTemplate>
+                    </DataGridColumn>
                     <DataGridColumn TItem="SteamMarketItemDTO" Field="@nameof(SteamMarketItemDTO.Supply)" Caption="Supply" Sortable="true">
                         <DisplayTemplate>
                             <Text>@((context as SteamMarketItemDTO).Supply.ToSaturationString(@context.Demand))</Text>
@@ -64,14 +69,23 @@
                                 @selectedItem.Description.Name
                             </Heading>
                             <Paragraph>
-                                <Text>This is a skin for the Metal Facemask item. You will be able to apply this skin when you craft the item in game.</Text>
+                                <Heading Size="HeadingSize.Is6">
+                                    <i class="fas fa-user"></i>
+                                    @selectedItem.Description.WorkshopFile.Subscriptions.ToQuantityString()
+                                </Heading>
+                                <Heading Size="HeadingSize.Is6">
+                                    <i class="fas fa-heart"></i>
+                                    @selectedItem.Description.WorkshopFile.Favourited.ToQuantityString()
+                                </Heading>
+                                <Heading Size="HeadingSize.Is6">
+                                    <i class="fas fa-eye"></i>
+                                    @selectedItem.Description.WorkshopFile.Views.ToQuantityString()
+                                </Heading>
                             </Paragraph>
-                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Armour</Badge>
-                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Metal Facemask</Badge>
-                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">Cloth</Badge>
-                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">Blackout</Badge>
-                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">MDE</Badge>
-                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is2">50K+</Badge>
+                            @foreach (var tag in selectedItem.Description.Tags)
+                            {
+                                <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">@tag.Value</Badge>
+                            }
                         </Column>
                     </Row>
                     <Row>

@@ -12,8 +12,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public SteamApp App { get; set; }
 
-        [Required]
-        public Guid DescriptionId { get; set; }
+        public Guid? DescriptionId { get; set; }
 
         public SteamAssetDescription Description { get; set; }
     }

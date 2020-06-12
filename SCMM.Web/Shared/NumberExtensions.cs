@@ -41,7 +41,9 @@ namespace SCMM.Web.Shared
 
         public static string ToQuantityString(this int quantity)
         {
-            return quantity.ToString("#,##");
+            return (quantity > 0)
+                ? quantity.ToString("#,##")
+                : "∞";
         }
 
         public static string ToSaturationString(this int quantity, int relativeToQuantity)

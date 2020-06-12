@@ -35,6 +35,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                 var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
 
@@ -69,8 +70,8 @@ namespace SCMM.Web.Server.Services.Jobs
 
                     foreach (var asset in response.Data.Assets)
                     {
-                        await SteamService.AddOrUpdateAppStoreItem(
-                            db, app, currency, language, asset, _steamConfiguration.ApplicationKey
+                        await steamService.AddOrUpdateAppStoreItem(
+                            app, currency, language, asset
                         );
                     }
 

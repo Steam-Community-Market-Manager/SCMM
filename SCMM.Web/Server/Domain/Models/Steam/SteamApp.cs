@@ -9,6 +9,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public SteamApp()
         {
             Filters = new Collection<SteamAssetFilter>();
+            Assets = new Collection<SteamAssetDescription>();
+            WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
             StoreItems = new Collection<SteamStoreItem>();
             MarketItems = new Collection<SteamMarketItem>();
         }
@@ -24,6 +26,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public string IconLargeUrl { get; set; }
 
         public ICollection<SteamAssetFilter> Filters { get; set; }
+
+        public ICollection<SteamAssetDescription> Assets { get; set; }
+
+        public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }
 
         public ICollection<SteamStoreItem> StoreItems { get; set; }
 

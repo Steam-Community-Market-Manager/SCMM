@@ -18,14 +18,14 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class UpdateStoreItemWorkshopStatisticsJob : CronJobService
+    public class UpdateStoreWorkshopStatisticsJob : CronJobService
     {
-        private readonly ILogger<UpdateStoreItemWorkshopStatisticsJob> _logger;
+        private readonly ILogger<UpdateStoreWorkshopStatisticsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly SteamConfiguration _steamConfiguration;
 
-        public UpdateStoreItemWorkshopStatisticsJob(IConfiguration configuration, ILogger<UpdateStoreItemWorkshopStatisticsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<UpdateStoreItemWorkshopStatisticsJob>())
+        public UpdateStoreWorkshopStatisticsJob(IConfiguration configuration, ILogger<UpdateStoreWorkshopStatisticsJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<UpdateStoreWorkshopStatisticsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -37,6 +37,8 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var commnityClient = new SteamCommunityClient();
+                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
+
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                 var assetDescriptions = db.SteamStoreItems
                     .Where(x => x.Description.WorkshopFile.SteamId != null)
@@ -67,8 +69,8 @@ namespace SCMM.Web.Server.Services.Jobs
 
                     foreach (var item in assetWorkshopJoined)
                     {
-                        await SteamService.UpdateAssetWorkshopStatistics(
-                            db, item.AssetDescription, item.PublishedFile, _steamConfiguration.ApplicationKey
+                        await steamService.UpdateAssetDescription(
+                            item.AssetDescription, item.PublishedFile
                         );
                     }
 

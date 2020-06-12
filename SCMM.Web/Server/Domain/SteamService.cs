@@ -1,11 +1,13 @@
 ﻿using AngleSharp.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Community.Models;
 using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
+using SCMM.Steam.Shared.Community.Responses.Json;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using Steam.Models;
@@ -20,18 +22,27 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Domain
 {
-    public static class SteamService
+    public class SteamService
     {
-        public static async Task<Models.Steam.SteamProfile> AddOrUpdateSteamProfile(SteamDbContext db, string steamId, string applicationKey)
+        private readonly SteamDbContext _db;
+        private readonly SteamConfiguration _cfg;
+
+        public SteamService(SteamDbContext db, IConfiguration cfg)
         {
-            var profile = await db.SteamProfiles.FirstOrDefaultAsync(x => x.SteamId == steamId);
+            _db = db;
+            _cfg = cfg?.GetSteamConfiguration();
+        }
+
+        public async Task<Models.Steam.SteamProfile> AddOrUpdateSteamProfile(string steamId)
+        {
+            var profile = await _db.SteamProfiles.FirstOrDefaultAsync(x => x.SteamId == steamId);
             if (profile != null)
             {
-                // No update required
+                // Nothing to update
                 return profile;
             }
 
-            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(applicationKey);
+            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
             var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
             var response = await steamUser.GetPlayerSummaryAsync(UInt64.Parse(steamId));
             if (response?.Data == null)
@@ -59,17 +70,17 @@ namespace SCMM.Web.Server.Domain
                 Country = response.Data.CountryCode
             };
 
-            db.SteamProfiles.Add(profile);
-            await db.SaveChangesAsync();
+            _db.SteamProfiles.Add(profile);
+            await _db.SaveChangesAsync();
             return profile;
         }
 
-        public static async Task<Models.Steam.SteamAssetFilter> AddOrUpdateAppAssetFilter(SteamDbContext db, SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
+        public async Task<Models.Steam.SteamAssetFilter> AddOrUpdateAppAssetFilter(SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
         {
             var existingFilter = app.Filters.FirstOrDefault(x => x.SteamId == filter.Name);
             if (existingFilter != null)
             {
-                // No update required
+                // Nothing to update
                 return existingFilter;
             }
 
@@ -86,12 +97,44 @@ namespace SCMM.Web.Server.Domain
             };
 
             app.Filters.Add(newFilter);
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             return newFilter;
         }
-
-        public static async Task<Models.Steam.SteamAssetDescription> UpdateAssetWorkshopStatistics(SteamDbContext db, Models.Steam.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile, string applicationKey)
+        
+        public async Task<Models.Steam.SteamAssetDescription> UpdateAssetDescription(Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
         {
+            // Update tags
+            if (assetClass.Tags != null)
+            {
+                foreach (var tag in assetClass.Tags)
+                {
+                    if (!assetDescription.Tags.ContainsKey(tag.Category))
+                    {
+                        assetDescription.Tags[tag.Category] = tag.Name;
+                    }
+                }
+            }
+
+            return assetDescription;
+        }
+
+        public async Task<Models.Steam.SteamAssetDescription> UpdateAssetDescription(Models.Steam.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile)
+        {
+            // Update workshop tags
+            if (publishedFile.Tags != null)
+            {
+                foreach (var tag in publishedFile.Tags.Where(x => !SteamConstants.SteamIgnoredWorkshopTags.Any(y => x == y)))
+                {
+                    var tagTrimmed = tag.Replace(" ", String.Empty).Trim();
+                    var tagKey = $"{SteamConstants.SteamAssetTagWorkshop}.{Char.ToLowerInvariant(tagTrimmed[0]) + tagTrimmed.Substring(1)}";
+                    if (!assetDescription.Tags.ContainsKey(tagKey))
+                    {
+                        assetDescription.Tags[tagKey] = tag;
+                    }
+                }
+            }
+
+            // Update workshop statistics
             var workshopFile = assetDescription.WorkshopFile;
             if (workshopFile != null)
             {
@@ -113,23 +156,10 @@ namespace SCMM.Web.Server.Domain
                 workshopFile.LastCheckedOn = DateTimeOffset.Now;
                 if (workshopFile.CreatorId == null)
                 {
-                    workshopFile.Creator = await AddOrUpdateSteamProfile(db, publishedFile.Creator.ToString(), applicationKey);
+                    workshopFile.Creator = await AddOrUpdateSteamProfile(publishedFile.Creator.ToString());
                     if (workshopFile.Creator != null)
                     {
                         assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = workshopFile.Creator.Name;
-                    }
-                }
-            }
-
-            if (publishedFile.Tags != null)
-            {
-                foreach(var tag in publishedFile.Tags)
-                {
-                    var tagTrimmed = tag.Replace(" ", String.Empty).Trim();
-                    var tagKey = $"{SteamConstants.SteamAssetTagWorkshop}.{Char.ToLowerInvariant(tagTrimmed[0]) + tagTrimmed.Substring(1)}";
-                    if (!assetDescription.Tags.ContainsKey(tagKey))
-                    {
-                        assetDescription.Tags[tagKey] = tag;
                     }
                 }
             }
@@ -141,9 +171,9 @@ namespace SCMM.Web.Server.Domain
         /// UPDATE BELOW...
         ///
 
-        public static async Task<Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamDbContext db, SteamApp app, SteamLanguage language, ulong classId, string applicationKey)
+        public async Task<Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, SteamLanguage language, ulong classId)
         {
-            var dbAssetDescription = await db.SteamAssetDescriptions
+            var dbAssetDescription = await _db.SteamAssetDescriptions
                 .Where(x => x.SteamId == classId.ToString())
                 .FirstOrDefaultAsync();
 
@@ -152,7 +182,7 @@ namespace SCMM.Web.Server.Domain
                 return dbAssetDescription;
             }
 
-            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(applicationKey);
+            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
             var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
             var response = await steamEconomy.GetAssetClassInfoAsync(
                 UInt32.Parse(app.SteamId), new List<ulong>() { classId }, language.SteamId
@@ -194,14 +224,14 @@ namespace SCMM.Web.Server.Domain
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
 
-            db.SteamAssetDescriptions.Add(dbAssetDescription);
-            await db.SaveChangesAsync();
+            _db.SteamAssetDescriptions.Add(dbAssetDescription);
+            await _db.SaveChangesAsync();
             return dbAssetDescription;
         }
 
-        public static async Task<Models.Steam.SteamStoreItem> AddOrUpdateAppStoreItem(SteamDbContext db, SteamApp app, SteamCurrency currency, SteamLanguage language, AssetModel asset, string applicationKey)
+        public async Task<Models.Steam.SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, SteamLanguage language, AssetModel asset)
         {
-            var dbItem = await db.SteamStoreItems
+            var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Description)
                 .Where(x => x.AppId == app.Id)
                 .FirstOrDefaultAsync(x => x.SteamId == asset.Name);
@@ -211,7 +241,7 @@ namespace SCMM.Web.Server.Domain
                 return dbItem;
             }
 
-            var assetDescription = await AddOrUpdateAssetDescription(db, app, language, asset.ClassId, applicationKey);
+            var assetDescription = await AddOrUpdateAssetDescription(app, language, asset.ClassId);
             if (assetDescription == null)
             {
                 return null;
@@ -229,32 +259,73 @@ namespace SCMM.Web.Server.Domain
             return dbItem;
         }
 
+        public async Task<Models.Steam.SteamMarketItem> UpdateSteamMarketItemOrders(SteamMarketItem item, Guid currencyId, SteamMarketItemOrdersHistogramJsonResponse histogram)
+        {
+            if (item == null || histogram?.Success != true)
+            {
+                return item;
+            }
+
+            item.LastCheckedOn = DateTimeOffset.Now;
+            item.CurrencyId = currencyId;
+            item.RebuildOrders(
+                ParseSteamMarketItemOrdersFromGraph(histogram.BuyOrderGraph),
+                ParseSteamMarketItemOrdersFromGraph(histogram.SellOrderGraph)
+            );
+
+            return item;
+        }
+
+        private Models.Steam.SteamMarketItemOrder[] ParseSteamMarketItemOrdersFromGraph(string[][] orderGraph)
+        {
+            var orders = new List<Models.Steam.SteamMarketItemOrder>();
+            if (orderGraph == null)
+            {
+                return orders.ToArray();
+            }
+
+            var totalQuantity = 0;
+            for (int i = 0; i < orderGraph.Length; i++)
+            {
+                var price = SteamEconomyHelper.GetPriceValueAsInt(orderGraph[i][0]);
+                var quantity = (SteamEconomyHelper.GetQuantityValueAsInt(orderGraph[i][1]) - totalQuantity);
+                orders.Add(new Models.Steam.SteamMarketItemOrder()
+                {
+                    Price = price,
+                    Quantity = quantity,
+                });
+                totalQuantity += quantity;
+            }
+
+            return orders.ToArray();
+        }
+
         ///
         /// UPDATE BELOW...
         ///
 
-        public static IEnumerable<SteamMarketItem> FindOrAddSteamItems(SteamDbContext db, IEnumerable<SteamMarketSearchItem> items)
+        public IEnumerable<SteamMarketItem> FindOrAddSteamItems(IEnumerable<SteamMarketSearchItem> items)
         {
             foreach (var item in items)
             {
-                yield return FindOrAddSteamItem(db, item);
+                yield return FindOrAddSteamItem(item);
             }
         }
 
-        public static SteamMarketItem FindOrAddSteamItem(SteamDbContext db, SteamMarketSearchItem item)
+        public SteamMarketItem FindOrAddSteamItem(SteamMarketSearchItem item)
         {
             if (String.IsNullOrEmpty(item?.AssetDescription.AppId))
             {
                 return null;
             }
 
-            var dbApp = db.SteamApps.FirstOrDefault(x => x.SteamId == item.AssetDescription.AppId);
+            var dbApp = _db.SteamApps.FirstOrDefault(x => x.SteamId == item.AssetDescription.AppId);
             if (dbApp == null)
             {
                 return null;
             }
 
-            var dbItem = db.SteamMarketItems
+            var dbItem = _db.SteamMarketItems
                 .Include(x => x.Description)
                 .FirstOrDefault(x => x.Description != null && x.Description.SteamId == item.AssetDescription.ClassId);
 
@@ -292,53 +363,7 @@ namespace SCMM.Web.Server.Domain
             return dbItem;
         }
 
-        public static async Task UpdateSteamItemOrders(SteamDbContext db, Guid itemId, Guid currencyId, SteamMarketItemOrdersHistogramJsonRequest request)
-        {
-            var orders = await new SteamCommunityClient().GetMarketItemOrdersHistogram(request);
-            if (orders?.Success != true)
-            {
-                return;
-            }
-
-            var item = db.SteamMarketItems.SingleOrDefault(x => x.Id == itemId);
-            if (item == null)
-            {
-                return;
-            }
-
-            item.LastCheckedOn = DateTimeOffset.Now;
-            item.CurrencyId = currencyId;
-            item.RebuildOrders(
-                ParseSteamItemOrdersFromGraph(orders.BuyOrderGraph),
-                ParseSteamItemOrdersFromGraph(orders.SellOrderGraph)
-            );
-        }
-
-        private static Models.Steam.SteamMarketItemOrder[] ParseSteamItemOrdersFromGraph(string[][] orderGraph)
-        {
-            var orders = new List<Models.Steam.SteamMarketItemOrder>();
-            if (orderGraph == null)
-            {
-                return orders.ToArray();
-            }
-
-            var totalQuantity = 0;
-            for (int i = 0; i < orderGraph.Length; i++)
-            {
-                var price = Int32.Parse(orderGraph[i][0].Replace(",", "").Replace(".", ""));
-                var quantity = (Int32.Parse(orderGraph[i][1].Replace(",", "")) - totalQuantity);
-                orders.Add(new Models.Steam.SteamMarketItemOrder()
-                {
-                    Price = price,
-                    Quantity = quantity,
-                });
-                totalQuantity += quantity;
-            }
-
-            return orders.ToArray();
-        }
-
-        public static async Task<SteamMarketItem> UpdateSteamItemId(SteamDbContext db, SteamMarketItem item)
+        public async Task<SteamMarketItem> UpdateSteamItemId(SteamMarketItem item)
         {
             var itemNameId = await new SteamCommunityClient().GetMarketListingItemNameId(
                 new SteamMarketListingPageRequest()
@@ -351,7 +376,7 @@ namespace SCMM.Web.Server.Domain
             if (!String.IsNullOrEmpty(itemNameId))
             {
                 item.SteamId = itemNameId;
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
             }
 
             return item;

@@ -49,14 +49,17 @@ namespace SCMM.Web.Server
                     configuration.ApplicationKey = steamConfiguration.ApplicationKey;
                 });
 
-            services.AddHostedService<CheckForNewStoreItemsJob>();
+            services.AddTransient<SteamService>();
+
+            services.AddHostedService<CheckForMissingAppFiltersJob>();
+            services.AddHostedService<CheckForMissingAssetTagsJob>();
+            services.AddHostedService<CheckForMissingMarketItemIdsJob>();
             services.AddHostedService<CheckForNewMarketItemsJob>();
-            services.AddHostedService<ResolveMarketItemIdsJob>();
-            services.AddHostedService<UpdateMarketItemOrdersJob>();
-            services.AddHostedService<UpdateStoreItemWorkshopStatisticsJob>();
+            services.AddHostedService<CheckForNewStoreItemsJob>();
             services.AddHostedService<UpdateAssetWorkshopStatisticsJob>();
-            services.AddHostedService<UpdateAppFiltersJob>();
-            
+            services.AddHostedService<UpdateMarketItemOrdersJob>();
+            services.AddHostedService<UpdateStoreWorkshopStatisticsJob>();
+
             services.AddAutoMapper(typeof(Startup));
 
             services.AddControllersWithViews();

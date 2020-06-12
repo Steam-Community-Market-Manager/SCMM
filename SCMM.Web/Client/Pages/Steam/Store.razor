@@ -1,4 +1,4 @@
-@page "/steam/store"
+﻿@page "/steam/store"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.Steam
 @using SCMM.Web.Shared
@@ -44,34 +44,38 @@
                                         <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">@tag.Value</Badge>
                                     }
                                 </Paragraph>
-                                <Paragraph>
-                                    <Button Color="Color.Success" Size="ButtonSize.Small">Buy Now</Button>
-                                    <Button Color="Color.Info" Size="ButtonSize.Small">View</Button>
-                                </Paragraph>
                             </TableRowCell>
                             <TableRowCell>
-                                <Heading Size="HeadingSize.Is6">
+                                <Heading Size="HeadingSize.Is4">
                                     <i class="fas fa-tag"></i>
                                     @item.Currency.ToPriceString(item.StorePrice)
                                 </Heading>
+                                <Paragraph>
+                                    @if (item.MarketRankTotal > 0)
+                                    {
+                                        <span>There are <strong>@item.MarketRankPosition</strong> cheaper market items of the same type (@item.MarketRankPosition / @item.MarketRankTotal).</span>
+                                        <br />
+                                    }
+                                </Paragraph>
                             </TableRowCell>
-                            <TableRowCell>
+                            <TableRowCell Style="vertical-align: middle">
                                 <Heading Size="HeadingSize.Is6">
                                     <i class="fas fa-user"></i>
                                     @item.Description.WorkshopFile.Subscriptions.ToQuantityString()
                                 </Heading>
-                            </TableRowCell>
-                            <TableRowCell>
+                                <Heading Size="HeadingSize.Is6">
+                                    <i class="fas fa-eye"></i>
+                                    @item.Description.WorkshopFile.Views.ToQuantityString()
+                                </Heading>
                                 <Heading Size="HeadingSize.Is6">
                                     <i class="fas fa-heart"></i>
                                     @item.Description.WorkshopFile.Favourited.ToQuantityString()
                                 </Heading>
                             </TableRowCell>
                             <TableRowCell>
-                                <Heading Size="HeadingSize.Is6">
-                                    <i class="fas fa-eye"></i>
-                                    @item.Description.WorkshopFile.Views.ToQuantityString()
-                                </Heading>
+                                <Button Color="Color.Success" Size="ButtonSize.Small" Margin="Margin.Is1">Buy</Button>
+                                <br/>
+                                <Button Color="Color.Info" Size="ButtonSize.Small" Margin="Margin.Is1">View</Button>
                             </TableRowCell>
                         </TableRow>
                         }
@@ -82,6 +86,10 @@
         </Column>
         <Column ColumnSize="ColumnSize.Is6">
             <BarChart @ref="storeRankings" TItem="double" Padding="Padding.Is2" />
+            <Alert Color="Color.Info" Visible="true">
+                <AlertMessage>What are subscribers?</AlertMessage>
+                <AlertDescription>A subscriber is a Steam user that owns at least one copy of the item. One subscriber could own multiple copies of the same item, therefore subscribers ≠ sales.</AlertDescription>
+            </Alert>
         </Column>
     </Row>
 </Container>
@@ -115,8 +123,8 @@
         await storeRankings.AddLabel(items.Select(x => x.Description.Name).ToArray());
         await storeRankings.AddDataSet(new BarChartDataset<double>
         {
-            Label = "Subscribers",
-            Data = items.Select(x => (double) x.Description.WorkshopFile.Subscriptions).ToList(),
+            Label = "Total Subscribers",
+            Data = items.Select(x => (double)x.Description.WorkshopFile.Subscriptions).ToList(),
             BackgroundColor = items.Select(x => "#4caf50").ToList(),
             BorderColor = items.Select(x => "#388e3c").ToList(),
             HoverBackgroundColor = items.Select(x => "#4caf50").ToList(),
@@ -124,8 +132,8 @@
         });
         await storeRankings.AddDataSet(new BarChartDataset<double>
         {
-            Label = "Views",
-            Data = items.Select(x => (double) x.Description.WorkshopFile.Views).ToList(),
+            Label = "Total Views",
+            Data = items.Select(x => (double)x.Description.WorkshopFile.Views).ToList(),
             BackgroundColor = items.Select(x => "#2196f3").ToList(),
             BorderColor = items.Select(x => "#1976d2").ToList(),
             HoverBackgroundColor = items.Select(x => "#2196f3").ToList(),

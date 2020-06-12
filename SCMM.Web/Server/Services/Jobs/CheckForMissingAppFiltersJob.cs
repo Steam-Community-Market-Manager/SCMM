@@ -14,13 +14,13 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class UpdateAppFiltersJob : CronJobService
+    public class CheckForMissingAppFiltersJob : CronJobService
     {
-        private readonly ILogger<UpdateAppFiltersJob> _logger;
+        private readonly ILogger<CheckForMissingAppFiltersJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public UpdateAppFiltersJob(IConfiguration configuration, ILogger<UpdateAppFiltersJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<UpdateAppFiltersJob>())
+        public CheckForMissingAppFiltersJob(IConfiguration configuration, ILogger<CheckForMissingAppFiltersJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<CheckForMissingAppFiltersJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -31,9 +31,15 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var commnityClient = new SteamCommunityClient();
+                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                var apps = db.SteamApps.Include(x => x.Filters).ToList();
-                foreach (var app in apps)
+
+                var appsWithMissingFilters = db.SteamApps
+                    .Include(x => x.Filters)
+                    .Where(x => x.Filters.Count == 0)
+                    .ToList();
+
+                foreach (var app in appsWithMissingFilters)
                 {
                     var request = new SteamMarketAppFiltersJsonRequest()
                     {
@@ -50,7 +56,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var appFilters = response.Facets.Where(x => x.Value?.AppId == app.SteamId).Select(x => x.Value);
                     foreach (var appFilter in appFilters)
                     {
-                        await SteamService.AddOrUpdateAppAssetFilter(db, app, appFilter);
+                        await steamService.AddOrUpdateAppAssetFilter(app, appFilter);
                     }
                 }
 

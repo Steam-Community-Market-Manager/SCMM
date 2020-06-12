@@ -1,9 +1,15 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
 {
     public class SteamInventoryItem : SteamItem
     {
+        [Required]
+        public Guid OwnerId { get; set; }
+
+        public SteamProfile Owner { get; set; }
+
         public Guid? CurrencyId { get; set; }
 
         public SteamCurrency Currency { get; set; }

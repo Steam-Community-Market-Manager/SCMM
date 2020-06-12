@@ -13,7 +13,12 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         [Required]
         public string SteamId { get; set; }
-        
+
+        [Required]
+        public Guid AppId { get; set; }
+
+        public SteamApp App { get; set; }
+
         [Required]
         public string Name { get; set; }
 

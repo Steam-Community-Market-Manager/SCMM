@@ -22,9 +22,7 @@ namespace SCMM.Steam.Shared.Community.Models
             set
             {
                 _priceText = value;
-                var priceGroups = Regex.Match(_priceText, @"([\d\.]+)").Groups;
-                var priceNumeric = (priceGroups.Count > 1) ? priceGroups[1].Value : "0";
-                Price = Int32.Parse(priceNumeric.Replace(".", "").Replace(",", ""));
+                Price = SteamEconomyHelper.GetPriceValueAsInt(value);
             }
         }
 
@@ -38,7 +36,7 @@ namespace SCMM.Steam.Shared.Community.Models
             set
             {
                 _quantityText = value;
-                Quantity = Int32.Parse(value?.Replace(",", "") ?? "0");
+                Quantity = SteamEconomyHelper.GetQuantityValueAsInt(value);
             }
         }
 

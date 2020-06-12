@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared.Community.Requests.Json;
+using SCMM.Web.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -10,6 +11,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using SCMM.Steam.Client;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
@@ -29,17 +32,12 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var itemSteamIds = db.SteamMarketItems
                     .Where(x => !String.IsNullOrEmpty(x.SteamId))
                     .OrderBy(x => x.LastCheckedOn)
-                    .Select(x => new
-                    {
-                        Id = x.Id,
-                        SteamId = x.SteamId
-                    })
-                    .Take(100)
                     .ToList();
 
                 if (!itemSteamIds.Any())
@@ -59,20 +57,35 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                foreach (var item in itemSteamIds)
+                var client = new SteamCommunityClient();
+                foreach (var batch in itemSteamIds.Batch(100))
                 {
-                    await SteamService.UpdateSteamItemOrders(
-                        db,
-                        item.Id,
-                        currency.Id,
-                        new SteamMarketItemOrdersHistogramJsonRequest()
+                    var batchTasks = batch.Select(x =>
+                        client.GetMarketItemOrdersHistogram(
+                            new SteamMarketItemOrdersHistogramJsonRequest()
+                            {
+                                ItemNameId = x.SteamId,
+                                Language = language.SteamId,
+                                CurrencyId = currency.SteamId,
+                                NoRender = true
+                            }
+                        )
+                        .ContinueWith(t => new
                         {
-                            ItemNameId = item.SteamId,
-                            Language = language.SteamId,
-                            CurrencyId = currency.SteamId,
-                            NoRender = true
-                        }
-                    );
+                            Item = x,
+                            Response  = t.Result
+                        })
+                    ).ToArray();
+
+                    Task.WaitAll(batchTasks);
+                    foreach (var task in batchTasks)
+                    {
+                        await steamService.UpdateSteamMarketItemOrders(
+                            task.Result.Item,
+                            currency.Id,
+                            task.Result.Response
+                        );
+                    }
 
                     await db.SaveChangesAsync();
                 }
