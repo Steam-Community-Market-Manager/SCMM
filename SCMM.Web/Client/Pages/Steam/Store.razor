@@ -18,78 +18,79 @@
                     <TableBody>
                         @foreach (var item in items)
                         {
-                        <TableRow>
-                            <TableRowCell>
-                                <img src="@item.Description.IconUrl" style="width:96px" />
-                            </TableRowCell>
-                            <TableRowCell>
-                                <Heading Size="HeadingSize.Is4">
-                                    @item.Description.Name
-                                    @if (items.First() == item)
-                                    {
-                                        <i class="fas fa-award" style="color:gold"></i>
-                                    }
-                                    @if (items.Skip(1).First() == item)
-                                    {
-                                        <i class="fas fa-award" style="color:silver"></i>
-                                    }
-                                    @if (items.Skip(2).First() == item)
-                                    {
-                                        <i class="fas fa-award" style="color:chocolate"></i>
-                                    }
-                                </Heading>
-                                <Paragraph>
-                                    @foreach (var tag in item.Description.Tags)
-                                    {
-                                        <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">@tag.Value</Badge>
-                                    }
-                                </Paragraph>
-                            </TableRowCell>
-                            <TableRowCell>
-                                <Heading Size="HeadingSize.Is4">
-                                    <i class="fas fa-tag"></i>
-                                    @item.Currency.ToPriceString(item.StorePrice)
-                                </Heading>
-                                <Paragraph>
-                                    @if (item.MarketRankTotal > 0)
-                                    {
-                                        <span>There are <strong>@item.MarketRankPosition</strong> cheaper market items of the same type (@item.MarketRankPosition / @item.MarketRankTotal).</span>
-                                        <br />
-                                    }
-                                </Paragraph>
-                            </TableRowCell>
-                            <TableRowCell Style="vertical-align: middle">
-                                <Heading Size="HeadingSize.Is6">
-                                    <i class="fas fa-user"></i>
-                                    @item.Description.WorkshopFile.Subscriptions.ToQuantityString()
-                                </Heading>
-                                <Heading Size="HeadingSize.Is6">
-                                    <i class="fas fa-eye"></i>
-                                    @item.Description.WorkshopFile.Views.ToQuantityString()
-                                </Heading>
-                                <Heading Size="HeadingSize.Is6">
-                                    <i class="fas fa-heart"></i>
-                                    @item.Description.WorkshopFile.Favourited.ToQuantityString()
-                                </Heading>
-                            </TableRowCell>
-                            <TableRowCell>
-                                <Button Color="Color.Success" Size="ButtonSize.Small" Margin="Margin.Is1">Buy</Button>
-                                <br/>
-                                <Button Color="Color.Info" Size="ButtonSize.Small" Margin="Margin.Is1">View</Button>
-                            </TableRowCell>
-                        </TableRow>
+                            <TableRow>
+                                <TableRowCell>
+                                    <img src="@item.Description.IconUrl" style="width:96px" />
+                                </TableRowCell>
+                                <TableRowCell>
+                                    <Heading Size="HeadingSize.Is4">
+                                        @item.Description.Name
+                                        @if (items.First() == item)
+                                        {
+                                            <i class="fas fa-award" style="color:gold"></i>
+                                        }
+                                        @if (items.Skip(1).First() == item)
+                                        {
+                                            <i class="fas fa-award" style="color:silver"></i>
+                                        }
+                                        @if (items.Skip(2).First() == item)
+                                        {
+                                            <i class="fas fa-award" style="color:chocolate"></i>
+                                        }
+                                    </Heading>
+                                    <Paragraph>
+                                        @foreach (var tag in item.Description.Tags)
+                                        {
+                                            <Badge Color="Color.Light" Margin="Margin.Is1" Padding="Padding.Is1">@tag.Value</Badge>
+                                        }
+                                    </Paragraph>
+                                </TableRowCell>
+                                <TableRowCell>
+                                    <Heading Size="HeadingSize.Is4">
+                                        <i class="fas fa-tag"></i>
+                                        @item.Currency.ToPriceString(item.StorePrice)
+                                    </Heading>
+                                    <Paragraph>
+                                        @if (item.MarketRankTotal > 0)
+                                        {
+                                            <span>There are <strong>@item.MarketRankPosition</strong> cheaper market items of the same type (@item.MarketRankPosition / @item.MarketRankTotal).</span>
+                                            <br />
+                                        }
+                                    </Paragraph>
+                                </TableRowCell>
+                                <TableRowCell Style="vertical-align: middle">
+                                    <Heading Size="HeadingSize.Is6">
+                                        <i class="fas fa-user"></i>
+                                        @item.Description.WorkshopFile.Subscriptions.ToQuantityString()
+                                    </Heading>
+                                    <Heading Size="HeadingSize.Is6">
+                                        <i class="fas fa-eye"></i>
+                                        @item.Description.WorkshopFile.Views.ToQuantityString()
+                                    </Heading>
+                                    <Heading Size="HeadingSize.Is6">
+                                        <i class="fas fa-heart"></i>
+                                        @item.Description.WorkshopFile.Favourited.ToQuantityString()
+                                    </Heading>
+                                </TableRowCell>
+                                <TableRowCell>
+                                    <Button Color="Color.Success" Size="ButtonSize.Small" Margin="Margin.Is1">Buy</Button>
+                                    <br />
+                                    <Button Color="Color.Info" Size="ButtonSize.Small" Margin="Margin.Is1">View</Button>
+                                </TableRowCell>
+                            </TableRow>
                         }
                     </TableBody>
                 </Table>
+                <Alert Color="Color.Info" Visible="true">
+                    <AlertMessage>What are subscribers?</AlertMessage>
+                    <AlertDescription>A subscriber is a Steam user that owns at least one copy of the item. One subscriber could own multiple copies of the same item, therefore subscribers ≠ sales.</AlertDescription>
+                </Alert>
             }
 
         </Column>
         <Column ColumnSize="ColumnSize.Is6">
             <BarChart @ref="storeRankings" TItem="double" Padding="Padding.Is2" />
-            <Alert Color="Color.Info" Visible="true">
-                <AlertMessage>What are subscribers?</AlertMessage>
-                <AlertDescription>A subscriber is a Steam user that owns at least one copy of the item. One subscriber could own multiple copies of the same item, therefore subscribers ≠ sales.</AlertDescription>
-            </Alert>
+            <LineChart @ref="storeRankHistory" TItem="double" Padding="Padding.Is2" />
         </Column>
     </Row>
 </Container>
@@ -98,11 +99,13 @@
 
     private SteamStoreItemDTO[] items;
     BarChart<double> storeRankings;
+    LineChart<double> storeRankHistory;
 
     protected override async Task OnInitializedAsync()
     {
         await RefreshItems();
         await RedrawStoreRankings();
+        await RedrawStoreRankHistory();
     }
 
     async Task RefreshItems()
@@ -142,4 +145,63 @@
         await storeRankings.Update();
     }
 
+    async Task RedrawStoreRankHistory()
+    {
+        await storeRankHistory.Clear();
+        await storeRankHistory.AddLabel(StoreRankLabels.ToArray());
+        foreach (var item in items)
+        {
+            await storeRankHistory.AddDataSet(new LineChartDataset<double>
+            {
+                Label = item.Description.Name,
+                Data = RandomizeData(),
+                BackgroundColor = StoreRankColours[Array.IndexOf(items, item)],
+                BorderColor = StoreRankColours[Array.IndexOf(items, item)],
+                Fill = true,
+                PointRadius = 3,
+                PointBorderWidth = 3
+            });
+        }
+        await storeRankHistory.Update();
+    }
+
+    string[] StoreRankColours = {
+        "#2196F3",
+        "#8BC34A",
+        "#FF5722",
+        "#E91E63",
+        "#9C27B0",
+        "#3F51B5",
+        "#FF9800",
+        "#FFEB3B",
+        "#795548",
+        "#00BCD4",
+        "#607D8B"
+    };
+
+    string[] StoreRankLabels = {
+        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(7)).ToString("dd-MMM-yyyy"),
+        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(6)).ToString("dd-MMM-yyyy"),
+        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(5)).ToString("dd-MMM-yyyy"),
+        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(4)).ToString("dd-MMM-yyyy"),
+        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(3)).ToString("dd-MMM-yyyy"),
+        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(2)).ToString("dd-MMM-yyyy"),
+        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(1)).ToString("dd-MMM-yyyy"),
+        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(0)).ToString("dd-MMM-yyyy"),
+    };
+
+    List<double> RandomizeData()
+    {
+        var r = new Random(DateTime.Now.Millisecond);
+        return new List<double> {
+            r.Next(3, 50) * r.NextDouble(),
+            r.Next(3, 50) * r.NextDouble(),
+            r.Next(3, 50) * r.NextDouble(),
+            r.Next(3, 50) * r.NextDouble(),
+            r.Next(3, 50) * r.NextDouble(),
+            r.Next(3, 50) * r.NextDouble(),
+            r.Next(3, 50) * r.NextDouble(),
+            r.Next(3, 50) * r.NextDouble()
+        };
+    }
 }
