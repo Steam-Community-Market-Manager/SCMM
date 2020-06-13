@@ -8,8 +8,6 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
 
         public int StorePrice { get; set; }
 
-        public DateTimeOffset? FirstReleasedOn { get; set; }
-
         public int MarketRankPosition { get; set; }
 
         public int MarketRankTotal { get; set; }

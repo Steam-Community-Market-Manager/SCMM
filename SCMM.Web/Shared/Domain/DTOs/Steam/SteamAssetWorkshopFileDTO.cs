@@ -10,6 +10,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
 
         public DateTimeOffset CreatedOn { get; set; }
 
+        public DateTimeOffset AcceptedOn { get; set; }
+
         public DateTimeOffset UpdatedOn { get; set; }
 
         public int Subscriptions { get; set; }

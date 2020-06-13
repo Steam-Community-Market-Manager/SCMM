@@ -147,8 +147,14 @@
 
     async Task RedrawStoreRankHistory()
     {
+        var startOfWeek = items.FirstOrDefault()?.Description?.WorkshopFile?.AcceptedOn.LocalDateTime;
+        if (startOfWeek == null)
+        {
+            return;
+        }
+
         await storeRankHistory.Clear();
-        await storeRankHistory.AddLabel(StoreRankLabels.ToArray());
+        await storeRankHistory.AddLabel(StoreRankLabsl(startOfWeek.Value));
         foreach (var item in items)
         {
             await storeRankHistory.AddDataSet(new LineChartDataset<double>
@@ -157,7 +163,7 @@
                 Data = RandomizeData(),
                 BackgroundColor = StoreRankColours[Array.IndexOf(items, item)],
                 BorderColor = StoreRankColours[Array.IndexOf(items, item)],
-                Fill = true,
+                Fill = false,
                 PointRadius = 3,
                 PointBorderWidth = 3
             });
@@ -179,29 +185,30 @@
         "#607D8B"
     };
 
-    string[] StoreRankLabels = {
-        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(7)).ToString("dd-MMM-yyyy"),
-        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(6)).ToString("dd-MMM-yyyy"),
-        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(5)).ToString("dd-MMM-yyyy"),
-        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(4)).ToString("dd-MMM-yyyy"),
-        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(3)).ToString("dd-MMM-yyyy"),
-        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(2)).ToString("dd-MMM-yyyy"),
-        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(1)).ToString("dd-MMM-yyyy"),
-        DateTimeOffset.Now.Date.Subtract(TimeSpan.FromDays(0)).ToString("dd-MMM-yyyy"),
-    };
+    string[] StoreRankLabsl(DateTimeOffset startOfWeek)
+    {
+        return new [] {
+            startOfWeek.Date.AddDays(0).ToString("dd-MMM-yyyy"),
+            startOfWeek.Date.AddDays(1).ToString("dd-MMM-yyyy"),
+            startOfWeek.Date.AddDays(2).ToString("dd-MMM-yyyy"),
+            startOfWeek.Date.AddDays(3).ToString("dd-MMM-yyyy"),
+            startOfWeek.Date.AddDays(4).ToString("dd-MMM-yyyy"),
+            startOfWeek.Date.AddDays(5).ToString("dd-MMM-yyyy"),
+            startOfWeek.Date.AddDays(6).ToString("dd-MMM-yyyy"),
+        };
+    }
 
     List<double> RandomizeData()
     {
         var r = new Random(DateTime.Now.Millisecond);
         return new List<double> {
-            r.Next(3, 50) * r.NextDouble(),
-            r.Next(3, 50) * r.NextDouble(),
-            r.Next(3, 50) * r.NextDouble(),
-            r.Next(3, 50) * r.NextDouble(),
-            r.Next(3, 50) * r.NextDouble(),
-            r.Next(3, 50) * r.NextDouble(),
-            r.Next(3, 50) * r.NextDouble(),
-            r.Next(3, 50) * r.NextDouble()
+            r.Next(0, 3000) * r.NextDouble(),
+            r.Next(3000, 4000) * r.NextDouble(),
+            r.Next(4000, 6000) * r.NextDouble(),
+            r.Next(6000, 10000) * r.NextDouble(),
+            r.Next(10000, 13000) * r.NextDouble(),
+            r.Next(13000, 20000) * r.NextDouble(),
+            r.Next(20000, 25000) * r.NextDouble()
         };
     }
 }

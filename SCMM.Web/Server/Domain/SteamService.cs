@@ -16,6 +16,7 @@ using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -148,7 +149,14 @@ namespace SCMM.Web.Server.Domain
                 }
                 if (workshopFile.AcceptedOn > DateTimeOffset.MinValue)
                 {
-                    assetDescription.Tags[SteamConstants.SteamAssetTagAccepted] = workshopFile.AcceptedOn.ToString("dd-MMM-yy");
+                    if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagAcceptedYear))
+                    {
+                        var culture = CultureInfo.InvariantCulture;
+                        var acceptedOn = workshopFile.AcceptedOn.UtcDateTime;
+                        int acceptedOnWeek = culture.Calendar.GetWeekOfYear(acceptedOn, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
+                        assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedYear] = acceptedOn.ToString("yyyy");
+                        assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedWeek] = $"Week {acceptedOnWeek}";
+                    }
                 }
                 workshopFile.Subscriptions = (int) Math.Max(publishedFile.LifetimeSubscriptions, publishedFile.Subscriptions);
                 workshopFile.Favourited = (int)Math.Max(publishedFile.LifetimeFavorited, publishedFile.Favorited);
@@ -159,7 +167,10 @@ namespace SCMM.Web.Server.Domain
                     workshopFile.Creator = await AddOrUpdateSteamProfile(publishedFile.Creator.ToString());
                     if (workshopFile.Creator != null)
                     {
-                        assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = workshopFile.Creator.Name;
+                        if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagCreator))
+                        {
+                            assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = workshopFile.Creator.Name;
+                        }
                     }
                 }
             }
@@ -175,6 +186,7 @@ namespace SCMM.Web.Server.Domain
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
                 .Where(x => x.SteamId == classId.ToString())
+                .Include(x => x.WorkshopFile)
                 .FirstOrDefaultAsync();
 
             if (dbAssetDescription != null)
@@ -229,7 +241,7 @@ namespace SCMM.Web.Server.Domain
             return dbAssetDescription;
         }
 
-        public async Task<Models.Steam.SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, SteamLanguage language, AssetModel asset)
+        public async Task<Models.Steam.SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, SteamLanguage language, AssetModel asset, DateTime timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Description)
@@ -245,6 +257,11 @@ namespace SCMM.Web.Server.Domain
             if (assetDescription == null)
             {
                 return null;
+            }
+
+            if (assetDescription?.WorkshopFile != null)
+            {
+                assetDescription.WorkshopFile.AcceptedOn = timeChecked;
             }
 
             app.StoreItems.Add(dbItem = new Models.Steam.SteamStoreItem()

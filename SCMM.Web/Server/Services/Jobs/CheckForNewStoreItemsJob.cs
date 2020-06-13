@@ -57,6 +57,8 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
+                var now = DateTime.UtcNow;
+                var timeChecked = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
                 foreach (var app in steamApps)
                 {
                     var response = await steamEconomy.GetAssetPricesAsync(
@@ -71,7 +73,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     foreach (var asset in response.Data.Assets)
                     {
                         await steamService.AddOrUpdateAppStoreItem(
-                            app, currency, language, asset
+                            app, currency, language, asset, timeChecked
                         );
                     }
 

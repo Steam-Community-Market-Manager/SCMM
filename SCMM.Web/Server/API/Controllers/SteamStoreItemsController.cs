@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Steam;
 using System;
@@ -31,38 +32,41 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<SteamStoreItemDTO> Get(string filter = null)
         {
             filter = filter?.Trim();
+            var currentWeek = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
             var items = _db.SteamStoreItems
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
                 .Include(x => x.Description.WorkshopFile.Creator)
+                .Where(x => x.Description.WorkshopFile.AcceptedOn == currentWeek)
                 .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
                 .Select(x => _mapper.Map<SteamStoreItemDTO>(x))
                 .ToList();
 
+            // TODO: Do this better, very lazy
             foreach (var item in items.Where(x => x.Description?.Tags != null))
             {
-                if (!item.Description.Tags.ContainsKey("itemclass"))
+                var type = Uri.EscapeDataString(item.Description.Tags["itemclass"]);
+                if (String.IsNullOrEmpty(type))
                 {
-                    continue;
+                    type = Uri.EscapeDataString(
+                        item.Description.Tags.FirstOrDefault(x => x.Key.StartsWith(SteamConstants.SteamAssetTagWorkshop)).Value
+                    );
                 }
 
-                // TODO: Do this better, very lazy
-                var itemClass = Uri.EscapeDataString(item.Description.Tags["itemclass"]);
                 var itemPrice = item.StorePrice;
                 var marketRank = _db.SteamApps
                     .Where(x => x.Id == item.App.Id)
                     .Select(app => new
                     {
                         Position = app.MarketItems
-                            .Where(x => x.Description.Tags.Serialised.Contains($"itemclass={itemClass}"))
+                            .Where(x => x.Description.Tags.Serialised.Contains(type))
                             .Where(x => x.BuyNowPrice < itemPrice)
                             .Count() + 1,
                         Total = app.MarketItems
-                            .Where(x => x.Description.Tags.Serialised.Contains($"itemclass={itemClass}"))
+                            .Where(x => x.Description.Tags.Serialised.Contains(type))
                             .Count() + 1,
-
                     })
                     .SingleOrDefault();
 

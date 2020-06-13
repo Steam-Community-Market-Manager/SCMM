@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using SCMM.Steam.Shared;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.Steam;
+using System.Linq;
 
 namespace SCMM.Web.Server
 {
@@ -17,7 +19,9 @@ namespace SCMM.Web.Server
             CreateMap<SteamMarketItem, SteamMarketItemDTO>().ReverseMap();
             CreateMap<SteamMarketItemOrder, SteamMarketItemOrderDTO>().ReverseMap();
             CreateMap<SteamInventoryItem, SteamInventoryItemDTO>().ReverseMap();
-            CreateMap<SteamAssetDescription, SteamAssetDescriptionDTO>().ReverseMap();
+            CreateMap<SteamAssetDescription, SteamAssetDescriptionDTO>()
+                .ForMember(x => x.Tags, o => o.MapFrom(p => p.Tags.Where(x => !x.Key.StartsWith(SteamConstants.SteamAssetTagWorkshop)))) // ignore workshop skins
+                .ReverseMap();
             CreateMap<SteamAssetWorkshopFile, SteamAssetWorkshopFileDTO>().ReverseMap();
         }
     }
