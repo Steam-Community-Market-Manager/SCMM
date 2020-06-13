@@ -2,7 +2,9 @@
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.Steam
 @using SCMM.Web.Shared
+@inject NavigationManager Navigation
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 
 <Container Fluid="true">
     <Row>
@@ -73,9 +75,9 @@
                                     </Heading>
                                 </TableRowCell>
                                 <TableRowCell>
-                                    <Button Color="Color.Success" Size="ButtonSize.Small" Margin="Margin.Is1">Buy</Button>
+                                    <Button Clicked="@(() => BuyItem(item))" Color="Color.Success" Size="ButtonSize.Small" Margin="Margin.Is1">Buy</Button>
                                     <br />
-                                    <Button Color="Color.Info" Size="ButtonSize.Small" Margin="Margin.Is1">View</Button>
+                                    <Button Clicked="@(() => ViewItem(item))" Color="Color.Info" Size="ButtonSize.Small" Margin="Margin.Is1">View</Button>
                                 </TableRowCell>
                             </TableRow>
                         }
@@ -89,8 +91,9 @@
 
         </Column>
         <Column ColumnSize="ColumnSize.Is6">
-            <BarChart @ref="storeRankings" TItem="double" Padding="Padding.Is2" />
-            <LineChart @ref="storeRankHistory" TItem="double" Padding="Padding.Is2" />
+            <BarChart @ref="storeRankings" TItem="double" />
+            <br />
+            <LineChart @ref="storeRankHistory" TItem="double" />
         </Column>
     </Row>
 </Container>
@@ -106,6 +109,18 @@
         await RefreshItems();
         await RedrawStoreRankings();
         await RedrawStoreRankHistory();
+    }
+
+    async Task BuyItem(SteamStoreItemDTO item)
+    {
+        string url = $"https://store.steampowered.com/itemstore/{item.App.SteamId}/detail/{item.SteamId}/";
+        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
+
+    async Task ViewItem(SteamStoreItemDTO item)
+    {
+        string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.Description.WorkshopFile.SteamId}";
+        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
     }
 
     async Task RefreshItems()
@@ -187,7 +202,7 @@
 
     string[] StoreRankLabsl(DateTimeOffset startOfWeek)
     {
-        return new [] {
+        return new[] {
             startOfWeek.Date.AddDays(0).ToString("dd-MMM-yyyy"),
             startOfWeek.Date.AddDays(1).ToString("dd-MMM-yyyy"),
             startOfWeek.Date.AddDays(2).ToString("dd-MMM-yyyy"),
