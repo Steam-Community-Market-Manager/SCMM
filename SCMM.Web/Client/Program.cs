@@ -1,10 +1,7 @@
-using Blazorise;
-using Blazorise.Icons.FontAwesome;
-using Blazorise.Icons.Material;
-using Blazorise.Material;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Skclusive.Material.Layout;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,17 +14,22 @@ namespace SCMM.Web.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            builder.Services
-              .AddBlazorise(options =>
-              {
-                  options.ChangeTextOnKeyPress = true;
-              })
-              .AddMaterialProviders()
-              .AddMaterialIcons()
-              .AddFontAwesomeIcons()
-              .AddSteamTheme();
+            builder.RootComponents.Add<App>("app");
 
-            builder.Services.AddHttpClient("SCMM.Web.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
+            builder.Services.AddSingleton(
+                new HttpClient { 
+                    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) 
+                }
+            );
+
+            builder.Services.TryAddLayoutServices(new LayoutConfigBuilder()
+                .WithIsServer(false)
+                .WithIsPreRendering(false)
+                .WithResponsive(true)
+                .Build()
+            );
+
+            builder.Services.AddHttpClient("SCMM.Web.ServerAPI",   client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
             // Supply HttpClient instances that include access tokens when making requests to the server project
@@ -35,16 +37,7 @@ namespace SCMM.Web.Client
 
             builder.Services.AddApiAuthorization();
 
-            builder.RootComponents.Add<App>("app");
-
-            var host = builder.Build();
-
-            host.Services
-              .UseMaterialProviders()
-              .UseMaterialIcons()
-              .UseFontAwesomeIcons();
-
-            await host.RunAsync();
+            await builder.Build().RunAsync();
         }
     }
 }

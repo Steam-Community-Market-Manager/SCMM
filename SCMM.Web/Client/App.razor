@@ -1,27 +1,24 @@
-@inject Blazorise.Theme Theme
-
 <CascadingAuthenticationState>
-    <Blazorise.ThemeProvider Theme="@Theme">
-        <Router AppAssembly="@typeof(Program).Assembly">
-            <Found Context="routeData">
-                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-                    <NotAuthorized>
-                        @if (!context.User.Identity.IsAuthenticated)
-                        {
-                            <RedirectToLogin />
-                        }
-                        else
-                        {
-                            <Text>You are not authorized to access this resource.</Text>
-                        }
-                    </NotAuthorized>
-                </AuthorizeRouteView>
-            </Found>
-            <NotFound>
-                <LayoutView Layout="@typeof(MainLayout)">
-                    <Text>Sorry, there's nothing at this address.</Text>
-                </LayoutView>
-            </NotFound>
-        </Router>
-    </Blazorise.ThemeProvider>
+    <AppResources />
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(FullLayout)">
+                <NotAuthorized>
+                    @if (!context.User.Identity.IsAuthenticated)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <NotAuthorized />
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(ErrorLayout)">
+                <NotFound />
+            </LayoutView>
+        </NotFound>
+    </Router>
 </CascadingAuthenticationState>

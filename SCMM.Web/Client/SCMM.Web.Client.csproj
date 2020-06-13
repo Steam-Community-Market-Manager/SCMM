@@ -7,16 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazorise.Charts" Version="0.9.0.3" />
-    <PackageReference Include="Blazorise.DataGrid" Version="0.9.0.3" />
-    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="0.9.0.3" />
-    <PackageReference Include="Blazorise.Icons.Material" Version="0.9.0.3" />
-    <PackageReference Include="Blazorise.Material" Version="0.9.0.3" />
+    <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="3.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Build" Version="3.2.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="3.2.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="3.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.4" />
+    <PackageReference Include="Skclusive.Material.Layout" Version="2.0.0" />
     <PackageReference Include="System.Net.Http.Json" Version="3.2.0" />
   </ItemGroup>
 
@@ -26,6 +23,10 @@
 
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Shared\Chart\" />
   </ItemGroup>
 
 

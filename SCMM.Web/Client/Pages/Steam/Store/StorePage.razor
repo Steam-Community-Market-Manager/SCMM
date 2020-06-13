@@ -1,0 +1,265 @@
+@page "/steam/store"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using SCMM.Web.Shared.Domain.DTOs.Steam
+@using SCMM.Web.Shared
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<style>
+
+    .Chart-Container {
+        padding: 16px;
+    }
+
+    .Buy-Button-Theme {
+        --theme-palette-primary-main: #388e3c;
+        --theme-palette-primary-current: #4caf50;
+    }
+
+    .View-Button-Theme {
+        --theme-palette-primary-main: #2196f3;
+        --theme-palette-primary-current: #42a5f5;
+    }
+
+</style>
+
+<Grid Container Spacing="@Spacing.Four">
+    <Grid Item ExtraSmall="@GridSize.True">
+        @if (items == null)
+        {
+            <Typography>Loading...</Typography>
+        }
+        else
+        {
+            <Paper>
+                <Table Narrow="true">
+                    <TableBody>
+                        @foreach (var item in items)
+                        {
+                            <TableRow>
+                                <TableCell style="vertical-align: top">
+                                    <img src="@item.Description.IconUrl" style="width:96px" />
+                                </TableCell>
+                                <TableCell style="vertical-align: top">
+                                    <Typography Variant="@TypographyVariant.H6" GutterBottom="true">
+                                        @item.Description.Name
+                                        @if (items.First() == item)
+                                        {
+                                            <i class="fa fa-fw fa-award" style="color:gold"></i>
+                                        }
+                                        @if (items.Skip(1).First() == item)
+                                        {
+                                            <i class="fa fa-fw fa-award" style="color:silver"></i>
+                                        }
+                                        @if (items.Skip(2).First() == item)
+                                        {
+                                            <i class="fa fa-fw fa-award" style="color:chocolate"></i>
+                                        }
+                                    </Typography>
+                                    <Typography Variant="@TypographyVariant.Body2">
+                                        @foreach (var tag in item.Description.Tags)
+                                        {
+                                            <div class="Chip-Root">
+                                                <span class="Chip-Label">
+                                                    @tag.Value
+                                                </span>
+                                            </div>
+                                        }
+                                    </Typography>
+                                </TableCell>
+                                <TableCell style="vertical-align: top">
+                                    <Typography Variant="@TypographyVariant.Subtitle1" GutterBottom="true">
+                                        <i class="fa fa-fw fa-tag"></i>
+                                        @item.Currency.ToPriceString(item.StorePrice)
+                                    </Typography>
+                                    <Typography Variant="@TypographyVariant.Body2">
+                                        @if (item.MarketRankTotal > 0)
+                                        {
+                                            <small>There are <strong>@item.MarketRankPosition</strong> cheaper market items of this type (@item.MarketRankPosition/@item.MarketRankTotal).</small>
+                                        }
+                                    </Typography>
+                                </TableCell>
+                                <TableCell style="vertical-align: top">
+                                    <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                                        <i class="fa fa-fw fa-user"></i>
+                                        @item.Description.WorkshopFile.Subscriptions.ToQuantityString()
+                                    </Typography>
+                                    <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                                        <i class="fa fa-fw fa-eye"></i>
+                                        @item.Description.WorkshopFile.Views.ToQuantityString()
+                                    </Typography>
+                                    <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                                        <i class="fa fa-fw fa-heart"></i>
+                                        @item.Description.WorkshopFile.Favourited.ToQuantityString()
+                                    </Typography>
+                                </TableCell>
+                                <TableCell style="vertical-align: top">
+                                    <Typography GutterBottom="true" class="Buy-Button-Theme">
+                                        <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">Buy</Button>
+                                    </Typography>
+                                    <Typography class="View-Button-Theme">
+                                        <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.Primary">View</Button>
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        }
+                    </TableBody>
+                </Table>
+            </Paper>
+        }
+        </Grid>
+    @if (itemRankChart != null)
+    {
+        <Grid Item ExtraSmall="@GridSize.True">
+            <Grid Container>
+                <Grid Item ExtraSmall="@GridSize.Twelve">
+                    <Paper Class="Chart-Container">
+                        <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
+                    </Paper>
+                </Grid>
+                <Grid Item ExtraSmall="@GridSize.Twelve">
+                    <Paper Class="Chart-Container" Style="margin-top: 16px">
+                        <Typography>Graph Subscriber History</Typography>
+                    </Paper>
+                </Grid>
+            </Grid>
+        </Grid>
+    }
+</Grid>
+
+@code {
+
+    private SteamStoreItemDTO[] items;
+    private ChartJsBarChart itemRankChartJs;
+    private BarConfig itemRankChart;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshItems();
+        await RedrawItemRankingChart();
+    }
+
+    private async Task BuyItem(SteamStoreItemDTO item)
+    {
+        string url = $"https://store.steampowered.com/itemstore/{item.App.SteamId}/detail/{item.SteamId}/";
+        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
+
+    private async Task ViewItem(SteamStoreItemDTO item)
+    {
+        string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.Description.WorkshopFile.SteamId}";
+        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
+
+    private async Task RefreshItems()
+    {
+        try
+        {
+            items = await Http.GetFromJsonAsync<SteamStoreItemDTO[]>($"SteamStoreItems");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    private async Task RedrawItemRankingChart()
+    {
+        itemRankChart = new BarConfig
+        {
+            Options = new BarOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scales = new BarScales
+                {
+                    XAxes = new List<CartesianAxis>
+                    {
+                        new BarCategoryAxis
+                        {
+                            Ticks = new CategoryTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    },
+                    YAxes = new List<CartesianAxis>
+                    {
+                        new BarLinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        itemRankChart.Data.Labels.AddRange(
+            items.Select(x => x.Description.Name).ToArray()
+        );
+
+        var itemSubscribers = new BarDataset<DoubleWrapper>
+        {
+            Label = "Total Subscribers",
+            BackgroundColor = "#388e3c",
+            BorderColor = "#1b5e20",
+            BorderWidth = 1
+        };
+        itemSubscribers.AddRange(
+            items.Select(x => (DoubleWrapper)x.Description.WorkshopFile.Subscriptions)
+        );
+
+        var itemViews = new BarDataset<DoubleWrapper>
+        {
+            Label = "Total Views",
+            BackgroundColor = "#1976d2",
+            BorderColor = "#0d47a1",
+            BorderWidth = 1
+        };
+        itemViews.AddRange(
+            items.Select(x => (DoubleWrapper) x.Description.WorkshopFile.Views)
+        );
+
+        itemRankChart.Data.Datasets.AddRange(new[] {
+            itemSubscribers, itemViews
+        });
+    }
+}

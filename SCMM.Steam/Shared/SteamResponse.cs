@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SCMM.Steam.Shared.WebAPI.ISteamEconomy.GetAssetPrices
+namespace SCMM.Steam.Shared
 {
     public class SteamResponse<T>
     {
