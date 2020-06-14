@@ -28,7 +28,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<SteamMarketItemDTO> Get(string filter = null)
+        public IEnumerable<SteamMarketItemDTO> Get([FromQuery] string filter = null)
         {
             filter = filter?.Trim();
             return _db.SteamMarketItems
@@ -41,5 +41,18 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => _mapper.Map<SteamMarketItemDTO>(x))
                 .ToList();
         }
+
+        [HttpGet("{id}")]
+        public SteamMarketItemDTO Get(Guid id)
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .Include(x => x.Description.WorkshopFile)
+                .Where(x => x.Id == id)
+                .Select(x => _mapper.Map<SteamMarketItemDTO>(x))
+                .SingleOrDefault();
+        }
+
     }
 }

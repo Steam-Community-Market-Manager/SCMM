@@ -112,7 +112,7 @@
 
     private async void OnItemSelectionChanged(SteamMarketItemDTO item)
     {
-        Navigation.NavigateTo($"steam/marketplace/{item.SteamId}");
+        Navigation.NavigateTo($"steam/marketplace/{item.Id}");
     }
 
     private string GetItemStyles(SteamMarketItemDTO item)
