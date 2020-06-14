@@ -35,9 +35,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
-                .Include(x => x.Description.WorkshopFile.Creator)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
                 .OrderBy(x => x.Description.Name)
+                .Take(100)
                 .Select(x => _mapper.Map<SteamMarketItemDTO>(x))
                 .ToList();
         }

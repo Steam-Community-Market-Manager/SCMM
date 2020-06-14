@@ -37,9 +37,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
-                .Include(x => x.Description.WorkshopFile.Creator)
                 .Where(x => x.Description.WorkshopFile.AcceptedOn == currentWeek)
                 .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
+                .Take(100)
                 .Select(x => _mapper.Map<SteamStoreItemDTO>(x))
                 .ToList();
 

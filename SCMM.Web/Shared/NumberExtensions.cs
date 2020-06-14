@@ -39,28 +39,22 @@ namespace SCMM.Web.Shared
             return $"{a / gcd}:{b / gcd}";
         }
 
+        
+        public static string ToRegularityString(this int value, int max)
+        {
+            if (value == 0 || max == 0)
+            {
+                return null;
+            }
+            var regularity = Math.Round((((decimal)value / max) * 100), 2);
+            return $"{regularity.ToString("#,##0.00")}%";
+        }
+
         public static string ToQuantityString(this int quantity)
         {
             return (quantity > 0)
                 ? quantity.ToString("#,##")
                 : "∞";
-        }
-
-        public static string ToSaturationString(this int quantity, int relativeToQuantity)
-        {
-            const int HighSaturationThreshold = 500;
-            var prefix = String.Empty;
-            if (quantity >= HighSaturationThreshold)
-            {
-                prefix = "🡱";
-            }
-
-            if (quantity < HighSaturationThreshold)
-            {
-                prefix = "🡳";
-            }
-
-            return ($"{prefix} {quantity}").Trim();
         }
 
         public static string ToDurationString(this TimeSpan timeSpan)

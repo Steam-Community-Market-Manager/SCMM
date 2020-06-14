@@ -1,10 +1,135 @@
 @page "/steam/marketplace"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using SCMM.Web.Shared.Domain.DTOs.Steam
+@using SCMM.Web.Shared
+@using SCMM.Steam.Shared
+@inject NavigationManager Navigation
 @inject HttpClient Http
 
-<p>Marketplace</p>
+<style>
+
+    .Search-Text {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+        .Search-Text input {
+            padding: 8px;
+        }
+
+    .Market-List-Container {
+        max-height: 85vh;
+        overflow: auto;
+    }
+</style>
+
+<Grid Container Spacing="@Spacing.Four">
+    <Grid Item ExtraSmall="@GridSize.True">
+        @if (items == null)
+        {
+            <Typography>Loading...</Typography>
+        }
+        else
+        {
+            <TextField Type="search" Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
+                       Placeholder="Type here to filter the listings..." Value="@itemFilter" OnChange="@OnItemFilterChanged" />
+            <Paper Class="Market-List-Container">
+                <Table StickyHeader Size="@Size.Small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Icon</TableCell>
+                            <TableCell>Name</TableCell>
+                            <TableCell>Regularity</TableCell>
+                            <TableCell>Supply</TableCell>
+                            <TableCell>Demand</TableCell>
+                            <TableCell>Lowest Price</TableCell>
+                            <TableCell>Tags</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        @foreach (var item in items)
+                        {
+                            <TableRow @key="@item.Id" Hover OnClick="@((_) => OnItemSelectionChanged(item))">
+                                <TableCell>
+                                    <img src="@item.Description.IconUrl" style="max-width:24px; max-height:24px" />
+                                </TableCell>
+                                <TableCell Component="th" Scope="row" Style="@GetItemStyles(item)">
+                                    <strong>@item.Description.Name</strong>
+                                </TableCell>
+                                <TableCell Style="@GetItemStyles(item)">
+                                    @item.Description.WorkshopFile?.Subscriptions.ToRegularityString(52807)
+                                </TableCell>
+                                <TableCell Style="@GetItemStyles(item)">
+                                    @item.Supply
+                                </TableCell>
+                                <TableCell Style="@GetItemStyles(item)">
+                                    @item.Demand
+                                </TableCell>
+                                <TableCell Style="@GetItemStyles(item)">
+                                    @item.Currency.ToPriceString(item.SellLowestPrice)
+                                </TableCell>
+                                <TableCell Style="@GetItemStyles(item)">
+                                    @foreach (var tag in item.Description.Tags)
+                                    {
+                                        <span class="mx-1">
+                                            @switch (tag.Key)
+                                            {
+                                                case SteamConstants.SteamAssetTagCategory:<i class="fa fa-fw fa-paint-brush"></i> break;
+                                                case SteamConstants.SteamAssetTagItemType: <i class="fa fa-fw fa-paint-brush"></i> break;
+                                                case SteamConstants.SteamAssetTagCreator: <i class="fa fa-fw fa-user"></i> break;
+                                                case SteamConstants.SteamAssetTagSet: <i class="fa fa-fw fa-layer-group"></i> break;
+                                                case SteamConstants.SteamAssetTagAcceptedYear: <i class="fa fa-fw fa-calendar"></i> break;
+                                                case SteamConstants.SteamAssetTagAcceptedWeek: <i class="fa fa-fw fa-calendar-week"></i>break;
+                                            }
+                                            @tag.Value
+                                        </span>
+                                    }
+                                </TableCell>
+                            </TableRow>
+                        }
+                    </TableBody>
+                </Table>
+            </Paper>
+        }
+    </Grid>
+</Grid>
 
 @code {
 
-    //...
+    private SteamMarketItemDTO[] items;
+    private string itemFilter = "blackout";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshItems();
+    }
+
+    private async void OnItemFilterChanged(ChangeEventArgs args)
+    {
+        itemFilter = args.Value?.ToString();
+        await RefreshItems();
+    }
+
+    private async void OnItemSelectionChanged(SteamMarketItemDTO item)
+    {
+        Navigation.NavigateTo($"steam/marketplace/{item.SteamId}");
+    }
+
+    private string GetItemStyles(SteamMarketItemDTO item)
+    {
+        return $"color: {item.Description.ForegroundColour}";
+    }
+
+    private async Task RefreshItems()
+    {
+        try
+        {
+            items = await Http.GetFromJsonAsync<SteamMarketItemDTO[]>($"SteamMarketItems?filter={itemFilter}");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
 
 }

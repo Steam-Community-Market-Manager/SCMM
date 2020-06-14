@@ -6,24 +6,6 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 
-<style>
-
-    .Chart-Container {
-        padding: 16px;
-    }
-
-    .Buy-Button-Theme {
-        --theme-palette-primary-main: #388e3c;
-        --theme-palette-primary-current: #4caf50;
-    }
-
-    .View-Button-Theme {
-        --theme-palette-primary-main: #2196f3;
-        --theme-palette-primary-current: #42a5f5;
-    }
-
-</style>
-
 <Grid Container Spacing="@Spacing.Four">
     <Grid Item ExtraSmall="@GridSize.True">
         @if (items == null)
@@ -38,8 +20,8 @@
                         @foreach (var item in items)
                         {
                             <TableRow>
-                                <TableCell style="vertical-align: top">
-                                    <img src="@item.Description.IconUrl" style="width:96px" />
+                                <TableCell style="vertical-align: middle">
+                                    <img src="@item.Description.IconUrl" style="width:80px" />
                                 </TableCell>
                                 <TableCell style="vertical-align: top">
                                     <Typography Variant="@TypographyVariant.H6" GutterBottom="true">
@@ -95,10 +77,10 @@
                                     </Typography>
                                 </TableCell>
                                 <TableCell style="vertical-align: top">
-                                    <Typography GutterBottom="true" class="Buy-Button-Theme">
+                                    <Typography GutterBottom="true" class="Theme-Success">
                                         <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">Buy</Button>
                                     </Typography>
-                                    <Typography class="View-Button-Theme">
+                                    <Typography class="Theme-Info">
                                         <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.Primary">View</Button>
                                     </Typography>
                                 </TableCell>

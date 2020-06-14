@@ -8,11 +8,12 @@
         public const string SteamWebApiUrl = "https://api.steampowered.com/";
 
         public const string SteamAssetTagCategory = "steamcat";
+        public const string SteamAssetTagItemType = "itemclass";
         public const string SteamAssetTagWorkshop = "workshop";
         public const string SteamAssetTagCreator = "creator";
+        public const string SteamAssetTagSet = "set";
         public const string SteamAssetTagAcceptedYear = "accepted.year";
         public const string SteamAssetTagAcceptedWeek = "accepted.week";
-        public const string SteamAssetTagSet = "set";
 
         public static readonly string[] SteamIgnoredWorkshopTags = { "Skin", "Version3" };
 
