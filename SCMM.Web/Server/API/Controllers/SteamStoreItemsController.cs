@@ -29,9 +29,8 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<SteamStoreItemDTO> Get(string filter = null)
+        public IEnumerable<SteamStoreItemDTO> Get()
         {
-            filter = filter?.Trim();
             var currentWeek = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
             var items = _db.SteamStoreItems
                 .Include(x => x.App)
@@ -63,7 +62,7 @@ namespace SCMM.Web.Server.API.Controllers
                         Position = app.MarketItems
                             .Where(x => x.Description.Tags.Serialised.Contains(type))
                             .Where(x => x.BuyNowPrice < itemPrice)
-                            .Count() + 1,
+                            .Count(),
                         Total = app.MarketItems
                             .Where(x => x.Description.Tags.Serialised.Contains(type))
                             .Count() + 1,

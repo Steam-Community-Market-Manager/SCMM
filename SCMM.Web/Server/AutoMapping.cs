@@ -22,7 +22,9 @@ namespace SCMM.Web.Server
             CreateMap<SteamAssetDescription, SteamAssetDescriptionDTO>()
                 .ForMember(x => x.Tags, o => o.MapFrom(p => p.Tags.Where(x => !x.Key.StartsWith(SteamConstants.SteamAssetTagWorkshop)))) // ignore workshop skins
                 .ReverseMap();
-            CreateMap<SteamAssetWorkshopFile, SteamAssetWorkshopFileDTO>().ReverseMap();
+            CreateMap<SteamAssetWorkshopFile, SteamAssetWorkshopFileDTO>()
+                .ForMember(x => x.SubscriptionsGraph, o => o.MapFrom(p => p.SubscriptionsGraph.ToDictionary(x => x.Key.ToString("dd MMM yyyy"), x => x.Value)))
+                .ReverseMap();
         }
     }
 }

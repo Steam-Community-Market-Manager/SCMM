@@ -67,7 +67,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         var response = await steamEconomy.GetAssetClassInfoAsync(UInt32.Parse(group.Key.SteamId), batch.ToList(), language.SteamId);
                         if (response?.Data?.Success != true)
                         {
-                            // TODO: Log this
+                            // TODO: Log this...
                             continue;
                         }
 

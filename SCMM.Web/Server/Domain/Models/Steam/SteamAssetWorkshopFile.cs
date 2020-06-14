@@ -1,10 +1,16 @@
-﻿using System;
+﻿using SCMM.Web.Server.Data.Types;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
 {
     public class SteamAssetWorkshopFile : Entity
     {
+        public SteamAssetWorkshopFile()
+        {
+            SubscriptionsGraph = new PersistableGraphDataSet();
+        }
+
         [Required]
         public string SteamId { get; set; }
 
@@ -24,6 +30,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public DateTimeOffset UpdatedOn { get; set; }
 
         public int Subscriptions { get; set; }
+
+        public PersistableGraphDataSet SubscriptionsGraph { get; set; }
 
         public int Favourited { get; set; }
 

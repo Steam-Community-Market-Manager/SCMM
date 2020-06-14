@@ -109,7 +109,7 @@
             </Paper>
         }
         </Grid>
-    @if (itemRankChart != null)
+    @if (itemRankChart != null && itemRankHistoryChart != null)
     {
         <Grid Item ExtraSmall="@GridSize.True">
             <Grid Container>
@@ -120,7 +120,7 @@
                 </Grid>
                 <Grid Item ExtraSmall="@GridSize.Twelve">
                     <Paper Class="Chart-Container" Style="margin-top: 16px">
-                        <Typography>Graph Subscriber History</Typography>
+                        <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
                     </Paper>
                 </Grid>
             </Grid>
@@ -132,13 +132,16 @@
 
     private SteamStoreItemDTO[] items;
     private ChartJsBarChart itemRankChartJs;
+    private ChartJsLineChart itemRankHistoryChartJs;
     private BarConfig itemRankChart;
+    private LineConfig itemRankHistoryChart;
 
 
     protected override async Task OnInitializedAsync()
     {
         await RefreshItems();
-        await RedrawItemRankingChart();
+        await RedrawItemRankChart();
+        await RedrawItemRankHistoryChart();
     }
 
     private async Task BuyItem(SteamStoreItemDTO item)
@@ -165,7 +168,7 @@
         }
     }
 
-    private async Task RedrawItemRankingChart()
+    private async Task RedrawItemRankChart()
     {
         itemRankChart = new BarConfig
         {
@@ -262,4 +265,151 @@
             itemSubscribers, itemViews
         });
     }
+
+    private async Task RedrawItemRankHistoryChart()
+    {
+        var startOfWeek = items.FirstOrDefault()?.Description?.WorkshopFile?.AcceptedOn.UtcDateTime;
+        if (startOfWeek == null)
+        {
+            return;
+        }
+
+        itemRankHistoryChart = new LineConfig
+        {
+            Options = new LineOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scales = new Scales
+                {
+
+                    xAxes = new List<CartesianAxis>
+                    {
+                        new CategoryAxis
+                        {
+                            Ticks = new CategoryTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    },
+                    yAxes = new List<CartesianAxis>
+                    {
+                        new LinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        itemRankHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek.Value)
+            .Select(x => x.ToString("dd MMMM yyyy"))
+            .ToList();
+
+        foreach (var item in items)
+        {
+            var itemDataSet = new LineDataset<DoubleWrapper>
+            {
+                Label = item.Description.Name,
+                BackgroundColor = GraphDataSetColours[Array.IndexOf(items, item)],
+                BorderColor = GraphDataSetColours[Array.IndexOf(items, item)],
+                BorderWidth = 5,
+                Fill = false
+            };
+            itemDataSet.AddRange(
+                GetItemSubscriptionDataset(item, startOfWeek.Value)
+            );
+            itemRankHistoryChart.Data.Datasets.Add(itemDataSet);
+        }
+    }
+
+    IEnumerable<DateTime> GetSkinWeekDates(DateTime startOfWeek)
+    {
+        return new[] {
+            startOfWeek.Date.AddDays(0),
+            startOfWeek.Date.AddDays(1),
+            startOfWeek.Date.AddDays(2),
+            startOfWeek.Date.AddDays(3),
+            startOfWeek.Date.AddDays(4),
+            startOfWeek.Date.AddDays(5),
+            startOfWeek.Date.AddDays(6),
+            startOfWeek.Date.AddDays(7)
+        };
+    }
+
+    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(SteamStoreItemDTO item, DateTime startOfWeek)
+    {
+        var dataSet = new List<DoubleWrapper>();
+        if (item?.Description?.WorkshopFile?.SubscriptionsGraph?.Any() != true)
+        {
+            return dataSet;
+        }
+
+        var graphDates = GetSkinWeekDates(startOfWeek).Where(x => x < DateTime.UtcNow);
+        foreach (var graphDate in graphDates)
+        {
+            var dataPoint = 0d;
+            var dataKey = graphDate.Date.ToString("dd MMM yyyy");
+            var keys = item.Description.WorkshopFile.SubscriptionsGraph.Keys.ToArray();
+            if (item.Description.WorkshopFile.SubscriptionsGraph.ContainsKey(dataKey))
+            {
+                dataPoint = item.Description.WorkshopFile.SubscriptionsGraph[dataKey];
+            }
+            dataSet.Add(dataPoint);
+        }
+        return dataSet;
+    }
+
+    private string[] GraphDataSetColours = {
+        "#2196F3",
+        "#8BC34A",
+        "#FF5722",
+        "#E91E63",
+        "#9C27B0",
+        "#3F51B5",
+        "#FF9800",
+        "#FFEB3B",
+        "#795548",
+        "#00BCD4",
+        "#607D8B"
+    };
+
 }

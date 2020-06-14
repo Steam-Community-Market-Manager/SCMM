@@ -52,7 +52,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(batch.ToList());
                     if (response?.Data?.Any() == false)
                     {
-                        // TODO: Log this
+                        // TODO: Log this...
                         continue;
                     }
 

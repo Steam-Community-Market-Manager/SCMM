@@ -55,7 +55,7 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
                         }
                         catch(Exception)
                         {
-                            // TODO: Log this?
+                            // TODO: Log this...
                             throw;
                         }
                     }

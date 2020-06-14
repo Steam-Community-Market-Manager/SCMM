@@ -70,7 +70,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     foreach (var item in assetWorkshopJoined)
                     {
                         await steamService.UpdateAssetDescription(
-                            item.AssetDescription, item.PublishedFile
+                            item.AssetDescription, item.PublishedFile, updateSubscriptionGraph: true
                         );
                     }
 

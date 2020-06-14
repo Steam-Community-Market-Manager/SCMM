@@ -8,6 +8,7 @@ using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;
+using SCMM.Web.Client;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using Steam.Models;
@@ -119,7 +120,7 @@ namespace SCMM.Web.Server.Domain
             return assetDescription;
         }
 
-        public async Task<Models.Steam.SteamAssetDescription> UpdateAssetDescription(Models.Steam.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile)
+        public async Task<Models.Steam.SteamAssetDescription> UpdateAssetDescription(Models.Steam.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile, bool updateSubscriptionGraph = false)
         {
             // Update workshop tags
             if (publishedFile.Tags != null)
@@ -158,10 +159,26 @@ namespace SCMM.Web.Server.Domain
                         assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedWeek] = $"Week {acceptedOnWeek}";
                     }
                 }
+
                 workshopFile.Subscriptions = (int) Math.Max(publishedFile.LifetimeSubscriptions, publishedFile.Subscriptions);
+                if (updateSubscriptionGraph)
+                {
+                    var utcDate = DateTime.UtcNow.Date;
+                    var maxSubscriptions = workshopFile.Subscriptions;
+                    if (workshopFile.SubscriptionsGraph.ContainsKey(utcDate))
+                    {
+                        maxSubscriptions = (int) Math.Max(maxSubscriptions, workshopFile.SubscriptionsGraph[utcDate]);
+                    }
+                    workshopFile.SubscriptionsGraph[utcDate] = maxSubscriptions;
+                    workshopFile.SubscriptionsGraph = new Data.Types.PersistableGraphDataSet(
+                        workshopFile.SubscriptionsGraph
+                    );
+                }
+
                 workshopFile.Favourited = (int)Math.Max(publishedFile.LifetimeFavorited, publishedFile.Favorited);
                 workshopFile.Views = (int)publishedFile.Views;
                 workshopFile.LastCheckedOn = DateTimeOffset.Now;
+
                 if (workshopFile.CreatorId == null)
                 {
                     workshopFile.Creator = await AddOrUpdateSteamProfile(publishedFile.Creator.ToString());
@@ -220,13 +237,15 @@ namespace SCMM.Web.Server.Domain
                 workshopFileId = (workshopFileIdGroups.Count > 1) ? workshopFileIdGroups[1].Value : "0";
                 workshopFile = new Models.Steam.SteamAssetWorkshopFile()
                 {
-                    SteamId = workshopFileId
+                    SteamId = workshopFileId,
+                    App = app
                 };
             }
 
             dbAssetDescription = new Models.Steam.SteamAssetDescription()
             {
                 SteamId = assetDescription.ClassId.ToString(),
+                App = app,
                 Name = assetDescription.MarketName,
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
@@ -365,6 +384,7 @@ namespace SCMM.Web.Server.Domain
                 Description = new Domain.Models.Steam.SteamAssetDescription()
                 {
                     SteamId = item.AssetDescription.ClassId,
+                    App = dbApp,
                     Name = item.AssetDescription.MarketName,
                     BackgroundColour = item.AssetDescription.BackgroundColour.SteamColourToHexString(),
                     ForegroundColour = item.AssetDescription.NameColour.SteamColourToHexString(),
@@ -372,7 +392,8 @@ namespace SCMM.Web.Server.Domain
                     IconLargeUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrlLarge).Uri.ToString(),
                     WorkshopFile = String.IsNullOrEmpty(workshopFileId) ? null : new SteamAssetWorkshopFile()
                     {
-                        SteamId = workshopFileId
+                        SteamId = workshopFileId, 
+                        App = dbApp
                     }
                 }
             });

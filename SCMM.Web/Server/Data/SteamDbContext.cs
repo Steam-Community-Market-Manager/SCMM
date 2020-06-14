@@ -72,6 +72,9 @@ namespace SCMM.Web.Server.Data
                 .HasOne(x => x.WorkshopFile);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Tags);
+
+            builder.Entity<SteamAssetWorkshopFile>()
+                .OwnsOne(x => x.SubscriptionsGraph);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace SCMM.Web.Server.Data.Types
             get { return DefaultItemSeperator; }
         }
 
-        public string Serialised
+        public virtual string Serialised
         {
             get
             {

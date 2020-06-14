@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SCMM.Web.Shared.Domain.DTOs.Steam
 {
@@ -15,6 +16,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.Steam
         public DateTimeOffset UpdatedOn { get; set; }
 
         public int Subscriptions { get; set; }
+
+        public IDictionary<string, double> SubscriptionsGraph { get; set; }
 
         public int Favourited { get; set; }
 
