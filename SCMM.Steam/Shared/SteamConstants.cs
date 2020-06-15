@@ -20,6 +20,8 @@
         public const string SteamActionViewWorkshopItem = "#Workshop_Commerce_ViewItem";
         public const string SteamActionViewWorkshopItemRegex = @"filedetails\/\?id=(\d+)";
 
+        public const int SteamWorkshopHighestSubscribers = 52807;
+
         public const string DefaultContextId = "2";
     }
 }

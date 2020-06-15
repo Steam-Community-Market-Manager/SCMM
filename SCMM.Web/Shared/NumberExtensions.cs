@@ -39,7 +39,6 @@ namespace SCMM.Web.Shared
             return $"{a / gcd}:{b / gcd}";
         }
 
-        
         public static string ToRegularityString(this int value, int max)
         {
             if (value == 0 || max == 0)
@@ -57,7 +56,39 @@ namespace SCMM.Web.Shared
                 : "∞";
         }
 
-        public static string ToDurationString(this TimeSpan timeSpan)
+        public static string ToStabilityString(this int value, int max)
+        {
+            if (value == 0 || max == 0)
+            {
+                return null;
+            }
+            var percentage = (int)Math.Round((((decimal)value / max) * 100), 0);
+            // Stable
+            // Trending Up
+            // Trending Down
+            return "?";
+        }
+
+        public static string ToPercentageString(this int value, int max)
+        {
+            if (value == 0 || max == 0)
+            {
+                return null;
+            }
+            var percentage = (int) Math.Round((((decimal)value / max) * 100), 0);
+            var prefix = "";
+            if (percentage >= 100)
+            {
+                prefix = "🡱";
+            }
+            if (percentage < 100)
+            {
+                prefix = "🡳";
+            }
+            return ($"{prefix} {percentage.ToString("#,##0")}%").Trim();
+        }
+
+        public static string ToDurationString(this TimeSpan timeSpan, bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true)
         {
             if (timeSpan.TotalMinutes <= 0)
             {
@@ -65,27 +96,26 @@ namespace SCMM.Web.Shared
             }
 
             var text = new StringBuilder();
-            if (timeSpan.Days > 0)
+            if (timeSpan.Days > 0 && showDays == true)
             {
                 text.AppendFormat("{0} day{1} ", timeSpan.Days, timeSpan.Days > 1 ? "s" : String.Empty);
             }
 
-            if (timeSpan.Hours > 0)
+            if (timeSpan.Hours > 0 && showHours == true)
             {
                 text.AppendFormat("{0} hour{1} ", timeSpan.Hours, timeSpan.Hours > 1 ? "s" : String.Empty);
             }
 
-            if (timeSpan.Minutes > 0)
+            if (timeSpan.Minutes > 0 && showMinutes == true)
             {
                 text.AppendFormat("{0} minute{1} ", timeSpan.Minutes, timeSpan.Minutes > 1 ? "s" : String.Empty);
             }
 
-            if (timeSpan.Minutes <= 0 && timeSpan.Seconds > 0)
+            if (timeSpan.Minutes <= 0 && timeSpan.Seconds > 0 && showSeconds == true)
             {
                 text.AppendFormat("{0} second{1} ", timeSpan.Seconds, timeSpan.Seconds > 1 ? "s" : String.Empty);
             }
 
-            text.Append("ago");
             return text.ToString();
         }
 

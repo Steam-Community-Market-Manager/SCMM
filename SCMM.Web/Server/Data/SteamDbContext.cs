@@ -57,9 +57,14 @@ namespace SCMM.Web.Server.Data
             builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Description);
             builder.Entity<SteamMarketItem>()
-                .OwnsMany(x => x.BuyOrders);
+                .HasMany(x => x.BuyOrders)
+                .WithOne(x => x.BuyItem);
             builder.Entity<SteamMarketItem>()
-                .OwnsMany(x => x.SellOrders);
+                .HasMany(x => x.SellOrders)
+                .WithOne(x => x.SellItem);
+            builder.Entity<SteamMarketItem>()
+                .HasMany(x => x.SalesHistory)
+                .WithOne(x => x.Item);
 
             builder.Entity<SteamInventoryItem>()
                 .HasOne(x => x.App);

@@ -312,6 +312,22 @@ namespace SCMM.Web.Server.Domain
             return item;
         }
 
+        public async Task<Models.Steam.SteamMarketItem> UpdateSteamMarketItemSalesHistory(SteamMarketItem item, Guid currencyId, SteamMarketPriceHistoryJsonResponse sales)
+        {
+            if (item == null || sales?.Success != true)
+            {
+                return item;
+            }
+
+            item.LastCheckedOn = DateTimeOffset.Now;
+            item.CurrencyId = currencyId;
+            item.RebuildSales(
+                ParseSteamMarketItemSalesFromGraph(sales.Prices)
+            );
+
+            return item;
+        }
+
         private Models.Steam.SteamMarketItemOrder[] ParseSteamMarketItemOrdersFromGraph(string[][] orderGraph)
         {
             var orders = new List<Models.Steam.SteamMarketItemOrder>();
@@ -334,6 +350,32 @@ namespace SCMM.Web.Server.Domain
             }
 
             return orders.ToArray();
+        }
+
+        private Models.Steam.SteamMarketItemSale[] ParseSteamMarketItemSalesFromGraph(string[][] salesGraph)
+        {
+            var sales = new List<Models.Steam.SteamMarketItemSale>();
+            if (salesGraph == null)
+            {
+                return sales.ToArray();
+            }
+
+            var totalQuantity = 0;
+            for (int i = 0; i < salesGraph.Length; i++)
+            {
+                var timeStamp = DateTime.ParseExact(salesGraph[i][0], "MMM dd yyyy HH: z", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+                var price = SteamEconomyHelper.GetPriceValueAsInt(salesGraph[i][1]);
+                var quantity = SteamEconomyHelper.GetQuantityValueAsInt(salesGraph[i][2]);
+                sales.Add(new Models.Steam.SteamMarketItemSale()
+                {
+                    Timestamp = timeStamp,
+                    Price = price,
+                    Quantity = quantity,
+                });
+                totalQuantity += quantity;
+            }
+
+            return sales.ToArray();
         }
 
         ///

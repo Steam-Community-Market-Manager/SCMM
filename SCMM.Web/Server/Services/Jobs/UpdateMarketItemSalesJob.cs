@@ -11,20 +11,25 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using SCMM.Steam.Client;
+using Microsoft.EntityFrameworkCore;
+using SCMM.Steam.Shared;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class UpdateMarketItemOrdersJob : CronJobService
+    public class UpdateMarketItemSalesJob : CronJobService
     {
-        private readonly ILogger<UpdateMarketItemOrdersJob> _logger;
+        private readonly ILogger<UpdateMarketItemSalesJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly SteamConfiguration _steamConfiguration;
 
-        public UpdateMarketItemOrdersJob(IConfiguration configuration, ILogger<UpdateMarketItemOrdersJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<UpdateMarketItemOrdersJob>())
+        public UpdateMarketItemSalesJob(IConfiguration configuration, ILogger<UpdateMarketItemSalesJob> logger, IServiceScopeFactory scopeFactory)
+            : base(configuration.GetJobConfiguration<UpdateMarketItemSalesJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _steamConfiguration = configuration.GetSteamConfiguration();
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
@@ -35,7 +40,8 @@ namespace SCMM.Web.Server.Services.Jobs
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var items = db.SteamMarketItems
-                    .Where(x => !String.IsNullOrEmpty(x.SteamId))
+                    .Include(x => x.App)
+                    .Include(x => x.Description)
                     .OrderBy(x => x.LastCheckedOn)
                     .Take(100)
                     .ToList();
@@ -57,14 +63,15 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var client = new SteamCommunityClient();
+                var client = new SteamCommunityClient(_steamConfiguration.GetCookieContainer());
                 foreach (var batch in items.Batch(100))
                 {
                     var batchTasks = batch.Select(x =>
-                        client.GetMarketItemOrdersHistogram(
-                            new SteamMarketItemOrdersHistogramJsonRequest()
+                        client.GetMarketPriceHistory(
+                            new SteamMarketPriceHistoryJsonRequest()
                             {
-                                ItemNameId = x.SteamId,
+                                AppId = x.App.SteamId,
+                                MarketHashName = x.Description.Name,
                                 Language = language.SteamId,
                                 CurrencyId = currency.SteamId,
                                 NoRender = true
@@ -80,7 +87,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     Task.WaitAll(batchTasks);
                     foreach (var task in batchTasks)
                     {
-                        await steamService.UpdateSteamMarketItemOrders(
+                        await steamService.UpdateSteamMarketItemSalesHistory(
                             task.Result.Item,
                             currency.Id,
                             task.Result.Response

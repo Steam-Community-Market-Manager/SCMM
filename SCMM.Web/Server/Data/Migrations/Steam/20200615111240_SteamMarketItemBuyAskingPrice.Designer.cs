@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200615111240_SteamMarketItemBuyAskingPrice")]
+    partial class SteamMarketItemBuyAskingPrice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,32 +253,23 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid?>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("CurrentValue")
+                        .HasColumnType("int");
+
                     b.Property<int>("Demand")
                         .HasColumnType("int");
 
                     b.Property<Guid?>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("First24hrValue")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset?>("FirstSeenOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("Last120hrValue")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Last24hrSales")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Last24hrValue")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Last48hrValue")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset?>("LastCheckedOn")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("OriginalValue")
+                        .HasColumnType("int");
 
                     b.Property<int>("ResellPrice")
                         .HasColumnType("int");

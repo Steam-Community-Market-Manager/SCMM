@@ -3,19 +3,21 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200615091819_SteamMarketItemSaleMetrics")]
+    partial class SteamMarketItemSaleMetrics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.5")
+                .HasAnnotation("ProductVersion", "3.1.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -239,9 +241,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("AppId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("BuyAskingPrice")
-                        .HasColumnType("int");
-
                     b.Property<int>("BuyNowPrice")
                         .HasColumnType("int");
 
@@ -251,32 +250,23 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid?>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("CurrentValue")
+                        .HasColumnType("int");
+
                     b.Property<int>("Demand")
                         .HasColumnType("int");
 
                     b.Property<Guid?>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("First24hrValue")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset?>("FirstSeenOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("Last120hrValue")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Last24hrSales")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Last24hrValue")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Last48hrValue")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset?>("LastCheckedOn")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("OriginalValue")
+                        .HasColumnType("int");
 
                     b.Property<int>("ResellPrice")
                         .HasColumnType("int");
@@ -302,58 +292,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasIndex("DescriptionId");
 
                     b.ToTable("SteamMarketItems");
-                });
-
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemOrder", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("BuyItemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("SellItemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BuyItemId");
-
-                    b.HasIndex("SellItemId");
-
-                    b.ToTable("SteamMarketItemOrder");
-                });
-
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemSale", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ItemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.ToTable("SteamMarketItemSale");
                 });
 
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamProfile", b =>
@@ -559,24 +497,84 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamAssetDescription", "Description")
                         .WithMany()
                         .HasForeignKey("DescriptionId");
-                });
 
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemOrder", b =>
-                {
-                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItem", "BuyItem")
-                        .WithMany("BuyOrders")
-                        .HasForeignKey("BuyItemId");
+                    b.OwnsMany("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemOrder", "BuyOrders", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier");
 
-                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItem", "SellItem")
-                        .WithMany("SellOrders")
-                        .HasForeignKey("SellItemId");
-                });
+                            b1.Property<int>("Price")
+                                .HasColumnType("int");
 
-            modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemSale", b =>
-                {
-                    b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItem", "Item")
-                        .WithMany("SalesHistory")
-                        .HasForeignKey("ItemId");
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int");
+
+                            b1.Property<Guid>("SteamMarketItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("SteamMarketItemId");
+
+                            b1.ToTable("SteamMarketItems_BuyOrders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamMarketItemId");
+                        });
+
+                    b.OwnsMany("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemOrder", "SellOrders", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Price")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int");
+
+                            b1.Property<Guid>("SteamMarketItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("SteamMarketItemId");
+
+                            b1.ToTable("SteamMarketItems_SellOrders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamMarketItemId");
+                        });
+
+                    b.OwnsMany("SCMM.Web.Server.Domain.Models.Steam.SteamMarketItemSale", "SalesHistory", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Price")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("int");
+
+                            b1.Property<Guid>("SteamMarketItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<DateTimeOffset>("Timestamp")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("SteamMarketItemId");
+
+                            b1.ToTable("SteamMarketItemSale");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamMarketItemId");
+                        });
                 });
 
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamStoreItem", b =>
