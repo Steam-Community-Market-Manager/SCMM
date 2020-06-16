@@ -1,7 +1,11 @@
-﻿namespace SCMM.Web.Shared.Domain.DTOs.Steam
+﻿using System;
+
+namespace SCMM.Web.Shared.Domain.DTOs
 {
-    public class SteamProfileDTO : EntityDTO
+    public class ProfileDTO
     {
+        public Guid Id { get; set; }
+
         public string SteamId { get; set; }
 
         public string ProfileId { get; set; }

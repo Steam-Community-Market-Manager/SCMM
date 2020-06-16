@@ -1,6 +1,6 @@
-﻿namespace SCMM.Web.Shared.Domain.DTOs.Steam
+﻿namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 {
-    public class SteamMarketItemOrderDTO : EntityDTO
+    public class MarketItemOrderDTO
     {
         public int Price { get; set; }
 

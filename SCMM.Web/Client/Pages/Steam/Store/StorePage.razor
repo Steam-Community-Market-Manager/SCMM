@@ -1,6 +1,6 @@
 @page "/steam/store"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using SCMM.Web.Shared.Domain.DTOs.Steam
+@using SCMM.Web.Shared.Domain.DTOs.StoreItems
 @using SCMM.Web.Shared
 @inject NavigationManager Navigation
 @inject HttpClient Http
@@ -20,27 +20,15 @@
                         @foreach (var item in items)
                         {
                             <TableRow>
-                                <TableCell style="vertical-align: middle">
-                                    <img src="@item.Description.IconUrl" style="width:80px" />
+                                <TableCell Class="align-top">
+                                    <img src="@item.IconUrl" style="width:80px" />
                                 </TableCell>
-                                <TableCell style="vertical-align: top">
-                                    <Typography Variant="@TypographyVariant.H6" GutterBottom="true">
-                                        @item.Description.Name
-                                        @if (items.First() == item)
-                                        {
-                                            <i class="fa fa-fw fa-award" style="color:gold"></i>
-                                        }
-                                        @if (items.Skip(1).First() == item)
-                                        {
-                                            <i class="fa fa-fw fa-award" style="color:silver"></i>
-                                        }
-                                        @if (items.Skip(2).First() == item)
-                                        {
-                                            <i class="fa fa-fw fa-award" style="color:chocolate"></i>
-                                        }
+                                <TableCell Class="align-top">
+                                    <Typography Variant="@TypographyVariant.H6" Style="@GetItemStyles(item)" GutterBottom="true">
+                                        @item.Name
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body2">
-                                        @foreach (var tag in item.Description.Tags)
+                                        @foreach (var tag in item.Tags)
                                         {
                                             <div class="Chip-Root">
                                                 <span class="Chip-Label">
@@ -50,7 +38,7 @@
                                         }
                                     </Typography>
                                 </TableCell>
-                                <TableCell style="vertical-align: top">
+                                <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Subtitle1" GutterBottom="true">
                                         <i class="fa fa-fw fa-tag"></i>
                                         @item.Currency.ToPriceString(item.StorePrice)
@@ -62,21 +50,21 @@
                                         }
                                     </Typography>
                                 </TableCell>
-                                <TableCell style="vertical-align: top">
+                                <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
                                         <i class="fa fa-fw fa-user"></i>
-                                        @item.Description.WorkshopFile.Subscriptions.ToQuantityString()
+                                        @item.Subscriptions.ToQuantityString()
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
                                         <i class="fa fa-fw fa-eye"></i>
-                                        @item.Description.WorkshopFile.Views.ToQuantityString()
+                                        @item.Views.ToQuantityString()
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
                                         <i class="fa fa-fw fa-heart"></i>
-                                        @item.Description.WorkshopFile.Favourited.ToQuantityString()
+                                        @item.Favourited.ToQuantityString()
                                     </Typography>
                                 </TableCell>
-                                <TableCell style="vertical-align: top">
+                                <TableCell Class="align-top">
                                     <Typography GutterBottom="true" class="Theme-Success">
                                         <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">Buy</Button>
                                     </Typography>
@@ -112,7 +100,7 @@
 
 @code {
 
-    private SteamStoreItemDTO[] items;
+    private StoreItemListDTO[] items;
     private ChartJsBarChart itemRankChartJs;
     private ChartJsLineChart itemRankHistoryChartJs;
     private BarConfig itemRankChart;
@@ -122,19 +110,19 @@
     protected override async Task OnInitializedAsync()
     {
         await RefreshItems();
-        await RedrawItemRankChart();
-        await RedrawItemRankHistoryChart();
+        RedrawItemRankChart();
+        RedrawItemRankHistoryChart();
     }
 
-    private async Task BuyItem(SteamStoreItemDTO item)
+    private async Task BuyItem(StoreItemListDTO item)
     {
-        string url = $"https://store.steampowered.com/itemstore/{item.App.SteamId}/detail/{item.SteamId}/";
+        string url = $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/";
         await JSRuntime.InvokeAsync<object>("open", url, "_blank");
     }
 
-    private async Task ViewItem(SteamStoreItemDTO item)
+    private async Task ViewItem(StoreItemListDTO item)
     {
-        string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.Description.WorkshopFile.SteamId}";
+        string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.SteamWorkshopId}";
         await JSRuntime.InvokeAsync<object>("open", url, "_blank");
     }
 
@@ -142,7 +130,7 @@
     {
         try
         {
-            items = await Http.GetFromJsonAsync<SteamStoreItemDTO[]>($"SteamStoreItems");
+            items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"StoreItems");
         }
         catch (AccessTokenNotAvailableException exception)
         {
@@ -150,7 +138,12 @@
         }
     }
 
-    private async Task RedrawItemRankChart()
+    private string GetItemStyles(StoreItemListDTO item)
+    {
+        return $"color: {item.ForegroundColour}";
+    }
+
+    private void RedrawItemRankChart()
     {
         itemRankChart = new BarConfig
         {
@@ -218,7 +211,7 @@
         };
 
         itemRankChart.Data.Labels.AddRange(
-            items.Select(x => x.Description.Name).ToArray()
+            items.Select(x => x.Name).ToArray()
         );
 
         var itemSubscribers = new BarDataset<DoubleWrapper>
@@ -229,7 +222,7 @@
             BorderWidth = 1
         };
         itemSubscribers.AddRange(
-            items.Select(x => (DoubleWrapper)x.Description.WorkshopFile.Subscriptions)
+            items.Select(x => (DoubleWrapper) x.Subscriptions)
         );
 
         var itemViews = new BarDataset<DoubleWrapper>
@@ -240,7 +233,7 @@
             BorderWidth = 1
         };
         itemViews.AddRange(
-            items.Select(x => (DoubleWrapper) x.Description.WorkshopFile.Views)
+            items.Select(x => (DoubleWrapper) x.Views)
         );
 
         itemRankChart.Data.Datasets.AddRange(new[] {
@@ -248,9 +241,9 @@
         });
     }
 
-    private async Task RedrawItemRankHistoryChart()
+    private void RedrawItemRankHistoryChart()
     {
-        var startOfWeek = items.FirstOrDefault()?.Description?.WorkshopFile?.AcceptedOn.UtcDateTime;
+        var startOfWeek = items.FirstOrDefault()?.AcceptedOn.UtcDateTime;
         if (startOfWeek == null)
         {
             return;
@@ -330,7 +323,7 @@
         {
             var itemDataSet = new LineDataset<DoubleWrapper>
             {
-                Label = item.Description.Name,
+                Label = item.Name,
                 BackgroundColor = GraphDataSetColours[Array.IndexOf(items, item)],
                 BorderColor = GraphDataSetColours[Array.IndexOf(items, item)],
                 BorderWidth = 5,
@@ -357,10 +350,10 @@
         };
     }
 
-    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(SteamStoreItemDTO item, DateTime startOfWeek)
+    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(StoreItemListDTO item, DateTime startOfWeek)
     {
         var dataSet = new List<DoubleWrapper>();
-        if (item?.Description?.WorkshopFile?.SubscriptionsGraph?.Any() != true)
+        if (item?.SubscriptionsHistory?.Any() != true)
         {
             return dataSet;
         }
@@ -370,10 +363,10 @@
         {
             var dataPoint = 0d;
             var dataKey = graphDate.Date.ToString("dd MMM yyyy");
-            var keys = item.Description.WorkshopFile.SubscriptionsGraph.Keys.ToArray();
-            if (item.Description.WorkshopFile.SubscriptionsGraph.ContainsKey(dataKey))
+            var keys = item.SubscriptionsHistory.Keys.ToArray();
+            if (item.SubscriptionsHistory.ContainsKey(dataKey))
             {
-                dataPoint = item.Description.WorkshopFile.SubscriptionsGraph[dataKey];
+                dataPoint = item.SubscriptionsHistory[dataKey];
             }
             dataSet.Add(dataPoint);
         }

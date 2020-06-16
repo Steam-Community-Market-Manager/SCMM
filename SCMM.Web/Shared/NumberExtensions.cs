@@ -1,4 +1,4 @@
-﻿using SCMM.Web.Shared.Domain.DTOs.Steam;
+﻿using SCMM.Web.Shared.Domain.DTOs;
 using System;
 using System.Text;
 
@@ -6,37 +6,36 @@ namespace SCMM.Web.Shared
 {
     public static class NumberExtensions
     {
-        public static string ToPriceString(this SteamCurrencyDTO currency, int price)
+        public const int DefaultTolerance = 10;
+
+        public static bool IsStonking(this int now, int longTermAverage, int tolerance = DefaultTolerance)
+        {
+            return (now > longTermAverage && (Math.Abs(now - longTermAverage) >= tolerance));
+        }
+
+        public static bool IsStinking(this int now, int longTermAverage, int tolerance = DefaultTolerance)
+        {
+            return (now < longTermAverage && (Math.Abs(now - longTermAverage) >= tolerance));
+        }
+
+        public static string ToTextColourClass(this int a, int b, int tolerance = DefaultTolerance)
+        {
+            var isAboveTolerance = (Math.Abs(a - b) >= tolerance);
+            if (a > b && isAboveTolerance)
+            {
+                return "Text-Success";
+            }
+            else if (a < b && isAboveTolerance)
+            {
+                return "Text-Error";
+            }
+            return null;
+        }
+
+        public static string ToPriceString(this CurrencyDTO currency, int price)
         {
             var negative = (price < 0) ? "-" : String.Empty;
             return ($"{currency?.PrefixText} {negative}{Math.Round((decimal)Math.Abs(price) / 100, 2).ToString("#,##0.00")} {currency?.SuffixText}").Trim();
-        }
-
-        public static string ToRoIString(this int percentage)
-        {
-            var prefix = String.Empty;
-            if (percentage >= 100)
-            {
-                prefix = "🡱";
-            }
-
-            if (percentage < 100)
-            {
-                prefix = "🡳";
-            }
-
-            return ((percentage > 0) ? $"{prefix} {percentage}%" : "∞").Trim();
-        }
-
-        public static string ToGCDRatioString(this int a, int b)
-        {
-            if (a == 0 || b == 0)
-            {
-                return "∞";
-            }
-
-            var gcd = GCD(a, b);
-            return $"{a / gcd}:{b / gcd}";
         }
 
         public static string ToRegularityString(this int value, int max)
@@ -49,6 +48,21 @@ namespace SCMM.Web.Shared
             return $"{regularity.ToString("#,##0.00")}%";
         }
 
+        public static string ToSalesActivityString(this int sales)
+        {
+            var suffix = "";
+            switch(sales)
+            {
+                case var _ when (sales >= 3000): suffix = "🔥🔥🔥🔥🔥"; break;
+                case var _ when (sales >= 1500): suffix = "🔥🔥🔥🔥"; break;
+                case var _ when (sales >= 1000): suffix = "🔥🔥🔥"; break;
+                case var _ when (sales >= 500): suffix = "🔥🔥"; break;
+                case var _ when (sales >= 250): suffix = "🔥"; break;
+                default: break;
+            }
+            return ($"{sales} {suffix}").Trim();
+        }
+
         public static string ToQuantityString(this int quantity)
         {
             return (quantity > 0)
@@ -56,17 +70,20 @@ namespace SCMM.Web.Shared
                 : "∞";
         }
 
-        public static string ToStabilityString(this int value, int max)
+        public static string ToStabilityString(this int now, int longTermAverage, int tolerance = DefaultTolerance)
         {
-            if (value == 0 || max == 0)
+            if (IsStonking(now, longTermAverage, tolerance))
             {
-                return null;
+                return $"📈 Stonking (+{Math.Abs(now - longTermAverage)})";
             }
-            var percentage = (int)Math.Round((((decimal)value / max) * 100), 0);
-            // Stable
-            // Trending Up
-            // Trending Down
-            return "?";
+            else if (IsStinking(now, longTermAverage, tolerance))
+            {
+                return $"📉 Stinking (-{Math.Abs(now - longTermAverage)})";
+            }
+            else
+            {
+                return "Stable";
+            }
         }
 
         public static string ToPercentageString(this int value, int max)
@@ -86,6 +103,35 @@ namespace SCMM.Web.Shared
                 prefix = "🡳";
             }
             return ($"{prefix} {percentage.ToString("#,##0")}%").Trim();
+        }
+
+        public static string ToRoIString(this int percentage)
+        {
+            var prefix = String.Empty;
+            if (percentage >= 100)
+            {
+                prefix = "🡱";
+            }
+            if (percentage < 100)
+            {
+                prefix = "🡳";
+            }
+            return ((percentage > 0) ? $"{prefix} {percentage}%" : "∞").Trim();
+        }
+
+        public static string ToGCDRatioString(this int a, int b)
+        {
+            if (a == 0 || b == 0)
+            {
+                return "∞";
+            }
+            var gcd = GCD(a, b);
+            return $"{a / gcd}:{b / gcd}";
+        }
+
+        public static int GCD(int a, int b)
+        {
+            return (b == 0 ? Math.Abs(a) : GCD(b, a % b));
         }
 
         public static string ToDurationString(this TimeSpan timeSpan, bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true)
@@ -117,11 +163,6 @@ namespace SCMM.Web.Shared
             }
 
             return text.ToString();
-        }
-
-        public static int GCD(int a, int b)
-        {
-            return (b == 0 ? Math.Abs(a) : GCD(b, a % b));
         }
     }
 }

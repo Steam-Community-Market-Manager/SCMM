@@ -56,38 +56,39 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         [NotMapped]
         public bool WouldResellLoss => (ResellProfit < 0);
 
-        // What was the average price from the first 24hrs
+        // What was the average price from the first 24hrs (1 day)
         public int First24hrValue { get; set; }
 
-        // What was the total number of sales from the last 24hrs
+        // What was the total number of sales from the last 24hrs (1 day)
         public int Last24hrSales { get; set; }
 
-        // What was the average price from the last 24hrs
+        // What was the average price from the last 24hrs (1 day)
         public int Last24hrValue { get; set; }
 
-        // What was the average price from the last 48hrs
+        // What was the average price from the last 48hrs (2 days)
         public int Last48hrValue { get; set; }
 
-        // What was the average price from the last 120hrs
+        // What was the average price from the last 120hrs (5 days)
         public int Last120hrValue { get; set; }
 
-        [NotMapped]
-        public bool IsStonking => (Last24hrValue > Last48hrValue);
+        // What was the average price from the last 336hrs (14 days)
+        public int Last336hrValue { get; set; }
 
+        // What is the difference between current and 48hr sale prices
         [NotMapped]
-        public bool IsStinking => (Last24hrValue < Last48hrValue);
+        public int MovementLast48hrValue => (Last24hrValue - Last48hrValue);
+
+        // What is the difference between current and 120hr sale prices
+        [NotMapped]
+        public int MovementLast120hrValue => (Last24hrValue - Last120hrValue);
+
+        // What is the difference between current and 336hr sale prices
+        [NotMapped]
+        public int MovementLast336hrValue => (Last24hrValue - Last336hrValue);
 
         // What is the difference between current and original sale prices
         [NotMapped]
-        public int MovementLast48hrValue => (Last48hrValue - Last24hrValue);
-
-        // What is the difference between current and original sale prices
-        [NotMapped]
-        public int MovementLast120hrValue => (Last120hrValue - Last24hrValue);
-
-        // What is the difference between current and original sale prices
-        [NotMapped]
-        public int MovementAllTimeValue => (First24hrValue - Last24hrValue);
+        public int MovementAllTimeValue => (Last24hrValue - First24hrValue);
 
         [NotMapped]
         public bool HasAppreciated => (Last24hrValue >= First24hrValue);
@@ -182,6 +183,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var last48hrValue = (int) Math.Round(last48hrs.Average(x => x.Price), 0);
             var last120hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(120))).ToArray();
             var last120hrValue = (int) Math.Round(last120hrs.Average(x => x.Price), 0);
+            var last336hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(336))).ToArray();
+            var last336hrValue = (int)Math.Round(last336hrs.Average(x => x.Price), 0);
             var allTimeLow = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Min(x => x.Price));
             var allTimeHigh = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Max(x => x.Price));
 
@@ -190,6 +193,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             Last24hrValue = last24hrValue;
             Last48hrValue = last48hrValue;
             Last120hrValue = last120hrValue;
+            Last336hrValue = last336hrValue;
             AllTimeHighestValue = (allTimeHigh?.Price ?? 0);
             AllTimeHighestValueOn = allTimeHigh?.Timestamp;
             AllTimeLowestValue = (allTimeLow?.Price ?? 0);

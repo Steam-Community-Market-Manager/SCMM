@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace SCMM.Web.Shared.Domain.DTOs.Steam
+namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 {
-    public class SteamMarketItemSaleDTO : EntityDTO
+    public class MarketItemSaleDTO
     {
         public DateTimeOffset Timestamp { get; set; }
 

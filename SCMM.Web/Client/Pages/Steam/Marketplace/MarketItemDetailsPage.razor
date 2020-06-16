@@ -1,0 +1,94 @@
+@page "/steam/marketplace/{ItemId}"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems
+@using SCMM.Web.Shared
+@inject NavigationManager Navigation
+@inject HttpClient Http
+
+@if (item == null)
+{
+    <Loading />
+}
+else
+{
+<Grid Container Spacing="@Spacing.Four">
+    <Grid Item ExtraSmall="@GridSize.One">
+        <img src="@item.IconUrl" style="width:100%" />
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Eleven">
+        <Typography Variant="@TypographyVariant.H5" Style="@GetItemStyles(item)" GutterBottom="true">
+            @item.Name
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Paragraph="true">
+            @foreach (var tag in item.Tags)
+            {
+                <div class="Chip-Root">
+                    <span class="Chip-Label">
+                        @tag.Value
+                    </span>
+                </div>
+            }
+        </Typography>
+        <Typography Paragraph="true">
+            <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                <i class="fa fa-fw fa-user"></i>
+                @item.Subscriptions.ToQuantityString()
+            </Typography>
+            <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                <i class="fa fa-fw fa-eye"></i>
+                @item.Views.ToQuantityString()
+            </Typography>
+            <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                <i class="fa fa-fw fa-heart"></i>
+                @item.Favourited.ToQuantityString()
+            </Typography>
+        </Typography>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Three">
+        <Paper Class="Chart-Container">
+            Sell orders list
+        </Paper>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Three">
+        <Paper Class="Chart-Container">
+            Buy orders list
+        </Paper>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Six">
+        <Paper Class="Chart-Container">
+            Buy/Sell orders chart
+        </Paper>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Twelve">
+        <Paper Class="Chart-Container">
+            Sales history chart
+        </Paper>
+    </Grid>
+</Grid>
+}
+
+@code {
+
+    [Parameter]
+    public string ItemId { get; set; }
+
+    private MarketItemDetailDTO item;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            item = await Http.GetFromJsonAsync<MarketItemDetailDTO>($"MarketItems/{ItemId}");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    private string GetItemStyles(MarketItemDetailDTO item)
+    {
+        return $"color: {item.ForegroundColour}";
+    }
+
+}

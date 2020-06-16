@@ -1,6 +1,6 @@
 ﻿@page "/steam/marketplace"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using SCMM.Web.Shared.Domain.DTOs.Steam
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
 @using SCMM.Steam.Shared
 @inject NavigationManager Navigation
@@ -13,14 +13,15 @@
         margin-bottom: 16px;
     }
 
-        .Search-Text input {
-            padding: 8px;
-        }
+    .Search-Text input {
+        padding: 8px;
+    }
 
     .Market-List-Container {
         max-height: 85vh;
         overflow: auto;
     }
+
 </style>
 
 <Grid Container Spacing="@Spacing.Four">
@@ -46,6 +47,7 @@
                             <TableCell>24hr Trades</TableCell>
                             <TableCell>24hr Value</TableCell>
                             <TableCell>24hr Movement</TableCell>
+                            <TableCell>5-Day Movement</TableCell>
                             <TableCell>Buy Now Price</TableCell>
                             <TableCell>Buy Asking Price</TableCell>
                             <TableCell>Day-1 Value</TableCell>
@@ -58,82 +60,57 @@
                         {
                         <TableRow @key="@item.Id" Hover OnClick="@((_) => OnItemSelectionChanged(item))">
                             <TableCell>
-                                <img src="@item.Description.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
                             </TableCell>
                             <TableCell Component="th" Scope="row" Style="@GetItemStyles(item)">
-                                <strong>@item.Description.Name</strong>
+                                <strong>@item.Name</strong>
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
+                            <TableCell>
                                 <span>@item.MarketAge old</span>
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
-                                @item.Description.WorkshopFile?.Subscriptions.ToRegularityString(SteamConstants.SteamWorkshopHighestSubscribers)
+                            <TableCell>
+                                @item.Subscriptions.ToRegularityString(SteamConstants.SteamWorkshopHighestSubscribers)
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
+                            <TableCell>
                                 @item.Supply
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
+                            <TableCell>
                                 @item.Demand
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
-                                @item.Last24hrSales
-                                @if (item.Last24hrSales > 250)
-                                {
-                                    <span>🔥</span>
-                                }
-                                @if (item.Last24hrSales > 500)
-                                {
-                                    <span>🔥</span>
-                                }
-                                @if (item.Last24hrSales > 1000)
-                                {
-                                    <span>🔥</span>
-                                }
+                            <TableCell>
+                                @item.Last24hrSales.ToSalesActivityString()
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
-                                @if (item.IsStonking)
-                                {
-                                    <span>🡱</span>
-                                }
-                                else if (item.IsStinking)
-                                {
-                                    <span>🡳</span>
-                                }
+                            <TableCell>
                                 @item.Currency.ToPriceString(item.Last24hrValue)
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
-                                @if (item.IsStonking)
+                            <TableCell Class="@item.Last24hrValue.ToTextColourClass(item.Last48hrValue)">
+                                @if (item.Last24hrValue.IsStonking(item.Last48hrValue) || item.Last24hrValue.IsStinking(item.Last48hrValue))
                                 {
-                                    <img src="https://image.winudf.com/v2/image1/Y29tLmZvdW5kYXRpb24uc3RvbmtzX2ljb25fMTU2Njg4MjcwNl8wOTE/icon.png?w=170&fakeurl=1" style="width:16px; margin-right: -6px;" />
-                                    <span>📈 Stonking (+@Math.Abs(item.Last24hrValue - item.Last48hrValue))</span>
+                                    <img src="https://image.winudf.com/v2/image1/Y29tLmZvdW5kYXRpb24uc3RvbmtzX2ljb25fMTU2Njg4MjcwNl8wOTE/icon.png?w=170&fakeurl=1" style="width:16px; margin-right: -6px;" /> 
                                 }
-                                else if (item.IsStinking)
-                                {
-                                    <img src="https://image.winudf.com/v2/image1/Y29tLmZvdW5kYXRpb24uc3RvbmtzX2ljb25fMTU2Njg4MjcwNl8wOTE/icon.png?w=170&fakeurl=1" style="width:16px; margin-right: -6px;" />
-                                    <span>📉 Stinking (-@Math.Abs(item.Last24hrValue - item.Last48hrValue))</span>
-                                }
-                                else
-                                {
-                                    <span>Stable</span>
-                                }
-                                <!--
-                                @item.Last24hrValue.ToStabilityString(item.Last120hrValue)
-                                -->
+                                @item.Last24hrValue.ToStabilityString(item.Last48hrValue)
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
+                            <TableCell Class="@item.Last24hrValue.ToTextColourClass(item.Last120hrValue)">
+                                @if (item.Last24hrValue.IsStonking(item.Last120hrValue) || item.Last24hrValue.IsStinking(item.Last120hrValue))
+                                {
+                                    <img src="https://image.winudf.com/v2/image1/Y29tLmZvdW5kYXRpb24uc3RvbmtzX2ljb25fMTU2Njg4MjcwNl8wOTE/icon.png?w=170&fakeurl=1" style="width:16px; margin-right: -6px;" />
+                                }
+                                @item.Last24hrValue.ToStabilityString(item.Last120hrValue)
+                            </TableCell>
+                            <TableCell>
                                 @item.Currency.ToPriceString(item.BuyNowPrice)
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
+                            <TableCell>
                                 @item.Currency.ToPriceString(item.BuyAskingPrice)
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
+                            <TableCell>
                                 @item.Currency.ToPriceString(item.First24hrValue)
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
+                            <TableCell Class="@item.Last24hrValue.ToTextColourClass(item.First24hrValue, tolerance: 0)">
                                 @item.Last24hrValue.ToPercentageString(item.First24hrValue)
                             </TableCell>
-                            <TableCell Style="@GetItemStyles(item)">
-                                @foreach (var tag in item.Description.Tags)
+                            <TableCell>
+                                @foreach (var tag in item.Tags)
                                 {
                                     <span class="mx-1">
                                         @switch (tag.Key)
@@ -160,7 +137,7 @@
 
 @code {
 
-    private SteamMarketItemDTO[] items;
+    private MarketItemListDTO[] items;
     private string itemFilter = "black";
 
     protected override async Task OnInitializedAsync()
@@ -174,21 +151,21 @@
         await RefreshItems();
     }
 
-    private async void OnItemSelectionChanged(SteamMarketItemDTO item)
+    private void OnItemSelectionChanged(MarketItemListDTO item)
     {
         Navigation.NavigateTo($"steam/marketplace/{item.Id}");
     }
 
-    private string GetItemStyles(SteamMarketItemDTO item)
+    private string GetItemStyles(MarketItemListDTO item)
     {
-        return $"color: {item.Description.ForegroundColour}";
+        return $"color: {item.ForegroundColour}";
     }
 
     private async Task RefreshItems()
     {
         try
         {
-            items = await Http.GetFromJsonAsync<SteamMarketItemDTO[]>($"SteamMarketItems?filter={itemFilter}");
+            items = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems?filter={itemFilter}");
         }
         catch (AccessTokenNotAvailableException exception)
         {

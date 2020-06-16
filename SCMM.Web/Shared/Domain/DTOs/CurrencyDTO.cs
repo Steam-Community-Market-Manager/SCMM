@@ -1,9 +1,7 @@
-﻿namespace SCMM.Web.Shared.Domain.DTOs.Steam
+﻿namespace SCMM.Web.Shared.Domain.DTOs
 {
-    public class SteamCurrencyDTO : EntityDTO
+    public class CurrencyDTO
     {
-        public string SteamId { get; set; }
-
         public string Name { get; set; }
 
         public string PrefixText { get; set; }
