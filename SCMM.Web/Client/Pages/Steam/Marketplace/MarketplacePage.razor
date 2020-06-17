@@ -24,7 +24,7 @@
 
 </style>
 
-<Grid Container Spacing="@Spacing.Four">
+<Grid Container Spacing="@Spacing.Two">
     <Grid Item ExtraSmall="@GridSize.True">
         @if (items == null)
         {
@@ -86,14 +86,14 @@
                             <TableCell Class="@item.Last24hrValue.ToTextColourClass(item.Last48hrValue)">
                                 @if (item.Last24hrValue.IsStonking(item.Last48hrValue) || item.Last24hrValue.IsStinking(item.Last48hrValue))
                                 {
-                                    <img src="https://image.winudf.com/v2/image1/Y29tLmZvdW5kYXRpb24uc3RvbmtzX2ljb25fMTU2Njg4MjcwNl8wOTE/icon.png?w=170&fakeurl=1" style="width:16px; margin-right: -6px;" /> 
+                                    <img src="/images/stonks-guy.png" style="width:16px; margin-right: -6px;" /> 
                                 }
                                 @item.Last24hrValue.ToStabilityString(item.Last48hrValue)
                             </TableCell>
                             <TableCell Class="@item.Last24hrValue.ToTextColourClass(item.Last120hrValue)">
                                 @if (item.Last24hrValue.IsStonking(item.Last120hrValue) || item.Last24hrValue.IsStinking(item.Last120hrValue))
                                 {
-                                    <img src="https://image.winudf.com/v2/image1/Y29tLmZvdW5kYXRpb24uc3RvbmtzX2ljb25fMTU2Njg4MjcwNl8wOTE/icon.png?w=170&fakeurl=1" style="width:16px; margin-right: -6px;" />
+                                    <img src="/images/stonks-guy.png" style="width:16px; margin-right: -6px;" />
                                 }
                                 @item.Last24hrValue.ToStabilityString(item.Last120hrValue)
                             </TableCell>

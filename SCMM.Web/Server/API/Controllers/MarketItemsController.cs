@@ -53,5 +53,108 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => _mapper.Map<MarketItemDetailDTO>(x))
                 .SingleOrDefault();
         }
+        
+        [HttpGet("dashboard/hotRightNow")]
+        public IEnumerable<MarketItemListDTO> GetDashboardHotRightNow()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.Description)
+                .OrderByDescending(x => x.Last24hrSales)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/allTimeLow")]
+        public IEnumerable<MarketItemListDTO> GetDashboardAllTimeLow()
+        {
+            var lastWeek = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7));
+            return _db.SteamMarketItems
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .Where(x => x.Last24hrValue > 50)
+                .Where(x => x.FirstSeenOn < lastWeek)
+                .OrderBy(x => Math.Abs(x.Last24hrValue - x.AllTimeLowestValue))
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/stonkingRightNow")]
+        public IEnumerable<MarketItemListDTO> GetDashboardStonkingRightNow()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .OrderByDescending(x => x.Last24hrValue - x.Last48hrValue)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/stinkingRightNow")]
+        public IEnumerable<MarketItemListDTO> GetDashboardStinkingRightNow()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .OrderBy(x => x.Last24hrValue - x.Last48hrValue)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/mostProfitable")]
+        public IEnumerable<MarketItemListDTO> GetDashboardMostProfitable()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .OrderByDescending(x => x.Last24hrValue - x.First24hrValue)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/mostCommon")]
+        public IEnumerable<MarketItemListDTO> GetDashboardMostOversaturated()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.Description)
+                .Include(x => x.Description.WorkshopFile)
+                .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
+                .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/mostRare")]
+        public IEnumerable<MarketItemListDTO> GetDashboardRaristExpensive()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.Description)
+                .Include(x => x.Description.WorkshopFile)
+                .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
+                .OrderBy(x => x.Description.WorkshopFile.Subscriptions)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/biggestCrashes")]
+        public IEnumerable<MarketItemListDTO> GetDashboardBiggestCrashes()
+        {
+            var now = DateTimeOffset.UtcNow;
+            return _db.SteamMarketItems
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .Where(x => x.AllTimeHighestValueOn < now)
+                .Where(x => x.Last24hrValue < x.AllTimeHighestValue)
+                .OrderBy(x => x.Last24hrValue - x.AllTimeHighestValue)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
     }
 }

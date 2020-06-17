@@ -52,7 +52,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                     var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
                     var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(batch.ToList());
-                    if (response?.Data?.Any() == false)
+                    if (response?.Data?.Any() != true)
                     {
                         // TODO: Log this
                         continue;
