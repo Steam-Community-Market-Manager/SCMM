@@ -2,7 +2,7 @@
     <AppResources />
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(FullLayout)">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
                 <NotAuthorized>
                     @if (!context.User.Identity.IsAuthenticated)
                     {

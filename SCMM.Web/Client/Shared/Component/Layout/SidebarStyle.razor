@@ -1,0 +1,31 @@
+﻿@namespace SCMM.Web.Client.Shared.Component.Layout
+@inherits StyleComponentBase
+
+<style data-name="Sidebar">
+
+    .Sidebar-Root {
+    }
+
+    .Sidebar-Drawer {
+        width: 240px;
+    }
+
+    @media (min-width: 1280px) {
+        .Sidebar-Drawer {
+            height: calc(100% - 64px);
+            margin-top: 64px;
+        }
+    }
+
+    .Sidebar-Content {
+        height: 100%;
+        display: flex;
+        padding: 16px;
+        flex-direction: column;
+    }
+    
+    .Sidebar-Content > .Divider-Root {
+        margin: 16px 0px;
+    }
+
+</style>

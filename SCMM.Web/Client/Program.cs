@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Skclusive.Material.Layout;
+using Skclusive.Material.Component;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -22,13 +22,12 @@ namespace SCMM.Web.Client
                 }
             );
 
-            builder.Services.TryAddLayoutServices(new LayoutConfigBuilder()
-                .WithIsServer(false)
+            builder.Services.TryAddMaterialServices(new MaterialConfigBuilder()
                 .WithIsPreRendering(false)
-                .WithResponsive(true)
+                .WithIsServer(false)
                 .Build()
             );
-
+            
             builder.Services.AddHttpClient("SCMM.Web.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 

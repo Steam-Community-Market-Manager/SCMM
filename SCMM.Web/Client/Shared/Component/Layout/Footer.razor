@@ -1,0 +1,19 @@
+﻿@namespace SCMM.Web.Client.Shared.Component.Layout
+@inherits FooterComponent
+
+<Component
+    RootRef="@RootRef"
+    Tag="@Component"
+    Class="@_Class"
+    Style="@_Style"
+    @attributes="Attributes">
+    <Typography
+        Variant="@TypographyVariant.Body1">
+        <span>@Name</span> 
+        <span>&copy; @Copyright</span>
+    </Typography>
+    <Typography
+        Variant="@TypographyVariant.Caption">
+        @ChildContent
+    </Typography>
+</Component>

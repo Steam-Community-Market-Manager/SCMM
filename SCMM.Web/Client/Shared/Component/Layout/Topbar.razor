@@ -1,0 +1,43 @@
+﻿@namespace SCMM.Web.Client.Shared.Component.Layout
+@inherits TopbarComponent
+
+<AppBar
+    RootRef="@RootRef"
+    Class="@_Class"
+    Style="@_Style"
+    Color="@Color.Custom"
+    @attributes="Attributes">
+    <Toolbar>
+        @if (HasLogoContent)
+        {
+            <NavLink
+                href="./"
+                style="color: inherit;"
+                Match="@NavLinkMatch.Prefix">
+                @LogoContent
+            </NavLink>
+        }
+        <Typography Class="Topbar-Title"
+                    Variant="@TypographyVariant.H6" 
+                    NoWrap>
+            @ChildContent
+        </Typography>
+        <div
+            class="@_GrowClass"
+            style="@_GrowStyle" />
+        @ActionsContent
+        @if (OnSidebarToggle != null)
+        {
+            <Hidden
+                LargeUp
+                Context="HiddenContext">
+                <IconButton
+                    Class="@HiddenContext.Class"
+                    Color="@Color.Inherit"
+                    OnClick="@OnSidebarToggle">
+                    <MenuIcon />
+                </IconButton>
+            </Hidden>
+        }
+    </Toolbar>
+</AppBar>

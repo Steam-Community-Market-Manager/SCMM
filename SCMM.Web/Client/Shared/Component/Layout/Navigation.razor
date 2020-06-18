@@ -1,0 +1,41 @@
+﻿@namespace SCMM.Web.Client.Shared.Component.Layout
+@inherits NavigationComponent
+
+<List
+    RootRef="@RootRef"
+    Class="@_Class"
+    Style="@_Style"
+    @attributes="Attributes">
+    @foreach(var item in Items)
+    {
+        @if (item != null)
+        {
+            <ListItem
+                @key="@item.Title"
+                Class="@_ItemClass"
+                Style="@_ItemStyle"
+                NoWrap
+                DisableGutters
+                Button>
+                <NavLink
+                    ActiveClass="@_ActiveClass"
+                    class="@($"{context.Class} {_LinkClass}")"
+                    style="@($"{_LinkStyle}")"
+                    href="@item.Path"
+                    @onclick="@item.OnClick"
+                    Match="@(item.Prefix ? NavLinkMatch.Prefix : NavLinkMatch.All)">
+                    <ListItemIcon
+                        Class="@_IconClass"
+                        Style="@_IconStyle">
+                        @item.Icon
+                    </ListItemIcon>
+                    <ListItemText Primary="@item.Title" />
+                </NavLink>
+            </ListItem>
+        }
+        else
+        {
+            <Divider />
+        }
+    }
+</List>

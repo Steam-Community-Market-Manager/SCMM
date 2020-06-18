@@ -7,7 +7,7 @@
 @inject IJSRuntime JSRuntime
 
 <Grid Container Spacing="@Spacing.Two">
-    <Grid Item ExtraSmall="@GridSize.True">
+    <Grid Item Medium="@GridSize.Twelve" Large="@GridSize.True">
         @if (items == null)
         {
             <Loading />
@@ -64,7 +64,7 @@
                                         @item.Favourited.ToQuantityString()
                                     </Typography>
                                 </TableCell>
-                                <TableCell Class="align-top">
+                                <TableCell Class="align-top" Align="@Align.Right">
                                     <Typography GutterBottom="true" class="Theme-Success">
                                         <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">Buy</Button>
                                     </Typography>
@@ -81,21 +81,41 @@
     </Grid>
     @if (itemRankChart != null && itemRankHistoryChart != null)
     {
-        <Grid Item ExtraSmall="@GridSize.True">
-            <Grid Container>
-                <Grid Item ExtraSmall="@GridSize.Twelve">
-                    <Paper Class="Chart-Container">
-                        <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
-                    </Paper>
-                </Grid>
-                <Grid Item ExtraSmall="@GridSize.Twelve">
-                    <Paper Class="Chart-Container" Style="margin-top: 16px">
-                        <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
-                    </Paper>
-                </Grid>
-            </Grid>
+        <Grid Item Medium="@GridSize.Twelve" Large="@GridSize.True">
+            <Paper Class="Chart-Root">
+                <div style="margin-bottom: 16px">
+                    <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
+                </div>
+                <div style="margin-top: 16px">
+                    <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
+                </div>
+            </Paper>
         </Grid>
     }
+
+    <!--
+    <Grid Item ExtraSmall="@GridSize.True">
+        <Grid Container>
+            <Grid Item ExtraSmall="@GridSize.Twelve">
+                <div class="YouTube-Container">
+                    <iframe id="ytplayer" type="text/html" width="720" height="405"
+                            src="https://www.youtube.com/embed/pukk_mdIG68?modestbranding=1"
+                            frameborder="0" allowfullscreen>
+                    </iframe>
+                </div>
+            </Grid>
+            <Grid Item ExtraSmall="@GridSize.Twelve">
+                <div class="YouTube-Container">
+                    <iframe id="ytplayer" type="text/html" width="720" height="405"
+                            src="https://www.youtube.com/embed/6mBAuuIjX9Y?modestbranding=1"
+                            frameborder="0" allowfullscreen>
+                    </iframe>
+                </div>
+            </Grid>
+        </Grid>
+    </Grid>
+    -->
+
 </Grid>
 
 @code {
