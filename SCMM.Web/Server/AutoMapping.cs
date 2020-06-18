@@ -15,6 +15,7 @@ namespace SCMM.Web.Server
             CreateMap<SteamProfile, ProfileDTO>();
 
             CreateMap<SteamMarketItem, MarketItemListDTO>()
+                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))

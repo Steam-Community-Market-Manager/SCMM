@@ -32,6 +32,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             filter = filter?.Trim();
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
