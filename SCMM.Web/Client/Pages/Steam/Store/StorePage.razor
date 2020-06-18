@@ -79,19 +79,43 @@
             </Paper>
         }
     </Grid>
-    @if (itemRankChart != null && itemRankHistoryChart != null)
-    {
-        <Grid Item Medium="@GridSize.Twelve" Large="@GridSize.True">
-            <Paper Class="Chart-Root">
-                <div style="margin-bottom: 16px">
-                    <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
-                </div>
-                <div style="margin-top: 16px">
-                    <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
-                </div>
-            </Paper>
+    <Grid Item Medium="@GridSize.Twelve" Large="@GridSize.True">
+        <Grid Container>
+            <Grid ExtraSmall="@GridSize.Twelve">
+                @if (itemRankChart != null || itemRankHistoryChart != null)
+                {
+                    <Paper>
+                        <Tabs Value="@selectedItemChartPanel"
+                              OnChange="@OnSelectedItemChartChanged"
+                              IndicatorColor="@Color.Primary"
+                              TextColor="@Color.Primary"
+                              Variant="@TabsVariant.FullWidth">
+                            <Tab Value="0" Label="Most Popular" />
+                            <Tab Value="1" Label="This Weeks Trend" />
+                        </Tabs>
+                        <TabPanel Value="@selectedItemChartPanel" Index="0">
+                            @if (itemRankChart != null)
+                            {
+                                <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
+                            }
+                        </TabPanel>
+                        <TabPanel Value="@selectedItemChartPanel" Index="1">
+                            @if (itemRankHistoryChart != null)
+                            {
+                                <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
+                            }
+                        </TabPanel>
+                    </Paper>
+                }
+            </Grid>
+            <Grid Item ExtraSmall="@GridSize.Six">
+                <YouTubeVideo VideoId="6mBAuuIjX9Y" />
+            </Grid>
+            <Grid Item ExtraSmall="@GridSize.Six">
+                <YouTubeVideo VideoId="pukk_mdIG68" />
+            </Grid>
         </Grid>
-    }
+    </Grid>
 
     <!--
     <Grid Item ExtraSmall="@GridSize.True">
@@ -121,17 +145,16 @@
 @code {
 
     private StoreItemListDTO[] items;
+
+    private object selectedItemChartPanel = 0;
     private ChartJsBarChart itemRankChartJs;
     private ChartJsLineChart itemRankHistoryChartJs;
     private BarConfig itemRankChart;
     private LineConfig itemRankHistoryChart;
 
-
     protected override async Task OnInitializedAsync()
     {
         await RefreshItems();
-        RedrawItemRankChart();
-        RedrawItemRankHistoryChart();
     }
 
     private async Task BuyItem(StoreItemListDTO item)
@@ -151,6 +174,7 @@
         try
         {
             items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"StoreItems");
+            OnSelectedItemChartChanged(selectedItemChartPanel);
         }
         catch (AccessTokenNotAvailableException exception)
         {
@@ -161,6 +185,20 @@
     private string GetItemStyles(StoreItemListDTO item)
     {
         return $"color: {item.ForegroundColour}";
+    }
+
+    private void OnSelectedItemChartChanged(object value)
+    {
+        selectedItemChartPanel = value;
+        itemRankChart = null;
+        itemRankHistoryChart = null;
+        switch (selectedItemChartPanel)
+        {
+            case 0: RedrawItemRankChart(); break;
+            case 1: RedrawItemRankHistoryChart(); break;
+        }
+
+        StateHasChanged();
     }
 
     private void RedrawItemRankChart()
