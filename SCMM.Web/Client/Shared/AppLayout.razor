@@ -59,21 +59,23 @@
                 Icon = @<SwapBagIcon />,
                 Title = "Inventory",
                 Path = "steam/inventory",
-                Prefix = false
+                Prefix = false,
+                Disabled = true
             },
             new NavigationItem
             {
                 Icon = @<CashIcon />,
                 Title = "History",
                 Path =  "steam/history",
-                Prefix =  true
+                Prefix =  true,
+                Disabled = true
             },
             new NavigationItem
             {
                 Icon = @<TakeMyMoneyIcon />,
                 Title = "Marketplace",
                 Path = "steam/marketplace",
-                Prefix = true,
+                Prefix = true
             },
             new NavigationItem
             {
@@ -87,7 +89,8 @@
                 Icon = @<SprayIcon />,
                 Title = "Workshop",
                 Path =  "steam/workshop",
-                Prefix =  true
+                Prefix =  true,
+                Disabled = true
             },
             null,
             new NavigationItem
@@ -95,7 +98,8 @@
                 Icon = @<HelpIcon />,
                 Title = "What is this?",
                 Path =  "about",
-                Prefix =  true
+                Prefix =  true,
+                Disabled = true
             }
         };
     }

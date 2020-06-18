@@ -14,5 +14,7 @@ namespace SCMM.Web.Client.Shared.Component.Layout
         public Action OnClick { set; get; }
 
         public bool Prefix { set; get; }
+
+        public bool Disabled { get; set; }
     }
 }
