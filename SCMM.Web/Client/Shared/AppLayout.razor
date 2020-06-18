@@ -1,7 +1,4 @@
 ﻿@inherits LayoutComponentBase
-@inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject SignOutSessionStateManager SignOutManager
 
 <MainLayout>
     <LogoContent>
@@ -18,15 +15,6 @@
         </Hidden>
     </ActionsContent>
     <SidebarContent>
-        <AuthorizeView>
-            <Authorized>
-                <Profile Name="Name"
-                         Avatar="https://steamuserimages-a.akamaihd.net/ugc/885384897182110030/F095539864AC9E94AE5236E04C8CA7C2725BCEFF/"
-                         SubTitle="Subtitle">
-                </Profile>
-                <Divider />
-            </Authorized>
-        </AuthorizeView>
         @if (navigationItems != null)
         {
             <Navigation Items="@navigationItems">
@@ -52,7 +40,6 @@
     protected override async Task OnInitializedAsync()
     {
         navigationItems = BuildGeneralNaviationItems();
-        this.StateHasChanged();
     }
 
     private List<NavigationItem> BuildGeneralNaviationItems()
@@ -111,54 +98,6 @@
                 Prefix =  true
             }
         };
-        }
-
-        private List<NavigationItem> BuildAuthenticatedNaviationItems()
-        {
-            return new List<NavigationItem>
-        {
-            new NavigationItem
-            {
-                Icon = @<i class="fa fa-2x fa-cog" />,
-                Title = "Profile",
-                Path = "authentication/profile",
-                Prefix = false
-            },
-            new NavigationItem
-            {
-                Icon = @<i class="fa fa-2x fa-user" />,
-                Title = "Logout",
-                Path = "authentication/logout",
-                Prefix = false
-            }
-        };
-        }
-
-        private List<NavigationItem> BuildUnauthenticatedNaviationItems()
-        {
-            return new List<NavigationItem>
-        {
-            new NavigationItem
-            {
-                Icon = @<i class="fa fa-2x fa-user-plus" />,
-                Title = "Register",
-                Path = "authentication/register",
-                Prefix = false
-            },
-            new NavigationItem
-            {
-                Icon = @<i class="fa fa-2x fa-user" />,
-                Title = "Login",
-                Path = "authentication/login",
-                Prefix = false
-            }
-        };
-        }
-
-        private async void Logout()
-        {
-            await SignOutManager.SetSignOutState();
-            Navigation.NavigateTo("authentication/logout");
-        }
+    }
 
 }
