@@ -46,12 +46,22 @@ namespace SCMM.Web.Server.API.Controllers
             // TODO: Do this better, very lazy
             foreach (var item in items.Where(x => x.Tags != null))
             {
-                var type = Uri.EscapeDataString(item.Tags[SteamConstants.SteamAssetTagItemType]);
-                if (String.IsNullOrEmpty(type))
+                var itemType = String.Empty;
+                if (item.Tags.ContainsKey(SteamConstants.SteamAssetTagItemType))
                 {
-                    type = Uri.EscapeDataString(
+                    itemType = Uri.EscapeDataString(
+                        item.Tags[SteamConstants.SteamAssetTagItemType]
+                    );
+                }
+                else if(item.Tags.ContainsKey(SteamConstants.SteamAssetTagWorkshop))
+                {
+                    itemType = Uri.EscapeDataString(
                         item.Tags.FirstOrDefault(x => x.Key.StartsWith(SteamConstants.SteamAssetTagWorkshop)).Value
                     );
+                }
+                if (string.IsNullOrEmpty(itemType))
+                {
+                    continue;
                 }
 
                 var itemPrice = item.StorePrice;
@@ -60,11 +70,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .Select(app => new
                     {
                         Position = app.MarketItems
-                            .Where(x => x.Description.Tags.Serialised.Contains(type))
+                            .Where(x => x.Description.Tags.Serialised.Contains(itemType))
                             .Where(x => x.BuyNowPrice < itemPrice)
                             .Count(),
                         Total = app.MarketItems
-                            .Where(x => x.Description.Tags.Serialised.Contains(type))
+                            .Where(x => x.Description.Tags.Serialised.Contains(itemType))
                             .Count() + 1,
                     })
                     .SingleOrDefault();
