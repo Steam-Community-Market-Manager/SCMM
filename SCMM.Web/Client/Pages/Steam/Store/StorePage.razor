@@ -6,14 +6,14 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 
-<Grid Container Spacing="@Spacing.Two">
-    <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-        @if (items == null)
-        {
-            <Loading />
-        }
-        else
-        {
+@if (items == null)
+{
+    <Loading />
+}
+else
+{
+    <Grid Container Spacing="@Spacing.Two">
+        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
             <Paper>
                 <Table Narrow="true">
                     <TableBody>
@@ -77,70 +77,46 @@
                     </TableBody>
                 </Table>
             </Paper>
-        }
-    </Grid>
-    <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-        <Grid Container>
-            <Grid ExtraSmall="@GridSize.Twelve">
-                @if (itemRankChart != null || itemRankHistoryChart != null)
-                {
-                    <Paper>
-                        <Tabs Value="@selectedItemChartPanel"
-                              OnChange="@OnSelectedItemChartChanged"
-                              IndicatorColor="@Color.Primary"
-                              TextColor="@Color.Primary"
-                              Variant="@TabsVariant.FullWidth">
-                            <Tab Value="0" Label="Now" />
-                            <Tab Value="1" Label="This Week" />
-                        </Tabs>
-                        <TabPanel Value="@selectedItemChartPanel" Index="0">
-                            @if (itemRankChart != null)
-                            {
-                                <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
-                            }
-                        </TabPanel>
-                        <TabPanel Value="@selectedItemChartPanel" Index="1">
-                            @if (itemRankHistoryChart != null)
-                            {
-                                <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
-                            }
-                        </TabPanel>
-                    </Paper>
-                }
-            </Grid>
-            <Grid Item ExtraSmall="@GridSize.Six">
-                <YouTubeVideo VideoId="6mBAuuIjX9Y" />
-            </Grid>
-            <Grid Item ExtraSmall="@GridSize.Six">
-                <YouTubeVideo VideoId="pukk_mdIG68" />
+        </Grid>
+        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+            <Grid Container>
+                <Grid ExtraSmall="@GridSize.Twelve">
+                    @if (itemRankChart != null || itemRankHistoryChart != null)
+                    {
+                        <Paper>
+                            <Tabs Value="@selectedItemChartPanel"
+                                  OnChange="@OnSelectedItemChartChanged"
+                                  IndicatorColor="@Color.Primary"
+                                  TextColor="@Color.Primary"
+                                  Variant="@TabsVariant.FullWidth">
+                                <Tab Value="0" Label="Now" />
+                                <Tab Value="1" Label="This Week" />
+                            </Tabs>
+                            <TabPanel Value="@selectedItemChartPanel" Index="0">
+                                @if (itemRankChart != null)
+                                {
+                                    <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
+                                }
+                            </TabPanel>
+                            <TabPanel Value="@selectedItemChartPanel" Index="1">
+                                @if (itemRankHistoryChart != null)
+                                {
+                                    <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
+                                }
+                            </TabPanel>
+                        </Paper>
+                    }
+                </Grid>
+                <Grid Item ExtraSmall="@GridSize.Six">
+                    <YouTubeVideo VideoId="6mBAuuIjX9Y" />
+                </Grid>
+                <Grid Item ExtraSmall="@GridSize.Six">
+                    <YouTubeVideo VideoId="pukk_mdIG68" />
+                </Grid>
             </Grid>
         </Grid>
     </Grid>
-
-    <!--
-    <Grid Item ExtraSmall="@GridSize.True">
-        <Grid Container>
-            <Grid Item ExtraSmall="@GridSize.Twelve">
-                <div class="YouTube-Container">
-                    <iframe id="ytplayer" type="text/html" width="720" height="405"
-                            src="https://www.youtube.com/embed/pukk_mdIG68?modestbranding=1"
-                            frameborder="0" allowfullscreen>
-                    </iframe>
-                </div>
-            </Grid>
-            <Grid Item ExtraSmall="@GridSize.Twelve">
-                <div class="YouTube-Container">
-                    <iframe id="ytplayer" type="text/html" width="720" height="405"
-                            src="https://www.youtube.com/embed/6mBAuuIjX9Y?modestbranding=1"
-                            frameborder="0" allowfullscreen>
-                    </iframe>
-                </div>
-            </Grid>
-        </Grid>
-    </Grid>
-    -->
-
-</Grid>
+}
 
 @code {
 
