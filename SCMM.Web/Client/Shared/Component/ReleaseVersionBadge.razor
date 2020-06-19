@@ -1,0 +1,15 @@
+﻿@namespace SCMM.Web.Client.Shared.Component
+@inject NavigationManager Navigation
+
+<Fab Variant="@FabVariant.Extended" Size="@Size.Small" Color="@Color.TextPrimary" OnClick="@ViewAboutPage" Style="margin: 8px; height:24px">
+    Preview
+</Fab>
+
+@code {
+
+    private void ViewAboutPage()
+    {
+        Navigation.NavigateTo($"about");
+    }
+
+}

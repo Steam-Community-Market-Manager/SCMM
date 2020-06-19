@@ -1,5 +1,4 @@
 ﻿@inherits LayoutComponentBase
-@inject NavigationManager Navigation
 
 <MainLayout>
     <LogoContent>
@@ -7,14 +6,12 @@
     </LogoContent>
     <TitleContent>
         <span>Rust - Steam Community Market</span>
-        <Fab Variant="@FabVariant.Extended" Size="@Size.Small" Color="@Color.TextPrimary" OnClick="@ViewAboutPage" Style="margin: 8px; height:24px">
-            Preview
-        </Fab>
+        <ReleaseVersionBadge />
     </TitleContent>
     <ActionsContent>
         <Hidden MediumDown Context="HiddenContext">
             <div Class="@HiddenContext.Class">
-
+                <CurrencySelector Currency="NZD" />
             </div>
         </Hidden>
     </ActionsContent>
@@ -52,11 +49,6 @@
     {
         isDonateOpen = true;
         StateHasChanged();
-    }
-
-    private void ViewAboutPage()
-    {
-        Navigation.NavigateTo($"about");
     }
 
     private List<NavigationItem> BuildGeneralNaviationItems()
