@@ -59,6 +59,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardHotRightNow()
         {
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Description)
                 .OrderByDescending(x => x.Last24hrSales)
                 .Take(10)
@@ -71,6 +72,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var lastWeek = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7));
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.Last24hrValue > 50)
@@ -85,6 +87,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardStonkingRightNow()
         {
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .OrderByDescending(x => x.Last24hrValue - x.Last48hrValue)
@@ -97,6 +100,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardStinkingRightNow()
         {
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .OrderBy(x => x.Last24hrValue - x.Last48hrValue)
@@ -109,6 +113,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardMostProfitable()
         {
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .OrderByDescending(x => x.Last24hrValue - x.First24hrValue)
@@ -121,6 +126,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardMostOversaturated()
         {
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
                 .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
@@ -134,6 +140,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardRaristExpensive()
         {
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
                 .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
@@ -148,6 +155,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var now = DateTimeOffset.UtcNow;
             return _db.SteamMarketItems
+                .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.AllTimeHighestValueOn < now)
