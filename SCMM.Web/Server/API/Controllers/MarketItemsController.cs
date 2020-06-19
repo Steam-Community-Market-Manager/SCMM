@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -28,17 +30,56 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<MarketItemListDTO> Get([FromQuery] string filter = null)
+        public IEnumerable<MarketItemListDTO> Get(
+            [FromQuery] string filter = null,
+            [FromQuery] string sort = null,
+            [FromQuery] bool sortDesc = false,
+            [FromQuery] int page = 0, 
+            [FromQuery] int pageSize = 25)
         {
             filter = filter?.Trim();
-            return _db.SteamMarketItems
+            page = Math.Max(0, page);
+            pageSize = Math.Max(0, Math.Min(1000, pageSize));
+
+            var query = _db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
-                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
-                .OrderBy(x => x.Description.Name)
-                .Take(100)
+                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.Tags.Serialised.Contains(filter));
+            
+            Expression<Func<SteamMarketItem, dynamic>> orderByExpression = (x) => x.Description.Name;
+            if (!String.IsNullOrEmpty(sort))
+            {
+                switch (sort)
+                {
+                    case nameof(MarketItemListDTO.Name): orderByExpression = (x) => x.Description.Name; break;
+                    case nameof(MarketItemListDTO.MarketAge): orderByExpression = (x) => x.MarketAge; break;
+                    case nameof(MarketItemListDTO.Subscriptions): orderByExpression = (x) => x.Description.WorkshopFile.Subscriptions; break;
+                    case nameof(MarketItemListDTO.Supply): orderByExpression = (x) => x.Supply; break;
+                    case nameof(MarketItemListDTO.Demand): orderByExpression = (x) => x.Demand; break;
+                    case nameof(MarketItemListDTO.Last24hrSales): orderByExpression = (x) => x.Last24hrSales; break;
+                    case nameof(MarketItemListDTO.Last24hrValue): orderByExpression = (x) => x.Last24hrValue; break;
+                    case nameof(MarketItemListDTO.Last48hrValue): orderByExpression = (x) => (x.Last24hrValue - x.Last48hrValue); break;
+                    case nameof(MarketItemListDTO.Last120hrValue): orderByExpression = (x) => (x.Last24hrValue - x.Last120hrValue); break;
+                    case nameof(MarketItemListDTO.BuyNowPrice): orderByExpression = (x) => x.BuyNowPrice; break;
+                    case nameof(MarketItemListDTO.BuyAskingPrice): orderByExpression = (x) => x.BuyAskingPrice; break;
+                    case nameof(MarketItemListDTO.First24hrValue): orderByExpression = (x) => x.First24hrValue; break;
+                    case "Appreciation": orderByExpression = (x) => (x.Last24hrValue - x.First24hrValue); break;
+                }
+            }
+            if (sortDesc)
+            {
+                query = query.OrderByDescending(orderByExpression);
+            }
+            else
+            {
+                query = query.OrderBy(orderByExpression);
+            }
+
+            return query
+                .Skip((page * pageSize))
+                .Take(pageSize)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
         }
