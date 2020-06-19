@@ -1,0 +1,27 @@
+﻿@namespace SCMM.Web.Client.Shared.Component
+@inherits MaterialComponent
+
+<Paper Class="Alert-Root Alert-Info">
+    <Typography Variant="@TypographyVariant.Subtitle1" Class="Alert-Title">
+        <strong class="Alert-Title-Icon">
+            @Icon
+        </strong>
+        <strong>@Title</strong>
+    </Typography>
+    <div class="Alert-Body">
+        @MessageContent
+    </div>
+</Paper>
+
+@code {
+
+    [Parameter]
+    public RenderFragment Icon { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public RenderFragment MessageContent { get; set; }
+
+}
