@@ -18,20 +18,38 @@
                 DisableGutters
                 Disabled="@item.Disabled"
                 Button>
-                <NavLink
-                    ActiveClass="@_ActiveClass"
-                    class="@($"{context.Class} {_LinkClass}")"
-                    style="@($"{_LinkStyle}")"
-                    href="@item.Path"
-                    @onclick="@item.OnClick"
-                    Match="@(item.Prefix ? NavLinkMatch.Prefix : NavLinkMatch.All)">
-                    <ListItemIcon
-                        Class="@_IconClass"
-                        Style="@_IconStyle">
-                        @item.Icon
-                    </ListItemIcon>
-                    <ListItemText Primary="@item.Title" />
-                </NavLink>
+                @if (item.OnClick != null)
+                {
+                    <NavLink
+                        class="@($"{context.Class} {_LinkClass}")"
+                        style="@($"{_LinkStyle}")"
+                        @onclick="@item.OnClick">
+                        <ListItemIcon
+                            Class="@_IconClass"
+                            Style="@_IconStyle">
+                            @item.Icon
+                        </ListItemIcon>
+                        <ListItemText Primary="@item.Title"
+                                      Secondary="@item.SubTitle" />
+                    </NavLink>
+                }
+                else
+                {
+                    <NavLink
+                        ActiveClass="@_ActiveClass"
+                        class="@($"{context.Class} {_LinkClass}")"
+                        style="@($"{_LinkStyle}")"
+                        href="@item.Path"
+                        Match="@(item.Prefix ? NavLinkMatch.Prefix : NavLinkMatch.All)">
+                        <ListItemIcon
+                            Class="@_IconClass"
+                            Style="@_IconStyle">
+                            @item.Icon
+                        </ListItemIcon>
+                        <ListItemText Primary="@item.Title"
+                                      Secondary="@item.SubTitle" />
+                    </NavLink>
+                }
             </ListItem>
         }
         else

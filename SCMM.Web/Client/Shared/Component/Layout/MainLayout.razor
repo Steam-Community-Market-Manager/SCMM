@@ -29,15 +29,15 @@
         Variant="@SidebarVariant"
         OnClick="@HandleSidebarClick">
         @SidebarContent
+        <div class="MainLayout-Sidebar-Footer">
+            @FooterContent
+        </div>
     </Sidebar>
     <main
         class="@_ContentClass"
         style="@_ContentStyle">
         <div class="MainLayout-Content-Body">
             @BodyContent
-        </div>
-        <div class="MainLayout-Content-Footer">
-            @FooterContent
         </div>
     </main>
 </Component>

@@ -24,36 +24,36 @@
     <BodyContent>
         @Body
     </BodyContent>
-    <!--
     <FooterContent>
-        <Footer Name="Steam Community Market Manager" Copyright="2020">
-            <span>A little side project by Rhys Koedijk.</span>
-        </Footer>
+        <Typography Variant="@TypographyVariant.Body2">
+            <span><strong>SCMM</strong></span>
+            <span>&copy; 2020 Rhys Koedijk</span>
+        </Typography>
     </FooterContent>
-    -->
 </MainLayout>
+
+<DonateDialog @bind-Open="isDonateOpen" />
 
 @code {
 
     private List<NavigationItem> navigationItems;
+    private bool isDonateOpen;
 
     protected override async Task OnInitializedAsync()
     {
         navigationItems = BuildGeneralNaviationItems();
     }
 
+    private void DonationOpen()
+    {
+        isDonateOpen = true;
+        StateHasChanged();
+    }
+
     private List<NavigationItem> BuildGeneralNaviationItems()
     {
         return new List<NavigationItem>
-{
-            new NavigationItem
-            {
-                Icon = @<ChartIcon />,
-                Title = "Dashboard",
-                Path = "/",
-                Prefix = false
-            },
-            null,
+    {
             new NavigationItem
             {
                 Icon = @<SwapBagIcon />,
@@ -70,24 +70,40 @@
                 Prefix =  true,
                 Disabled = true
             },
+            null,
+            new NavigationItem
+            {
+                Icon = @<ChartIcon />,
+                Title = "Market Statistics",
+                Path = "steam/marketstatistics",
+                Prefix = false
+            },
+            new NavigationItem
+            {
+                Icon = @<ArtificialIntelligenceIcon />,
+                Title = "Market Insights",
+                Path =  "steam/marketinsights",
+                Prefix =  true,
+                Disabled = true
+            },
             new NavigationItem
             {
                 Icon = @<TakeMyMoneyIcon />,
-                Title = "Marketplace",
+                Title = "Market Listings",
                 Path = "steam/marketplace",
                 Prefix = true
             },
             new NavigationItem
             {
                 Icon = @<PriceTagIcon />,
-                Title = "Store",
+                Title = "Item Store",
                 Path =  "steam/store",
                 Prefix =  true
             },
             new NavigationItem
             {
                 Icon = @<SprayIcon />,
-                Title = "Workshop",
+                Title = "Item Workshop",
                 Path =  "steam/workshop",
                 Prefix =  true,
                 Disabled = true
@@ -95,11 +111,17 @@
             null,
             new NavigationItem
             {
-                Icon = @<HelpIcon />,
-                Title = "About / FAQs",
+                Icon = @<InformationIcon />,
+                Title = "About",
                 Path =  "about",
-                Prefix =  true,
-                Disabled = true
+                Prefix =  true
+            },
+            new NavigationItem
+            {
+                Icon = @<ReceiveMoneyIcon />,
+                Title = "Donate",
+                SubTitle = "Show your support",
+                OnClick = DonationOpen
             }
         };
         }
