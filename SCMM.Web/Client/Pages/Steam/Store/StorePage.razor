@@ -81,7 +81,7 @@ else
         <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
             <Grid Container>
                 <Grid ExtraSmall="@GridSize.Twelve">
-                    @if (itemRankChart != null || itemRankHistoryChart != null)
+                    @if (itemRevenueChart != null || itemRankChart != null || itemRankHistoryChart != null)
                     {
                         <Paper>
                             <Tabs Value="@selectedItemChartPanel"
@@ -89,16 +89,32 @@ else
                                   IndicatorColor="@Color.Primary"
                                   TextColor="@Color.Primary"
                                   Variant="@TabsVariant.FullWidth">
-                                <Tab Value="0" Label="Now" />
-                                <Tab Value="1" Label="This Week" />
+                                <Tab Value="0" Label="Sales Revenue" />
+                                <Tab Value="1" Label="Popular Now" />
+                                <Tab Value="2" Label="Popular This Week" />
                             </Tabs>
                             <TabPanel Value="@selectedItemChartPanel" Index="0">
+                                @if (itemRevenueChart != null)
+                                {
+                                    <Alert Info Title="Minimum sales revenue disclaimer" Rounded="false">
+                                        <Icon>
+                                            <i class="fa fa-fw fa-exclamation-circle"></i>
+                                        </Icon>
+                                        <MessageContent>
+                                            <span>This graph represents <strong>minimum</strong> revenue earned through item sales. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher. Steam doesn't advertise exact sales figures, this is is the closest estimate.</span>
+                                            <span><strong>TL;DR;</strong> Revenue is at least @(items.FirstOrDefault().Currency.ToPriceString(items.Sum(x => x.Subscriptions * x.StorePrice))) so far this week.</span>
+                                        </MessageContent>
+                                    </Alert>
+                                    <ChartJsBarChart @ref="itemRevenueChartJs" Config="@itemRevenueChart" />
+                                }
+                            </TabPanel>
+                            <TabPanel Value="@selectedItemChartPanel" Index="1">
                                 @if (itemRankChart != null)
                                 {
                                     <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
                                 }
                             </TabPanel>
-                            <TabPanel Value="@selectedItemChartPanel" Index="1">
+                            <TabPanel Value="@selectedItemChartPanel" Index="2">
                                 @if (itemRankHistoryChart != null)
                                 {
                                     <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
@@ -122,9 +138,11 @@ else
 
     private StoreItemListDTO[] items;
 
-    private object selectedItemChartPanel = 0;
+    private object selectedItemChartPanel = 1;
+    private ChartJsBarChart itemRevenueChartJs;
     private ChartJsBarChart itemRankChartJs;
     private ChartJsLineChart itemRankHistoryChartJs;
+    private BarConfig itemRevenueChart;
     private BarConfig itemRankChart;
     private LineConfig itemRankHistoryChart;
 
@@ -166,15 +184,105 @@ else
     private void OnSelectedItemChartChanged(object value)
     {
         selectedItemChartPanel = value;
+        itemRevenueChart = null;
         itemRankChart = null;
         itemRankHistoryChart = null;
         switch (selectedItemChartPanel)
         {
-            case 0: RedrawItemRankChart(); break;
-            case 1: RedrawItemRankHistoryChart(); break;
+            case 0: RedrawItemRevenueChart(); break;
+            case 1: RedrawItemRankChart(); break;
+            case 2: RedrawItemRankHistoryChart(); break;
         }
 
         StateHasChanged();
+    }
+
+    private void RedrawItemRevenueChart()
+    {
+        itemRevenueChart = new BarConfig
+        {
+            Options = new BarOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scales = new BarScales
+                {
+                    XAxes = new List<CartesianAxis>
+                    {
+                        new BarCategoryAxis
+                        {
+                            Ticks = new CategoryTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff",
+
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    },
+                    YAxes = new List<CartesianAxis>
+                    {
+                        new BarLinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        itemRevenueChart.Data.Labels.AddRange(
+            items.Select(x => x.Name).ToArray()
+        );
+
+        var itemRevenue = new BarDataset<DoubleWrapper>
+        {
+            Label = "Minimum Sales Revenue",
+            BackgroundColor = "#388e3c",
+            BorderColor = "#1b5e20",
+            BorderWidth = 1
+        };
+        itemRevenue.AddRange(
+            items.Select(x => (DoubleWrapper) (x.Subscriptions * x.StorePrice))
+        );
+
+        itemRevenueChart.Data.Datasets.AddRange(new[] {
+            itemRevenue
+        });
     }
 
     private void RedrawItemRankChart()
