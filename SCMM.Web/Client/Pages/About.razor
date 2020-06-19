@@ -1,10 +1,93 @@
 @page "/about"
 @inject HttpClient Http
 
-<Typography>
-    <i class="fa fa-fw fa-wrench"></i> 
-    Under construction, check back later...
+<Typography Variant="@TypographyVariant.H5" Color="@Color.Primary"  Style="margin: 0px 0px 8px;">
+    About
 </Typography>
+<Paper Style="padding:16px">
+    <Typography Variant="@TypographyVariant.Body1">
+        <span>This tool was created because I wasn't satified with manually tracking my inventory performance against the Steam Community Market.</span><br />
+        <span>I make no claims that the information provided here is accurate, use it at your own risk.</span>
+    </Typography>
+    <br/>
+    <Typography Variant="@TypographyVariant.Body1">
+        <span>Acknowledgements</span>
+    </Typography>
+    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
+        <ul>
+            <li><a href="https://steamcommunity.com/">Steam Community</a> and <a href="https://partner.steamgames.com/doc/webapi">Steam WebAPI</a> for providing the source data</li>
+            <li><a href="https://game-icons.net/">game-icons.net</a> and <a href="https://fontawesome.com/">Font Awesome</a> for providing various icons</li>
+            <li><a href="https://discord.gg/CRMf95Z">OMIGHTY YouTube</a> Discord community for their feedback</li>
+        </ul>
+    </Typography>
+</Paper>
+
+<Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" Style="margin: 16px 0px 8px;">
+    Frequently Asked Questions
+</Typography>
+<Paper Style="padding:16px">
+    <Typography Variant="@TypographyVariant.Body1">
+        <i class="fa fa-fw fa-question-circle"></i>
+        <span>Why can't I change the currency?</span>
+    </Typography>
+    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
+        <span>Only NZD is supported at this time. All Steam currencies will be available once i18n support is completed, so stay tuned.</span>
+    </Typography>
+    <br />
+    <Typography Variant="@TypographyVariant.Body1">
+        <i class="fa fa-fw fa-question-circle"></i>
+        <span>Why are some of the menu options disabled?</span>
+    </Typography>
+    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
+        <span>These features aren't finished yet. They'll be enabled in a future update when they are ready, so stay tuned.</span>
+    </Typography>
+    <br />
+    <Typography Variant="@TypographyVariant.Body1">
+        <i class="fa fa-fw fa-question-circle"></i>
+        <span>When will the next update be released?</span>
+    </Typography>
+    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
+        <span>I'm not commited to any release schedule, but I do post progress updates in the <a href="https://discord.gg/CRMf95Z">OMIGHTY YouTube</a> Discord from time-to-time.</span>
+    </Typography>
+    <br />
+    <Typography Variant="@TypographyVariant.Body1">
+        <i class="fa fa-fw fa-question-circle"></i>
+        <span>I have a suggestion/idea/bug, where do I report it?</span>
+    </Typography>
+    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
+        <span>All feedback is appreicated, drop me a message on Discord.</span>
+    </Typography>
+    <br />
+    <Typography Variant="@TypographyVariant.Body1">
+        <i class="fa fa-fw fa-question-circle"></i>
+        <span>I want to help with this project, how do I get involved?</span>
+    </Typography>
+    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
+        <span>At this time I'm not actively looking for any help, the project is still very early-days.</span>
+    </Typography>
+    <br />
+    <Typography Variant="@TypographyVariant.Body1">
+        <i class="fa fa-fw fa-question-circle"></i>
+        <span>How do I get in contact with you?</span>
+    </Typography>
+    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
+        <span>Discord: Bipolar Penguin#8838</span>
+    </Typography>
+</Paper>
+
+<Typography Variant="@TypographyVariant.H5" Color="@Color.Primary"  Style="margin:16px 0px 8px;">
+    Change History
+</Typography>
+<Paper Style="padding:16px">
+    <Typography Variant="@TypographyVariant.Body1">
+        <span>v0.1a (20/06/2020)</span>
+    </Typography>
+    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
+        <ul>
+            <li>Initial preview release</li>
+        </ul>
+    </Typography>
+</Paper>
 
 @code {
 
