@@ -1,7 +1,7 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
 @inherits MaterialComponent
 
-<Paper Class="Alert-Root Alert-Info">
+<Paper Class="@GetClasses()" Style="@GetStyles()">
     <Typography Variant="@TypographyVariant.Subtitle1" Class="Alert-Title">
         <strong class="Alert-Title-Icon">
             @Icon
@@ -22,6 +22,53 @@
     public string Title { get; set; }
 
     [Parameter]
+    public bool Success { get; set; }
+
+    [Parameter]
+    public bool Warning { get; set; }
+
+    [Parameter]
+    public bool Error { get; set; }
+
+    [Parameter]
+    public bool Info { get; set; }
+
+    [Parameter]
+    public bool Rounded { get; set; } = true;
+
+    [Parameter]
     public RenderFragment MessageContent { get; set; }
 
+    private string GetClasses()
+    {
+        var classes = new System.Text.StringBuilder();
+        classes.Append("Alert-Root ");
+        if (Success)
+        {
+            classes.Append("Alert-Success ");
+        }
+        if (Warning)
+        {
+            classes.Append("Alert-Warning ");
+        }
+        if (Error)
+        {
+            classes.Append("Alert-Error ");
+        }
+        if (Info)
+        {
+            classes.Append("Alert-Info ");
+        }
+        return classes.ToString();
+    }
+
+    private string GetStyles()
+    {
+        var styles = new System.Text.StringBuilder();
+        if (!Rounded)
+        {
+            styles.Append("border-radius:unset; ");
+        }
+        return styles.ToString();
+    }
 }
