@@ -21,7 +21,9 @@ else
                         {
                             <TableRow>
                                 <TableCell Class="align-top">
-                                    <img src="@item.IconUrl" style="width:80px" />
+                                    <Hidden ExtraSmallDown>
+                                        <img src="@item.IconUrl" style="width:80px" />
+                                    </Hidden>
                                 </TableCell>
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.H6" Style="@GetItemStyles(item)" GutterBottom="true">
@@ -148,7 +150,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshItems();
+        RefreshItems();
     }
 
     private async Task BuyItem(StoreItemListDTO item)
@@ -169,6 +171,7 @@ else
         {
             items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"StoreItems");
             OnSelectedItemChartChanged(selectedItemChartPanel);
+            StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
         {

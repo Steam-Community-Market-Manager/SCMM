@@ -16,9 +16,9 @@
         </Hidden>
     </ActionsContent>
     <SidebarContent>
-        @if (navigationItems != null)
+        @if (NavigationItems != null)
         {
-            <Navigation Items="@navigationItems">
+            <Navigation Items="@NavigationItems">
             </Navigation>
         }
     </SidebarContent>
@@ -33,21 +33,21 @@
     </FooterContent>
 </MainLayout>
 
-<DonateDialog @bind-Open="isDonateOpen" />
+<DonateDialog @bind-Open="DonateDialogOpened" />
 
 @code {
 
-    private List<NavigationItem> navigationItems;
-    private bool isDonateOpen;
+    private List<NavigationItem> NavigationItems { get; set; }
+    private bool DonateDialogOpened { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        navigationItems = BuildGeneralNaviationItems();
+        NavigationItems = BuildGeneralNaviationItems();
     }
 
     private void DonationOpen()
     {
-        isDonateOpen = true;
+        DonateDialogOpened = true;
         StateHasChanged();
     }
 
