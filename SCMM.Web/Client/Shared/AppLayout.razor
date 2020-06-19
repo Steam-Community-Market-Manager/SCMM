@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
 
 <MainLayout>
     <LogoContent>
@@ -6,6 +7,9 @@
     </LogoContent>
     <TitleContent>
         <span>Rust - Steam Community Market</span>
+        <Fab Variant="@FabVariant.Extended" Size="@Size.Small" Color="@Color.TextPrimary" OnClick="@ViewAboutPage" Style="margin: 8px; height:24px">
+            Preview
+        </Fab>
     </TitleContent>
     <ActionsContent>
         <Hidden MediumDown Context="HiddenContext">
@@ -50,10 +54,15 @@
         StateHasChanged();
     }
 
+    private void ViewAboutPage()
+    {
+        Navigation.NavigateTo($"about");
+    }
+
     private List<NavigationItem> BuildGeneralNaviationItems()
     {
         return new List<NavigationItem>
-    {
+{
             new NavigationItem
             {
                 Icon = @<SwapBagIcon />,
