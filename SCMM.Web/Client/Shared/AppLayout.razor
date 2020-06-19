@@ -45,7 +45,7 @@
     private List<NavigationItem> BuildGeneralNaviationItems()
     {
         return new List<NavigationItem>
-    {
+{
             new NavigationItem
             {
                 Icon = @<ChartIcon />,
@@ -57,7 +57,7 @@
             new NavigationItem
             {
                 Icon = @<SwapBagIcon />,
-                Title = "Inventory",
+                Title = "My Inventory",
                 Path = "steam/inventory",
                 Prefix = false,
                 Disabled = true
@@ -65,7 +65,7 @@
             new NavigationItem
             {
                 Icon = @<CashIcon />,
-                Title = "History",
+                Title = "My Trade History",
                 Path =  "steam/history",
                 Prefix =  true,
                 Disabled = true
@@ -96,12 +96,12 @@
             new NavigationItem
             {
                 Icon = @<HelpIcon />,
-                Title = "What is this?",
+                Title = "About / FAQs",
                 Path =  "about",
                 Prefix =  true,
                 Disabled = true
             }
         };
-    }
+        }
 
 }

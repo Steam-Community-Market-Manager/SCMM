@@ -42,10 +42,10 @@ namespace SCMM.Steam.Shared.Community.Models
         public string Name { get; set; }
 
         [JsonProperty("name_color")]
-        public string NameColour { get; set; }
+        public string NameColor { get; set; }
 
         [JsonProperty("background_color")]
-        public string BackgroundColour { get; set; }
+        public string BackgroundColor { get; set; }
 
         [JsonProperty("icon_url")]
         public string IconUrl { get; set; }

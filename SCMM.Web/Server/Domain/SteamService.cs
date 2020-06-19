@@ -199,6 +199,28 @@ namespace SCMM.Web.Server.Domain
         /// UPDATE BELOW...
         ///
 
+        public async Task<Models.Steam.SteamAssetWorkshopFile> AddOrUpdateAssetWorkshopFile(SteamApp app, string fileId)
+        {
+            var dbWorkshopFile = await _db.SteamAssetWorkshopFiles
+                .Where(x => x.SteamId == fileId)
+                .FirstOrDefaultAsync();
+
+            if (dbWorkshopFile != null)
+            {
+                return dbWorkshopFile;
+            }
+
+            dbWorkshopFile = new Models.Steam.SteamAssetWorkshopFile()
+            {
+                SteamId = fileId,
+                AppId = app.Id
+            };
+
+            _db.SteamAssetWorkshopFiles.Add(dbWorkshopFile);
+            await _db.SaveChangesAsync();
+            return dbWorkshopFile;
+        }
+
         public async Task<Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, SteamLanguage language, ulong classId)
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
@@ -235,17 +257,54 @@ namespace SCMM.Web.Server.Domain
             {
                 var workshopFileIdGroups = Regex.Match(viewWorkshopAction.Link, SteamConstants.SteamActionViewWorkshopItemRegex).Groups;
                 workshopFileId = (workshopFileIdGroups.Count > 1) ? workshopFileIdGroups[1].Value : "0";
-                workshopFile = new Models.Steam.SteamAssetWorkshopFile()
-                {
-                    SteamId = workshopFileId,
-                    App = app
-                };
+                workshopFile = await AddOrUpdateAssetWorkshopFile(app, workshopFileId);
             }
 
             dbAssetDescription = new Models.Steam.SteamAssetDescription()
             {
                 SteamId = assetDescription.ClassId.ToString(),
-                App = app,
+                AppId = app.Id,
+                Name = assetDescription.MarketName,
+                BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
+                ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
+                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge).Uri.ToString(),
+                WorkshopFile = workshopFile,
+                Tags = new Data.Types.PersistableStringDictionary(tags)
+            };
+
+            _db.SteamAssetDescriptions.Add(dbAssetDescription);
+            await _db.SaveChangesAsync();
+            return dbAssetDescription;
+        }
+
+        public async Task<Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, Steam.Shared.Community.Models.SteamAssetDescription assetDescription)
+        {
+            var dbAssetDescription = await _db.SteamAssetDescriptions
+                .Where(x => x.SteamId == assetDescription.ToString())
+                .Include(x => x.WorkshopFile)
+                .FirstOrDefaultAsync();
+
+            if (dbAssetDescription != null)
+            {
+                return dbAssetDescription;
+            }
+
+            var tags = new Dictionary<string, string>();
+            var workshopFile = (SteamAssetWorkshopFile)null;
+            var workshopFileId = (string)null;
+            var viewWorkshopAction = assetDescription?.Actions?.FirstOrDefault(x => x.Name == SteamConstants.SteamActionViewWorkshopItem);
+            if (viewWorkshopAction != null)
+            {
+                var workshopFileIdGroups = Regex.Match(viewWorkshopAction.Link, SteamConstants.SteamActionViewWorkshopItemRegex).Groups;
+                workshopFileId = (workshopFileIdGroups.Count > 1) ? workshopFileIdGroups[1].Value : "0";
+                workshopFile = await AddOrUpdateAssetWorkshopFile(app, workshopFileId);
+            }
+
+            dbAssetDescription = new Models.Steam.SteamAssetDescription()
+            {
+                SteamId = assetDescription.ClassId.ToString(),
+                AppId = app.Id,
                 Name = assetDescription.MarketName,
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
@@ -286,7 +345,7 @@ namespace SCMM.Web.Server.Domain
             app.StoreItems.Add(dbItem = new Models.Steam.SteamStoreItem()
             {
                 SteamId = asset.Name,
-                App = app,
+                AppId = app.Id,
                 Description = assetDescription,
                 Currency = currency,
                 StorePrice = Int32.Parse(asset.Prices.ToDictionary().FirstOrDefault(x => x.Key == currency.Name).Value ?? "0")
@@ -382,15 +441,17 @@ namespace SCMM.Web.Server.Domain
         /// UPDATE BELOW...
         ///
 
-        public IEnumerable<SteamMarketItem> FindOrAddSteamItems(IEnumerable<SteamMarketSearchItem> items)
+        public async Task<IEnumerable<SteamMarketItem>> FindOrAddSteamMarketItems(IEnumerable<SteamMarketSearchItem> items)
         {
+            var dbItems = new List<SteamMarketItem>();
             foreach (var item in items)
             {
-                yield return FindOrAddSteamItem(item);
+                dbItems.Add(await FindOrAddSteamMarketItem(item));
             }
+            return dbItems;
         }
 
-        public SteamMarketItem FindOrAddSteamItem(SteamMarketSearchItem item)
+        public async Task<SteamMarketItem> FindOrAddSteamMarketItem(SteamMarketSearchItem item)
         {
             if (String.IsNullOrEmpty(item?.AssetDescription.AppId))
             {
@@ -412,32 +473,16 @@ namespace SCMM.Web.Server.Domain
                 return dbItem;
             }
 
-            var workshopFileId = (string)null;
-            var viewWorkshopAction = item.AssetDescription?.Actions?.FirstOrDefault(x => x.Name == SteamConstants.SteamActionViewWorkshopItem);
-            if (viewWorkshopAction != null)
+            var assetDescription = await AddOrUpdateAssetDescription(dbApp, item.AssetDescription);
+            if (assetDescription == null)
             {
-                var workshopFileIdGroups = Regex.Match(viewWorkshopAction.Link, SteamConstants.SteamActionViewWorkshopItemRegex).Groups;
-                workshopFileId = (workshopFileIdGroups.Count > 1) ? workshopFileIdGroups[1].Value : "0";
+                return null;
             }
 
             dbApp.MarketItems.Add(dbItem = new SteamMarketItem()
             {
-                App = dbApp,
-                Description = new Domain.Models.Steam.SteamAssetDescription()
-                {
-                    SteamId = item.AssetDescription.ClassId,
-                    App = dbApp,
-                    Name = item.AssetDescription.MarketName,
-                    BackgroundColour = item.AssetDescription.BackgroundColour.SteamColourToHexString(),
-                    ForegroundColour = item.AssetDescription.NameColour.SteamColourToHexString(),
-                    IconUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrl).Uri.ToString(),
-                    IconLargeUrl = new SteamEconomyImageBlobRequest(item.AssetDescription.IconUrlLarge).Uri.ToString(),
-                    WorkshopFile = String.IsNullOrEmpty(workshopFileId) ? null : new SteamAssetWorkshopFile()
-                    {
-                        SteamId = workshopFileId, 
-                        App = dbApp
-                    }
-                }
+                AppId = dbApp.Id,
+                Description = assetDescription
             });
 
             return dbItem;

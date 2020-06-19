@@ -100,7 +100,11 @@ namespace SCMM.Web.Server.Services.Jobs
                     .Select(x => Observable.FromAsync(() => steamClient.GetMarketSearchPaginated(x)))
                     .Merge()
                     .Where(x => x?.Success == true && x?.Results?.Count > 0)
-                    .SelectMany(x => steamService.FindOrAddSteamItems(x.Results))
+                    .SelectMany(x => {
+                        var tasks = steamService.FindOrAddSteamMarketItems(x.Results);
+                        Task.WaitAll(tasks);
+                        return tasks.Result;
+                    })
                     .Where(x => x?.IsTransient == true)
                     .ToList();
 

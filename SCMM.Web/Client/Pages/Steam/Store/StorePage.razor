@@ -7,7 +7,7 @@
 @inject IJSRuntime JSRuntime
 
 <Grid Container Spacing="@Spacing.Two">
-    <Grid Item Medium="@GridSize.Twelve" Large="@GridSize.True">
+    <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
         @if (items == null)
         {
             <Loading />
@@ -79,7 +79,7 @@
             </Paper>
         }
     </Grid>
-    <Grid Item Medium="@GridSize.Twelve" Large="@GridSize.True">
+    <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
         <Grid Container>
             <Grid ExtraSmall="@GridSize.Twelve">
                 @if (itemRankChart != null || itemRankHistoryChart != null)
