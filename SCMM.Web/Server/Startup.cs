@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SCMM.Steam.Client;
+using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models;
@@ -28,6 +30,8 @@ namespace SCMM.Web.Server
         public void ConfigureServices(IServiceCollection services)
         {
             var steamConfiguration = Configuration.GetSteamConfiguration();
+            services.AddSingleton<SteamConfiguration>((s) => steamConfiguration);
+            services.AddSingleton<SteamSession>((s) => new SteamSession(s));
 
             services.AddDbContext<IdentityDbContext>(options =>
                 options.UseSqlServer(

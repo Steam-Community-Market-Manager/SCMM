@@ -6,12 +6,10 @@ using SCMM.Web.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
-using System;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using SCMM.Steam.Client;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Shared;
@@ -23,13 +21,15 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly ILogger<UpdateMarketItemSalesJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly SteamConfiguration _steamConfiguration;
+        private readonly SteamSession _steamSession;
 
-        public UpdateMarketItemSalesJob(IConfiguration configuration, ILogger<UpdateMarketItemSalesJob> logger, IServiceScopeFactory scopeFactory)
+        public UpdateMarketItemSalesJob(IConfiguration configuration, ILogger<UpdateMarketItemSalesJob> logger, IServiceScopeFactory scopeFactory, SteamSession steamSession)
             : base(configuration.GetJobConfiguration<UpdateMarketItemSalesJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
             _steamConfiguration = configuration.GetSteamConfiguration();
+            _steamSession = steamSession;
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
@@ -63,7 +63,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var client = new SteamCommunityClient(_steamConfiguration.GetCookieContainer());
+                var client = new SteamCommunityClient(_steamSession);
                 foreach (var batch in items.Batch(100))
                 {
                     var batchTasks = batch.Select(x =>

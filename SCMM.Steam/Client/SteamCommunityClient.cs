@@ -5,7 +5,6 @@ using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;
 using SCMM.Steam.Shared.Community.Responses.Xml;
 using System.IO;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -14,8 +13,8 @@ namespace SCMM.Steam.Client
 {
     public class SteamCommunityClient : SteamClient
     {
-        public SteamCommunityClient(CookieContainer cookies = null)
-            : base(cookies)
+        public SteamCommunityClient(SteamSession session = null)
+            : base(session)
         {
         }
 
