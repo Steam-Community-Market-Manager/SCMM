@@ -1,0 +1,19 @@
+﻿@namespace SCMM.Web.Client.Shared.Component
+@inject IJSRuntime JSRuntime
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string Application { get; set; } = "SCMM";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("DocumentInterop.setDocumentTitle", $"{Application} - {Title}");
+        }
+    }
+}

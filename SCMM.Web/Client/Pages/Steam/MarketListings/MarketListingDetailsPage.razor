@@ -10,60 +10,61 @@
 }
 else
 {
-<Grid Container Spacing="@Spacing.Four">
-    <Grid Item ExtraSmall="@GridSize.One">
-        <img src="@Item.IconUrl" style="width:100%" />
-    </Grid>
-    <Grid Item ExtraSmall="@GridSize.Eleven">
-        <Typography Variant="@TypographyVariant.H5" Style="@GetItemStyles(Item)" GutterBottom="true">
-            @Item.Name
-        </Typography>
-        <Typography Variant="@TypographyVariant.Body2" Paragraph="true">
-            @foreach (var tag in Item.Tags)
-            {
-                <div class="Chip-Root">
-                    <span class="Chip-Label">
-                        @tag.Value
-                    </span>
-                </div>
-            }
-        </Typography>
-        <Typography Paragraph="true">
-            <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                <i class="fa fa-fw fa-user"></i>
-                @Item.Subscriptions.ToQuantityString()
+    <DocumentTitle Title="@Item.Name" />
+    <Grid Container Spacing="@Spacing.Four">
+        <Grid Item ExtraSmall="@GridSize.One">
+            <img src="@Item.IconUrl" style="width:100%" />
+        </Grid>
+        <Grid Item ExtraSmall="@GridSize.Eleven">
+            <Typography Variant="@TypographyVariant.H5" Style="@GetItemStyles(Item)" GutterBottom="true">
+                @Item.Name
             </Typography>
-            <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                <i class="fa fa-fw fa-eye"></i>
-                @Item.Views.ToQuantityString()
+            <Typography Variant="@TypographyVariant.Body2" Paragraph="true">
+                @foreach (var tag in Item.Tags)
+                {
+                    <div class="Chip-Root">
+                        <span class="Chip-Label">
+                            @tag.Value
+                        </span>
+                    </div>
+                }
             </Typography>
-            <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                <i class="fa fa-fw fa-heart"></i>
-                @Item.Favourited.ToQuantityString()
+            <Typography Paragraph="true">
+                <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                    <i class="fa fa-fw fa-user"></i>
+                    @Item.Subscriptions.ToQuantityString()
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                    <i class="fa fa-fw fa-eye"></i>
+                    @Item.Views.ToQuantityString()
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                    <i class="fa fa-fw fa-heart"></i>
+                    @Item.Favourited.ToQuantityString()
+                </Typography>
             </Typography>
-        </Typography>
+        </Grid>
+        <Grid Item ExtraSmall="@GridSize.Three">
+            <Paper Class="Chart-Root">
+                Sell orders list
+            </Paper>
+        </Grid>
+        <Grid Item ExtraSmall="@GridSize.Three">
+            <Paper Class="Chart-Root">
+                Buy orders list
+            </Paper>
+        </Grid>
+        <Grid Item ExtraSmall="@GridSize.Six">
+            <Paper Class="Chart-Root">
+                Buy/Sell orders chart
+            </Paper>
+        </Grid>
+        <Grid Item ExtraSmall="@GridSize.Twelve">
+            <Paper Class="Chart-Root">
+                Sales history chart
+            </Paper>
+        </Grid>
     </Grid>
-    <Grid Item ExtraSmall="@GridSize.Three">
-        <Paper Class="Chart-Root">
-            Sell orders list
-        </Paper>
-    </Grid>
-    <Grid Item ExtraSmall="@GridSize.Three">
-        <Paper Class="Chart-Root">
-            Buy orders list
-        </Paper>
-    </Grid>
-    <Grid Item ExtraSmall="@GridSize.Six">
-        <Paper Class="Chart-Root">
-            Buy/Sell orders chart
-        </Paper>
-    </Grid>
-    <Grid Item ExtraSmall="@GridSize.Twelve">
-        <Paper Class="Chart-Root">
-            Sales history chart
-        </Paper>
-    </Grid>
-</Grid>
 }
 
 @code {
