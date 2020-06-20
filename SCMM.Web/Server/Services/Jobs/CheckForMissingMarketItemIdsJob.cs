@@ -33,10 +33,10 @@ namespace SCMM.Web.Server.Services.Jobs
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var itemsWithMissingIds = db.SteamMarketItems
+                    .Where(x => String.IsNullOrEmpty(x.SteamId))
                     .Include(x => x.App)
                     .Include(x => x.Description)
-                    .Where(x => String.IsNullOrEmpty(x.SteamId))
-                    .Take(10)
+                    .Take(10) // batch 10 at a time
                     .ToList();
 
                 if (!itemsWithMissingIds.Any())

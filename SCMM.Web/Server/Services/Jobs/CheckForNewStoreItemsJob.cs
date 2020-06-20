@@ -39,7 +39,11 @@ namespace SCMM.Web.Server.Services.Jobs
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                 var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
 
-                var steamApps = await db.SteamApps.ToListAsync();
+                var sixAndAHalfDaysAgo = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(6.5));
+                var steamApps = await db.SteamApps
+                    .Where(x => x.StoreItems.Max(x => x.Description.WorkshopFile.AcceptedOn) < sixAndAHalfDaysAgo)
+                    .ToListAsync();
+
                 if (!steamApps.Any())
                 {
                     return;

@@ -42,6 +42,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                 var assetDescriptions = db.SteamStoreItems
                     .Where(x => x.Description.WorkshopFile.SteamId != null)
+                    .Where(x => x.Description.WorkshopFile.AcceptedOn == x.App.StoreItems.Max(x => x.Description.WorkshopFile.AcceptedOn))
                     .Include(x => x.Description.WorkshopFile)
                     .Select(x => x.Description)
                     .ToList();

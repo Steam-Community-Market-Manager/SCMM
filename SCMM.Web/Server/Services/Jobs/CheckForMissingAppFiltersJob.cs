@@ -35,8 +35,8 @@ namespace SCMM.Web.Server.Services.Jobs
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var appsWithMissingFilters = db.SteamApps
-                    .Include(x => x.Filters)
                     .Where(x => x.Filters.Count == 0)
+                    .Include(x => x.Filters)
                     .ToList();
 
                 foreach (var app in appsWithMissingFilters)

@@ -361,7 +361,7 @@ namespace SCMM.Web.Server.Domain
                 return item;
             }
 
-            item.LastCheckedOn = DateTimeOffset.Now;
+            item.LastCheckedOrdersOn = DateTimeOffset.Now;
             item.CurrencyId = currencyId;
             item.RebuildOrders(
                 ParseSteamMarketItemOrdersFromGraph(histogram.BuyOrderGraph),
@@ -378,7 +378,7 @@ namespace SCMM.Web.Server.Domain
                 return item;
             }
 
-            item.LastCheckedOn = DateTimeOffset.Now;
+            item.LastCheckedSalesOn = DateTimeOffset.Now;
             item.CurrencyId = currencyId;
             item.RebuildSales(
                 ParseSteamMarketItemSalesFromGraph(sales.Prices)

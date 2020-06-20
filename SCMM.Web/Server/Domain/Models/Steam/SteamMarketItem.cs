@@ -114,8 +114,11 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public TimeSpan? MarketAge => (DateTimeOffset.Now - FirstSeenOn);
 
-        // How long since prices were checked
-        public DateTimeOffset? LastCheckedOn { get; set; }
+        // How long since orders were last checked
+        public DateTimeOffset? LastCheckedOrdersOn { get; set; }
+
+        // How long since prices were last checked
+        public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
         public void RebuildOrders(SteamMarketItemOrder[] buyOrders, SteamMarketItemOrder[] sellOrders)
         {
