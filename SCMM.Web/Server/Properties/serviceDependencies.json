@@ -3,6 +3,26 @@
     "appInsights1": {
       "type": "appInsights",
       "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY"
+    },
+    "secrets1": {
+      "type": "secrets",
+      "connectionId": "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT"
+    },
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "IdentityDbConnection"
+    },
+    "mssql2": {
+      "type": "mssql",
+      "connectionId": "SteamDbConnection"
+    },
+    "mssql3": {
+      "type": "mssql",
+      "connectionId": "IdentityDbConnection"
+    },
+    "mssql4": {
+      "type": "mssql",
+      "connectionId": "SteamDbConnection"
     }
   }
 }
