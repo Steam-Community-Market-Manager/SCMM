@@ -15,14 +15,6 @@
     "mssql2": {
       "type": "mssql",
       "connectionId": "SteamDbConnection"
-    },
-    "mssql3": {
-      "type": "mssql",
-      "connectionId": "IdentityDbConnection"
-    },
-    "mssql4": {
-      "type": "mssql",
-      "connectionId": "SteamDbConnection"
     }
   }
 }

@@ -6,30 +6,12 @@
       "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
       "secretStore": "LocalSecretsFile"
     },
-    "secrets1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/Microsoft.KeyVault/vaults/scmm-key-vault",
-      "type": "secrets.keyVault",
-      "connectionId": "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT",
-      "secretStore": null
-    },
     "mssql1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/Microsoft.Sql/servers/scmm/databases/SCMM.Identity",
-      "type": "mssql.azure",
-      "connectionId": "IdentityDbConnection",
-      "secretStore": "AzureKeyVault"
-    },
-    "mssql2": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/Microsoft.Sql/servers/scmm/databases/SCMM.Steam",
-      "type": "mssql.azure",
-      "connectionId": "SteamDbConnection",
-      "secretStore": "AzureKeyVault"
-    },
-    "mssql3": {
       "type": "mssql.local",
       "connectionId": "IdentityDbConnection",
       "secretStore": "LocalSecretsFile"
     },
-    "mssql4": {
+    "mssql2": {
       "type": "mssql.local",
       "connectionId": "SteamDbConnection",
       "secretStore": "LocalSecretsFile"
