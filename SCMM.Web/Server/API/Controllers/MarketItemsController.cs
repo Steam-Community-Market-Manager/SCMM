@@ -164,7 +164,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("dashboard/mostCommon")]
-        public IEnumerable<MarketItemListDTO> GetDashboardMostOversaturated()
+        public IEnumerable<MarketItemListDTO> GetDashboardMostCommon()
         {
             return _db.SteamMarketItems
                 .Include(x => x.App)
@@ -178,7 +178,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("dashboard/mostRare")]
-        public IEnumerable<MarketItemListDTO> GetDashboardRaristExpensive()
+        public IEnumerable<MarketItemListDTO> GetDashboardMostRare()
         {
             return _db.SteamMarketItems
                 .Include(x => x.App)
