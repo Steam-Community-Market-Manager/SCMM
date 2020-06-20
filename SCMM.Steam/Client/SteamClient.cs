@@ -11,7 +11,7 @@ namespace SCMM.Steam.Client
 
         public SteamClient(SteamSession session = null)
         {
-            var cookies = session.Cookies;
+            var cookies = session?.Cookies;
             _httpHandler = new HttpClientHandler()
             {
                 UseCookies = (cookies != null),
