@@ -111,14 +111,28 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("dashboard/allTimeLow")]
         public IEnumerable<MarketItemListDTO> GetDashboardAllTimeLow()
         {
-            var lastWeek = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7));
             return _db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.Last24hrValue > 50)
-                .Where(x => x.FirstSeenOn < lastWeek)
+                .Where(x => (x.Last24hrValue - x.AllTimeLowestValue) <= 10)
                 .OrderBy(x => Math.Abs(x.Last24hrValue - x.AllTimeLowestValue))
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/allTimeHigh")]
+        public IEnumerable<MarketItemListDTO> GetDashboardAllTimeHigh()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.App)
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .Where(x => x.Last24hrValue > 50)
+                .Where(x => (x.Last24hrValue - x.AllTimeHighestValue) >= 10)
+                .OrderBy(x => Math.Abs(x.Last24hrValue - x.AllTimeHighestValue))
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -158,6 +172,34 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .OrderByDescending(x => x.Last24hrValue - x.First24hrValue)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/mostWanted")]
+        public IEnumerable<MarketItemListDTO> GetDashboardMostWanted()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.App)
+                .Include(x => x.Description)
+                .Include(x => x.BuyOrders)
+                .Where(x => x.BuyOrders.Count > 0)
+                .OrderByDescending(x => x.BuyOrders.Count)
+                .Take(10)
+                .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                .ToList();
+        }
+
+        [HttpGet("dashboard/mostSaturated")]
+        public IEnumerable<MarketItemListDTO> GetDashboardMostSaturated()
+        {
+            return _db.SteamMarketItems
+                .Include(x => x.App)
+                .Include(x => x.Description)
+                .Include(x => x.SellOrders)
+                .Where(x => x.SellOrders.Count > 0)
+                .OrderByDescending(x => x.SellOrders.Count)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();

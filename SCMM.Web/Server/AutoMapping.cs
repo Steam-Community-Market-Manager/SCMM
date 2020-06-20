@@ -21,6 +21,8 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
                 .ForMember(x => x.MarketAge, o => o.MapFrom(p => p.MarketAge.ToMarketAgeString()))
+                .ForMember(x => x.DemandUnique, o => o.MapFrom(p => p.BuyOrders.Count))
+                .ForMember(x => x.SupplyUnique, o => o.MapFrom(p => p.SellOrders.Count))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.WorkshopFile.Subscriptions))
                 .ForMember(x => x.Tags, o => o.MapFrom(p => p.Description.Tags.WithoutWorkshopTags()));
 

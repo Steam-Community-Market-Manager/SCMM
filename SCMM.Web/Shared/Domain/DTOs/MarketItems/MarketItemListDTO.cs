@@ -23,7 +23,11 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public int Supply { get; set; }
 
+        public int SupplyUnique { get; set; }
+
         public int Demand { get; set; }
+
+        public int DemandUnique { get; set; }
 
         public int BuyAskingPrice { get; set; }
 
