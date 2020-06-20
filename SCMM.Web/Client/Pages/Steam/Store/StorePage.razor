@@ -98,13 +98,13 @@ else
                             <TabPanel Value="@selectedItemChartPanel" Index="0">
                                 @if (itemRevenueChart != null)
                                 {
-                                    <Alert Info Title="Minimum sales revenue disclaimer" Rounded="false">
+                                    <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
                                         <Icon>
                                             <i class="fa fa-fw fa-exclamation-circle"></i>
                                         </Icon>
                                         <MessageContent>
-                                            <span>This graph represents <strong>minimum</strong> revenue earned through item sales. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher. Steam doesn't advertise exact sales figures, this is is the closest estimate.</span>
-                                            <span><strong>TL;DR;</strong> Revenue is at least @(items.FirstOrDefault().Currency.ToPriceString(items.Sum(x => x.Subscriptions * x.StorePrice))) so far this week.</span>
+                                            <span><strong>TL;DR;</strong> Total revenue is at least @(items.FirstOrDefault().Currency.ToPriceString(items.Sum(x => x.Subscriptions * x.StorePrice))) so far this week.</span>
+                                            <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher. Steam doesn't advertise exact sales figures, this is the closest estimate.</span>
                                         </MessageContent>
                                     </Alert>
                                     <ChartJsBarChart @ref="itemRevenueChartJs" Config="@itemRevenueChart" />

@@ -300,7 +300,7 @@
                     </ActionContent>
                 </CardHeader>
                 <CardContent Style="padding:0px">
-                    @if (HotRightNow == null)
+                    @if (MostCommon == null)
                     {
                         <Loading />
                     }
@@ -308,7 +308,7 @@
                     {
                         <Table Size="@Size.Small">
                             <TableBody>
-                                @foreach (var item in HotRightNow)
+                                @foreach (var item in MostCommon)
                                 {
                                     <TableRow Hover OnClick="@((_) => ViewItem(item))">
                                         <TableCell>
@@ -319,7 +319,7 @@
                                         </TableCell>
                                         <TableCell>
                                             <i class="fa fa-fw fa-user"></i>
-                                            @item.Last24hrSales.ToSalesActivityString()
+                                            @item.Subscriptions.ToQuantityString()
                                         </TableCell>
                                     </TableRow>
                                 }
@@ -351,7 +351,7 @@
                     </ActionContent>
                 </CardHeader>
                 <CardContent Style="padding:0px">
-                    @if (MostCommon == null)
+                    @if (MostRare == null)
                     {
                         <Loading />
                     }
@@ -359,7 +359,7 @@
                     {
                         <Table Size="@Size.Small">
                             <TableBody>
-                                @foreach (var item in MostCommon)
+                                @foreach (var item in MostRare)
                                 {
                                     <TableRow Hover OnClick="@((_) => ViewItem(item))">
                                         <TableCell>
@@ -402,7 +402,7 @@
                     </ActionContent>
                 </CardHeader>
                 <CardContent Style="padding:0px">
-                    @if (MostRare == null)
+                    @if (BiggestCrashes == null)
                     {
                         <Loading />
                     }
@@ -410,7 +410,7 @@
                     {
                         <Table Size="@Size.Small">
                             <TableBody>
-                                @foreach (var item in MostRare)
+                                @foreach (var item in BiggestCrashes)
                                 {
                                     <TableRow Hover OnClick="@((_) => ViewItem(item))">
                                         <TableCell>
@@ -420,7 +420,7 @@
                                             <strong>@item.Name</strong>
                                         </TableCell>
                                         <TableCell>
-                                            @item.Subscriptions.ToQuantityString()
+                                            @item.Currency.ToPriceString(item.Last24hrValue)
                                         </TableCell>
                                         <TableCell>
                                             <span class="Text-Error">🡳 @Math.Abs(item.Last24hrValue - item.AllTimeHighestValue)</span>
@@ -438,11 +438,11 @@
 
 @code {
 
-    private MarketItemListDTO[] HotRightNow { get; set; }
-    private MarketItemListDTO[] AllTimeLow { get; set; }
     private MarketItemListDTO[] StonkingRightNow { get; set; }
     private MarketItemListDTO[] StinkingRightNow { get; set; }
+    private MarketItemListDTO[] AllTimeLow { get; set; }
     private MarketItemListDTO[] MostProfitable { get; set; }
+    private MarketItemListDTO[] HotRightNow { get; set; }
     private MarketItemListDTO[] MostCommon { get; set; }
     private MarketItemListDTO[] MostRare { get; set; }
     private MarketItemListDTO[] BiggestCrashes { get; set; }
@@ -454,8 +454,8 @@
         RefreshAllTimeLow();
         RefreshMostProfitable();
         RefreshHotRightNow();
-        RefreshMostRare();
         RefreshMostCommon();
+        RefreshMostRare();
         RefreshBiggestCrashes();
     }
 
