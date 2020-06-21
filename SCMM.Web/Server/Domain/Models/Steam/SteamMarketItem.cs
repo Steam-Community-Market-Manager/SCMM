@@ -207,19 +207,19 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
             var currentTimeStamp = DateTimeOffset.UtcNow;
             var first24hrs = salesSorted.Where(x => x.Timestamp < earliestTimestamp.Add(TimeSpan.FromHours(24))).ToArray();
-            var first24hrValue = (int) Math.Round(first24hrs.Average(x => x.Price), 0);
+            var first24hrValue = (int) Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price), 0);
             var last24hrs = salesSorted.Where(x => x.Timestamp > currentTimeStamp.Subtract(TimeSpan.FromHours(24))).ToArray();
             var last24hrSales = last24hrs.Sum(x => x.Quantity);
-            var last24hrValue = (int) Math.Round(last24hrs.Average(x => x.Price), 0);
+            var last24hrValue = (int) Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
             var last48hrs = salesSorted.Where(x => x.Timestamp > currentTimeStamp.Subtract(TimeSpan.FromHours(48))).ToArray();
             var last48hrSales = last48hrs.Sum(x => x.Quantity);
-            var last48hrValue = (int) Math.Round(last48hrs.Average(x => x.Price), 0);
+            var last48hrValue = (int) Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.Price) : 0, 0);
             var last120hrs = salesSorted.Where(x => x.Timestamp > currentTimeStamp.Subtract(TimeSpan.FromHours(120))).ToArray();
             var last120hrSales = last120hrs.Sum(x => x.Quantity);
-            var last120hrValue = (int) Math.Round(last120hrs.Average(x => x.Price), 0);
+            var last120hrValue = (int) Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
             var last336hrs = salesSorted.Where(x => x.Timestamp > currentTimeStamp.Subtract(TimeSpan.FromHours(336))).ToArray();
             var last336hrSales = last336hrs.Sum(x => x.Quantity);
-            var last336hrValue = (int)Math.Round(last336hrs.Average(x => x.Price), 0);
+            var last336hrValue = (int)Math.Round(last336hrs.Length > 0 ? last336hrs.Average(x => x.Price) : 0, 0);
             var allTimeLow = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Min(x => x.Price));
             var allTimeHigh = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Max(x => x.Price));
 
