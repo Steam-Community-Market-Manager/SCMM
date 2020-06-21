@@ -92,7 +92,7 @@
                 </ActionContent>
             </CardHeader>
             <CardContent Style="padding:0px">
-                @if (StonkingRightNow == null)
+                @if (StonkingRecently == null)
                 {
                 <Loading />
                 }
@@ -100,8 +100,8 @@
                 {
                 <Table Size="@Size.Small">
                     <TableBody>
-                        @foreach (var item in StonkingRightNow)
-                            {
+                        @foreach (var item in StonkingRecently)
+                        {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
                                 <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
@@ -207,7 +207,7 @@
                 </ActionContent>
             </CardHeader>
             <CardContent Style="padding:0px">
-                @if (StinkingRightNow == null)
+                @if (StinkingRecently == null)
                 {
                 <Loading />
                 }
@@ -215,8 +215,8 @@
                 {
                 <Table Size="@Size.Small">
                     <TableBody>
-                        @foreach (var item in StinkingRightNow)
-                            {
+                        @foreach (var item in StinkingRecently)
+                        {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
                                 <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
@@ -601,8 +601,8 @@
 
 @code {
 
-    private MarketItemListDTO[] StonkingRightNow { get; set; }
-    private MarketItemListDTO[] StinkingRightNow { get; set; }
+    private MarketItemListDTO[] StonkingRecently { get; set; }
+    private MarketItemListDTO[] StinkingRecently { get; set; }
     private MarketItemListDTO[] AllTimeLow { get; set; }
     private MarketItemListDTO[] AllTimeHigh { get; set; }
     private MarketItemListDTO[] MostProfitable { get; set; }
@@ -615,8 +615,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        RefreshStonkingRightNow();
-        RefreshStinkingRightNow();
+        RefreshStonkingRecently();
+        RefreshStinkingRecently();
         RefreshAllTimeLow();
         RefreshAllTimeHigh();
         RefreshMostProfitable();
@@ -674,11 +674,11 @@
         }
     }
 
-    private async Task RefreshStonkingRightNow()
+    private async Task RefreshStonkingRecently()
     {
         try
         {
-            StonkingRightNow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/stonkingRightNow");
+            StonkingRecently = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/stonkingRecently");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -687,11 +687,11 @@
         }
     }
 
-    private async Task RefreshStinkingRightNow()
+    private async Task RefreshStinkingRecently()
     {
         try
         {
-            StinkingRightNow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/stinkingRightNow");
+            StinkingRecently = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/stinkingRecently");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)

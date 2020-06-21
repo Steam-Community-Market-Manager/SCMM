@@ -131,14 +131,14 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.Last24hrValue > 50)
-                .Where(x => (x.Last24hrValue - x.AllTimeHighestValue) >= 10)
+                .Where(x => (x.Last24hrValue - x.AllTimeHighestValue) >= -10)
                 .OrderBy(x => Math.Abs(x.Last24hrValue - x.AllTimeHighestValue))
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
         }
 
-        [HttpGet("dashboard/stonkingRightNow")]
+        [HttpGet("dashboard/stonkingRecently")]
         public IEnumerable<MarketItemListDTO> GetDashboardStonkingRightNow()
         {
             return _db.SteamMarketItems
@@ -151,7 +151,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToList();
         }
 
-        [HttpGet("dashboard/stinkingRightNow")]
+        [HttpGet("dashboard/stinkingRecently")]
         public IEnumerable<MarketItemListDTO> GetDashboardStinkingRightNow()
         {
             return _db.SteamMarketItems
@@ -183,9 +183,8 @@ namespace SCMM.Web.Server.API.Controllers
             return _db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .Include(x => x.BuyOrders)
-                .Where(x => x.BuyOrders.Count > 0)
-                .OrderByDescending(x => x.BuyOrders.Count)
+                .Where(x => x.DemandUnique > 0)
+                .OrderByDescending(x => x.DemandUnique)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -197,9 +196,8 @@ namespace SCMM.Web.Server.API.Controllers
             return _db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .Include(x => x.SellOrders)
-                .Where(x => x.SellOrders.Count > 0)
-                .OrderByDescending(x => x.SellOrders.Count)
+                .Where(x => x.SupplyUnique > 0)
+                .OrderByDescending(x => x.SupplyUnique)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
