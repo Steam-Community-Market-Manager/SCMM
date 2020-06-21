@@ -2,8 +2,8 @@
 
 namespace SCMM.Steam.Shared
 {
-    public class SteamRequest
+    public abstract class SteamRequest
     {
-        public Uri Uri { get; }
+        public abstract Uri Uri { get; }
     }
 }

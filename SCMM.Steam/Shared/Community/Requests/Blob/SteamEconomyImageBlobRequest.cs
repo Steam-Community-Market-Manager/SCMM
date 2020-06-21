@@ -12,7 +12,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Blob
 
         public string IconId { get; set; }
 
-        public Uri Uri => new Uri(
+        public override Uri Uri => new Uri(
             $"{SteamConstants.SteamCommunityAssetUrl}/economy/image/{Uri.EscapeDataString(IconId)}"
         );
     }

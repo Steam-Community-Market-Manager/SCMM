@@ -10,7 +10,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Html
 
         public string AssetId { get; set; }
 
-        public Uri Uri => new Uri(String.IsNullOrEmpty(AssetId)
+        public override Uri Uri => new Uri(String.IsNullOrEmpty(AssetId)
             ? $"{SteamConstants.SteamCommunityUrl}/profiles/{Uri.EscapeDataString(SteamId)}/inventory/#{Uri.EscapeDataString(AppId)}"
             : $"{SteamConstants.SteamCommunityUrl}/profiles/{Uri.EscapeDataString(SteamId)}/inventory/#{Uri.EscapeDataString(AppId)}_2_{AssetId}"
         );

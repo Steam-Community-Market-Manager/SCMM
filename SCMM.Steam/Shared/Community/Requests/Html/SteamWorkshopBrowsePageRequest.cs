@@ -14,7 +14,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Html
 
         public string Section { get; set; } = SectionItems;
 
-        public Uri Uri => new Uri(
+        public override Uri Uri => new Uri(
             $"{SteamConstants.SteamCommunityUrl}/workshop/browse/?appid={Uri.EscapeDataString(AppId)}&browsesort={Uri.EscapeDataString(BrowseSort)}&section={Uri.EscapeDataString(Section)}"
         );
     }

@@ -8,7 +8,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Html
 
         public bool Xml { get; set; }
 
-        public Uri Uri => new Uri(
+        public override Uri Uri => new Uri(
             $"{SteamConstants.SteamCommunityUrl}/profiles/{Uri.EscapeDataString(SteamId)}/?xml={(Xml ? "1" : "0")}"
         );
     }

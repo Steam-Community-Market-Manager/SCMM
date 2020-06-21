@@ -6,7 +6,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Html
     {
         public string AppId { get; set; }
 
-        public Uri Uri => new Uri(
+        public override Uri Uri => new Uri(
             $"{SteamConstants.SteamCommunityUrl}/itemstore/{Uri.EscapeUriString(AppId)}/"
         );
     }

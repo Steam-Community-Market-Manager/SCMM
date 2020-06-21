@@ -12,7 +12,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Json
 
         public bool NoRender { get; set; } = true;
 
-        public Uri Uri => new Uri(
+        public override Uri Uri => new Uri(
             $"{SteamConstants.SteamCommunityUrl}/market/itemordershistogram?item_nameid={Uri.EscapeDataString(ItemNameId)}&language={Language}&currency={Uri.EscapeDataString(CurrencyId)}&norender={(NoRender ? "1" : "0")}"
         );
     }
