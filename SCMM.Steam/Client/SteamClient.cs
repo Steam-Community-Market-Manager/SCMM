@@ -88,10 +88,13 @@ namespace SCMM.Steam.Client
             try
             {
                 var xml = await GetText(request);
-                var xmlSerializer = new XmlSerializer(typeof(TResponse));
-                using (var reader = new StringReader(xml))
+                if (!String.IsNullOrEmpty(xml))
                 {
-                    return (TResponse)xmlSerializer.Deserialize(reader);
+                    var xmlSerializer = new XmlSerializer(typeof(TResponse));
+                    using (var reader = new StringReader(xml))
+                    {
+                        return (TResponse)xmlSerializer.Deserialize(reader);
+                    }
                 }
             }
             catch (Exception ex)
@@ -108,7 +111,10 @@ namespace SCMM.Steam.Client
             try
             {
                 var json = await GetText(request);
-                return JsonConvert.DeserializeObject<TResponse>(json);
+                if (!String.IsNullOrEmpty(json))
+                {
+                    return JsonConvert.DeserializeObject<TResponse>(json);
+                }
             }
             catch (Exception ex)
             {
