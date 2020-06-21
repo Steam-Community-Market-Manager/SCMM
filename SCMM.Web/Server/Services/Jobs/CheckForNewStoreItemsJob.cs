@@ -23,7 +23,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly SteamConfiguration _steamConfiguration;
 
         public CheckForNewStoreItemsJob(IConfiguration configuration, ILogger<CheckForNewStoreItemsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<CheckForNewStoreItemsJob>())
+            : base(logger, configuration.GetJobConfiguration<CheckForNewStoreItemsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -65,6 +65,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var timeChecked = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
                 foreach (var app in steamApps)
                 {
+                    _logger.LogInformation($"Checking for new store items (appId: {app.SteamId})");
                     var response = await steamEconomy.GetAssetPricesAsync(
                         UInt32.Parse(app.SteamId), currency.Name, language.SteamId
                     );

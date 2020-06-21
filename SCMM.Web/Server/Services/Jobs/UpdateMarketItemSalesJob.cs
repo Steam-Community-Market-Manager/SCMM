@@ -21,21 +21,20 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly ILogger<UpdateMarketItemSalesJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly SteamConfiguration _steamConfiguration;
-        private readonly SteamSession _steamSession;
 
-        public UpdateMarketItemSalesJob(IConfiguration configuration, ILogger<UpdateMarketItemSalesJob> logger, IServiceScopeFactory scopeFactory, SteamSession steamSession)
-            : base(configuration.GetJobConfiguration<UpdateMarketItemSalesJob>())
+        public UpdateMarketItemSalesJob(IConfiguration configuration, ILogger<UpdateMarketItemSalesJob> logger, IServiceScopeFactory scopeFactory)
+            : base(logger, configuration.GetJobConfiguration<UpdateMarketItemSalesJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
             _steamConfiguration = configuration.GetSteamConfiguration();
-            _steamSession = steamSession;
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
@@ -63,11 +62,11 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var client = new SteamCommunityClient(_steamSession);
                 foreach (var batch in items.Batch(100))
                 {
+                    _logger.LogInformation($"Updating market item sales history (ids: {batch.Count()})");
                     var batchTasks = batch.Select(x =>
-                        client.GetMarketPriceHistory(
+                        commnityClient.GetMarketPriceHistory(
                             new SteamMarketPriceHistoryJsonRequest()
                             {
                                 AppId = x.App.SteamId,

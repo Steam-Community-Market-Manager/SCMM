@@ -29,6 +29,10 @@ namespace SCMM.Web.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddApplicationInsightsTelemetry(
+                Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"]
+            );
+
             var steamConfiguration = Configuration.GetSteamConfiguration();
             services.AddSingleton<SteamConfiguration>((s) => steamConfiguration);
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
@@ -69,10 +73,6 @@ namespace SCMM.Web.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
-
-            services.AddApplicationInsightsTelemetry(
-                Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"]
-            );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

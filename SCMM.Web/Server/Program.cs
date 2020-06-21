@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 
 namespace SCMM.Web.Server
 {
@@ -16,8 +17,10 @@ namespace SCMM.Web.Server
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
-                    logging.AddConsole();
                     logging.AddDebug();
+                    logging.AddConsole();
+                    logging.AddApplicationInsights();
+                    logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

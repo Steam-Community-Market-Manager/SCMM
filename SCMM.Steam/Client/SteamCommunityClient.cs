@@ -1,235 +1,90 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;
 using SCMM.Steam.Shared.Community.Responses.Xml;
-using System.IO;
+using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
     public class SteamCommunityClient : SteamClient
     {
-        public SteamCommunityClient(SteamSession session = null)
-            : base(session)
+        public SteamCommunityClient(ILogger<SteamCommunityClient> logger, SteamSession session)
+            : base(logger, session)
         {
         }
 
         public async Task<SteamProfileXmlResponse> GetProfile(SteamProfilePageRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var xml = await response.Content.ReadAsStringAsync();
-                var xmlSerializer = new XmlSerializer(typeof(SteamProfileXmlResponse));
-                using (var reader = new StringReader(xml))
-                {
-                    return (SteamProfileXmlResponse)xmlSerializer.Deserialize(reader);
-                }
-            }
+            return await GetXml<SteamProfilePageRequest, SteamProfileXmlResponse>(request);
         }
 
         public async Task<SteamMarketAppFiltersJsonResponse> GetMarketAppFilters(SteamMarketAppFiltersJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var filters = JsonConvert.DeserializeObject<SteamMarketAppFiltersJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return filters;
-            }
+            return await GetJson<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(request);
         }
 
         public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var inventory = JsonConvert.DeserializeObject<SteamInventoryPaginatedJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return inventory;
-            }
+            return await GetJson<SteamInventoryPaginatedJsonRequest, SteamInventoryPaginatedJsonResponse>(request);
         }
 
         public async Task<SteamMarketMyListingsPaginatedJsonResponse> GetMarketMyListingsPaginated(SteamMarketMyListingsPaginatedJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var listings = JsonConvert.DeserializeObject<SteamMarketMyListingsPaginatedJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return listings;
-            }
+            return await GetJson<SteamMarketMyListingsPaginatedJsonRequest, SteamMarketMyListingsPaginatedJsonResponse>(request);
         }
 
         public async Task<SteamMarketMyHistoryPaginatedJsonResponse> GetMarketMyHistoryPaginated(SteamMarketMyHistoryPaginatedJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var history = JsonConvert.DeserializeObject<SteamMarketMyHistoryPaginatedJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return history;
-            }
+            return await GetJson<SteamMarketMyHistoryPaginatedJsonRequest, SteamMarketMyHistoryPaginatedJsonResponse>(request);
         }
 
         public async Task<string> GetMarketListingItemNameId(SteamMarketListingPageRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
+            // TODO: Find a better way to look this up...
+            var html = await GetText(request);
+            if (String.IsNullOrEmpty(html))
             {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                // TODO: Find a better way to look this up...
-                var html = await response.Content.ReadAsStringAsync();
-                var itemNameIdMatchGroup = Regex.Match(html, @"Market_LoadOrderSpread\((.*)\)").Groups;
-                var itemNameId = (itemNameIdMatchGroup.Count > 1) ? itemNameIdMatchGroup[1].Value.Trim() : null;
-                return itemNameId;
+                return null;
             }
+
+            var itemNameIdMatchGroup = Regex.Match(html, @"Market_LoadOrderSpread\((.*)\)").Groups;
+            return (itemNameIdMatchGroup.Count > 1) 
+                ? itemNameIdMatchGroup[1].Value.Trim() 
+                : null;
         }
 
         public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var search = JsonConvert.DeserializeObject<SteamMarketSearchPaginatedJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return search;
-            }
+            return await GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request);
         }
 
         public async Task<SteamMarketItemOrdersActivityJsonResponse> GetMarketItemOrdersActivity(SteamMarketItemOrdersActivityJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var activity = JsonConvert.DeserializeObject<SteamMarketItemOrdersActivityJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return activity;
-            }
+            return await GetJson<SteamMarketItemOrdersActivityJsonRequest, SteamMarketItemOrdersActivityJsonResponse>(request);
         }
 
         public async Task<SteamMarketItemOrdersHistogramJsonResponse> GetMarketItemOrdersHistogram(SteamMarketItemOrdersHistogramJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var histogram = JsonConvert.DeserializeObject<SteamMarketItemOrdersHistogramJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return histogram;
-            }
+            return await GetJson<SteamMarketItemOrdersHistogramJsonRequest, SteamMarketItemOrdersHistogramJsonResponse>(request);
         }
 
         public async Task<SteamMarketPriceOverviewJsonResponse> GetMarketPriceOverview(SteamMarketPriceOverviewJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var priceOverview = JsonConvert.DeserializeObject<SteamMarketPriceOverviewJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return priceOverview;
-            }
+            return await GetJson<SteamMarketPriceOverviewJsonRequest, SteamMarketPriceOverviewJsonResponse>(request);
         }
 
         public async Task<SteamMarketPriceHistoryJsonResponse> GetMarketPriceHistory(SteamMarketPriceHistoryJsonRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var priceHistory = JsonConvert.DeserializeObject<SteamMarketPriceHistoryJsonResponse>(
-                    await response.Content.ReadAsStringAsync()
-                );
-
-                return priceHistory;
-            }
+            return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request);
         }
 
         public async Task<byte[]> GetEconomyImage(SteamEconomyImageBlobRequest request)
         {
-            using (var client = BuildSteamHttpClient(request.Uri))
-            {
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var image = await response.Content.ReadAsByteArrayAsync();
-                return image;
-            }
+            return await GetBinary<SteamEconomyImageBlobRequest>(request);
         }
     }
 }

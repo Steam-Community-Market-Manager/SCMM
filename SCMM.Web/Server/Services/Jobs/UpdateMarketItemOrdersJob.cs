@@ -21,7 +21,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly IServiceScopeFactory _scopeFactory;
 
         public UpdateMarketItemOrdersJob(IConfiguration configuration, ILogger<UpdateMarketItemOrdersJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<UpdateMarketItemOrdersJob>())
+            : base(logger, configuration.GetJobConfiguration<UpdateMarketItemOrdersJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -31,6 +31,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
@@ -57,11 +58,11 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var client = new SteamCommunityClient();
                 foreach (var batch in items.Batch(100))
                 {
+                    _logger.LogInformation($"Updating market item orders (ids: {batch.Count()})");
                     var batchTasks = batch.Select(x =>
-                        client.GetMarketItemOrdersHistogram(
+                        commnityClient.GetMarketItemOrdersHistogram(
                             new SteamMarketItemOrdersHistogramJsonRequest()
                             {
                                 ItemNameId = x.SteamId,

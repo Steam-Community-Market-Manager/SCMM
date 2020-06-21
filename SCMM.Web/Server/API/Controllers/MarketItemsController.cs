@@ -139,7 +139,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("dashboard/stonkingRecently")]
-        public IEnumerable<MarketItemListDTO> GetDashboardStonkingRightNow()
+        public IEnumerable<MarketItemListDTO> GetDashboardStonkingRecently()
         {
             return _db.SteamMarketItems
                 .Include(x => x.App)
@@ -152,7 +152,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("dashboard/stinkingRecently")]
-        public IEnumerable<MarketItemListDTO> GetDashboardStinkingRightNow()
+        public IEnumerable<MarketItemListDTO> GetDashboardStinkingRecently()
         {
             return _db.SteamMarketItems
                 .Include(x => x.App)

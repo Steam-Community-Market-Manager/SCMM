@@ -488,16 +488,8 @@ namespace SCMM.Web.Server.Domain
             return dbItem;
         }
 
-        public async Task<SteamMarketItem> UpdateSteamItemId(SteamMarketItem item)
+        public async Task<SteamMarketItem> UpdateMarketItemNameId(SteamMarketItem item, string itemNameId)
         {
-            var itemNameId = await new SteamCommunityClient().GetMarketListingItemNameId(
-                new SteamMarketListingPageRequest()
-                {
-                    AppId = item.App.SteamId,
-                    MarketHashName = item.Description.Name,
-                }
-            );
-
             if (!String.IsNullOrEmpty(itemNameId))
             {
                 item.SteamId = itemNameId;

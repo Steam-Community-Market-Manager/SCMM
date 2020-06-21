@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Client;
+using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -19,7 +21,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly IServiceScopeFactory _scopeFactory;
 
         public CheckForMissingMarketItemIdsJob(IConfiguration configuration, ILogger<CheckForMissingMarketItemIdsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<CheckForMissingMarketItemIdsJob>())
+            : base(logger, configuration.GetJobConfiguration<CheckForMissingMarketItemIdsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -29,6 +31,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>(); 
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
@@ -45,11 +48,22 @@ namespace SCMM.Web.Server.Services.Jobs
                 }
 
                 // Add a 30 second delay between requests to avoid "Too Many Requests" error
+                _logger.LogInformation($"Checking for missing market item name ids (ids: {itemsWithMissingIds.Count()})");
                 var updatedItems = await Observable.Interval(TimeSpan.FromSeconds(30))
                     .Zip(itemsWithMissingIds, (x, y) => y)
-                    .Select(x => Observable.FromAsync(() => steamService.UpdateSteamItemId(x)))
+                    .Select(async x => 
+                        steamService.UpdateMarketItemNameId(x, 
+                            await commnityClient.GetMarketListingItemNameId(
+                                new SteamMarketListingPageRequest()
+                                {
+                                    AppId = x.App.SteamId,
+                                    MarketHashName = x.Description.Name,
+                                }
+                            )
+                        )
+                    )
                     .Merge()
-                    .Where(x => !String.IsNullOrEmpty(x.SteamId))
+                    .Where(x => !String.IsNullOrEmpty(x.Result.SteamId))
                     .ToList();
 
                 if (updatedItems.Any())

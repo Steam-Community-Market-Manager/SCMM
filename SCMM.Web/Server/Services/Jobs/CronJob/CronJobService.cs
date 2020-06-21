@@ -1,5 +1,6 @@
 ﻿using Cronos;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,13 +9,15 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
 {
     public abstract class CronJobService : IHostedService, IDisposable
     {
-        private System.Timers.Timer _timer;
-        private readonly object _timerLock = new object();
+        private readonly ILogger<CronJobService> _logger;
         private readonly bool _startImmediately;
         private readonly CronExpression _expression;
+        private System.Timers.Timer _timer;
+        private readonly object _timerLock = new object();
 
-        protected CronJobService(CronJobConfiguration configuration)
+        protected CronJobService(ILogger<CronJobService> logger, CronJobConfiguration configuration)
         {
+            _logger = logger;
             _startImmediately = configuration.StartImmediately;
             _expression = !String.IsNullOrEmpty(configuration.CronExpression)
                 ? CronExpression.Parse(configuration.CronExpression)
@@ -53,10 +56,9 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
                         {
                             await DoWork(cancellationToken);
                         }
-                        catch(Exception)
+                        catch(Exception ex)
                         {
-                            // TODO: Log this...
-                            throw;
+                            _logger.LogError(ex, $"{this.GetType().Name} work failed");
                         }
                     }
                     if (!cancellationToken.IsCancellationRequested)

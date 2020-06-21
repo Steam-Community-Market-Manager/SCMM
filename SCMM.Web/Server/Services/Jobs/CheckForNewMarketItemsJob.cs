@@ -21,7 +21,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly IServiceScopeFactory _scopeFactory;
 
         public CheckForNewMarketItemsJob(IConfiguration configuration, ILogger<CheckForNewMarketItemsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<CheckForNewMarketItemsJob>())
+            : base(logger, configuration.GetJobConfiguration<CheckForNewMarketItemsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -31,7 +31,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var steamClient = new SteamCommunityClient();
+                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                 
@@ -65,7 +65,8 @@ namespace SCMM.Web.Server.Services.Jobs
                         CurrencyId = currency.SteamId
                     };
 
-                    var appPageCountResponse = await steamClient.GetMarketSearchPaginated(appPageCountRequest);
+                    _logger.LogInformation($"Checking for new market items (appId: {app.SteamId})");
+                    var appPageCountResponse = await commnityClient.GetMarketSearchPaginated(appPageCountRequest);
                     if (appPageCountResponse?.Success != true || appPageCountResponse?.TotalCount <= 0)
                     {
                         continue;
@@ -97,7 +98,10 @@ namespace SCMM.Web.Server.Services.Jobs
                 // Add a 10 second delay between requests to avoid "Too Many Requests" error
                 var newItems = await Observable.Interval(TimeSpan.FromSeconds(10))
                     .Zip(pageRequests, (x, y) => y)
-                    .Select(x => Observable.FromAsync(() => steamClient.GetMarketSearchPaginated(x)))
+                    .Select(x => Observable.FromAsync(() => {
+                        _logger.LogInformation($"Checking for new market items (appId: {x.AppId}, start: {x.Start}, end: {x.Start + x.Count})");
+                        return commnityClient.GetMarketSearchPaginated(x);
+                    }))
                     .Merge()
                     .Where(x => x?.Success == true && x?.Results?.Count > 0)
                     .SelectMany(x => {

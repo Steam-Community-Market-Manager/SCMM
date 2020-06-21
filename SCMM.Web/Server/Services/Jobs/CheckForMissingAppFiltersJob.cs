@@ -20,7 +20,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly IServiceScopeFactory _scopeFactory;
 
         public CheckForMissingAppFiltersJob(IConfiguration configuration, ILogger<CheckForMissingAppFiltersJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<CheckForMissingAppFiltersJob>())
+            : base(logger, configuration.GetJobConfiguration<CheckForMissingAppFiltersJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -30,7 +30,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var commnityClient = new SteamCommunityClient();
+                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
@@ -46,6 +46,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         AppId = app.SteamId
                     };
 
+                    _logger.LogInformation($"Checking for missing app filters (appId: {app.SteamId})");
                     var response = await commnityClient.GetMarketAppFilters(request);
                     if (response?.Success != true)
                     {

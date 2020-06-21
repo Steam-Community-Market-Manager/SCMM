@@ -25,7 +25,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly SteamConfiguration _steamConfiguration;
 
         public CheckForMissingAssetTagsJob(IConfiguration configuration, ILogger<CheckForMissingAssetTagsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<CheckForMissingAssetTagsJob>())
+            : base(logger, configuration.GetJobConfiguration<CheckForMissingAssetTagsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -36,7 +36,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var commnityClient = new SteamCommunityClient();
+                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
@@ -62,6 +62,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var assetClassIds = group.Select(x => UInt64.Parse(x.SteamId)).ToList();
                     foreach (var batch in assetClassIds.Batch(100)) // Batch to 100 per request to avoid server ban
                     {
+                        _logger.LogInformation($"Checking for missing asset tags (ids: {batch.Count()})");
                         var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                         var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
                         var response = await steamEconomy.GetAssetClassInfoAsync(UInt32.Parse(group.Key.SteamId), batch.ToList(), language.SteamId);

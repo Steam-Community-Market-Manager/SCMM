@@ -25,7 +25,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly SteamConfiguration _steamConfiguration;
 
         public UpdateAssetWorkshopStatisticsJob(IConfiguration configuration, ILogger<UpdateAssetWorkshopStatisticsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(configuration.GetJobConfiguration<UpdateAssetWorkshopStatisticsJob>())
+            : base(logger, configuration.GetJobConfiguration<UpdateAssetWorkshopStatisticsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -36,7 +36,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var commnityClient = new SteamCommunityClient();
+                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                 var assetDescriptions = db.SteamAssetDescriptions
@@ -47,6 +47,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var workshopFileIds = assetDescriptions.Select(x => UInt64.Parse(x.WorkshopFile.SteamId)).ToList();
                 foreach (var batch in workshopFileIds.Batch(100)) // Batch to 100 per request to avoid server ban
                 {
+                    _logger.LogInformation($"Updating asset workshop statistics (ids: {batch.Count()})");
                     var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                     var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
                     var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(batch.ToList());
