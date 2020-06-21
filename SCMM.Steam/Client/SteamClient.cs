@@ -13,18 +13,22 @@ namespace SCMM.Steam.Client
     // TODO: Add error proper handling for StatusCode: 429, ReasonPhrase: 'Too Many Requests'
     public abstract class SteamClient
     {
-        private readonly ILogger<SteamCommunityClient> _logger;
+        private readonly ILogger<SteamClient> _logger;
         private readonly HttpClientHandler _httpHandler;
+        private readonly SteamSession _session;
 
-        public SteamClient(ILogger<SteamCommunityClient> logger, SteamSession session)
+        public SteamClient(ILogger<SteamClient> logger, SteamSession session)
         {
             _logger = logger;
+            _session = session;
             _httpHandler = new HttpClientHandler()
             {
                 UseCookies = (session?.Cookies != null),
                 CookieContainer = (session?.Cookies ?? new CookieContainer())
             };
         }
+
+        public SteamSession Session => _session;
 
         protected HttpClient BuildSteamHttpClient(Uri uri)
         {

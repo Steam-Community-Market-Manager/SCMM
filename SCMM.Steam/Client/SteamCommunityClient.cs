@@ -12,9 +12,12 @@ namespace SCMM.Steam.Client
 {
     public class SteamCommunityClient : SteamClient
     {
+        private readonly ILogger<SteamCommunityClient> _logger;
+
         public SteamCommunityClient(ILogger<SteamCommunityClient> logger, SteamSession session)
             : base(logger, session)
         {
+            _logger = logger;
         }
 
         public async Task<SteamProfileXmlResponse> GetProfile(SteamProfilePageRequest request)
@@ -79,6 +82,13 @@ namespace SCMM.Steam.Client
 
         public async Task<SteamMarketPriceHistoryJsonResponse> GetMarketPriceHistory(SteamMarketPriceHistoryJsonRequest request)
         {
+            // API returns BadRequest unless authenticated
+            if (Session?.IsValid != true)
+            {
+                _logger.LogWarning($"GET '{request.Uri}' was skipped because session is not authenticated");
+                return null;
+            }
+
             return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request);
         }
 

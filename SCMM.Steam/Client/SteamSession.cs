@@ -28,6 +28,7 @@ namespace SCMM.Steam.Client
                     logger.LogError($"Failed to login to steam (result: {result})");
                 }
 
+                logger.LogInformation("Logged in to steam ok");
                 return login.Session;
             }
             catch (Exception ex)
@@ -46,5 +47,7 @@ namespace SCMM.Steam.Client
                 return cookies;
             }
         }
+
+        public bool IsValid => !String.IsNullOrEmpty(_session.SteamLoginSecure);
     }
 }
