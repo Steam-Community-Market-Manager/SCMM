@@ -365,7 +365,9 @@ namespace SCMM.Web.Server.Domain
             item.CurrencyId = currencyId;
             item.RecalculateOrders(
                 ParseSteamMarketItemOrdersFromGraph(histogram.BuyOrderGraph),
-                ParseSteamMarketItemOrdersFromGraph(histogram.SellOrderGraph)
+                SteamEconomyHelper.GetQuantityValueAsInt(histogram.BuyOrderCount),
+                ParseSteamMarketItemOrdersFromGraph(histogram.SellOrderGraph),
+                SteamEconomyHelper.GetQuantityValueAsInt(histogram.SellOrderCount)
             );
 
             return item;

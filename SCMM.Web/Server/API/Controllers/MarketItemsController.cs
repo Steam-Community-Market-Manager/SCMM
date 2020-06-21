@@ -183,8 +183,7 @@ namespace SCMM.Web.Server.API.Controllers
             return _db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .Where(x => x.DemandUnique > 0)
-                .OrderByDescending(x => x.DemandUnique)
+                .OrderByDescending(x => x.Demand)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -196,8 +195,7 @@ namespace SCMM.Web.Server.API.Controllers
             return _db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .Where(x => x.SupplyUnique > 0)
-                .OrderByDescending(x => x.SupplyUnique)
+                .OrderByDescending(x => x.Supply)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();

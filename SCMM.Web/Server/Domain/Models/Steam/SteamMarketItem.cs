@@ -26,17 +26,11 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public ICollection<SteamMarketItemSale> SalesHistory { get; set; }
 
-        // What is the sum quantity of all sell orders
+        // What is the total quantity of all sell orders
         public int Supply { get; set; }
 
-        // What is the total number of unique sell orders
-        public int SupplyUnique { get; set; }
-
-        // What is the sum quantity of all buy orders
+        // What is the total quantity of all buy orders
         public int Demand { get; set; }
-
-        // What is the total number of unique buy orders
-        public int DemandUnique { get; set; }
 
         // What is the cheapest buy order
         public int BuyAskingPrice { get; set; }
@@ -135,7 +129,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         // How long since prices were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
-        public void RecalculateOrders(SteamMarketItemOrder[] buyOrders = null, SteamMarketItemOrder[] sellOrders = null)
+        public void RecalculateOrders(SteamMarketItemOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemOrder[] sellOrders = null, int? sellOrderCount = null)
         {
             var buyOrdersSafe = (buyOrders ?? BuyOrders?.ToArray());
             if (buyOrdersSafe != null)
@@ -145,8 +139,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                     ? buyOrdersSorted.First().Price
                     : 0;
 
-                Demand = buyOrdersSorted.Sum(y => y.Quantity);
-                DemandUnique = buyOrdersSorted.Length;
+                // NOTE: Steam only returns the top 100 orders, so the true demand can't be calculated from sell orders list
+                //Demand = buyOrdersSorted.Sum(y => y.Quantity);
+                Demand = (buyOrderCount ?? Demand);
+
                 BuyAskingPrice = highestPrice;
                 if (buyOrders != null)
                 {
@@ -176,8 +172,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                 var resellTaxPublisher = Math.Max(1, (int)Math.Round(resellPrice * SteamEconomyHelper.DefaultPublisherFeeMultiplier, 0));
                 var resellTax = (resellTaxSteam + resellTaxPublisher);
 
-                Supply = sellOrdersSorted.Sum(y => y.Quantity);
-                SupplyUnique = sellOrdersSorted.Length;
+                // NOTE: Steam only returns the top 100 orders, so the true supply can't be calculated from sell orders list
+                //Supply = sellOrdersSorted.Sum(y => y.Quantity);
+                Supply = (sellOrderCount ?? Supply);
+
                 BuyNowPrice = lowestPrice;
                 BuyNowPriceDelta = (secondLowestPrice - lowestPrice);
                 ResellPrice = resellPrice;
@@ -205,19 +203,18 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var salesSorted = salesSafe.OrderBy(y => y.Timestamp).ToArray();
             var earliestTimestamp = salesSorted.Min(x => x.Timestamp);
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
-            var currentTimeStamp = DateTimeOffset.UtcNow;
             var first24hrs = salesSorted.Where(x => x.Timestamp < earliestTimestamp.Add(TimeSpan.FromHours(24))).ToArray();
             var first24hrValue = (int) Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
-            var last24hrs = salesSorted.Where(x => x.Timestamp > currentTimeStamp.Subtract(TimeSpan.FromHours(24))).ToArray();
+            var last24hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(24))).ToArray();
             var last24hrSales = last24hrs.Sum(x => x.Quantity);
             var last24hrValue = (int) Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
-            var last48hrs = salesSorted.Where(x => x.Timestamp > currentTimeStamp.Subtract(TimeSpan.FromHours(48))).ToArray();
+            var last48hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(48))).ToArray();
             var last48hrSales = last48hrs.Sum(x => x.Quantity);
             var last48hrValue = (int) Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.Price) : 0, 0);
-            var last120hrs = salesSorted.Where(x => x.Timestamp > currentTimeStamp.Subtract(TimeSpan.FromHours(120))).ToArray();
+            var last120hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(120))).ToArray();
             var last120hrSales = last120hrs.Sum(x => x.Quantity);
             var last120hrValue = (int) Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
-            var last336hrs = salesSorted.Where(x => x.Timestamp > currentTimeStamp.Subtract(TimeSpan.FromHours(336))).ToArray();
+            var last336hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(336))).ToArray();
             var last336hrSales = last336hrs.Sum(x => x.Quantity);
             var last336hrValue = (int)Math.Round(last336hrs.Length > 0 ? last336hrs.Average(x => x.Price) : 0, 0);
             var allTimeLow = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Min(x => x.Price));
