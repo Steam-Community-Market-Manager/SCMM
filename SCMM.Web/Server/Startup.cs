@@ -57,6 +57,7 @@ namespace SCMM.Web.Server
                     configuration.ApplicationKey = steamConfiguration.ApplicationKey;
                 });
 
+            services.AddTransient<SteamCommunityClient>();
             services.AddTransient<SteamService>();
 
             services.AddHostedService<CheckForMissingAppFiltersJob>();
@@ -68,6 +69,7 @@ namespace SCMM.Web.Server
             services.AddHostedService<UpdateMarketItemOrdersJob>();
             services.AddHostedService<UpdateMarketItemSalesJob>();
             services.AddHostedService<UpdateStoreWorkshopStatisticsJob>();
+            services.AddHostedService<RecalculateMarketItemSnapshotsJob>();
 
             services.AddAutoMapper(typeof(Startup));
 
