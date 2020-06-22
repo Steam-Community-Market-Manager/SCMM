@@ -151,7 +151,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        RefreshItems();
+        await RefreshItems();
     }
 
     private async Task BuyItem(StoreItemListDTO item)

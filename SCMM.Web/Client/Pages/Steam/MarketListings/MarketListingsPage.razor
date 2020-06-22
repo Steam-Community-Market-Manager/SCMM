@@ -28,8 +28,7 @@
 
 </style>
 
-<TextField Type="search" Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
-           Value="@SearchFilter" OnChange="@OnSearchFilterChanged"
+<TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None" OnChange="@OnSearchFilterChanged"
            Placeholder="Type an item name or tag here to filter results (e.g. 'sheet metal door' or 'blackout')" />
 
 @if (Items == null)
@@ -64,7 +63,7 @@ else
                 {
                     <TableRow @key="@item.Id" Hover OnClick="@((_) => OnItemSelectionChanged(item))">
                         <TableCell>
-                            <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                         </TableCell>
                         <TableCell Component="th" Scope="row" Style="@GetItemStyles(item)">
                             <strong>@item.Name</strong>

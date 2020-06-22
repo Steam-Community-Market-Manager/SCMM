@@ -43,7 +43,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -104,7 +104,7 @@
                         {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -158,7 +158,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -219,7 +219,7 @@
                         {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -272,7 +272,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -322,7 +322,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -372,7 +372,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -422,7 +422,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -473,7 +473,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -524,7 +524,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -577,7 +577,7 @@
                             {
                         <TableRow Hover OnClick="@((_) => ViewItem(item))">
                             <TableCell>
-                                <img src="@item.IconUrl" style="max-width:24px; max-height:24px" />
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                             </TableCell>
                             <TableCell Component="th" Scope="row">
                                 <strong>@item.Name</strong>
@@ -615,17 +615,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        RefreshStonkingRecently();
-        RefreshStinkingRecently();
-        RefreshAllTimeLow();
-        RefreshAllTimeHigh();
-        RefreshMostProfitable();
-        RefreshHotRightNow();
-        RefreshMostWanted();
-        RefreshMostSaturated();
-        RefreshMostCommon();
-        RefreshMostRare();
-        RefreshBiggestCrashes();
+        await RefreshStonkingRecently();
+        await RefreshStinkingRecently();
+        await RefreshAllTimeLow();
+        await RefreshAllTimeHigh();
+        await RefreshMostProfitable();
+        await RefreshHotRightNow();
+        await RefreshMostWanted();
+        await RefreshMostSaturated();
+        await RefreshMostCommon();
+        await RefreshMostRare();
+        await RefreshBiggestCrashes();
     }
 
     private async Task ViewItem(MarketItemListDTO item)
