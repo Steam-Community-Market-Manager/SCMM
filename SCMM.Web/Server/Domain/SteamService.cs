@@ -147,7 +147,7 @@ namespace SCMM.Web.Server.Domain
                         MarketItemId = marketItem?.Id,
                         Currency = marketItem?.Currency,
                         CurrencyId = marketItem?.CurrencyId,
-                        BuyPrice = 0,
+                        BuyPrice = null,
                         Quantity = asset.Amount
                     };
 

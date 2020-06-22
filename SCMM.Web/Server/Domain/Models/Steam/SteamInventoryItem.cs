@@ -14,7 +14,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public SteamCurrency Currency { get; set; }
 
-        public int BuyPrice { get; set; }
+        public int? BuyPrice { get; set; }
 
         public int Quantity { get; set; }
 
