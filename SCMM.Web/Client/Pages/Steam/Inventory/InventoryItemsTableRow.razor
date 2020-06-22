@@ -15,7 +15,7 @@
         @Item.Quantity.ToQuantityString()
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        <InputBase Type="number" Margin="@Margin.None" Style="width:70px" PlaceHolder="Enter Price" Value="@Item.BuyPrice?.ToString()"
+        <InputBase Type="number" Margin="@Margin.None" Style="width:70px" PlaceHolder="Set" Value="@Item.BuyPrice?.ToString()"
                    OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))" />
     </TableCell>
     <TableCell Class="@GetItemClass()">
@@ -25,27 +25,48 @@
         }
         else
         {
-            <span>N/A</span>
+            <span>—</span>
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.BuyNowPrice)
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellPrice)
         }
         else
         {
-            <span>N/A</span>
+            <span>—</span>
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        ?
+        @if (Item.MarketItem != null)
+        {
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellTax)
+        }
+        else
+        {
+            <span>—</span>
+        }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        ?
+        @if (Item.MarketItem != null && Item.BuyPrice > 0)
+        {
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax - Item.BuyPrice.Value)
+        }
+        else
+        {
+            <span>—</span>
+        }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        ?
+        @if (Item.MarketItem != null && Item.BuyPrice > 0)
+        {
+            @(((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0)).ToRoIString())
+        }
+        else
+        {
+            <span>∞</span>
+        }
     </TableCell>
 </TableRow>
 
@@ -56,15 +77,16 @@
 
     private string GetItemClass()
     {
-        if (Item.BuyPrice <= 0 || Item.MarketItem == null)
+        if (Item.BuyPrice == 0 || Item.BuyPrice == null || Item.MarketItem == null)
         {
             return null;
         }
-        if (Item.MarketItem.BuyNowPrice > Item.BuyPrice)
+        var roi = ((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0));
+        if (roi >= 100)
         {
             return "Background-Success";
         }
-        if (Item.MarketItem.BuyNowPrice < Item.BuyPrice)
+        if (roi < 100)
         {
             return "Background-Error";
         }

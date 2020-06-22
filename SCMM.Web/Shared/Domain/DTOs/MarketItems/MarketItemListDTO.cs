@@ -29,6 +29,12 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public int BuyNowPrice { get; set; }
 
+        public int ResellPrice { get; set; }
+
+        public int ResellTax { get; set; }
+
+        public int ResellProfit { get; set; }
+
         public int First24hrValue { get; set; }
 
         public int Last24hrSales { get; set; }
