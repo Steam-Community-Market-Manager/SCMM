@@ -1,0 +1,32 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@inherits ComponentBase
+
+<Table StickyHeader Size="@Size.Small">
+    <TableHead>
+        <TableRow>
+            <TableCell></TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Owned</TableCell>
+            <TableCell>Buy Price</TableCell>
+            <TableCell>Market Value</TableCell>
+            <TableCell>Resell Price</TableCell>
+            <TableCell>Resell Tax</TableCell>
+            <TableCell>Resell Profit</TableCell>
+            <TableCell>Resell RoI%</TableCell>
+        </TableRow>
+    </TableHead>
+    <TableBody>
+        @foreach (var item in Items)
+        { 
+            <InventoryItemsTableRow Item="@item" />
+        }
+    </TableBody>
+</Table>
+
+@code {
+
+    [Parameter]
+    public InventoryItemListDTO[] Items { get; set; }
+
+}

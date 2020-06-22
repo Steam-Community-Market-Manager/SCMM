@@ -1,0 +1,82 @@
+@page "/steam/inventory/{SteamId}"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@using SCMM.Web.Shared.Domain.DTOs
+@using SCMM.Web.Shared
+@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<style>
+    
+    .Search-Text {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .Search-Text input {
+        padding: 8px;
+    }
+
+    .Inventory-List-Container {
+        max-height: calc(100vh - 150px);
+        overflow: auto;
+    }
+
+</style>
+
+@if (Profile == null)
+{
+    <Loading />
+}
+else
+{
+    <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
+    <Grid Container Spacing="@Spacing.Two">
+        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+            <TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
+                       Placeholder="Type an item name to filter results" />
+            <Paper Class="Inventory-List-Container">
+                <InventoryItemsTable Items="@InventoryItems" />
+            </Paper>
+        </Grid>
+        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+            <Grid Container>
+                <Grid ExtraSmall="@GridSize.Twelve">
+                    Inventory value history chart
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+}
+
+@code {
+
+    [Parameter]
+    public string SteamId { get; set; }
+
+    private ProfileInventoryDetailsDTO Profile { get; set; }
+
+    private InventoryItemListDTO[] InventoryItems { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"InventoryItems/{SteamId}");
+            InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    private async Task ViewItem(InventoryItemListDTO item)
+    {
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
+
+}

@@ -1,0 +1,87 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@using SCMM.Web.Shared
+@inherits ComponentBase
+@inject HttpClient Http
+
+<TableRow @key="@Item.Id" Hover>
+    <TableCell Class="@GetItemClass()">
+        <img src="@Item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+    </TableCell>
+    <TableCell Component="th" Scope="row" Class="@GetItemClass()">
+        <strong>@Item.Name</strong>
+    </TableCell>
+    <TableCell Class="@GetItemClass()">
+        @Item.Quantity.ToQuantityString()
+    </TableCell>
+    <TableCell Class="@GetItemClass()">
+        <InputBase Type="number" Margin="@Margin.None" Style="width:70px" PlaceHolder="Enter Price" Value="@Item.BuyPrice?.ToString()"
+                   OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))" />
+    </TableCell>
+    <TableCell Class="@GetItemClass()">
+        @if (Item.MarketItem != null)
+        {
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.Last24hrValue)
+        }
+        else
+        {
+            <span>N/A</span>
+        }
+    </TableCell>
+    <TableCell Class="@GetItemClass()">
+        @if (Item.MarketItem != null)
+        {
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.BuyNowPrice)
+        }
+        else
+        {
+            <span>N/A</span>
+        }
+    </TableCell>
+    <TableCell Class="@GetItemClass()">
+        ?
+    </TableCell>
+    <TableCell Class="@GetItemClass()">
+        ?
+    </TableCell>
+    <TableCell Class="@GetItemClass()">
+        ?
+    </TableCell>
+</TableRow>
+
+@code { 
+
+    [Parameter]
+    public InventoryItemListDTO Item { get; set; }
+
+    private string GetItemClass()
+    {
+        if (Item.BuyPrice <= 0 || Item.MarketItem == null)
+        {
+            return null;
+        }
+        if (Item.MarketItem.BuyNowPrice > Item.BuyPrice)
+        {
+            return "Background-Success";
+        }
+        if (Item.MarketItem.BuyNowPrice < Item.BuyPrice)
+        {
+            return "Background-Error";
+        }
+        return null;
+    }
+
+    private async Task UpdateItemPrice(string value)
+    {
+        var buyPrice = 0;
+        if (Int32.TryParse(value, out buyPrice))
+        {
+            if (buyPrice != Item.BuyPrice)
+            {
+                Item.BuyPrice = buyPrice;
+                await Http.PutAsJsonAsync<int>($"InventoryItems/item/{Item.Id}", buyPrice);
+            }
+        }
+    }
+
+}

@@ -1,0 +1,47 @@
+@page "/steam/inventory"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<DocumentTitle Title="Inventory" />
+
+<style>
+
+    .Profile-Search-Root {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+</style>
+
+<div class="Profile-Search-Root">
+    <Paper Style="display: flex; padding: 2px 4px; align-items: center;">
+        <Typography Style="padding: 10px;">
+            <PersonIcon />
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2">
+            https://steamcommunity.com/id/
+        </Typography>
+        <InputBase OnChange="@OnSteamIdChanged" Style="flex: 1; margin-left: 8px;" Placeholder="enter your steam id..." />
+        <IconButton OnClick="@ViewProfileInventory" Style="padding: 10px;">
+            <SearchIcon />
+        </IconButton>
+    </Paper>
+</div>
+
+@code {
+
+    private string SteamId { get; set; }
+
+    private void OnSteamIdChanged(ChangeEventArgs args)
+    {
+        SteamId = (string)args.Value;
+    }
+
+    private async Task ViewProfileInventory()
+    {
+        Navigation.NavigateTo($"steam/inventory/{SteamId}");
+    }
+
+}
