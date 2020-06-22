@@ -29,10 +29,7 @@ namespace SCMM.Web.Server.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (Debugger.IsAttached)
-            {
-                optionsBuilder.UseLoggerFactory(DebugLoggerFactory);
-            }
+            //optionsBuilder.UseLoggerFactory(DebugLoggerFactory);
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
