@@ -85,7 +85,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public MarketItemDetailDTO Get(Guid id)
+        public MarketItemDetailDTO Get([FromRoute] Guid id)
         {
             return _db.SteamMarketItems
                 .Include(x => x.Currency)

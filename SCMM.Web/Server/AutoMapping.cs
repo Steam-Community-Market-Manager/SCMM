@@ -13,6 +13,14 @@ namespace SCMM.Web.Server
         {
             CreateMap<SteamCurrency, CurrencyDTO>();
             CreateMap<SteamProfile, ProfileDTO>();
+            CreateMap<SteamProfile, ProfileInventoryDetailsDTO>();
+
+            CreateMap<SteamInventoryItem, InventoryItemListDTO>()
+                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
+                .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
+                .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
+                .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
+                .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl));
 
             CreateMap<SteamMarketItem, MarketItemListDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))

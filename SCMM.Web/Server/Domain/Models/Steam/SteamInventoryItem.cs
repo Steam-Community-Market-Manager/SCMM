@@ -17,5 +17,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public int BuyPrice { get; set; }
 
         public int Quantity { get; set; }
+
+        public Guid? MarketItemId { get; set; }
+
+        public SteamMarketItem MarketItem { get; set; }
     }
 }

@@ -28,11 +28,13 @@ namespace SCMM.Web.Server.Domain
     {
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
+        private readonly SteamCommunityClient _communityClient;
 
-        public SteamService(SteamDbContext db, IConfiguration cfg)
+        public SteamService(SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
+            _communityClient = communityClient;
         }
 
         public async Task<Models.Steam.SteamProfile> AddOrUpdateSteamProfile(string steamId)
@@ -74,6 +76,106 @@ namespace SCMM.Web.Server.Domain
 
             _db.SteamProfiles.Add(profile);
             await _db.SaveChangesAsync();
+            return profile;
+        }
+
+        public async Task<Models.Steam.SteamProfile> LoadAndRefreshProfileInventory(string steamId)
+        {
+            var profile = await _db.SteamProfiles
+                .Include(x => x.InventoryItems).ThenInclude(x => x.App)
+                .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
+                .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
+                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem)
+                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Currency)
+                .FirstOrDefaultAsync(x => x.SteamId == steamId);
+            if (profile == null)
+            {
+                return null;
+            }
+
+            var apps = _db.SteamApps.ToList();
+            if (!apps.Any())
+            {
+                return profile;
+            }
+
+            foreach (var app in apps)
+            {
+                // Fetch assets
+                var inventory = await _communityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
+                {
+                    AppId = app.SteamId,
+                    SteamId = profile.SteamId,
+                    Start = 1,
+                    Count = SteamInventoryPaginatedJsonRequest.MaxPageSize,
+                    NoRender = true
+                });
+                if (inventory?.Success != true)
+                {
+                    continue;
+                }
+
+                // Add assets
+                var missingAssets = inventory.Assets
+                    .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId))
+                    .ToList();
+                foreach (var asset in missingAssets)
+                {
+                    var description = inventory.Descriptions.FirstOrDefault(x => x.ClassId == asset.ClassId);
+                    if (description == null)
+                    {
+                        continue;
+                    }
+                    var assetDescription = await AddOrUpdateAssetDescription(app, description);
+                    if (assetDescription == null)
+                    {
+                        continue;
+                    }
+                    var marketItem = await _db.SteamMarketItems
+                        .Include(x => x.Currency)
+                        .FirstOrDefaultAsync(x => x.Description.SteamId == asset.ClassId);                    
+                    var inventoryItem = new SteamInventoryItem()
+                    {
+                        SteamId = asset.AssetId,
+                        Owner = profile,
+                        OwnerId = profile.Id,
+                        App = app,
+                        AppId = app.Id,
+                        Description = assetDescription,
+                        DescriptionId = assetDescription.Id,
+                        MarketItem = marketItem,
+                        MarketItemId = marketItem?.Id,
+                        Currency = marketItem?.Currency,
+                        CurrencyId = marketItem?.CurrencyId,
+                        BuyPrice = 0,
+                        Quantity = asset.Amount
+                    };
+
+                    profile.InventoryItems.Add(inventoryItem);
+                }
+
+                // Update assets
+                foreach (var asset in inventory.Assets)
+                {
+                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.SteamId == asset.AssetId);
+                    if (existingAsset != null)
+                    {
+                        existingAsset.Quantity = asset.Amount;
+                    }
+                }
+
+                // Remove assets
+                var removedAssets = profile.InventoryItems
+                    .Where(x => !inventory.Assets.Any(y => y.AssetId == x.SteamId))
+                    .ToList();
+                foreach (var asset in removedAssets)
+                {
+                    profile.InventoryItems.Remove(asset);
+                }
+
+                await _db.SaveChangesAsync();
+            }
+
             return profile;
         }
 
@@ -281,7 +383,7 @@ namespace SCMM.Web.Server.Domain
         public async Task<Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, Steam.Shared.Community.Models.SteamAssetDescription assetDescription)
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
-                .Where(x => x.SteamId == assetDescription.ToString())
+                .Where(x => x.SteamId == assetDescription.ClassId)
                 .Include(x => x.WorkshopFile)
                 .FirstOrDefaultAsync();
 

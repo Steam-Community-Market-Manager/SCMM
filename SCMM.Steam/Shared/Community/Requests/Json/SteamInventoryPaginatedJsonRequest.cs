@@ -11,7 +11,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Json
         public string AppId { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{SteamConstants.SteamCommunityUrl}/inventory/{Uri.EscapeDataString(SteamId)}/{Uri.EscapeDataString(AppId)}/2?start={Start}&count={Count}&language={Uri.EscapeDataString(Language)}&currency={Uri.EscapeDataString(CurrencyId)}&norender={(NoRender ? "1" : "0")}"
+            $"{SteamConstants.SteamCommunityUrl}/inventory/{Uri.EscapeDataString(SteamId)}/{Uri.EscapeDataString(AppId)}/2?start={Start}&count={Count}&norender={(NoRender ? "1" : "0")}"
         );
     }
 }
