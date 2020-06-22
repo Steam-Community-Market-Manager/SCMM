@@ -288,107 +288,7 @@
             </CardContent>
         </Card>
     </Grid>
-
-    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
-            <CardHeader>
-                <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
-                        Most Wanted
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Highest number of buy orders
-                    </Typography>
-                </TitleContent>
-                <ActionContent>
-                    <Button Color="@Color.Secondary"
-                            Disabled="true"
-                            Size="@Size.Small"
-                            Variant="@ButtonVariant.Text">
-                        View More <ArrowRightIcon />
-                    </Button>
-                </ActionContent>
-            </CardHeader>
-            <CardContent Style="padding:0px">
-                @if (MostWanted == null)
-                {
-                <Loading />
-                }
-                else
-                {
-                <Table Size="@Size.Small">
-                    <TableBody>
-                        @foreach (var item in MostWanted)
-                            {
-                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                            <TableCell>
-                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                            </TableCell>
-                            <TableCell Component="th" Scope="row">
-                                <strong>@item.Name</strong>
-                            </TableCell>
-                            <TableCell>
-                                @item.Demand.ToQuantityString()
-                            </TableCell>
-                        </TableRow>
-                            }
-                    </TableBody>
-                </Table>
-                }
-            </CardContent>
-        </Card>
-    </Grid>
-
-    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
-            <CardHeader>
-                <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
-                        Most Saturated
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Highest number of sell orders
-                    </Typography>
-                </TitleContent>
-                <ActionContent>
-                    <Button Color="@Color.Secondary"
-                            Disabled="true"
-                            Size="@Size.Small"
-                            Variant="@ButtonVariant.Text">
-                        View More <ArrowRightIcon />
-                    </Button>
-                </ActionContent>
-            </CardHeader>
-            <CardContent Style="padding:0px">
-                @if (MostSaturated == null)
-                {
-                <Loading />
-                }
-                else
-                {
-                <Table Size="@Size.Small">
-                    <TableBody>
-                        @foreach (var item in MostSaturated)
-                            {
-                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                            <TableCell>
-                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                            </TableCell>
-                            <TableCell Component="th" Scope="row">
-                                <strong>@item.Name</strong>
-                            </TableCell>
-                            <TableCell>
-                                @item.Supply.ToQuantityString()
-                            </TableCell>
-                        </TableRow>
-                            }
-                    </TableBody>
-                </Table>
-                }
-            </CardContent>
-        </Card>
-    </Grid>
-
+    
     <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
         <Card>
             <CardHeader>
@@ -490,7 +390,7 @@
             </CardContent>
         </Card>
     </Grid>
-
+    
     <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
         <Card>
             <CardHeader>
@@ -534,6 +434,106 @@
                             </TableCell>
                             <TableCell>
                                 <span class="Text-Success">🡱 @Math.Abs(item.Last24hrValue - item.First24hrValue)</span>
+                            </TableCell>
+                        </TableRow>
+                            }
+                    </TableBody>
+                </Table>
+                }
+            </CardContent>
+        </Card>
+    </Grid>
+
+    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+        <Card>
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                        Most Wanted
+                    </Typography>
+                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                        Highest number of buy orders
+                    </Typography>
+                </TitleContent>
+                <ActionContent>
+                    <Button Color="@Color.Secondary"
+                            Disabled="true"
+                            Size="@Size.Small"
+                            Variant="@ButtonVariant.Text">
+                        View More <ArrowRightIcon />
+                    </Button>
+                </ActionContent>
+            </CardHeader>
+            <CardContent Style="padding:0px">
+                @if (MostWanted == null)
+                {
+                <Loading />
+                }
+                else
+                {
+                <Table Size="@Size.Small">
+                    <TableBody>
+                        @foreach (var item in MostWanted)
+                            {
+                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                            <TableCell>
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                            </TableCell>
+                            <TableCell Component="th" Scope="row">
+                                <strong>@item.Name</strong>
+                            </TableCell>
+                            <TableCell>
+                                @item.Demand.ToQuantityString()
+                            </TableCell>
+                        </TableRow>
+                            }
+                    </TableBody>
+                </Table>
+                }
+            </CardContent>
+        </Card>
+    </Grid>
+
+    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+        <Card>
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                        Most Saturated
+                    </Typography>
+                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                        Highest number of sell orders
+                    </Typography>
+                </TitleContent>
+                <ActionContent>
+                    <Button Color="@Color.Secondary"
+                            Disabled="true"
+                            Size="@Size.Small"
+                            Variant="@ButtonVariant.Text">
+                        View More <ArrowRightIcon />
+                    </Button>
+                </ActionContent>
+            </CardHeader>
+            <CardContent Style="padding:0px">
+                @if (MostSaturated == null)
+                {
+                <Loading />
+                }
+                else
+                {
+                <Table Size="@Size.Small">
+                    <TableBody>
+                        @foreach (var item in MostSaturated)
+                            {
+                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                            <TableCell>
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                            </TableCell>
+                            <TableCell Component="th" Scope="row">
+                                <strong>@item.Name</strong>
+                            </TableCell>
+                            <TableCell>
+                                @item.Supply.ToQuantityString()
                             </TableCell>
                         </TableRow>
                             }
