@@ -16,4 +16,7 @@
             await JSRuntime.InvokeVoidAsync("DocumentInterop.setDocumentTitle", $"{Application} - {Title}");
         }
     }
+
+    protected override bool ShouldRender() => false;
+
 }
