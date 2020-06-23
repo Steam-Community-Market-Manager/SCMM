@@ -8,6 +8,7 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 
+<InventoryCardStyle />
 <style>
     
     .Search-Text {
@@ -20,7 +21,7 @@
     }
 
     .Inventory-List-Container {
-        max-height: calc(100vh - 150px);
+        max-height: calc(100vh - 230px);
         overflow: auto;
     }
 
@@ -34,6 +35,21 @@ else
 {
     <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
     <Grid Container Spacing="@Spacing.Two">
+        <Grid ExtraSmall="@GridSize.Four">
+            <InventoryProfileCard Profile="@Profile" />
+        </Grid>
+        <Grid ExtraSmall="@GridSize.Two">
+            <InventoryValueCard Title="Invested Value" IconClass="Background-Error" Currency="@Currency" Value="@InventoryTotalInvestedValue" />
+        </Grid>
+        <Grid ExtraSmall="@GridSize.Two">
+            <InventoryValueCard Title="Market Value" IconClass="Background-Info" Currency="@Currency" Value="@InventoryTotalMarketValue" />
+        </Grid>
+        <Grid ExtraSmall="@GridSize.Two">
+            <InventoryValueCard Title="Resell Value" IconClass="Background-Success" Currency="@Currency" Value="@InventoryTotalResellValue" />
+        </Grid>
+        <Grid ExtraSmall="@GridSize.Two">
+            <InventoryValueCard Title="Resell Profit" IconClass="Background-Success" Currency="@Currency" Value="@InventoryTotalProfitValue" />
+        </Grid>
         <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
             <TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
                        Placeholder="Type an item name to filter results" />
@@ -41,10 +57,13 @@ else
                 <InventoryItemsTable Items="@InventoryItems" />
             </Paper>
         </Grid>
-        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        <Grid Container Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
             <Grid Container>
                 <Grid ExtraSmall="@GridSize.Twelve">
-                    Inventory value history chart
+                    @if (TotalValueHistoryChart != null)
+                    {
+                        <ChartJsLineChart @ref="TotalValueHistoryChartJs" Config="@TotalValueHistoryChart" />
+                    }
                 </Grid>
             </Grid>
         </Grid>
@@ -60,12 +79,27 @@ else
 
     private InventoryItemListDTO[] InventoryItems { get; set; }
 
+    private CurrencyDTO Currency { get; set; }
+
+    private int InventoryTotalInvestedValue { get; set; }
+
+    private int InventoryTotalMarketValue { get; set; }
+
+    private int InventoryTotalResellValue { get; set; }
+
+    private int InventoryTotalProfitValue { get; set; }
+
+    private ChartJsLineChart TotalValueHistoryChartJs;
+    private LineConfig TotalValueHistoryChart;
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"InventoryItems/{SteamId}");
             InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
+            RecalculateTotals();
+            RedrawTotalValueHistoryChart();
         }
         catch (AccessTokenNotAvailableException exception)
         {
@@ -77,6 +111,120 @@ else
     {
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
         await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
+
+    private void RecalculateTotals()
+    {
+        if (Profile?.InventoryItems?.Any() == true)
+        {
+            var items = Profile.InventoryItems.Where(x => x.MarketItem != null).ToList();
+            Currency = items.FirstOrDefault().MarketItem.Currency;
+            InventoryTotalInvestedValue = items.Sum(x => (x.BuyPrice ?? 0) * x.Quantity);
+            InventoryTotalMarketValue = items.Sum(x => x.MarketItem.Last24hrValue);
+            InventoryTotalResellValue = items.Sum(x => x.MarketItem.ResellPrice);
+            InventoryTotalProfitValue = items.Sum(x => x.MarketItem.ResellPrice - x.MarketItem.ResellTax - (x.BuyPrice ?? 0));
+        }
+        else
+        {
+            Currency = null;
+            InventoryTotalInvestedValue = 0;
+            InventoryTotalMarketValue = 0;
+            InventoryTotalResellValue = 0;
+            InventoryTotalProfitValue = 0;
+        }
+    }
+
+    private void RedrawTotalValueHistoryChart()
+    {
+        if (Profile.ValueHistoryGraph == null)
+        {
+            return;
+        }
+
+        TotalValueHistoryChart = new LineConfig
+        {
+            Options = new LineOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scales = new Scales
+                {
+
+                    xAxes = new List<CartesianAxis>
+                    {
+                        new CategoryAxis
+                        {
+                            Ticks = new CategoryTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    },
+                    yAxes = new List<CartesianAxis>
+                    {
+                        new LinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        TotalValueHistoryChart.Data.Labels = Profile.ValueHistoryGraph.Keys.ToList();
+
+        var totalValueDataSet = new LineDataset<DoubleWrapper>
+        {
+            Label = "Market Value",
+            BackgroundColor = "#1976d2",
+            BorderColor = "#0d47a1",
+            BorderWidth = 1,
+            PointBorderWidth = 2,
+            PointRadius = 8,
+            LineTension = 0.1,
+            Fill = true,
+        };
+        totalValueDataSet.AddRange(
+            Profile.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
+        );
+
+        TotalValueHistoryChart.Data.Datasets.Add(totalValueDataSet);
     }
 
 }

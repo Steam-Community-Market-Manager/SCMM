@@ -79,6 +79,49 @@ namespace SCMM.Web.Server.Domain
             return profile;
         }
 
+        public async Task<IDictionary<DateTimeOffset, double>> LoadInventoryValueHistory(string steamId)
+        {
+            var history = new Dictionary<DateTimeOffset, double>();
+            var today = DateTimeOffset.UtcNow.Date;
+  
+            try
+            {
+                var inventoryValues = _db.SteamProfiles
+                    .Where(x => x.SteamId == steamId)
+                    .Select(x => new
+                    {
+                        Last1hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last1hrValue),
+                        Last24hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last24hrValue),
+                        Last48hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last48hrValue),
+                        Last72hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last72hrValue),
+                        Last96hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last96hrValue),
+                        Last120hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last120hrValue),
+                        Last144hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last144hrValue),
+                        Last168hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last168hrValue),
+                        Last336hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last336hrValue),
+                        Last504hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last504hrValue),
+                    })
+                    .FirstOrDefault();
+
+                history[today.Subtract(TimeSpan.FromDays(21))] = inventoryValues.Last504hrValue;
+                history[today.Subtract(TimeSpan.FromDays(14))] = inventoryValues.Last336hrValue;
+                history[today.Subtract(TimeSpan.FromDays(7))] = inventoryValues.Last168hrValue;
+                history[today.Subtract(TimeSpan.FromDays(6))] = inventoryValues.Last144hrValue;
+                history[today.Subtract(TimeSpan.FromDays(5))] = inventoryValues.Last120hrValue;
+                history[today.Subtract(TimeSpan.FromDays(4))] = inventoryValues.Last96hrValue;
+                history[today.Subtract(TimeSpan.FromDays(3))] = inventoryValues.Last72hrValue;
+                history[today.Subtract(TimeSpan.FromDays(2))] = inventoryValues.Last48hrValue;
+                history[today.Subtract(TimeSpan.FromDays(1))] = inventoryValues.Last24hrValue;
+                history[today.Subtract(TimeSpan.FromDays(0))] = inventoryValues.Last1hrValue;
+            }
+            catch (Exception ex)
+            {
+
+            }
+            
+            return history;
+        }
+
         public async Task<Models.Steam.SteamProfile> LoadAndRefreshProfileInventory(string steamId)
         {
             var profile = await _db.SteamProfiles

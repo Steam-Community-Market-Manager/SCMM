@@ -1,0 +1,24 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs
+@inherits ComponentBase
+
+<div style=" display: flex; align-items: center; align-content: center; padding: 8px;">
+    <Avatar style="width: 64px; height: 64px; display:flex">
+        <img src="@Profile.AvatarLargeUrl" style="width: 64px; height: 64px;" />
+    </Avatar>
+    <div style="display: inline-block; padding: 0px 16px;">
+        <Typography Variant="@TypographyVariant.H5">
+            @Profile.Name
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+            @(Profile.ProfileId ?? Profile.SteamId)
+        </Typography>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public ProfileInventoryDetailsDTO Profile { get; set; }
+
+}

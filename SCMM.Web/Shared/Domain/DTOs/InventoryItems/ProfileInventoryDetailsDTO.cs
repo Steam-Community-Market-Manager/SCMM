@@ -1,5 +1,6 @@
 ﻿using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using System;
+using System.Collections.Generic;
 
 namespace SCMM.Web.Shared.Domain.DTOs
 {
@@ -20,5 +21,7 @@ namespace SCMM.Web.Shared.Domain.DTOs
         public string Country { get; set; }
 
         public InventoryItemListDTO[] InventoryItems { get; set; }
+
+        public IDictionary<string, double> ValueHistoryGraph { get; set; }
     }
 }

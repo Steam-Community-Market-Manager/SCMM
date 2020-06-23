@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using AngleSharp.Common;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,9 @@ using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -42,8 +45,17 @@ namespace SCMM.Web.Server.API.Controllers
                     return null;
                 }
 
-                profile = await service.LoadAndRefreshProfileInventory(steamId);
-                return _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(profile);
+                var mappedProfile = _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(
+                    await service.LoadAndRefreshProfileInventory(steamId)
+                );
+
+                var inventoryValueHistory = await service.LoadInventoryValueHistory(steamId);
+                mappedProfile.ValueHistoryGraph = inventoryValueHistory.ToDictionary(
+                    x => x.Key.ToString("dd MMM yyyy"),
+                    x => x.Value
+                );
+
+                return mappedProfile;
             }
         }
 

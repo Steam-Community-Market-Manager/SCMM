@@ -85,7 +85,7 @@ namespace SCMM.Steam.Client
             // API returns BadRequest unless authenticated
             if (Session?.IsValid != true)
             {
-                _logger.LogWarning($"GET '{request.Uri}' was skipped because session is not authenticated");
+                _logger.LogError($"GET '{request.Uri}' was skipped because session is not authenticated");
                 return null;
             }
 
