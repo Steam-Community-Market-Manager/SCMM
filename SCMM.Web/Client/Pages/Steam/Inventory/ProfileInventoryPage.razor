@@ -65,6 +65,12 @@ else
                         <ChartJsLineChart @ref="TotalValueHistoryChartJs" Config="@TotalValueHistoryChart" />
                     }
                 </Grid>
+                <Grid ExtraSmall="@GridSize.Twelve">
+                    @if (TotalProfitHistoryChart != null)
+                    {
+                        <ChartJsLineChart @ref="TotalProfitHistoryChartJs" Config="@TotalProfitHistoryChart" />
+                    }
+                </Grid>
             </Grid>
         </Grid>
     </Grid>
@@ -90,7 +96,9 @@ else
     private int InventoryTotalProfitValue { get; set; }
 
     private ChartJsLineChart TotalValueHistoryChartJs;
+    private ChartJsLineChart TotalProfitHistoryChartJs;
     private LineConfig TotalValueHistoryChart;
+    private LineConfig TotalProfitHistoryChart;
 
     protected override async Task OnInitializedAsync()
     {
@@ -100,6 +108,7 @@ else
             InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
             RecalculateTotals();
             RedrawTotalValueHistoryChart();
+            RedrawTotalProfitHistoryChart();
         }
         catch (AccessTokenNotAvailableException exception)
         {
@@ -225,6 +234,99 @@ else
         );
 
         TotalValueHistoryChart.Data.Datasets.Add(totalValueDataSet);
+    }
+
+    private void RedrawTotalProfitHistoryChart()
+    {
+        if (Profile.ValueProfitGraph == null)
+        {
+            return;
+        }
+
+        TotalProfitHistoryChart = new LineConfig
+        {
+            Options = new LineOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scales = new Scales
+                {
+
+                    xAxes = new List<CartesianAxis>
+                    {
+                        new CategoryAxis
+                        {
+                            Ticks = new CategoryTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    },
+                    yAxes = new List<CartesianAxis>
+                    {
+                        new LinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        TotalProfitHistoryChart.Data.Labels = Profile.ValueProfitGraph.Keys.ToList();
+
+        var totalProfitDataSet = new LineDataset<DoubleWrapper>
+        {
+            Label = "Resell Profit",
+            BackgroundColor = "#388e3c",
+            BorderColor = "#1b5e20",
+            BorderWidth = 1,
+            PointBorderWidth = 2,
+            PointRadius = 8,
+            LineTension = 0.1,
+            Fill = true,
+        };
+        totalProfitDataSet.AddRange(
+            Profile.ValueProfitGraph.Values.Select(x => (DoubleWrapper)x).ToList()
+        );
+
+        TotalProfitHistoryChart.Data.Datasets.Add(totalProfitDataSet);
     }
 
 }

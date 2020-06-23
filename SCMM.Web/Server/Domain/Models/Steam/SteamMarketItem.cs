@@ -228,9 +228,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                     ? (int)Math.Ceiling((decimal)sellOrdersSorted.Skip(1).Sum(y => y.Price) / (sellOrdersSorted.Length - 1))
                     : 0;
                 var resellPrice = secondLowestPrice;
-                var resellTaxSteam = Math.Max(1, (int)Math.Round(resellPrice * SteamEconomyHelper.DefaultSteamFeeMultiplier, 0));
-                var resellTaxPublisher = Math.Max(1, (int)Math.Round(resellPrice * SteamEconomyHelper.DefaultPublisherFeeMultiplier, 0));
-                var resellTax = (resellTaxSteam + resellTaxPublisher);
+                var resellTax = SteamEconomyHelper.GetSaleFeeAsInt(resellPrice);
 
                 // NOTE: Steam only returns the top 100 orders, so the true supply can't be calculated from sell orders list
                 //Supply = sellOrdersSorted.Sum(y => y.Quantity);

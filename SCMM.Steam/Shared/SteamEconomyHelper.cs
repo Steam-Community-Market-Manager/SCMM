@@ -3,15 +3,30 @@ using System.Linq;
 
 namespace SCMM.Steam.Shared
 {
-    /// <summary>
-    /// C# port of the Steam economy common logic
-	/// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
-    /// </summary>
     public static class SteamEconomyHelper
 	{
-		public const decimal DefaultSteamFeeMultiplier = 0.03m;
+		public const decimal DefaultSteamFeeMultiplier = 0.05m;
 		public const decimal DefaultPublisherFeeMultiplier = 0.100000001490116119m;
 
+		public static int GetSteamFeeAsInt(int value)
+		{
+			return (int) Math.Floor(Math.Max(value * (float) DefaultSteamFeeMultiplier, 1));
+		}
+
+		public static int GetPublisherFeeAsInt(int value)
+		{
+			return (int) Math.Floor(Math.Max(value * (float) DefaultPublisherFeeMultiplier, 1));
+		}
+
+		public static int GetSaleFeeAsInt(int value)
+		{
+			return (GetSteamFeeAsInt(value) + GetPublisherFeeAsInt(value));
+		}
+
+		/// <summary>
+		/// C# port of the Steam economy common logic
+		/// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
+		/// </summary>
 		public static int GetQuantityValueAsInt(string strAmount)
         {
 			if (String.IsNullOrEmpty(strAmount))
@@ -23,6 +38,10 @@ namespace SCMM.Steam.Shared
 			return int.Parse(strAmount);
 		}
 
+		/// <summary>
+		/// C# port of the Steam economy common logic
+		/// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
+		/// </summary>
 		public static int GetPriceValueAsInt(string strAmount)
 		{
 			var nAmount = 0;
@@ -81,6 +100,10 @@ namespace SCMM.Steam.Shared
 		}
 
 		/*
+		/// <summary>
+		/// C# port of the Steam economy common logic
+		/// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
+		/// </summary>
 		public static int CalculateFeeAmount(int amount, int publisherFee)
 		{
 			if (!g_rgWalletInfo['wallet_fee'])
@@ -125,7 +148,11 @@ namespace SCMM.Steam.Shared
 
 			return fees;
 		}
-
+		
+		/// <summary>
+		/// C# port of the Steam economy common logic
+		/// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
+		/// </summary>
 		public static int CalculateAmountToSendForDesiredReceivedAmount(int receivedAmount, int publisherFee )
 		{
 			if (!g_rgWalletInfo['wallet_fee'])

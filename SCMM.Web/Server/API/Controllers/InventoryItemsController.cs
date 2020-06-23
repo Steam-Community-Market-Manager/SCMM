@@ -55,6 +55,12 @@ namespace SCMM.Web.Server.API.Controllers
                     x => x.Value
                 );
 
+                var inventoryProfitHistory = await service.LoadInventoryProfitHistory(steamId);
+                mappedProfile.ValueProfitGraph = inventoryProfitHistory.ToDictionary(
+                    x => x.Key.ToString("dd MMM yyyy"),
+                    x => x.Value
+                );
+
                 return mappedProfile;
             }
         }

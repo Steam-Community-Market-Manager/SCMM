@@ -23,5 +23,7 @@ namespace SCMM.Web.Shared.Domain.DTOs
         public InventoryItemListDTO[] InventoryItems { get; set; }
 
         public IDictionary<string, double> ValueHistoryGraph { get; set; }
+
+        public IDictionary<string, double> ValueProfitGraph { get; set; }
     }
 }
