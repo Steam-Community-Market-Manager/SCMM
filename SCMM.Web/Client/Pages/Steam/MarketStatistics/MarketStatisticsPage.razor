@@ -49,16 +49,16 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @item.Currency.ToPriceString(item.Last24hrValue)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
-                                @if (Math.Abs(item.Last24hrValue - item.AllTimeHighestValue) == 0)
+                                @if (Math.Abs(item.Last1hrValue - item.AllTimeHighestValue) == 0)
                                         {
                                 <span class="Text-Success">🡱 All-Time High</span>
                                         }
                                         else
                                         {
-                                <span class="Text-Error">🡳 @Math.Abs(item.Last24hrValue - item.AllTimeHighestValue)</span>
+                                <span class="Text-Error">🡳 @Math.Abs(item.Last1hrValue - item.AllTimeHighestValue)</span>
                                         }
                             </TableCell>
                         </TableRow>
@@ -110,10 +110,10 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @item.Currency.ToPriceString(item.Last24hrValue)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
-                                <span class="Text-Success">🡱 @Math.Abs(item.Last24hrValue - item.Last48hrValue)</span>
+                                <span class="Text-Success">🡱 @Math.Abs(item.Last1hrValue - item.Last24hrValue)</span>
                             </TableCell>
                         </TableRow>
                             }
@@ -164,16 +164,16 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @item.Currency.ToPriceString(item.Last24hrValue)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
-                                @if (Math.Abs(item.Last24hrValue - item.AllTimeLowestValue) == 0)
+                                @if (Math.Abs(item.Last1hrValue - item.AllTimeLowestValue) == 0)
                                         {
                                 <span class="Text-Error">🡳 All-Time Low</span>
                                         }
                                         else
                                         {
-                                <span class="Text-Success">🡱 @Math.Abs(item.Last24hrValue - item.AllTimeLowestValue)</span>
+                                <span class="Text-Success">🡱 @Math.Abs(item.Last1hrValue - item.AllTimeLowestValue)</span>
                                         }
                             </TableCell>
                         </TableRow>
@@ -225,10 +225,10 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @item.Currency.ToPriceString(item.Last24hrValue)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
-                                <span class="Text-Error">🡳 @Math.Abs(item.Last24hrValue - item.Last48hrValue)</span>
+                                <span class="Text-Error">🡳 @Math.Abs(item.Last1hrValue - item.Last24hrValue)</span>
                             </TableCell>
                         </TableRow>
                             }
@@ -430,10 +430,10 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @item.Currency.ToPriceString(item.Last24hrValue)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
-                                <span class="Text-Success">🡱 @Math.Abs(item.Last24hrValue - item.First24hrValue)</span>
+                                <span class="Text-Success">🡱 @Math.Abs(item.Last1hrValue - item.First24hrValue)</span>
                             </TableCell>
                         </TableRow>
                             }
@@ -583,10 +583,10 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @item.Currency.ToPriceString(item.Last24hrValue)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
-                                <span class="Text-Error">🡳 @Math.Abs(item.Last24hrValue - item.AllTimeHighestValue)</span>
+                                <span class="Text-Error">🡳 @Math.Abs(item.Last1hrValue - item.AllTimeHighestValue)</span>
                             </TableCell>
                         </TableRow>
                             }

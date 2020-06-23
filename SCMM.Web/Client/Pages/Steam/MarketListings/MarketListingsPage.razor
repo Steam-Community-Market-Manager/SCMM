@@ -47,9 +47,9 @@ else
                     <TableCell>Owners</TableCell>
                     <TableCell>Supply</TableCell>
                     <TableCell>Demand</TableCell>
-                    <TableCell>24hr Trades</TableCell>
-                    <TableCell>24hr Value</TableCell>
-                    <TableCell>24hr Movement</TableCell>
+                    <TableCell>1hr Trades</TableCell>
+                    <TableCell>1hr Value</TableCell>
+                    <TableCell>1-Day Movement</TableCell>
                     <TableCell>5-Day Movement</TableCell>
                     <TableCell>Buy Now Price</TableCell>
                     <TableCell>Buy Asking Price</TableCell>
@@ -87,28 +87,28 @@ else
                             @item.Demand
                         </TableCell>
                         <TableCell>
-                            @item.Last24hrSales.ToSalesActivityString()
+                            @item.Last1hrSales.ToSalesActivityString()
                         </TableCell>
                         <TableCell>
-                            @item.Currency.ToPriceString(item.Last24hrValue)
+                            @item.Currency.ToPriceString(item.Last1hrValue)
                         </TableCell>
-                        <TableCell Class="@item.Last24hrValue.ToTextColourClass(item.Last48hrValue)">
-                            @if (item.Last24hrValue.IsStonking(item.Last48hrValue) || item.Last24hrValue.IsStinking(item.Last48hrValue))
+                        <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.Last24hrValue)">
+                            @if (item.Last1hrValue.IsStonking(item.Last24hrValue) || item.Last1hrValue.IsStinking(item.Last24hrValue))
                             {
                                 <Hidden LargeDown>
                                     <img src="/images/stonks-guy.png" style="width:16px; margin-right: -6px;" />
                                 </Hidden>
                             }
-                            @item.Last24hrValue.ToStabilityString(item.Last48hrValue)
+                            @item.Last1hrValue.ToStabilityString(item.Last24hrValue)
                         </TableCell>
-                        <TableCell Class="@item.Last24hrValue.ToTextColourClass(item.Last120hrValue)">
-                            @if (item.Last24hrValue.IsStonking(item.Last120hrValue) || item.Last24hrValue.IsStinking(item.Last120hrValue))
+                        <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.Last120hrValue)">
+                            @if (item.Last1hrValue.IsStonking(item.Last120hrValue) || item.Last1hrValue.IsStinking(item.Last120hrValue))
                             {
                                 <Hidden LargeDown>
                                     <img src="/images/stonks-guy.png" style="width:16px; margin-right: -6px;" />
                                 </Hidden>
                             }
-                            @item.Last24hrValue.ToStabilityString(item.Last120hrValue)
+                            @item.Last1hrValue.ToStabilityString(item.Last120hrValue)
                         </TableCell>
                         <TableCell>
                             @item.Currency.ToPriceString(item.BuyNowPrice)
@@ -119,8 +119,8 @@ else
                         <TableCell>
                             @item.Currency.ToPriceString(item.First24hrValue)
                         </TableCell>
-                        <TableCell Class="@item.Last24hrValue.ToTextColourClass(item.First24hrValue, tolerance: 0)">
-                            @item.Last24hrValue.ToPercentageString(item.First24hrValue)
+                        <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.First24hrValue, tolerance: 0)">
+                            @item.Last1hrValue.ToPercentageString(item.First24hrValue)
                         </TableCell>
                         <TableCell>
                             @foreach (var tag in item.Tags)

@@ -21,7 +21,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.Last24hrValue)
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.Last1hrValue)
         }
         else
         {
@@ -96,7 +96,7 @@
     private async Task UpdateItemPrice(string value)
     {
         var buyPrice = 0;
-        if (Int32.TryParse(value, out buyPrice))
+        if (Int32.TryParse(value, out buyPrice) || String.IsNullOrEmpty(value))
         {
             if (buyPrice != Item.BuyPrice)
             {

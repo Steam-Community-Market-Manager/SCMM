@@ -16,18 +16,6 @@
         <Typography Variant="@TypographyVariant.H6">
             @Currency.ToPriceString(Value)
         </Typography>
-        @if (Last24hrMovement != 0)
-        {
-            <div>
-                <ArrowDownwardIcon />
-                <Typography Variant="@TypographyVariant.Body2">
-                    @Last24hrMovement %
-                </Typography>
-                <Typography Variant="@TypographyVariant.Caption">
-                    Since yesterday
-                </Typography>
-            </div>
-        }
     </div>
 </div>
 
@@ -44,8 +32,5 @@
 
     [Parameter]
     public int Value { get; set; }
-
-    [Parameter]
-    public int Last24hrMovement { get; set; }
 
 }

@@ -58,14 +58,14 @@ namespace SCMM.Web.Server.API.Controllers
                     case nameof(MarketItemListDTO.Subscriptions): orderByExpression = (x) => x.Description.WorkshopFile.Subscriptions; break;
                     case nameof(MarketItemListDTO.Supply): orderByExpression = (x) => x.Supply; break;
                     case nameof(MarketItemListDTO.Demand): orderByExpression = (x) => x.Demand; break;
-                    case nameof(MarketItemListDTO.Last24hrSales): orderByExpression = (x) => x.Last24hrSales; break;
-                    case nameof(MarketItemListDTO.Last24hrValue): orderByExpression = (x) => x.Last24hrValue; break;
-                    case nameof(MarketItemListDTO.Last48hrValue): orderByExpression = (x) => (x.Last24hrValue - x.Last48hrValue); break;
-                    case nameof(MarketItemListDTO.Last120hrValue): orderByExpression = (x) => (x.Last24hrValue - x.Last120hrValue); break;
+                    case nameof(MarketItemListDTO.Last1hrSales): orderByExpression = (x) => x.Last1hrSales; break;
+                    case nameof(MarketItemListDTO.Last1hrValue): orderByExpression = (x) => x.Last1hrValue; break;
+                    case nameof(MarketItemListDTO.Last24hrValue): orderByExpression = (x) => (x.Last1hrValue - x.Last24hrValue); break;
+                    case nameof(MarketItemListDTO.Last120hrValue): orderByExpression = (x) => (x.Last1hrValue - x.Last120hrValue); break;
                     case nameof(MarketItemListDTO.BuyNowPrice): orderByExpression = (x) => x.BuyNowPrice; break;
                     case nameof(MarketItemListDTO.BuyAskingPrice): orderByExpression = (x) => x.BuyAskingPrice; break;
                     case nameof(MarketItemListDTO.First24hrValue): orderByExpression = (x) => x.First24hrValue; break;
-                    case "Appreciation": orderByExpression = (x) => (x.Last24hrValue - x.First24hrValue); break;
+                    case "Appreciation": orderByExpression = (x) => (x.Last1hrValue - x.First24hrValue); break;
                 }
             }
             if (sortDesc)
@@ -115,9 +115,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Last24hrValue > 50)
-                .Where(x => (x.Last24hrValue - x.AllTimeLowestValue) <= 10)
-                .OrderBy(x => Math.Abs(x.Last24hrValue - x.AllTimeLowestValue))
+                .Where(x => x.Last1hrValue > 50)
+                .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 10)
+                .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -130,9 +130,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Last24hrValue > 50)
-                .Where(x => (x.Last24hrValue - x.AllTimeHighestValue) >= -10)
-                .OrderBy(x => Math.Abs(x.Last24hrValue - x.AllTimeHighestValue))
+                .Where(x => x.Last1hrValue > 50)
+                .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= -10)
+                .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -145,7 +145,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .OrderByDescending(x => x.Last24hrValue - x.Last48hrValue)
+                .OrderByDescending(x => x.Last1hrValue - x.Last24hrValue)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -158,7 +158,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .OrderBy(x => x.Last24hrValue - x.Last48hrValue)
+                .OrderBy(x => x.Last1hrValue - x.Last24hrValue)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -171,7 +171,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .OrderByDescending(x => x.Last24hrValue - x.First24hrValue)
+                .OrderByDescending(x => x.Last1hrValue - x.First24hrValue)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -238,8 +238,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.AllTimeHighestValueOn < now)
-                .Where(x => x.Last24hrValue < x.AllTimeHighestValue)
-                .OrderBy(x => x.Last24hrValue - x.AllTimeHighestValue)
+                .Where(x => x.Last1hrValue < x.AllTimeHighestValue)
+                .OrderBy(x => x.Last1hrValue - x.AllTimeHighestValue)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();

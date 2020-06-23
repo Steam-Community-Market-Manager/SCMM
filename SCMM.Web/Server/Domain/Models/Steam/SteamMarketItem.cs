@@ -261,38 +261,42 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var salesSorted = salesSafe.OrderBy(y => y.Timestamp).ToArray();
             var earliestTimestamp = salesSorted.Min(x => x.Timestamp);
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
-            var first24hrs = salesSorted.Where(x => x.Timestamp < earliestTimestamp.Add(TimeSpan.FromHours(24))).ToArray();
+
+            var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24)) && x.Timestamp > earliestTimestamp).ToArray();
             var first24hrValue = (int) Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
-            var last1hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(1))).ToArray();
+
+            var last1hrs = salesSorted.Where(x => x.Timestamp == latestTimestamp).ToArray();
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
             var last1hrValue = (int)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.Price) : 0, 0);
-            var last24hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(24))).ToArray();
+            var last24hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(24)) && x.Timestamp < latestTimestamp).ToArray();
             var last24hrSales = last24hrs.Sum(x => x.Quantity);
             var last24hrValue = (int) Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
-            var last48hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(48))).ToArray();
+            var last48hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(48)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(24))).ToArray();
             var last48hrSales = last48hrs.Sum(x => x.Quantity);
             var last48hrValue = (int)Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.Price) : 0, 0);
-            var last72hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(72))).ToArray();
+            var last72hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(72)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(48))).ToArray();
             var last72hrSales = last72hrs.Sum(x => x.Quantity);
             var last72hrValue = (int)Math.Round(last72hrs.Length > 0 ? last72hrs.Average(x => x.Price) : 0, 0);
-            var last96hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(96))).ToArray();
+            var last96hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(96)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(72))).ToArray();
             var last96hrSales = last96hrs.Sum(x => x.Quantity);
             var last96hrValue = (int)Math.Round(last96hrs.Length > 0 ? last96hrs.Average(x => x.Price) : 0, 0);
-            var last120hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(120))).ToArray();
+            var last120hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(120)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(96))).ToArray();
             var last120hrSales = last120hrs.Sum(x => x.Quantity);
             var last120hrValue = (int) Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
-            var last144hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(144))).ToArray();
+            var last144hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(144)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(120))).ToArray();
             var last144hrSales = last144hrs.Sum(x => x.Quantity);
             var last144hrValue = (int)Math.Round(last144hrs.Length > 0 ? last144hrs.Average(x => x.Price) : 0, 0);
-            var last168hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(168))).ToArray();
+            var last168hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(168)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(144))).ToArray();
             var last168hrSales = last168hrs.Sum(x => x.Quantity);
             var last168hrValue = (int)Math.Round(last168hrs.Length > 0 ? last168hrs.Average(x => x.Price) : 0, 0);
-            var last336hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(336))).ToArray();
+
+            var last336hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(336))).ToArray();
             var last336hrSales = last336hrs.Sum(x => x.Quantity);
             var last336hrValue = (int)Math.Round(last336hrs.Length > 0 ? last336hrs.Average(x => x.Price) : 0, 0);
-            var last504hrs = salesSorted.Where(x => x.Timestamp > latestTimestamp.Subtract(TimeSpan.FromHours(504))).ToArray();
+            var last504hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(504))).ToArray();
             var last504hrSales = last504hrs.Sum(x => x.Quantity);
             var last504hrValue = (int)Math.Round(last504hrs.Length > 0 ? last504hrs.Average(x => x.Price) : 0, 0);
+
             var allTimeLow = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Min(x => x.Price));
             var allTimeHigh = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Max(x => x.Price));
 

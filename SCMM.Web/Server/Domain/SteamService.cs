@@ -97,14 +97,10 @@ namespace SCMM.Web.Server.Domain
                         Last96hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last96hrValue),
                         Last120hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last120hrValue),
                         Last144hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last144hrValue),
-                        Last168hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last168hrValue),
-                        Last336hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last336hrValue),
-                        Last504hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last504hrValue),
+                        Last168hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last168hrValue)
                     })
                     .FirstOrDefault();
 
-                history[today.Subtract(TimeSpan.FromDays(21))] = inventoryValues.Last504hrValue;
-                history[today.Subtract(TimeSpan.FromDays(14))] = inventoryValues.Last336hrValue;
                 history[today.Subtract(TimeSpan.FromDays(7))] = inventoryValues.Last168hrValue;
                 history[today.Subtract(TimeSpan.FromDays(6))] = inventoryValues.Last144hrValue;
                 history[today.Subtract(TimeSpan.FromDays(5))] = inventoryValues.Last120hrValue;
@@ -141,14 +137,10 @@ namespace SCMM.Web.Server.Domain
                         Last96hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last96hrValue),
                         Last120hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last120hrValue),
                         Last144hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last144hrValue),
-                        Last168hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last168hrValue),
-                        Last336hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last336hrValue),
-                        Last504hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last504hrValue),
+                        Last168hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last168hrValue)
                     })
                     .FirstOrDefault();
 
-                history[today.Subtract(TimeSpan.FromDays(21))] = (inventoryValues.Last504hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last504hrValue) - (inventoryValues.Invested ?? 0));
-                history[today.Subtract(TimeSpan.FromDays(14))] = (inventoryValues.Last336hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last336hrValue) - (inventoryValues.Invested ?? 0));
                 history[today.Subtract(TimeSpan.FromDays(7))] = (inventoryValues.Last168hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last168hrValue) - (inventoryValues.Invested ?? 0));
                 history[today.Subtract(TimeSpan.FromDays(6))] = (inventoryValues.Last144hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last144hrValue) - (inventoryValues.Invested ?? 0));
                 history[today.Subtract(TimeSpan.FromDays(5))] = (inventoryValues.Last120hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last120hrValue) - (inventoryValues.Invested ?? 0));
