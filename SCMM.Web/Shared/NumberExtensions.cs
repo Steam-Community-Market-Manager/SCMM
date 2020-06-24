@@ -35,7 +35,7 @@ namespace SCMM.Web.Shared
         public static string ToPriceString(this CurrencyDTO currency, int price)
         {
             var negative = (price < 0) ? "-" : String.Empty;
-            return ($"{currency?.PrefixText} {negative}{Math.Round((decimal)Math.Abs(price) / 100, 2).ToString("#,##0.00")} {currency?.SuffixText}").Trim();
+            return ($"{currency?.PrefixText}{negative}{Math.Round((decimal)Math.Abs(price) / 100, 2).ToString("#,##0.00")}{currency?.SuffixText}").Trim();
         }
 
         public static string ToRegularityString(this int value, int max)
