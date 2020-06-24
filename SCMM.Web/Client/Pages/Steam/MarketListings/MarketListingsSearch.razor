@@ -1,0 +1,44 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.MarketListings
+@using System.Timers
+@inherits ComponentBase
+
+<style>
+
+    .Search-Text {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .Search-Text input {
+        padding: 8px;
+    }
+
+</style>
+
+<TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None" OnChange="@OnSearchTextChanged"
+           Placeholder="Type an item name or tag here to filter results (e.g. 'sheet metal door' or 'blackout')" />
+
+@code {
+
+    [Parameter]
+    public Action<string> OnSearch { get; set; }
+
+    private Timer SearchTimer { get; set; }
+
+    private string SearchText { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        SearchTimer = new System.Timers.Timer(1000);
+        SearchTimer.AutoReset = false;
+        SearchTimer.Elapsed += (source, e) => OnSearch?.Invoke(SearchText);
+    }
+
+    private void OnSearchTextChanged(ChangeEventArgs args)
+    {
+        SearchText = (string)args.Value;
+        SearchTimer.Stop();
+        SearchTimer.Start();
+    }
+
+}

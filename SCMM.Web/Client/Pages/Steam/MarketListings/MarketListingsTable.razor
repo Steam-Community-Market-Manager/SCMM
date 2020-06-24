@@ -1,0 +1,124 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.MarketListings
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems
+@using SCMM.Web.Shared
+@using SCMM.Steam.Shared
+@inherits ComponentBase
+
+<Table StickyHeader Size="@Size.Small">
+    <TableHead>
+        <TableRow>
+            <TableCell>Icon</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Market Age</TableCell>
+            <TableCell>Owners</TableCell>
+            <TableCell>Supply</TableCell>
+            <TableCell>Demand</TableCell>
+            <TableCell>Buy Now</TableCell>
+            <TableCell>1-Day Movement</TableCell>
+            <TableCell>5-Day Movement</TableCell>
+            <TableCell>All-Time Low</TableCell>
+            <TableCell>All-Time High</TableCell>
+            <TableCell>All-Time Average</TableCell>
+            <TableCell>All-Time Appreciation</TableCell>
+            <TableCell>Tags</TableCell>
+        </TableRow>
+    </TableHead>
+    <TableBody>
+        @foreach (var item in Items)
+        {
+            <TableRow @key="@item.Id" Hover OnClick="@((_) => OnItemClick?.Invoke(item))">
+                <TableCell>
+                    <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                </TableCell>
+                <TableCell Component="th" Scope="row" Style="@GetItemStyles(item)">
+                    <strong>@item.Name</strong>
+                </TableCell>
+                <TableCell>
+                    <span>@item.MarketAge</span>
+                </TableCell>
+                <TableCell>
+                    @if (item.Subscriptions > 0)
+                    {
+                        <Hidden LargeDown>
+                            <i class="fa fa-fw fa-user"></i>
+                        </Hidden>
+                        @item.Subscriptions.ToQuantityString()
+                    }
+                </TableCell>
+                <TableCell>
+                    @item.Supply
+                </TableCell>
+                <TableCell>
+                    @item.Demand
+                </TableCell>
+                <TableCell>
+                    @item.Currency.ToPriceString(item.BuyNowPrice)
+                </TableCell>
+                <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.Last24hrValue)">
+                    @if (item.Last1hrValue.IsStonking(item.Last24hrValue) || item.Last1hrValue.IsStinking(item.Last24hrValue))
+                    {
+                        <Hidden LargeDown>
+                            <img src="/images/stonks-guy.png" style="width:16px; margin-right: -6px;" />
+                        </Hidden>
+                    }
+                    @item.Last1hrValue.ToStabilityString(item.Last24hrValue)
+                </TableCell>
+                <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.Last120hrValue)">
+                    @if (item.Last1hrValue.IsStonking(item.Last120hrValue) || item.Last1hrValue.IsStinking(item.Last120hrValue))
+                    {
+                        <Hidden LargeDown>
+                            <img src="/images/stonks-guy.png" style="width:16px; margin-right: -6px;" />
+                        </Hidden>
+                    }
+                    @item.Last1hrValue.ToStabilityString(item.Last120hrValue)
+                </TableCell>
+                <TableCell>
+                    @item.Currency.ToPriceString(item.AllTimeHighestValue)
+                </TableCell>
+                <TableCell>
+                    @item.Currency.ToPriceString(item.AllTimeLowestValue)
+                </TableCell>
+                <TableCell>
+                    @item.Currency.ToPriceString(item.AllTimeAverageValue)
+                </TableCell>
+                <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.First24hrValue, tolerance: 0)">
+                    @item.Last1hrValue.ToPercentageString(item.First24hrValue)
+                </TableCell>
+                <TableCell>
+                    @foreach (var tag in item.Tags)
+                    {
+                        <span class="mx-1">
+                            <Hidden LargeDown>
+                                @switch (tag.Key)
+                                {
+                                    case SteamConstants.SteamAssetTagCategory:<i class="fa fa-fw fa-paint-brush"></i> break;
+                                    case SteamConstants.SteamAssetTagItemType: <i class="fa fa-fw fa-paint-brush"></i> break;
+                                    case SteamConstants.SteamAssetTagCreator: <i class="fa fa-fw fa-user"></i> break;
+                                    case SteamConstants.SteamAssetTagSet: <i class="fa fa-fw fa-layer-group"></i> break;
+                                    case SteamConstants.SteamAssetTagAcceptedYear: <i class="fa fa-fw fa-calendar"></i> break;
+                                    case SteamConstants.SteamAssetTagAcceptedWeek: <i class="fa fa-fw fa-calendar-week"></i>break;
+                                }
+                            </Hidden>
+                            @tag.Value
+                        </span>
+                    }
+                </TableCell>
+            </TableRow>
+        }
+    </TableBody>
+</Table>
+
+@code {
+
+    [Parameter]
+    public MarketItemListDTO[] Items { get; set; }
+
+    [Parameter]
+    public Action<MarketItemListDTO> OnItemClick { set; get; }
+
+    private string GetItemStyles(MarketItemListDTO item)
+    {
+        return $"color: {item.ForegroundColour}";
+    }
+
+}

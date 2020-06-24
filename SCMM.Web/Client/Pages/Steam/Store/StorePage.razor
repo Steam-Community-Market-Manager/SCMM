@@ -7,7 +7,7 @@
 @inject IJSRuntime JSRuntime
 
 <DocumentTitle Title="Item Store" />
-@if (items == null)
+@if (Items == null)
 {
     <Loading />
 }
@@ -18,7 +18,7 @@ else
             <Paper>
                 <Table Narrow="true">
                     <TableBody>
-                        @foreach (var item in items)
+                        @foreach (var item in Items)
                         {
                             <TableRow>
                                 <TableCell Class="align-top">
@@ -84,10 +84,10 @@ else
         <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
             <Grid Container>
                 <Grid ExtraSmall="@GridSize.Twelve">
-                    @if (itemRevenueChart != null || itemRankChart != null || itemRankHistoryChart != null)
+                    @if (ItemRevenueChart != null || ItemRankChart != null || ItemRankHistoryChart != null)
                     {
                         <Paper>
-                            <Tabs Value="@selectedItemChartPanel"
+                            <Tabs Value="@SelectedItemChartPanel"
                                   OnChange="@OnSelectedItemChartChanged"
                                   IndicatorColor="@Color.Primary"
                                   TextColor="@Color.Primary"
@@ -96,31 +96,31 @@ else
                                 <Tab Value="1" Label="Popular Now" />
                                 <Tab Value="2" Label="Popular This Week" />
                             </Tabs>
-                            <TabPanel Value="@selectedItemChartPanel" Index="0">
-                                @if (itemRevenueChart != null)
+                            <TabPanel Value="@SelectedItemChartPanel" Index="0">
+                                @if (ItemRevenueChart != null)
                                 {
                                     <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
                                         <Icon>
                                             <i class="fa fa-fw fa-exclamation-circle"></i>
                                         </Icon>
                                         <MessageContent>
-                                            <span><strong>TL;DR;</strong> Total revenue is at least @(items.FirstOrDefault().Currency.ToPriceString(items.Sum(x => x.Subscriptions * x.StorePrice))) so far this week.</span>
+                                            <span><strong>TL;DR;</strong> Total revenue is at least @(Items.FirstOrDefault().Currency.ToPriceString(Items.Sum(x => x.Subscriptions * x.StorePrice))) so far this week.</span>
                                             <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher. Steam doesn't advertise exact sales figures, this is the closest estimate.</span>
                                         </MessageContent>
                                     </Alert>
-                                    <ChartJsBarChart @ref="itemRevenueChartJs" Config="@itemRevenueChart" />
+                                    <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
                                 }
                             </TabPanel>
-                            <TabPanel Value="@selectedItemChartPanel" Index="1">
-                                @if (itemRankChart != null)
+                            <TabPanel Value="@SelectedItemChartPanel" Index="1">
+                                @if (ItemRankChart != null)
                                 {
-                                    <ChartJsBarChart @ref="itemRankChartJs" Config="@itemRankChart" />
+                                    <ChartJsBarChart @ref="ItemRankChartJs" Config="@ItemRankChart" />
                                 }
                             </TabPanel>
-                            <TabPanel Value="@selectedItemChartPanel" Index="2">
-                                @if (itemRankHistoryChart != null)
+                            <TabPanel Value="@SelectedItemChartPanel" Index="2">
+                                @if (ItemRankHistoryChart != null)
                                 {
-                                    <ChartJsLineChart @ref="itemRankHistoryChartJs" Config="@itemRankHistoryChart" />
+                                    <ChartJsLineChart @ref="ItemRankHistoryChartJs" Config="@ItemRankHistoryChart" />
                                 }
                             </TabPanel>
                         </Paper>
@@ -139,15 +139,21 @@ else
 
 @code {
 
-    private StoreItemListDTO[] items;
+    private StoreItemListDTO[] Items;
 
-    private object selectedItemChartPanel = 1;
-    private ChartJsBarChart itemRevenueChartJs;
-    private ChartJsBarChart itemRankChartJs;
-    private ChartJsLineChart itemRankHistoryChartJs;
-    private BarConfig itemRevenueChart;
-    private BarConfig itemRankChart;
-    private LineConfig itemRankHistoryChart;
+    private object SelectedItemChartPanel { get; set; } = 1;
+
+    private ChartJsBarChart ItemRevenueChartJs { get; set; }
+
+    private ChartJsBarChart ItemRankChartJs { get; set; }
+
+    private ChartJsLineChart ItemRankHistoryChartJs { get; set; }
+
+    private BarConfig ItemRevenueChart { get; set; }
+
+    private BarConfig ItemRankChart { get; set; }
+
+    private LineConfig ItemRankHistoryChart { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -170,8 +176,8 @@ else
     {
         try
         {
-            items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"StoreItems");
-            OnSelectedItemChartChanged(selectedItemChartPanel);
+            Items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"StoreItems");
+            OnSelectedItemChartChanged(SelectedItemChartPanel);
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -187,11 +193,11 @@ else
 
     private void OnSelectedItemChartChanged(object value)
     {
-        selectedItemChartPanel = value;
-        itemRevenueChart = null;
-        itemRankChart = null;
-        itemRankHistoryChart = null;
-        switch (selectedItemChartPanel)
+        SelectedItemChartPanel = value;
+        ItemRevenueChart = null;
+        ItemRankChart = null;
+        ItemRankHistoryChart = null;
+        switch (SelectedItemChartPanel)
         {
             case 0: RedrawItemRevenueChart(); break;
             case 1: RedrawItemRankChart(); break;
@@ -203,7 +209,7 @@ else
 
     private void RedrawItemRevenueChart()
     {
-        itemRevenueChart = new BarConfig
+        ItemRevenueChart = new BarConfig
         {
             Options = new BarOptions
             {
@@ -269,8 +275,8 @@ else
             }
         };
 
-        itemRevenueChart.Data.Labels.AddRange(
-            items.Select(x => x.Name).ToArray()
+        ItemRevenueChart.Data.Labels.AddRange(
+            Items.Select(x => x.Name).ToArray()
         );
 
         var itemRevenue = new BarDataset<DoubleWrapper>
@@ -281,17 +287,17 @@ else
             BorderWidth = 1
         };
         itemRevenue.AddRange(
-            items.Select(x => (DoubleWrapper) (x.Subscriptions * x.StorePrice))
+            Items.Select(x => (DoubleWrapper) (x.Subscriptions * x.StorePrice))
         );
 
-        itemRevenueChart.Data.Datasets.AddRange(new[] {
+        ItemRevenueChart.Data.Datasets.AddRange(new[] {
             itemRevenue
         });
     }
 
     private void RedrawItemRankChart()
     {
-        itemRankChart = new BarConfig
+        ItemRankChart = new BarConfig
         {
             Options = new BarOptions
             {
@@ -356,8 +362,8 @@ else
             }
         };
 
-        itemRankChart.Data.Labels.AddRange(
-            items.Select(x => x.Name).ToArray()
+        ItemRankChart.Data.Labels.AddRange(
+            Items.Select(x => x.Name).ToArray()
         );
 
         var itemSubscribers = new BarDataset<DoubleWrapper>
@@ -368,7 +374,7 @@ else
             BorderWidth = 1
         };
         itemSubscribers.AddRange(
-            items.Select(x => (DoubleWrapper) x.Subscriptions)
+            Items.Select(x => (DoubleWrapper) x.Subscriptions)
         );
 
         var itemViews = new BarDataset<DoubleWrapper>
@@ -379,23 +385,23 @@ else
             BorderWidth = 1
         };
         itemViews.AddRange(
-            items.Select(x => (DoubleWrapper) x.Views)
+            Items.Select(x => (DoubleWrapper) x.Views)
         );
 
-        itemRankChart.Data.Datasets.AddRange(new[] {
+        ItemRankChart.Data.Datasets.AddRange(new[] {
             itemSubscribers, itemViews
         });
     }
 
     private void RedrawItemRankHistoryChart()
     {
-        var startOfWeek = items.FirstOrDefault()?.AcceptedOn.UtcDateTime;
+        var startOfWeek = Items.FirstOrDefault()?.AcceptedOn.UtcDateTime;
         if (startOfWeek == null)
         {
             return;
         }
 
-        itemRankHistoryChart = new LineConfig
+        ItemRankHistoryChart = new LineConfig
         {
             Options = new LineOptions
             {
@@ -461,17 +467,17 @@ else
             }
         };
 
-        itemRankHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek.Value)
+        ItemRankHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek.Value)
             .Select(x => x.ToString("dd MMMM yyyy"))
             .ToList();
 
-        foreach (var item in items)
+        foreach (var item in Items)
         {
             var itemDataSet = new LineDataset<DoubleWrapper>
             {
                 Label = item.Name,
-                BackgroundColor = GraphDataSetColours[Array.IndexOf(items, item)],
-                BorderColor = GraphDataSetColours[Array.IndexOf(items, item)],
+                BackgroundColor = GraphDataSetColours[Array.IndexOf(Items, item)],
+                BorderColor = GraphDataSetColours[Array.IndexOf(Items, item)],
                 BorderWidth = 3,
                 LineTension = 0.1,
                 Fill = false
@@ -479,7 +485,7 @@ else
             itemDataSet.AddRange(
                 GetItemSubscriptionDataset(item, startOfWeek.Value)
             );
-            itemRankHistoryChart.Data.Datasets.Add(itemDataSet);
+            ItemRankHistoryChart.Data.Datasets.Add(itemDataSet);
         }
     }
 

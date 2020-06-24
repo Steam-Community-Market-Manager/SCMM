@@ -65,6 +65,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public int MovementAllTimeValue { get; set; }
 
+        public int AllTimeAverageValue { get; set; }
+
         public int AllTimeHighestValue { get; set; }
 
         public int AllTimeLowestValue { get; set; }

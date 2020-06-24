@@ -165,6 +165,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         [NotMapped]
         public bool HasDepreciated => (Last1hrValue < First24hrValue);
 
+        // What was the all-time average price this sells for
+        public int AllTimeAverageValue { get; set; }
+
         // What was the all-time highest price this ever sold for
         public int AllTimeHighestValue { get; set; }
 
@@ -297,6 +300,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var last504hrSales = last504hrs.Sum(x => x.Quantity);
             var last504hrValue = (int)Math.Round(last504hrs.Length > 0 ? last504hrs.Average(x => x.Price) : 0, 0);
 
+            var allTimeAverage = (int)Math.Round(salesSorted.Length > 0 ? salesSorted.Average(x => x.Price) : 0, 0);
             var allTimeLow = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Min(x => x.Price));
             var allTimeHigh = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Max(x => x.Price));
 
@@ -321,6 +325,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             Last336hrValue = last336hrValue;
             Last504hrSales = last504hrSales;
             Last504hrValue = last504hrValue;
+            AllTimeAverageValue = allTimeAverage;
             AllTimeHighestValue = (allTimeHigh?.Price ?? 0);
             AllTimeHighestValueOn = allTimeHigh?.Timestamp;
             AllTimeLowestValue = (allTimeLow?.Price ?? 0);

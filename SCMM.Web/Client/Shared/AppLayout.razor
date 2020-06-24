@@ -33,11 +33,12 @@
     </FooterContent>
 </MainLayout>
 
-<DonateDialog @bind-Open="DonateDialogOpened" />
+<DonateDialog @bind-Open="@DonateDialogOpened" />
 
 @code {
 
     private List<NavigationItem> NavigationItems { get; set; }
+
     private bool DonateDialogOpened { get; set; }
 
     protected override async Task OnInitializedAsync()
