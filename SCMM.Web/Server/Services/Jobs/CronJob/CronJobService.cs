@@ -18,9 +18,9 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
         protected CronJobService(ILogger<CronJobService> logger, CronJobConfiguration configuration)
         {
             _logger = logger;
-            _startImmediately = configuration.StartImmediately;
-            _expression = !String.IsNullOrEmpty(configuration.CronExpression)
-                ? CronExpression.Parse(configuration.CronExpression)
+            _startImmediately = (configuration?.StartImmediately ?? false);
+            _expression = !String.IsNullOrEmpty(configuration?.CronExpression)
+                ? CronExpression.Parse(configuration?.CronExpression)
                 : null;
         }
 

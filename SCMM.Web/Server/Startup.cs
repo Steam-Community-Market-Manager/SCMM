@@ -60,6 +60,7 @@ namespace SCMM.Web.Server
             services.AddTransient<SteamCommunityClient>();
             services.AddTransient<SteamService>();
 
+            services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<CheckForMissingAppFiltersJob>();
             services.AddHostedService<CheckForMissingAssetTagsJob>();
             services.AddHostedService<CheckForMissingMarketItemIdsJob>();
