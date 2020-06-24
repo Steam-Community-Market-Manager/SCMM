@@ -6,7 +6,7 @@
 
 <div style=" display: flex; align-items: center; align-content: center; padding: 8px;">
     <Avatar Class="@IconClass" style="width: 64px; height: 64px; display:flex">
-        <AttachMoneyIcon Style="width:48px;height:48px" />
+        @Icon
     </Avatar>
     <div style="display: inline-block; padding: 0px 16px;">
         <Typography Color="@Color.TextSecondary"
@@ -14,7 +14,7 @@
             @Title
         </Typography>
         <Typography Variant="@TypographyVariant.H6">
-            @Currency.ToPriceString(Value)
+            @Total
         </Typography>
     </div>
 </div>
@@ -28,9 +28,9 @@
     public string IconClass { get; set; }
 
     [Parameter]
-    public CurrencyDTO Currency { get; set; }
+    public RenderFragment Icon { get; set; }
 
     [Parameter]
-    public int Value { get; set; }
+    public RenderFragment Total { get; set; }
 
 }

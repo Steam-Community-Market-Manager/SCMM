@@ -8,7 +8,6 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 
-<InventoryCardStyle />
 <style>
     
     .Search-Text {
@@ -35,20 +34,86 @@ else
 {
     <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
     <Grid Container Spacing="@Spacing.Two">
-        <Grid ExtraSmall="@GridSize.Four">
+        <Grid ExtraSmall="@GridSize.Two">
             <InventoryProfileCard Profile="@Profile" />
         </Grid>
         <Grid ExtraSmall="@GridSize.Two">
-            <InventoryValueCard Title="Invested Value" IconClass="Background-Error" Currency="@Currency" Value="@InventoryTotalInvestedValue" />
+            <InventoryTotalCard Title="Assets">
+                <Icon>
+                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                </Icon>
+                <Total>
+                    @InventoryTotalItemCount
+                </Total>
+            </InventoryTotalCard>
         </Grid>
         <Grid ExtraSmall="@GridSize.Two">
-            <InventoryValueCard Title="Market Value" IconClass="Background-Info" Currency="@Currency" Value="@InventoryTotalMarketValue" />
+            <InventoryTotalCard Title="Total Investment Value" IconClass="Background-Error">
+                <Icon>
+                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                </Icon>
+                <Total>
+                    @if (Currency != null && InventoryTotalInvestedValue > 0)
+                    {
+                        @Currency.ToPriceString(InventoryTotalInvestedValue)
+                    }
+                    else
+                    {
+                        <span>—</span>
+                    }
+                </Total>
+            </InventoryTotalCard>
         </Grid>
         <Grid ExtraSmall="@GridSize.Two">
-            <InventoryValueCard Title="Resell Value" IconClass="Background-Success" Currency="@Currency" Value="@InventoryTotalResellValue" />
+            <InventoryTotalCard Title="Current Market Value" IconClass="Background-Info">
+                <Icon>
+                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                </Icon>
+                <Total>
+                    @if (Currency != null && InventoryTotalMarketValue > 0)
+                    {
+                        @Currency.ToPriceString(InventoryTotalMarketValue)
+                    }
+                    else
+                    {
+                        <span>—</span>
+                    }
+                </Total>
+            </InventoryTotalCard>
         </Grid>
         <Grid ExtraSmall="@GridSize.Two">
-            <InventoryValueCard Title="Resell Profit" IconClass="Background-Success" Currency="@Currency" Value="@InventoryTotalProfitValue" />
+            <InventoryTotalCard Title="Optimistic Resell Value" IconClass="Background-Success">
+                <Icon>
+                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                </Icon>
+                <Total>
+                    @if (Currency != null && InventoryTotalResellValue > 0)
+                    {
+                        @Currency.ToPriceString(InventoryTotalResellValue)
+                    }
+                    else
+                    {
+                        <span>—</span>
+                    }
+                </Total>
+            </InventoryTotalCard>
+        </Grid>
+        <Grid ExtraSmall="@GridSize.Two">
+            <InventoryTotalCard Title="Optimistic Resell Profit" IconClass="Background-Success">
+                <Icon>
+                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                </Icon>
+                <Total>
+                    @if (Currency != null && InventoryTotalProfitValue > 0)
+                    {
+                        @Currency.ToPriceString(InventoryTotalProfitValue)
+                    }
+                    else
+                    {
+                        <span>—</span>
+                    }
+                </Total>
+            </InventoryTotalCard>
         </Grid>
         <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
             <TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
@@ -60,15 +125,9 @@ else
         <Grid Container Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
             <Grid Container>
                 <Grid ExtraSmall="@GridSize.Twelve">
-                    @if (TotalValueHistoryChart != null)
+                    @if (TotalHistoryChart != null)
                     {
-                        <ChartJsLineChart @ref="TotalValueHistoryChartJs" Config="@TotalValueHistoryChart" />
-                    }
-                </Grid>
-                <Grid ExtraSmall="@GridSize.Twelve">
-                    @if (TotalProfitHistoryChart != null && InventoryTotalProfitValue > 0)
-                    {
-                        <ChartJsLineChart @ref="TotalProfitHistoryChartJs" Config="@TotalProfitHistoryChart" />
+                        <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
                     }
                 </Grid>
             </Grid>
@@ -87,6 +146,8 @@ else
 
     private CurrencyDTO Currency { get; set; }
 
+    private int InventoryTotalItemCount { get; set; }
+
     private int InventoryTotalInvestedValue { get; set; }
 
     private int InventoryTotalMarketValue { get; set; }
@@ -95,10 +156,8 @@ else
 
     private int InventoryTotalProfitValue { get; set; }
 
-    private ChartJsLineChart TotalValueHistoryChartJs;
-    private ChartJsLineChart TotalProfitHistoryChartJs;
-    private LineConfig TotalValueHistoryChart;
-    private LineConfig TotalProfitHistoryChart;
+    private ChartJsLineChart TotalHistoryChartJs;
+    private LineConfig TotalHistoryChart;
 
     protected override async Task OnInitializedAsync()
     {
@@ -107,8 +166,7 @@ else
             Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"InventoryItems/{SteamId}");
             InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
             RecalculateTotals();
-            RedrawTotalValueHistoryChart();
-            RedrawTotalProfitHistoryChart();
+            RedrawTotalHistoryChart();
         }
         catch (AccessTokenNotAvailableException exception)
         {
@@ -128,6 +186,7 @@ else
         {
             var items = Profile.InventoryItems.Where(x => x.MarketItem != null).ToList();
             Currency = items.FirstOrDefault().MarketItem.Currency;
+            InventoryTotalItemCount = items.Sum(x => x.Quantity);
             InventoryTotalInvestedValue = items.Sum(x => (x.BuyPrice ?? 0) * x.Quantity);
             InventoryTotalMarketValue = items.Sum(x => x.MarketItem.Last1hrValue);
             InventoryTotalResellValue = items.Sum(x => x.MarketItem.ResellPrice);
@@ -136,6 +195,7 @@ else
         else
         {
             Currency = null;
+            InventoryTotalItemCount = 0;
             InventoryTotalInvestedValue = 0;
             InventoryTotalMarketValue = 0;
             InventoryTotalResellValue = 0;
@@ -143,14 +203,14 @@ else
         }
     }
 
-    private void RedrawTotalValueHistoryChart()
+    private void RedrawTotalHistoryChart()
     {
         if (Profile.ValueHistoryGraph == null)
         {
             return;
         }
 
-        TotalValueHistoryChart = new LineConfig
+        TotalHistoryChart = new LineConfig
         {
             Options = new LineOptions
             {
@@ -216,117 +276,45 @@ else
             }
         };
 
-        TotalValueHistoryChart.Data.Labels = Profile.ValueHistoryGraph.Keys.ToList();
+        TotalHistoryChart.Data.Labels = Profile.ValueHistoryGraph.Keys.ToList();
 
-        var totalValueDataSet = new LineDataset<DoubleWrapper>
+        if (Profile.ValueProfitGraph != null && InventoryTotalProfitValue > 0)
         {
-            Label = "Market Value",
-            BackgroundColor = "#1976d2",
-            BorderColor = "#0d47a1",
-            BorderWidth = 1,
-            PointBorderWidth = 2,
-            PointRadius = 8,
-            LineTension = 0.1,
-            Fill = true,
-        };
-        totalValueDataSet.AddRange(
-            Profile.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
-        );
-
-        TotalValueHistoryChart.Data.Datasets.Add(totalValueDataSet);
-    }
-
-    private void RedrawTotalProfitHistoryChart()
-    {
-        if (Profile.ValueProfitGraph == null)
-        {
-            return;
+            var totalProfitDataSet = new LineDataset<DoubleWrapper>
+            {
+                Label = "Resell Profit",
+                BackgroundColor = "#388e3c",
+                BorderColor = "#1b5e20",
+                BorderWidth = 1,
+                PointBorderWidth = 2,
+                PointRadius = 8,
+                LineTension = 0.1,
+                Fill = true,
+            };
+            totalProfitDataSet.AddRange(
+                Profile.ValueProfitGraph.Values.Select(x => (DoubleWrapper)x).ToList()
+            );
+            TotalHistoryChart.Data.Datasets.Add(totalProfitDataSet);
         }
 
-        TotalProfitHistoryChart = new LineConfig
+        if (Profile.ValueHistoryGraph != null)
         {
-            Options = new LineOptions
+            var totalValueDataSet = new LineDataset<DoubleWrapper>
             {
-                Legend = new Legend
-                {
-                    Display = true,
-                    Labels = new LegendLabelConfiguration()
-                    {
-                        FontColor = "#ffffff"
-                    }
-                },
-                Responsive = true,
-                Tooltips = new Tooltips
-                {
-                    Enabled = true
-                },
-                Scales = new Scales
-                {
-
-                    xAxes = new List<CartesianAxis>
-                    {
-                        new CategoryAxis
-                        {
-                            Ticks = new CategoryTicks()
-                            {
-                                Display = true,
-                                FontColor = "#ffffff"
-                            },
-                            ScaleLabel = new ScaleLabel()
-                            {
-                                Display = true,
-                                FontColor = "#ffffff"
-                            },
-                            GridLines = new GridLines
-                            {
-                                Display = true,
-                                Color = "#e0e0e0"
-                            }
-                        }
-                    },
-                    yAxes = new List<CartesianAxis>
-                    {
-                        new LinearCartesianAxis
-                        {
-                            Ticks = new LinearCartesianTicks()
-                            {
-                                Display = true,
-                                FontColor = "#ffffff"
-                            },
-                            ScaleLabel = new ScaleLabel()
-                            {
-                                Display = true,
-                                FontColor = "#ffffff"
-                            },
-                            GridLines = new GridLines
-                            {
-                                Display = true,
-                                Color = "#e0e0e0"
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        TotalProfitHistoryChart.Data.Labels = Profile.ValueProfitGraph.Keys.ToList();
-
-        var totalProfitDataSet = new LineDataset<DoubleWrapper>
-        {
-            Label = "Resell Profit",
-            BackgroundColor = "#388e3c",
-            BorderColor = "#1b5e20",
-            BorderWidth = 1,
-            PointBorderWidth = 2,
-            PointRadius = 8,
-            LineTension = 0.1,
-            Fill = true,
-        };
-        totalProfitDataSet.AddRange(
-            Profile.ValueProfitGraph.Values.Select(x => (DoubleWrapper)x).ToList()
-        );
-
-        TotalProfitHistoryChart.Data.Datasets.Add(totalProfitDataSet);
+                Label = "Market Value",
+                BackgroundColor = "#1976d2",
+                BorderColor = "#0d47a1",
+                BorderWidth = 1,
+                PointBorderWidth = 2,
+                PointRadius = 8,
+                LineTension = 0.1,
+                Fill = true,
+            };
+            totalValueDataSet.AddRange(
+                Profile.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
+            );
+            TotalHistoryChart.Data.Datasets.Add(totalValueDataSet);
+        }
     }
 
 }

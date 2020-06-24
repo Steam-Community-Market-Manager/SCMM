@@ -47,14 +47,13 @@ else
                     <TableCell>Owners</TableCell>
                     <TableCell>Supply</TableCell>
                     <TableCell>Demand</TableCell>
-                    <TableCell>1hr Trades</TableCell>
-                    <TableCell>1hr Value</TableCell>
+                    <TableCell>Buy Now</TableCell>
                     <TableCell>1-Day Movement</TableCell>
                     <TableCell>5-Day Movement</TableCell>
-                    <TableCell>Buy Now Price</TableCell>
-                    <TableCell>Buy Asking Price</TableCell>
-                    <TableCell>Day-1 Value</TableCell>
-                    <TableCell>Day-1 Appreciation</TableCell>
+                    <TableCell>All-Time Low</TableCell>
+                    <TableCell>All-Time High</TableCell>
+                    <TableCell>All-Time Average</TableCell>
+                    <TableCell>All-Time Appreciation</TableCell>
                     <TableCell>Tags</TableCell>
                 </TableRow>
             </TableHead>
@@ -87,10 +86,7 @@ else
                             @item.Demand
                         </TableCell>
                         <TableCell>
-                            @item.Last1hrSales.ToSalesActivityString()
-                        </TableCell>
-                        <TableCell>
-                            @item.Currency.ToPriceString(item.Last1hrValue)
+                            @item.Currency.ToPriceString(item.BuyNowPrice)
                         </TableCell>
                         <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.Last24hrValue)">
                             @if (item.Last1hrValue.IsStonking(item.Last24hrValue) || item.Last1hrValue.IsStinking(item.Last24hrValue))
@@ -111,13 +107,13 @@ else
                             @item.Last1hrValue.ToStabilityString(item.Last120hrValue)
                         </TableCell>
                         <TableCell>
-                            @item.Currency.ToPriceString(item.BuyNowPrice)
+                            @item.Currency.ToPriceString(item.AllTimeHighestValue)
                         </TableCell>
                         <TableCell>
-                            @item.Currency.ToPriceString(item.BuyAskingPrice)
+                            @item.Currency.ToPriceString(item.AllTimeLowestValue)
                         </TableCell>
                         <TableCell>
-                            @item.Currency.ToPriceString(item.First24hrValue)
+                            @item.Currency.ToPriceString(0/*item.AllTimeAverageValue*/)
                         </TableCell>
                         <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.First24hrValue, tolerance: 0)">
                             @item.Last1hrValue.ToPercentageString(item.First24hrValue)
