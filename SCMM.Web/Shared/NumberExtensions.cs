@@ -6,7 +6,7 @@ namespace SCMM.Web.Shared
 {
     public static class NumberExtensions
     {
-        public const int DefaultTolerance = 10;
+        public const int DefaultTolerance = 0;
 
         public static bool IsStonking(this int now, int longTermAverage, int tolerance = DefaultTolerance)
         {
@@ -79,6 +79,22 @@ namespace SCMM.Web.Shared
             else if (IsStinking(now, longTermAverage, tolerance))
             {
                 return $"📉 Stinking (-{Math.Abs(now - longTermAverage)})";
+            }
+            else
+            {
+                return "Stable";
+            }
+        }
+
+        public static string ToMovementString(this int now, int longTermAverage, int tolerance = DefaultTolerance)
+        {
+            if (IsStonking(now, longTermAverage, tolerance))
+            {
+                return $"🡱 +{Math.Abs(now - longTermAverage)}";
+            }
+            else if (IsStinking(now, longTermAverage, tolerance))
+            {
+                return $"🡳 -{Math.Abs(now - longTermAverage)}";
             }
             else
             {

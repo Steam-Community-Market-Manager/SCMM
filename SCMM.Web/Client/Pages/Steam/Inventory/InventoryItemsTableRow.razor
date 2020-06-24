@@ -15,7 +15,7 @@
         @Item.Quantity.ToQuantityString()
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        <InputBase Type="number" Margin="@Margin.None" Style="width:70px" PlaceHolder="Unit Price" Value="@Item.BuyPrice?.ToString()"
+        <InputBase Type="number" Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@Item.BuyPrice?.ToString()"
                    OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))" />
     </TableCell>
     <TableCell Class="@GetItemClass()">

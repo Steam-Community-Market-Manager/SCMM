@@ -28,7 +28,14 @@
 
 @if (Profile == null)
 {
-    <Loading />
+    @if (ProfileNotFound)
+    {
+        <NotFound />
+    }
+    else
+    {
+        <Loading />
+    }
 }
 else
 {
@@ -142,6 +149,8 @@ else
 
     private ProfileInventoryDetailsDTO Profile { get; set; }
 
+    private bool ProfileNotFound { get; set; }
+
     private InventoryItemListDTO[] InventoryItems { get; set; }
 
     private CurrencyDTO Currency { get; set; }
@@ -164,13 +173,21 @@ else
         try
         {
             Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"InventoryItems/{SteamId}");
-            InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
-            RecalculateTotals();
-            RedrawTotalHistoryChart();
+            ProfileNotFound = (Profile == null);
+            if (Profile != null)
+            {
+                InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
+                RecalculateTotals();
+                RedrawTotalHistoryChart();
+            }
         }
         catch (AccessTokenNotAvailableException exception)
         {
             exception.Redirect();
+        }
+        catch (Exception)
+        {
+            ProfileNotFound = true;
         }
     }
 

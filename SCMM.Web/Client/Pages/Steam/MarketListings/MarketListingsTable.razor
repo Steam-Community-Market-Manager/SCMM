@@ -19,7 +19,7 @@
             <TableCell>All-Time Average</TableCell>
             <TableCell>All-Time Appreciation</TableCell>
             <TableCell>1-Day Movement</TableCell>
-            <TableCell>5-Day Movement</TableCell>
+            <TableCell>3-Day Movement</TableCell>
             <TableCell>Tags</TableCell>
         </TableRow>
     </TableHead>
@@ -63,26 +63,14 @@
                 <TableCell>
                     @item.Currency.ToPriceString(item.AllTimeAverageValue)
                 </TableCell>
-                <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.First24hrValue, tolerance: 0)">
+                <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.First24hrValue)">
                     @item.Last1hrValue.ToPercentageString(item.First24hrValue)
                 </TableCell>
                 <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.Last24hrValue)">
-                    @if (item.Last1hrValue.IsStonking(item.Last24hrValue) || item.Last1hrValue.IsStinking(item.Last24hrValue))
-                    {
-                        <Hidden LargeDown>
-                            <img src="/images/stonks-guy.png" style="width:16px; margin-right: -6px;" />
-                        </Hidden>
-                    }
-                    @item.Last1hrValue.ToStabilityString(item.Last24hrValue)
+                    @item.Last1hrValue.ToMovementString(item.Last24hrValue)
                 </TableCell>
-                <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.Last120hrValue)">
-                    @if (item.Last1hrValue.IsStonking(item.Last120hrValue) || item.Last1hrValue.IsStinking(item.Last120hrValue))
-                    {
-                        <Hidden LargeDown>
-                            <img src="/images/stonks-guy.png" style="width:16px; margin-right: -6px;" />
-                        </Hidden>
-                    }
-                    @item.Last1hrValue.ToStabilityString(item.Last120hrValue)
+                <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.Last72hrValue)">
+                    @item.Last1hrValue.ToMovementString(item.Last72hrValue)
                 </TableCell>
                 <TableCell>
                     @foreach (var tag in item.Tags)

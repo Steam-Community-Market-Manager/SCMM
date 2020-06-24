@@ -49,6 +49,10 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public int Last48hrValue { get; set; }
 
+        public int Last72hrSales { get; set; }
+
+        public int Last72hrValue { get; set; }
+
         public int Last120hrSales { get; set; }
 
         public int Last120hrValue { get; set; }

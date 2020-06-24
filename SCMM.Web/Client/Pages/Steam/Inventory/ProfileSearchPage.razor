@@ -4,31 +4,31 @@
 
 <DocumentTitle Title="Inventory" />
 
-<style>
-
-    .Profile-Search-Root {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-
-</style>
-
-<div class="Profile-Search-Root">
-    <Paper Style="display: flex; padding: 2px 4px; align-items: center;">
-        <Typography Style="padding: 10px;">
-            <PersonIcon />
-        </Typography>
-        <Typography Variant="@TypographyVariant.Body2">
-            https://steamcommunity.com/id/
-        </Typography>
-        <InputBase OnChange="@OnSteamIdChanged" Style="flex: 1; margin-left: 8px;" Placeholder="enter your steam id..." />
-        <IconButton OnClick="@ViewProfileInventory" Style="padding: 10px;">
-            <SearchIcon />
-        </IconButton>
-    </Paper>
-</div>
+<Dialog Open="true" OnClose="@(() => ViewHome())">
+    <DialogTitle>
+        View Inventory Value
+    </DialogTitle>
+    <DialogContent>
+        <DialogContentText>
+            <p>To use this tool, your profile <a href="https://steamcommunity.com/my/edit/settings" target="_blank">inventory privacy must be set to public</a>.</p>
+            <p>Enter either your profile id (username) or steam id below.</p>
+        </DialogContentText>
+        <div style="margin:16px 0px">
+            <Paper Style="display: flex; padding: 2px 4px; align-items: center;">
+                <Typography Style="padding: 10px;">
+                    <PersonIcon />
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2">
+                    https://steamcommunity.com/id/
+                </Typography>
+                <InputBase OnChange="@OnSteamIdChanged" Style="flex: 1; margin-left: 8px;" Placeholder="your steam id" />
+                <IconButton OnClick="@ViewProfileInventory" Style="padding: 10px;">
+                    <SearchIcon />
+                </IconButton>
+            </Paper>
+        </div>
+    </DialogContent>
+</Dialog>
 
 @code {
 
@@ -42,6 +42,11 @@
     private void ViewProfileInventory()
     {
         Navigation.NavigateTo($"steam/inventory/{SteamId}");
+    }
+
+    private void ViewHome()
+    {
+        Navigation.NavigateTo("/");
     }
 
 }
