@@ -118,6 +118,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.Last1hrValue > 50)
                 .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 10)
                 .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
+                .ThenBy(x => x.Last1hrValue - x.Last24hrValue)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
@@ -133,6 +134,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.Last1hrValue > 50)
                 .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= -10)
                 .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
+                .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
                 .Take(10)
                 .Select(x => _mapper.Map<MarketItemListDTO>(x))
                 .ToList();
