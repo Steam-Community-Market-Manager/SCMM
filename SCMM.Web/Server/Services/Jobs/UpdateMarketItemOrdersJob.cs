@@ -38,8 +38,6 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 var items = db.SteamMarketItems
                     .Where(x => !String.IsNullOrEmpty(x.SteamId))
-                    .Include(x => x.BuyOrders)
-                    .Include(x => x.SellOrders)
                     .OrderBy(x => x.LastCheckedOrdersOn)
                     .Take(100) // batch 100 at a time
                     .ToList();
