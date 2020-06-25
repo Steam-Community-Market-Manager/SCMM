@@ -41,6 +41,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var items = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
+                    .Include(x => x.SalesHistory)
                     .OrderBy(x => x.LastCheckedSalesOn)
                     .Take(100) // batch 100 at a time
                     .ToList();
