@@ -7,5 +7,7 @@
         public string PrefixText { get; set; }
 
         public string SuffixText { get; set; }
+
+        public int Scale { get; set; }
     }
 }

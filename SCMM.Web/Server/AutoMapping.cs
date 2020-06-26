@@ -2,6 +2,7 @@
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain.DTOs;
+using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
 
@@ -12,6 +13,7 @@ namespace SCMM.Web.Server
         public AutoMapping()
         {
             CreateMap<SteamCurrency, CurrencyDTO>();
+            CreateMap<SteamCurrency, CurrencyDetailsDTO>();
             CreateMap<SteamProfile, ProfileDTO>();
             CreateMap<SteamProfile, ProfileInventoryDetailsDTO>();
 

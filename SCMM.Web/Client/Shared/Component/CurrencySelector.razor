@@ -1,80 +1,50 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
+@using SCMM.Web.Shared.Domain.DTOs.Currencies;
+@inject HttpClient Http
 
-<Typography Variant="@TypographyVariant.H6">
-    <span>$ NZD</span>
-    <IconButton OnClick="@OnOpen" RootRef="@ButtonRef">
-        <ArrowDropDownIcon />
-    </IconButton>
-    <Menu Open="@Open"
-        AnchorRef="@ButtonRef"
-        OnClose="@HandleClose"
-        PaperStyle="width: 200px; max-height: 400px;">
-        @foreach(var option in Options)
-        {
-            <MenuItem
-                @key="@option"
-                Selected="@(option == Currency)"
-                OnClick="@HandleClose"
-                disabled="@(option != Currency)">
-                @option
-            </MenuItem>
-        }
-    </Menu>
-</Typography>
+@if (Currency != null)
+{
+    <Typography Variant="@TypographyVariant.H6">
+        <span>@Currency.PrefixText @Currency.Name</span>
+        <IconButton OnClick="@OnOpen" RootRef="@ButtonRef">
+            <ArrowDropDownIcon />
+        </IconButton>
+        <Menu Open="@Open"
+              AnchorRef="@ButtonRef"
+              OnClose="@HandleClose"
+              PaperStyle="width: 200px; max-height: 400px;">
+            @foreach (var currency in Currencies)
+            {
+                <MenuItem @key="@currency.SteamId"
+                          Selected="@(currency.SteamId == Currency.SteamId)"
+                          OnClick="@(() => HandleCurrencyChange(currency))">
+                    <span style="min-width:30%">@currency.PrefixText</span> 
+                    <span>@currency.Name</span>
+                </MenuItem>
+            }
+        </Menu>
+    </Typography>
+}
 
 @code
-{
+{ 
     [Parameter]
-    public string Currency { get; set; }
+    public CurrencyDetailsDTO Currency { get; set; }
 
-    private static readonly string[] Options =  {
-        "USD",
-        "GBP",
-        "EUR",
-        "CHF",
-        "RUB",
-        "PLN",
-        "BRL",
-        "JPY",
-        "NOK",
-        "IDR",
-        "MYR",
-        "PHP",
-        "SGD",
-        "THB",
-        "VND",
-        "KRW",
-        "TRY",
-        "UAH",
-        "MXN",
-        "CAD",
-        "AUD",
-        "NZD",
-        "CNY",
-        "INR",
-        "CLP",
-        "PEN",
-        "COP",
-        "ZAR",
-        "HKD",
-        "TWD",
-        "SAR",
-        "AED",
-        "ARS",
-        "ILS",
-        "KZT",
-        "KWD",
-        "QAR",
-        "CRC",
-        "UYU",
-    };
+    private CurrencyDetailsDTO[] Currencies { get; set; }
 
     private bool Open { set; get; }
 
     private IReference ButtonRef { set; get; } = new Reference();
 
-    private void HandleClose(EventArgs args)
+    protected override async Task OnInitializedAsync()
     {
+        await RefreshCurrencies();
+    }
+
+    private void HandleCurrencyChange(CurrencyDetailsDTO currency)
+    {
+        Currency = currency;
         Open = false;
         StateHasChanged();
     }
@@ -90,4 +60,14 @@
         Open = true;
         StateHasChanged();
     }
+
+    private async Task RefreshCurrencies()
+    {
+        Currencies = await Http.GetFromJsonAsync<CurrencyDetailsDTO[]>($"Currency");
+        if (Currency == null)
+        {
+            Currency = Currencies?.FirstOrDefault(x => x.IsDefault);
+        }
+    }
+
 }

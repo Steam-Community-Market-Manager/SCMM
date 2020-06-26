@@ -49,13 +49,13 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.Id.ToString() == Constants.DefaultLanguageId);
+                var language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.IsDefault);
                 if (language == null)
                 {
                     return;
                 }
 
-                var currency = await db.SteamCurrencies.FirstOrDefaultAsync(x => x.Id.ToString() == Constants.DefaultCurrencyId);
+                var currency = await db.SteamCurrencies.FirstOrDefaultAsync(x => x.IsDefault);
                 if (currency == null)
                 {
                     return;

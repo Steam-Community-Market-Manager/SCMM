@@ -35,7 +35,11 @@ namespace SCMM.Web.Shared
         public static string ToPriceString(this CurrencyDTO currency, int price)
         {
             var negative = (price < 0) ? "-" : String.Empty;
-            return ($"{currency?.PrefixText}{negative}{Math.Round((decimal)Math.Abs(price) / 100, 2).ToString("#,##0.00")}{currency?.SuffixText}").Trim();
+            var localScaleString = String.Empty.PadRight(currency.Scale, '0');
+            var localScaleDivisor = Int32.Parse($"1{localScaleString}");
+            var localPrice = Math.Round((decimal) Math.Abs(price) / localScaleDivisor, currency.Scale);
+            var localFormat = $"###,###,###,###,##0{(currency.Scale > 0 ? "." : String.Empty)}{localScaleString}";
+            return ($"{currency?.PrefixText}{negative}{localPrice.ToString(localFormat.ToString())}{currency?.SuffixText}").Trim();
         }
 
         public static string ToRegularityString(this int value, int max)

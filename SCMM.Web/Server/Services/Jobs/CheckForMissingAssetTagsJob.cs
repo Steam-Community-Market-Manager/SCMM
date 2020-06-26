@@ -50,7 +50,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var language = db.SteamLanguages.FirstOrDefault(x => x.Id.ToString() == Constants.DefaultLanguageId);
+                var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
                 if (language == null)
                 {
                     return;
