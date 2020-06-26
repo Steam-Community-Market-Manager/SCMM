@@ -8,17 +8,17 @@ namespace SCMM.Steam.Shared
 		public const decimal DefaultSteamFeeMultiplier = 0.05m;
 		public const decimal DefaultPublisherFeeMultiplier = 0.100000001490116119m;
 
-		public static int GetSteamFeeAsInt(int value)
+		public static long GetSteamFeeAsInt(long value)
 		{
-			return (int) Math.Floor(Math.Max(value * (float) DefaultSteamFeeMultiplier, 1));
+			return (long) Math.Floor(Math.Max(value * (decimal) DefaultSteamFeeMultiplier, 1));
 		}
 
-		public static int GetPublisherFeeAsInt(int value)
+		public static long GetPublisherFeeAsInt(long value)
 		{
-			return (int) Math.Floor(Math.Max(value * (float) DefaultPublisherFeeMultiplier, 1));
+			return (long) Math.Floor(Math.Max(value * (decimal) DefaultPublisherFeeMultiplier, 1));
 		}
 
-		public static int GetSaleFeeAsInt(int value)
+		public static long GetSaleFeeAsInt(long value)
 		{
 			return (GetSteamFeeAsInt(value) + GetPublisherFeeAsInt(value));
 		}
@@ -42,9 +42,9 @@ namespace SCMM.Steam.Shared
 		/// C# port of the Steam economy common logic
 		/// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
 		/// </summary>
-		public static int GetPriceValueAsInt(string strAmount)
+		public static long GetPriceValueAsInt(string strAmount)
 		{
-			var nAmount = 0;
+			long nAmount = 0;
 			if (String.IsNullOrEmpty(strAmount))
 			{
 				return 0;
@@ -74,7 +74,7 @@ namespace SCMM.Steam.Shared
 				var splitAmount = strAmount.Split('.');
 				var strLastSegment = splitAmount.Length > 0 ? splitAmount[splitAmount.Length - 1] : null;
 
-				if (!String.IsNullOrEmpty(strLastSegment) && strLastSegment.Length == 3 && Int32.Parse(splitAmount[splitAmount.Length - 2]) != 0)
+				if (!String.IsNullOrEmpty(strLastSegment) && strLastSegment.Length == 3 && Int64.Parse(splitAmount[splitAmount.Length - 2]) != 0)
 				{
 					// Looks like the user only entered thousands separators. Remove all commas and periods.
 					// Ensures an entry like "1,147" is not treated as "1.147"
@@ -92,8 +92,8 @@ namespace SCMM.Steam.Shared
 				}
 			}
 
-			var flAmount = float.Parse(strAmount) * 100;
-			nAmount = (int)Math.Floor(flAmount + 0.000001f); // round down
+			var flAmount = decimal.Parse(strAmount) * 100;
+			nAmount = (long) Math.Floor(flAmount + 0.000001m); // round down
 
 			nAmount = Math.Max(nAmount, 0);
 			return nAmount;
@@ -104,7 +104,7 @@ namespace SCMM.Steam.Shared
 		/// C# port of the Steam economy common logic
 		/// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
 		/// </summary>
-		public static int CalculateFeeAmount(int amount, int publisherFee)
+		public static long CalculateFeeAmount(long amount, long publisherFee)
 		{
 			if (!g_rgWalletInfo['wallet_fee'])
 				return 0;
@@ -153,7 +153,7 @@ namespace SCMM.Steam.Shared
 		/// C# port of the Steam economy common logic
 		/// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
 		/// </summary>
-		public static int CalculateAmountToSendForDesiredReceivedAmount(int receivedAmount, int publisherFee )
+		public static long CalculateAmountToSendForDesiredReceivedAmount(long receivedAmount, long publisherFee )
 		{
 			if (!g_rgWalletInfo['wallet_fee'])
 			{

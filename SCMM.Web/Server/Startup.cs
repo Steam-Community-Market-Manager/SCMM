@@ -61,6 +61,7 @@ namespace SCMM.Web.Server
             services.AddTransient<SteamService>();
 
             services.AddHostedService<RefreshSteamSessionJob>();
+            services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
             services.AddHostedService<CheckForMissingAppFiltersJob>();
             services.AddHostedService<CheckForMissingAssetTagsJob>();
             services.AddHostedService<CheckForMissingMarketItemIdsJob>();

@@ -9,7 +9,7 @@ namespace SCMM.Steam.Shared.Community.Models
         private string _priceText;
         private string _quantityText;
 
-        public int Price { get; private set; }
+        public long Price { get; private set; }
 
         [JsonProperty("price")]
         public string PriceText

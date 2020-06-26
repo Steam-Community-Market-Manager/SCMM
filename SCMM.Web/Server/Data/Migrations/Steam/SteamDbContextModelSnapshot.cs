@@ -141,7 +141,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ExchangeRateMultiplier")
-                        .HasColumnType("decimal(29, 24)");
+                        .HasColumnType("decimal(29,21)");
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
@@ -177,8 +177,8 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("AppId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("BuyPrice")
-                        .HasColumnType("int");
+                    b.Property<long?>("BuyPrice")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid?>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
@@ -241,17 +241,17 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("AllTimeAverageValue")
-                        .HasColumnType("int");
+                    b.Property<long>("AllTimeAverageValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("AllTimeHighestValue")
-                        .HasColumnType("int");
+                    b.Property<long>("AllTimeHighestValue")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset?>("AllTimeHighestValueOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("AllTimeLowestValue")
-                        .HasColumnType("int");
+                    b.Property<long>("AllTimeLowestValue")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset?>("AllTimeLowestValueOn")
                         .HasColumnType("datetimeoffset");
@@ -259,14 +259,14 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("AppId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("BuyAskingPrice")
-                        .HasColumnType("int");
+                    b.Property<long>("BuyAskingPrice")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("BuyNowPrice")
-                        .HasColumnType("int");
+                    b.Property<long>("BuyNowPrice")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("BuyNowPriceDelta")
-                        .HasColumnType("int");
+                    b.Property<long>("BuyNowPriceDelta")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid?>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
@@ -277,71 +277,71 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid?>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("First24hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("First24hrValue")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset?>("FirstSeenOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("Last120hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last120hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last120hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last120hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last144hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last144hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last144hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last144hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last168hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last168hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last168hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last168hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last1hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last1hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last1hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last1hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last24hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last24hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last24hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last24hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last336hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last336hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last336hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last336hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last48hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last48hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last48hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last48hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last504hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last504hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last504hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last504hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last72hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last72hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last72hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last72hrValue")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last96hrSales")
-                        .HasColumnType("int");
+                    b.Property<long>("Last96hrSales")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("Last96hrValue")
-                        .HasColumnType("int");
+                    b.Property<long>("Last96hrValue")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset?>("LastCheckedOrdersOn")
                         .HasColumnType("datetimeoffset");
@@ -349,14 +349,14 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<DateTimeOffset?>("LastCheckedSalesOn")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ResellPrice")
-                        .HasColumnType("int");
+                    b.Property<long>("ResellPrice")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("ResellProfit")
-                        .HasColumnType("int");
+                    b.Property<long>("ResellProfit")
+                        .HasColumnType("bigint");
 
-                    b.Property<int>("ResellTax")
-                        .HasColumnType("int");
+                    b.Property<long>("ResellTax")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(max)");
@@ -384,8 +384,8 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("ItemId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -406,8 +406,8 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("ItemId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -431,8 +431,8 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("ItemId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -491,8 +491,8 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StorePrice")
-                        .HasColumnType("int");
+                    b.Property<long>("StorePrice")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 

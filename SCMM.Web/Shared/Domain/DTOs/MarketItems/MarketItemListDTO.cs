@@ -25,55 +25,55 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public int Demand { get; set; }
 
-        public int BuyAskingPrice { get; set; }
+        public long BuyAskingPrice { get; set; }
 
-        public int BuyNowPrice { get; set; }
+        public long BuyNowPrice { get; set; }
 
-        public int ResellPrice { get; set; }
+        public long ResellPrice { get; set; }
 
-        public int ResellTax { get; set; }
+        public long ResellTax { get; set; }
 
-        public int ResellProfit { get; set; }
+        public long ResellProfit { get; set; }
 
-        public int First24hrValue { get; set; }
+        public long First24hrValue { get; set; }
 
-        public int Last1hrSales { get; set; }
+        public long Last1hrSales { get; set; }
 
-        public int Last1hrValue { get; set; }
+        public long Last1hrValue { get; set; }
 
-        public int Last24hrSales { get; set; }
+        public long Last24hrSales { get; set; }
 
-        public int Last24hrValue { get; set; }
+        public long Last24hrValue { get; set; }
 
-        public int Last48hrSales { get; set; }
+        public long Last48hrSales { get; set; }
 
-        public int Last48hrValue { get; set; }
+        public long Last48hrValue { get; set; }
 
-        public int Last72hrSales { get; set; }
+        public long Last72hrSales { get; set; }
 
-        public int Last72hrValue { get; set; }
+        public long Last72hrValue { get; set; }
 
-        public int Last120hrSales { get; set; }
+        public long Last120hrSales { get; set; }
 
-        public int Last120hrValue { get; set; }
+        public long Last120hrValue { get; set; }
 
-        public int Last336hrSales { get; set; }
+        public long Last336hrSales { get; set; }
 
-        public int Last336hrValue { get; set; }
+        public long Last336hrValue { get; set; }
 
-        public int MovementLast48hrValue { get; set; }
+        public long MovementLast48hrValue { get; set; }
 
-        public int MovementLast120hrValue { get; set; }
+        public long MovementLast120hrValue { get; set; }
 
-        public int MovementLast336hrValue { get; set; }
+        public long MovementLast336hrValue { get; set; }
 
-        public int MovementAllTimeValue { get; set; }
+        public long MovementAllTimeValue { get; set; }
 
-        public int AllTimeAverageValue { get; set; }
+        public long AllTimeAverageValue { get; set; }
 
-        public int AllTimeHighestValue { get; set; }
+        public long AllTimeHighestValue { get; set; }
 
-        public int AllTimeLowestValue { get; set; }
+        public long AllTimeLowestValue { get; set; }
 
         public bool HasAppreciated { get; set; }
 

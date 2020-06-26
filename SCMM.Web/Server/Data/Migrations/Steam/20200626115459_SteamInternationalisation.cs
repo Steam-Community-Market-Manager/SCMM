@@ -16,7 +16,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
             migrationBuilder.AddColumn<decimal>(
                 name: "ExchangeRateMultiplier",
                 table: "SteamCurrencies",
-                type: "decimal(29, 24)",
+                type: "decimal(29,21)",
                 nullable: false,
                 defaultValue: 0m);
 

@@ -20,7 +20,7 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public CurrencyDTO Currency { get; set; }
         
-        public int? BuyPrice { get; set; }
+        public long? BuyPrice { get; set; }
 
         public int Quantity { get; set; }
 

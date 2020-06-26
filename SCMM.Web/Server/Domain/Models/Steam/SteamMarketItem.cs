@@ -33,22 +33,22 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public int Demand { get; set; }
 
         // What is the cheapest buy order
-        public int BuyAskingPrice { get; set; }
+        public long BuyAskingPrice { get; set; }
 
         // What is the cheapest sell order
-        public int BuyNowPrice { get; set; }
+        public long BuyNowPrice { get; set; }
 
         // What is the difference between the cheapest and 2nd cheapest sell orders
-        public int BuyNowPriceDelta { get; set; }
+        public long BuyNowPriceDelta { get; set; }
 
         // What is the price you could reasonably flip this for given the current buy orders
-        public int ResellPrice { get; set; }
+        public long ResellPrice { get; set; }
 
         // What tax is owed on resell price
-        public int ResellTax { get; set; }
+        public long ResellTax { get; set; }
 
         // What is the difference between buy now and resell prices
-        public int ResellProfit { get; set; }
+        public long ResellProfit { get; set; }
 
         [NotMapped]
         public bool WouldResellProfit => (ResellProfit >= 0);
@@ -57,107 +57,107 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public bool WouldResellLoss => (ResellProfit < 0);
 
         // What was the average price from the first 24hrs (1 day)
-        public int First24hrValue { get; set; }
+        public long First24hrValue { get; set; }
 
         // What was the total number of sales from the last hour 
-        public int Last1hrSales { get; set; }
+        public long Last1hrSales { get; set; }
 
         // What was the average price from the last hour
-        public int Last1hrValue { get; set; }
+        public long Last1hrValue { get; set; }
 
         // What was the total number of sales from the last 24hrs (1 day)
-        public int Last24hrSales { get; set; }
+        public long Last24hrSales { get; set; }
 
         // What was the average price from the last 24hrs (1 day)
-        public int Last24hrValue { get; set; }
+        public long Last24hrValue { get; set; }
 
         // What was the total number of sales from the last 48hrs (2 days)
-        public int Last48hrSales { get; set; }
+        public long Last48hrSales { get; set; }
 
         // What was the average price from the last 48hrs (2 days)
-        public int Last48hrValue { get; set; }
+        public long Last48hrValue { get; set; }
 
         // What was the total number of sales from the last 72hrs (3 days)
-        public int Last72hrSales { get; set; }
+        public long Last72hrSales { get; set; }
 
         // What was the average price from the last 72hrs (3 days)
-        public int Last72hrValue { get; set; }
+        public long Last72hrValue { get; set; }
 
         // What was the total number of sales from the last 96hrs (4 days)
-        public int Last96hrSales { get; set; }
+        public long Last96hrSales { get; set; }
 
         // What was the average price from the last 96hrs (4 days)
-        public int Last96hrValue { get; set; }
+        public long Last96hrValue { get; set; }
 
         // What was the total number of sales from the last 48hrs (5 days)
-        public int Last120hrSales { get; set; }
+        public long Last120hrSales { get; set; }
 
         // What was the average price from the last 120hrs (5 days)
-        public int Last120hrValue { get; set; }
+        public long Last120hrValue { get; set; }
 
         // What was the total number of sales from the last 144hrs (6 days)
-        public int Last144hrSales { get; set; }
+        public long Last144hrSales { get; set; }
 
         // What was the average price from the last 144hrs (6 days)
-        public int Last144hrValue { get; set; }
+        public long Last144hrValue { get; set; }
 
         // What was the total number of sales from the last 168hrs (7 days)
-        public int Last168hrSales { get; set; }
+        public long Last168hrSales { get; set; }
 
         // What was the average price from the last 168hrs (7 days)
-        public int Last168hrValue { get; set; }
+        public long Last168hrValue { get; set; }
 
         // What was the total number of sales from the last 336hrs (14 days)
-        public int Last336hrSales { get; set; }
+        public long Last336hrSales { get; set; }
 
         // What was the average price from the last 336hrs (14 days)
-        public int Last336hrValue { get; set; }
+        public long Last336hrValue { get; set; }
 
         // What was the total number of sales from the last 504hrs (21 days)
-        public int Last504hrSales { get; set; }
+        public long Last504hrSales { get; set; }
 
         // What was the average price from the last 504hrs (21 days)
-        public int Last504hrValue { get; set; }
+        public long Last504hrValue { get; set; }
 
         // What is the difference between current and 120hr sale prices
         [NotMapped]
-        public int MovementLast24hrValue => (Last1hrValue - Last24hrValue);
+        public long MovementLast24hrValue => (Last1hrValue - Last24hrValue);
 
         // What is the difference between current and 48hr sale prices
         [NotMapped]
-        public int MovementLast48hrValue => (Last1hrValue - Last48hrValue);
+        public long MovementLast48hrValue => (Last1hrValue - Last48hrValue);
 
         // What is the difference between current and 72hr sale prices
         [NotMapped]
-        public int MovementLast72hrValue => (Last1hrValue - Last72hrValue);
+        public long MovementLast72hrValue => (Last1hrValue - Last72hrValue);
 
         // What is the difference between current and 96hr sale prices
         [NotMapped]
-        public int MovementLast96hrValue => (Last1hrValue - Last96hrValue);
+        public long MovementLast96hrValue => (Last1hrValue - Last96hrValue);
 
         // What is the difference between current and 120hr sale prices
         [NotMapped]
-        public int MovementLast120hrValue => (Last1hrValue - Last120hrValue);
+        public long MovementLast120hrValue => (Last1hrValue - Last120hrValue);
 
         // What is the difference between current and 144hr sale prices
         [NotMapped]
-        public int MovementLast144hrValue => (Last1hrValue - Last144hrValue);
+        public long MovementLast144hrValue => (Last1hrValue - Last144hrValue);
 
         // What is the difference between current and 168hr sale prices
         [NotMapped]
-        public int MovementLast168hrValue => (Last1hrValue - Last168hrValue);
+        public long MovementLast168hrValue => (Last1hrValue - Last168hrValue);
 
         // What is the difference between current and 336hr sale prices
         [NotMapped]
-        public int MovementLast336hrValue => (Last1hrValue - Last336hrValue);
+        public long MovementLast336hrValue => (Last1hrValue - Last336hrValue);
 
         // What is the difference between current and 504hr sale prices
         [NotMapped]
-        public int MovementLast504hrValue => (Last1hrValue - Last504hrValue);
+        public long MovementLast504hrValue => (Last1hrValue - Last504hrValue);
 
         // What is the difference between current and original sale prices
         [NotMapped]
-        public int MovementAllTimeValue => (Last1hrValue - First24hrValue);
+        public long MovementAllTimeValue => (Last1hrValue - First24hrValue);
 
         [NotMapped]
         public bool HasAppreciated => (Last1hrValue >= First24hrValue);
@@ -166,20 +166,20 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public bool HasDepreciated => (Last1hrValue < First24hrValue);
 
         // What was the all-time average price this sells for
-        public int AllTimeAverageValue { get; set; }
+        public long AllTimeAverageValue { get; set; }
 
         // What was the all-time highest price this ever sold for
-        public int AllTimeHighestValue { get; set; }
+        public long AllTimeHighestValue { get; set; }
 
         public DateTimeOffset? AllTimeHighestValueOn { get; set; }
 
         // What was the all-time lowest price this ever sold for
-        public int AllTimeLowestValue { get; set; }
+        public long AllTimeLowestValue { get; set; }
 
         public DateTimeOffset? AllTimeLowestValueOn { get; set; }
 
         // What is the difference between all-time highest and lowest sale prices
-        public int AllTimeSwingValue => (AllTimeHighestValue - AllTimeLowestValue);
+        public long AllTimeSwingValue => (AllTimeHighestValue - AllTimeLowestValue);
 
         // When was the very first sale
         public DateTimeOffset? FirstSeenOn { get; set; }
@@ -228,7 +228,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                     ? sellOrdersSorted.Skip(1).First().Price
                     : lowestPrice;
                 var averagePrice = (sellOrdersSorted.Length > 1)
-                    ? (int)Math.Ceiling((decimal)sellOrdersSorted.Skip(1).Sum(y => y.Price) / (sellOrdersSorted.Length - 1))
+                    ? (long)Math.Ceiling((decimal)sellOrdersSorted.Skip(1).Sum(y => y.Price) / (sellOrdersSorted.Length - 1))
                     : 0;
                 var resellPrice = secondLowestPrice;
                 var resellTax = SteamEconomyHelper.GetSaleFeeAsInt(resellPrice);
@@ -266,41 +266,41 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
 
             var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24)) && x.Timestamp > earliestTimestamp).ToArray();
-            var first24hrValue = (int) Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
+            var first24hrValue = (long) Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
 
             var last1hrs = salesSorted.Where(x => x.Timestamp == latestTimestamp).ToArray();
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
-            var last1hrValue = (int)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.Price) : 0, 0);
+            var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.Price) : 0, 0);
             var last24hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(24)) && x.Timestamp < latestTimestamp).ToArray();
             var last24hrSales = last24hrs.Sum(x => x.Quantity);
-            var last24hrValue = (int) Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
+            var last24hrValue = (long) Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
             var last48hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(48)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(24))).ToArray();
             var last48hrSales = last48hrs.Sum(x => x.Quantity);
-            var last48hrValue = (int)Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.Price) : 0, 0);
+            var last48hrValue = (long)Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.Price) : 0, 0);
             var last72hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(72)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(48))).ToArray();
             var last72hrSales = last72hrs.Sum(x => x.Quantity);
-            var last72hrValue = (int)Math.Round(last72hrs.Length > 0 ? last72hrs.Average(x => x.Price) : 0, 0);
+            var last72hrValue = (long)Math.Round(last72hrs.Length > 0 ? last72hrs.Average(x => x.Price) : 0, 0);
             var last96hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(96)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(72))).ToArray();
             var last96hrSales = last96hrs.Sum(x => x.Quantity);
-            var last96hrValue = (int)Math.Round(last96hrs.Length > 0 ? last96hrs.Average(x => x.Price) : 0, 0);
+            var last96hrValue = (long)Math.Round(last96hrs.Length > 0 ? last96hrs.Average(x => x.Price) : 0, 0);
             var last120hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(120)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(96))).ToArray();
             var last120hrSales = last120hrs.Sum(x => x.Quantity);
-            var last120hrValue = (int) Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
+            var last120hrValue = (long) Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
             var last144hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(144)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(120))).ToArray();
             var last144hrSales = last144hrs.Sum(x => x.Quantity);
-            var last144hrValue = (int)Math.Round(last144hrs.Length > 0 ? last144hrs.Average(x => x.Price) : 0, 0);
+            var last144hrValue = (long)Math.Round(last144hrs.Length > 0 ? last144hrs.Average(x => x.Price) : 0, 0);
             var last168hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(168)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(144))).ToArray();
             var last168hrSales = last168hrs.Sum(x => x.Quantity);
-            var last168hrValue = (int)Math.Round(last168hrs.Length > 0 ? last168hrs.Average(x => x.Price) : 0, 0);
+            var last168hrValue = (long)Math.Round(last168hrs.Length > 0 ? last168hrs.Average(x => x.Price) : 0, 0);
 
             var last336hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(336))).ToArray();
             var last336hrSales = last336hrs.Sum(x => x.Quantity);
-            var last336hrValue = (int)Math.Round(last336hrs.Length > 0 ? last336hrs.Average(x => x.Price) : 0, 0);
+            var last336hrValue = (long)Math.Round(last336hrs.Length > 0 ? last336hrs.Average(x => x.Price) : 0, 0);
             var last504hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(504))).ToArray();
             var last504hrSales = last504hrs.Sum(x => x.Quantity);
-            var last504hrValue = (int)Math.Round(last504hrs.Length > 0 ? last504hrs.Average(x => x.Price) : 0, 0);
+            var last504hrValue = (long)Math.Round(last504hrs.Length > 0 ? last504hrs.Average(x => x.Price) : 0, 0);
 
-            var allTimeAverage = (int)Math.Round(salesSorted.Length > 0 ? salesSorted.Average(x => x.Price) : 0, 0);
+            var allTimeAverage = (long)Math.Round(salesSorted.Length > 0 ? salesSorted.Average(x => x.Price) : 0, 0);
             var allTimeLow = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Min(x => x.Price));
             var allTimeHigh = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Max(x => x.Price));
 

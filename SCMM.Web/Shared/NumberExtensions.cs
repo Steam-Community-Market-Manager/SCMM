@@ -8,17 +8,17 @@ namespace SCMM.Web.Shared
     {
         public const int DefaultTolerance = 0;
 
-        public static bool IsStonking(this int now, int longTermAverage, int tolerance = DefaultTolerance)
+        public static bool IsStonking(this long now, long longTermAverage, int tolerance = DefaultTolerance)
         {
             return (now > longTermAverage && (Math.Abs(now - longTermAverage) >= tolerance));
         }
 
-        public static bool IsStinking(this int now, int longTermAverage, int tolerance = DefaultTolerance)
+        public static bool IsStinking(this long now, long longTermAverage, int tolerance = DefaultTolerance)
         {
             return (now < longTermAverage && (Math.Abs(now - longTermAverage) >= tolerance));
         }
 
-        public static string ToTextColourClass(this int a, int b, int tolerance = DefaultTolerance)
+        public static string ToTextColourClass(this long a, long b, int tolerance = DefaultTolerance)
         {
             var isAboveTolerance = (Math.Abs(a - b) >= tolerance);
             if (a > b && isAboveTolerance)
@@ -32,17 +32,17 @@ namespace SCMM.Web.Shared
             return null;
         }
 
-        public static string ToPriceString(this CurrencyDTO currency, int price)
+        public static string ToPriceString(this CurrencyDTO currency, long price)
         {
             var negative = (price < 0) ? "-" : String.Empty;
             var localScaleString = String.Empty.PadRight(currency.Scale, '0');
-            var localScaleDivisor = Int32.Parse($"1{localScaleString}");
+            var localScaleDivisor = Int64.Parse($"1{localScaleString}");
             var localPrice = Math.Round((decimal) Math.Abs(price) / localScaleDivisor, currency.Scale);
             var localFormat = $"###,###,###,###,##0{(currency.Scale > 0 ? "." : String.Empty)}{localScaleString}";
             return ($"{currency?.PrefixText}{negative}{localPrice.ToString(localFormat.ToString())}{currency?.SuffixText}").Trim();
         }
 
-        public static string ToRegularityString(this int value, int max)
+        public static string ToRegularityString(this long value, long max)
         {
             if (value == 0 || max == 0)
             {
@@ -52,7 +52,7 @@ namespace SCMM.Web.Shared
             return $"{regularity.ToString("#,##0.00")}%";
         }
 
-        public static string ToSalesActivityString(this int sales)
+        public static string ToSalesActivityString(this long sales)
         {
             var suffix = "";
             switch(sales)
@@ -74,7 +74,7 @@ namespace SCMM.Web.Shared
                 : "∞";
         }
 
-        public static string ToStabilityString(this int now, int longTermAverage, int tolerance = DefaultTolerance)
+        public static string ToStabilityString(this long now, long longTermAverage, int tolerance = DefaultTolerance)
         {
             if (IsStonking(now, longTermAverage, tolerance))
             {
@@ -90,7 +90,7 @@ namespace SCMM.Web.Shared
             }
         }
 
-        public static string ToMovementString(this int now, int longTermAverage, int tolerance = DefaultTolerance)
+        public static string ToMovementString(this long now, long longTermAverage, int tolerance = DefaultTolerance)
         {
             if (IsStonking(now, longTermAverage, tolerance))
             {
@@ -106,7 +106,7 @@ namespace SCMM.Web.Shared
             }
         }
 
-        public static string ToPercentageString(this int value, int max)
+        public static string ToPercentageString(this long value, long max)
         {
             if (value == 0 || max == 0)
             {
@@ -139,7 +139,7 @@ namespace SCMM.Web.Shared
             return ((percentage > 0) ? $"{prefix} {percentage}%" : "∞").Trim();
         }
 
-        public static string ToGCDRatioString(this int a, int b)
+        public static string ToGCDRatioString(this long a, long b)
         {
             if (a == 0 || b == 0)
             {
@@ -149,7 +149,7 @@ namespace SCMM.Web.Shared
             return $"{a / gcd}:{b / gcd}";
         }
 
-        public static int GCD(int a, int b)
+        public static long GCD(long a, long b)
         {
             return (b == 0 ? Math.Abs(a) : GCD(b, a % b));
         }
