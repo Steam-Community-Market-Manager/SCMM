@@ -11,8 +11,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
     {
         public SteamMarketItem()
         {
-            BuyOrders = new Collection<SteamMarketItemOrder>();
-            SellOrders = new Collection<SteamMarketItemOrder>();
+            BuyOrders = new Collection<SteamMarketItemBuyOrder>();
+            SellOrders = new Collection<SteamMarketItemSellOrder>();
             SalesHistory = new Collection<SteamMarketItemSale>();
         }
 
@@ -20,9 +20,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public SteamCurrency Currency { get; set; }
 
-        public ICollection<SteamMarketItemOrder> BuyOrders { get; set; }
+        public ICollection<SteamMarketItemBuyOrder> BuyOrders { get; set; }
 
-        public ICollection<SteamMarketItemOrder> SellOrders { get; set; }
+        public ICollection<SteamMarketItemSellOrder> SellOrders { get; set; }
 
         public ICollection<SteamMarketItemSale> SalesHistory { get; set; }
 
@@ -192,7 +192,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         // How long since prices were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
-        public void RecalculateOrders(SteamMarketItemOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemOrder[] sellOrders = null, int? sellOrderCount = null)
+        public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
         {
             var buyOrdersSafe = (buyOrders ?? BuyOrders?.ToArray());
             if (buyOrdersSafe != null)

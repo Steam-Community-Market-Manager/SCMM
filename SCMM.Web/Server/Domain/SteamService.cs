@@ -578,9 +578,9 @@ namespace SCMM.Web.Server.Domain
             item.LastCheckedOrdersOn = DateTimeOffset.Now;
             item.CurrencyId = currencyId;
             item.RecalculateOrders(
-                ParseSteamMarketItemOrdersFromGraph(histogram.BuyOrderGraph),
+                ParseSteamMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
                 SteamEconomyHelper.GetQuantityValueAsInt(histogram.BuyOrderCount),
-                ParseSteamMarketItemOrdersFromGraph(histogram.SellOrderGraph),
+                ParseSteamMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(histogram.SellOrderGraph),
                 SteamEconomyHelper.GetQuantityValueAsInt(histogram.SellOrderCount)
             );
 
@@ -611,9 +611,10 @@ namespace SCMM.Web.Server.Domain
             return item;
         }
 
-        private Models.Steam.SteamMarketItemOrder[] ParseSteamMarketItemOrdersFromGraph(string[][] orderGraph)
+        private T[] ParseSteamMarketItemOrdersFromGraph<T>(string[][] orderGraph)
+            where T : Models.Steam.SteamMarketItemOrder, new()
         {
-            var orders = new List<Models.Steam.SteamMarketItemOrder>();
+            var orders = new List<T>();
             if (orderGraph == null)
             {
                 return orders.ToArray();
@@ -624,7 +625,7 @@ namespace SCMM.Web.Server.Domain
             {
                 var price = SteamEconomyHelper.GetPriceValueAsInt(orderGraph[i][0]);
                 var quantity = (SteamEconomyHelper.GetQuantityValueAsInt(orderGraph[i][1]) - totalQuantity);
-                orders.Add(new Models.Steam.SteamMarketItemOrder()
+                orders.Add(new T()
                 {
                     Price = price,
                     Quantity = quantity,

@@ -10,7 +10,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public int Quantity { get; set; }
 
-        public Guid? ItemId { get; set; }
+        public Guid ItemId { get; set; }
 
         public SteamMarketItem Item { get; set; }
     }
