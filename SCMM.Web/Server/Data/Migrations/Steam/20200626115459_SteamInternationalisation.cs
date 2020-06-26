@@ -35,6 +35,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
             // Fix up currencies from previous migrations
             migrationBuilder.Sql("UPDATE [SteamCurrencies] SET [SteamId] = '1' WHERE [SteamId] = '2'");
             migrationBuilder.Sql("UPDATE [SteamCurrencies] SET [PrefixText] = '$' WHERE [SteamId] IN ('1', '22')");
+            migrationBuilder.Sql("UPDATE [SteamCurrencies] SET [SuffixText] = '' WHERE [SteamId] IN ('1', '22')");
             migrationBuilder.Sql("UPDATE [SteamCurrencies] SET [Scale] = 2 WHERE [SteamId] IN ('1', '22')");
 
             // Add all known currencies
