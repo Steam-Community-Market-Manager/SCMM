@@ -52,16 +52,16 @@
                     @item.Demand
                 </TableCell>
                 <TableCell>
-                    @item.Currency.ToPriceString(item.BuyNowPrice)
+                    @State.ToLocalPriceText(item.BuyNowPrice, item.Currency)
                 </TableCell>
                 <TableCell>
-                    @item.Currency.ToPriceString(item.AllTimeLowestValue)
+                    @State.ToLocalPriceText(item.AllTimeLowestValue, item.Currency)
                 </TableCell>
                 <TableCell>
-                    @item.Currency.ToPriceString(item.AllTimeHighestValue)
+                    @State.ToLocalPriceText(item.AllTimeHighestValue, item.Currency)
                 </TableCell>
                 <TableCell>
-                    @item.Currency.ToPriceString(item.AllTimeAverageValue)
+                    @State.ToLocalPriceText(item.AllTimeAverageValue, item.Currency)
                 </TableCell>
                 <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.First24hrValue)">
                     @item.Last1hrValue.ToPercentageString(item.First24hrValue)
@@ -97,6 +97,9 @@
 </Table>
 
 @code {
+
+    [CascadingParameter]
+    public AppState State { get; set; }
 
     [Parameter]
     public MarketItemListDTO[] Items { get; set; }

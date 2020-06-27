@@ -21,7 +21,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.Last1hrValue)
+            @State.ToLocalPriceText(Item.MarketItem.Last1hrValue, Item.MarketItem.Currency)
         }
         else
         {
@@ -31,7 +31,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellPrice)
+            @State.ToLocalPriceText(Item.MarketItem.ResellPrice, Item.MarketItem.Currency)
         }
         else
         {
@@ -41,7 +41,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellTax)
+            @State.ToLocalPriceText(Item.MarketItem.ResellTax, Item.MarketItem.Currency)
         }
         else
         {
@@ -51,7 +51,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null && Item.BuyPrice > 0)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax - Item.BuyPrice.Value)
+            @State.ToLocalPriceText(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax - Item.BuyPrice.Value, Item.MarketItem.Currency)
         }
         else
         {
@@ -71,6 +71,9 @@
 </TableRow>
 
 @code { 
+
+    [CascadingParameter]
+    public AppState State { get; set; }
 
     [Parameter]
     public InventoryItemListDTO Item { get; set; }

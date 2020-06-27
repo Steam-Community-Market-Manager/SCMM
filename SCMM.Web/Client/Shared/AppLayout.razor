@@ -41,7 +41,7 @@
 
     private bool DonateDialogOpened { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         NavigationItems = BuildGeneralNaviationItems();
     }

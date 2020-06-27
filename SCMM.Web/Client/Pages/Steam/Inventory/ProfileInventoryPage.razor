@@ -62,7 +62,7 @@ else
                 <Total>
                     @if (Currency != null && InventoryTotalInvestedValue > 0)
                     {
-                        @Currency.ToPriceString(InventoryTotalInvestedValue)
+                        @State.ToLocalPriceText(InventoryTotalInvestedValue, Currency)
                     }
                     else
                     {
@@ -79,7 +79,7 @@ else
                 <Total>
                     @if (Currency != null && InventoryTotalMarketValue > 0)
                     {
-                        @Currency.ToPriceString(InventoryTotalMarketValue)
+                        @State.ToLocalPriceText(InventoryTotalMarketValue, Currency)
                     }
                     else
                     {
@@ -96,7 +96,7 @@ else
                 <Total>
                     @if (Currency != null && InventoryTotalResellValue > 0)
                     {
-                        @Currency.ToPriceString(InventoryTotalResellValue)
+                        @State.ToLocalPriceText(InventoryTotalResellValue, Currency)
                     }
                     else
                     {
@@ -113,7 +113,7 @@ else
                 <Total>
                     @if (Currency != null && InventoryTotalProfitValue > 0)
                     {
-                        @Currency.ToPriceString(InventoryTotalProfitValue)
+                        @State.ToLocalPriceText(InventoryTotalProfitValue, Currency)
                     }
                     else
                     {
@@ -143,6 +143,9 @@ else
 }
 
 @code {
+
+    [CascadingParameter]
+    public AppState State { get; set; }
 
     [Parameter]
     public string SteamId { get; set; }

@@ -2,10 +2,10 @@
 @using SCMM.Web.Shared.Domain.DTOs.Currencies;
 @inject HttpClient Http
 
-@if (Currency != null)
+@if (State.CurrencyLocal != null && State.Currencies != null)
 {
     <Typography Variant="@TypographyVariant.H6">
-        <span>@Currency.PrefixText @Currency.Name</span>
+        <span>@State.CurrencyLocal.PrefixText @State.CurrencyLocal.Name</span>
         <IconButton OnClick="@OnOpen" RootRef="@ButtonRef">
             <ArrowDropDownIcon />
         </IconButton>
@@ -13,10 +13,10 @@
               AnchorRef="@ButtonRef"
               OnClose="@HandleClose"
               PaperStyle="width: 200px; max-height: 400px;">
-            @foreach (var currency in Currencies)
+            @foreach (var currency in State.Currencies)
             {
                 <MenuItem @key="@currency.SteamId"
-                          Selected="@(currency.SteamId == Currency.SteamId)"
+                          Selected="@(currency.SteamId == State.CurrencyLocal.SteamId)"
                           OnClick="@(() => HandleCurrencyChange(currency))">
                     <span style="min-width:30%">@currency.PrefixText</span> 
                     <span>@currency.Name</span>
@@ -28,23 +28,24 @@
 
 @code
 { 
-    [Parameter]
-    public CurrencyDetailsDTO Currency { get; set; }
-
-    private CurrencyDetailsDTO[] Currencies { get; set; }
+    [CascadingParameter]
+    public AppState State { get; set; }
 
     private bool Open { set; get; }
 
     private IReference ButtonRef { set; get; } = new Reference();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await RefreshCurrencies();
+        State.OnCurrenciesChanged += (s, c) =>
+        {
+            StateHasChanged();
+        };
     }
 
-    private void HandleCurrencyChange(CurrencyDetailsDTO currency)
+    private async Task HandleCurrencyChange(CurrencyDetailsDTO currency)
     {
-        Currency = currency;
+        await State.SetLocalCurrency(currency);
         Open = false;
         StateHasChanged();
     }
@@ -59,15 +60,6 @@
     {
         Open = true;
         StateHasChanged();
-    }
-
-    private async Task RefreshCurrencies()
-    {
-        Currencies = await Http.GetFromJsonAsync<CurrencyDetailsDTO[]>($"Currency");
-        if (Currency == null)
-        {
-            Currency = Currencies?.FirstOrDefault(x => x.IsDefault);
-        }
     }
 
 }

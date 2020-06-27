@@ -132,7 +132,7 @@ namespace SCMM.Web.Client.Shared.Component.Layout
         {
             MediaQueryMatcher.OnChange += OnMediaQueryChanged;
 
-            TimeoutDisposal = ExecutionPlan.Delay(500, () =>
+            TimeoutDisposal = ExecutionPlan.Delay(1000, () =>
             {
                 _ = MediaQueryMatcher.RegisterAsync("(min-width:1280px)");
             });
