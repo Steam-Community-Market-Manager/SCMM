@@ -60,9 +60,9 @@ namespace SCMM.Web.Server.Data
                 .WithOne(x => x.App);
 
             builder.Entity<SteamStoreItem>()
-                .HasOne(x => x.Currency);
-            builder.Entity<SteamStoreItem>()
                 .HasOne(x => x.Description);
+            builder.Entity<SteamStoreItem>()
+                .OwnsOne(x => x.StorePrices);
 
             builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Currency);

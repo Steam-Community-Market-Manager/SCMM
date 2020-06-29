@@ -10,6 +10,7 @@ using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;
 using SCMM.Web.Client;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Data.Types;
 using SCMM.Web.Server.Domain.Models.Steam;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -524,7 +526,7 @@ namespace SCMM.Web.Server.Domain
             return dbAssetDescription;
         }
 
-        public async Task<Models.Steam.SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, SteamLanguage language, AssetModel asset, DateTime timeChecked)
+        public async Task<Models.Steam.SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamLanguage language, AssetModel asset, DateTime timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Description)
@@ -533,6 +535,11 @@ namespace SCMM.Web.Server.Domain
 
             if (dbItem != null)
             {
+                // Update prices
+                if (asset.Prices != null)
+                {
+                    dbItem.StorePrices = new PersistablePriceDictionary(GetPriceTable(asset.Prices));
+                }
                 return dbItem;
             }
 
@@ -552,11 +559,20 @@ namespace SCMM.Web.Server.Domain
                 SteamId = asset.Name,
                 AppId = app.Id,
                 Description = assetDescription,
-                Currency = currency,
-                StorePrice = Int32.Parse(asset.Prices.ToDictionary().FirstOrDefault(x => x.Key == currency.Name).Value ?? "0")
+                StorePrices = new PersistablePriceDictionary(GetPriceTable(asset.Prices))
             });
 
             return dbItem;
+        }
+
+        public IDictionary<string, long> GetPriceTable(AssetPricesModel prices)
+        {
+            return prices.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .ToDictionary(
+                    k => k.Name,
+                    prop => (long) ((uint)prop.GetValue(prices, null))
+                );
         }
 
         public async Task<Models.Steam.SteamMarketItem> UpdateSteamMarketItemOrders(SteamMarketItem item, Guid currencyId, SteamMarketItemOrdersHistogramJsonResponse histogram)

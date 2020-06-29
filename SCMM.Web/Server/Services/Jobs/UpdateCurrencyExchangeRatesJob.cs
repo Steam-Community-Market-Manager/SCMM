@@ -59,7 +59,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var systemCurrencyPrice = 0l;
+                var systemCurrencyPrice = 0L;
                 var systemCurrency = currencies.FirstOrDefault(x => x.IsDefault);
                 if (systemCurrency == null)
                 {

@@ -1,13 +1,15 @@
-﻿using System;
+﻿using SCMM.Web.Server.Data.Types;
+using System;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
 {
     public class SteamStoreItem : SteamItem
     {
-        public Guid? CurrencyId { get; set; }
+        public SteamStoreItem()
+        {
+            StorePrices = new PersistablePriceDictionary();
+        }
 
-        public SteamCurrency Currency { get; set; }
-
-        public long StorePrice { get; set; }
+        public PersistablePriceDictionary StorePrices { get; set; }
     }
 }

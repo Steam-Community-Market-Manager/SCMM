@@ -31,10 +31,10 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet]
         public IEnumerable<StoreItemListDTO> Get()
         {
+            var currency = _db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
             var latestWeek = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
             var items = _db.SteamStoreItems
                 .Include(x => x.App)
-                .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
                 .Where(x => x.Description.WorkshopFile.AcceptedOn == latestWeek)
@@ -64,7 +64,7 @@ namespace SCMM.Web.Server.API.Controllers
                     continue;
                 }
 
-                var itemPrice = item.StorePrice;
+                var itemPrice = item.StorePrices.FirstOrDefault(x => x.Key == currency?.Name).Value;
                 var marketRank = _db.SteamApps
                     .Where(x => x.SteamId == item.SteamAppId)
                     .Select(app => new

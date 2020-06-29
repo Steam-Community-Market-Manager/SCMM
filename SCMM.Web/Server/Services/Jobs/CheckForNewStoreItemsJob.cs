@@ -55,19 +55,13 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var currency = await db.SteamCurrencies.FirstOrDefaultAsync(x => x.IsDefault);
-                if (currency == null)
-                {
-                    return;
-                }
-
                 var now = DateTime.UtcNow;
                 var timeChecked = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
                 foreach (var app in steamApps)
                 {
                     _logger.LogInformation($"Checking for new store items (appId: {app.SteamId})");
                     var response = await steamEconomy.GetAssetPricesAsync(
-                        UInt32.Parse(app.SteamId), currency.Name, language.SteamId
+                        UInt32.Parse(app.SteamId), String.Empty, language.SteamId
                     );
                     if (response?.Data?.Success != true)
                     {
@@ -78,7 +72,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     foreach (var asset in response.Data.Assets)
                     {
                         await steamService.AddOrUpdateAppStoreItem(
-                            app, currency, language, asset, timeChecked
+                            app, language, asset, timeChecked
                         );
                     }
 
