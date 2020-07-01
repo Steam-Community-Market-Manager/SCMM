@@ -13,6 +13,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+using SteamWebAPI2.Interfaces;
+using SCMM.Steam.Shared;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -66,7 +69,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpPut("item/{inventoryItemId}")]
-        public async void SetItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] int buyPrice)
+        public async void SetItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -78,7 +81,8 @@ namespace SCMM.Web.Server.API.Controllers
                     return;
                 }
 
-                inventoryItem.BuyPrice = buyPrice;
+                inventoryItem.CurrencyId = command.CurrencyId;
+                inventoryItem.BuyPrice = SteamEconomyHelper.GetPriceValueAsInt(command.Price);
                 await db.SaveChangesAsync();
             }
         }

@@ -32,14 +32,16 @@ namespace SCMM.Web.Shared
             return null;
         }
 
-        public static string ToPriceString(this CurrencyDTO currency, long price)
+        public static string ToPriceString(this CurrencyDTO currency, long price, bool dense = false)
         {
             var negative = (price < 0) ? "-" : String.Empty;
             var localScaleString = String.Empty.PadRight(currency.Scale, '0');
             var localScaleDivisor = Int64.Parse($"1{localScaleString}");
             var localPrice = Math.Round((decimal) Math.Abs(price) / localScaleDivisor, currency.Scale);
             var localFormat = $"###,###,###,###,##0{(currency.Scale > 0 ? "." : String.Empty)}{localScaleString}";
-            return ($"{currency?.PrefixText}{negative}{localPrice.ToString(localFormat.ToString())}{currency?.SuffixText}").Trim();
+            return dense
+                ? ($"{negative}{localPrice.ToString(localFormat.ToString())}").Trim()
+                : ($"{currency?.PrefixText}{negative}{localPrice.ToString(localFormat.ToString())}{currency?.SuffixText}").Trim();
         }
 
         public static string ToRegularityString(this long value, long max)

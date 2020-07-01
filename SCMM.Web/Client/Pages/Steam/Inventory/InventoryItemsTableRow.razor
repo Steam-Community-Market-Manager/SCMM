@@ -1,4 +1,5 @@
 ﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 @using SCMM.Web.Shared
 @inherits ComponentBase
@@ -15,8 +16,12 @@
         @Item.Quantity.ToQuantityString()
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        <InputBase Type="number" Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@Item.BuyPrice?.ToString()"
-                   OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))" />
+        <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@Value"
+                   OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))">
+            <StartAdornment>
+                <span style="padding-right: 5px;">@(Item.Currency ?? State.CurrencyLocal).PrefixText</span>
+            </StartAdornment>
+        </InputBase>
     </TableCell>
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
@@ -31,7 +36,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @State.ToLocalPriceText(Item.MarketItem.ResellPrice, Item.MarketItem.Currency)
+            @State.ToLocalPriceText(Item.MarketItem.ResellPrice, Item.MarketItem.Currency) 
         }
         else
         {
@@ -41,7 +46,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @State.ToLocalPriceText(Item.MarketItem.ResellTax, Item.MarketItem.Currency)
+            @State.ToLocalPriceText(Item.MarketItem.ResellTax, Item.MarketItem.Currency) 
         }
         else
         {
@@ -51,7 +56,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null && Item.BuyPrice > 0)
         {
-            @State.ToLocalPriceText(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax - Item.BuyPrice.Value, Item.MarketItem.Currency)
+            @State.ToLocalPriceText(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax - Item.BuyPrice.Value, Item.MarketItem.Currency) 
         }
         else
         {
@@ -60,8 +65,7 @@
     </TableCell>
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null && Item.BuyPrice > 0)
-        {
-            @(((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0)).ToRoIString())
+        {@(((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0)).ToRoIString()) 
         }
         else
         {
@@ -77,6 +81,13 @@
 
     [Parameter]
     public InventoryItemListDTO Item { get; set; }
+
+    public string Value { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Value = (Item.BuyPrice != null ? (Item.Currency ?? State.CurrencyLocal).ToPriceString(Item.BuyPrice.Value, dense: true) : null);
+    }
 
     private string GetItemClass()
     {
@@ -98,14 +109,16 @@
 
     private async Task UpdateItemPrice(string value)
     {
-        var buyPrice = 0;
-        if (Int32.TryParse(value, out buyPrice) || String.IsNullOrEmpty(value))
+        var buyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value);
+        if (buyPrice != Item.BuyPrice)
         {
-            if (buyPrice != Item.BuyPrice)
+            Item.Currency = State.CurrencyLocal;
+            Item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value);
+            await Http.PutAsJsonAsync($"InventoryItems/item/{Item.Id}", new UpdateInventoryItemPriceCommand()
             {
-                Item.BuyPrice = buyPrice;
-                await Http.PutAsJsonAsync<int>($"InventoryItems/item/{Item.Id}", buyPrice);
-            }
+                CurrencyId = State.CurrencyLocal.Id,
+                Price = value
+            });
         }
     }
 
