@@ -19,7 +19,7 @@
         <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@Value"
                    OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))">
             <StartAdornment>
-                <span style="padding-right: 5px;">@(Item.Currency ?? State.CurrencyLocal).PrefixText</span>
+                <span style="padding-right: 5px;">@State.CurrencyLocal.PrefixText</span>
             </StartAdornment>
         </InputBase>
     </TableCell>
@@ -86,7 +86,7 @@
 
     protected override void OnInitialized()
     {
-        Value = (Item.BuyPrice != null ? (Item.Currency ?? State.CurrencyLocal).ToPriceString(Item.BuyPrice.Value, dense: true) : null);
+        Value = (Item.BuyPrice != null ? Item.Currency?.ToPriceString(Item.BuyPrice.Value, dense: true) : null);
     }
 
     private string GetItemClass()
