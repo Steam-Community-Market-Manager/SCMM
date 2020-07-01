@@ -44,7 +44,7 @@ else
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Subtitle1" GutterBottom="true">
                                         <i class="fa fa-fw fa-tag"></i>
-                                        @State.ToLocalPriceText(item.StorePrices[State.CurrencyLocal.Name], State.CurrencyLocal);
+                                        @State.ToLocalPriceText(item.StorePrices[State.CurrencyLocal.Name], State.CurrencyLocal)
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body2">
                                         @if (item.MarketRankTotal > 0)
