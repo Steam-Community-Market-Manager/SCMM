@@ -238,7 +238,7 @@ namespace SCMM.Web.Server.Domain
                     }
                     var marketItem = await _db.SteamMarketItems
                         .Include(x => x.Currency)
-                        .FirstOrDefaultAsync(x => x.Description.SteamId == asset.ClassId);                    
+                        .FirstOrDefaultAsync(x => x.Description.SteamId == asset.ClassId);
                     var inventoryItem = new SteamInventoryItem()
                     {
                         SteamId = asset.AssetId,
@@ -250,9 +250,6 @@ namespace SCMM.Web.Server.Domain
                         DescriptionId = assetDescription.Id,
                         MarketItem = marketItem,
                         MarketItemId = marketItem?.Id,
-                        Currency = marketItem?.Currency,
-                        CurrencyId = marketItem?.CurrencyId,
-                        BuyPrice = null,
                         Quantity = asset.Amount
                     };
 
@@ -266,6 +263,17 @@ namespace SCMM.Web.Server.Domain
                     if (existingAsset != null)
                     {
                         existingAsset.Quantity = asset.Amount;
+                        if (existingAsset.MarketItemId == null)
+                        {
+                            var marketItem = await _db.SteamMarketItems
+                                .Include(x => x.Currency)
+                                .FirstOrDefaultAsync(x => x.Description.SteamId == asset.ClassId);
+                            if (marketItem != null)
+                            {
+                                existingAsset.MarketItem = marketItem;
+                                existingAsset.MarketItemId = marketItem.Id;
+                            }
+                        }
                     }
                 }
 
