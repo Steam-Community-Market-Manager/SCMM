@@ -19,11 +19,6 @@
         padding: 8px;
     }
 
-    .Inventory-List-Container {
-        max-height: calc(100vh - 230px);
-        overflow: auto;
-    }
-
 </style>
 
 @if (Profile == null)
@@ -125,7 +120,7 @@ else
         <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
             <TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
                        Placeholder="Type an item name to filter the inventory list" />
-            <Paper Class="Inventory-List-Container">
+            <Paper>
                 <InventoryItemsTable Items="@InventoryItems" />
             </Paper>
         </Grid>
