@@ -3,6 +3,8 @@ using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain.DTOs;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -43,13 +45,14 @@ namespace SCMM.Web.Client
             if (CurrencyLocal == null)
             {
                 var localCurrencyId = await _storage.GetItemAsync<string>("currency");
-                if (!string.IsNullOrEmpty(localCurrencyId))
+                if (!String.IsNullOrEmpty(localCurrencyId))
                 {
                     CurrencyLocal = Currencies?.FirstOrDefault(x => x.SteamId == localCurrencyId);
                 }
                 if (CurrencyLocal == null)
                 {
-                    CurrencyLocal = CurrencySystem;
+                    CurrencyLocal = await TryGuessLocalCurrency();
+                    await SetLocalCurrency(CurrencyLocal);
                 }
             }
 
@@ -94,6 +97,39 @@ namespace SCMM.Web.Client
             }
 
             return localCurrency.ToPriceString((long) Math.Floor(localValue));
+        }
+
+        public async Task<CurrencyDetailsDTO> TryGuessLocalCurrency()
+        {
+            try
+            {
+                var country = await _http.GetStringAsync("https://ipinfo.io/country");
+                if (String.IsNullOrEmpty(country))
+                {
+                    return null;
+                }
+
+                var countryCurrencyTable = await _http.GetFromJsonAsync<IDictionary<string, string>>("/json/country-currency.json");
+                if (countryCurrencyTable == null)
+                {
+                    return null;
+                }
+
+                var currencyName = countryCurrencyTable.FirstOrDefault(x => x.Key == country.Trim()).Value;
+                if (String.IsNullOrEmpty(currencyName))
+                {
+                    return null;
+                }
+
+                var currency = Currencies.FirstOrDefault(x => x.Name == currencyName);
+                Console.WriteLine($"Auto-detected currency: '{currency?.Name}'");
+                return currency ?? CurrencySystem;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to auto-detect currency. Error: {ex.Message}");
+                return CurrencySystem;
+            }
         }
     }
 }
