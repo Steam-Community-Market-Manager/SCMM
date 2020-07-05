@@ -10,6 +10,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         [Required]
         public string Name { get; set; }
 
+        public string CultureName { get; set; }
+
         public bool IsDefault { get; set; }
     }
 }

@@ -22,6 +22,11 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public string SuffixText { get; set; }
 
         /// <summary>
+        /// Culture used to format prices
+        /// </summary>
+        public string CultureName { get; set; }
+
+        /// <summary>
         /// Number of decimal places when formatted
         /// </summary>
         public int Scale { get; set; }

@@ -8,6 +8,8 @@
 
         public string SuffixText { get; set; }
 
+        public string CultureName { get; set; }
+
         public int Scale { get; set; }
     }
 }

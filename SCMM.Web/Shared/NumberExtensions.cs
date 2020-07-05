@@ -1,5 +1,6 @@
 ﻿using SCMM.Web.Shared.Domain.DTOs;
 using System;
+using System.Globalization;
 using System.Text;
 
 namespace SCMM.Web.Shared
@@ -34,14 +35,23 @@ namespace SCMM.Web.Shared
 
         public static string ToPriceString(this CurrencyDTO currency, long price, bool dense = false)
         {
-            var negative = (price < 0) ? "-" : String.Empty;
+            if (currency == null)
+            {
+                return price.ToString();
+            }
+
+            var sign = (price < 0) ? "-" : String.Empty;
             var localScaleString = String.Empty.PadRight(currency.Scale, '0');
             var localScaleDivisor = Int64.Parse($"1{localScaleString}");
+            var localFormat = $"#,##0{(currency.Scale > 0 ? "." : String.Empty)}{localScaleString}";
+            var localCulture = CultureInfo.GetCultureInfo(currency.CultureName);
             var localPrice = Math.Round((decimal) Math.Abs(price) / localScaleDivisor, currency.Scale);
-            var localFormat = $"###,###,###,###,##0{(currency.Scale > 0 ? "." : String.Empty)}{localScaleString}";
-            return dense
-                ? ($"{negative}{localPrice.ToString(localFormat.ToString())}").Trim()
-                : ($"{currency?.PrefixText}{negative}{localPrice.ToString(localFormat.ToString())}{currency?.SuffixText}").Trim();
+            var localPriceString = $"{sign}{localPrice.ToString(localFormat, localCulture.NumberFormat)}";
+            if (!dense)
+            {
+                localPriceString = $"{currency.PrefixText}{localPriceString}{currency.SuffixText}";
+            }
+            return localPriceString.Trim();
         }
 
         public static string ToRegularityString(this long value, long max)
