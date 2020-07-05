@@ -173,14 +173,14 @@ namespace SCMM.Web.Server.Domain
                 })
                 .FirstOrDefaultAsync();
 
-            history[today.Subtract(TimeSpan.FromDays(7))] = (inventoryValues.Last168hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last168hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(6))] = (inventoryValues.Last144hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last144hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(5))] = (inventoryValues.Last120hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last120hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(4))] = (inventoryValues.Last96hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last96hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(3))] = (inventoryValues.Last72hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last72hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(2))] = (inventoryValues.Last48hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last48hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(1))] = (inventoryValues.Last24hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last24hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(0))] = (inventoryValues.Last1hrValue - SteamEconomyHelper.GetSaleFeeAsInt(inventoryValues.Last1hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(7))] = (inventoryValues.Last168hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last168hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(6))] = (inventoryValues.Last144hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last144hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(5))] = (inventoryValues.Last120hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last120hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(4))] = (inventoryValues.Last96hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last96hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(3))] = (inventoryValues.Last72hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last72hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(2))] = (inventoryValues.Last48hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last48hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(1))] = (inventoryValues.Last24hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last24hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(0))] = (inventoryValues.Last1hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last1hrValue) - (inventoryValues.Invested ?? 0));
             return history;
         }
 

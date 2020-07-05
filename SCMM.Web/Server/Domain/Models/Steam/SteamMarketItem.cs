@@ -221,27 +221,27 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             if (sellOrdersSafe != null)
             {
                 var sellOrdersSorted = sellOrdersSafe.OrderBy(y => y.Price).ToArray();
-                var lowestPrice = (sellOrdersSorted.Length > 0)
+                var lowestBuyNowPrice = (sellOrdersSorted.Length > 0)
                     ? sellOrdersSorted.First().Price
                     : 0;
-                var secondLowestPrice = (sellOrdersSorted.Length > 1)
+                var secondLowestBuyNowPrice = (sellOrdersSorted.Length > 1)
                     ? sellOrdersSorted.Skip(1).First().Price
-                    : lowestPrice;
-                var averagePrice = (sellOrdersSorted.Length > 1)
+                    : lowestBuyNowPrice;
+                var averageBuyNowPrice = (sellOrdersSorted.Length > 1)
                     ? (long)Math.Ceiling((decimal)sellOrdersSorted.Skip(1).Sum(y => y.Price) / (sellOrdersSorted.Length - 1))
                     : 0;
-                var resellPrice = secondLowestPrice;
-                var resellTax = SteamEconomyHelper.GetSaleFeeAsInt(resellPrice);
+                var resellPrice = secondLowestBuyNowPrice;
+                var resellTax = SteamEconomyHelper.GetSteamFeeAsInt(resellPrice);
 
                 // NOTE: Steam only returns the top 100 orders, so the true supply can't be calculated from sell orders list
                 //Supply = sellOrdersSorted.Sum(y => y.Quantity);
                 Supply = (sellOrderCount ?? Supply);
 
-                BuyNowPrice = lowestPrice;
-                BuyNowPriceDelta = (secondLowestPrice - lowestPrice);
+                BuyNowPrice = lowestBuyNowPrice;
+                BuyNowPriceDelta = (secondLowestBuyNowPrice - lowestBuyNowPrice);
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
-                ResellProfit = (resellPrice - resellTax - lowestPrice);
+                ResellProfit = (resellPrice - resellTax - lowestBuyNowPrice);
                 if (sellOrders != null)
                 {
                     SellOrders.Clear();

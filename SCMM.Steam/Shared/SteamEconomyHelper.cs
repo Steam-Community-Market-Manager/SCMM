@@ -5,22 +5,26 @@ namespace SCMM.Steam.Shared
 {
     public static class SteamEconomyHelper
 	{
-		public const decimal DefaultSteamFeeMultiplier = 0.05m;
-		public const decimal DefaultPublisherFeeMultiplier = 0.100000001490116119m;
+		public const decimal SteamFeeMultiplier = 0.8695652173928261m; // 13%
+		public const decimal SteamFeePlatformMultiplier = 0.0304347811170578m; // 3%
+		public const decimal SteamFeePublisherMultiplier = 0.100000001490116119m; // 10%
+
+		public static long GetSteamFeePlatformComponentAsInt(long value)
+		{
+			// Minimum platform fee is 0.01 units
+			return (long) Math.Floor(Math.Max((decimal) value * SteamFeePlatformMultiplier, 1));
+		}
+
+		public static long GetSteamFeePublisherComponentAsInt(long value)
+		{
+			// Minimum publisher fee is 0.01 units
+			return (long) Math.Floor(Math.Max((decimal) value * SteamFeePublisherMultiplier, 1));
+		}
 
 		public static long GetSteamFeeAsInt(long value)
 		{
-			return (long) Math.Floor(Math.Max(value * (decimal) DefaultSteamFeeMultiplier, 1));
-		}
-
-		public static long GetPublisherFeeAsInt(long value)
-		{
-			return (long) Math.Floor(Math.Max(value * (decimal) DefaultPublisherFeeMultiplier, 1));
-		}
-
-		public static long GetSaleFeeAsInt(long value)
-		{
-			return (GetSteamFeeAsInt(value) + GetPublisherFeeAsInt(value));
+			// Add both fees together to ensure the minimum fee component of 0.02
+			return (GetSteamFeePlatformComponentAsInt(value) + GetSteamFeePublisherComponentAsInt(value));
 		}
 
 		/// <summary>
