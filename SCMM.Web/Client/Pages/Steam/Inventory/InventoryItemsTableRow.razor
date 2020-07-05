@@ -19,7 +19,14 @@
         <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@Value"
                    OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))">
             <StartAdornment>
-                <span style="padding-right: 5px;">@State.CurrencyLocal.PrefixText</span>
+                @if (Item.Currency != null)
+                {
+                    <span style="padding-right:5px;">@Item.Currency.PrefixText</span>
+                }
+                else
+                {
+                    <span style="padding-right:5px;">@State.CurrencyLocal.PrefixText</span>
+                }
             </StartAdornment>
         </InputBase>
     </TableCell>

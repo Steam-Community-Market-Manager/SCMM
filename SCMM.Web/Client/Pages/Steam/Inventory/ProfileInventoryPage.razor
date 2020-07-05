@@ -55,13 +55,13 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @if (Currency != null && InventoryTotalInvestedValue > 0)
+                    @if (InventoryTotalInvestedValue > 0)
                     {
-                        @State.ToLocalPriceText(InventoryTotalInvestedValue, Currency)
+                        @State.ToLocalPriceText(InventoryTotalInvestedValue, State.CurrencyLocal)
                     }
                     else
                     {
-                        <span>—</span>
+                        <span>-</span>
                     }
                 </Total>
             </InventoryTotalCard>
@@ -72,13 +72,13 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @if (Currency != null && InventoryTotalMarketValue > 0)
+                    @if (InventoryTotalMarketValue > 0)
                     {
-                        @State.ToLocalPriceText(InventoryTotalMarketValue, Currency)
+                        @State.ToLocalPriceText(InventoryTotalMarketValue, State.CurrencyLocal)
                     }
                     else
                     {
-                        <span>—</span>
+                        <span>-</span>
                     }
                 </Total>
             </InventoryTotalCard>
@@ -89,13 +89,13 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @if (Currency != null && InventoryTotalResellValue > 0)
+                    @if (InventoryTotalResellValue > 0)
                     {
-                        @State.ToLocalPriceText(InventoryTotalResellValue, Currency)
+                        @State.ToLocalPriceText(InventoryTotalResellValue, State.CurrencyLocal)
                     }
                     else
                     {
-                        <span>—</span>
+                        <span>-</span>
                     }
                 </Total>
             </InventoryTotalCard>
@@ -106,13 +106,13 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @if (Currency != null && InventoryTotalProfitValue > 0)
+                    @if (InventoryTotalProfitValue > 0)
                     {
-                        @State.ToLocalPriceText(InventoryTotalProfitValue, Currency)
+                        @State.ToLocalPriceText(InventoryTotalProfitValue, State.CurrencyLocal)
                     }
                     else
                     {
-                        <span>—</span>
+                        <span>-</span>
                     }
                 </Total>
             </InventoryTotalCard>
@@ -150,8 +150,6 @@ else
     private bool ProfileNotFound { get; set; }
 
     private InventoryItemListDTO[] InventoryItems { get; set; }
-
-    private CurrencyDTO Currency { get; set; }
 
     private int InventoryTotalItemCount { get; set; }
 
@@ -199,17 +197,18 @@ else
     {
         if (Profile?.InventoryItems?.Any() == true)
         {
-            var items = Profile.InventoryItems.Where(x => x.MarketItem != null).ToList();
-            Currency = items.FirstOrDefault().MarketItem.Currency;
+            var items = Profile.InventoryItems;
+            var itemsOnMarket = items.Where(x => x.MarketItem != null).ToList();
             InventoryTotalItemCount = items.Sum(x => x.Quantity);
-            InventoryTotalInvestedValue = items.Sum(x => (x.BuyPrice ?? 0) * x.Quantity);
-            InventoryTotalMarketValue = items.Sum(x => x.MarketItem.Last1hrValue);
-            InventoryTotalResellValue = items.Sum(x => x.MarketItem.ResellPrice);
-            InventoryTotalProfitValue = items.Where(x => x.BuyPrice > 0).Sum(x => x.MarketItem.ResellPrice - x.MarketItem.ResellTax - (x.BuyPrice ?? 0));
+            InventoryTotalInvestedValue = items.Sum(x => State.ToLocalPrice((x.BuyPrice ?? 0) * x.Quantity, x.Currency));
+            InventoryTotalMarketValue = itemsOnMarket.Sum(x => State.ToLocalPrice(x.MarketItem.Last1hrValue, x.MarketItem.Currency));
+            InventoryTotalResellValue = itemsOnMarket.Sum(x => State.ToLocalPrice(x.MarketItem.ResellPrice, x.MarketItem.Currency));
+            InventoryTotalProfitValue = itemsOnMarket.Where(x => x.BuyPrice > 0).Sum(x => 
+                State.ToLocalPrice(x.MarketItem.ResellPrice, x.MarketItem.Currency) - State.ToLocalPrice(x.MarketItem.ResellTax, x.MarketItem.Currency) - State.ToLocalPrice(x.BuyPrice ?? 0, x.Currency)
+            );
         }
         else
         {
-            Currency = null;
             InventoryTotalItemCount = 0;
             InventoryTotalInvestedValue = 0;
             InventoryTotalMarketValue = 0;

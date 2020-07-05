@@ -72,14 +72,14 @@ namespace SCMM.Web.Client
             }
         }
 
-        public string ToLocalPriceText(long value, CurrencyDTO currency)
+        public long ToLocalPrice(long value, CurrencyDTO currency)
         {
             var localCurrency = CurrencyLocal;
             var systemCurrency = CurrencySystem;
-            var sourceCurrency = Currencies.FirstOrDefault(x => x.Name == currency.Name);
+            var sourceCurrency = Currencies.FirstOrDefault(x => x.Name == currency?.Name);
             if (localCurrency == null || systemCurrency == null || sourceCurrency == null)
             {
-                return null;
+                return 0;
             }
 
             decimal localValue = value;
@@ -89,14 +89,25 @@ namespace SCMM.Web.Client
                 if (sourceCurrency != systemCurrency)
                 {
                     systemValue = (value > 0)
-                        ? (value / sourceCurrency.ExchangeRateMultiplier)
+                        ? ((decimal)value / sourceCurrency.ExchangeRateMultiplier)
                         : 0;
                 }
 
                 localValue = (systemValue * localCurrency.ExchangeRateMultiplier);
             }
 
-            return localCurrency.ToPriceString((long) Math.Floor(localValue));
+            return (long) Math.Floor(localValue);
+        }
+
+        public string ToLocalPriceText(long value, CurrencyDTO currency)
+        {
+            var localCurrency = CurrencyLocal;
+            if (localCurrency == null)
+            {
+                return null;
+            }
+
+            return localCurrency.ToPriceString(ToLocalPrice(value, currency));
         }
 
         public async Task<CurrencyDetailsDTO> TryGuessLocalCurrency()
