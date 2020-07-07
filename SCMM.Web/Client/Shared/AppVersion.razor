@@ -1,0 +1,22 @@
+﻿@namespace SCMM.Web.Client.Shared.Component
+@inject HttpClient Http
+
+<Typography Variant="@TypographyVariant.Body2" GutterBottom>
+    <span><i class="fa fa-fw fa-user"></i> v@(ClientVersion)</span>&nbsp;
+    <span><i class="fa fa-fw fa-server"></i> v@(ServerVersion)</span>&nbsp;
+</Typography>
+
+@code
+{
+    private string ClientVersion { set; get; }
+
+    private string ServerVersion { set; get; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = System.Reflection.Assembly.GetExecutingAssembly().GetName();
+        ClientVersion = $"{client.Version.Major}.{client.Version.Minor}";
+        ServerVersion = await Http.GetStringAsync("Version");
+    }
+
+}
