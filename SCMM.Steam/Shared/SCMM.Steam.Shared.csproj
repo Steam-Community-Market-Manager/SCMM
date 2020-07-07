@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <Copyright>Copyright 2020 Rhys Koedijk</Copyright>
+    <Version>0.3-alpha</Version>
   </PropertyGroup>
 
   <ItemGroup>

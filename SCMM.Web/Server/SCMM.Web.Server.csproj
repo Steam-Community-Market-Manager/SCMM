@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>SCMM.Web.Server-CEF763B9-8A28-4DFF-9A7A-1E4D1E7320D9</UserSecretsId>
     <ApplicationInsightsResourceId>/subscriptions/c42f13b2-3f25-4a32-a1c1-9bbc323dfa76/resourceGroups/SCMM/providers/microsoft.insights/components/scmm-app-insights</ApplicationInsightsResourceId>
+    <Copyright>Copyright 2020 Rhys Koedijk</Copyright>
+    <Version>0.3-alpha</Version>
   </PropertyGroup>
 
   <ItemGroup>

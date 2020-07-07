@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RazorLangVersion>3.0</RazorLangVersion>
+    <Version>0.3-alpha</Version>
+    <Copyright>Copyright 2020 Rhys Koedijk</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
