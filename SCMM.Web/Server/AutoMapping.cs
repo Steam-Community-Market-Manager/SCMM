@@ -36,6 +36,7 @@ namespace SCMM.Web.Server
 
             CreateMap<SteamMarketItemSale, MarketItemSaleDTO>();
             CreateMap<SteamMarketItemOrder, MarketItemOrderDTO>();
+            CreateMap<SteamMarketItemActivity, MarketItemActivityDTO>();
             CreateMap<SteamMarketItem, MarketItemDetailDTO>()
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))

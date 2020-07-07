@@ -21,6 +21,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public CurrencyDTO Currency { get; set; }
 
+        public MarketItemActivityDTO[] Activity { get; set; }
+
         public int Supply { get; set; }
 
         public int Demand { get; set; }

@@ -14,6 +14,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             BuyOrders = new Collection<SteamMarketItemBuyOrder>();
             SellOrders = new Collection<SteamMarketItemSellOrder>();
             SalesHistory = new Collection<SteamMarketItemSale>();
+            Activity = new Collection<SteamMarketItemActivity>();
         }
 
         public Guid? CurrencyId { get; set; }
@@ -25,6 +26,8 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public ICollection<SteamMarketItemSellOrder> SellOrders { get; set; }
 
         public ICollection<SteamMarketItemSale> SalesHistory { get; set; }
+
+        public ICollection<SteamMarketItemActivity> Activity { get; set; }
 
         // What is the total quantity of all sell orders
         public int Supply { get; set; }
@@ -266,14 +269,14 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
 
             var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24)) && x.Timestamp > earliestTimestamp).ToArray();
-            var first24hrValue = (long) Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
+            var first24hrValue = (long)Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
 
             var last1hrs = salesSorted.Where(x => x.Timestamp == latestTimestamp).ToArray();
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
             var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.Price) : 0, 0);
             var last24hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(24)) && x.Timestamp < latestTimestamp).ToArray();
             var last24hrSales = last24hrs.Sum(x => x.Quantity);
-            var last24hrValue = (long) Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
+            var last24hrValue = (long)Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
             var last48hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(48)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(24))).ToArray();
             var last48hrSales = last48hrs.Sum(x => x.Quantity);
             var last48hrValue = (long)Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.Price) : 0, 0);
@@ -285,7 +288,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var last96hrValue = (long)Math.Round(last96hrs.Length > 0 ? last96hrs.Average(x => x.Price) : 0, 0);
             var last120hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(120)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(96))).ToArray();
             var last120hrSales = last120hrs.Sum(x => x.Quantity);
-            var last120hrValue = (long) Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
+            var last120hrValue = (long)Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
             var last144hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(144)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(120))).ToArray();
             var last144hrSales = last144hrs.Sum(x => x.Quantity);
             var last144hrValue = (long)Math.Round(last144hrs.Length > 0 ? last144hrs.Average(x => x.Price) : 0, 0);
@@ -331,6 +334,12 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             AllTimeLowestValue = (allTimeLow?.Price ?? 0);
             AllTimeLowestValueOn = allTimeLow?.Timestamp;
             FirstSeenOn = salesSorted.FirstOrDefault()?.Timestamp;
+
+            if (last48hrs != null)
+            {
+                RecalculateActivity(last48hrs);
+            }
+
             if (sales != null)
             {
                 SalesHistory.Clear();
@@ -338,6 +347,31 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                 {
                     SalesHistory.Add(sale);
                 }
+            }
+        }
+
+        public void RecalculateActivity(SteamMarketItemSale[] sales)
+        {
+            var salesSorted = sales?.OrderBy(y => y.Timestamp)?.ToArray();
+            if (salesSorted == null)
+            {
+                return;
+            }
+
+            Activity.Clear();
+            var previousPrice = salesSorted.FirstOrDefault().Price;
+            foreach (var sale in salesSorted.Skip(1))
+            {
+                Activity.Add(
+                    new SteamMarketItemActivity()
+                    {
+                        Timestamp = sale.Timestamp,
+                        Movement = (sale.Price - previousPrice),
+                        ItemId = Id,
+                        Item = this
+                    }
+                );
+                previousPrice = sale.Price;
             }
         }
     }

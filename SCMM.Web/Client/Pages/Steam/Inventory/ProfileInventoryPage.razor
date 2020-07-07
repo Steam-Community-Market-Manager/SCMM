@@ -132,6 +132,12 @@ else
                         <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
                     }
                 </Grid>
+                <Grid ExtraSmall="@GridSize.Twelve">
+                    @if (InventoryActivity != null)
+                    {
+                        
+                    }
+                </Grid>
             </Grid>
         </Grid>
     </Grid>
@@ -161,6 +167,8 @@ else
 
     private long InventoryTotalProfitValue { get; set; }
 
+    private IDictionary<MarketItemActivityDTO, MarketItemListDTO> InventoryActivity { get; set; }
+
     private ChartJsLineChart TotalHistoryChartJs;
     private LineConfig TotalHistoryChart;
 
@@ -174,6 +182,7 @@ else
             {
                 InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
                 RecalculateTotals();
+                RecalculateActivity();
                 RedrawTotalHistoryChart();
             }
         }
@@ -195,15 +204,34 @@ else
 
     private void RecalculateTotals()
     {
-        if (Profile?.InventoryItems?.Any() == true)
+        if (InventoryItems?.Any() == true)
         {
-            var items = Profile.InventoryItems;
+            InventoryActivity = new Dictionary<MarketItemActivityDTO, MarketItemListDTO>();
+            foreach (var item in InventoryItems.Where(x => x.MarketItem != null))
+            {
+                foreach (var activity in item.MarketItem.Activity)
+                {
+                    InventoryActivity[activity] = item.MarketItem;
+                }
+            }
+        }
+        else
+        {
+            InventoryActivity = null;
+        }
+    }
+
+    private void RecalculateActivity()
+    {
+        if (InventoryItems?.Any() == true)
+        {
+            var items = InventoryItems;
             var itemsOnMarket = items.Where(x => x.MarketItem != null).ToList();
             InventoryTotalItemCount = items.Sum(x => x.Quantity);
             InventoryTotalInvestedValue = items.Sum(x => State.ToLocalPrice((x.BuyPrice ?? 0) * x.Quantity, x.Currency));
             InventoryTotalMarketValue = itemsOnMarket.Sum(x => State.ToLocalPrice(x.MarketItem.Last1hrValue, x.MarketItem.Currency));
             InventoryTotalResellValue = itemsOnMarket.Sum(x => State.ToLocalPrice(x.MarketItem.ResellPrice, x.MarketItem.Currency));
-            InventoryTotalProfitValue = itemsOnMarket.Where(x => x.BuyPrice > 0).Sum(x => 
+            InventoryTotalProfitValue = itemsOnMarket.Where(x => x.BuyPrice > 0).Sum(x =>
                 State.ToLocalPrice(x.MarketItem.ResellPrice, x.MarketItem.Currency) - State.ToLocalPrice(x.MarketItem.ResellTax, x.MarketItem.Currency) - State.ToLocalPrice(x.BuyPrice ?? 0, x.Currency)
             );
         }
