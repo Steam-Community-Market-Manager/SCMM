@@ -2,8 +2,14 @@
 @inject HttpClient Http
 
 <Typography Variant="@TypographyVariant.Body2" GutterBottom>
-    <span><i class="fa fa-fw fa-user"></i> v@(ClientVersion)</span>&nbsp;
-    <span><i class="fa fa-fw fa-server"></i> v@(ServerVersion)</span>&nbsp;
+    @if (ClientVersion != null)
+    {
+        <span><i class="fa fa-fw fa-user"></i> v@(ClientVersion)</span>&nbsp;
+    }
+    @if (ServerVersion != null)
+    {
+        <span><i class="fa fa-fw fa-server"></i> v@(ServerVersion)</span>&nbsp;
+    }
 </Typography>
 
 @code
