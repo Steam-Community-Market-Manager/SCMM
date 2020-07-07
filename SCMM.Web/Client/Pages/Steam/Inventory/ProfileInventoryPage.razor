@@ -1,4 +1,4 @@
-@page "/steam/inventory/{SteamId}"
+﻿@page "/steam/inventory/{SteamId}"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 @using SCMM.Web.Shared.Domain.DTOs
@@ -75,6 +75,20 @@ else
                     @if (InventoryTotalMarketValue > 0)
                     {
                         @State.ToLocalPriceText(InventoryTotalMarketValue, State.CurrencyLocal)
+                        <Typography Variant="@TypographyVariant.Body2">
+                            @if (InventoryTotalMarketValueMovement > 0)
+                            {
+                                <span class="Text-Success">
+                                    🡱 +@(InventoryTotalMarketValueMovement) today
+                                </span>
+                            }
+                            @if (InventoryTotalMarketValueMovement < 0)
+                            {
+                                <span class="Text-Error">
+                                    🡳 -@(InventoryTotalMarketValueMovement) today
+                                </span>
+                            }
+                        </Typography>
                     }
                     else
                     {
@@ -109,6 +123,20 @@ else
                     @if (InventoryTotalProfitValue > 0)
                     {
                         @State.ToLocalPriceText(InventoryTotalProfitValue, State.CurrencyLocal)
+                        <Typography Variant="@TypographyVariant.Body2">
+                            @if (InventoryTotalProfitMovement > 0)
+                            {
+                                <span class="Text-Success">
+                                    🡱 +@(InventoryTotalProfitMovement) today
+                                </span>
+                            }
+                            @if (InventoryTotalProfitMovement < 0)
+                            {
+                            <span class="Text-Error">
+                                🡳 -@(InventoryTotalProfitMovement) today
+                            </span>
+                            }
+                        </Typography>
                     }
                     else
                     {
@@ -135,7 +163,12 @@ else
                 <Grid ExtraSmall="@GridSize.Twelve">
                     @if (InventoryActivity != null)
                     {
-                        
+                        @foreach(var activity in InventoryActivity.OrderBy(x => x.Key.Timestamp))
+                        {
+                            <p>
+                                <strong>@activity.Value.Name</strong> moved <strong>@activity.Key.Movement</strong> @((DateTimeOffset.Now - activity.Key.Timestamp).ToDurationString()) ago
+                            </p>
+                        }
                     }
                 </Grid>
             </Grid>
@@ -166,6 +199,10 @@ else
     private long InventoryTotalResellValue { get; set; }
 
     private long InventoryTotalProfitValue { get; set; }
+
+    private long InventoryTotalMarketValueMovement { get; set; }
+
+    private long InventoryTotalProfitMovement { get; set; }
 
     private IDictionary<MarketItemActivityDTO, MarketItemListDTO> InventoryActivity { get; set; }
 
@@ -202,7 +239,7 @@ else
         await JSRuntime.InvokeAsync<object>("open", url, "_blank");
     }
 
-    private void RecalculateTotals()
+    private void RecalculateActivity()
     {
         if (InventoryItems?.Any() == true)
         {
@@ -221,7 +258,7 @@ else
         }
     }
 
-    private void RecalculateActivity()
+    private void RecalculateTotals()
     {
         if (InventoryItems?.Any() == true)
         {
@@ -234,6 +271,22 @@ else
             InventoryTotalProfitValue = itemsOnMarket.Where(x => x.BuyPrice > 0).Sum(x =>
                 State.ToLocalPrice(x.MarketItem.ResellPrice, x.MarketItem.Currency) - State.ToLocalPrice(x.MarketItem.ResellTax, x.MarketItem.Currency) - State.ToLocalPrice(x.BuyPrice ?? 0, x.Currency)
             );
+            if (Profile.ValueHistoryGraph?.Any() == true)
+            {
+                InventoryTotalMarketValueMovement = ((long)Profile.ValueHistoryGraph.Reverse().First().Value - (long)Profile.ValueHistoryGraph.Reverse().Skip(1).First().Value);
+            }
+            else
+            {
+                InventoryTotalMarketValueMovement = 0;
+            }
+            if (Profile.ValueProfitGraph?.Any() == true)
+            {
+                InventoryTotalProfitMovement = ((long)Profile.ValueProfitGraph.Reverse().First().Value - (long)Profile.ValueProfitGraph.Reverse().Skip(1).First().Value);
+            }
+            else
+            {
+                InventoryTotalProfitMovement = 0;
+            }
         }
         else
         {
@@ -242,6 +295,8 @@ else
             InventoryTotalMarketValue = 0;
             InventoryTotalResellValue = 0;
             InventoryTotalProfitValue = 0;
+            InventoryTotalMarketValueMovement = 0;
+            InventoryTotalProfitMovement = 0;
         }
     }
 
