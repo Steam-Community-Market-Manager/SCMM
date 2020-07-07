@@ -335,9 +335,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             AllTimeLowestValueOn = allTimeLow?.Timestamp;
             FirstSeenOn = salesSorted.FirstOrDefault()?.Timestamp;
 
-            if (last48hrs != null)
+            if (last24hrs != null)
             {
-                RecalculateActivity(last48hrs);
+                RecalculateActivity(last24hrs);
             }
 
             if (sales != null)
@@ -359,19 +359,28 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             }
 
             Activity.Clear();
-            var previousPrice = salesSorted.FirstOrDefault().Price;
-            foreach (var sale in salesSorted.Skip(1))
+            if (salesSorted.Any())
             {
-                Activity.Add(
-                    new SteamMarketItemActivity()
+                var previousPrice = (salesSorted.FirstOrDefault()?.Price ?? 0);
+                foreach (var sale in salesSorted.Skip(1).ToArray())
+                {
+                    var movement = (sale.Price - previousPrice);
+                    previousPrice = sale.Price;
+                    if (movement == 0)
                     {
-                        Timestamp = sale.Timestamp,
-                        Movement = (sale.Price - previousPrice),
-                        ItemId = Id,
-                        Item = this
+                        continue;
                     }
-                );
-                previousPrice = sale.Price;
+
+                    Activity.Add(
+                        new SteamMarketItemActivity()
+                        {
+                            Timestamp = sale.Timestamp,
+                            Movement = movement,
+                            ItemId = Id,
+                            Item = this
+                        }
+                    );
+                }
             }
         }
     }
