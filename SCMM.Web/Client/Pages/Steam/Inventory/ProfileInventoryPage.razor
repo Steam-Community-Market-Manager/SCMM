@@ -132,9 +132,9 @@ else
                             }
                             @if (InventoryTotalProfitMovement < 0)
                             {
-                            <span class="Text-Error">
-                                🡳 -@(InventoryTotalProfitMovement) today
-                            </span>
+                                <span class="Text-Error">
+                                    🡳 -@(InventoryTotalProfitMovement) today
+                                </span>
                             }
                         </Typography>
                     }
@@ -163,11 +163,19 @@ else
                 <Grid ExtraSmall="@GridSize.Twelve">
                     @if (InventoryActivity != null)
                     {
-                        @foreach(var activity in InventoryActivity.OrderBy(x => x.Key.Timestamp))
+                        @foreach(var activity in InventoryActivity.Where(x => x.Key.Movement != 0).OrderByDescending(x => x.Key.Timestamp))
                         {
-                            <p>
-                                <strong>@activity.Value.Name</strong> moved <strong>@activity.Key.Movement</strong> @((DateTimeOffset.Now - activity.Key.Timestamp).ToDurationString()) ago
-                            </p>
+                            @if(activity.Key.Movement > 0) {
+                                <p class="Text-Success">
+                                    <strong>@activity.Value.Name</strong> 🡱 +<strong>@Math.Abs(activity.Key.Movement)</strong> <span style="float:right">@((DateTimeOffset.Now - activity.Key.Timestamp).ToDurationString()) ago</span>
+                                </p>
+                            }
+                            else 
+                            {
+                                <p class="Text-Error">
+                                    <strong>@activity.Value.Name</strong> 🡳 -<strong>@Math.Abs(activity.Key.Movement)</strong> <span style="float:right">@((DateTimeOffset.Now - activity.Key.Timestamp).ToDurationString()) ago</span>
+                                </p>
+                            }
                         }
                     }
                 </Grid>
