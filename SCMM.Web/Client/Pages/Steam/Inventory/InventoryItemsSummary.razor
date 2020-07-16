@@ -1,0 +1,93 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@inherits ComponentBase
+@inject IJSRuntime JSRuntime
+
+<style>
+
+    .Item-Summary-Root {
+        display: inline-flex;
+        flex-direction: column;
+        align-content: center;
+        align-items: center;
+        width: 104px;
+        height: 128px;
+        margin: 8px;
+        border-radius: 3px;
+        background-color: var(--theme-palette-background-paper, #fff);
+    }
+
+    .Item-Summary-Root:hover
+    {
+        background-color: #666666;
+        cursor: pointer;
+    }
+
+    .Item-Summary-Root img {
+        margin: calc(var(--theme-spacing, 6) * 2px);
+        max-width: 72px;
+        max-height: 72px;
+    }
+
+    .Item-Summary-Badge
+    {
+        margin: calc(var(--theme-spacing, 6) * 2px);
+    }
+    
+    .Item-Summary-Badge > .Badge-Top-Right-Rectangle 
+    {
+        top: calc(var(--theme-spacing, 6) * 2px);
+        right: calc(var(--theme-spacing, 6) * 2px);
+    }
+
+    .Item-Summary-Badge img
+    {
+        margin: 0px;
+    }
+
+</style>
+
+<div style="padding:8px">
+    @foreach (var item in Items.Where(x => x.Key.IconUrl != null))
+    { 
+        <div class="Item-Summary-Root" style="@GetItemStyles(item.Key)" @onclick="@((_) => OnItemClicked(item.Key))">
+            @if (item.Value > 1)
+            {
+                <Badge Class="Item-Summary-Badge"
+                       Badge="@item.Value.ToString()"
+                       Color="@Color.Primary">
+                    <img src="@item.Key.IconUrl" />
+                </Badge>
+            }
+            else
+            {
+                <img src="@item.Key.IconUrl" />
+            }
+            <Typography Variant="@TypographyVariant.Body2">
+                @State.ToLocalPriceText(item.Key.Last1hrValue, item.Key.Currency)
+            </Typography>
+        </div>
+    }
+</div>
+
+@code {
+
+    [CascadingParameter]
+    public AppState State { get; set; }
+
+    [Parameter]
+    public IDictionary<MarketItemListDTO, int> Items { get; set; }
+
+    private string GetItemStyles(MarketItemListDTO item)
+    {
+        return $"border: 2px solid {item.ForegroundColour}";
+    }
+
+    private async Task OnItemClicked(MarketItemListDTO item)
+    {
+        //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
+
+}

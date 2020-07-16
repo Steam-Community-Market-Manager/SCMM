@@ -92,11 +92,11 @@ else
                                   IndicatorColor="@Color.Primary"
                                   TextColor="@Color.Primary"
                                   Variant="@TabsVariant.FullWidth">
-                                <Tab Value="0" Label="Sales Revenue" />
-                                <Tab Value="1" Label="Popular Now" />
-                                <Tab Value="2" Label="Popular This Week" />
+                                <Tab Id="store-tab" Control="store-tab-panel" Value="0" Label="Sales Revenue" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel" Value="1" Label="Popular Now" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel" Value="2" Label="Popular This Week" Wrapped />
                             </Tabs>
-                            <TabPanel Value="@SelectedItemChartPanel" Index="0">
+                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
                                 @if (ItemRevenueChart != null)
                                 {
                                     <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
@@ -111,13 +111,13 @@ else
                                     <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
                                 }
                             </TabPanel>
-                            <TabPanel Value="@SelectedItemChartPanel" Index="1">
+                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
                                 @if (ItemRankChart != null)
                                 {
                                     <ChartJsBarChart @ref="ItemRankChartJs" Config="@ItemRankChart" />
                                 }
                             </TabPanel>
-                            <TabPanel Value="@SelectedItemChartPanel" Index="2">
+                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
                                 @if (ItemRankHistoryChart != null)
                                 {
                                     <ChartJsLineChart @ref="ItemRankHistoryChartJs" Config="@ItemRankHistoryChart" />

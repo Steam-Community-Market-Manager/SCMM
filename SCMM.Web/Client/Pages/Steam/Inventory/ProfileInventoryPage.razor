@@ -145,41 +145,38 @@ else
                 </Total>
             </InventoryTotalCard>
         </Grid>
-        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-            <TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
-                       Placeholder="Type an item name to filter the inventory list" />
-            <Paper>
-                <InventoryItemsTable Items="@InventoryItems" />
-            </Paper>
-        </Grid>
-        <Grid Container Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-            <Grid Container>
-                <Grid ExtraSmall="@GridSize.Twelve">
-                    @if (TotalHistoryChart != null)
-                    {
-                        <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
-                    }
-                </Grid>
-                <Grid ExtraSmall="@GridSize.Twelve">
-                    @if (InventoryActivity != null)
-                    {
-                        @foreach(var activity in InventoryActivity.Where(x => x.Key.Movement != 0).OrderByDescending(x => x.Key.Timestamp))
-                        {
-                            @if(activity.Key.Movement > 0) {
-                                <p class="Text-Success">
-                                    <strong>@activity.Value.Name</strong> 🡱 +<strong>@Math.Abs(activity.Key.Movement)</strong> <span style="float:right">@((DateTimeOffset.Now - activity.Key.Timestamp).ToDurationString()) ago</span>
-                                </p>
-                            }
-                            else 
-                            {
-                                <p class="Text-Error">
-                                    <strong>@activity.Value.Name</strong> 🡳 -<strong>@Math.Abs(activity.Key.Movement)</strong> <span style="float:right">@((DateTimeOffset.Now - activity.Key.Timestamp).ToDurationString()) ago</span>
-                                </p>
-                            }
-                        }
-                    }
-                </Grid>
-            </Grid>
+        <Grid Item ExtraSmall="@GridSize.Twelve">
+            <Tabs Value="@SelectedInventoryPanel"
+                  OnChange="@OnSelectedInventoryPanelChanged"
+                  IndicatorColor="@Color.Primary"
+                  TextColor="@Color.Primary"
+                  Variant="@TabsVariant.FullWidth">
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Summary" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Return on investment" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Market performance" Wrapped />
+            </Tabs>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
+                @if (InventoryItemsSummary != null)
+                {
+                    <InventoryItemsSummary Items = "@InventoryItemsSummary" />
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
+                @if (InventoryItemsDetailed != null)
+                {
+                    <TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
+                               Placeholder="Type an item name to filter the inventory list" />
+                    <Paper>
+                        <InventoryItemsTable Items="@InventoryItemsDetailed" />
+                    </Paper>
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
+                @if (TotalHistoryChart != null)
+                {
+                    <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
+                }
+            </TabPanel>
         </Grid>
     </Grid>
 }
@@ -196,7 +193,13 @@ else
 
     private bool ProfileNotFound { get; set; }
 
+    private object SelectedInventoryPanel { get; set; } = 0;
+
     private InventoryItemListDTO[] InventoryItems { get; set; }
+
+    private IDictionary<MarketItemListDTO, int> InventoryItemsSummary { get; set; }
+
+    private InventoryItemListDTO[] InventoryItemsDetailed { get; set; }
 
     private int InventoryTotalItemCount { get; set; }
 
@@ -227,8 +230,7 @@ else
             {
                 InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
                 RecalculateTotals();
-                RecalculateActivity();
-                RedrawTotalHistoryChart();
+                OnSelectedInventoryPanelChanged(SelectedInventoryPanel);
             }
         }
         catch (AccessTokenNotAvailableException exception)
@@ -247,23 +249,19 @@ else
         await JSRuntime.InvokeAsync<object>("open", url, "_blank");
     }
 
-    private void RecalculateActivity()
+    private void OnSelectedInventoryPanelChanged(object value)
     {
-        if (InventoryItems?.Any() == true)
+        SelectedInventoryPanel = value;
+        InventoryItemsSummary = null;
+        InventoryItemsDetailed = null;
+        TotalHistoryChart = null;
+        switch (SelectedInventoryPanel)
         {
-            InventoryActivity = new Dictionary<MarketItemActivityDTO, MarketItemListDTO>();
-            foreach (var item in InventoryItems.Where(x => x.MarketItem != null))
-            {
-                foreach (var activity in item.MarketItem.Activity)
-                {
-                    InventoryActivity[activity] = item.MarketItem;
-                }
-            }
+            case 0: RecalculateItemsSummary();  break;
+            case 1: RecalculateItemsDetailed();  break;
+            case 2: RedrawTotalHistoryChart(); break;
         }
-        else
-        {
-            InventoryActivity = null;
-        }
+        StateHasChanged();
     }
 
     private void RecalculateTotals()
@@ -305,6 +303,56 @@ else
             InventoryTotalProfitValue = 0;
             InventoryTotalMarketValueMovement = 0;
             InventoryTotalProfitMovement = 0;
+        }
+    }
+
+    private void RecalculateItemsSummary()
+    {
+        if (InventoryItems?.Any() == true)
+        {
+            InventoryItemsSummary = new Dictionary<MarketItemListDTO, int>();
+            var marketItems = InventoryItems
+                .Select(x => x.MarketItem)
+                .Where(x => x != null)
+                .OrderByDescending(x => x.Last1hrValue);
+
+            foreach (var marketItem in marketItems)
+            {
+                if (!InventoryItemsSummary.Any(x => x.Key.SteamId == marketItem.SteamId))
+                {
+                    InventoryItemsSummary[marketItem] = InventoryItems
+                        .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
+                        .Sum(x => x.Quantity);
+                }
+            }
+        }
+        else
+        {
+            InventoryItemsSummary = null;
+        }
+    }
+
+    private void RecalculateItemsDetailed()
+    {
+        InventoryItemsDetailed = InventoryItems;
+    }
+
+    private void RecalculateActivity()
+    {
+        if (InventoryItems?.Any() == true)
+        {
+            InventoryActivity = new Dictionary<MarketItemActivityDTO, MarketItemListDTO>();
+            foreach (var item in InventoryItems.Where(x => x.MarketItem != null))
+            {
+                foreach (var activity in item.MarketItem.Activity)
+                {
+                    InventoryActivity[activity] = item.MarketItem;
+                }
+            }
+        }
+        else
+        {
+            InventoryActivity = null;
         }
     }
 
@@ -363,7 +411,8 @@ else
                             Ticks = new LinearCartesianTicks()
                             {
                                 Display = true,
-                                FontColor = "#ffffff"
+                                FontColor = "#ffffff",
+                                BeginAtZero = true
                             },
                             ScaleLabel = new ScaleLabel()
                             {
@@ -421,5 +470,4 @@ else
             TotalHistoryChart.Data.Datasets.Add(totalValueDataSet);
         }
     }
-
 }
