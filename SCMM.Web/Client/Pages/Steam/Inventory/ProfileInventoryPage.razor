@@ -49,102 +49,86 @@ else
                 </Total>
             </InventoryTotalCard>
         </Grid>
+        @if (InventoryTotalInvestedValue > 0)
+        {
         <Grid ExtraSmall="@GridSize.Two">
-            <InventoryTotalCard Title="Total Investment Value" IconClass="Background-Error">
+            <InventoryTotalCard Title="Total Investment" IconClass="Background-Error">
                 <Icon>
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @if (InventoryTotalInvestedValue > 0)
-                    {
-                        @State.ToLocalPriceText(InventoryTotalInvestedValue, State.CurrencyLocal)
-                    }
-                    else
-                    {
-                        <span>-</span>
-                    }
+                    @State.ToLocalPriceText(InventoryTotalInvestedValue, State.CurrencyLocal)
                 </Total>
             </InventoryTotalCard>
         </Grid>
+        }
+        @if (InventoryTotalMarketValue > 0)
+        {
         <Grid ExtraSmall="@GridSize.Two">
-            <InventoryTotalCard Title="Current Market Value" IconClass="Background-Info">
+            <InventoryTotalCard Title="Total Market Value" IconClass="Background-Info">
                 <Icon>
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @if (InventoryTotalMarketValue > 0)
-                    {
-                        @State.ToLocalPriceText(InventoryTotalMarketValue, State.CurrencyLocal)
-                        <Typography Variant="@TypographyVariant.Body2">
-                            @if (InventoryTotalMarketValueMovement > 0)
-                            {
-                                <span class="Text-Success">
-                                    🡱 +@(InventoryTotalMarketValueMovement) today
-                                </span>
-                            }
-                            @if (InventoryTotalMarketValueMovement < 0)
-                            {
-                                <span class="Text-Error">
-                                    🡳 -@(InventoryTotalMarketValueMovement) today
-                                </span>
-                            }
-                        </Typography>
-                    }
-                    else
-                    {
-                        <span>-</span>
-                    }
+                    @State.ToLocalPriceText(InventoryTotalMarketValue, State.CurrencyLocal)
+                    <Typography Variant="@TypographyVariant.Body2">
+                        @if (InventoryTotalMarketValueMovement > 0)
+                        {
+                            <span class="Text-Success">
+                                🡱 @State.ToLocalPriceText(InventoryTotalMarketValueMovement, State.CurrencyLocal) today
+                            </span>
+                        }
+                        @if (InventoryTotalMarketValueMovement < 0)
+                        {
+                            <span class="Text-Error">
+                                🡳 @State.ToLocalPriceText(InventoryTotalMarketValueMovement, State.CurrencyLocal) today
+                            </span>
+                        }
+                    </Typography>
                 </Total>
             </InventoryTotalCard>
         </Grid>
+        }
+        @if (InventoryTotalResellValue > 0)
+        {
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryTotalCard Title="Optimistic Resell Value" IconClass="Background-Success">
                 <Icon>
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @if (InventoryTotalResellValue > 0)
-                    {
-                        @State.ToLocalPriceText(InventoryTotalResellValue, State.CurrencyLocal)
-                    }
-                    else
-                    {
-                        <span>-</span>
-                    }
+                    @State.ToLocalPriceText(InventoryTotalResellValue, State.CurrencyLocal)
                 </Total>
             </InventoryTotalCard>
         </Grid>
+        }
+        @if (InventoryTotalProfitValue > 0)
+        {
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryTotalCard Title="Optimistic Resell Profit" IconClass="Background-Success">
                 <Icon>
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @if (InventoryTotalProfitValue > 0)
-                    {
-                        @State.ToLocalPriceText(InventoryTotalProfitValue, State.CurrencyLocal)
-                        <Typography Variant="@TypographyVariant.Body2">
-                            @if (InventoryTotalProfitMovement > 0)
-                            {
-                                <span class="Text-Success">
-                                    🡱 +@(InventoryTotalProfitMovement) today
-                                </span>
-                            }
-                            @if (InventoryTotalProfitMovement < 0)
-                            {
-                                <span class="Text-Error">
-                                    🡳 -@(InventoryTotalProfitMovement) today
-                                </span>
-                            }
-                        </Typography>
-                    }
-                    else
-                    {
-                        <span>-</span>
-                    }
+                    @State.ToLocalPriceText(InventoryTotalProfitValue, State.CurrencyLocal)
+                    <Typography Variant="@TypographyVariant.Body2">
+                        @if (InventoryTotalProfitMovement > 0)
+                        {
+                            <span class="Text-Success">
+                                🡱 @State.ToLocalPriceText(InventoryTotalProfitMovement, State.CurrencyLocal) today
+                            </span>
+                        }
+                        @if (InventoryTotalProfitMovement < 0)
+                        {
+                            <span class="Text-Error">
+                                🡳 @State.ToLocalPriceText(InventoryTotalProfitMovement, State.CurrencyLocal) today
+                            </span>
+                        }
+                    </Typography>
                 </Total>
             </InventoryTotalCard>
         </Grid>
+        }
         <Grid Item ExtraSmall="@GridSize.Twelve">
             <Tabs Value="@SelectedInventoryPanel"
                   OnChange="@OnSelectedInventoryPanelChanged"
@@ -153,7 +137,8 @@ else
                   Variant="@TabsVariant.FullWidth">
                 <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Summary" Wrapped />
                 <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Return on investment" Wrapped />
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Market performance" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Market activity" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Market performance" Wrapped />
             </Tabs>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
                 @if (InventoryItemsSummary != null)
@@ -164,14 +149,18 @@ else
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
                 @if (InventoryItemsDetailed != null)
                 {
-                    <TextField Class="Search-Text" Variant="@TextFieldVariant.Outlined" Margin="@Margin.None"
-                               Placeholder="Type an item name to filter the inventory list" />
                     <Paper>
                         <InventoryItemsTable Items="@InventoryItemsDetailed" />
                     </Paper>
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
+                @if ((int)SelectedInventoryPanel == 2)
+                {
+                    <p>Work in progress, check back later...</p>
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
                 @if (TotalHistoryChart != null)
                 {
                     <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
@@ -259,7 +248,8 @@ else
         {
             case 0: RecalculateItemsSummary();  break;
             case 1: RecalculateItemsDetailed();  break;
-            case 2: RedrawTotalHistoryChart(); break;
+            case 2: break;
+            case 3: RedrawTotalHistoryChart(); break;
         }
         StateHasChanged();
     }
@@ -443,7 +433,7 @@ else
                 PointBorderWidth = 2,
                 PointRadius = 8,
                 LineTension = 0.1,
-                Fill = true,
+                Fill = true
             };
             totalProfitDataSet.AddRange(
                 Profile.ValueProfitGraph.Values.Select(x => (DoubleWrapper)x).ToList()
@@ -462,7 +452,7 @@ else
                 PointBorderWidth = 2,
                 PointRadius = 8,
                 LineTension = 0.1,
-                Fill = true,
+                Fill = true
             };
             totalValueDataSet.AddRange(
                 Profile.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
