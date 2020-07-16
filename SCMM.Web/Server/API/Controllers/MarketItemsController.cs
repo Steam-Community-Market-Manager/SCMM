@@ -37,7 +37,7 @@ namespace SCMM.Web.Server.API.Controllers
             [FromQuery] int page = 0, 
             [FromQuery] int pageSize = 25)
         {
-            filter = filter?.Trim();
+            filter = Uri.EscapeDataString(filter?.Trim() ?? String.Empty);
             page = Math.Max(0, page);
             pageSize = Math.Max(0, Math.Min(1000, pageSize));
 
@@ -239,7 +239,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.AllTimeHighestValueOn < now)
+                .Where(x => x.AllTimeLowestValueOn > x.AllTimeHighestValueOn)
                 .Where(x => x.Last1hrValue < x.AllTimeHighestValue)
                 .OrderBy(x => x.Last1hrValue - x.AllTimeHighestValue)
                 .Take(10)
