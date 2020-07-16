@@ -1,0 +1,69 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@using SCMM.Web.Shared;
+@inherits ComponentBase
+
+@if (Items != null)
+{
+    <Paper>
+        <Table StickyHeader Size="@Size.Small">
+            <TableHead>
+                <TableRow>
+                    <TableCell></TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Activity</TableCell>
+                    <TableCell>When</TableCell>
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                @foreach (var item in Items.Take(100))
+                { 
+                <TableRow>
+                    <TableCell Class="@GetItemClass(item.Key)">
+                        <img src="@item.Value.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                    </TableCell>
+                    <TableCell Component="th" Scope="row" Class="@GetItemClass(item.Key)">
+                        <strong>@item.Value.Name</strong>
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item.Key)">
+                        @if (item.Key.Movement > 0)
+                        {
+                            <span>🡱 increased by @State.ToLocalPriceText(item.Key.Movement, item.Value.Currency)</span>
+                        }
+                        else
+                        {
+                            <span>🡳 dropped by @State.ToLocalPriceText(item.Key.Movement, item.Value.Currency)</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item.Key)">
+                        <span>about @((DateTimeOffset.Now - item.Key.Timestamp).ToDurationString()) ago</span>
+                    </TableCell>
+                </TableRow>
+                }
+            </TableBody>
+        </Table>
+    </Paper>
+}
+
+@code {
+
+    [CascadingParameter]
+    public AppState State { get; set; }
+
+    [Parameter]
+    public IDictionary<MarketItemActivityDTO, MarketItemListDTO> Items { get; set; }
+
+    private string GetItemClass(MarketItemActivityDTO item)
+    {
+        if (item.Movement > 0)
+        {
+            return "Text-Success";
+        }
+        if (item.Movement < 0)
+        {
+            return "Text-Error";
+        }
+        return null;
+    }
+
+}

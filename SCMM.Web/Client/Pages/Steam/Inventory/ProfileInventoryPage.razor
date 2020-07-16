@@ -143,7 +143,7 @@ else
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
                 @if (InventoryItemsSummary != null)
                 {
-                    <InventoryItemsSummary Items = "@InventoryItemsSummary" />
+                    <InventoryItemsSummary Items="@InventoryItemsSummary" />
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
@@ -157,7 +157,7 @@ else
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
                 @if ((int)SelectedInventoryPanel == 2)
                 {
-                    <p>Work in progress, check back later...</p>
+                    <InventoryItemsActivity Items="@InventoryActivity" />
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
@@ -219,6 +219,7 @@ else
             {
                 InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
                 RecalculateTotals();
+                RecalculateActivity();
                 OnSelectedInventoryPanelChanged(SelectedInventoryPanel);
             }
         }
@@ -334,11 +335,15 @@ else
             InventoryActivity = new Dictionary<MarketItemActivityDTO, MarketItemListDTO>();
             foreach (var item in InventoryItems.Where(x => x.MarketItem != null))
             {
-                foreach (var activity in item.MarketItem.Activity)
+                foreach (var activity in item.MarketItem.Activity.Where(x => x.Movement != 0))
                 {
                     InventoryActivity[activity] = item.MarketItem;
                 }
             }
+            InventoryActivity = InventoryActivity.OrderByDescending(x => x.Key.Timestamp).ToDictionary(
+                x => x.Key,
+                x => x.Value
+            );
         }
         else
         {
