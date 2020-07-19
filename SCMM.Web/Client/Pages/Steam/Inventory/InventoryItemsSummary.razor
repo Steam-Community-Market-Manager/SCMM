@@ -48,7 +48,7 @@
 </style>
 
 <div style="padding:8px">
-    @foreach (var item in Items.Where(x => x.Key.IconUrl != null))
+    @foreach (var item in Items)
     { 
         <div class="Item-Summary-Root" style="@GetItemStyles(item.Key)" @onclick="@((_) => OnItemClicked(item.Key))">
             @if (item.Value > 1)
