@@ -29,8 +29,17 @@ namespace SCMM.Web.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddApplicationInsightsTelemetry(
-                Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"]
+            services.AddApplicationInsightsTelemetry(options =>
+                {
+                    options.InstrumentationKey = Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+                    options.EnableAppServicesHeartbeatTelemetryModule = false;
+                    options.EnableAzureInstanceMetadataTelemetryModule = true;
+                    options.EnableDependencyTrackingTelemetryModule = false;
+                    options.EnableEventCounterCollectionModule = false;
+                    options.EnablePerformanceCounterCollectionModule = false;
+                    options.EnableRequestTrackingTelemetryModule = true;
+                    options.RequestCollectionOptions.TrackExceptions = true;
+                }
             );
 
             var steamConfiguration = Configuration.GetSteamConfiguration();
