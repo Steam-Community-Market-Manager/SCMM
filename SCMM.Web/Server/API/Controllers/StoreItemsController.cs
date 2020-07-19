@@ -32,12 +32,13 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<StoreItemListDTO> Get()
         {
             var currency = _db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-            var latestWeek = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
+            var latestStoreEnd = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
+            var latestStoreStart = latestStoreEnd.Subtract(TimeSpan.FromDays(2));
             var items = _db.SteamStoreItems
                 .Include(x => x.App)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
-                .Where(x => x.Description.WorkshopFile.AcceptedOn == latestWeek)
+                .Where(x => x.Description.WorkshopFile.AcceptedOn >= latestStoreStart && x.Description.WorkshopFile.AcceptedOn <= latestStoreEnd)
                 .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
                 .Take(100)
                 .Select(x => _mapper.Map<StoreItemListDTO>(x))

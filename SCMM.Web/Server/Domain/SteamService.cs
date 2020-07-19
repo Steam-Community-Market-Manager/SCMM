@@ -200,6 +200,13 @@ namespace SCMM.Web.Server.Domain
                 return null;
             }
 
+            var language = _db.SteamLanguages
+                .FirstOrDefault(x => x.IsDefault);
+            if (language == null)
+            {
+                return null;
+            }
+
             var apps = _db.SteamApps.ToList();
             if (!apps.Any())
             {
@@ -228,12 +235,7 @@ namespace SCMM.Web.Server.Domain
                     .ToList();
                 foreach (var asset in missingAssets)
                 {
-                    var description = inventory.Descriptions.FirstOrDefault(x => x.ClassId == asset.ClassId);
-                    if (description == null)
-                    {
-                        continue;
-                    }
-                    var assetDescription = await AddOrUpdateAssetDescription(app, description);
+                    var assetDescription = await AddOrUpdateAssetDescription(app, language, UInt64.Parse(asset.ClassId));
                     if (assetDescription == null)
                     {
                         continue;
