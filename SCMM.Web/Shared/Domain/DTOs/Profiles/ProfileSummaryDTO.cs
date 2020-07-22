@@ -1,11 +1,7 @@
-﻿using System;
-
-namespace SCMM.Web.Shared.Domain.DTOs
+﻿namespace SCMM.Web.Shared.Domain.DTOs.Profiles
 {
-    public class ProfileDTO
+    public class ProfileSummaryDTO
     {
-        public Guid Id { get; set; }
-
         public string SteamId { get; set; }
 
         public string ProfileId { get; set; }
@@ -15,7 +11,5 @@ namespace SCMM.Web.Shared.Domain.DTOs
         public string AvatarUrl { get; set; }
 
         public string AvatarLargeUrl { get; set; }
-
-        public string Country { get; set; }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Shared.Domain.DTOs.Currencies;
+using SCMM.Web.Shared.Domain.DTOs.Languages;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,13 +13,13 @@ namespace SCMM.Web.Server.API.Controllers
     [AllowAnonymous]
     [ApiController]
     [Route("[controller]")]
-    public class CurrencyController : ControllerBase
+    public class LanguageController : ControllerBase
     {
-        private readonly ILogger<CurrencyController> _logger;
+        private readonly ILogger<LanguageController> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMapper _mapper;
 
-        public CurrencyController(ILogger<CurrencyController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
+        public LanguageController(ILogger<LanguageController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -27,14 +27,14 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<CurrencyListDTO> Get()
+        public IEnumerable<LanguageListDTO> Get()
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamCurrencies
+                return db.SteamLanguages
                     .OrderBy(x => x.Name)
-                    .Select(x => _mapper.Map<CurrencyListDTO>(x))
+                    .Select(x => _mapper.Map<LanguageListDTO>(x))
                     .ToList();
             }
         }

@@ -44,7 +44,7 @@ else
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Subtitle1" GutterBottom="true">
                                         <i class="fa fa-fw fa-tag"></i>
-                                        @State.ToLocalPriceText(item.StorePrices[State.CurrencyLocal.Name], State.CurrencyLocal)
+                                        @State.ToLocalPriceText(item.StorePrices[State.Currency.Name], State.Currency)
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body2">
                                         @if (item.MarketRankTotal > 0)
@@ -104,7 +104,7 @@ else
                                             <i class="fa fa-fw fa-exclamation-circle"></i>
                                         </Icon>
                                         <MessageContent>
-                                            <span><strong>TL;DR;</strong> Total revenue is at least @(State.ToLocalPriceText(Items.Sum(x => x.Subscriptions * x.StorePrices[State.CurrencyLocal.Name]), State.CurrencyLocal)) so far this week.</span>
+                                            <span><strong>TL;DR;</strong> Total revenue is at least @(State.ToLocalPriceText(Items.Sum(x => x.Subscriptions * x.StorePrices[State.Currency.Name]), State.Currency)) so far this week.</span>
                                             <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher. Steam doesn't advertise exact sales figures, this is the closest estimate.</span>
                                         </MessageContent>
                                     </Alert>
@@ -290,7 +290,7 @@ else
             BorderWidth = 1
         };
         itemRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper) (x.Subscriptions * x.StorePrices[State.CurrencyLocal.Name]))
+            Items.Select(x => (DoubleWrapper) (x.Subscriptions * x.StorePrices[State.Currency.Name]))
         );
 
         ItemRevenueChart.Data.Datasets.AddRange(new[] {

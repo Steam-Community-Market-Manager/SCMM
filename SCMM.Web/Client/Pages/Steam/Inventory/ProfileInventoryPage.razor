@@ -57,7 +57,7 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.ToLocalPriceText(InventoryTotalInvestedValue, State.CurrencyLocal)
+                    @State.ToLocalPriceText(InventoryTotalInvestedValue, State.Currency)
                 </Total>
             </InventoryTotalCard>
         </Grid>
@@ -70,18 +70,18 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.ToLocalPriceText(InventoryTotalMarketValue, State.CurrencyLocal)
+                    @State.ToLocalPriceText(InventoryTotalMarketValue, State.Currency)
                     <Typography Variant="@TypographyVariant.Body2">
                         @if (InventoryTotalMarketValueMovement > 0)
                         {
                             <span class="Text-Success">
-                                🡱 @State.ToLocalPriceText(InventoryTotalMarketValueMovement, State.CurrencyLocal) today
+                                🡱 @State.ToLocalPriceText(InventoryTotalMarketValueMovement, State.Currency) today
                             </span>
                         }
                         @if (InventoryTotalMarketValueMovement < 0)
                         {
                             <span class="Text-Error">
-                                🡳 @State.ToLocalPriceText(InventoryTotalMarketValueMovement, State.CurrencyLocal) today
+                                🡳 @State.ToLocalPriceText(InventoryTotalMarketValueMovement, State.Currency) today
                             </span>
                         }
                     </Typography>
@@ -97,7 +97,7 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.ToLocalPriceText(InventoryTotalResellValue, State.CurrencyLocal)
+                    @State.ToLocalPriceText(InventoryTotalResellValue, State.Currency)
                 </Total>
             </InventoryTotalCard>
         </Grid>
@@ -110,18 +110,18 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.ToLocalPriceText(InventoryTotalProfitValue, State.CurrencyLocal)
+                    @State.ToLocalPriceText(InventoryTotalProfitValue, State.Currency)
                     <Typography Variant="@TypographyVariant.Body2">
                         @if (InventoryTotalProfitMovement > 0)
                         {
                             <span class="Text-Success">
-                                🡱 @State.ToLocalPriceText(InventoryTotalProfitMovement, State.CurrencyLocal) today
+                                🡱 @State.ToLocalPriceText(InventoryTotalProfitMovement, State.Currency) today
                             </span>
                         }
                         @if (InventoryTotalProfitMovement < 0)
                         {
                             <span class="Text-Error">
-                                🡳 @State.ToLocalPriceText(InventoryTotalProfitMovement, State.CurrencyLocal) today
+                                🡳 @State.ToLocalPriceText(InventoryTotalProfitMovement, State.Currency) today
                             </span>
                         }
                     </Typography>

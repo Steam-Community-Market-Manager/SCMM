@@ -25,7 +25,7 @@
                 }
                 else
                 {
-                    <span style="padding-right:5px;">@State.CurrencyLocal.PrefixText</span>
+                    <span style="padding-right:5px;">@State.Currency.PrefixText</span>
                 }
             </StartAdornment>
         </InputBase>
@@ -119,11 +119,11 @@
         var buyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value);
         if (buyPrice != Item.BuyPrice)
         {
-            Item.Currency = State.CurrencyLocal;
+            Item.Currency = State.Currency;
             Item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value);
             await Http.PutAsJsonAsync($"InventoryItems/item/{Item.Id}", new UpdateInventoryItemPriceCommand()
             {
-                CurrencyId = State.CurrencyLocal.Id,
+                CurrencyId = State.Currency.Id,
                 Price = value
             });
         }

@@ -2,12 +2,9 @@
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain.DTOs;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
+using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Client
@@ -21,59 +18,101 @@ namespace SCMM.Web.Client
         {
             _storage = storage;
             _http = http;
-
-            ReloadCurrencies();
         }
 
-        public ProfileDTO Profile { get; set; }
+        public string LanguageId { get; set; }
 
-        public CurrencyDetailsDTO[] Currencies { get; set; }
+        public LanguageStateDTO Language { get; set; }
 
-        public CurrencyDetailsDTO CurrencySystem { get; set; }
+        public string CurrencyId { get; set; }
 
-        public CurrencyDetailsDTO CurrencyLocal { get; set; }
+        public CurrencyStateDTO Currency { get; set; }
 
-        public event EventHandler<CurrencyDetailsDTO[]> OnCurrenciesChanged;
+        public string ProfileId { get; set; }
 
-        public async Task ReloadCurrencies()
+        public ProfileStateDTO Profile { get; set; }
+
+        public event EventHandler Changed;
+
+        public bool IsValid => (
+            !String.IsNullOrEmpty(LanguageId) && !String.IsNullOrEmpty(CurrencyId)
+        );
+
+        public async Task LoadAsync()
         {
-            Currencies = await _http.GetFromJsonAsync<CurrencyDetailsDTO[]>($"Currency");
-            if (CurrencySystem == null)
+            try
             {
-                CurrencySystem = Currencies?.FirstOrDefault(x => x.IsDefault);
+                ProfileId = await _storage.GetItemAsync<string>(nameof(ProfileId));
+                LanguageId = await _storage.GetItemAsync<string>(nameof(LanguageId));
+                CurrencyId = await _storage.GetItemAsync<string>(nameof(CurrencyId));
+                Changed?.Invoke(this, new EventArgs());
             }
-            if (CurrencyLocal == null)
+            catch (Exception ex)
             {
-                var localCurrencyId = await _storage.GetItemAsync<string>("currency");
-                if (!String.IsNullOrEmpty(localCurrencyId))
-                {
-                    CurrencyLocal = Currencies?.FirstOrDefault(x => x.SteamId == localCurrencyId);
-                }
-                if (CurrencyLocal == null)
-                {
-                    CurrencyLocal = await TryGuessLocalCurrency();
-                    await SetLocalCurrency(CurrencyLocal);
-                }
+                Console.WriteLine($"Failed to load state. {ex.Message}");
             }
-
-            OnCurrenciesChanged?.Invoke(this, Currencies);
         }
 
-        public async Task SetLocalCurrency(CurrencyDetailsDTO currency)
+        public async Task SaveAsync()
         {
-            CurrencyLocal = currency;
-            if (currency != null)
+            try
             {
-                await _storage.SetItemAsync<string>("currency", currency.SteamId);
+                await _storage.SetItemAsync<string>(nameof(ProfileId), ProfileId);
+                await _storage.SetItemAsync<string>(nameof(LanguageId), LanguageId);
+                await _storage.SetItemAsync<string>(nameof(CurrencyId), CurrencyId);
             }
-            else
+            catch (Exception ex)
             {
-                await _storage.RemoveItemAsync("currency");
+                Console.WriteLine($"Failed to save state. {ex.Message}");
             }
+        }
+
+        public async Task RefreshAsync()
+        {
+            try
+            {
+                // GET 
+                Changed?.Invoke(this, new EventArgs());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to refresh state. {ex.Message}");
+            }
+        }
+
+        public async Task LoginAsync(ProfileSummaryDTO profile, string country, string language, string currency)
+        {
+            try
+            {
+                LanguageId = language;
+                CurrencyId = currency;
+                ProfileId = profile?.SteamId;
+                await SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to set state. {ex.Message}");
+            }
+
+            if (profile != null)
+            {
+                try
+                {
+                    // POST /profile/id
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to upate profile info. {ex.Message}");
+                }
+            }
+
+            await RefreshAsync();
         }
 
         public long ToLocalPrice(long value, CurrencyDTO currency)
         {
+            return value;
+            /*
             var localCurrency = CurrencyLocal;
             var systemCurrency = CurrencySystem;
             var sourceCurrency = Currencies.FirstOrDefault(x => x.Name == currency?.Name);
@@ -97,50 +136,18 @@ namespace SCMM.Web.Client
             }
 
             return (long) Math.Floor(localValue);
+            */
         }
 
         public string ToLocalPriceText(long value, CurrencyDTO currency)
         {
-            var localCurrency = CurrencyLocal;
+            var localCurrency = (this.Currency ?? currency);
             if (localCurrency == null)
             {
                 return null;
             }
 
-            return localCurrency.ToPriceString(ToLocalPrice(value, currency));
-        }
-
-        public async Task<CurrencyDetailsDTO> TryGuessLocalCurrency()
-        {
-            try
-            {
-                var country = await _http.GetStringAsync("https://ipinfo.io/country");
-                if (String.IsNullOrEmpty(country))
-                {
-                    return null;
-                }
-
-                var countryCurrencyTable = await _http.GetFromJsonAsync<IDictionary<string, string>>("/json/country-currency.json");
-                if (countryCurrencyTable == null)
-                {
-                    return null;
-                }
-
-                var currencyName = countryCurrencyTable.FirstOrDefault(x => x.Key == country.Trim()).Value;
-                if (String.IsNullOrEmpty(currencyName))
-                {
-                    return null;
-                }
-
-                var currency = Currencies.FirstOrDefault(x => x.Name == currencyName);
-                Console.WriteLine($"Auto-detected currency: '{currency?.Name}'");
-                return currency ?? CurrencySystem;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to auto-detect currency. Error: {ex.Message}");
-                return CurrencySystem;
-            }
+            return localCurrency?.ToPriceString(ToLocalPrice(value, currency));
         }
     }
 }

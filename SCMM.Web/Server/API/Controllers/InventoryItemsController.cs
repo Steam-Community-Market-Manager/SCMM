@@ -10,11 +10,9 @@ using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
-using SteamWebAPI2.Interfaces;
 using SCMM.Steam.Shared;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -24,11 +22,11 @@ namespace SCMM.Web.Server.API.Controllers
     [Route("[controller]")]
     public class InventoryItemsController : ControllerBase
     {
-        private readonly ILogger<MarketItemsController> _logger;
+        private readonly ILogger<InventoryItemsController> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMapper _mapper;
 
-        public InventoryItemsController(ILogger<MarketItemsController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
+        public InventoryItemsController(ILogger<InventoryItemsController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;

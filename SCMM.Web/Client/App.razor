@@ -5,8 +5,20 @@
 <CascadingValue Value="@State">
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
-            </RouteView>
+            @if (State != null)
+            {
+                @if (State.IsValid)
+                {
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
+                    </RouteView>
+                }
+                else
+                {
+                    <LayoutView Layout="@typeof(LoginLayout)">
+                        <Login />
+                    </LayoutView>
+                }
+            }
         </Found>
         <NotFound>
             <LayoutView Layout="@typeof(ErrorLayout)">
@@ -20,9 +32,20 @@
 
     private AppState State { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        State = new AppState(LocalStorage, Http);
+        try
+        {
+            var appState = new AppState(LocalStorage, Http);
+            await appState.LoadAsync();
+
+            State = appState;
+            State.Changed += (s, e) => StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to initialise app. {ex.Message}");
+        }
     }
 
 }
