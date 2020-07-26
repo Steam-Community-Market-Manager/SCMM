@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject AppState State
- 
+
 <MainLayout>
     <LogoContent>
         <AppLogo />
@@ -110,6 +110,13 @@
                 Disabled = true
             },
             null,
+            {
+                Icon = @<DiscussionIcon />,
+                Title = "Community",
+                SubTitle = "Chat on Discord",
+                Path =  "https://discord.gg/CRMf95Z",
+                Prefix =  false
+            },
             new NavigationItem
             {
                 Icon = @<InformationIcon />,
