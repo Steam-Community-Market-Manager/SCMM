@@ -172,19 +172,19 @@ namespace SCMM.Web.Server
             {
                 if (!context.Items.ContainsKey(ContextKeyCurrency))
                 {
-                    return null;
+                    return (long?) null;
                 }
 
                 var value = valueExpression.Compile().Invoke(src);
                 if (value == null)
                 {
-                    return null;
+                    return (long?) null;
                 }
 
                 var valueCurrency = currencyExpression.Compile().Invoke(src);
                 if (valueCurrency == null)
                 {
-                    return null;
+                    return (long?) null;
                 }
 
                 var targetCurrency = (CurrencyDetailedDTO)context.Items[ContextKeyCurrency];
