@@ -43,7 +43,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .OrderBy(x => x.LastCheckedSalesOn)
-                    .Take(100) // batch 100 at a time
+                    .Take(10) // batch 10 at a time
                     .ToList();
 
                 if (!items.Any())
@@ -63,47 +63,35 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                foreach (var batch in items.Batch(10)) // Batch to 10 per request to avoid server ban
+                foreach (var item in items)
                 {
-                    _logger.LogInformation($"Updating market item sales history (ids: {batch.Count()})");
-                    var batchTasks = batch.Select(x =>
-                        commnityClient.GetMarketPriceHistory(
-                            new SteamMarketPriceHistoryJsonRequest()
-                            {
-                                AppId = x.App.SteamId,
-                                MarketHashName = x.Description.Name,
-                                Language = language.SteamId,
-                                CurrencyId = currency.SteamId,
-                                NoRender = true
-                            }
-                        )
-                        .ContinueWith(t => new
+                    var response = await commnityClient.GetMarketPriceHistory(
+                        new SteamMarketPriceHistoryJsonRequest()
                         {
-                            Item = x,
-                            Response = t.Result
-                        })
-                    ).ToArray();
+                            AppId = item.App.SteamId,
+                            MarketHashName = item.Description.Name,
+                            Language = language.SteamId,
+                            CurrencyId = currency.SteamId,
+                            NoRender = true
+                        }
+                    );
 
-                    Task.WaitAll(batchTasks);
-                    foreach (var task in batchTasks)
+                    try
                     {
-                        try
-                        {
-                            await steamService.UpdateSteamMarketItemSalesHistory(
-                                task.Result.Item,
-                                currency.Id,
-                                task.Result.Response
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"Failed to update market item sales history for '{task.Result.Item.SteamId}'");
-                            continue;
-                        }
+                        await steamService.UpdateSteamMarketItemSalesHistory(
+                            item,
+                            currency.Id,
+                            response
+                        );
                     }
-
-                    await db.SaveChangesAsync();
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'");
+                        continue;
+                    }
                 }
+
+                await db.SaveChangesAsync();
             }
         }
     }

@@ -38,7 +38,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var items = db.SteamMarketItems
                     .Where(x => !String.IsNullOrEmpty(x.SteamId))
                     .OrderBy(x => x.LastCheckedOrdersOn)
-                    .Take(100) // batch 100 at a time
+                    .Take(10) // batch 10 at a time
                     .ToList();
 
                 if (!items.Any())
@@ -58,46 +58,34 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                foreach (var batch in items.Batch(10)) // Batch to 10 per request to avoid server ban
+                foreach (var item in items) 
                 {
-                    _logger.LogInformation($"Updating market item orders (ids: {batch.Count()})");
-                    var batchTasks = batch.Select(x =>
-                        commnityClient.GetMarketItemOrdersHistogram(
-                            new SteamMarketItemOrdersHistogramJsonRequest()
-                            {
-                                ItemNameId = x.SteamId,
-                                Language = language.SteamId,
-                                CurrencyId = currency.SteamId,
-                                NoRender = true
-                            }
-                        )
-                        .ContinueWith(t => new
+                    var response = await commnityClient.GetMarketItemOrdersHistogram(
+                        new SteamMarketItemOrdersHistogramJsonRequest()
                         {
-                            Item = x,
-                            Response = t.Result
-                        })
-                    ).ToArray();
+                            ItemNameId = item.SteamId,
+                            Language = language.SteamId,
+                            CurrencyId = currency.SteamId,
+                            NoRender = true
+                        }
+                    );
 
-                    Task.WaitAll(batchTasks);
-                    foreach (var task in batchTasks)
+                    try
                     {
-                        try
-                        {
-                            await steamService.UpdateSteamMarketItemOrders(
-                                task.Result.Item,
-                                currency.Id,
-                                task.Result.Response
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"Failed to update market item order history for '{task.Result.Item.SteamId}'");
-                            continue;
-                        }
+                        await steamService.UpdateSteamMarketItemOrders(
+                            item,
+                            currency.Id,
+                            response
+                        );
                     }
-
-                    await db.SaveChangesAsync();
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to update market item order history for '{item.SteamId}'");
+                        continue;
+                    }
                 }
+
+                await db.SaveChangesAsync();
             }
         }
     }
