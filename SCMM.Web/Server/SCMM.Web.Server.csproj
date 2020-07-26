@@ -6,6 +6,7 @@
     <ApplicationInsightsResourceId>/subscriptions/c42f13b2-3f25-4a32-a1c1-9bbc323dfa76/resourceGroups/SCMM/providers/microsoft.insights/components/scmm-app-insights</ApplicationInsightsResourceId>
     <Copyright>Copyright 2020 Rhys Koedijk</Copyright>
     <Version>0.3-alpha</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

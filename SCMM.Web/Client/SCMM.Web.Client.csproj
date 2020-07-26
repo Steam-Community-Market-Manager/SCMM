@@ -5,6 +5,7 @@
     <RazorLangVersion>3.0</RazorLangVersion>
     <Version>0.3-alpha</Version>
     <Copyright>Copyright 2020 Rhys Koedijk</Copyright>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
