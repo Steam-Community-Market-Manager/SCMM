@@ -137,11 +137,11 @@ else
         {
         <Grid ExtraSmall="@GridSize.Two" Style="padding:8px">
             <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
-                Last synchronoised @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago
+                Last synchronised @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago
             </Typography>
-            <Button OnClick="@(() => SyncInventory())" 
+            <Button OnClick="@(() => SyncInventory())"
                     Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
-                Synchronoise
+                Synchronise
             </Button>
         </Grid>
         }
