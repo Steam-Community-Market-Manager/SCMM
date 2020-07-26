@@ -58,7 +58,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                foreach (var batch in items.Batch(100))
+                foreach (var batch in items.Batch(10)) // Batch to 10 per request to avoid server ban
                 {
                     _logger.LogInformation($"Updating market item orders (ids: {batch.Count()})");
                     var batchTasks = batch.Select(x =>

@@ -56,7 +56,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(batch.ToList());
                     if (response?.Data?.Any() != true)
                     {
-                        // TODO: Log this
+                        _logger.LogError("Failed to get published file details");
                         continue;
                     }
 

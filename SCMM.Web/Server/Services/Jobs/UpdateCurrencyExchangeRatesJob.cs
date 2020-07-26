@@ -92,7 +92,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     }
 
                     await db.SaveChangesAsync();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(3000); // Delay between requests to avoid server ban
                 }
 
                 await currencyService.RepopulateCache();

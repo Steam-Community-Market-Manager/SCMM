@@ -50,7 +50,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var response = await commnityClient.GetMarketAppFilters(request);
                     if (response?.Success != true)
                     {
-                        // TODO: Log this...
+                        _logger.LogError("Failed to get app filters");
                         continue;
                     }
 

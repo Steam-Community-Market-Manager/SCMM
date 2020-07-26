@@ -61,7 +61,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     );
                     if (response?.Data?.Success != true)
                     {
-                        // TODO: Log this...
+                        _logger.LogError("Failed to get asset prices");
                         continue;
                     }
 
