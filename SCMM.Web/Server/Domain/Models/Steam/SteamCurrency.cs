@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SCMM.Web.Shared;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
 {
-    public class SteamCurrency : Entity
+    public class SteamCurrency : Entity, ICurrency, IExchangeableCurrency
     {
         [Required]
         public string SteamId { get; set; }

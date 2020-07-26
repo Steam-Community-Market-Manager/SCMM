@@ -1,6 +1,7 @@
-﻿using System;
+﻿using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+using System;
 
-namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
+namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
     public class InventoryItemListDTO
     {

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared;
+using SCMM.Web.Server.API.Controllers.Extensions;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
 using System;
@@ -35,9 +36,8 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
                 var latestStoreEnd = db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
-                var latestStoreStart = latestStoreEnd.Subtract(TimeSpan.FromDays(2));
+                var latestStoreStart = latestStoreEnd.Subtract(TimeSpan.FromHours(24));
                 var items = db.SteamStoreItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
@@ -45,12 +45,17 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => x.Description.WorkshopFile.AcceptedOn >= latestStoreStart && x.Description.WorkshopFile.AcceptedOn <= latestStoreEnd)
                     .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
                     .Take(100)
-                    .Select(x => _mapper.Map<StoreItemListDTO>(x))
                     .ToList();
 
+                var itemDtos = items.ToDictionary(
+                    x => x,
+                    x => _mapper.Map<StoreItemListDTO>(x, opt => opt.AddRequest(Request))
+                );
+
                 // TODO: Do this better, very lazy
-                foreach (var item in items.Where(x => x.Tags != null))
+                foreach (var pair in itemDtos.Where(x => x.Value.Tags != null))
                 {
+                    var item = pair.Value;
                     var itemType = String.Empty;
                     if (item.Tags.ContainsKey(SteamConstants.SteamAssetTagItemType))
                     {
@@ -69,7 +74,8 @@ namespace SCMM.Web.Server.API.Controllers
                         continue;
                     }
 
-                    var itemPrice = item.StorePrices.FirstOrDefault(x => x.Key == currency?.Name).Value;
+                    var systemCurrency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
+                    var itemPrice = item.StorePrice;// systemCurrency.ToLocalValue(item.StorePrice, item.Currency);
                     var marketRank = db.SteamApps
                         .Where(x => x.SteamId == item.SteamAppId)
                         .Select(app => new
@@ -91,7 +97,9 @@ namespace SCMM.Web.Server.API.Controllers
                     }
                 }
 
-                return items;
+                return itemDtos
+                    .Select(x => x.Value)
+                    .ToList();
             }
         }
     }

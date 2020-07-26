@@ -2,7 +2,8 @@
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 @using SCMM.Web.Shared;
 @inherits ComponentBase
-
+@inject AppState State
+ 
 @if (Items != null)
 {
     <Paper>
@@ -28,11 +29,11 @@
                     <TableCell Class="@GetItemClass(item.Key)">
                         @if (item.Key.Movement > 0)
                         {
-                            <span>🡱 increased by @State.ToLocalPriceText(item.Key.Movement, item.Value.Currency)</span>
+                            <span>🡱 increased by @item.Value.Currency.ToPriceString(item.Key.Movement)</span>
                         }
                         else
                         {
-                            <span>🡳 dropped by @State.ToLocalPriceText(item.Key.Movement, item.Value.Currency)</span>
+                            <span>🡳 dropped by @item.Value.Currency.ToPriceString(item.Key.Movement)</span>
                         }
                     </TableCell>
                     <TableCell Class="@GetItemClass(item.Key)">
@@ -46,9 +47,6 @@
 }
 
 @code {
-
-    [CascadingParameter]
-    public AppState State { get; set; }
 
     [Parameter]
     public IDictionary<MarketItemActivityDTO, MarketItemListDTO> Items { get; set; }

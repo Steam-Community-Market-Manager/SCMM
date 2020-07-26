@@ -1,32 +1,31 @@
 @inject ILocalStorageService LocalStorage
+@inject AppState AppState
 @inject HttpClient Http
 
 <AppResources />
-<CascadingValue Value="@State">
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            @if (State != null)
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+        @if (State != null)
+        {
+            @if (State.IsValid)
             {
-                @if (State.IsValid)
-                {
-                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
-                    </RouteView>
-                }
-                else
-                {
-                    <LayoutView Layout="@typeof(LoginLayout)">
-                        <Login />
-                    </LayoutView>
-                }
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
+                </RouteView>
             }
-        </Found>
-        <NotFound>
-            <LayoutView Layout="@typeof(ErrorLayout)">
-                <NotFound />
-            </LayoutView>
-        </NotFound>
-    </Router>
-</CascadingValue>
+            else
+            {
+                <LayoutView Layout="@typeof(LoginLayout)">
+                    <Login />
+                </LayoutView>
+            }
+        }
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(ErrorLayout)">
+            <NotFound />
+        </LayoutView>
+    </NotFound>
+</Router>
 
 @code {
 
@@ -36,10 +35,10 @@
     {
         try
         {
-            var appState = new AppState(LocalStorage, Http);
-            await appState.LoadAsync();
+            await AppState.LoadAsync(LocalStorage);
+            await AppState.RefreshAsync(Http);
 
-            State = appState;
+            State = AppState;
             State.Changed += (s, e) => StateHasChanged();
         }
         catch (Exception ex)

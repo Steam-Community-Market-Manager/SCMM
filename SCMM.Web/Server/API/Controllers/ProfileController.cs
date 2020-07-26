@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Web.Server.API.Controllers.Extensions;
+using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
+using System;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -25,8 +28,50 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("me")]
+        public async Task<ProfileDetailedDTO> GetMyState()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var service = scope.ServiceProvider.GetService<SteamService>();
+                
+                var language = Request.Language();
+                if (language == null)
+                {
+                    throw new Exception($"Language '{Request.LanguageId()}' is not supported");
+                }
+
+                var currency = Request.Currency();
+                if (currency == null)
+                {
+                    throw new Exception($"Currency '{Request.CurrencyId()}' is not supported");
+                }
+
+                var profileId = Request.ProfileId();
+                var profileState = new ProfileDetailedDTO()
+                {
+                    Language = language,
+                    Currency = currency,
+                };
+
+                if (!String.IsNullOrEmpty(profileId))
+                {
+                    var profile = await service.AddOrUpdateSteamProfile(profileId);
+                    if (profile == null)
+                    {
+                        throw new Exception($"Profile with Steam ID '{profileId}' was not found");
+                    }
+
+                    _mapper.Map(profile, profileState);
+                }
+
+                return profileState;
+            }
+        }
+
         [HttpGet("steam/{steamId}/summary")]
-        public async Task<ProfileSummaryDTO> GetSteamIdSummary([FromRoute] string steamId)
+        public async Task<ProfileDTO> GetSteamIdSummary([FromRoute] string steamId)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -38,7 +83,7 @@ namespace SCMM.Web.Server.API.Controllers
                     return null;
                 }
 
-                return _mapper.Map<ProfileSummaryDTO>(profile);
+                return _mapper.Map<ProfileDTO>(profile);
             }
         }
     }

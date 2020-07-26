@@ -68,7 +68,10 @@ namespace SCMM.Web.Server
 
             services.AddTransient<SteamCommunityClient>();
             services.AddTransient<SteamService>();
+            services.AddTransient<SteamLanguageService>();
+            services.AddTransient<SteamCurrencyService>();
 
+            services.AddHostedService<RepopulateCacheJob>();
             services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
             services.AddHostedService<CheckForMissingAppFiltersJob>();

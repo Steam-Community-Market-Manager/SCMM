@@ -8,12 +8,13 @@ using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models.Steam;
-using SCMM.Web.Shared.Domain.DTOs;
+using SCMM.Web.Server.Extensions;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using SCMM.Steam.Shared;
+using SCMM.Web.Server.API.Controllers.Extensions;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -47,16 +48,17 @@ namespace SCMM.Web.Server.API.Controllers
                 }
 
                 var mappedProfile = _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(
-                    await service.LoadAndRefreshProfileInventory(steamId)
+                    await service.LoadAndRefreshProfileInventory(steamId),
+                    Request
                 );
 
-                var inventoryValueHistory = await service.LoadInventoryValueHistory(steamId);
+                var inventoryValueHistory = await service.LoadInventoryValueHistory(steamId, Request.Currency());
                 mappedProfile.ValueHistoryGraph = inventoryValueHistory.ToDictionary(
                     x => x.Key.ToString("dd MMM yyyy"),
                     x => x.Value
                 );
 
-                var inventoryProfitHistory = await service.LoadInventoryProfitHistory(steamId);
+                var inventoryProfitHistory = await service.LoadInventoryProfitHistory(steamId, Request.Currency());
                 mappedProfile.ValueProfitGraph = inventoryProfitHistory.ToDictionary(
                     x => x.Key.ToString("dd MMM yyyy"),
                     x => x.Value

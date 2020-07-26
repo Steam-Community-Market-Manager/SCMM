@@ -1,36 +1,31 @@
 ﻿using Blazored.LocalStorage;
-using SCMM.Web.Shared;
-using SCMM.Web.Shared.Domain.DTOs;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
+using SCMM.Web.Shared.Domain.DTOs.Languages;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using System;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Client
 {
     public class AppState
     {
-        private ILocalStorageService _storage;
-        private HttpClient _http;
-
-        public AppState(ILocalStorageService storage, HttpClient http)
-        {
-            _storage = storage;
-            _http = http;
-        }
+        public const string HttpHeaderLanguage = "language";
+        public const string HttpHeaderCurrency = "currency";
+        public const string HttpHeaderProfile  = "profile";
 
         public string LanguageId { get; set; }
 
-        public LanguageStateDTO Language { get; set; }
+        public LanguageDetailedDTO Language => Profile?.Language;
 
         public string CurrencyId { get; set; }
 
-        public CurrencyStateDTO Currency { get; set; }
+        public CurrencyDetailedDTO Currency => Profile?.Currency;
 
         public string ProfileId { get; set; }
 
-        public ProfileStateDTO Profile { get; set; }
+        public ProfileDetailedDTO Profile { get; set; }
 
         public event EventHandler Changed;
 
@@ -38,13 +33,33 @@ namespace SCMM.Web.Client
             !String.IsNullOrEmpty(LanguageId) && !String.IsNullOrEmpty(CurrencyId)
         );
 
-        public async Task LoadAsync()
+        public bool HasProfile => (
+            !String.IsNullOrEmpty(ProfileId) && Profile != null && Profile.Id != Guid.Empty
+        );
+
+        public void SetHeadersFor(HttpClient client)
+        {
+            if (!String.IsNullOrEmpty(LanguageId))
+            {
+                client.DefaultRequestHeaders.Add(HttpHeaderLanguage, LanguageId);
+            }
+            if (!String.IsNullOrEmpty(CurrencyId))
+            {
+                client.DefaultRequestHeaders.Add(HttpHeaderCurrency, CurrencyId);
+            }
+            if (!String.IsNullOrEmpty(ProfileId))
+            {
+                client.DefaultRequestHeaders.Add(HttpHeaderProfile, ProfileId);
+            }
+        }
+
+        public async Task LoadAsync(ILocalStorageService storage)
         {
             try
             {
-                ProfileId = await _storage.GetItemAsync<string>(nameof(ProfileId));
-                LanguageId = await _storage.GetItemAsync<string>(nameof(LanguageId));
-                CurrencyId = await _storage.GetItemAsync<string>(nameof(CurrencyId));
+                ProfileId = await storage.GetItemAsync<string>(nameof(ProfileId));
+                LanguageId = await storage.GetItemAsync<string>(nameof(LanguageId));
+                CurrencyId = await storage.GetItemAsync<string>(nameof(CurrencyId));
                 Changed?.Invoke(this, new EventArgs());
             }
             catch (Exception ex)
@@ -53,13 +68,13 @@ namespace SCMM.Web.Client
             }
         }
 
-        public async Task SaveAsync()
+        public async Task SaveAsync(ILocalStorageService storage)
         {
             try
             {
-                await _storage.SetItemAsync<string>(nameof(ProfileId), ProfileId);
-                await _storage.SetItemAsync<string>(nameof(LanguageId), LanguageId);
-                await _storage.SetItemAsync<string>(nameof(CurrencyId), CurrencyId);
+                await storage.SetItemAsync<string>(nameof(ProfileId), ProfileId ?? String.Empty);
+                await storage.SetItemAsync<string>(nameof(LanguageId), LanguageId ?? String.Empty);
+                await storage.SetItemAsync<string>(nameof(CurrencyId), CurrencyId ?? String.Empty);
             }
             catch (Exception ex)
             {
@@ -67,12 +82,19 @@ namespace SCMM.Web.Client
             }
         }
 
-        public async Task RefreshAsync()
+        public async Task RefreshAsync(HttpClient http)
         {
             try
             {
-                // GET 
-                Changed?.Invoke(this, new EventArgs());
+                if (IsValid)
+                {
+                    SetHeadersFor(http);
+                    Profile = await http.GetFromJsonAsync<ProfileDetailedDTO>(
+                        $"profile/me"
+                    );
+
+                    Changed?.Invoke(this, new EventArgs());
+                }
             }
             catch (Exception ex)
             {
@@ -80,14 +102,14 @@ namespace SCMM.Web.Client
             }
         }
 
-        public async Task LoginAsync(ProfileSummaryDTO profile, string country, string language, string currency)
+        public async Task LoginAsync(HttpClient http, ILocalStorageService storage, ProfileDTO profile, string country, string language, string currency)
         {
             try
             {
                 LanguageId = language;
                 CurrencyId = currency;
                 ProfileId = profile?.SteamId;
-                await SaveAsync();
+                await SaveAsync(storage);
             }
             catch (Exception ex)
             {
@@ -99,6 +121,7 @@ namespace SCMM.Web.Client
                 try
                 {
                     // POST /profile/id
+                    // TODO: This...
                 }
                 catch (Exception ex)
                 {
@@ -106,48 +129,7 @@ namespace SCMM.Web.Client
                 }
             }
 
-            await RefreshAsync();
-        }
-
-        public long ToLocalPrice(long value, CurrencyDTO currency)
-        {
-            return value;
-            /*
-            var localCurrency = CurrencyLocal;
-            var systemCurrency = CurrencySystem;
-            var sourceCurrency = Currencies.FirstOrDefault(x => x.Name == currency?.Name);
-            if (localCurrency == null || systemCurrency == null || sourceCurrency == null)
-            {
-                return 0;
-            }
-
-            decimal localValue = value;
-            if (sourceCurrency != localCurrency)
-            {
-                decimal systemValue = value;
-                if (sourceCurrency != systemCurrency)
-                {
-                    systemValue = (value > 0)
-                        ? ((decimal)value / sourceCurrency.ExchangeRateMultiplier)
-                        : 0;
-                }
-
-                localValue = (systemValue * localCurrency.ExchangeRateMultiplier);
-            }
-
-            return (long) Math.Floor(localValue);
-            */
-        }
-
-        public string ToLocalPriceText(long value, CurrencyDTO currency)
-        {
-            var localCurrency = (this.Currency ?? currency);
-            if (localCurrency == null)
-            {
-                return null;
-            }
-
-            return localCurrency?.ToPriceString(ToLocalPrice(value, currency));
+            await RefreshAsync(http);
         }
     }
 }

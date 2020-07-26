@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Web.Shared.Domain.DTOs.Profiles
 {
-    public class ProfileSummaryDTO
+    public class ProfileDTO
     {
         public string SteamId { get; set; }
 

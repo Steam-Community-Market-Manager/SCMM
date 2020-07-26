@@ -3,6 +3,7 @@
 @using SCMM.Web.Shared
 @using SCMM.Steam.Shared
 @inherits ComponentBase
+@inject AppState State
 
 <Table StickyHeader Size="@Size.Small">
     <TableHead>
@@ -52,16 +53,16 @@
                     @item.Demand
                 </TableCell>
                 <TableCell>
-                    @State.ToLocalPriceText(item.BuyNowPrice, item.Currency)
+                    @item.Currency.ToPriceString(item.BuyNowPrice)
                 </TableCell>
                 <TableCell>
-                    @State.ToLocalPriceText(item.AllTimeLowestValue, item.Currency)
+                    @item.Currency.ToPriceString(item.AllTimeLowestValue)
                 </TableCell>
                 <TableCell>
-                    @State.ToLocalPriceText(item.AllTimeHighestValue, item.Currency)
+                    @item.Currency.ToPriceString(item.AllTimeHighestValue)
                 </TableCell>
                 <TableCell>
-                    @State.ToLocalPriceText(item.AllTimeAverageValue, item.Currency)
+                    @item.Currency.ToPriceString(item.AllTimeAverageValue)
                 </TableCell>
                 <TableCell Class="@item.Last1hrValue.ToTextColourClass(item.First24hrValue)">
                     @item.Last1hrValue.ToPercentageString(item.First24hrValue)
@@ -97,9 +98,6 @@
 </Table>
 
 @code {
-
-    [CascadingParameter]
-    public AppState State { get; set; }
 
     [Parameter]
     public MarketItemListDTO[] Items { get; set; }

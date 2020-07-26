@@ -33,7 +33,33 @@ namespace SCMM.Web.Shared
             return null;
         }
 
-        public static string ToPriceString(this CurrencyDTO currency, long price, bool dense = false)
+        public static long CalculateExchange(this IExchangeableCurrency localCurrency, long value, IExchangeableCurrency valueCurrency)
+        {
+            if (localCurrency == null || valueCurrency == null)
+            {
+                return 0;
+            }
+
+            var localValue = (decimal) value;
+            if (valueCurrency != localCurrency)
+            {
+                var baseValue = (value > 0)
+                    ? ((decimal) value / valueCurrency.ExchangeRateMultiplier)
+                    : 0m;
+
+                localValue = (baseValue * localCurrency.ExchangeRateMultiplier);
+            }
+
+            return (long) Math.Floor(localValue);
+        }
+
+        public static string ToPriceString<T>(this T currency, long price, IExchangeableCurrency priceCurrency, bool dense = false)
+            where T : ICurrency, IExchangeableCurrency
+        {
+            return currency?.ToPriceString(currency.CalculateExchange(price, priceCurrency), dense: dense);
+        }
+
+        public static string ToPriceString(this ICurrency currency, long price, bool dense = false)
         {
             if (currency == null)
             {

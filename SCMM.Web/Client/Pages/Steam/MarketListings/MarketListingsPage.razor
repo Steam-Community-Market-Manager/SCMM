@@ -17,7 +17,7 @@
 
 </style>
 
-<MarketListingsSearch OnSearch="@((x) => RefreshItems(x))" />
+<MarketListingsSearch OnSearch="@(async (x) => await RefreshItems(x))" />
 
 @if (Items == null)
 {
@@ -26,7 +26,7 @@
 else
 {
     <Paper Class="Market-List-Container">
-        <MarketListingsTable Items="@Items" OnItemClick="@((x) => OnItemSelectionChanged(x))" />
+        <MarketListingsTable Items="@Items" OnItemClick="@(async (x) => await OnItemSelectionChanged(x))" />
     </Paper>
 }
 

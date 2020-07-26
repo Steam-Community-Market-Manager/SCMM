@@ -1,12 +1,13 @@
 ﻿@page "/steam/inventory/{SteamId}"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems;
-@using SCMM.Web.Shared.Domain.DTOs
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @namespace SCMM.Web.Client.Pages.Steam.Inventory
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject AppState State
 
 <style>
     
@@ -57,7 +58,7 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.ToLocalPriceText(InventoryTotalInvestedValue, State.Currency)
+                    @State.Currency.ToPriceString(InventoryTotalInvestedValue)
                 </Total>
             </InventoryTotalCard>
         </Grid>
@@ -70,18 +71,18 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.ToLocalPriceText(InventoryTotalMarketValue, State.Currency)
+                    @State.Currency.ToPriceString(InventoryTotalMarketValue)
                     <Typography Variant="@TypographyVariant.Body2">
                         @if (InventoryTotalMarketValueMovement > 0)
                         {
                             <span class="Text-Success">
-                                🡱 @State.ToLocalPriceText(InventoryTotalMarketValueMovement, State.Currency) today
+                                🡱 @State.Currency.ToPriceString(InventoryTotalMarketValueMovement) today
                             </span>
                         }
                         @if (InventoryTotalMarketValueMovement < 0)
                         {
                             <span class="Text-Error">
-                                🡳 @State.ToLocalPriceText(InventoryTotalMarketValueMovement, State.Currency) today
+                                🡳 @State.Currency.ToPriceString(InventoryTotalMarketValueMovement) today
                             </span>
                         }
                     </Typography>
@@ -97,7 +98,7 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.ToLocalPriceText(InventoryTotalResellValue, State.Currency)
+                    @State.Currency.ToPriceString(InventoryTotalResellValue)
                 </Total>
             </InventoryTotalCard>
         </Grid>
@@ -110,18 +111,18 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.ToLocalPriceText(InventoryTotalProfitValue, State.Currency)
+                    @State.Currency.ToPriceString(InventoryTotalProfitValue)
                     <Typography Variant="@TypographyVariant.Body2">
                         @if (InventoryTotalProfitMovement > 0)
                         {
                             <span class="Text-Success">
-                                🡱 @State.ToLocalPriceText(InventoryTotalProfitMovement, State.Currency) today
+                                🡱 @State.Currency.ToPriceString(InventoryTotalProfitMovement) today
                             </span>
                         }
                         @if (InventoryTotalProfitMovement < 0)
                         {
                             <span class="Text-Error">
-                                🡳 @State.ToLocalPriceText(InventoryTotalProfitMovement, State.Currency) today
+                                🡳 @State.Currency.ToPriceString(InventoryTotalProfitMovement) today
                             </span>
                         }
                     </Typography>
@@ -171,9 +172,6 @@ else
 }
 
 @code {
-
-    [CascadingParameter]
-    public AppState State { get; set; }
 
     [Parameter]
     public string SteamId { get; set; }
@@ -262,11 +260,11 @@ else
             var items = InventoryItems;
             var itemsOnMarket = items.Where(x => x.MarketItem != null).ToList();
             InventoryTotalItemCount = items.Sum(x => x.Quantity);
-            InventoryTotalInvestedValue = items.Sum(x => State.ToLocalPrice((x.BuyPrice ?? 0) * x.Quantity, x.Currency));
-            InventoryTotalMarketValue = itemsOnMarket.Sum(x => State.ToLocalPrice(x.MarketItem.Last1hrValue, x.MarketItem.Currency));
-            InventoryTotalResellValue = itemsOnMarket.Sum(x => State.ToLocalPrice(x.MarketItem.ResellPrice, x.MarketItem.Currency));
+            InventoryTotalInvestedValue = items.Sum(x => (x.BuyPrice ?? 0) * x.Quantity);
+            InventoryTotalMarketValue = itemsOnMarket.Sum(x => x.MarketItem.Last1hrValue);
+            InventoryTotalResellValue = itemsOnMarket.Sum(x => x.MarketItem.ResellPrice);
             InventoryTotalProfitValue = itemsOnMarket.Where(x => x.BuyPrice > 0).Sum(x =>
-                State.ToLocalPrice(x.MarketItem.ResellPrice, x.MarketItem.Currency) - State.ToLocalPrice(x.MarketItem.ResellTax, x.MarketItem.Currency) - State.ToLocalPrice(x.BuyPrice ?? 0, x.Currency)
+                x.MarketItem.ResellPrice - x.MarketItem.ResellTax - (x.BuyPrice ?? 0)
             );
             if (Profile.ValueHistoryGraph?.Any() == true)
             {

@@ -18,10 +18,18 @@ namespace SCMM.Web.Client
 
             builder.Services.AddBlazoredLocalStorage();
 
-            builder.Services.AddSingleton(
-                new HttpClient { 
-                    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) 
+            builder.Services.AddHttpClient("default", (serviceProvider, client) => {
+                client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+                var state = serviceProvider.GetService<AppState>();
+                if (state != null)
+                {
+                    state.SetHeadersFor(client);
                 }
+            });
+
+            builder.Services.AddSingleton<AppState>();
+            builder.Services.AddTransient<HttpClient>(
+                sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("default")
             );
 
             builder.Services.TryAddMaterialServices(new MaterialConfigBuilder()

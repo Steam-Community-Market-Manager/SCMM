@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SCMM.Web.Shared.Domain.DTOs
+namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
     public class ProfileInventoryDetailsDTO
     {

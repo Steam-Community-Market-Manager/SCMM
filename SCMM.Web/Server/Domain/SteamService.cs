@@ -8,10 +8,10 @@ using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;
-using SCMM.Web.Client;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Types;
 using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Shared;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
@@ -121,11 +121,12 @@ namespace SCMM.Web.Server.Domain
             return profile;
         }
 
-        public async Task<IDictionary<DateTimeOffset, double>> LoadInventoryValueHistory(string steamId)
+        public async Task<IDictionary<DateTimeOffset, double>> LoadInventoryValueHistory(string steamId, IExchangeableCurrency currency)
         {
             var history = new Dictionary<DateTimeOffset, double>();
             var today = DateTimeOffset.UtcNow.Date;
-  
+
+            var baseCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.IsDefault);
             var inventoryValues = await _db.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
                 .Select(x => new
@@ -141,22 +142,23 @@ namespace SCMM.Web.Server.Domain
                 })
                 .FirstOrDefaultAsync();
 
-            history[today.Subtract(TimeSpan.FromDays(7))] = inventoryValues.Last168hrValue;
-            history[today.Subtract(TimeSpan.FromDays(6))] = inventoryValues.Last144hrValue;
-            history[today.Subtract(TimeSpan.FromDays(5))] = inventoryValues.Last120hrValue;
-            history[today.Subtract(TimeSpan.FromDays(4))] = inventoryValues.Last96hrValue;
-            history[today.Subtract(TimeSpan.FromDays(3))] = inventoryValues.Last72hrValue;
-            history[today.Subtract(TimeSpan.FromDays(2))] = inventoryValues.Last48hrValue;
-            history[today.Subtract(TimeSpan.FromDays(1))] = inventoryValues.Last24hrValue;
-            history[today.Subtract(TimeSpan.FromDays(0))] = inventoryValues.Last1hrValue;
+            history[today.Subtract(TimeSpan.FromDays(7))] = currency.CalculateExchange(inventoryValues.Last168hrValue, baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(6))] = currency.CalculateExchange(inventoryValues.Last144hrValue, baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(5))] = currency.CalculateExchange(inventoryValues.Last120hrValue, baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(4))] = currency.CalculateExchange(inventoryValues.Last96hrValue, baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(3))] = currency.CalculateExchange(inventoryValues.Last72hrValue, baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(2))] = currency.CalculateExchange(inventoryValues.Last48hrValue, baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(1))] = currency.CalculateExchange(inventoryValues.Last24hrValue, baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(0))] = currency.CalculateExchange(inventoryValues.Last1hrValue, baseCurrency);
             return history;
         }
 
-        public async Task<IDictionary<DateTimeOffset, double>> LoadInventoryProfitHistory(string steamId)
+        public async Task<IDictionary<DateTimeOffset, double>> LoadInventoryProfitHistory(string steamId, IExchangeableCurrency currency)
         {
             var history = new Dictionary<DateTimeOffset, double>();
             var today = DateTimeOffset.UtcNow.Date;
 
+            var baseCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.IsDefault);
             var inventoryValues = await _db.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
                 .Select(x => new
@@ -173,14 +175,14 @@ namespace SCMM.Web.Server.Domain
                 })
                 .FirstOrDefaultAsync();
 
-            history[today.Subtract(TimeSpan.FromDays(7))] = (inventoryValues.Last168hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last168hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(6))] = (inventoryValues.Last144hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last144hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(5))] = (inventoryValues.Last120hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last120hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(4))] = (inventoryValues.Last96hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last96hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(3))] = (inventoryValues.Last72hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last72hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(2))] = (inventoryValues.Last48hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last48hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(1))] = (inventoryValues.Last24hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last24hrValue) - (inventoryValues.Invested ?? 0));
-            history[today.Subtract(TimeSpan.FromDays(0))] = (inventoryValues.Last1hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last1hrValue) - (inventoryValues.Invested ?? 0));
+            history[today.Subtract(TimeSpan.FromDays(7))] = currency.CalculateExchange(inventoryValues.Last168hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last168hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(6))] = currency.CalculateExchange(inventoryValues.Last144hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last144hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(5))] = currency.CalculateExchange(inventoryValues.Last120hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last120hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(4))] = currency.CalculateExchange(inventoryValues.Last96hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last96hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(3))] = currency.CalculateExchange(inventoryValues.Last72hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last72hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(2))] = currency.CalculateExchange(inventoryValues.Last48hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last48hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(1))] = currency.CalculateExchange(inventoryValues.Last24hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last24hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
+            history[today.Subtract(TimeSpan.FromDays(0))] = currency.CalculateExchange(inventoryValues.Last1hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last1hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
             return history;
         }
 
@@ -322,7 +324,7 @@ namespace SCMM.Web.Server.Domain
             return newFilter;
         }
         
-        public async Task<Models.Steam.SteamAssetDescription> UpdateAssetDescription(Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
+        public Models.Steam.SteamAssetDescription UpdateAssetDescription(Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
         {
             // Update tags
             if (assetClass.Tags != null)

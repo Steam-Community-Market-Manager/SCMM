@@ -5,6 +5,7 @@
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject AppState State
 
 <DocumentTitle Title="Market Statistics" />
 <Grid Container Spacing="@Spacing.Two">
@@ -49,7 +50,7 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @State.ToLocalPriceText(item.Last1hrValue, item.Currency)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
                                 @if (Math.Abs(item.Last1hrValue - item.AllTimeHighestValue) == 0)
@@ -110,7 +111,7 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @State.ToLocalPriceText(item.Last1hrValue, item.Currency)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
                                 <span class="Text-Success">🡱 @Math.Abs(item.Last1hrValue - item.Last24hrValue)</span>
@@ -164,7 +165,7 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @State.ToLocalPriceText(item.Last1hrValue, item.Currency)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
                                 @if (Math.Abs(item.Last1hrValue - item.AllTimeLowestValue) == 0)
@@ -225,7 +226,7 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @State.ToLocalPriceText(item.Last1hrValue, item.Currency)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
                                 <span class="Text-Error">🡳 @Math.Abs(item.Last1hrValue - item.Last24hrValue)</span>
@@ -430,7 +431,7 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @State.ToLocalPriceText(item.Last1hrValue, item.Currency)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
                                 <span class="Text-Success">🡱 @Math.Abs(item.Last1hrValue - item.First24hrValue)</span>
@@ -583,7 +584,7 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @State.ToLocalPriceText(item.Last1hrValue, item.Currency)
+                                @item.Currency.ToPriceString(item.Last1hrValue)
                             </TableCell>
                             <TableCell>
                                 <span class="Text-Error">🡳 @Math.Abs(item.Last1hrValue - item.AllTimeHighestValue)</span>
@@ -600,9 +601,6 @@
 </Grid>
 
 @code {
-
-    [CascadingParameter]
-    public AppState State { get; set; }
 
     private MarketItemListDTO[] StonkingRecently { get; set; }
     private MarketItemListDTO[] StinkingRecently { get; set; }

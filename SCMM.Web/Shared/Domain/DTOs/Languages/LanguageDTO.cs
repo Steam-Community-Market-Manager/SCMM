@@ -1,9 +1,7 @@
-﻿namespace SCMM.Web.Shared.Domain.DTOs
+﻿namespace SCMM.Web.Shared.Domain.DTOs.Languages
 {
     public class LanguageDTO
     {
-        public string Name { get; set; }
-
         public string CultureName { get; set; }
     }
 }

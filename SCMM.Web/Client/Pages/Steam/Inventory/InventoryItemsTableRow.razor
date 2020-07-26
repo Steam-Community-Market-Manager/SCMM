@@ -4,6 +4,7 @@
 @using SCMM.Web.Shared
 @inherits ComponentBase
 @inject HttpClient Http
+@inject AppState State
 
 <TableRow @key="@Item.Id" Hover>
     <TableCell Class="@GetItemClass()">
@@ -33,7 +34,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @State.ToLocalPriceText(Item.MarketItem.Last1hrValue, Item.MarketItem.Currency)
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.Last1hrValue)
         }
         else
         {
@@ -43,7 +44,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @State.ToLocalPriceText(Item.MarketItem.ResellPrice, Item.MarketItem.Currency) 
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellPrice) 
         }
         else
         {
@@ -53,7 +54,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null)
         {
-            @State.ToLocalPriceText(Item.MarketItem.ResellTax, Item.MarketItem.Currency) 
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellTax) 
         }
         else
         {
@@ -63,7 +64,7 @@
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null && Item.BuyPrice > 0)
         {
-            @State.ToLocalPriceText(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax - Item.BuyPrice.Value, Item.MarketItem.Currency) 
+            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax - Item.BuyPrice.Value) 
         }
         else
         {
@@ -82,9 +83,6 @@
 </TableRow>
 
 @code { 
-
-    [CascadingParameter]
-    public AppState State { get; set; }
 
     [Parameter]
     public InventoryItemListDTO Item { get; set; }

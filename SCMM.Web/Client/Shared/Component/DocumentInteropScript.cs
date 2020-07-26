@@ -1,6 +1,6 @@
 ﻿using Skclusive.Core.Component;
 
-namespace SCMM.Web.Client.Shared.Chart
+namespace SCMM.Web.Client.Shared.Component
 {
     public class DocumentInteropScript : ScriptComponentBase
     {

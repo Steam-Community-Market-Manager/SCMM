@@ -20,7 +20,7 @@ namespace SCMM.Web.Server.Services.Jobs
             _scopeFactory = scopeFactory;
         }
 
-        public override async Task DoWork(CancellationToken cancellationToken)
+        public override Task DoWork(CancellationToken cancellationToken)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -30,6 +30,8 @@ namespace SCMM.Web.Server.Services.Jobs
                     steamSession.Refresh(scope.ServiceProvider);
                 }
             }
+
+            return Task.CompletedTask;
         }
     }
 }

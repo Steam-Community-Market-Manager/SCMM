@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using System;
 using System.Collections.Generic;
@@ -84,7 +86,8 @@ namespace SCMM.Web.Server.API.Controllers
                 return query
                     .Skip((page * pageSize))
                     .Take(pageSize)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
+                    .ToList()
+                    .Select(x => _mapper.Map<MarketItemListDTO>(x, opt => opt.AddRequest(Request)))
                     .ToList();
             }
         }
@@ -95,13 +98,13 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
-                    .Where(x => x.Id == id)
-                    .Select(x => _mapper.Map<MarketItemDetailDTO>(x))
-                    .SingleOrDefault();
+                    .SingleOrDefault(x => x.Id == id);
+
+                return _mapper.Map<SteamMarketItem, MarketItemDetailDTO>(query, Request);
             }
         }
         
@@ -111,13 +114,13 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .OrderByDescending(x => x.Last24hrSales)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -127,7 +130,7 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
@@ -135,9 +138,9 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 10)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
                     .ThenBy(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -147,7 +150,7 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
@@ -155,9 +158,9 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= -10)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
                     .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -167,14 +170,14 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
                     .OrderByDescending(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -184,14 +187,14 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
                     .OrderBy(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -201,14 +204,14 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
                     .OrderByDescending(x => x.Last1hrValue - x.First24hrValue)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -218,13 +221,13 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .OrderByDescending(x => x.Demand)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -234,13 +237,13 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .OrderByDescending(x => x.Supply)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -250,15 +253,15 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
                     .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
                     .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -268,15 +271,15 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
                     .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
                     .OrderBy(x => x.Description.WorkshopFile.Subscriptions)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
 
@@ -287,16 +290,16 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var now = DateTimeOffset.UtcNow;
-                return db.SteamMarketItems
+                var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
                     .Where(x => x.AllTimeLowestValueOn > x.AllTimeHighestValueOn)
                     .Where(x => x.Last1hrValue < x.AllTimeHighestValue)
                     .OrderBy(x => x.Last1hrValue - x.AllTimeHighestValue)
-                    .Take(10)
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x))
-                    .ToList();
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
     }

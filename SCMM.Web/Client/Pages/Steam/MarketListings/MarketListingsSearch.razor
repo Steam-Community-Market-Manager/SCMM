@@ -27,7 +27,7 @@
 
     private string SearchText { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         SearchTimer = new System.Timers.Timer(1000);
         SearchTimer.AutoReset = false;

@@ -3,7 +3,9 @@
 @using SCMM.Web.Shared.Domain.DTOs.Currencies;
 @using SCMM.Web.Shared.Domain.DTOs.Profiles;
 @using System.Timers
+@inject ILocalStorageService LocalStorage
 @inject HttpClient Http
+@inject AppState State
 
 @if (ComponentIsVisible)
 {
@@ -143,10 +145,7 @@
 
 @code { 
 
-    [CascadingParameter]
-    public AppState State { get; set; }
-
-    public ProfileSummaryDTO SteamProfile { get; set; }
+    public ProfileDTO SteamProfile { get; set; }
 
     public string SteamIdText { get; set; }
 
@@ -215,7 +214,7 @@
             Console.WriteLine($"Looking up steam id: {steamId}...");
             SteamIdIsResolving = true;
             StateHasChanged();
-            SteamProfile = await Http.GetFromJsonAsync<ProfileSummaryDTO>(
+            SteamProfile = await Http.GetFromJsonAsync<ProfileDTO>(
                 $"profile/steam/{Uri.EscapeDataString(steamId)}/summary"
             );
         }
@@ -243,7 +242,7 @@
         StateHasChanged();
     }
 
-    private async Task HandleLanguageChange(LanguageListDTO language)
+    private void HandleLanguageChange(LanguageListDTO language)
     {
         Language = language;
         HandleLanguageSelectionClose(MenuCloseReason.Escape);
@@ -261,17 +260,17 @@
         StateHasChanged();
     }
 
-    private async Task HandleCurrencyChange(CurrencyListDTO currency)
+    private void HandleCurrencyChange(CurrencyListDTO currency)
     {
         Currency = currency;
         HandleCurrencySelectionClose(MenuCloseReason.Escape);
     }
 
-    private async Task HandleLogin(ProfileSummaryDTO profile, string country, string language, string currency)
+    private async Task HandleLogin(ProfileDTO profile, string country, string language, string currency)
     {
         ComponentIsVisible = false;
         StateHasChanged();
-        await State.LoginAsync(profile, country, language, currency);
+        await State.LoginAsync(Http, LocalStorage, profile, country, language, currency);
     }
 
     public async Task TryGuessLocality()
