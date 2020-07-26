@@ -39,6 +39,11 @@ namespace SCMM.Web.Server.Domain
 
         public static CurrencyDetailedDTO GetByNameCached(string name)
         {
+            if (String.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+
             CurrencyDetailedDTO value = null;
             Cache.TryGetValue(name, out value);
             return value;

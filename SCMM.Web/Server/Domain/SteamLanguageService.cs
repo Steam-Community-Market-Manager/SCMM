@@ -39,6 +39,11 @@ namespace SCMM.Web.Server.Domain
 
         public static LanguageDetailedDTO GetByNameCached(string name)
         {
+            if (String.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+
             LanguageDetailedDTO value = null;
             Cache.TryGetValue(name, out value);
             return value;
