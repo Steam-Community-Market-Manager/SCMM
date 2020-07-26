@@ -335,9 +335,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             AllTimeLowestValueOn = allTimeLow?.Timestamp;
             FirstSeenOn = salesSorted.FirstOrDefault()?.Timestamp;
 
+            var mostRecentSales = salesSorted.Take(10).ToArray();
             if (last24hrs != null)
             {
-                RecalculateActivity(last24hrs);
+                RecalculateActivity(mostRecentSales);
             }
 
             if (sales != null)
