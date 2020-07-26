@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using SCMM.Steam.Client;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Shared;
+using System;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
@@ -86,11 +87,19 @@ namespace SCMM.Web.Server.Services.Jobs
                     Task.WaitAll(batchTasks);
                     foreach (var task in batchTasks)
                     {
-                        await steamService.UpdateSteamMarketItemSalesHistory(
-                            task.Result.Item,
-                            currency.Id,
-                            task.Result.Response
-                        );
+                        try
+                        {
+                            await steamService.UpdateSteamMarketItemSalesHistory(
+                                task.Result.Item,
+                                currency.Id,
+                                task.Result.Response
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Failed to update market item sales history for '{task.Result.Item.SteamId}'");
+                            continue;
+                        }
                     }
 
                     await db.SaveChangesAsync();
