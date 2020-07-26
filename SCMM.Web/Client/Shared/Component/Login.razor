@@ -128,10 +128,13 @@
                     </Grid>
                 </Paper>
                 <div style="padding:12px 0px; text-align:right">
+                    @if (!LoginIsValid)
+                    {
                     <Button OnClick="@(() => HandleLogin(null, Country, Language?.Name, Currency?.Name))" 
                             Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary" Disabled="@(!SkipIsValid)" style="margin:0px 4px">
                         <span>I don't have a Steam ID, skip</span>
                     </Button>
+                    }
                     <Button OnClick="@(() => HandleLogin(SteamProfile, Country, Language?.Name, Currency?.Name))"
                             Variant="@ButtonVariant.Contained" Color="@Color.Primary" Disabled="@(!LoginIsValid)" style="margin: 0px 4px">
                         <span>Continue</span>

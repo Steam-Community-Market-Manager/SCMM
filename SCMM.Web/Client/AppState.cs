@@ -41,14 +41,17 @@ namespace SCMM.Web.Client
         {
             if (!String.IsNullOrEmpty(LanguageId))
             {
+                client.DefaultRequestHeaders.Remove(HttpHeaderLanguage);
                 client.DefaultRequestHeaders.Add(HttpHeaderLanguage, LanguageId);
             }
             if (!String.IsNullOrEmpty(CurrencyId))
             {
+                client.DefaultRequestHeaders.Remove(HttpHeaderCurrency);
                 client.DefaultRequestHeaders.Add(HttpHeaderCurrency, CurrencyId);
             }
             if (!String.IsNullOrEmpty(ProfileId))
             {
+                client.DefaultRequestHeaders.Remove(HttpHeaderProfile);
                 client.DefaultRequestHeaders.Add(HttpHeaderProfile, ProfileId);
             }
         }
@@ -120,8 +123,13 @@ namespace SCMM.Web.Client
             {
                 try
                 {
-                    // POST /profile/id
-                    // TODO: This...
+                    SetHeadersFor(http);
+                    await http.PutAsJsonAsync("profile/me", new UpdateProfileStateCommand()
+                    {
+                        Country = country,
+                        Language = language,
+                        Currency = currency
+                    });
                 }
                 catch (Exception ex)
                 {

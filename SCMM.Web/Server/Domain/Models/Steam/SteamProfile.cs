@@ -24,6 +24,18 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public string Country { get; set; }
 
+        public Guid? LanguageId { get; set; }
+
+        public SteamLanguage Language { get; set; }
+
+        public Guid? CurrencyId { get; set; }
+
+        public SteamCurrency Currency { get; set; }
+
+        public DateTimeOffset? LastViewedInventoryOn { get; set; }
+
+        public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
+
         public ICollection<SteamInventoryItem> InventoryItems { get; set; }
 
         public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }

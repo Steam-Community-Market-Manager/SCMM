@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.API.Controllers.Extensions;
@@ -34,7 +35,6 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var service = scope.ServiceProvider.GetService<SteamService>();
                 
                 var language = Request.Language();
                 if (language == null)
@@ -57,7 +57,13 @@ namespace SCMM.Web.Server.API.Controllers
 
                 if (!String.IsNullOrEmpty(profileId))
                 {
-                    var profile = await service.AddOrUpdateSteamProfile(profileId);
+                    var profile = await db.SteamProfiles
+                        .Include(x => x.Language)
+                        .Include(x => x.Currency)
+                        .FirstOrDefaultAsync(
+                            x => x.SteamId == profileId || x.ProfileId == profileId
+                        );
+
                     if (profile == null)
                     {
                         throw new Exception($"Profile with Steam ID '{profileId}' was not found");
@@ -70,6 +76,25 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [HttpPut("me")]
+        public async void SetMyState([FromBody] UpdateProfileStateCommand command)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var steamService = scope.ServiceProvider.GetService<SteamService>();
+                var profile = await steamService.AddOrUpdateSteamProfile(Request.ProfileId());
+                if (profile == null)
+                {
+                    throw new Exception($"Profile with Steam ID '{Request.ProfileId()}' was not found");
+                }
+
+                profile.Country = (command.Country ?? profile.Country);
+                profile.Language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.Name == command.Language);
+                profile.Currency = await db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == command.Currency);
+                await db.SaveChangesAsync();
+            }
+        }
         [HttpGet("steam/{steamId}/summary")]
         public async Task<ProfileDTO> GetSteamIdSummary([FromRoute] string steamId)
         {
