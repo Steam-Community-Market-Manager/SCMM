@@ -37,9 +37,12 @@ else
 {
     <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
     <Grid Container Spacing="@Spacing.Two">
+        @if (State.ProfileId != Profile.SteamId)
+        {
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryProfileCard Profile="@Profile" />
         </Grid>
+        }
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryTotalCard Title="Assets">
                 <Icon>
@@ -130,6 +133,18 @@ else
             </InventoryTotalCard>
         </Grid>
         }
+        @if (State.ProfileId == Profile.SteamId)
+        {
+        <Grid ExtraSmall="@GridSize.Two" Style="padding:8px">
+            <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
+                Last synchronoised @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago
+            </Typography>
+            <Button OnClick="@(() => SyncInventory())" 
+                    Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
+                Synchronoise
+            </Button>
+        </Grid>
+        }
         <Grid Item ExtraSmall="@GridSize.Twelve">
             <Tabs Value="@SelectedInventoryPanel"
                   OnChange="@OnSelectedInventoryPanelChanged"
@@ -176,6 +191,9 @@ else
     [Parameter]
     public string SteamId { get; set; }
 
+    [Parameter]
+    public bool Sync { get; set; } = false;
+
     private ProfileInventoryDetailsDTO Profile { get; set; }
 
     private bool ProfileNotFound { get; set; }
@@ -209,9 +227,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await RefreshInventory();
+    }
+
+    private async Task RefreshInventory()
+    {
         try
         {
-            Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"InventoryItems/{SteamId}");
+            Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"InventoryItems/{SteamId}?sync={Sync}");
             ProfileNotFound = (Profile == null);
             if (Profile != null)
             {
@@ -229,6 +252,15 @@ else
         {
             ProfileNotFound = true;
         }
+    }
+
+    private async Task SyncInventory()
+    {
+        Sync = true;
+        Profile = null;
+        StateHasChanged();
+        await RefreshInventory();
+        StateHasChanged();
     }
 
     private async Task ViewItem(InventoryItemListDTO item)

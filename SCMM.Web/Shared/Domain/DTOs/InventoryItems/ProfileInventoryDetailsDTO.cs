@@ -21,6 +21,10 @@ namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 
         public InventoryItemListDTO[] InventoryItems { get; set; }
 
+        public DateTimeOffset? LastViewedInventoryOn { get; set; }
+
+        public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
+
         public IDictionary<string, double> ValueHistoryGraph { get; set; }
 
         public IDictionary<string, double> ValueProfitGraph { get; set; }

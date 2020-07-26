@@ -199,7 +199,11 @@ namespace SCMM.Web.Server.Domain
                 .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
             if (profile == null)
             {
-                return null;
+                profile = await AddOrUpdateSteamProfile(steamId);
+                if (profile == null)
+                {
+                    return null;
+                }
             }
 
             var language = _db.SteamLanguages
@@ -292,6 +296,7 @@ namespace SCMM.Web.Server.Domain
                     profile.InventoryItems.Remove(asset);
                 }
 
+                profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
                 await _db.SaveChangesAsync();
             }
 

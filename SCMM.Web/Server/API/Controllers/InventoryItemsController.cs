@@ -35,12 +35,39 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("{steamId}")]
-        public async Task<ProfileInventoryDetailsDTO> Get([FromRoute] string steamId)
+        public async Task<ProfileInventoryDetailsDTO> Get([FromRoute] string steamId, [FromQuery] bool sync = false)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
-                var profile = await service.AddOrUpdateSteamProfile(steamId);
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var profile = (SteamProfile)null;
+
+                if (sync)
+                {
+                    // Force inventory sync
+                    profile = await service.LoadAndRefreshProfileInventory(steamId);
+                }
+                else
+                {
+                    // Use last cached inventory
+                    profile = await db.SteamProfiles
+                        .Include(x => x.InventoryItems).ThenInclude(x => x.App)
+                        .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
+                        .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
+                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem)
+                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Description)
+                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Currency)
+                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Activity)
+                        .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
+
+                    // Profile doesn't exist yet? force sync
+                    if (profile == null)
+                    {
+                        profile = await service.LoadAndRefreshProfileInventory(steamId);
+                    }
+                }
+
                 if (profile == null)
                 {
                     _logger.LogError($"Profile with SteamID '{steamId}' was not found");
