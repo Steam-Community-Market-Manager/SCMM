@@ -1,5 +1,4 @@
-﻿using SCMM.Web.Shared.Domain.DTOs;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Text;
 
@@ -40,17 +39,17 @@ namespace SCMM.Web.Shared
                 return 0;
             }
 
-            var localValue = (decimal) value;
+            var localValue = (decimal)value;
             if (valueCurrency != localCurrency)
             {
                 var baseValue = (value > 0)
-                    ? ((decimal) value / valueCurrency.ExchangeRateMultiplier)
+                    ? (value / valueCurrency.ExchangeRateMultiplier)
                     : 0m;
 
                 localValue = (baseValue * localCurrency.ExchangeRateMultiplier);
             }
 
-            return (long) Math.Floor(localValue);
+            return (long)Math.Floor(localValue);
         }
 
         public static string ToPriceString<T>(this T currency, long price, IExchangeableCurrency priceCurrency, bool dense = false)
@@ -71,7 +70,7 @@ namespace SCMM.Web.Shared
             var localScaleDivisor = Int64.Parse($"1{localScaleString}");
             var localFormat = $"#,##0{(currency.Scale > 0 ? "." : String.Empty)}{localScaleString}";
             var localCulture = CultureInfo.GetCultureInfo(currency.CultureName);
-            var localPrice = Math.Round((decimal) Math.Abs(price) / localScaleDivisor, currency.Scale);
+            var localPrice = Math.Round((decimal)Math.Abs(price) / localScaleDivisor, currency.Scale);
             var localPriceString = $"{sign}{localPrice.ToString(localFormat, localCulture.NumberFormat)}";
             if (!dense)
             {
@@ -93,7 +92,7 @@ namespace SCMM.Web.Shared
         public static string ToSalesActivityString(this long sales)
         {
             var suffix = "";
-            switch(sales)
+            switch (sales)
             {
                 case var _ when (sales >= 3000): suffix = "🔥🔥🔥🔥🔥"; break;
                 case var _ when (sales >= 1500): suffix = "🔥🔥🔥🔥"; break;
@@ -150,7 +149,7 @@ namespace SCMM.Web.Shared
             {
                 return null;
             }
-            var percentage = (int) Math.Round((((decimal)value / max) * 100), 0);
+            var percentage = (int)Math.Round((((decimal)value / max) * 100), 0);
             var prefix = "";
             if (percentage >= 100)
             {

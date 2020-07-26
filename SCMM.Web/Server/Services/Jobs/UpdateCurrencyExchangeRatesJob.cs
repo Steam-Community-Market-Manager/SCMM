@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Client;
+using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Community.Requests.Json;
-using SCMM.Web.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -10,9 +12,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Steam.Client;
-using Microsoft.EntityFrameworkCore;
-using SCMM.Steam.Shared;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
@@ -89,7 +88,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     }
                     if (localPrice > 0 && systemCurrencyPrice > 0)
                     {
-                        currency.ExchangeRateMultiplier = ((decimal) localPrice / systemCurrencyPrice);
+                        currency.ExchangeRateMultiplier = ((decimal)localPrice / systemCurrencyPrice);
                     }
 
                     await db.SaveChangesAsync();

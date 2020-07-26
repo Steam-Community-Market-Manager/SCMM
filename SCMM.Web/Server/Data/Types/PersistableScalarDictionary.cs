@@ -27,12 +27,12 @@ namespace SCMM.Web.Server.Data.Types
         protected abstract TValue ConvertSingleValueToRuntime(string rawValue);
         protected abstract string ConvertSingleKeyToPersistable(TKey key);
         protected abstract string ConvertSingleValueToPersistable(TValue value);
-     
+
         protected virtual string KeyValueSeperator
         {
             get { return DefaultKeyValueSeperator; }
         }
-      
+
         protected virtual string ItemSeperator
         {
             get { return DefaultItemSeperator; }
@@ -42,7 +42,7 @@ namespace SCMM.Web.Server.Data.Types
         {
             get
             {
-                var keyValues = _data.Select(x => 
+                var keyValues = _data.Select(x =>
                     $"{ConvertSingleKeyToPersistable(x.Key)}{KeyValueSeperator}{ConvertSingleValueToPersistable(x.Value)}"
                 );
                 return String.Join(ItemSeperator, keyValues);

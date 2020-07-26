@@ -5,16 +5,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Shared;
+using SCMM.Web.Server.API.Controllers.Extensions;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Extensions;
-using System;
-using System.Threading.Tasks;
-using System.Linq;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
-using SCMM.Steam.Shared;
-using SCMM.Web.Server.API.Controllers.Extensions;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {

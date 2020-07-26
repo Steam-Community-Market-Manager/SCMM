@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace SCMM.Web.Shared
@@ -14,11 +13,15 @@ namespace SCMM.Web.Shared
             foreach (var item in source)
             {
                 if (bucket == null)
+                {
                     bucket = new TSource[size];
+                }
 
                 bucket[count++] = item;
                 if (count != size)
+                {
                     continue;
+                }
 
                 yield return bucket;
 

@@ -111,7 +111,7 @@ namespace SCMM.Web.Server.Domain
                     Country = response.Location
                 };
             }
-            
+
             if (profile != null)
             {
                 _db.SteamProfiles.Add(profile);
@@ -323,7 +323,7 @@ namespace SCMM.Web.Server.Domain
             await _db.SaveChangesAsync();
             return newFilter;
         }
-        
+
         public Models.Steam.SteamAssetDescription UpdateAssetDescription(Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
         {
             // Update tags
@@ -381,14 +381,14 @@ namespace SCMM.Web.Server.Domain
                     }
                 }
 
-                workshopFile.Subscriptions = (int) Math.Max(publishedFile.LifetimeSubscriptions, publishedFile.Subscriptions);
+                workshopFile.Subscriptions = (int)Math.Max(publishedFile.LifetimeSubscriptions, publishedFile.Subscriptions);
                 if (updateSubscriptionGraph)
                 {
                     var utcDate = DateTime.UtcNow.Date;
                     var maxSubscriptions = workshopFile.Subscriptions;
                     if (workshopFile.SubscriptionsGraph.ContainsKey(utcDate))
                     {
-                        maxSubscriptions = (int) Math.Max(maxSubscriptions, workshopFile.SubscriptionsGraph[utcDate]);
+                        maxSubscriptions = (int)Math.Max(maxSubscriptions, workshopFile.SubscriptionsGraph[utcDate]);
                     }
                     workshopFile.SubscriptionsGraph[utcDate] = maxSubscriptions;
                     workshopFile.SubscriptionsGraph = new Data.Types.PersistableGraphDataSet(
@@ -585,7 +585,7 @@ namespace SCMM.Web.Server.Domain
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .ToDictionary(
                     k => k.Name,
-                    prop => (long) ((uint)prop.GetValue(prices, null))
+                    prop => (long)((uint)prop.GetValue(prices, null))
                 );
         }
 

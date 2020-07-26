@@ -31,7 +31,7 @@ namespace SCMM.Web.Server
             CreateMap<SteamProfile, ProfileDTO>();
             CreateMap<SteamProfile, ProfileDetailedDTO>();
             CreateMap<SteamProfile, ProfileInventoryDetailsDTO>();
-            
+
             CreateMap<SteamInventoryItem, InventoryItemListDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
@@ -96,7 +96,8 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.StorePrice, o => o.MapFrom(
-                    (src, dst, _, context) => {
+                    (src, dst, _, context) =>
+                    {
                         return context.Items.ContainsKey(AutoMappingExtensions.ContextKeyCurrencyId)
                             ? src.StorePrices[(string)context.Options.Items[AutoMappingExtensions.ContextKeyCurrencyId]]
                             : 0;
@@ -134,7 +135,7 @@ namespace SCMM.Web.Server
             memberOptions.MapFrom((src, dst, _, context) =>
             {
                 return context.Items.ContainsKey(ContextKeyCurrency)
-                    ? (CurrencyDTO) context.Options.Items[ContextKeyCurrency]
+                    ? (CurrencyDTO)context.Options.Items[ContextKeyCurrency]
                     : null;
             });
         }
@@ -144,17 +145,23 @@ namespace SCMM.Web.Server
             memberOptions.MapFrom((src, dst, _, context) =>
             {
                 if (!context.Items.ContainsKey(ContextKeyCurrency))
+                {
                     return 0L;
+                }
 
                 var value = valueExpression.Compile().Invoke(src);
                 if (value == 0)
+                {
                     return 0L;
+                }
 
                 var valueCurrency = currencyExpression.Compile().Invoke(src);
                 if (valueCurrency == null)
+                {
                     return 0L;
+                }
 
-                var targetCurrency = (CurrencyDetailedDTO) context.Items[ContextKeyCurrency];
+                var targetCurrency = (CurrencyDetailedDTO)context.Items[ContextKeyCurrency];
                 return targetCurrency.CalculateExchange(value, valueCurrency);
             });
         }
@@ -164,15 +171,21 @@ namespace SCMM.Web.Server
             memberOptions.MapFrom((src, dst, _, context) =>
             {
                 if (!context.Items.ContainsKey(ContextKeyCurrency))
-                    return (long?)null;
+                {
+                    return null;
+                }
 
                 var value = valueExpression.Compile().Invoke(src);
                 if (value == null)
-                    return (long?)null;
+                {
+                    return null;
+                }
 
                 var valueCurrency = currencyExpression.Compile().Invoke(src);
                 if (valueCurrency == null)
-                    return (long?)null;
+                {
+                    return null;
+                }
 
                 var targetCurrency = (CurrencyDetailedDTO)context.Items[ContextKeyCurrency];
                 return targetCurrency.CalculateExchange(value.Value, valueCurrency);

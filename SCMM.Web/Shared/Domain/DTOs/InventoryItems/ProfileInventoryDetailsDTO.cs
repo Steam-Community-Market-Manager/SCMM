@@ -1,5 +1,4 @@
-﻿using SCMM.Web.Shared.Domain.DTOs.MarketItems;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems

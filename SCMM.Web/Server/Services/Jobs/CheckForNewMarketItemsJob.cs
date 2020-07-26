@@ -34,7 +34,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                
+
                 var steamApps = db.SteamApps.ToList();
                 if (!steamApps.Any())
                 {
@@ -98,13 +98,15 @@ namespace SCMM.Web.Server.Services.Jobs
                 // Add a 10 second delay between requests to avoid "Too Many Requests" error
                 var newItems = await Observable.Interval(TimeSpan.FromSeconds(10))
                     .Zip(pageRequests, (x, y) => y)
-                    .Select(x => Observable.FromAsync(() => {
+                    .Select(x => Observable.FromAsync(() =>
+                    {
                         _logger.LogInformation($"Checking for new market items (appId: {x.AppId}, start: {x.Start}, end: {x.Start + x.Count})");
                         return commnityClient.GetMarketSearchPaginated(x);
                     }))
                     .Merge()
                     .Where(x => x?.Success == true && x?.Results?.Count > 0)
-                    .SelectMany(x => {
+                    .SelectMany(x =>
+                    {
                         var tasks = steamService.FindOrAddSteamMarketItems(x.Results);
                         Task.WaitAll(tasks);
                         return tasks.Result;

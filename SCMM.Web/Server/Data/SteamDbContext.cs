@@ -1,14 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Domain.Models.Steam;
-using System.Diagnostics;
 
 namespace SCMM.Web.Server.Data
 {
     public class SteamDbContext : DbContext
     {
         public static readonly ILoggerFactory DebugLoggerFactory =
-            LoggerFactory.Create(builder => {
+            LoggerFactory.Create(builder =>
+            {
                 builder.AddDebug();
             });
 

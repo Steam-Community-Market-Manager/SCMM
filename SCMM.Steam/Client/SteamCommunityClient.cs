@@ -55,8 +55,8 @@ namespace SCMM.Steam.Client
             }
 
             var itemNameIdMatchGroup = Regex.Match(html, @"Market_LoadOrderSpread\((.*)\)").Groups;
-            return (itemNameIdMatchGroup.Count > 1) 
-                ? itemNameIdMatchGroup[1].Value.Trim() 
+            return (itemNameIdMatchGroup.Count > 1)
+                ? itemNameIdMatchGroup[1].Value.Trim()
                 : null;
         }
 

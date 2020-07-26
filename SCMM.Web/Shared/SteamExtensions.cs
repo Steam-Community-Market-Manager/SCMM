@@ -10,7 +10,7 @@ namespace SCMM.Web.Shared
         public static IEnumerable<KeyValuePair<string, double>> ToGraphDictionary(this IDictionary<DateTime, double> graph)
         {
             return graph?.ToDictionary(
-                x => x.Key.ToString("dd MMM yyyy"), 
+                x => x.Key.ToString("dd MMM yyyy"),
                 x => x.Value
             );
         }

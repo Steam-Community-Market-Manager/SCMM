@@ -37,7 +37,7 @@ namespace SCMM.Web.Server.API.Controllers
             [FromQuery] string filter = null,
             [FromQuery] string sort = null,
             [FromQuery] bool sortDesc = false,
-            [FromQuery] int page = 0, 
+            [FromQuery] int page = 0,
             [FromQuery] int pageSize = 25)
         {
             using (var scope = _scopeFactory.CreateScope())
@@ -107,7 +107,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return _mapper.Map<SteamMarketItem, MarketItemDetailDTO>(query, Request);
             }
         }
-        
+
         [HttpGet("dashboard/hotRightNow")]
         public IEnumerable<MarketItemListDTO> GetDashboardHotRightNow()
         {

@@ -75,7 +75,8 @@ namespace SCMM.Web.Server.Services.Jobs
                         var assetDescriptionsJoined = response.Data.AssetClasses.Join(group,
                             x => x.ClassId.ToString(),
                             y => y.SteamId,
-                            (x, y) => new {
+                            (x, y) => new
+                            {
                                 AssetDescription = y,
                                 AssetClass = x
                             }

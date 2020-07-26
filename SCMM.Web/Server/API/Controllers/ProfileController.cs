@@ -35,7 +35,7 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                
+
                 var language = Request.Language();
                 if (language == null)
                 {

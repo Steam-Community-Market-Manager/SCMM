@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-
-namespace SCMM.Steam.Shared
+﻿namespace SCMM.Steam.Shared
 {
     public class SteamConfiguration
     {

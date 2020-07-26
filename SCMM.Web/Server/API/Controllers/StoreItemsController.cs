@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared;
-using SCMM.Web.Server.API.Controllers.Extensions;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
 using System;

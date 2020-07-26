@@ -60,7 +60,8 @@ namespace SCMM.Web.Server.Services.Jobs
                     var assetWorkshopJoined = response.Data.Join(assetDescriptions,
                         x => x.PublishedFileId.ToString(),
                         y => y.WorkshopFile.SteamId,
-                        (x, y) => new {
+                        (x, y) => new
+                        {
                             AssetDescription = y,
                             PublishedFile = x
                         }

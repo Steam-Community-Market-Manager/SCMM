@@ -20,7 +20,7 @@ namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
         public string IconUrl { get; set; }
 
         public CurrencyDTO Currency { get; set; }
-        
+
         public long? BuyPrice { get; set; }
 
         public int Quantity { get; set; }

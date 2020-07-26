@@ -32,7 +32,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
-                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>(); 
+                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var itemsWithMissingIds = db.SteamMarketItems
@@ -51,8 +51,8 @@ namespace SCMM.Web.Server.Services.Jobs
                 _logger.LogInformation($"Checking for missing market item name ids (ids: {itemsWithMissingIds.Count()})");
                 var updatedItems = await Observable.Interval(TimeSpan.FromSeconds(30))
                     .Zip(itemsWithMissingIds, (x, y) => y)
-                    .Select(async x => 
-                        steamService.UpdateMarketItemNameId(x, 
+                    .Select(async x =>
+                        steamService.UpdateMarketItemNameId(x,
                             await commnityClient.GetMarketListingItemNameId(
                                 new SteamMarketListingPageRequest()
                                 {

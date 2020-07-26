@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Client;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Steam.Client;
 
 namespace SCMM.Web.Server.Services.Jobs
 {

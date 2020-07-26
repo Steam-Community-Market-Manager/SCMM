@@ -1,5 +1,4 @@
 ﻿using SCMM.Web.Server.Data.Types;
-using System;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
 {

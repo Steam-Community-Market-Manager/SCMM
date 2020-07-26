@@ -18,7 +18,8 @@ namespace SCMM.Web.Client
 
             builder.Services.AddBlazoredLocalStorage();
 
-            builder.Services.AddHttpClient("default", (serviceProvider, client) => {
+            builder.Services.AddHttpClient("default", (serviceProvider, client) =>
+            {
                 client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
                 var state = serviceProvider.GetService<AppState>();
                 if (state != null)
@@ -37,7 +38,7 @@ namespace SCMM.Web.Client
                 .WithIsServer(false)
                 .Build()
             );
-            
+
             await builder.Build().RunAsync();
         }
     }

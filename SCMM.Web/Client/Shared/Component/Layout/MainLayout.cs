@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Skclusive.Core.Component;
 using Skclusive.Material.Core;
 using Skclusive.Material.Drawer;
 using Skclusive.Material.Script;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SCMM.Web.Client.Shared.Component.Layout
 {
@@ -70,10 +70,14 @@ namespace SCMM.Web.Client.Shared.Component.Layout
             get
             {
                 foreach (var item in base.Classes)
+                {
                     yield return item;
+                }
 
                 if (IsDesktop)
+                {
                     yield return "ShiftContent";
+                }
             }
         }
 

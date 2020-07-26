@@ -56,7 +56,7 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
                         {
                             await DoWork(cancellationToken);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             _logger.LogError(ex, $"{this.GetType().Name} work failed");
                         }

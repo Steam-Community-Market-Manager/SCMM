@@ -18,7 +18,7 @@ namespace SCMM.Steam.Client
 
         public void Refresh(IServiceProvider serviceProvider)
         {
-            lock(_sessionLock)
+            lock (_sessionLock)
             {
                 var logger = serviceProvider.GetService(typeof(ILogger<SteamSession>)) as ILogger<SteamSession>;
                 var config = serviceProvider.GetService(typeof(SteamConfiguration)) as SteamConfiguration;
@@ -43,7 +43,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public CookieContainer Cookies 
+        public CookieContainer Cookies
         {
             get
             {

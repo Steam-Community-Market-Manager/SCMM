@@ -13,7 +13,7 @@ namespace SCMM.Web.Client
     {
         public const string HttpHeaderLanguage = "language";
         public const string HttpHeaderCurrency = "currency";
-        public const string HttpHeaderProfile  = "profile";
+        public const string HttpHeaderProfile = "profile";
 
         public string LanguageId { get; set; }
 
