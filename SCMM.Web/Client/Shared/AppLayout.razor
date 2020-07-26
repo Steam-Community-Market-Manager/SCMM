@@ -53,25 +53,47 @@
 
     private List<NavigationItem> BuildGeneralNaviationItems()
     {
-        return new List<NavigationItem>
-{
-            new NavigationItem
+        var items = new List<NavigationItem>();
+        if (State.HasProfile)
+        {
+            items.AddRange(new List<NavigationItem>
             {
-                Icon = @<SwapBagIcon />,
-                Title = "Inventory Value",
-                Path = $"steam/inventory/{State.ProfileId}",
-                Prefix = true,
-                Disabled = (!State.HasProfile)
-            },
-            new NavigationItem
+                new NavigationItem
+                {
+                    Icon = @<SwapBagIcon />,
+                    Title = "Inventory Value",
+                    Path = $"steam/inventory/{State.ProfileId}",
+                    Prefix = true
+                },
+                new NavigationItem
+                {
+                    Icon = @<CashIcon />,
+                    Title = "Trade History",
+                    Path =  "steam/history",
+                    Prefix =  true,
+                    Disabled = true
+                }
+            });
+        }
+        else
+        {
+            items.AddRange(new List<NavigationItem>
             {
-                Icon = @<CashIcon />,
-                Title = "Trade History",
-                Path =  "steam/history",
-                Prefix =  true,
-                Disabled = true
-            },
-            null,
+                new NavigationItem
+                {
+                    Icon = @<SwapBagIcon />,
+                    Title = "Inventory Value",
+                    Path = $"steam/inventory",
+                    Prefix = true
+                }
+            });
+        }
+        if (items.Any())
+        {
+            items.Add(null);
+        }
+        items.AddRange(new List<NavigationItem>
+        {
             new NavigationItem
             {
                 Icon = @<ChartIcon />,
@@ -108,8 +130,14 @@
                 Path =  "steam/workshop",
                 Prefix =  true,
                 Disabled = true
-            },
-            null,
+            }
+        });
+        if (items.Any())
+        {
+            items.Add(null);
+        }
+        items.AddRange(new List<NavigationItem>
+        {
             new NavigationItem
             {
                 Icon = @<DiscussionIcon />,
@@ -133,7 +161,9 @@
                 SubTitle = "Show your support",
                 OnClick = DonationOpen
             }
-        };
-        }
+        });
+
+        return items;
+    }
 
 }
