@@ -234,7 +234,7 @@ else
     {
         try
         {
-            Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"InventoryItems/{SteamId}?sync={Sync}");
+            Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"api/inventory/{SteamId}?sync={Sync}");
             ProfileNotFound = (Profile == null);
             if (Profile != null)
             {

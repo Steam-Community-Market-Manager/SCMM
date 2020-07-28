@@ -15,7 +15,7 @@ namespace SCMM.Web.Server.API.Controllers
 {
     [AllowAnonymous]
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ProfileController : ControllerBase
     {
         private readonly ILogger<ProfileController> _logger;

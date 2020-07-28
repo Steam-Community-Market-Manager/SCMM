@@ -12,6 +12,7 @@ using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+using SCMM.Web.Shared;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,29 +21,40 @@ namespace SCMM.Web.Server.API.Controllers
 {
     [AllowAnonymous]
     [ApiController]
-    [Route("[controller]")]
-    public class InventoryItemsController : ControllerBase
+    [Route("api/[controller]")]
+    public class InventoryController : ControllerBase
     {
-        private readonly ILogger<InventoryItemsController> _logger;
+        private readonly ILogger<InventoryController> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMapper _mapper;
 
-        public InventoryItemsController(ILogger<InventoryItemsController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
+        public InventoryController(ILogger<InventoryController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
             _mapper = mapper;
         }
 
-        [HttpGet("{steamId}")]
-        public async Task<ProfileInventoryDetailsDTO> Get([FromRoute] string steamId, [FromQuery] bool sync = false)
+        [HttpGet("me")]
+        public async Task<ProfileInventoryDetailsDTO> GetMyInventory([FromQuery] bool sync = false)
         {
+            return await GetInventory(Request.ProfileId(), sync);
+        }
+
+        [HttpGet("{steamId}")]
+        public async Task<ProfileInventoryDetailsDTO> GetInventory([FromRoute] string steamId, [FromQuery] bool sync = false)
+        {
+            if (String.IsNullOrEmpty(steamId))
+            {
+                throw new ArgumentNullException(nameof(steamId));
+            }
+
             using (var scope = _scopeFactory.CreateScope())
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var profile = (SteamProfile)null;
-
+                
                 if (sync)
                 {
                     // Force inventory sync
@@ -70,8 +82,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 if (profile == null)
                 {
-                    _logger.LogError($"Profile with SteamID '{steamId}' was not found");
-                    return null;
+                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
                 }
 
                 var mappedProfile = _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(
@@ -95,8 +106,52 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [HttpGet("me/total")]
+        public async Task<ProfileInventoryTotalsDTO> GetMyInventoryTotal()
+        {
+            return await GetInventoryTotal(Request.ProfileId());
+        }
+
+        [HttpGet("{steamId}/total")]
+        public async Task<ProfileInventoryTotalsDTO> GetInventoryTotal([FromRoute] string steamId)
+        {
+            if (String.IsNullOrEmpty(steamId))
+            {
+                throw new ArgumentNullException(nameof(steamId));
+            }
+
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var defaultCurrency = SteamCurrencyService.GetDefaultCached();
+                var profileInventory = await db.SteamProfiles
+                    .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
+                    .Select(x => new
+                    {
+                        TotalItems = x.InventoryItems.Sum(x => x.Quantity),
+                        TotalInvested = x.InventoryItems.Sum(x => x.BuyPrice / x.Currency.ExchangeRateMultiplier),
+                        TotalMarketValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last1hrValue),
+                        TotalResellValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.ResellPrice)
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (profileInventory == null)
+                {
+                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
+                }
+
+                return new ProfileInventoryTotalsDTO()
+                {
+                    TotalItems = profileInventory.TotalItems,
+                    TotalInvested = Request.Currency().CalculateExchange(profileInventory.TotalInvested ?? 0),
+                    TotalMarketValue = Request.Currency().CalculateExchange(profileInventory.TotalMarketValue, defaultCurrency),
+                    TotalResellValue = Request.Currency().CalculateExchange(profileInventory.TotalResellValue, defaultCurrency),
+                };
+            }
+        }
+
         [HttpPut("item/{inventoryItemId}")]
-        public async void SetItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
+        public async void SetInventoryItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
         {
             using (var scope = _scopeFactory.CreateScope())
             {

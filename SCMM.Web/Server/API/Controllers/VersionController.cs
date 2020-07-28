@@ -7,12 +7,12 @@ namespace SCMM.Web.Server.API.Controllers
 {
     [AllowAnonymous]
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class VersionController : ControllerBase
     {
-        private readonly ILogger<StoreItemsController> _logger;
+        private readonly ILogger<StoreController> _logger;
 
-        public VersionController(ILogger<StoreItemsController> logger)
+        public VersionController(ILogger<StoreController> logger)
         {
             _logger = logger;
         }

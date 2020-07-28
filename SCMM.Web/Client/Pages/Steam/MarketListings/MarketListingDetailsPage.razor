@@ -78,7 +78,7 @@ else
     {
         try
         {
-            Item = await Http.GetFromJsonAsync<MarketItemDetailDTO>($"MarketItems/{ItemId}");
+            Item = await Http.GetFromJsonAsync<MarketItemDetailDTO>($"api/market/{ItemId}");
         }
         catch (AccessTokenNotAvailableException exception)
         {

@@ -11,6 +11,8 @@ namespace SCMM.Web.Server.Domain
 {
     public class SteamLanguageService
     {
+        private const string DefaultCacheKey = "default";
+
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         private readonly SteamDbContext _db;
@@ -31,10 +33,18 @@ namespace SCMM.Web.Server.Domain
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetPriority(CacheItemPriority.NeverRemove);
 
+            Cache.Set(DefaultCacheKey, languages.FirstOrDefault(x => x.IsDefault));
             foreach (var language in languages)
             {
                 Cache.Set(language.Name, language, cacheOptions);
             }
+        }
+
+        public static LanguageDetailedDTO GetDefaultCached()
+        {
+            LanguageDetailedDTO value = null;
+            Cache.TryGetValue(DefaultCacheKey, out value);
+            return value;
         }
 
         public static LanguageDetailedDTO GetByNameCached(string name)

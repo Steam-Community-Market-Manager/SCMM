@@ -57,7 +57,7 @@ else
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<MarketItemListDTO[]>(
-                $"MarketItems?filter={Uri.EscapeDataString(filter ?? String.Empty)}&pageSize={PageSize}"
+                $"api/market?filter={Uri.EscapeDataString(filter ?? String.Empty)}&pageSize={PageSize}"
             );
             StateHasChanged();
         }

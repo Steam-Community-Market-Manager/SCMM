@@ -15,6 +15,8 @@ namespace SCMM.Web.Client
         public const string HttpHeaderCurrency = "currency";
         public const string HttpHeaderProfile = "profile";
 
+        public event EventHandler Changed;
+
         public string LanguageId { get; set; }
 
         public LanguageDetailedDTO Language => Profile?.Language;
@@ -23,15 +25,13 @@ namespace SCMM.Web.Client
 
         public CurrencyDetailedDTO Currency => Profile?.Currency;
 
-        public string ProfileId { get; set; }
-
-        public ProfileDetailedDTO Profile { get; set; }
-
-        public event EventHandler Changed;
-
         public bool IsValid => (
             !String.IsNullOrEmpty(LanguageId) && !String.IsNullOrEmpty(CurrencyId)
         );
+
+        public string ProfileId { get; set; }
+
+        public ProfileDetailedDTO Profile { get; set; }
 
         public bool HasProfile => (
             !String.IsNullOrEmpty(ProfileId) && Profile != null && Profile.Id != Guid.Empty
@@ -93,7 +93,7 @@ namespace SCMM.Web.Client
                 {
                     SetHeadersFor(http);
                     Profile = await http.GetFromJsonAsync<ProfileDetailedDTO>(
-                        $"profile/me"
+                        $"api/profile/me"
                     );
 
                     Changed?.Invoke(this, new EventArgs());
@@ -124,7 +124,7 @@ namespace SCMM.Web.Client
                 try
                 {
                     SetHeadersFor(http);
-                    await http.PutAsJsonAsync("profile/me", new UpdateProfileStateCommand()
+                    await http.PutAsJsonAsync("api/profile/me", new UpdateProfileStateCommand()
                     {
                         Country = country,
                         Language = language,

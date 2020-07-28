@@ -52,6 +52,17 @@ namespace SCMM.Web.Shared
             return (long)Math.Floor(localValue);
         }
 
+        public static long CalculateExchange(this IExchangeableCurrency localCurrency, decimal value)
+        {
+            if (localCurrency == null)
+            {
+                return 0;
+            }
+
+            var localValue = (decimal) (value * localCurrency.ExchangeRateMultiplier);
+            return (long)Math.Floor(localValue);
+        }
+
         public static string ToPriceString<T>(this T currency, long price, IExchangeableCurrency priceCurrency, bool dense = false)
             where T : ICurrency, IExchangeableCurrency
         {
@@ -191,32 +202,36 @@ namespace SCMM.Web.Shared
             return (b == 0 ? Math.Abs(a) : GCD(b, a % b));
         }
 
-        public static string ToDurationString(this TimeSpan timeSpan, bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true)
+        public static string ToDurationString(this TimeSpan timeSpan, bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true, string suffix = null)
         {
+            if (timeSpan <= TimeSpan.Zero)
+            {
+                return "due any moment now";
+            }
             if (timeSpan.TotalMinutes <= 0)
             {
                 return "just moments ago";
             }
-
             var text = new StringBuilder();
             if (timeSpan.Days > 0 && showDays == true)
             {
                 text.AppendFormat("{0} day{1} ", timeSpan.Days, timeSpan.Days > 1 ? "s" : String.Empty);
             }
-
             if (timeSpan.Hours > 0 && showHours == true)
             {
                 text.AppendFormat("{0} hour{1} ", timeSpan.Hours, timeSpan.Hours > 1 ? "s" : String.Empty);
             }
-
             if (timeSpan.Minutes > 0 && showMinutes == true)
             {
                 text.AppendFormat("{0} minute{1} ", timeSpan.Minutes, timeSpan.Minutes > 1 ? "s" : String.Empty);
             }
-
             if (timeSpan.Minutes <= 0 && timeSpan.Seconds > 0 && showSeconds == true)
             {
                 text.AppendFormat("{0} second{1} ", timeSpan.Seconds, timeSpan.Seconds > 1 ? "s" : String.Empty);
+            }
+            if (!String.IsNullOrEmpty(suffix))
+            {
+                text.Append($" {suffix}");
             }
 
             return text.ToString();

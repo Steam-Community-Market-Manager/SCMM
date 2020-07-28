@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace SCMM.Web.Server.API.Controllers
 {
+    [AllowAnonymous]
+    [ApiController]
+    [Route("[controller]")]
     public class OidcConfigurationController : Controller
     {
         private readonly ILogger<OidcConfigurationController> _logger;

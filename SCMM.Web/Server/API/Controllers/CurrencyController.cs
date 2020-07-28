@@ -12,7 +12,7 @@ namespace SCMM.Web.Server.API.Controllers
 {
     [AllowAnonymous]
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class CurrencyController : ControllerBase
     {
         private readonly ILogger<CurrencyController> _logger;

@@ -15,18 +15,44 @@ namespace SCMM.Web.Server.API.Controllers
 {
     [AllowAnonymous]
     [ApiController]
-    [Route("[controller]")]
-    public class StoreItemsController : ControllerBase
+    [Route("api/[controller]")]
+    public class StoreController : ControllerBase
     {
-        private readonly ILogger<StoreItemsController> _logger;
+        private readonly ILogger<StoreController> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMapper _mapper;
 
-        public StoreItemsController(ILogger<StoreItemsController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
+        public StoreController(ILogger<StoreController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
             _mapper = mapper;
+        }
+
+        [HttpGet("nextUpdateExpectedOn")]
+        public DateTimeOffset GetNextUpdateExpectedOn()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var nextStoreUpdateUtc = db.SteamAssetWorkshopFiles
+                    .Select(p => p.AcceptedOn).Max().UtcDateTime.Date;
+
+                // Store normally updates every thursday or friday around 9pm (UK time)
+                do
+                {
+                    nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
+                } while (nextStoreUpdateUtc.DayOfWeek != DayOfWeek.Thursday);
+                
+                // If the expected store date is in the past, assume it will be tomorrow
+                if ((nextStoreUpdateUtc + TimeSpan.FromHours(3)) <= DateTime.UtcNow)
+                {
+                    nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
+                }
+
+                nextStoreUpdateUtc = nextStoreUpdateUtc.Add(new TimeSpan(21, 0, 0));
+                return new DateTimeOffset(nextStoreUpdateUtc, TimeZoneInfo.Utc.BaseUtcOffset);
+            }
         }
 
         [HttpGet]

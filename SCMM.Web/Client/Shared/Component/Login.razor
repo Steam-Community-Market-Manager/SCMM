@@ -192,8 +192,8 @@
             SteamLookupTimer = new Timer(1000);
             SteamLookupTimer.AutoReset = false;
             SteamLookupTimer.Elapsed += async (source, e) => await HandleSteamIdLookup(SteamIdText);
-            Languages = await Http.GetFromJsonAsync<LanguageListDTO[]>($"language");
-            Currencies = await Http.GetFromJsonAsync<CurrencyListDTO[]>($"currency");
+            Languages = await Http.GetFromJsonAsync<LanguageListDTO[]>($"api/language");
+            Currencies = await Http.GetFromJsonAsync<CurrencyListDTO[]>($"api/currency");
 
             await TryGuessLocality();
         }
@@ -218,7 +218,7 @@
             SteamIdIsResolving = true;
             StateHasChanged();
             SteamProfile = await Http.GetFromJsonAsync<ProfileDTO>(
-                $"profile/steam/{Uri.EscapeDataString(steamId)}/summary"
+                $"api/profile/steam/{Uri.EscapeDataString(steamId)}/summary"
             );
         }
         catch (Exception ex)

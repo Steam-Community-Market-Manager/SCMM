@@ -1,0 +1,210 @@
+﻿@using SCMM.Web.Shared.Domain.DTOs.InventoryItems
+@using SCMM.Web.Shared
+@inject HttpClient Http
+@inject AppState State
+
+@if (NavigationItems == null)
+{
+    <Loading />
+}
+else
+{
+    <Navigation Items="@NavigationItems">
+    </Navigation>
+}
+
+<DonateDialog @bind-Open="@DonateDialogOpened" />
+
+@code {
+
+    private List<NavigationItem> NavigationItems { get; set; }
+
+    private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
+
+    private DateTimeOffset? StoreUpdatesOn { get; set; }
+
+    private bool DonateDialogOpened { get; set; }
+
+    protected override void OnInitialized()
+    {
+        NavigationItems = RebuildNaviationItems();
+        Task.Run(async () =>
+        {
+            /// Do in background...
+            await RefreshInventoryTotals();
+            await RefreshStoreTimeRemaining();
+            NavigationItems = RebuildNaviationItems();
+            StateHasChanged();
+        });
+    }
+
+    private async Task RefreshInventoryTotals()
+    {
+        if (!State.HasProfile)
+        {
+            return;
+        }
+        try
+        {
+            InventoryTotals = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
+                $"api/inventory/me/total"
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to refresh inventory totals");
+        }
+    }
+
+    private async Task RefreshStoreTimeRemaining()
+    {
+        try
+        {
+            StoreUpdatesOn = await Http.GetFromJsonAsync<DateTimeOffset>(
+                $"api/store/nextUpdateExpectedOn"
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to refresh remaining store time");
+        }
+    }
+
+    private List<NavigationItem> RebuildNaviationItems()
+    {
+        var inventoryValue = String.Empty;
+        if (InventoryTotals?.TotalMarketValue > 0)
+        {
+            inventoryValue = State.Currency.ToPriceString(InventoryTotals.TotalMarketValue);
+        }
+
+        var storeUpdateTimeRemaining = String.Empty;
+        if (StoreUpdatesOn != null)
+        {
+            storeUpdateTimeRemaining = (StoreUpdatesOn.Value - DateTimeOffset.Now).ToDurationString(
+                showDays: true, showHours: true, showMinutes: false, showSeconds: false, suffix: "left"
+            );
+        }
+
+        var items = new List<NavigationItem>();
+        if (State.HasProfile)
+        {
+            items.AddRange(new List<NavigationItem>
+            {
+                new NavigationItem
+                {
+                    Icon = @<SwapBagIcon />,
+                    Title = "Inventory Value",
+                    Path = $"steam/inventory/{State.ProfileId}",
+                    SubTitle = inventoryValue,
+                    Prefix = true
+                },
+                new NavigationItem
+                {
+                    Icon = @<CashIcon />,
+                    Title = "Trade History",
+                    Path =  "steam/history",
+                    Prefix =  true,
+                    Disabled = true
+                }
+            });
+        }
+        else
+        {
+            items.AddRange(new List<NavigationItem>
+            {
+                new NavigationItem
+                {
+                    Icon = @<SwapBagIcon />,
+                    Title = "Inventory Value",
+                    Path = $"steam/inventory",
+                    Prefix = true
+                }
+            });
+        }
+        if (items.Any())
+        {
+            items.Add(null);
+        }
+        items.AddRange(new List<NavigationItem>
+        {
+            new NavigationItem
+            {
+                Icon = @<ChartIcon />,
+                Title = "Market Statistics",
+                Path = "steam/marketstatistics",
+                Prefix = true
+            },
+            new NavigationItem
+            {
+                Icon = @<ArtificialIntelligenceIcon />,
+                Title = "Market Insights",
+                Path =  "steam/marketinsights",
+                Prefix =  true,
+                Disabled = true
+            },
+            new NavigationItem
+            {
+                Icon = @<TakeMyMoneyIcon />,
+                Title = "Market Listings",
+                Path = "steam/marketplace",
+                Prefix = true
+            },
+            new NavigationItem
+            {
+                Icon = @<PriceTagIcon />,
+                Title = "Item Store",
+                SubTitle = storeUpdateTimeRemaining,
+                Path =  "steam/store",
+                Prefix =  true
+            },
+            new NavigationItem
+            {
+                Icon = @<SprayIcon />,
+                Title = "Item Workshop",
+                Path =  "steam/workshop",
+                Prefix =  true,
+                Disabled = true
+            }
+        });
+        if (items.Any())
+        {
+            items.Add(null);
+        }
+        items.AddRange(new List<NavigationItem>
+        {
+            new NavigationItem
+            {
+                Icon = @<DiscussionIcon />,
+                Title = "Community",
+                SubTitle = "Chat on Discord",
+                Path =  "https://discord.gg/CRMf95Z",
+                Prefix =  false
+            },
+            new NavigationItem
+            {
+                Icon = @<InformationIcon />,
+                Title = "About",
+                SubTitle = "FAQ and changes",
+                Path =  "about",
+                Prefix =  true
+            },
+            new NavigationItem
+            {
+                Icon = @<ReceiveMoneyIcon />,
+                Title = "Donate",
+                SubTitle = "Show your support",
+                OnClick = DonationOpen
+            }
+        });
+
+        return items;
+    }
+
+    private void DonationOpen()
+    {
+        DonateDialogOpened = true;
+        StateHasChanged();
+    }
+
+}

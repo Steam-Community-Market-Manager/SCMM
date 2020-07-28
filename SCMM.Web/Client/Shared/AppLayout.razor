@@ -14,156 +14,18 @@
         {
             <Profile Name="@State.Profile.Name" SubTitle="@State.Profile.ProfileId" Avatar="@State.Profile.AvatarLargeUrl" />
         }
-        @if (NavigationItems != null)
-        {
-            <Navigation Items="@NavigationItems">
-            </Navigation>
-        }
+        <AppNavigation />
     </SidebarContent>
     <BodyContent>
         @Body
     </BodyContent>
     <FooterContent>
-        <AppVersion />
-        <Typography Variant="@TypographyVariant.Body2">
+        <p>
+            <AppVersion />
+        </p>
+        <p>
             <span><strong>SCMM</strong></span>
             <span>&copy; 2020 Rhys Koedijk</span>
-        </Typography>
+        </p>
     </FooterContent>
 </MainLayout>
-
-<DonateDialog @bind-Open="@DonateDialogOpened" />
-
-@code {
-
-    private List<NavigationItem> NavigationItems { get; set; }
-
-    private bool DonateDialogOpened { get; set; }
-
-    protected override void OnInitialized()
-    {
-        NavigationItems = BuildGeneralNaviationItems();
-    }
-
-    private void DonationOpen()
-    {
-        DonateDialogOpened = true;
-        StateHasChanged();
-    }
-
-    private List<NavigationItem> BuildGeneralNaviationItems()
-    {
-        var items = new List<NavigationItem>();
-        if (State.HasProfile)
-        {
-            items.AddRange(new List<NavigationItem>
-            {
-                new NavigationItem
-                {
-                    Icon = @<SwapBagIcon />,
-                    Title = "Inventory Value",
-                    Path = $"steam/inventory/{State.ProfileId}",
-                    Prefix = true
-                },
-                new NavigationItem
-                {
-                    Icon = @<CashIcon />,
-                    Title = "Trade History",
-                    Path =  "steam/history",
-                    Prefix =  true,
-                    Disabled = true
-                }
-            });
-        }
-        else
-        {
-            items.AddRange(new List<NavigationItem>
-            {
-                new NavigationItem
-                {
-                    Icon = @<SwapBagIcon />,
-                    Title = "Inventory Value",
-                    Path = $"steam/inventory",
-                    Prefix = true
-                }
-            });
-        }
-        if (items.Any())
-        {
-            items.Add(null);
-        }
-        items.AddRange(new List<NavigationItem>
-        {
-            new NavigationItem
-            {
-                Icon = @<ChartIcon />,
-                Title = "Market Statistics",
-                Path = "steam/marketstatistics",
-                Prefix = true
-            },
-            new NavigationItem
-            {
-                Icon = @<ArtificialIntelligenceIcon />,
-                Title = "Market Insights",
-                Path =  "steam/marketinsights",
-                Prefix =  true,
-                Disabled = true
-            },
-            new NavigationItem
-            {
-                Icon = @<TakeMyMoneyIcon />,
-                Title = "Market Listings",
-                Path = "steam/marketplace",
-                Prefix = true
-            },
-            new NavigationItem
-            {
-                Icon = @<PriceTagIcon />,
-                Title = "Item Store",
-                Path =  "steam/store",
-                Prefix =  true
-            },
-            new NavigationItem
-            {
-                Icon = @<SprayIcon />,
-                Title = "Item Workshop",
-                Path =  "steam/workshop",
-                Prefix =  true,
-                Disabled = true
-            }
-        });
-        if (items.Any())
-        {
-            items.Add(null);
-        }
-        items.AddRange(new List<NavigationItem>
-        {
-            new NavigationItem
-            {
-                Icon = @<DiscussionIcon />,
-                Title = "Community",
-                SubTitle = "Chat on Discord",
-                Path =  "https://discord.gg/CRMf95Z",
-                Prefix =  false
-            },
-            new NavigationItem
-            {
-                Icon = @<InformationIcon />,
-                Title = "About",
-                SubTitle = "FAQ and changes",
-                Path =  "about",
-                Prefix =  true
-            },
-            new NavigationItem
-            {
-                Icon = @<ReceiveMoneyIcon />,
-                Title = "Donate",
-                SubTitle = "Show your support",
-                OnClick = DonationOpen
-            }
-        });
-
-        return items;
-    }
-
-}

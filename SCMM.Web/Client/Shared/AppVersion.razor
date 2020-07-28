@@ -1,16 +1,14 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
 @inject HttpClient Http
 
-<Typography Variant="@TypographyVariant.Body2" GutterBottom>
-    @if (ClientVersion != null)
-    {
-        <span><i class="fa fa-fw fa-user"></i> v@(ClientVersion)&nbsp;</span>
-    }
-    @if (ServerVersion != null)
-    {
-        <span><i class="fa fa-fw fa-server"></i> v@(ServerVersion)&nbsp;</span>
-    }
-</Typography>
+@if (ClientVersion != null)
+{
+    <span><i class="fa fa-fw fa-user"></i> v@(ClientVersion)&nbsp;</span>
+}
+@if (ServerVersion != null)
+{
+    <span><i class="fa fa-fw fa-server"></i> v@(ServerVersion)&nbsp;</span>
+}
 
 @code
 {
@@ -22,7 +20,7 @@
     {
         var client = System.Reflection.Assembly.GetExecutingAssembly().GetName();
         ClientVersion = $"{client.Version.Major}.{client.Version.Minor}";
-        ServerVersion = await Http.GetStringAsync("Version");
+        ServerVersion = await Http.GetStringAsync("api/version");
     }
 
 }

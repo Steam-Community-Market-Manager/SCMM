@@ -177,7 +177,7 @@ else
     {
         try
         {
-            Items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"StoreItems");
+            Items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"api/store");
             OnSelectedItemChartChanged(SelectedItemChartPanel);
             StateHasChanged();
         }

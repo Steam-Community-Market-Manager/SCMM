@@ -640,7 +640,7 @@
     {
         try
         {
-            HotRightNow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/hotRightNow");
+            HotRightNow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/hotRightNow");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -653,7 +653,7 @@
     {
         try
         {
-            AllTimeLow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/allTimeLow");
+            AllTimeLow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/allTimeLow");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -666,7 +666,7 @@
     {
         try
         {
-            AllTimeHigh = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/allTimeHigh");
+            AllTimeHigh = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/allTimeHigh");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -679,7 +679,7 @@
     {
         try
         {
-            StonkingRecently = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/stonkingRecently");
+            StonkingRecently = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/stonkingRecently");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -692,7 +692,7 @@
     {
         try
         {
-            StinkingRecently = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/stinkingRecently");
+            StinkingRecently = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/stinkingRecently");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -705,7 +705,7 @@
     {
         try
         {
-            MostProfitable = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/mostProfitable");
+            MostProfitable = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostProfitable");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -718,7 +718,7 @@
     {
         try
         {
-            MostWanted = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/mostWanted");
+            MostWanted = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostWanted");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -731,7 +731,7 @@
     {
         try
         {
-            MostSaturated = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/mostSaturated");
+            MostSaturated = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostSaturated");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -744,7 +744,7 @@
     {
         try
         {
-            MostCommon = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/mostCommon");
+            MostCommon = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostCommon");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -757,7 +757,7 @@
     {
         try
         {
-            MostRare = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/mostRare");
+            MostRare = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostRare");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -770,7 +770,7 @@
     {
         try
         {
-            BiggestCrashes = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"MarketItems/dashboard/biggestCrashes");
+            BiggestCrashes = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/biggestCrashes");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)

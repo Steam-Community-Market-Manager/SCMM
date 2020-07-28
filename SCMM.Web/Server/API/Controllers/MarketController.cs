@@ -18,14 +18,14 @@ namespace SCMM.Web.Server.API.Controllers
 {
     [AllowAnonymous]
     [ApiController]
-    [Route("[controller]")]
-    public class MarketItemsController : ControllerBase
+    [Route("api/[controller]")]
+    public class MarketController : ControllerBase
     {
-        private readonly ILogger<MarketItemsController> _logger;
+        private readonly ILogger<MarketController> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IMapper _mapper;
 
-        public MarketItemsController(ILogger<MarketItemsController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
+        public MarketController(ILogger<MarketController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
