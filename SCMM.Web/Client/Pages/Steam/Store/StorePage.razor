@@ -106,7 +106,7 @@ else
                                         </Icon>
                                         <MessageContent>
                                             <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Items.Sum(x => x.Subscriptions * x.StorePrice))) so far this week.</span>
-                                            <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher. Steam doesn't advertise exact sales figures, this is the closest estimate.</span>
+                                            <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than shown here. Steam doesn't advertise exact sales figures, this is the closest estimate.</span>
                                         </MessageContent>
                                     </Alert>
                                     <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
@@ -280,19 +280,41 @@ else
             Items.Select(x => x.Name).ToArray()
         );
 
-        var itemRevenue = new BarDataset<DoubleWrapper>
+        var totalRevenue = new BarDataset<DoubleWrapper>
         {
-            Label = "Minimum Sales Revenue",
+            Label = "Total Revenue",
             BackgroundColor = "#388e3c",
             BorderColor = "#1b5e20",
             BorderWidth = 1
         };
-        itemRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper) (x.Subscriptions * x.StorePrice))
+        totalRevenue.AddRange(
+            Items.Select(x => (DoubleWrapper)(x.Subscriptions * x.StorePrice))
+        );
+
+        var steamPublisherRevenue = new BarDataset<DoubleWrapper>
+        {
+            Label = "Steam/Publisher Revenue",
+            BackgroundColor = "#455a64",
+            BorderColor = "#263238",
+            BorderWidth = 1
+        };
+        steamPublisherRevenue.AddRange(
+            Items.Select(x => (DoubleWrapper)((x.Subscriptions * x.StorePrice) * 0.75))
+        );
+
+        var authorRevenue = new BarDataset<DoubleWrapper>
+        {
+            Label = "Skin Author Revenue",
+            BackgroundColor = "#1976d2",
+            BorderColor = "#0d47a1",
+            BorderWidth = 1
+        };
+        authorRevenue.AddRange(
+            Items.Select(x => (DoubleWrapper)((x.Subscriptions * x.StorePrice) * 0.25))
         );
 
         ItemRevenueChart.Data.Datasets.AddRange(new[] {
-            itemRevenue
+            totalRevenue, steamPublisherRevenue, authorRevenue
         });
     }
 
