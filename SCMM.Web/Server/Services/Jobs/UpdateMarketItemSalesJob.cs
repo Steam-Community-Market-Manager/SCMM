@@ -43,7 +43,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .OrderBy(x => x.LastCheckedSalesOn)
-                    .Take(10) // batch 10 at a time
+                    .Take(5) // batch 5 at a time
                     .ToList();
 
                 if (!items.Any())
