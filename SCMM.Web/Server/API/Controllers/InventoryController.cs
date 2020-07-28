@@ -86,8 +86,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
 
                 var mappedProfile = _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(
-                    await service.LoadAndRefreshProfileInventory(steamId),
-                    Request
+                    profile, Request
                 );
 
                 var inventoryValueHistory = await service.LoadInventoryValueHistory(steamId, Request.Currency());
