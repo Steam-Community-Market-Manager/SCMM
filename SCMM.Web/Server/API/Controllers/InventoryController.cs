@@ -64,13 +64,11 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     // Use last cached inventory
                     profile = await db.SteamProfiles
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.App)
                         .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
                         .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
                         .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem)
                         .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Description)
                         .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Currency)
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Activity)
                         .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
 
                     // Profile doesn't exist yet? force sync

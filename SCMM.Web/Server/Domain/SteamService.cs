@@ -195,7 +195,6 @@ namespace SCMM.Web.Server.Domain
                 .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Description)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Currency)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Activity)
                 .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
             if (profile == null)
             {
