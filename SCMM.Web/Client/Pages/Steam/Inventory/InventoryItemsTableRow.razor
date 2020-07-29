@@ -1,6 +1,5 @@
 ﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
-@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
-@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @inherits ComponentBase
 @inject HttpClient Http
@@ -91,7 +90,9 @@
 
     protected override void OnInitialized()
     {
-        Value = (Item.BuyPrice != null ? Item.Currency?.ToPriceString(Item.BuyPrice.Value, dense: true) : null);
+        Value = Item.BuyPrice != null 
+            ? Item.Currency?.ToPriceString(Item.BuyPrice.Value, dense: true) 
+            : null;
     }
 
     private string GetItemClass()

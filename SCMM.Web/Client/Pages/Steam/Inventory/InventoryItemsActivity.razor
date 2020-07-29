@@ -1,5 +1,6 @@
 ﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
-@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared;
 @inherits ComponentBase
 @inject AppState State
@@ -49,7 +50,7 @@
 @code {
 
     [Parameter]
-    public IDictionary<MarketItemActivityDTO, MarketItemListDTO> Items { get; set; }
+    public IDictionary<MarketItemActivityDTO, InventoryMarketItemDTO> Items { get; set; }
 
     private string GetItemClass(MarketItemActivityDTO item)
     {

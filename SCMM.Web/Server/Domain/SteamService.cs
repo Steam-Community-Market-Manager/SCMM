@@ -11,7 +11,6 @@ using SCMM.Steam.Shared.Community.Responses.Json;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Types;
 using SCMM.Web.Server.Domain.Models.Steam;
-using SCMM.Web.Shared;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
@@ -119,71 +118,6 @@ namespace SCMM.Web.Server.Domain
             }
 
             return profile;
-        }
-
-        public async Task<IDictionary<DateTimeOffset, double>> LoadInventoryValueHistory(string steamId, IExchangeableCurrency currency)
-        {
-            var history = new Dictionary<DateTimeOffset, double>();
-            var today = DateTimeOffset.UtcNow.Date;
-
-            var baseCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.IsDefault);
-            var inventoryValues = await _db.SteamProfiles
-                .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                .Select(x => new
-                {
-                    Last1hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last1hrValue),
-                    Last24hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last24hrValue),
-                    Last48hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last48hrValue),
-                    Last72hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last72hrValue),
-                    Last96hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last96hrValue),
-                    Last120hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last120hrValue),
-                    Last144hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last144hrValue),
-                    Last168hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last168hrValue)
-                })
-                .FirstOrDefaultAsync();
-
-            history[today.Subtract(TimeSpan.FromDays(7))] = currency.CalculateExchange(inventoryValues.Last168hrValue, baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(6))] = currency.CalculateExchange(inventoryValues.Last144hrValue, baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(5))] = currency.CalculateExchange(inventoryValues.Last120hrValue, baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(4))] = currency.CalculateExchange(inventoryValues.Last96hrValue, baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(3))] = currency.CalculateExchange(inventoryValues.Last72hrValue, baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(2))] = currency.CalculateExchange(inventoryValues.Last48hrValue, baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(1))] = currency.CalculateExchange(inventoryValues.Last24hrValue, baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(0))] = currency.CalculateExchange(inventoryValues.Last1hrValue, baseCurrency);
-            return history;
-        }
-
-        public async Task<IDictionary<DateTimeOffset, double>> LoadInventoryProfitHistory(string steamId, IExchangeableCurrency currency)
-        {
-            var history = new Dictionary<DateTimeOffset, double>();
-            var today = DateTimeOffset.UtcNow.Date;
-
-            var baseCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.IsDefault);
-            var inventoryValues = await _db.SteamProfiles
-                .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                .Select(x => new
-                {
-                    Invested = x.InventoryItems.Sum(x => x.BuyPrice),
-                    Last1hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last1hrValue),
-                    Last24hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last24hrValue),
-                    Last48hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last48hrValue),
-                    Last72hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last72hrValue),
-                    Last96hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last96hrValue),
-                    Last120hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last120hrValue),
-                    Last144hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last144hrValue),
-                    Last168hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last168hrValue)
-                })
-                .FirstOrDefaultAsync();
-
-            history[today.Subtract(TimeSpan.FromDays(7))] = currency.CalculateExchange(inventoryValues.Last168hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last168hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(6))] = currency.CalculateExchange(inventoryValues.Last144hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last144hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(5))] = currency.CalculateExchange(inventoryValues.Last120hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last120hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(4))] = currency.CalculateExchange(inventoryValues.Last96hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last96hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(3))] = currency.CalculateExchange(inventoryValues.Last72hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last72hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(2))] = currency.CalculateExchange(inventoryValues.Last48hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last48hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(1))] = currency.CalculateExchange(inventoryValues.Last24hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last24hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
-            history[today.Subtract(TimeSpan.FromDays(0))] = currency.CalculateExchange(inventoryValues.Last1hrValue - SteamEconomyHelper.GetSteamFeeAsInt(inventoryValues.Last1hrValue) - (inventoryValues.Invested ?? 0), baseCurrency);
-            return history;
         }
 
         public async Task<Models.Steam.SteamProfile> LoadAndRefreshProfileInventory(string steamId)

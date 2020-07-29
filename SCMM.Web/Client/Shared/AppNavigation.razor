@@ -52,7 +52,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Failed to refresh inventory totals");
+            Console.WriteLine($"Failed to refresh inventory totals. {ex.Message}");
         }
     }
 
@@ -66,7 +66,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Failed to refresh remaining store time");
+            Console.WriteLine($"Failed to refresh remaining store time. {ex.Message}");
         }
     }
 

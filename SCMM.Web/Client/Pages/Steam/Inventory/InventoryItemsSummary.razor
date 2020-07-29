@@ -1,5 +1,5 @@
 ﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
-@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 @using SCMM.Web.Shared; 
 @inherits ComponentBase
 @inject IJSRuntime JSRuntime
@@ -74,14 +74,14 @@
 @code {
 
     [Parameter]
-    public IDictionary<MarketItemListDTO, int> Items { get; set; }
+    public IDictionary<InventoryMarketItemDTO, int> Items { get; set; }
 
-    private string GetItemStyles(MarketItemListDTO item)
+    private string GetItemStyles(InventoryMarketItemDTO item)
     {
         return $"border: 2px solid {item.ForegroundColour}";
     }
 
-    private async Task OnItemClicked(MarketItemListDTO item)
+    private async Task OnItemClicked(InventoryMarketItemDTO item)
     {
         //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";

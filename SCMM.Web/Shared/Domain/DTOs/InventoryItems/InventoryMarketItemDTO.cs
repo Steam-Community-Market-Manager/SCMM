@@ -1,12 +1,9 @@
-﻿using SCMM.Web.Shared.Domain.DTOs.MarketItems;
-using System;
+﻿using System;
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
-    public class InventoryItemListDTO
+    public class InventoryMarketItemDTO
     {
-        public Guid Id { get; set; }
-
         public string SteamId { get; set; }
 
         public string SteamAppId { get; set; }
@@ -21,10 +18,16 @@ namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 
         public CurrencyDTO Currency { get; set; }
 
-        public long? BuyPrice { get; set; }
+        public long BuyAskingPrice { get; set; }
 
-        public int Quantity { get; set; }
+        public long BuyNowPrice { get; set; }
 
-        public InventoryMarketItemDTO MarketItem { get; set; }
+        public long ResellPrice { get; set; }
+
+        public long ResellTax { get; set; }
+
+        public long ResellProfit { get; set; }
+
+        public long Last1hrValue { get; set; }
     }
 }

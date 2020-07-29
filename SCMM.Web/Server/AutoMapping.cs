@@ -41,6 +41,20 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.BuyPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyPrice, p => p.Currency));
 
+            CreateMap<SteamMarketItem, InventoryMarketItemDTO>()
+                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
+                .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
+                .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
+                .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
+                .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
+                .ForMember(x => x.Currency, o => o.MapFromCurrency())
+                .ForMember(x => x.BuyAskingPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyAskingPrice, p => p.Currency))
+                .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyNowPrice, p => p.Currency))
+                .ForMember(x => x.ResellPrice, o => o.MapFromUsingCurrencyExchange(p => p.ResellPrice, p => p.Currency))
+                .ForMember(x => x.ResellTax, o => o.MapFromUsingCurrencyExchange(p => p.ResellTax, p => p.Currency))
+                .ForMember(x => x.ResellProfit, o => o.MapFromUsingCurrencyExchange(p => p.ResellProfit, p => p.Currency))
+                .ForMember(x => x.Last1hrValue, o => o.MapFromUsingCurrencyExchange(p => p.Last1hrValue, p => p.Currency));
+
             CreateMap<SteamMarketItem, MarketItemListDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))

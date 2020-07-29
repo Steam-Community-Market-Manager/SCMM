@@ -1,6 +1,5 @@
 ﻿@page "/steam/inventory/{SteamId}"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @namespace SCMM.Web.Client.Pages.Steam.Inventory
@@ -37,23 +36,17 @@ else
 {
     <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
     <Grid Container Spacing="@Spacing.Two">
-        @if (State.ProfileId != Profile.SteamId)
-        {
-        <Grid ExtraSmall="@GridSize.Two">
-            <InventoryProfileCard Profile="@Profile" />
-        </Grid>
-        }
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryTotalCard Title="Assets">
                 <Icon>
                     <SwapBagIcon />
                 </Icon>
                 <Total>
-                    @InventoryTotalItemCount
+                    @InventoryTotal.TotalItems
                 </Total>
             </InventoryTotalCard>
         </Grid>
-        @if (InventoryTotalInvestedValue > 0)
+        @if (InventoryTotal?.TotalInvested > 0)
         {
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryTotalCard Title="Total Investment" IconClass="Background-Error">
@@ -61,12 +54,12 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.Currency.ToPriceString(InventoryTotalInvestedValue)
+                    @State.Currency.ToPriceString(InventoryTotal.TotalInvested)
                 </Total>
             </InventoryTotalCard>
         </Grid>
         }
-        @if (InventoryTotalMarketValue > 0)
+        @if (InventoryTotal?.TotalMarketValue > 0)
         {
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryTotalCard Title="Total Market Value" IconClass="Background-Info">
@@ -74,18 +67,18 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.Currency.ToPriceString(InventoryTotalMarketValue)
+                    @State.Currency.ToPriceString(InventoryTotal.TotalMarketValue)
                     <Typography Variant="@TypographyVariant.Body2">
-                        @if (InventoryTotalMarketValueMovement > 0)
+                        @if (InventoryTotal.TotalMarket24hrMovement > 0)
                         {
                             <span class="Text-Success">
-                                🡱 @State.Currency.ToPriceString(InventoryTotalMarketValueMovement) today
+                                🡱 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
                             </span>
                         }
-                        @if (InventoryTotalMarketValueMovement < 0)
+                        @if (InventoryTotal.TotalMarket24hrMovement < 0)
                         {
                             <span class="Text-Error">
-                                🡳 @State.Currency.ToPriceString(InventoryTotalMarketValueMovement) today
+                                🡳 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
                             </span>
                         }
                     </Typography>
@@ -93,7 +86,7 @@ else
             </InventoryTotalCard>
         </Grid>
         }
-        @if (InventoryTotalResellValue > 0)
+        @if (InventoryTotal?.TotalResellValue > 0)
         {
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryTotalCard Title="Optimistic Resell Value" IconClass="Background-Success">
@@ -101,12 +94,12 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.Currency.ToPriceString(InventoryTotalResellValue)
+                    @State.Currency.ToPriceString(InventoryTotal.TotalResellValue)
                 </Total>
             </InventoryTotalCard>
         </Grid>
         }
-        @if (InventoryTotalProfitValue > 0)
+        @if (InventoryTotal?.TotalResellProfit > 0)
         {
         <Grid ExtraSmall="@GridSize.Two">
             <InventoryTotalCard Title="Optimistic Resell Profit" IconClass="Background-Success">
@@ -114,26 +107,12 @@ else
                     <AttachMoneyIcon Style="width:48px;height:48px" />
                 </Icon>
                 <Total>
-                    @State.Currency.ToPriceString(InventoryTotalProfitValue)
-                    <Typography Variant="@TypographyVariant.Body2">
-                        @if (InventoryTotalProfitMovement > 0)
-                        {
-                            <span class="Text-Success">
-                                🡱 @State.Currency.ToPriceString(InventoryTotalProfitMovement) today
-                            </span>
-                        }
-                        @if (InventoryTotalProfitMovement < 0)
-                        {
-                            <span class="Text-Error">
-                                🡳 @State.Currency.ToPriceString(InventoryTotalProfitMovement) today
-                            </span>
-                        }
-                    </Typography>
+                    @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit)
                 </Total>
             </InventoryTotalCard>
         </Grid>
         }
-        @if (State.ProfileId == Profile.SteamId)
+        @if (Profile != null && State.ProfileId == Profile?.SteamId)
         {
         <Grid ExtraSmall="@GridSize.Two" Style="padding:8px">
             <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
@@ -143,6 +122,12 @@ else
                     Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
                 Synchronise
             </Button>
+        </Grid>
+        }
+        else if(Profile != null)
+        {
+        <Grid ExtraSmall="@GridSize.Two">
+            <InventoryProfileCard Profile="@Profile" />
         </Grid>
         }
         <Grid Item ExtraSmall="@GridSize.Twelve">
@@ -157,13 +142,13 @@ else
                 <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Market performance" Wrapped />
             </Tabs>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
-                @if (InventoryItemsSummary != null)
+                @if ((int)SelectedInventoryPanel == 0 && InventoryItemsSummary != null)
                 {
                     <InventoryItemsSummary Items="@InventoryItemsSummary" />
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
-                @if (InventoryItemsDetailed != null)
+                @if ((int)SelectedInventoryPanel == 1 && InventoryItemsDetailed != null)
                 {
                     <Paper>
                         <InventoryItemsTable Items="@InventoryItemsDetailed" />
@@ -173,11 +158,11 @@ else
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
                 @if ((int)SelectedInventoryPanel == 2)
                 {
-                    <InventoryItemsActivity Items="@InventoryActivity" />
+                    <InventoryItemsActivity />
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
-                @if (TotalHistoryChart != null)
+                @if ((int)SelectedInventoryPanel == 3 && TotalHistoryChart != null)
                 {
                     <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
                 }
@@ -200,27 +185,13 @@ else
 
     private object SelectedInventoryPanel { get; set; } = 0;
 
-    private InventoryItemListDTO[] InventoryItems { get; set; }
-
-    private IDictionary<MarketItemListDTO, int> InventoryItemsSummary { get; set; }
+    private IDictionary<InventoryMarketItemDTO, int> InventoryItemsSummary { get; set; }
 
     private InventoryItemListDTO[] InventoryItemsDetailed { get; set; }
 
-    private int InventoryTotalItemCount { get; set; }
+    private ProfileInventoryTotalsDTO InventoryTotal { get; set; }
 
-    private long InventoryTotalInvestedValue { get; set; }
-
-    private long InventoryTotalMarketValue { get; set; }
-
-    private long InventoryTotalResellValue { get; set; }
-
-    private long InventoryTotalProfitValue { get; set; }
-
-    private long InventoryTotalMarketValueMovement { get; set; }
-
-    private long InventoryTotalProfitMovement { get; set; }
-
-    private IDictionary<MarketItemActivityDTO, MarketItemListDTO> InventoryActivity { get; set; }
+    private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
 
     private ChartJsLineChart TotalHistoryChartJs;
     private LineConfig TotalHistoryChart;
@@ -236,11 +207,14 @@ else
         {
             Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"api/inventory/{SteamId}?sync={Sync}");
             ProfileNotFound = (Profile == null);
+            InventoryItemsSummary = null;
+            InventoryItemsDetailed = null;
+            InventoryTotal = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>($"api/inventory/{SteamId}/total");
+            InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>($"api/inventory/{SteamId}/performance");
+            TotalHistoryChartJs = null;
+            TotalHistoryChart = null;
             if (Profile != null)
             {
-                InventoryItems = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
-                RecalculateTotals();
-                RecalculateActivity();
                 OnSelectedInventoryPanelChanged(SelectedInventoryPanel);
             }
         }
@@ -272,9 +246,6 @@ else
     private void OnSelectedInventoryPanelChanged(object value)
     {
         SelectedInventoryPanel = value;
-        InventoryItemsSummary = null;
-        InventoryItemsDetailed = null;
-        TotalHistoryChart = null;
         switch (SelectedInventoryPanel)
         {
             case 0: RecalculateItemsSummary();  break;
@@ -285,54 +256,13 @@ else
         StateHasChanged();
     }
 
-    private void RecalculateTotals()
-    {
-        if (InventoryItems?.Any() == true)
-        {
-            var items = InventoryItems;
-            var itemsOnMarket = items.Where(x => x.MarketItem != null).ToList();
-            InventoryTotalItemCount = items.Sum(x => x.Quantity);
-            InventoryTotalInvestedValue = items.Sum(x => (x.BuyPrice ?? 0) * x.Quantity);
-            InventoryTotalMarketValue = itemsOnMarket.Sum(x => x.MarketItem.Last1hrValue);
-            InventoryTotalResellValue = itemsOnMarket.Sum(x => x.MarketItem.ResellPrice);
-            InventoryTotalProfitValue = itemsOnMarket.Where(x => x.BuyPrice > 0).Sum(x =>
-                x.MarketItem.ResellPrice - x.MarketItem.ResellTax - (x.BuyPrice ?? 0)
-            );
-            if (Profile.ValueHistoryGraph?.Any() == true)
-            {
-                InventoryTotalMarketValueMovement = ((long)Profile.ValueHistoryGraph.Reverse().First().Value - (long)Profile.ValueHistoryGraph.Reverse().Skip(1).First().Value);
-            }
-            else
-            {
-                InventoryTotalMarketValueMovement = 0;
-            }
-            if (Profile.ValueProfitGraph?.Any() == true)
-            {
-                InventoryTotalProfitMovement = ((long)Profile.ValueProfitGraph.Reverse().First().Value - (long)Profile.ValueProfitGraph.Reverse().Skip(1).First().Value);
-            }
-            else
-            {
-                InventoryTotalProfitMovement = 0;
-            }
-        }
-        else
-        {
-            InventoryTotalItemCount = 0;
-            InventoryTotalInvestedValue = 0;
-            InventoryTotalMarketValue = 0;
-            InventoryTotalResellValue = 0;
-            InventoryTotalProfitValue = 0;
-            InventoryTotalMarketValueMovement = 0;
-            InventoryTotalProfitMovement = 0;
-        }
-    }
-
     private void RecalculateItemsSummary()
     {
-        if (InventoryItems?.Any() == true)
+        var inventoryItems = Profile?.InventoryItems;
+        if (inventoryItems?.Any() == true)
         {
-            InventoryItemsSummary = new Dictionary<MarketItemListDTO, int>();
-            var marketItems = InventoryItems
+            InventoryItemsSummary = new Dictionary<InventoryMarketItemDTO, int>();
+            var marketItems = inventoryItems
                 .Select(x => x.MarketItem)
                 .Where(x => x != null)
                 .OrderByDescending(x => x.Last1hrValue);
@@ -341,7 +271,7 @@ else
             {
                 if (!InventoryItemsSummary.Any(x => x.Key.SteamId == marketItem.SteamId))
                 {
-                    InventoryItemsSummary[marketItem] = InventoryItems
+                    InventoryItemsSummary[marketItem] = inventoryItems
                         .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
                         .Sum(x => x.Quantity);
                 }
@@ -355,39 +285,11 @@ else
 
     private void RecalculateItemsDetailed()
     {
-        InventoryItemsDetailed = InventoryItems;
-    }
-
-    private void RecalculateActivity()
-    {
-        if (InventoryItems?.Any() == true)
-        {
-            InventoryActivity = new Dictionary<MarketItemActivityDTO, MarketItemListDTO>();
-            foreach (var item in InventoryItems.Where(x => x.MarketItem != null))
-            {
-                foreach (var activity in item.MarketItem.Activity.Where(x => x.Movement != 0))
-                {
-                    InventoryActivity[activity] = item.MarketItem;
-                }
-            }
-            InventoryActivity = InventoryActivity.OrderByDescending(x => x.Key.Timestamp).ToDictionary(
-                x => x.Key,
-                x => x.Value
-            );
-        }
-        else
-        {
-            InventoryActivity = null;
-        }
+        InventoryItemsDetailed = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
     }
 
     private void RedrawTotalHistoryChart()
     {
-        if (Profile.ValueHistoryGraph == null)
-        {
-            return;
-        }
-
         TotalHistoryChart = new LineConfig
         {
             Options = new LineOptions
@@ -455,9 +357,9 @@ else
             }
         };
 
-        TotalHistoryChart.Data.Labels = Profile.ValueHistoryGraph.Keys.ToList();
+        TotalHistoryChart.Data.Labels = InventoryPerformance.ValueHistoryGraph.Keys.ToList();
 
-        if (Profile.ValueProfitGraph != null && InventoryTotalProfitValue > 0)
+        if (InventoryPerformance.ProfitHistoryGraph != null && InventoryTotal.TotalResellProfit > 0)
         {
             var totalProfitDataSet = new LineDataset<DoubleWrapper>
             {
@@ -471,12 +373,12 @@ else
                 Fill = true
             };
             totalProfitDataSet.AddRange(
-                Profile.ValueProfitGraph.Values.Select(x => (DoubleWrapper)x).ToList()
+                InventoryPerformance.ProfitHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
             );
             TotalHistoryChart.Data.Datasets.Add(totalProfitDataSet);
         }
 
-        if (Profile.ValueHistoryGraph != null)
+        if (InventoryPerformance.ValueHistoryGraph != null)
         {
             var totalValueDataSet = new LineDataset<DoubleWrapper>
             {
@@ -490,7 +392,7 @@ else
                 Fill = true
             };
             totalValueDataSet.AddRange(
-                Profile.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
+                InventoryPerformance.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
             );
             TotalHistoryChart.Data.Datasets.Add(totalValueDataSet);
         }
