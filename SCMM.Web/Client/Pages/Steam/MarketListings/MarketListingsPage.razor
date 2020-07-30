@@ -43,11 +43,11 @@ else
         await RefreshItems();
     }
 
-    private async Task OnItemSelectionChanged(MarketItemListDTO item)
+    private void OnItemSelectionChanged(MarketItemListDTO item)
     {
         //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
     private async Task RefreshItems(string filter = null)

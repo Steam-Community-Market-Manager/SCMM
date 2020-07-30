@@ -621,7 +621,7 @@
         await RefreshBiggestCrashes();
     }
 
-    private async Task ViewItem(MarketItemListDTO item)
+    private void ViewItem(MarketItemListDTO item)
     {
         //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";

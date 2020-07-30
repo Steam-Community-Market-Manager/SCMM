@@ -237,10 +237,10 @@ else
         StateHasChanged();
     }
 
-    private async Task ViewItem(InventoryItemListDTO item)
+    private void ViewItem(InventoryItemListDTO item)
     {
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
     private void OnSelectedInventoryPanelChanged(object value)

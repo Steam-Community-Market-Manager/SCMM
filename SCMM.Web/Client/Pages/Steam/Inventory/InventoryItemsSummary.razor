@@ -81,11 +81,11 @@
         return $"border: 2px solid {item.ForegroundColour}";
     }
 
-    private async Task OnItemClicked(InventoryMarketItemDTO item)
+    private void OnItemClicked(InventoryMarketItemDTO item)
     {
         //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
 }

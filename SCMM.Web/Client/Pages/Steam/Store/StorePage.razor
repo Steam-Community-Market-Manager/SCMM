@@ -161,16 +161,16 @@ else
         await RefreshItems();
     }
 
-    private async Task BuyItem(StoreItemListDTO item)
+    private void BuyItem(StoreItemListDTO item)
     {
         string url = $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/";
-        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
-    private async Task ViewItem(StoreItemListDTO item)
+    private void ViewItem(StoreItemListDTO item)
     {
         string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.SteamWorkshopId}";
-        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
     private async Task RefreshItems()
