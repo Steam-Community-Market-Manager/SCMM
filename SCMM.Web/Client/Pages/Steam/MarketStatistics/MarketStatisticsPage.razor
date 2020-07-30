@@ -9,6 +9,106 @@
 
 <DocumentTitle Title="Market Statistics" />
 <Grid Container Spacing="@Spacing.Two">
+    
+    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+        <Card>
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                        Good Time to Buy
+                    </Typography>
+                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                        Largest <strong>negative</strong> gap in buy-now vs recent market value
+                    </Typography>
+                </TitleContent>
+                <ActionContent>
+                    <Button Color="@Color.Secondary"
+                            Disabled="true"
+                            Size="@Size.Small"
+                            Variant="@ButtonVariant.Text">
+                        View More <ArrowRightIcon />
+                    </Button>
+                </ActionContent>
+            </CardHeader>
+            <CardContent Style="padding:0px">
+                @if (GoodTimeToBuy == null)
+                {
+                <Loading />
+                }
+                else
+                {
+                <Table Size="@Size.Small">
+                    <TableBody>
+                        @foreach (var item in GoodTimeToBuy)
+                        {
+                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                            <TableCell>
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                            </TableCell>
+                            <TableCell Component="th" Scope="row">
+                                <strong>@item.Name</strong>
+                            </TableCell>
+                            <TableCell>
+                                @item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor((((decimal)item.Last48hrValue - item.BuyNowPrice) / item.BuyNowPrice) * 100)%)
+                            </TableCell>
+                        </TableRow>
+                            }
+                    </TableBody>
+                </Table>
+                }
+            </CardContent>
+        </Card>
+    </Grid>
+    
+    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+        <Card>
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                        Good Time to Sell
+                    </Typography>
+                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                        Largest <strong>positive</strong> gap in buy-now vs recent market value
+                    </Typography>
+                </TitleContent>
+                <ActionContent>
+                    <Button Color="@Color.Secondary"
+                            Disabled="true"
+                            Size="@Size.Small"
+                            Variant="@ButtonVariant.Text">
+                        View More <ArrowRightIcon />
+                    </Button>
+                </ActionContent>
+            </CardHeader>
+            <CardContent Style="padding:0px">
+                @if (GoodTimeToSell == null)
+                {
+                <Loading />
+                }
+                else
+                {
+                <Table Size="@Size.Small">
+                    <TableBody>
+                        @foreach (var item in GoodTimeToSell)
+                        {
+                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                            <TableCell>
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                            </TableCell>
+                            <TableCell Component="th" Scope="row">
+                                <strong>@item.Name</strong>
+                            </TableCell>
+                            <TableCell>
+                                @item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor((((decimal)item.BuyNowPrice - item.Last48hrValue) / item.Last48hrValue) * 100)%)
+                            </TableCell>
+                        </TableRow>
+                            }
+                    </TableBody>
+                </Table>
+                }
+            </CardContent>
+        </Card>
+    </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
         <Card>
@@ -77,60 +177,6 @@
                 <TitleContent>
                     <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
                         <img src="/images/stonks-guy.png" style="width:24px; margin-right: -10px;" />
-                        📈 Stonking Recently
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Highest <strong>positive</strong> growth in the last 24hrs
-                    </Typography>
-                </TitleContent>
-                <ActionContent>
-                    <Button Color="@Color.Secondary"
-                            Disabled="true"
-                            Size="@Size.Small"
-                            Variant="@ButtonVariant.Text">
-                        View More <ArrowRightIcon />
-                    </Button>
-                </ActionContent>
-            </CardHeader>
-            <CardContent Style="padding:0px">
-                @if (StonkingRecently == null)
-                {
-                <Loading />
-                }
-                else
-                {
-                <Table Size="@Size.Small">
-                    <TableBody>
-                        @foreach (var item in StonkingRecently)
-                        {
-                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                            <TableCell>
-                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                            </TableCell>
-                            <TableCell Component="th" Scope="row">
-                                <strong>@item.Name</strong>
-                            </TableCell>
-                            <TableCell>
-                                @item.Currency.ToPriceString(item.Last1hrValue)
-                            </TableCell>
-                            <TableCell>
-                                <span class="Text-Success">🡱 @Math.Abs(item.Last1hrValue - item.Last24hrValue)</span>
-                            </TableCell>
-                        </TableRow>
-                            }
-                    </TableBody>
-                </Table>
-                }
-            </CardContent>
-        </Card>
-    </Grid>
-
-    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
-            <CardHeader>
-                <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
-                        <img src="/images/stonks-guy.png" style="width:24px; margin-right: -10px;" />
                         📉 Crashing
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -176,60 +222,6 @@
                                         {
                                 <span class="Text-Success">🡱 @Math.Abs(item.Last1hrValue - item.AllTimeLowestValue)</span>
                                         }
-                            </TableCell>
-                        </TableRow>
-                            }
-                    </TableBody>
-                </Table>
-                }
-            </CardContent>
-        </Card>
-    </Grid>
-
-    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
-            <CardHeader>
-                <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
-                        <img src="/images/stonks-guy.png" style="width:24px; margin-right: -10px;" />
-                        📉 Crashing Recently
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Highest <strong>negative</strong> growth in the last 24hrs
-                    </Typography>
-                </TitleContent>
-                <ActionContent>
-                    <Button Color="@Color.Secondary"
-                            Disabled="true"
-                            Size="@Size.Small"
-                            Variant="@ButtonVariant.Text">
-                        View More <ArrowRightIcon />
-                    </Button>
-                </ActionContent>
-            </CardHeader>
-            <CardContent Style="padding:0px">
-                @if (StinkingRecently == null)
-                {
-                <Loading />
-                }
-                else
-                {
-                <Table Size="@Size.Small">
-                    <TableBody>
-                        @foreach (var item in StinkingRecently)
-                        {
-                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                            <TableCell>
-                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                            </TableCell>
-                            <TableCell Component="th" Scope="row">
-                                <strong>@item.Name</strong>
-                            </TableCell>
-                            <TableCell>
-                                @item.Currency.ToPriceString(item.Last1hrValue)
-                            </TableCell>
-                            <TableCell>
-                                <span class="Text-Error">🡳 @Math.Abs(item.Last1hrValue - item.Last24hrValue)</span>
                             </TableCell>
                         </TableRow>
                             }
@@ -597,13 +589,13 @@
             </CardContent>
         </Card>
     </Grid>
-
+    
 </Grid>
 
 @code {
 
-    private MarketItemListDTO[] StonkingRecently { get; set; }
-    private MarketItemListDTO[] StinkingRecently { get; set; }
+    private MarketItemListDTO[] GoodTimeToBuy { get; set; }
+    private MarketItemListDTO[] GoodTimeToSell { get; set; }
     private MarketItemListDTO[] AllTimeLow { get; set; }
     private MarketItemListDTO[] AllTimeHigh { get; set; }
     private MarketItemListDTO[] MostProfitable { get; set; }
@@ -616,8 +608,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshStonkingRecently();
-        await RefreshStinkingRecently();
+        await RefreshGoodTimeToBuy();
+        await RefreshGoodTimeToSell();
         await RefreshAllTimeLow();
         await RefreshAllTimeHigh();
         await RefreshMostProfitable();
@@ -633,7 +625,7 @@
     {
         //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
     private async Task RefreshHotRightNow()
@@ -675,11 +667,11 @@
         }
     }
 
-    private async Task RefreshStonkingRecently()
+    private async Task RefreshGoodTimeToBuy()
     {
         try
         {
-            StonkingRecently = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/stonkingRecently");
+            GoodTimeToBuy = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/goodTimeToBuy");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)
@@ -688,11 +680,11 @@
         }
     }
 
-    private async Task RefreshStinkingRecently()
+    private async Task RefreshGoodTimeToSell()
     {
         try
         {
-            StinkingRecently = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/stinkingRecently");
+            GoodTimeToSell = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/goodTimeToSell");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)

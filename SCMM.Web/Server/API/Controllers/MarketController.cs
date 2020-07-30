@@ -124,6 +124,52 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+
+        [HttpGet("dashboard/goodTimeToBuy")]
+        public IEnumerable<MarketItemListDTO> GetDashboardGoodTimeToBuy()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var now = DateTimeOffset.UtcNow;
+                var query = db.SteamMarketItems
+                    .Include(x => x.App)
+                    .Include(x => x.Currency)
+                    .Include(x => x.Description)
+                    .Where(x => x.BuyNowPrice < x.AllTimeAverageValue)
+                    .Where(x => x.BuyNowPrice < x.Last1hrValue)
+                    .Where(x => x.BuyNowPrice < x.Last24hrValue)
+                    .Where(x => x.BuyNowPrice < x.Last48hrValue)
+                    .Where(x => x.BuyNowPrice > 0 && (x.Last48hrValue - x.BuyNowPrice) > 0)
+                    .OrderByDescending(x => (((decimal)x.Last48hrValue - x.BuyNowPrice) / x.BuyNowPrice) * 100)
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+            }
+        }
+
+        [HttpGet("dashboard/goodTimeToSell")]
+        public IEnumerable<MarketItemListDTO> GetDashboardGoodTimeToSell()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var now = DateTimeOffset.UtcNow;
+                var query = db.SteamMarketItems
+                    .Include(x => x.App)
+                    .Include(x => x.Currency)
+                    .Include(x => x.Description)
+                    .Where(x => x.BuyNowPrice > x.AllTimeAverageValue)
+                    .Where(x => x.BuyNowPrice > x.Last1hrValue)
+                    .Where(x => x.BuyNowPrice > x.Last24hrValue)
+                    .Where(x => x.BuyNowPrice > x.Last48hrValue)
+                    .Where(x => x.Last48hrValue > 0 && (x.BuyNowPrice - x.Last48hrValue) > 0)
+                    .OrderByDescending(x => (((decimal)x.BuyNowPrice - x.Last48hrValue) / x.Last48hrValue) * 100)
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+            }
+        }
         [HttpGet("dashboard/allTimeLow")]
         public IEnumerable<MarketItemListDTO> GetDashboardAllTimeLow()
         {
@@ -158,40 +204,6 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= -10)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
                     .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(10);
-
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
-            }
-        }
-
-        [HttpGet("dashboard/stonkingRecently")]
-        public IEnumerable<MarketItemListDTO> GetDashboardStonkingRecently()
-        {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var query = db.SteamMarketItems
-                    .Include(x => x.App)
-                    .Include(x => x.Currency)
-                    .Include(x => x.Description)
-                    .OrderByDescending(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(10);
-
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
-            }
-        }
-
-        [HttpGet("dashboard/stinkingRecently")]
-        public IEnumerable<MarketItemListDTO> GetDashboardStinkingRecently()
-        {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var query = db.SteamMarketItems
-                    .Include(x => x.App)
-                    .Include(x => x.Currency)
-                    .Include(x => x.Description)
-                    .OrderBy(x => x.Last1hrValue - x.Last24hrValue)
                     .Take(10);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
