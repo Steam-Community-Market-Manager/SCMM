@@ -240,7 +240,7 @@ else
     private async Task ViewItem(InventoryItemListDTO item)
     {
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
     private void OnSelectedInventoryPanelChanged(object value)

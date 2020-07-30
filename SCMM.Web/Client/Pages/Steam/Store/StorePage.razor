@@ -164,13 +164,13 @@ else
     private async Task BuyItem(StoreItemListDTO item)
     {
         string url = $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/";
-        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
     private async Task ViewItem(StoreItemListDTO item)
     {
         string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.SteamWorkshopId}";
-        await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+        await JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
     private async Task RefreshItems()
