@@ -45,9 +45,10 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
                 } while (nextStoreUpdateUtc.DayOfWeek != DayOfWeek.Thursday);
-                
-                // If the expected store date is in the past, assume it will be tomorrow
-                if ((nextStoreUpdateUtc + TimeSpan.FromHours(3)) <= DateTime.UtcNow)
+
+                // If the expected store date is still in the past, assume it is a day late
+                // NOTE: Has a tolerance of 3hrs from the expected time
+                while ((nextStoreUpdateUtc + TimeSpan.FromHours(3)) <= DateTime.UtcNow)
                 {
                     nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
                 }
