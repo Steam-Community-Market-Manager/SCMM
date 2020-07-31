@@ -124,7 +124,6 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
-
         [HttpGet("dashboard/goodTimeToBuy")]
         public IEnumerable<MarketItemListDTO> GetDashboardGoodTimeToBuy()
         {
@@ -136,13 +135,12 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
-                    .Where(x => x.BuyNowPrice < x.AllTimeAverageValue)
-                    .Where(x => x.BuyNowPrice < x.Last1hrValue)
-                    .Where(x => x.BuyNowPrice < x.Last24hrValue)
                     .Where(x => x.BuyNowPrice < x.Last48hrValue)
-                    .Where(x => x.BuyNowPrice > 0 && (x.Last48hrValue - x.BuyNowPrice) > 0)
-                    .OrderByDescending(x => (((decimal)x.Last48hrValue - x.BuyNowPrice) / x.BuyNowPrice) * 100)
-                    .Take(10);
+                    .Where(x => x.Last1hrValue < x.Last24hrValue)
+                    .Where(x => x.Last24hrValue < x.Last48hrValue)
+                    .Where(x => x.Last1hrValue > 0 && x.Last48hrValue > 0)
+                    .OrderByDescending(x => ((decimal)x.Last48hrValue / x.Last1hrValue) * 100)
+                    .Take(20);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
@@ -159,13 +157,12 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
-                    .Where(x => x.BuyNowPrice > x.AllTimeAverageValue)
-                    .Where(x => x.BuyNowPrice > x.Last1hrValue)
-                    .Where(x => x.BuyNowPrice > x.Last24hrValue)
                     .Where(x => x.BuyNowPrice > x.Last48hrValue)
-                    .Where(x => x.Last48hrValue > 0 && (x.BuyNowPrice - x.Last48hrValue) > 0)
-                    .OrderByDescending(x => (((decimal)x.BuyNowPrice - x.Last48hrValue) / x.Last48hrValue) * 100)
-                    .Take(10);
+                    .Where(x => x.Last1hrValue > x.Last24hrValue)
+                    .Where(x => x.Last24hrValue > x.Last48hrValue)
+                    .Where(x => x.Last1hrValue > 0 && x.Last48hrValue > 0)
+                    .OrderByDescending(x => ((decimal)x.Last1hrValue / x.Last48hrValue) * 100)
+                    .Take(20);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
@@ -180,11 +177,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
-                    .Where(x => x.Last1hrValue > 50)
-                    .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 10)
+                    .Where(x => x.Last1hrValue > 50 /* cents */)
+                    .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
                     .ThenBy(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(10);
+                    .Take(20);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
@@ -200,8 +197,8 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
-                    .Where(x => x.Last1hrValue > 50)
-                    .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= -10)
+                    .Where(x => x.Last1hrValue > 50 /* cents */)
+                    .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= 0)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
                     .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
                     .Take(20);

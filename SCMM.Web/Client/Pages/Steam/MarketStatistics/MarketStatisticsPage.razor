@@ -49,7 +49,7 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor((((decimal)item.Last48hrValue - item.BuyNowPrice) / item.BuyNowPrice) * 100)%)
+                                @item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor(((decimal)item.Last48hrValue / item.Last1hrValue) * 100)%)
                             </TableCell>
                         </TableRow>
                             }
@@ -99,7 +99,7 @@
                                 <strong>@item.Name</strong>
                             </TableCell>
                             <TableCell>
-                                @item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor((((decimal)item.BuyNowPrice - item.Last48hrValue) / item.Last48hrValue) * 100)%)
+                                @item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor(((decimal)item.Last1hrValue / item.Last48hrValue) * 100)%)
                             </TableCell>
                         </TableRow>
                             }
@@ -119,7 +119,7 @@
                         📈 Stonking
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Currently at (or close to) their all-time highest value
+                        Currently at an all-time high value
                     </Typography>
                 </TitleContent>
                 <ActionContent>
@@ -180,7 +180,7 @@
                         📉 Crashing
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Currently at (or close to) their all-time lowest value
+                        Currently at an all-time low value
                     </Typography>
                 </TitleContent>
                 <ActionContent>
