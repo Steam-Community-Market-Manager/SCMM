@@ -7,24 +7,23 @@
     Class="@_Class"
     Style="@_Style"
     @attributes="Attributes">
-    <NavLink
-        href="authentication/profile"
-        Match="@NavLinkMatch.Prefix">
-        <Avatar
-            Class="@_AvatarClass"
-            Style="@_AvatarStyle"
-            Alt="Person"
-            Src="@Avatar" />
-    </NavLink>
+    <Avatar
+        Class="@_AvatarClass"
+        Style="@_AvatarStyle"
+        Alt="Person"
+        Src="@Avatar" />
     <Typography
         Class="@_NameClass"
         Style="@_NameStyle"
         Variant="@TypographyVariant.H6">
         @Name
     </Typography>
-    <Typography 
-        Variant="@TypographyVariant.Body2"
-        Color="@Color.TextSecondary">
-        @SubTitle
-    </Typography>
+    <div class="Profile-Actions">
+        <a href="account/settings" title="Settings">
+            <i class="fas fa-fw fa-cog"></i>
+        </a>
+        <a href="account/logOut" title="Logout">
+            <i class="fas fa-fw fa-sign-out-alt"></i>
+        </a>
+    </div>
 </Component>

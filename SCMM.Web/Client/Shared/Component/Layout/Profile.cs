@@ -23,9 +23,6 @@ namespace SCMM.Web.Client.Shared.Component.Layout
         public string Avatar { set; get; }
 
         [Parameter]
-        public string SubTitle { set; get; }
-
-        [Parameter]
         public string AvatarStyle { set; get; }
 
         [Parameter]
