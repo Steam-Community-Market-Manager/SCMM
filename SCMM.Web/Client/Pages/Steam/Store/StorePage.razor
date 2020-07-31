@@ -44,7 +44,7 @@ else
                                 </TableCell>
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Subtitle1" GutterBottom="true">
-                                        <i class="fa fa-fw fa-tag"></i>
+                                        <i class="fas fa-fw fa-tag"></i>
                                         @item.Currency.ToPriceString(item.StorePrice)
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body2">
@@ -56,15 +56,15 @@ else
                                 </TableCell>
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                                        <i class="fa fa-fw fa-user"></i>
+                                        <i class="fas fa-fw fa-user"></i>
                                         @item.Subscriptions.ToQuantityString()
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                                        <i class="fa fa-fw fa-eye"></i>
+                                        <i class="fas fa-fw fa-eye"></i>
                                         @item.Views.ToQuantityString()
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                                        <i class="fa fa-fw fa-heart"></i>
+                                        <i class="fas fa-fw fa-heart"></i>
                                         @item.Favourited.ToQuantityString()
                                     </Typography>
                                 </TableCell>
@@ -102,7 +102,7 @@ else
                                 {
                                     <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
                                         <Icon>
-                                            <i class="fa fa-fw fa-exclamation-circle"></i>
+                                            <i class="fas fa-fw fa-exclamation-circle"></i>
                                         </Icon>
                                         <MessageContent>
                                             <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Items.Sum(x => x.Subscriptions * x.StorePrice))) so far this week.</span>

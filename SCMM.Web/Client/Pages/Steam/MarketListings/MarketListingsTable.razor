@@ -41,7 +41,7 @@
                     @if (item.Subscriptions > 0)
                     {
                         <Hidden LargeDown>
-                            <i class="fa fa-fw fa-user"></i>
+                            <i class="fas fa-fw fa-user"></i>
                         </Hidden>
                         @item.Subscriptions.ToQuantityString()
                     }
@@ -80,12 +80,12 @@
                             <Hidden LargeDown>
                                 @switch (tag.Key)
                                 {
-                                    case SteamConstants.SteamAssetTagCategory:<i class="fa fa-fw fa-paint-brush"></i> break;
-                                    case SteamConstants.SteamAssetTagItemType: <i class="fa fa-fw fa-paint-brush"></i> break;
-                                    case SteamConstants.SteamAssetTagCreator: <i class="fa fa-fw fa-user"></i> break;
-                                    case SteamConstants.SteamAssetTagSet: <i class="fa fa-fw fa-layer-group"></i> break;
-                                    case SteamConstants.SteamAssetTagAcceptedYear: <i class="fa fa-fw fa-calendar"></i> break;
-                                    case SteamConstants.SteamAssetTagAcceptedWeek: <i class="fa fa-fw fa-calendar-week"></i>break;
+                                    case SteamConstants.SteamAssetTagCategory:<i class="fas fa-fw fa-paint-brush"></i> break;
+                                    case SteamConstants.SteamAssetTagItemType: <i class="fas fa-fw fa-paint-brush"></i> break;
+                                    case SteamConstants.SteamAssetTagCreator: <i class="fas fa-fw fa-user"></i> break;
+                                    case SteamConstants.SteamAssetTagSet: <i class="fas fa-fw fa-layer-group"></i> break;
+                                    case SteamConstants.SteamAssetTagAcceptedYear: <i class="fas fa-fw fa-calendar"></i> break;
+                                    case SteamConstants.SteamAssetTagAcceptedWeek: <i class="fas fa-fw fa-calendar-week"></i>break;
                                 }
                             </Hidden>
                             @tag.Value
