@@ -27,6 +27,7 @@ namespace SCMM.Web.Shared
                 return null;
             }
             return timespan.Value.ToDurationString(
+                showDays: true,
                 showHours: false,
                 showMinutes: false,
                 showSeconds: false

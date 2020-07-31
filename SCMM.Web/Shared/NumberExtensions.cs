@@ -202,16 +202,13 @@ namespace SCMM.Web.Shared
             return (b == 0 ? Math.Abs(a) : GCD(b, a % b));
         }
 
-        public static string ToDurationString(this TimeSpan timeSpan, bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true, string suffix = null)
+        public static string ToDurationString(this TimeSpan timeSpan, bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true, string suffix = null, string zero = null)
         {
             if (timeSpan <= TimeSpan.Zero)
             {
-                return "due any moment now";
+                return zero;
             }
-            if (timeSpan.TotalMinutes <= 0)
-            {
-                return "just moments ago";
-            }
+
             var text = new StringBuilder();
             if (timeSpan.Days > 0 && showDays == true)
             {
@@ -229,19 +226,14 @@ namespace SCMM.Web.Shared
             {
                 text.AppendFormat("{0} second{1} ", timeSpan.Seconds, timeSpan.Seconds > 1 ? "s" : String.Empty);
             }
-            if (text.Length == 0)
+            if (text.Length != 0 && !String.IsNullOrEmpty(suffix))
             {
-                text.Append("due any moment now");
-            }
-            else
-            {
-                if (!String.IsNullOrEmpty(suffix))
-                {
-                    text.Append($" {suffix}");
-                }
+                text.Append($" {suffix}");
             }
 
-            return text.ToString();
+            return (text.Length > 0)
+                ? text.ToString()
+                : zero;
         }
     }
 }
