@@ -287,6 +287,56 @@
             <CardHeader>
                 <TitleContent>
                     <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                        Most Recent
+                    </Typography>
+                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                        Lowest market age
+                    </Typography>
+                </TitleContent>
+                <ActionContent>
+                    <Button Color="@Color.Secondary"
+                            Disabled="true"
+                            Size="@Size.Small"
+                            Variant="@ButtonVariant.Text">
+                        View More <ArrowRightIcon />
+                    </Button>
+                </ActionContent>
+            </CardHeader>
+            <CardContent Style="padding:0px">
+                @if (MostRecent == null)
+                {
+                <Loading />
+                }
+                else
+                {
+                <Table Size="@Size.Small">
+                    <TableBody>
+                        @foreach (var item in MostRecent)
+                            {
+                        <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                            <TableCell>
+                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                            </TableCell>
+                            <TableCell Component="th" Scope="row">
+                                <strong>@item.Name</strong>
+                            </TableCell>
+                            <TableCell>
+                                @item.MarketAge
+                            </TableCell>
+                        </TableRow>
+                            }
+                    </TableBody>
+                </Table>
+                }
+            </CardContent>
+        </Card>
+    </Grid>
+
+    <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+        <Card>
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
                         Most Common
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -602,6 +652,7 @@
     private MarketItemListDTO[] HotRightNow { get; set; }
     private MarketItemListDTO[] MostWanted { get; set; }
     private MarketItemListDTO[] MostSaturated { get; set; }
+    private MarketItemListDTO[] MostRecent { get; set; }
     private MarketItemListDTO[] MostCommon { get; set; }
     private MarketItemListDTO[] MostRare { get; set; }
     private MarketItemListDTO[] BiggestCrashes { get; set; }
@@ -616,6 +667,7 @@
         await RefreshHotRightNow();
         await RefreshMostWanted();
         await RefreshMostSaturated();
+        await RefreshMostRecent();
         await RefreshMostCommon();
         await RefreshMostRare();
         await RefreshBiggestCrashes();
@@ -724,6 +776,19 @@
         try
         {
             MostSaturated = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostSaturated");
+            StateHasChanged();
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+
+    private async Task RefreshMostRecent()
+    {
+        try
+        {
+            MostRecent = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostRecent");
             StateHasChanged();
         }
         catch (AccessTokenNotAvailableException exception)

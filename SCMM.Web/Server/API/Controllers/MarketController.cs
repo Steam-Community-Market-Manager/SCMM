@@ -204,6 +204,22 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= -10)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
                     .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
+                    .Take(20);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+            }
+        }
+
+        [HttpGet("dashboard/mostRecent")]
+        public IEnumerable<MarketItemListDTO> GetDashboardMostRecent()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var query = db.SteamMarketItems
+                    .Include(x => x.App)
+                    .Include(x => x.Description)
+                    .OrderByDescending(x => x.FirstSeenOn)
                     .Take(10);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
