@@ -1,4 +1,6 @@
 @page "/steam/inventory"
+@inject AppState State
+@inject ILocalStorageService LocalStorage
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
@@ -39,8 +41,9 @@
         SteamId = (string)args.Value;
     }
 
-    private void ViewProfileInventory()
+    private async Task ViewProfileInventory()
     {
+        await State.LoginAsync(Http, LocalStorage, SteamId);
         Navigation.NavigateTo($"steam/inventory/{SteamId}");
     }
 

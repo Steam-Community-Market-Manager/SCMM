@@ -112,7 +112,7 @@ else
             </InventoryTotalCard>
         </Grid>
         }
-        @if (Profile != null && State.ProfileId == Profile?.SteamId)
+        @if (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId))
         {
         <Grid ExtraSmall="@GridSize.Two" Style="padding:8px">
             <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>

@@ -273,7 +273,7 @@
     {
         ComponentIsVisible = false;
         StateHasChanged();
-        await State.LoginAsync(Http, LocalStorage, profile, country, language, currency);
+        await State.LoginAndUpdateProfileAsync(Http, LocalStorage, profile, country, language, currency);
     }
 
     public async Task TryGuessLocality()

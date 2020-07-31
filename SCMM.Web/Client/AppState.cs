@@ -75,9 +75,30 @@ namespace SCMM.Web.Client
         {
             try
             {
-                await storage.SetItemAsync<string>(nameof(ProfileId), ProfileId ?? String.Empty);
-                await storage.SetItemAsync<string>(nameof(LanguageId), LanguageId ?? String.Empty);
-                await storage.SetItemAsync<string>(nameof(CurrencyId), CurrencyId ?? String.Empty);
+                if (!String.IsNullOrEmpty(ProfileId))
+                {
+                    await storage.SetItemAsync<string>(nameof(ProfileId), ProfileId);
+                }
+                else
+                {
+                    await storage.RemoveItemAsync(nameof(ProfileId));
+                }
+                if (!String.IsNullOrEmpty(LanguageId))
+                {
+                    await storage.SetItemAsync<string>(nameof(LanguageId), LanguageId);
+                }
+                else
+                {
+                    await storage.RemoveItemAsync(nameof(LanguageId));
+                }
+                if (!String.IsNullOrEmpty(CurrencyId))
+                {
+                    await storage.SetItemAsync<string>(nameof(CurrencyId), CurrencyId);
+                }
+                else
+                {
+                    await storage.RemoveItemAsync(nameof(CurrencyId));
+                }
             }
             catch (Exception ex)
             {
@@ -95,9 +116,12 @@ namespace SCMM.Web.Client
                     Profile = await http.GetFromJsonAsync<ProfileDetailedDTO>(
                         $"api/profile/me"
                     );
-
-                    Changed?.Invoke(this, new EventArgs());
                 }
+                else
+                {
+                    Profile = null;
+                }
+                Changed?.Invoke(this, new EventArgs());
             }
             catch (Exception ex)
             {
@@ -105,7 +129,22 @@ namespace SCMM.Web.Client
             }
         }
 
-        public async Task LoginAsync(HttpClient http, ILocalStorageService storage, ProfileDTO profile, string country, string language, string currency)
+        public async Task LoginAsync(HttpClient http, ILocalStorageService storage, string profileId)
+        {
+            try
+            {
+                ProfileId = profileId;
+                await SaveAsync(storage);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to set state. {ex.Message}");
+            }
+
+            await RefreshAsync(http);
+        }
+
+        public async Task LoginAndUpdateProfileAsync(HttpClient http, ILocalStorageService storage, ProfileDTO profile, string country, string language, string currency)
         {
             try
             {
@@ -135,6 +174,23 @@ namespace SCMM.Web.Client
                 {
                     Console.WriteLine($"Failed to upate profile info. {ex.Message}");
                 }
+            }
+
+            await RefreshAsync(http);
+        }
+
+        public async Task LogoutAsync(HttpClient http, ILocalStorageService storage)
+        {
+            try
+            {
+                LanguageId = null;
+                CurrencyId = null;
+                ProfileId = null;
+                await SaveAsync(storage);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to set state. {ex.Message}");
             }
 
             await RefreshAsync(http);
