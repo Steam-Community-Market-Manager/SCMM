@@ -229,9 +229,16 @@ namespace SCMM.Web.Shared
             {
                 text.AppendFormat("{0} second{1} ", timeSpan.Seconds, timeSpan.Seconds > 1 ? "s" : String.Empty);
             }
-            if (!String.IsNullOrEmpty(suffix))
+            if (text.Length == 0)
             {
-                text.Append($" {suffix}");
+                text.Append("due any moment now");
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(suffix))
+                {
+                    text.Append($" {suffix}");
+                }
             }
 
             return text.ToString();
