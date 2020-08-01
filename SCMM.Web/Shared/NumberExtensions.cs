@@ -176,15 +176,15 @@ namespace SCMM.Web.Shared
         public static string ToRoIString(this int percentage)
         {
             var prefix = String.Empty;
-            if (percentage >= 100)
+            if (percentage >= 0)
             {
                 prefix = "🡱";
             }
-            if (percentage < 100)
+            if (percentage < 0)
             {
                 prefix = "🡳";
             }
-            return ((percentage > 0) ? $"{prefix} {percentage}%" : "∞").Trim();
+            return ((percentage != 0) ? $"{prefix} {percentage}%" : "∞").Trim();
         }
 
         public static string ToGCDRatioString(this long a, long b)
