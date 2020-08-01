@@ -97,8 +97,8 @@ else
                                   TextColor="@Color.Primary"
                                   Variant="@TabsVariant.FullWidth">
                                 <Tab Id="store-tab" Control="store-tab-panel" Value="0" Label="Sales Revenue" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel" Value="1" Label="Popular Now" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel" Value="2" Label="Popular This Week" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel" Value="1" Label="Sales Overview" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel" Value="2" Label="Sales History" Wrapped />
                             </Tabs>
                             <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
                                 @if (ItemRevenueChart != null)
@@ -108,7 +108,7 @@ else
                                             <i class="fas fa-fw fa-exclamation-circle"></i>
                                         </Icon>
                                         <MessageContent>
-                                            <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Items.Sum(x => x.Subscriptions * x.StorePrice))) so far.</span>
+                                            <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Items.Sum(x => x.TotalSalesMin * x.StorePrice))) so far.</span>
                                             <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than what is shown here. Steam doesn't publicly advertise exact sales figures, this is the just a rough estimate.</span>
                                         </MessageContent>
                                     </Alert>
@@ -296,7 +296,7 @@ else
             BorderWidth = 1
         };
         authorRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)Math.Round((double)((x.Subscriptions * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
+            Items.Select(x => (DoubleWrapper)Math.Round((double)((x.TotalSalesMin * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
         );
 
         var totalRevenue = new BarDataset<DoubleWrapper>
@@ -307,7 +307,7 @@ else
             BorderWidth = 1
         };
         totalRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)Math.Round((double)(x.Subscriptions * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
+            Items.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
         );
 
         ItemRevenueChart.Data.Datasets.AddRange(new[] {
