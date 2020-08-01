@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace SCMM.Steam.Shared.Community.Requests.Html
+namespace SCMM.Steam.Shared.Community.Requests.Json
 {
-    public class SteamItemStorePageRequest : SteamRequest
+    public class SteamItemStorePaginatedJsonRequest : SteamPaginatedJsonRequest
     {
         public const int MaxPageSize = 100;
 
@@ -11,16 +11,12 @@ namespace SCMM.Steam.Shared.Community.Requests.Html
 
         public string AppId { get; set; }
 
-        public int Start { get; set; }
-
-        public int Count { get; set; }
-
         public string Filter { get; set; }
 
         public string SearchText { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{SteamConstants.SteamStoreUrl}/itemstore/{Uri.EscapeUriString(AppId)}/?start={Start}&count={Count}&filter={Uri.EscapeUriString(Filter)}&searchtext={Uri.EscapeUriString(SearchText)}"
+            $"{SteamConstants.SteamStoreUrl}/itemstore/{Uri.EscapeUriString(AppId)}/ajaxgetitemdefs?start={Start}&count={Count}&norender={(NoRender ? "1" : "0")}&filter={Uri.EscapeUriString(Filter)}&searchtext={Uri.EscapeUriString(SearchText)}"
         );
     }
 }

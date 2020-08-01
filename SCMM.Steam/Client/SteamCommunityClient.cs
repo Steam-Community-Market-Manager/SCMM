@@ -7,6 +7,7 @@ using SCMM.Steam.Shared.Community.Responses.Xml;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SCMM.Steam.Client
 {
@@ -28,6 +29,16 @@ namespace SCMM.Steam.Client
         public async Task<SteamMarketAppFiltersJsonResponse> GetMarketAppFilters(SteamMarketAppFiltersJsonRequest request)
         {
             return await GetJson<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(request);
+        }
+
+        public async Task<XDocument> GetItemStorePage(SteamItemStorePageRequest request)
+        {
+            return await GetHtml<SteamItemStorePageRequest>(request);
+        }
+
+        public async Task<SteamItemStorePaginatedJsonResponse> GetItemStorePaginated(SteamItemStorePaginatedJsonRequest request)
+        {
+            return await GetJson<SteamItemStorePaginatedJsonRequest, SteamItemStorePaginatedJsonResponse>(request);
         }
 
         public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request)

@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
@@ -76,6 +77,32 @@ namespace SCMM.Steam.Client
                     }
 
                     return await response.Content.ReadAsStringAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"GET '{request.Uri}' failed");
+            }
+
+            return null;
+        }
+
+        protected async Task<XDocument> GetHtml<TRequest>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            try
+            {
+                using (var client = BuildSteamHttpClient(request.Uri))
+                {
+                    var response = await client.GetAsync(request.Uri);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
+                    }
+
+                    return XDocument.Parse(
+                        await response.Content.ReadAsStringAsync()
+                    );
                 }
             }
             catch (Exception ex)
