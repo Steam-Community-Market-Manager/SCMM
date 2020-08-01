@@ -68,11 +68,11 @@ namespace SCMM.Web.Server.Domain
                 var profileId = response.Data.ProfileUrl;
                 if (!String.IsNullOrEmpty(profileId))
                 {
-                    profileId = (Regex.Match(profileId, @"id\/(.*)\/").Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
+                    profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
                 }
                 if (String.IsNullOrEmpty(profileId))
                 {
-                    profileId = (Regex.Match(profileId, @"id\/(.*)\/").Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
+                    profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
                 }
 
                 profile = new Models.Steam.SteamProfile()
@@ -352,6 +352,19 @@ namespace SCMM.Web.Server.Domain
             }
 
             return assetDescription;
+        }
+
+        public Models.Steam.SteamStoreItem UpdateStoreItemRank(Models.Steam.SteamStoreItem storeItem, int storeRankPosition, int storeRankTotal)
+        {
+            var utcDate = DateTime.UtcNow.Date;
+            storeItem.StoreRankPosition = storeRankPosition;
+            storeItem.StoreRankTotal = storeRankTotal;
+            storeItem.StoreRankGraph[utcDate] = storeRankPosition;
+            storeItem.StoreRankGraph = new Data.Types.PersistableGraphDataSet(
+                storeItem.StoreRankGraph
+            );
+
+            return storeItem;
         }
 
         ///

@@ -23,11 +23,21 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 
         public long StorePrice { get; set; }
 
+        public int StoreRankPosition { get; set; }
+
+        public int StoreRankTotal { get; set; }
+
+        public IDictionary<string, double> StoreRankHistory { get; set; }
+
         public int MarketRankPosition { get; set; }
 
         public int MarketRankTotal { get; set; }
 
-        public DateTimeOffset AcceptedOn { get; set; }
+        public int TotalSalesMin { get; set; }
+
+        public int TotalSalesMax { get; set; }
+
+        public IDictionary<string, double> TotalSalesHistory { get; set; }
 
         public IDictionary<string, double> SubscriptionsHistory { get; set; }
 
@@ -36,6 +46,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
         public int Favourited { get; set; }
 
         public int Views { get; set; }
+
+        public DateTimeOffset AcceptedOn { get; set; }
 
         public IDictionary<string, string> Tags { get; set; }
     }

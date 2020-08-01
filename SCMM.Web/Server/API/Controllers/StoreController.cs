@@ -63,15 +63,15 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var latestStoreEnd = db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
-                var latestStoreStart = latestStoreEnd.Subtract(TimeSpan.FromHours(24));
+                var latestStore = db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
                 var items = db.SteamStoreItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
-                    .Where(x => x.Description.WorkshopFile.AcceptedOn >= latestStoreStart && x.Description.WorkshopFile.AcceptedOn <= latestStoreEnd)
-                    .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
-                    .Take(100)
+                    .Where(x => x.Description.WorkshopFile.AcceptedOn == latestStore)
+                    .OrderBy(x => x.StoreRankPosition)
+                    .ThenByDescending(x => x.Description.WorkshopFile.Subscriptions)
+                    .Take(30)
                     .ToList();
 
                 var itemDtos = items.ToDictionary(

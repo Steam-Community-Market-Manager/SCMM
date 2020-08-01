@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
@@ -31,7 +32,7 @@ namespace SCMM.Steam.Client
             return await GetJson<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(request);
         }
 
-        public async Task<XDocument> GetItemStorePage(SteamItemStorePageRequest request)
+        public async Task<XElement> GetItemStorePage(SteamItemStorePageRequest request)
         {
             return await GetHtml<SteamItemStorePageRequest>(request);
         }
@@ -65,7 +66,7 @@ namespace SCMM.Steam.Client
                 return null;
             }
 
-            var itemNameIdMatchGroup = Regex.Match(html, @"Market_LoadOrderSpread\((.*)\)").Groups;
+            var itemNameIdMatchGroup = Regex.Match(html, SteamConstants.SteamMarketListingItemNameIdRegex).Groups;
             return (itemNameIdMatchGroup.Count > 1)
                 ? itemNameIdMatchGroup[1].Value.Trim()
                 : null;

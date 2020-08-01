@@ -20,7 +20,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Html
         public string SearchText { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{SteamConstants.SteamStoreUrl}/itemstore/{Uri.EscapeUriString(AppId)}/?start={Start}&count={Count}&filter={Uri.EscapeUriString(Filter)}&searchtext={Uri.EscapeUriString(SearchText)}"
+            $"{SteamConstants.SteamStoreUrl}/itemstore/{Uri.EscapeUriString(AppId)}/?start={Start}&count={Count}&filter={Uri.EscapeUriString(Filter ?? String.Empty)}&searchtext={Uri.EscapeUriString(SearchText ?? String.Empty)}"
         );
     }
 }

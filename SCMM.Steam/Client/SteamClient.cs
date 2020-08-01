@@ -1,11 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SCMM.Steam.Shared;
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -87,7 +90,7 @@ namespace SCMM.Steam.Client
             return null;
         }
 
-        protected async Task<XDocument> GetHtml<TRequest>(TRequest request)
+        protected async Task<XElement> GetHtml<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             try
@@ -100,9 +103,25 @@ namespace SCMM.Steam.Client
                         throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
                     }
 
-                    return XDocument.Parse(
-                        await response.Content.ReadAsStringAsync()
-                    );
+                    var html = await response.Content.ReadAsStringAsync();
+                    if (String.IsNullOrEmpty(html))
+                    {
+                        return null;
+                    }    
+
+                    // Sanitise the html first to clean-up dodgy tags that may cause XML parsing to fail
+                    // (e.g. <meta>, <link>, etc)
+                    var htmlDocument = new HtmlDocument();
+                    htmlDocument.LoadHtml(html);
+
+                    var sanitisedHtml = new StringBuilder();
+                    using (var stringWriter = new StringWriter(sanitisedHtml))
+                    {
+                        var xmlWriter = new XmlTextWriter(stringWriter);
+                        htmlDocument.Save(xmlWriter);
+                    }
+
+                    return XElement.Parse(sanitisedHtml.ToString());
                 }
             }
             catch (Exception ex)

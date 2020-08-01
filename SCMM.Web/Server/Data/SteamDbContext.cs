@@ -67,6 +67,10 @@ namespace SCMM.Web.Server.Data
                 .HasOne(x => x.Description);
             builder.Entity<SteamStoreItem>()
                 .OwnsOne(x => x.StorePrices);
+            builder.Entity<SteamStoreItem>()
+                .OwnsOne(x => x.StoreRankGraph);
+            builder.Entity<SteamStoreItem>()
+                .OwnsOne(x => x.TotalSalesGraph);
 
             builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Currency);

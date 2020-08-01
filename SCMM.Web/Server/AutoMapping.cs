@@ -11,6 +11,7 @@ using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace SCMM.Web.Server
@@ -117,11 +118,13 @@ namespace SCMM.Web.Server
                             : 0;
                     }
                 ))
-                .ForMember(x => x.AcceptedOn, o => o.MapFrom(p => p.Description.WorkshopFile.AcceptedOn))
+                .ForMember(x => x.StoreRankHistory, o => o.MapFrom(p => p.StoreRankGraph.ToGraphDictionary()))
+                .ForMember(x => x.TotalSalesHistory, o => o.MapFrom(p => p.TotalSalesGraph.ToGraphDictionary()))
                 .ForMember(x => x.SubscriptionsHistory, o => o.MapFrom(p => p.Description.WorkshopFile.SubscriptionsGraph.ToGraphDictionary()))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.WorkshopFile.Subscriptions))
                 .ForMember(x => x.Favourited, o => o.MapFrom(p => p.Description.WorkshopFile.Favourited))
                 .ForMember(x => x.Views, o => o.MapFrom(p => p.Description.WorkshopFile.Views))
+                .ForMember(x => x.AcceptedOn, o => o.MapFrom(p => p.Description.WorkshopFile.AcceptedOn))
                 .ForMember(x => x.Tags, o => o.MapFrom(p => p.Description.Tags.WithoutWorkshopTags()));
         }
     }

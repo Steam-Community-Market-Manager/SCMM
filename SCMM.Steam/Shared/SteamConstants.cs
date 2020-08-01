@@ -15,12 +15,18 @@
         public const string SteamAssetTagAcceptedYear = "accepted.year";
         public const string SteamAssetTagAcceptedWeek = "accepted.week";
 
+        public const string SteamProfileIdRegex = @"id\/(.*)\/";
+
         public static readonly string[] SteamIgnoredWorkshopTags = { "Skin", "Version3" };
 
         public const string SteamActionViewWorkshopItem = "#Workshop_Commerce_ViewItem";
         public const string SteamActionViewWorkshopItemRegex = @"filedetails\/\?id=(\d+)";
 
-        public const int SteamWorkshopHighestSubscribers = 52807;
+        public const string SteamStoreItemDef = "item_def_grid_item";
+        public const string SteamStoreItemDefName = "item_def_name";
+        public const string SteamStoreItemDefLinkRegex = @"detail\/(\d+)";
+
+        public const string SteamMarketListingItemNameIdRegex = @"Market_LoadOrderSpread\((.*)\)";
 
         public const string DefaultContextId = "2";
     }

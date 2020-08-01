@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200801090755_SteamStoreItemRankGraph")]
+    partial class SteamStoreItemRankGraph
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -532,18 +534,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StoreRankPosition")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StoreRankTotal")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalSalesMax")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalSalesMin")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AppId");
@@ -761,22 +751,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .HasForeignKey("DescriptionId");
 
                     b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableGraphDataSet", "StoreRankGraph", b1 =>
-                        {
-                            b1.Property<Guid>("SteamStoreItemId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Serialised")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("SteamStoreItemId");
-
-                            b1.ToTable("SteamStoreItems");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SteamStoreItemId");
-                        });
-
-                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableGraphDataSet", "TotalSalesGraph", b1 =>
                         {
                             b1.Property<Guid>("SteamStoreItemId")
                                 .HasColumnType("uniqueidentifier");

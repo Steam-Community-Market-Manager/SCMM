@@ -19,7 +19,7 @@ else
             <Paper>
                 <Table Narrow="true">
                     <TableBody>
-                        @foreach (var item in Items)
+                        @foreach (var item in Items.OrderBy(x => x.StoreRankPosition))
                         {
                             <TableRow>
                                 <TableCell Class="align-top">
@@ -56,24 +56,27 @@ else
                                 </TableCell>
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
+                                        <i class="fas fa-fw fa-coins"></i>
+                                        @if (item.TotalSalesMax - item.TotalSalesMin > 0)
+                                        {
+                                            <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.ToQuantityString()</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@item.TotalSalesMin.ToQuantityString() or more</span>
+                                        }
+                                    </Typography>
+                                    <Typography Variant="@TypographyVariant.Body1" NoWrap>
                                         <i class="fas fa-fw fa-user"></i>
                                         @item.Subscriptions.ToQuantityString()
-                                    </Typography>
-                                    <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                                        <i class="fas fa-fw fa-eye"></i>
-                                        @item.Views.ToQuantityString()
-                                    </Typography>
-                                    <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                                        <i class="fas fa-fw fa-heart"></i>
-                                        @item.Favourited.ToQuantityString()
                                     </Typography>
                                 </TableCell>
                                 <TableCell Class="align-top" Align="@Align.Right">
                                     <Typography GutterBottom="true" class="Theme-Success">
                                         <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">Buy</Button>
                                     </Typography>
-                                    <Typography class="Theme-Info">
-                                        <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.Primary">View</Button>
+                                    <Typography>
+                                        <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">View</Button>
                                     </Typography>
                                 </TableCell>
                             </TableRow>
@@ -105,8 +108,8 @@ else
                                             <i class="fas fa-fw fa-exclamation-circle"></i>
                                         </Icon>
                                         <MessageContent>
-                                            <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Items.Sum(x => x.Subscriptions * x.StorePrice))) so far this week.</span>
-                                            <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than shown here. Steam doesn't advertise exact sales figures, this is the closest estimate.</span>
+                                            <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Items.Sum(x => x.Subscriptions * x.StorePrice))) so far.</span>
+                                            <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than what is shown here. Steam doesn't publicly advertise exact sales figures, this is the just a rough estimate.</span>
                                         </MessageContent>
                                     </Alert>
                                     <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
@@ -233,10 +236,11 @@ else
                     {
                         new BarCategoryAxis
                         {
+                            Stacked = true,
                             Ticks = new CategoryTicks()
                             {
                                 Display = true,
-                                FontColor = "#ffffff",
+                                FontColor = "#ffffff"
 
                             },
                             ScaleLabel = new ScaleLabel()
@@ -258,7 +262,8 @@ else
                             Ticks = new LinearCartesianTicks()
                             {
                                 Display = true,
-                                FontColor = "#ffffff"
+                                FontColor = "#ffffff",
+                                BeginAtZero = true
                             },
                             ScaleLabel = new ScaleLabel()
                             {
@@ -280,41 +285,33 @@ else
             Items.Select(x => x.Name).ToArray()
         );
 
+        var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
+        var localScaleDivisor = Int64.Parse($"1{localScaleString}");
+
+        var authorRevenue = new BarDataset<DoubleWrapper>
+        {
+            Label = "Skin Author Cut",
+            BackgroundColor = "#6BC16F",
+            BorderColor = "#335E33",
+            BorderWidth = 1
+        };
+        authorRevenue.AddRange(
+            Items.Select(x => (DoubleWrapper)Math.Round((double)((x.Subscriptions * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
+        );
+
         var totalRevenue = new BarDataset<DoubleWrapper>
         {
-            Label = "Total Revenue",
+            Label = "Revenue Collected",
             BackgroundColor = "#388e3c",
             BorderColor = "#1b5e20",
             BorderWidth = 1
         };
         totalRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)(x.Subscriptions * x.StorePrice))
-        );
-
-        var steamPublisherRevenue = new BarDataset<DoubleWrapper>
-        {
-            Label = "Steam/Publisher Revenue",
-            BackgroundColor = "#455a64",
-            BorderColor = "#263238",
-            BorderWidth = 1
-        };
-        steamPublisherRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)((x.Subscriptions * x.StorePrice) * 0.75))
-        );
-
-        var authorRevenue = new BarDataset<DoubleWrapper>
-        {
-            Label = "Skin Author Revenue",
-            BackgroundColor = "#1976d2",
-            BorderColor = "#0d47a1",
-            BorderWidth = 1
-        };
-        authorRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)((x.Subscriptions * x.StorePrice) * 0.25))
+            Items.Select(x => (DoubleWrapper)Math.Round((double)(x.Subscriptions * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
         );
 
         ItemRevenueChart.Data.Datasets.AddRange(new[] {
-            totalRevenue, steamPublisherRevenue, authorRevenue
+            authorRevenue, totalRevenue
         });
     }
 
@@ -343,6 +340,7 @@ else
                     {
                         new BarCategoryAxis
                         {
+                            Stacked = true,
                             Ticks = new CategoryTicks()
                             {
                                 Display = true,
@@ -367,7 +365,8 @@ else
                             Ticks = new LinearCartesianTicks()
                             {
                                 Display = true,
-                                FontColor = "#ffffff"
+                                FontColor = "#ffffff",
+                                BeginAtZero = true
                             },
                             ScaleLabel = new ScaleLabel()
                             {
@@ -389,30 +388,30 @@ else
             Items.Select(x => x.Name).ToArray()
         );
 
-        var itemSubscribers = new BarDataset<DoubleWrapper>
+        var itemSubscriptions = new BarDataset<DoubleWrapper>
         {
-            Label = "Total Subscribers",
+            Label = "Subscribers (Unique)",
             BackgroundColor = "#388e3c",
             BorderColor = "#1b5e20",
             BorderWidth = 1
         };
-        itemSubscribers.AddRange(
-            Items.Select(x => (DoubleWrapper) x.Subscriptions)
+        itemSubscriptions.AddRange(
+            Items.Select(x => (DoubleWrapper)x.Subscriptions)
         );
 
-        var itemViews = new BarDataset<DoubleWrapper>
+        var itemTotalSalesMin = new BarDataset<DoubleWrapper>
         {
-            Label = "Total Views",
-            BackgroundColor = "#1976d2",
-            BorderColor = "#0d47a1",
+            Label = "Minimum Copies (incl. duplicates)",
+            BackgroundColor = "#6BC16F",
+            BorderColor = "#335E33",
             BorderWidth = 1
         };
-        itemViews.AddRange(
-            Items.Select(x => (DoubleWrapper) x.Views)
+        itemTotalSalesMin.AddRange(
+            Items.Select(x => (DoubleWrapper)x.TotalSalesMin)
         );
 
         ItemRankChart.Data.Datasets.AddRange(new[] {
-            itemSubscribers, itemViews
+            itemSubscriptions, itemTotalSalesMin
         });
     }
 
@@ -472,7 +471,8 @@ else
                             Ticks = new LinearCartesianTicks()
                             {
                                 Display = true,
-                                FontColor = "#ffffff"
+                                FontColor = "#ffffff",
+                                BeginAtZero = true
                             },
                             ScaleLabel = new ScaleLabel()
                             {
