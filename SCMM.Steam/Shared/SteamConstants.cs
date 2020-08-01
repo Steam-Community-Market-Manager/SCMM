@@ -22,6 +22,7 @@
         public const string SteamActionViewWorkshopItem = "#Workshop_Commerce_ViewItem";
         public const string SteamActionViewWorkshopItemRegex = @"filedetails\/\?id=(\d+)";
 
+        public const int SteamStoreItemsMax = 30;
         public const string SteamStoreItemDef = "item_def_grid_item";
         public const string SteamStoreItemDefName = "item_def_name";
         public const string SteamStoreItemDefLinkRegex = @"detail\/(\d+)";

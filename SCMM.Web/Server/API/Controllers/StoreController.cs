@@ -38,7 +38,6 @@ namespace SCMM.Web.Server.API.Controllers
                 var nextStoreUpdateUtc = db.SteamAssetWorkshopFiles
                     .Select(p => p.AcceptedOn).Max().UtcDateTime;
 
-
                 // Store normally updates every thursday or friday around 9pm (UK time)
                 nextStoreUpdateUtc = (nextStoreUpdateUtc.Date + new TimeSpan(21, 0, 0));
                 do
@@ -71,7 +70,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => x.Description.WorkshopFile.AcceptedOn == latestStore)
                     .OrderBy(x => x.StoreRankPosition)
                     .ThenByDescending(x => x.Description.WorkshopFile.Subscriptions)
-                    .Take(30)
+                    .Take(SteamConstants.SteamStoreItemsMax)
                     .ToList();
 
                 var itemDtos = items.ToDictionary(

@@ -35,7 +35,7 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 
         public int TotalSalesMin { get; set; }
 
-        public int TotalSalesMax { get; set; }
+        public int? TotalSalesMax { get; set; }
 
         public IDictionary<string, double> TotalSalesHistory { get; set; }
 

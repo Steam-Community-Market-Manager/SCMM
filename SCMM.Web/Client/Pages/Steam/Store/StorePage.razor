@@ -57,9 +57,9 @@ else
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
                                         <i class="fas fa-fw fa-coins"></i>
-                                        @if (item.TotalSalesMax - item.TotalSalesMin > 0)
+                                        @if (item.TotalSalesMax != null)
                                         {
-                                            <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.ToQuantityString()</span>
+                                            <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
                                         }
                                         else
                                         {
@@ -401,7 +401,7 @@ else
 
         var itemTotalSalesMin = new BarDataset<DoubleWrapper>
         {
-            Label = "Minimum Copies (incl. duplicates)",
+            Label = "Minimum Sales (incl. duplicates)",
             BackgroundColor = "#6BC16F",
             BorderColor = "#335E33",
             BorderWidth = 1
