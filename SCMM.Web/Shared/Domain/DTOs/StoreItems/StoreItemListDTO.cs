@@ -19,6 +19,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 
         public string IconUrl { get; set; }
 
+        public string AuthorName { get; set; }
+
         public CurrencyDTO Currency { get; set; }
 
         public long StorePrice { get; set; }

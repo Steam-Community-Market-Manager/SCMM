@@ -49,7 +49,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                 : totalSubscribers; // bottom of the list
             var newTotalSalesMax = (afterMeItem != null)
                 ? (int?) Math.Max(afterMeItem.TotalSalesMin - 1, TotalSalesMin)
-                : null; // top of the list
+                : Int32.MaxValue; // top of the list
 
             // Minimum sales should never drop below its current value. If another item overtakes us in sales, 
             // we need to remember we still sold alot rather than falling back to subscriber count (which isn't an accurate representation of sales)

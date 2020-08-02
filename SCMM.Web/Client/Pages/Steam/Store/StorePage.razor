@@ -57,13 +57,17 @@ else
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
                                         <i class="fas fa-fw fa-coins"></i>
-                                        @if (item.TotalSalesMax != null)
+                                        @if (item.TotalSalesMax == null)
                                         {
-                                            <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
+                                        <span>@item.TotalSalesMin.ToQuantityString()</span>
+                                        }
+                                        else if (item.TotalSalesMax < Int32.MaxValue)
+                                        {
+                                        <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
                                         }
                                         else
                                         {
-                                            <span>@item.TotalSalesMin.ToQuantityString() or more</span>
+                                        <span>@item.TotalSalesMin.ToQuantityString() or more</span>
                                         }
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
@@ -290,7 +294,7 @@ else
 
         var authorRevenue = new BarDataset<DoubleWrapper>
         {
-            Label = "Skin Author Cut",
+            Label = "Skin Author Royalties",
             BackgroundColor = "#6BC16F",
             BorderColor = "#335E33",
             BorderWidth = 1
@@ -301,7 +305,7 @@ else
 
         var totalRevenue = new BarDataset<DoubleWrapper>
         {
-            Label = "Revenue Collected",
+            Label = "Skin Sales Revenue",
             BackgroundColor = "#388e3c",
             BorderColor = "#1b5e20",
             BorderWidth = 1
@@ -390,7 +394,7 @@ else
 
         var itemSubscriptions = new BarDataset<DoubleWrapper>
         {
-            Label = "Subscribers (Unique)",
+            Label = "Subscribers",
             BackgroundColor = "#388e3c",
             BorderColor = "#1b5e20",
             BorderWidth = 1
@@ -401,7 +405,7 @@ else
 
         var itemTotalSalesMin = new BarDataset<DoubleWrapper>
         {
-            Label = "Minimum Sales (incl. duplicates)",
+            Label = "Minimum Sales",
             BackgroundColor = "#6BC16F",
             BorderColor = "#335E33",
             BorderWidth = 1

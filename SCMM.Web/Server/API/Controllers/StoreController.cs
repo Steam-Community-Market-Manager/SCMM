@@ -67,6 +67,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
+                    .Include(x => x.Description.WorkshopFile.Creator)
                     .Where(x => x.Description.WorkshopFile.AcceptedOn == latestStore)
                     .OrderBy(x => x.StoreRankPosition)
                     .ThenByDescending(x => x.Description.WorkshopFile.Subscriptions)

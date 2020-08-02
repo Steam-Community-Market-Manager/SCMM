@@ -109,6 +109,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
+                .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Description.WorkshopFile.Creator.Name))                
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.StorePrice, o => o.MapFrom(
                     (src, dst, _, context) =>
