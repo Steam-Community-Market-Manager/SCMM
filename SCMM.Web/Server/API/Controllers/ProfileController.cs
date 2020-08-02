@@ -49,12 +49,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
 
                 var profileId = Request.ProfileId();
-                var profileState = new ProfileDetailedDTO()
-                {
-                    Language = language,
-                    Currency = currency,
-                };
-
+                var profileState = new ProfileDetailedDTO();
                 if (!String.IsNullOrEmpty(profileId))
                 {
                     var profile = await db.SteamProfiles
@@ -72,6 +67,8 @@ namespace SCMM.Web.Server.API.Controllers
                     _mapper.Map(profile, profileState);
                 }
 
+                profileState.Language = language;
+                profileState.Currency = currency;
                 return profileState;
             }
         }
