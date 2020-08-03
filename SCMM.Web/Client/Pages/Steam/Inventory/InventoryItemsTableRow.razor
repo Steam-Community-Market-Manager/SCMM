@@ -6,14 +6,19 @@
 @inject AppState State
 
 <TableRow @key="@Item.Id" Hover>
-    <TableCell Class="@GetItemClass()">
-        <img src="@Item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-    </TableCell>
     <TableCell Component="th" Scope="row" Class="@GetItemClass()">
-        <strong>@Item.Name</strong>
-    </TableCell>
-    <TableCell Class="@GetItemClass()">
-        @Item.Quantity.ToQuantityString()
+        <div style="display:flex; align-content:center; align-items:center">
+            <img src="@Item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+            <strong style="margin:8px">@Item.Name</strong>
+            @if (Item.Quantity > 1)
+            { 
+            <div class="Chip-Root">
+                <span class="Chip-Label">
+                    @Item.Quantity.ToQuantityString()
+                </span>
+            </div>
+            }
+        </div>
     </TableCell>
     <TableCell Class="@GetItemClass()">
         <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@Value"

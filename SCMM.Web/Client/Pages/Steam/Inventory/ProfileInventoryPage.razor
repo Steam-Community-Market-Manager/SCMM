@@ -3,6 +3,7 @@
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @namespace SCMM.Web.Client.Pages.Steam.Inventory
+@inject ILocalStorageService LocalStorage
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
@@ -17,6 +18,11 @@
 
     .Search-Text input {
         padding: 8px;
+    }
+
+    .Inventory-List-Container {
+        max-height: calc(100vh - 235px);
+        overflow: auto;
     }
 
 </style>
@@ -150,7 +156,7 @@ else
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
                 @if ((int)SelectedInventoryPanel == 1 && InventoryItemsDetailed != null)
                 {
-                    <Paper>
+                    <Paper Class="Inventory-List-Container">
                         <InventoryItemsTable Items="@InventoryItemsDetailed" />
                     </Paper>
                 }
@@ -198,6 +204,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        SelectedInventoryPanel = await LocalStorage.GetItemAsync<int>("Inventory.SelectedTab");
         await RefreshInventory();
     }
 
@@ -243,9 +250,10 @@ else
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
-    private void OnSelectedInventoryPanelChanged(object value)
+    private async Task OnSelectedInventoryPanelChanged(object value)
     {
         SelectedInventoryPanel = value;
+        await LocalStorage.SetItemAsync<int>("Inventory.SelectedTab", (int) value);
         switch (SelectedInventoryPanel)
         {
             case 0: RecalculateItemsSummary();  break;

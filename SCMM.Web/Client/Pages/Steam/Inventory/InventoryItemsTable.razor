@@ -1,23 +1,36 @@
 ﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 @inherits ComponentBase
+@inject ILocalStorageService LocalStorage
 
 <Table StickyHeader Size="@Size.Small">
     <TableHead>
         <TableRow>
-            <TableCell></TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Owned</TableCell>
-            <TableCell>Buy Price</TableCell>
-            <TableCell>Market Value</TableCell>
-            <TableCell>Resell Price</TableCell>
-            <TableCell>Resell Tax</TableCell>
-            <TableCell>Resell Profit</TableCell>
-            <TableCell>Resell RoI%</TableCell>
+            <TableCell>
+                @CreateSortableColumn("name", "Name")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("buyPrice", "Buy Price")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("marketValue", "Current Market Value")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("resellPrice", "Resell Price")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("resellFees", "Resell Fees")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("resellProfit", "Resell Profit")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("resellROI", "Resell ROI%")
+            </TableCell>
         </TableRow>
     </TableHead>
     <TableBody>
-        @foreach (var item in Items)
+        @foreach (var item in GetSortedRows())
         { 
             <InventoryItemsTableRow Item="@item" />
         }
@@ -28,5 +41,96 @@
 
     [Parameter]
     public InventoryItemListDTO[] Items { get; set; }
+
+    private string OrderBy { set; get; } = "marketValue";
+
+    private Sort Direction { set; get; } = Sort.Ascending;
+
+    protected override async Task OnInitializedAsync()
+    {
+        OrderBy = await LocalStorage.GetItemAsync<string>("Inventory.SortBy");
+        Direction = await LocalStorage.GetItemAsync<Sort>("Inventory.SortDirection");
+    }
+
+    private RenderFragment CreateSortableColumn(string name, string label)
+    {
+        return @<TableSortLabel
+                    Active="@(OrderBy == name)"
+                    Direction="@Direction"
+                    OnClick="@CreateOnSortClick(name)">
+                    @label
+                </TableSortLabel>;
+    }
+
+    private EventCallback<EventArgs> CreateOnSortClick(string name)
+    {
+        return EventCallback.Factory.Create<System.EventArgs>(this, (_) =>
+        {
+            HandleSortClick(name);
+        });
+    }
+
+    private IEnumerable<InventoryItemListDTO> GetSortedRows()
+    {
+        if (Direction == Sort.Ascending)
+        {
+            if (OrderBy == "name")
+                return Items.OrderBy(row => row.Name);
+            else if (OrderBy == "buyPrice")
+                return Items.OrderBy(row => row.BuyPrice);
+            else if (OrderBy == "marketValue")
+                return Items.OrderBy(row => row.MarketItem?.Last1hrValue);
+            else if (OrderBy == "resellPrice")
+                return Items.OrderBy(row => row.MarketItem?.ResellPrice);
+            else if (OrderBy == "resellFees")
+                return Items.OrderBy(row => row.MarketItem?.ResellTax);
+            else if (OrderBy == "resellProfit")
+                return Items
+                    .Where(x => x.BuyPrice > 0)
+                    .OrderBy(row => row.MarketItem?.ResellProfit - row.BuyPrice);
+            else if (OrderBy == "resellROI")
+                return Items
+                    .Where(x => x.BuyPrice > 0)
+                    .OrderBy(row => (decimal)(row.MarketItem.ResellPrice - row.MarketItem.ResellTax) / row.BuyPrice.Value);
+        }
+        else
+        {
+            if (OrderBy == "name")
+                return Items.OrderByDescending(row => row.Name);
+            else if (OrderBy == "buyPrice")
+                return Items.OrderByDescending(row => row.BuyPrice);
+            else if (OrderBy == "marketValue")
+                return Items.OrderByDescending(row => row.MarketItem?.Last1hrValue);
+            else if (OrderBy == "resellPrice")
+                return Items.OrderByDescending(row => row.MarketItem?.ResellPrice);
+            else if (OrderBy == "resellFees")
+                return Items.OrderByDescending(row => row.MarketItem?.ResellTax);
+            else if (OrderBy == "resellProfit")
+                return Items
+                    .Where(x => x.BuyPrice > 0)
+                    .OrderByDescending(row => row.MarketItem?.ResellProfit - row.BuyPrice);
+            else if (OrderBy == "resellROI")
+                return Items
+                    .Where(x => x.BuyPrice > 0)
+                    .OrderByDescending(row => (decimal)(row.MarketItem.ResellPrice - row.MarketItem.ResellTax) / row.BuyPrice.Value);
+        }
+        return Items;
+    }
+
+    private async Task HandleSortClick(string name)
+    {
+        if (OrderBy == name)
+        {
+            Direction = Direction == Sort.Ascending ? Sort.Descending : Sort.Ascending;
+        }
+        else
+        {
+            Direction = Sort.Ascending;
+        }
+        OrderBy = name;
+        await LocalStorage.SetItemAsync<string>("Inventory.SortBy", OrderBy);
+        await LocalStorage.SetItemAsync<Sort>("Inventory.SortDirection", Direction);
+        StateHasChanged();
+    }
 
 }
