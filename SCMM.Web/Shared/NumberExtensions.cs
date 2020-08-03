@@ -59,7 +59,7 @@ namespace SCMM.Web.Shared
                 return 0;
             }
 
-            var localValue = (decimal) (value * localCurrency.ExchangeRateMultiplier);
+            var localValue = (value * localCurrency.ExchangeRateMultiplier);
             return (long)Math.Floor(localValue);
         }
 

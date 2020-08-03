@@ -11,12 +11,12 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using SCMM.Web.Shared;
+using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -55,8 +55,8 @@ namespace SCMM.Web.Server.API.Controllers
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var currency = Request.Currency();
-                var profile = (SteamProfile) null;
-                
+                var profile = (SteamProfile)null;
+
                 if (sync)
                 {
                     // Force inventory sync
@@ -164,7 +164,7 @@ namespace SCMM.Web.Server.API.Controllers
                 profitHistory[today.Subtract(TimeSpan.FromDays(2))] = last48hrValue - SteamEconomyHelper.GetSteamFeeAsInt(last48hrValue) - totalInvested;
                 profitHistory[today.Subtract(TimeSpan.FromDays(1))] = last24hrValue - SteamEconomyHelper.GetSteamFeeAsInt(last24hrValue) - totalInvested;
                 profitHistory[today.Subtract(TimeSpan.FromDays(0))] = last1hrValue - SteamEconomyHelper.GetSteamFeeAsInt(last1hrValue) - totalInvested;
-                
+
                 return new ProfileInventoryPerformanceDTO()
                 {
                     ValueHistoryGraph = valueHistory.ToDictionary(

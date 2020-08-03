@@ -8,10 +8,8 @@ using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
-using SCMM.Web.Shared;
 using System;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 

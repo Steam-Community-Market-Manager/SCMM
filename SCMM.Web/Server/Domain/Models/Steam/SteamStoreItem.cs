@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Internal;
-using SCMM.Web.Server.Data.Types;
+﻿using SCMM.Web.Server.Data.Types;
 using System;
 using System.Linq;
 
@@ -43,12 +42,12 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var afterMeIndex = Math.Max((orderedStoreItems.IndexOf(me) - 1), 0);
             var afterMeItem = (afterMeIndex != meIndex) ? orderedStoreItems.ElementAtOrDefault(afterMeIndex) : null;
             var totalSubscribers = (Description?.WorkshopFile?.Subscriptions ?? 0);
-            
+
             var newTotalSalesMin = (beforeMeItem != null)
                 ? Math.Max(beforeMeItem.TotalSalesMin + 1, totalSubscribers)
                 : totalSubscribers; // bottom of the list
             var newTotalSalesMax = (afterMeItem != null)
-                ? (int?) Math.Max(afterMeItem.TotalSalesMin - 1, TotalSalesMin)
+                ? (int?)Math.Max(afterMeItem.TotalSalesMin - 1, TotalSalesMin)
                 : Int32.MaxValue; // top of the list
 
             // Minimum sales should never drop below its current value. If another item overtakes us in sales, 

@@ -107,7 +107,7 @@ namespace SCMM.Steam.Client
                     if (String.IsNullOrEmpty(html))
                     {
                         return null;
-                    }    
+                    }
 
                     // Sanitise the html first to clean-up dodgy tags that may cause XML parsing to fail
                     // (e.g. <meta>, <link>, etc)
