@@ -30,7 +30,7 @@
         </TableRow>
     </TableHead>
     <TableBody>
-        @foreach (var item in GetSortedRows())
+        @foreach (var item in Items)
         { 
             <InventoryItemsTableRow Item="@item" />
         }
