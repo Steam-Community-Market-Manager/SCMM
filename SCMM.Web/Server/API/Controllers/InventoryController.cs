@@ -113,26 +113,61 @@ namespace SCMM.Web.Server.API.Controllers
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var currency = Request.Currency();
 
-                var profileInventory = await db.SteamProfiles
-                    .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
+                var profileInventoryItems = db.SteamInventoryItems
+                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                    .Where(x => x.MarketItemId != null)
                     .Select(x => new
                     {
-                        Invested = x.InventoryItems.Sum(x => x.BuyPrice / x.Currency.ExchangeRateMultiplier),
-                        Last1hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last1hrValue / x.Currency.ExchangeRateMultiplier),
-                        Last24hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last24hrValue / x.Currency.ExchangeRateMultiplier),
-                        Last48hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last48hrValue / x.Currency.ExchangeRateMultiplier),
-                        Last72hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last72hrValue / x.Currency.ExchangeRateMultiplier),
-                        Last96hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last96hrValue / x.Currency.ExchangeRateMultiplier),
-                        Last120hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last120hrValue / x.Currency.ExchangeRateMultiplier),
-                        Last144hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last144hrValue / x.Currency.ExchangeRateMultiplier),
-                        Last168hrValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last168hrValue / x.Currency.ExchangeRateMultiplier)
+                        Quantity = x.Quantity,
+                        BuyPrice = x.BuyPrice,
+                        ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                        MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
+                        MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
+                        MarketItemLast48hrValue = x.MarketItem.Last48hrValue,
+                        MarketItemLast72hrValue = x.MarketItem.Last72hrValue,
+                        MarketItemLast96hrValue = x.MarketItem.Last96hrValue,
+                        MarketItemLast120hrValue = x.MarketItem.Last120hrValue,
+                        MarketItemLast144hrValue = x.MarketItem.Last144hrValue,
+                        MarketItemLast168hrValue = x.MarketItem.Last168hrValue,
+                        MarketItemExchangeRateMultiplier = x.MarketItem.Currency.ExchangeRateMultiplier
                     })
-                    .FirstOrDefaultAsync();
+                    .ToList();
 
-                if (profileInventory == null)
+                if (!profileInventoryItems.Any())
                 {
                     throw new Exception($"Profile with SteamID '{steamId}' was not found");
                 }
+
+                var profileInventory = new
+                {
+                    Invested = profileInventoryItems
+                        .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
+                        .Sum(x => (x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
+                    Last1hrValue = profileInventoryItems
+                        .Where(x => x.MarketItemLast1hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast1hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    Last24hrValue = profileInventoryItems
+                        .Where(x => x.MarketItemLast24hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast24hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    Last48hrValue = profileInventoryItems
+                        .Where(x => x.MarketItemLast48hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast48hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    Last72hrValue = profileInventoryItems
+                        .Where(x => x.MarketItemLast72hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast72hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    Last96hrValue = profileInventoryItems
+                        .Where(x => x.MarketItemLast96hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast96hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    Last120hrValue = profileInventoryItems
+                        .Where(x => x.MarketItemLast120hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast120hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    Last144hrValue = profileInventoryItems
+                        .Where(x => x.MarketItemLast144hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast144hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    Last168hrValue = profileInventoryItems
+                        .Where(x => x.MarketItemLast168hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast168hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity)
+                };
 
                 var today = DateTimeOffset.UtcNow.Date;
                 var totalInvested = currency.CalculateExchange(profileInventory.Invested ?? 0);
@@ -195,37 +230,70 @@ namespace SCMM.Web.Server.API.Controllers
 
             using (var scope = _scopeFactory.CreateScope())
             {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var currency = Request.Currency();
-                var profileInventory = await db.SteamProfiles
-                    .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                    .Select(x => new
+                
+                try
+                {
+                    var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                    var currency = Request.Currency();
+                    var profileInventoryItems = db.SteamInventoryItems
+                        .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                        .Where(x => x.MarketItemId != null)
+                        .Select(x => new
+                        {
+                            Quantity = x.Quantity,
+                            BuyPrice = x.BuyPrice,
+                            ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                            MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
+                            MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
+                            MarketItemResellPrice = x.MarketItem.ResellPrice,
+                            MarketItemResellTax = x.MarketItem.ResellTax,
+                            MarketItemExchangeRateMultiplier = x.MarketItem.Currency.ExchangeRateMultiplier
+                        })
+                        .ToList();
+
+                    if (!profileInventoryItems.Any())
                     {
-                        TotalItems = x.InventoryItems.Sum(x => x.Quantity),
-                        TotalInvested = x.InventoryItems.Sum(x => x.BuyPrice / x.Currency.ExchangeRateMultiplier),
-                        TotalMarketValueLast1hr = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last1hrValue / x.Currency.ExchangeRateMultiplier),
-                        TotalMarketValueLast24hr = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.Last24hrValue / x.Currency.ExchangeRateMultiplier),
-                        TotalResellValue = x.InventoryItems.Select(x => x.MarketItem).Sum(x => x.ResellPrice / x.Currency.ExchangeRateMultiplier),
-                        TotalResellValueAfterTax = x.InventoryItems.Select(x => x.MarketItem).Sum(x => (x.ResellPrice - x.ResellTax) / x.Currency.ExchangeRateMultiplier)
-                    })
-                    .FirstOrDefaultAsync();
+                        throw new Exception($"Profile with SteamID '{steamId}' was not found");
+                    }
 
-                if (profileInventory == null)
-                {
-                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
+                    var profileInventory = new
+                    {
+                        TotalItems = profileInventoryItems
+                            .Sum(x => x.Quantity),
+                        TotalInvested = profileInventoryItems
+                            .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
+                            .Sum(x => (x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
+                        TotalMarketValueLast1hr = profileInventoryItems
+                            .Where(x => x.MarketItemLast1hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                            .Sum(x => (x.MarketItemLast1hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                        TotalMarketValueLast24hr = profileInventoryItems
+                            .Where(x => x.MarketItemLast24hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                            .Sum(x => (x.MarketItemLast24hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                        TotalResellValue = profileInventoryItems
+                            .Where(x => x.MarketItemResellPrice != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                            .Sum(x => (x.MarketItemResellPrice / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                        TotalResellValueAfterTax = profileInventoryItems
+                            .Where(x => x.MarketItemResellPrice - x.MarketItemResellTax != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                            .Sum(x => ((x.MarketItemResellPrice - x.MarketItemResellTax) / x.MarketItemExchangeRateMultiplier) * x.Quantity)
+                    };
+
+                    return new ProfileInventoryTotalsDTO()
+                    {
+                        TotalItems = profileInventory.TotalItems,
+                        TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
+                        TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
+                        TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
+                        TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
+                        TotalResellProfit = (
+                            currency.CalculateExchange(profileInventory.TotalResellValueAfterTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
+                        )
+                    };
                 }
-
-                return new ProfileInventoryTotalsDTO()
+                catch (Exception ex)
                 {
-                    TotalItems = profileInventory.TotalItems,
-                    TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
-                    TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
-                    TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
-                    TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
-                    TotalResellProfit = (
-                        currency.CalculateExchange(profileInventory.TotalResellValueAfterTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
-                    )
-                };
+                    throw;
+
+                }
             }
         }
 
