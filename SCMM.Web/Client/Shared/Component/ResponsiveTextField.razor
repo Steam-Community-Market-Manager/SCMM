@@ -1,0 +1,55 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using System.Timers
+@inherits ComponentBase
+
+<TextField Variant="@TextFieldVariant.Outlined" Margin="@Margin.Dense" FullWidth Shrink
+           Label="@Label" Value="@Value" OnChange="@OnSearchTextChanged" Placeholder="@Placeholder">
+    <StartAdornment>
+        <InputAdornment Position="@InputPosition.Start">
+            @StartAdornment
+        </InputAdornment>
+    </StartAdornment>
+    <EndAdornment>
+        <InputAdornment Position="@InputPosition.Start">
+            @EndAdornment
+        </InputAdornment>
+    </EndAdornment>
+</TextField>
+
+@code {
+
+    [Parameter]
+    public Action<string> OnChange { get; set; }
+    
+    [Parameter]
+    public string Label { get; set; }
+    
+    [Parameter]
+    public string Placeholder { get; set; }
+    
+    [Parameter]
+    public string Value { get; set; }
+    
+    [Parameter]
+    public RenderFragment StartAdornment { get; set; }
+    
+    [Parameter]
+    public RenderFragment EndAdornment { get; set; }
+
+    private Timer Timer { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Timer = new System.Timers.Timer(1000);
+        Timer.AutoReset = false;
+        Timer.Elapsed += (source, e) => OnChange?.Invoke(Value);
+    }
+
+    private void OnSearchTextChanged(ChangeEventArgs args)
+    {
+        Value = (string)args.Value;
+        Timer.Stop();
+        Timer.Start();
+    }
+
+}

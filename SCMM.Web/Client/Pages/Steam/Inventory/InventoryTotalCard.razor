@@ -2,7 +2,7 @@
 @inherits ComponentBase
 
 <div style=" display: flex; align-items: center; align-content: center; padding: 8px;">
-    <Avatar Class="@IconClass" style="width: 64px; height: 64px; display:flex">
+    <Avatar Class="@IconClass" style="min-width:42px; min-height:42px; max-width:48px; max-height:48px; padding:5px; display:flex">
         @Icon
     </Avatar>
     <div style="display: inline-block; padding: 0px 16px;">
@@ -10,7 +10,7 @@
                     Variant="@TypographyVariant.Body2">
             @Title
         </Typography>
-        <Typography Variant="@TypographyVariant.H6">
+        <Typography Variant="@TypographyVariant.Subtitle2">
             @Total
         </Typography>
     </div>

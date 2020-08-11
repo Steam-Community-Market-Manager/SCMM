@@ -11,15 +11,6 @@
 
 <style>
     
-    .Search-Text {
-        width: 100%;
-        margin-bottom: 16px;
-    }
-
-    .Search-Text input {
-        padding: 8px;
-    }
-
     .Inventory-List-Container {
         max-height: calc(100vh - 235px);
         overflow: auto;
@@ -42,7 +33,38 @@ else
 {
     <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
     <Grid Container Spacing="@Spacing.Two">
-        <Grid ExtraSmall="@GridSize.Two">
+        <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
+            <ResponsiveTextField Label="Steam ID" Placeholder="steam id" Value="@SteamId" OnChange="@(x => OnSteamIdChanged(x))">
+                <StartAdornment>
+                    <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+                        <span>https://steamcommunity.com/id/</span>
+                    </Typography>
+                </StartAdornment>
+                <EndAdornment>
+                    <IconButton OnClick="@ViewProfileInventory" Style="padding:5px;" title="View Profile Inventory">
+                        <SearchIcon />
+                    </IconButton>
+                </EndAdornment>
+            </ResponsiveTextField>
+        </Grid>
+        <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
+            <ResponsiveTextField Label="Filter" Placeholder="type an item name or tag..." OnChange="@(x => OnFilterChanged(x))">
+                <StartAdornment>
+                    <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+                        <i class="fas fa-fw fa-filter"></i>
+                    </Typography>
+                </StartAdornment>
+            </ResponsiveTextField>
+        </Grid>
+    </Grid>
+    <Grid Container Spacing="@Spacing.Two">
+        @if(Profile != null && (State.ProfileId != Profile?.SteamId && State.ProfileId != Profile?.ProfileId))
+        {
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+            <InventoryProfileCard Profile="@Profile" />
+        </Grid>
+        }
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
             <InventoryTotalCard Title="Assets">
                 <Icon>
                     <SwapBagIcon />
@@ -54,10 +76,10 @@ else
         </Grid>
         @if (InventoryTotal?.TotalInvested > 0)
         {
-        <Grid ExtraSmall="@GridSize.Two">
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
             <InventoryTotalCard Title="Total Investment" IconClass="Background-Error">
                 <Icon>
-                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                    <i class="fas fa-fw fa-dollar-sign"></i>
                 </Icon>
                 <Total>
                     @State.Currency.ToPriceString(InventoryTotal.TotalInvested)
@@ -67,14 +89,14 @@ else
         }
         @if (InventoryTotal?.TotalMarketValue > 0)
         {
-        <Grid ExtraSmall="@GridSize.Two">
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
             <InventoryTotalCard Title="Total Market Value" IconClass="Background-Info">
                 <Icon>
-                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                    <i class="fas fa-fw fa-dollar-sign"></i>
                 </Icon>
                 <Total>
                     @State.Currency.ToPriceString(InventoryTotal.TotalMarketValue)
-                    <Typography Variant="@TypographyVariant.Body2">
+                    <span>
                         @if (InventoryTotal.TotalMarket24hrMovement > 0)
                         {
                             <span class="Text-Success">
@@ -87,17 +109,17 @@ else
                                 🡳 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
                             </span>
                         }
-                    </Typography>
+                    </span>
                 </Total>
             </InventoryTotalCard>
         </Grid>
         }
         @if (InventoryTotal?.TotalResellValue > 0)
         {
-        <Grid ExtraSmall="@GridSize.Two">
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
             <InventoryTotalCard Title="Optimistic Resell Value" IconClass="Background-Success">
                 <Icon>
-                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                    <i class="fas fa-fw fa-dollar-sign"></i>
                 </Icon>
                 <Total>
                     @State.Currency.ToPriceString(InventoryTotal.TotalResellValue)
@@ -107,10 +129,10 @@ else
         }
         @if (InventoryTotal?.TotalResellProfit > 0)
         {
-        <Grid ExtraSmall="@GridSize.Two">
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
             <InventoryTotalCard Title="Optimistic Resell Profit" IconClass="Background-Success">
                 <Icon>
-                    <AttachMoneyIcon Style="width:48px;height:48px" />
+                    <i class="fas fa-fw fa-dollar-sign"></i>
                 </Icon>
                 <Total>
                     @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit)
@@ -120,20 +142,14 @@ else
         }
         @if (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId))
         {
-        <Grid ExtraSmall="@GridSize.Two" Style="padding:8px">
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two" Style="padding:8px">
             <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
                 Last synchronised @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago
             </Typography>
-            <Button OnClick="@(() => SyncInventory())"
+            <Button OnClick="@(() => SyncInventory())" Size="@Size.Small"
                     Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
                 Synchronise
             </Button>
-        </Grid>
-        }
-        else if(Profile != null)
-        {
-        <Grid ExtraSmall="@GridSize.Two">
-            <InventoryProfileCard Profile="@Profile" />
         </Grid>
         }
         <Grid Item ExtraSmall="@GridSize.Twelve">
@@ -185,6 +201,8 @@ else
     [Parameter]
     public bool Sync { get; set; } = false;
 
+    private string Filter { get; set; }
+
     private ProfileInventoryDetailsDTO Profile { get; set; }
 
     private bool ProfileNotFound { get; set; }
@@ -201,7 +219,7 @@ else
 
     private ChartJsLineChart TotalHistoryChartJs;
     private LineConfig TotalHistoryChart;
-
+    
     protected override async Task OnInitializedAsync()
     {
         SelectedInventoryPanel = await LocalStorage.GetItemAsync<int>("Inventory.SelectedTab");
@@ -242,6 +260,23 @@ else
         StateHasChanged();
         await RefreshInventory();
         StateHasChanged();
+    }
+    
+    private void OnSteamIdChanged(string steamId)
+    {
+        SteamId = steamId;
+    }
+    
+    private void OnFilterChanged(string filter)
+    {
+        Filter = (string) filter;
+        StateHasChanged();
+        Console.WriteLine(filter);
+    }
+
+    private async Task ViewProfileInventory()
+    {
+        Navigation.NavigateTo($"steam/inventory/{SteamId}", forceLoad: true);
     }
 
     private void ViewItem(InventoryItemListDTO item)
@@ -404,5 +439,17 @@ else
             );
             TotalHistoryChart.Data.Datasets.Add(totalValueDataSet);
         }
+    }
+
+    private IEnumerable<InventoryMarketItemDTO> FilterItems(IEnumerable<InventoryMarketItemDTO> items)
+    {
+        if (String.IsNullOrEmpty(Filter))
+        {
+            return items;
+        }
+
+        return items.Where(x => 
+            x.Name.Contains(Filter, StringComparison.CurrentCultureIgnoreCase)
+        );
     }
 }

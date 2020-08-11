@@ -3,15 +3,15 @@
 @inherits ComponentBase
 
 <div style=" display: flex; align-items: center; align-content: center; padding: 8px;">
-    <Avatar style="width: 64px; height: 64px; display:flex">
-        <img src="@Profile.AvatarLargeUrl" style="width: 64px; height: 64px;" />
+    <Avatar style="min-width:42px; min-height:42px; max-width:48px; max-height:48px; padding:5px; display:flex">
+        <img src="@Profile.AvatarLargeUrl" style="min-width:42px; min-height:42px; max-width:48px; max-height:48px;" />
     </Avatar>
     <div style="display: inline-block; padding: 0px 16px;">
-        <Typography Variant="@TypographyVariant.H5">
+        <Typography Variant="@TypographyVariant.Body2">
             @Profile.Name
         </Typography>
-        <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
-            @(Profile.ProfileId ?? Profile.SteamId)
+        <Typography Variant="@TypographyVariant.Subtitle2" Color="@Color.TextSecondary">
+            @(String.IsNullOrEmpty(Profile.ProfileId) ? Profile.SteamId : Profile.ProfileId)
         </Typography>
     </div>
 </div>
