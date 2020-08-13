@@ -87,6 +87,9 @@ namespace SCMM.Web.Server.API.Controllers
                     throw new Exception($"Profile with SteamID '{steamId}' was not found");
                 }
 
+                profile.LastViewedInventoryOn = DateTimeOffset.Now;
+                db.SaveChanges();
+
                 return _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(
                     profile, Request
                 );
