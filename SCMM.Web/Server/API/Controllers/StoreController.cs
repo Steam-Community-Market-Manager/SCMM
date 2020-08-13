@@ -82,29 +82,23 @@ namespace SCMM.Web.Server.API.Controllers
                 // TODO: Do this better, very lazy
                 foreach (var pair in itemDtos.Where(x => x.Value.Tags != null))
                 {
-                    var item = pair.Value;
-                    var itemType = String.Empty;
-                    if (item.Tags.ContainsKey(SteamConstants.SteamAssetTagItemType))
-                    {
-                        itemType = Uri.EscapeDataString(
-                            item.Tags[SteamConstants.SteamAssetTagItemType]
-                        );
-                    }
-                    else if (item.Tags.ContainsKey(SteamConstants.SteamAssetTagWorkshop))
-                    {
-                        itemType = Uri.EscapeDataString(
-                            item.Tags.FirstOrDefault(x => x.Key.StartsWith(SteamConstants.SteamAssetTagWorkshop)).Value
-                        );
-                    }
-                    if (string.IsNullOrEmpty(itemType))
+                    var item = pair.Key;
+                    var itemDto = pair.Value;
+                    var itemType = itemDto.ItemType;
+                    if (String.IsNullOrEmpty(itemType))
                     {
                         continue;
                     }
 
                     var systemCurrency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-                    var itemPrice = item.StorePrice;// systemCurrency.ToLocalValue(item.StorePrice, item.Currency);
+                    var itemPrice = item.StorePrices.FirstOrDefault(x => x.Key == systemCurrency.Name).Value;
+                    if (itemPrice <= 0)
+                    {
+                        continue;
+                    }
+
                     var marketRank = db.SteamApps
-                        .Where(x => x.SteamId == item.SteamAppId)
+                        .Where(x => x.SteamId == itemDto.SteamAppId)
                         .Select(app => new
                         {
                             Position = app.MarketItems
@@ -119,8 +113,8 @@ namespace SCMM.Web.Server.API.Controllers
 
                     if (marketRank.Total > 1)
                     {
-                        item.MarketRankPosition = marketRank.Position;
-                        item.MarketRankTotal = marketRank.Total;
+                        itemDto.MarketRankPosition = marketRank.Position;
+                        itemDto.MarketRankTotal = marketRank.Total;
                     }
                 }
 
