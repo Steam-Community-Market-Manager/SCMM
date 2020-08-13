@@ -272,9 +272,9 @@ namespace SCMM.Web.Server.API.Controllers
                     TotalResellValue = profileInventoryItems
                         .Where(x => x.MarketItemResellPrice != 0 && x.MarketItemExchangeRateMultiplier != 0)
                         .Sum(x => (x.MarketItemResellPrice / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                    TotalResellValueAfterTax = profileInventoryItems
-                        .Where(x => x.MarketItemResellPrice - x.MarketItemResellTax != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                        .Sum(x => ((x.MarketItemResellPrice - x.MarketItemResellTax) / x.MarketItemExchangeRateMultiplier) * x.Quantity)
+                    TotalResellTax = profileInventoryItems
+                        .Where(x => x.MarketItemResellTax != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemResellTax / x.MarketItemExchangeRateMultiplier) * x.Quantity)
                 };
 
                 return new ProfileInventoryTotalsDTO()
@@ -284,8 +284,9 @@ namespace SCMM.Web.Server.API.Controllers
                     TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
                     TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
                     TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
+                    TotalResellTax= currency.CalculateExchange(profileInventory.TotalResellTax),
                     TotalResellProfit = (
-                        currency.CalculateExchange(profileInventory.TotalResellValueAfterTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
+                        currency.CalculateExchange(profileInventory.TotalResellValue - profileInventory.TotalResellTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
                     )
                 };
             }

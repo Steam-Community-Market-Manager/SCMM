@@ -123,19 +123,20 @@ else
                 </Icon>
                 <Total>
                     @State.Currency.ToPriceString(InventoryTotal.TotalResellValue)
-                </Total>
-            </InventoryTotalCard>
-        </Grid>
-        }
-        @if (InventoryTotal?.TotalResellProfit > 0)
-        {
-        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
-            <InventoryTotalCard Title="Optimistic Resell Profit" IconClass="Background-Success">
-                <Icon>
-                    <i class="fas fa-fw fa-dollar-sign"></i>
-                </Icon>
-                <Total>
-                    @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit)
+                    <span>
+                        @if (InventoryTotal.TotalResellProfit > 0)
+                        {
+                            <span class="Text-Success">
+                                🡱 @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit) profit
+                            </span>
+                        }
+                        @if (InventoryTotal.TotalResellProfit < 0)
+                        {
+                            <span class="Text-Error">
+                                🡳 @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit) profit
+                            </span>
+                        }
+                    </span>
                 </Total>
             </InventoryTotalCard>
         </Grid>
@@ -186,7 +187,14 @@ else
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
                 @if ((int)SelectedInventoryPanel == 3 && TotalHistoryChart != null)
                 {
-                    <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
+                    <Grid Container>
+                        <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                            <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
+                        </Grid>
+                        <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                            <ChartJsPieChart @ref="TotalSummaryChartJs" Config="@TotalSummaryChart" />
+                        </Grid>
+                    </Grid>
                 }
             </TabPanel>
         </Grid>
@@ -220,7 +228,9 @@ else
     private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
 
     private ChartJsLineChart TotalHistoryChartJs;
+    private ChartJsPieChart TotalSummaryChartJs;
     private LineConfig TotalHistoryChart;
+    private PieConfig TotalSummaryChart;
     
     protected override async Task OnInitializedAsync()
     {
@@ -240,7 +250,9 @@ else
             InventoryTotal = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>($"api/inventory/{SteamId}/total");
             InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>($"api/inventory/{SteamId}/performance");
             TotalHistoryChartJs = null;
+            TotalSummaryChartJs = null;
             TotalHistoryChart = null;
+            TotalSummaryChart = null;
             if (Profile != null)
             {
                 OnSelectedInventoryPanelChanged(SelectedInventoryPanel);
@@ -297,7 +309,7 @@ else
             case 0: RecalculateItemsSummary();  break;
             case 1: RecalculateItemsDetailed();  break;
             case 2: break;
-            case 3: RedrawTotalHistoryChart(); break;
+            case 3: RedrawPerformanceCharts(); break;
         }
         StateHasChanged();
     }
@@ -334,8 +346,11 @@ else
         InventoryItemsDetailed = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
     }
 
-    private void RedrawTotalHistoryChart()
+    private void RedrawPerformanceCharts()
     {
+        var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
+        var localScaleDivisor = Int64.Parse($"1{localScaleString}");
+
         TotalHistoryChart = new LineConfig
         {
             Options = new LineOptions
@@ -419,7 +434,7 @@ else
                 Fill = true
             };
             totalProfitDataSet.AddRange(
-                InventoryPerformance.ProfitHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
+                InventoryPerformance.ProfitHistoryGraph.Values.Select(x => (DoubleWrapper)Math.Round((double)x / localScaleDivisor, State.Currency.Scale)).ToList()
             );
             TotalHistoryChart.Data.Datasets.Add(totalProfitDataSet);
         }
@@ -438,10 +453,62 @@ else
                 Fill = true
             };
             totalValueDataSet.AddRange(
-                InventoryPerformance.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)x).ToList()
+                InventoryPerformance.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)Math.Round((double)x / localScaleDivisor, State.Currency.Scale)).ToList()
             );
             TotalHistoryChart.Data.Datasets.Add(totalValueDataSet);
         }
+
+        TotalSummaryChart = new PieConfig
+        {
+            Options = new PieOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Animation = new ArcAnimation
+                {
+                    AnimateRotate = true,
+                    AnimateScale = true
+                },
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                }
+            }
+        };
+        
+        TotalSummaryChart.Data.Labels.AddRange(new[] { 
+            "Invested", 
+            "Resell Fees", 
+            "Resell Profit", 
+            "Resell Value"
+        });
+
+        var inventoryTotals = new PieDataset
+        {
+            BackgroundColor = new[] { 
+                "#d32f2f",
+                "#f57c00",
+                "#388e3c",
+                "#1976d2"
+            },
+            BorderWidth = 0
+        };
+
+        inventoryTotals.Data.AddRange(new double[] { 
+            (DoubleWrapper)Math.Round((double)InventoryTotal.TotalInvested / localScaleDivisor, State.Currency.Scale),
+            (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellTax / localScaleDivisor, State.Currency.Scale),
+            (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellProfit / localScaleDivisor, State.Currency.Scale),
+            (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellValue / localScaleDivisor, State.Currency.Scale)
+        });
+
+        TotalSummaryChart.Data.Datasets.Add(inventoryTotals);
     }
 
     private IEnumerable<InventoryMarketItemDTO> FilterItems(IEnumerable<InventoryMarketItemDTO> items)

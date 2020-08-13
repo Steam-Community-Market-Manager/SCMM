@@ -14,6 +14,8 @@
 
         public long TotalResellValue { get; set; }
 
+        public long TotalResellTax { get; set; }
+
         public long TotalResellProfit { get; set; }
     }
 }
