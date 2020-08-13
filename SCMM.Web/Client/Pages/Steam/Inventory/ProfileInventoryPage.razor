@@ -58,7 +58,7 @@ else
         </Grid>
     </Grid>
     <Grid Container Spacing="@Spacing.Two">
-        @if(Profile != null && (State.ProfileId != Profile?.SteamId && State.ProfileId != Profile?.ProfileId))
+        @if(!ProfileIsMe)
         {
         <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
             <InventoryProfileCard Profile="@Profile" />
@@ -140,7 +140,7 @@ else
             </InventoryTotalCard>
         </Grid>
         }
-        @if (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId))
+        @if (ProfileIsMe)
         {
         <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two" Style="padding:8px">
             <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
@@ -173,7 +173,7 @@ else
                 @if ((int)SelectedInventoryPanel == 1 && InventoryItemsDetailed != null)
                 {
                     <Paper Class="Inventory-List-Container">
-                        <InventoryItemsTable Items="@InventoryItemsDetailed" />
+                        <InventoryItemsTable Items="@InventoryItemsDetailed" ReadOnly="@(!ProfileIsMe)" />
                     </Paper>
                 }
             </TabPanel>
@@ -205,6 +205,8 @@ else
 
     private ProfileInventoryDetailsDTO Profile { get; set; }
 
+    private bool ProfileIsMe { get; set; }
+
     private bool ProfileNotFound { get; set; }
 
     private object SelectedInventoryPanel { get; set; } = 0;
@@ -231,6 +233,7 @@ else
         try
         {
             Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"api/inventory/{SteamId}?sync={Sync}");
+            ProfileIsMe = (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId));
             ProfileNotFound = (Profile == null);
             InventoryItemsSummary = null;
             InventoryItemsDetailed = null;

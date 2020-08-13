@@ -32,7 +32,7 @@
     <TableBody>
         @foreach (var item in Items)
         { 
-            <InventoryItemsTableRow Item="@item" />
+            <InventoryItemsTableRow Item="@item" ReadOnly="@ReadOnly" />
         }
     </TableBody>
 </Table>
@@ -41,6 +41,9 @@
 
     [Parameter]
     public InventoryItemListDTO[] Items { get; set; }
+    
+    [Parameter]
+    public bool ReadOnly { get; set; }
 
     private string OrderBy { set; get; } = "marketValue";
 
