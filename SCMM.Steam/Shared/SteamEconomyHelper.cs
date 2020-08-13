@@ -46,7 +46,7 @@ namespace SCMM.Steam.Shared
         /// C# port of the Steam economy common logic
         /// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
         /// </summary>
-        public static long GetPriceValueAsInt(string strAmount)
+        public static long GetPriceValueAsInt(string strAmount, bool useDecimalShortCircuit = true)
         {
             long nAmount = 0;
             if (String.IsNullOrEmpty(strAmount))
@@ -54,13 +54,16 @@ namespace SCMM.Steam.Shared
                 return 0;
             }
 
-            // Custom work around for strings that have more than 2 decimal places (e.g. "12.34.56), round down
-            //var decAmount = 0m;
-            //if (decimal.TryParse(strAmount, out decAmount))
-            //{
-            //    decAmount = Math.Round(decAmount, 2);
-            //    strAmount = decAmount.ToString();
-            //}
+            // Custom work around for strings that have more than 2 decimal places (e.g. "12.34.56"), round down
+            if (useDecimalShortCircuit)
+            {
+                var decAmount = 0m;
+                if (decimal.TryParse(strAmount, out decAmount))
+                {
+                    decAmount = Math.Round(decAmount, 2);
+                    strAmount = decAmount.ToString();
+                }
+            }
 
             // Users may enter either comma or period for the decimal mark and digit group separators.
             strAmount = strAmount.Replace(',', '.');

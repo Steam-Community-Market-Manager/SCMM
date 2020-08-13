@@ -137,11 +137,11 @@
 
     private async Task UpdateItemPrice(string value)
     {
-        var buyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value);
+        var buyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
         if (buyPrice != Item.BuyPrice)
         {
             Item.Currency = State.Currency;
-            Item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value);
+            Item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
             await Http.PutAsJsonAsync($"api/inventory/item/{Item.Id}", new UpdateInventoryItemPriceCommand()
             {
                 CurrencyId = State.Currency.Id,
