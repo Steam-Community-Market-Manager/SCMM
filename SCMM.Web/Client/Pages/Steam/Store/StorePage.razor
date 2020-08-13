@@ -50,13 +50,13 @@ else
                                     <Typography Variant="@TypographyVariant.Body2">
                                         @if (item.MarketRankTotal > 0)
                                         {
-                                            <small>There are <strong>@item.MarketRankPosition</strong> cheaper market items of this type (@item.MarketRankPosition/@item.MarketRankTotal).</small>
+                                            <small><strong>@item.MarketRankPosition/@item.MarketRankTotal</strong> other @(item.ItemType)'s are cheaper than this</small>
                                         }
                                     </Typography>
                                 </TableCell>
                                 <TableCell Class="align-top">
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
-                                        <i class="fas fa-fw fa-coins"></i>
+                                        <i class="fas fa-fw fa-shopping-cart"></i>
                                         @if (item.TotalSalesMax == null)
                                         {
                                         <span>@item.TotalSalesMin.ToQuantityString()</span>
@@ -72,7 +72,7 @@ else
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body1" NoWrap>
                                         <i class="fas fa-fw fa-user"></i>
-                                        @item.Subscriptions.ToQuantityString()
+                                        <span>@item.Subscriptions.ToQuantityString()</span>
                                     </Typography>
                                 </TableCell>
                                 <TableCell Class="align-top" Align="@Align.Right">

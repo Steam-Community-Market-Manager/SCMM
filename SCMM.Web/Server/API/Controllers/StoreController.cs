@@ -84,7 +84,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     var item = pair.Key;
                     var itemDto = pair.Value;
-                    var itemType = itemDto.ItemType;
+                    var itemType = Uri.EscapeDataString(itemDto.ItemType ?? String.Empty);
                     if (String.IsNullOrEmpty(itemType))
                     {
                         continue;

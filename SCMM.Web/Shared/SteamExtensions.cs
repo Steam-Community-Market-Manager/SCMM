@@ -334,7 +334,8 @@ namespace SCMM.Web.Shared
                 }
                  */
             }
-            return itemType;
+
+            return Uri.UnescapeDataString(itemType ?? String.Empty);
         }
     }
 }
