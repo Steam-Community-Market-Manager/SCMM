@@ -54,13 +54,13 @@ namespace SCMM.Steam.Shared
                 return 0;
             }
 
-            // Custom work around for strings that have more than 2 decimal places, round down
-            var decAmount = 0m;
-            if (decimal.TryParse(strAmount, out decAmount))
-            {
-                decAmount = Math.Round(decAmount, 2);
-                strAmount = decAmount.ToString();
-            }
+            // Custom work around for strings that have more than 2 decimal places (e.g. "12.34.56), round down
+            //var decAmount = 0m;
+            //if (decimal.TryParse(strAmount, out decAmount))
+            //{
+            //    decAmount = Math.Round(decAmount, 2);
+            //    strAmount = decAmount.ToString();
+            //}
 
             // Users may enter either comma or period for the decimal mark and digit group separators.
             strAmount = strAmount.Replace(',', '.');
