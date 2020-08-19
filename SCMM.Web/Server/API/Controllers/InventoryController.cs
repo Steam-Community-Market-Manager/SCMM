@@ -116,6 +116,15 @@ namespace SCMM.Web.Server.API.Controllers
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var currency = Request.Currency();
 
+                // If this profile doesn't have an inventory loaded yet, force inventory sync now
+                var hasInventory = db.SteamInventoryItems
+                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                    .Any();
+                if (!hasInventory)
+                {
+                    await service.LoadAndRefreshProfileInventory(steamId);
+                }
+
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                     .Where(x => x.MarketItemId != null)
@@ -234,7 +243,18 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var service = scope.ServiceProvider.GetService<SteamService>();
                 var currency = Request.Currency();
+
+                // If this profile doesn't have an inventory loaded yet, force inventory sync now
+                var hasInventory = db.SteamInventoryItems
+                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                    .Any();
+                if (!hasInventory)
+                {
+                    await service.LoadAndRefreshProfileInventory(steamId);
+                }
+
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                     .Where(x => x.MarketItemId != null)
