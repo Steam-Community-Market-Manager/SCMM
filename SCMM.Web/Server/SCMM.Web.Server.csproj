@@ -4,11 +4,15 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>SCMM.Web.Server-CEF763B9-8A28-4DFF-9A7A-1E4D1E7320D9</UserSecretsId>
     <ApplicationInsightsResourceId>/subscriptions/c42f13b2-3f25-4a32-a1c1-9bbc323dfa76/resourceGroups/SCMM/providers/microsoft.insights/components/scmm-app-insights</ApplicationInsightsResourceId>
-    <Copyright>Copyright 2020 Rhys Koedijk</Copyright>
-    <Version>0.3-alpha</Version>
-    <AssemblyVersion>0.4.0.0</AssemblyVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Version>0.4-alpha</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <FileVersion>0.4.0.0</FileVersion>
+    <Copyright>Copyright 2020 Rhys Koedijk</Copyright>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Cronos" Version="0.7.0" />
