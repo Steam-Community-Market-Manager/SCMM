@@ -37,13 +37,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("me")]
-        public async Task<ProfileInventoryDetailsDTO> GetMyInventory([FromQuery] bool sync = false)
+        public async Task<ProfileInventoryDetailsDTO> GetMyInventoryProfile([FromQuery] bool sync = false)
         {
-            return await GetInventory(Request.ProfileId(), sync);
+            return await GetInventoryProfile(Request.ProfileId(), sync);
         }
 
         [HttpGet("{steamId}")]
-        public async Task<ProfileInventoryDetailsDTO> GetInventory([FromRoute] string steamId, [FromQuery] bool sync = false)
+        public async Task<ProfileInventoryDetailsDTO> GetInventoryProfile([FromRoute] string steamId, [FromQuery] bool sync = false)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -59,26 +59,29 @@ namespace SCMM.Web.Server.API.Controllers
 
                 if (sync)
                 {
-                    // Force inventory sync
+                    // Load the profile and force an inventory sync
                     profile = await service.LoadAndRefreshProfileInventory(steamId);
                 }
                 else
                 {
-                    // Use last cached inventory
-                    profile = await db.SteamProfiles
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.App)
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem)
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.App)
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Description)
-                        .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Currency)
-                        .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
+                    // Load the profile
+                    var inventory = await db.SteamProfiles
+                        .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
+                        .Select(x => new
+                        {
+                            Profile = x,
+                            TotalItems = x.InventoryItems.Count
+                        })
+                        .FirstOrDefaultAsync();
 
-                    // Profile doesn't exist yet? force sync
-                    if (profile == null)
+                    // If the profile inventory hasn't been loaded before, fetch it now
+                    if (inventory == null || inventory.Profile == null || inventory.TotalItems == 0)
                     {
                         profile = await service.LoadAndRefreshProfileInventory(steamId);
+                    }
+                    else
+                    {
+                        profile = inventory.Profile;
                     }
                 }
 
@@ -96,14 +99,91 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
-        [HttpGet("me/performance")]
-        public async Task<ProfileInventoryPerformanceDTO> GetMyInventoryPerformance([FromQuery] bool sync = false)
+        [HttpGet("me/total")]
+        public async Task<ProfileInventoryTotalsDTO> GetMyInventoryTotal()
         {
-            return await GetInventoryPerformance(Request.ProfileId(), sync);
+            return await GetInventoryTotal(Request.ProfileId());
         }
 
-        [HttpGet("{steamId}/performance")]
-        public async Task<ProfileInventoryPerformanceDTO> GetInventoryPerformance([FromRoute] string steamId, [FromQuery] bool sync = false)
+        [HttpGet("{steamId}/total")]
+        public async Task<ProfileInventoryTotalsDTO> GetInventoryTotal([FromRoute] string steamId)
+        {
+            if (String.IsNullOrEmpty(steamId))
+            {
+                throw new ArgumentNullException(nameof(steamId));
+            }
+
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var service = scope.ServiceProvider.GetService<SteamService>();
+                var currency = Request.Currency();
+
+                var profileInventoryItems = db.SteamInventoryItems
+                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                    .Where(x => x.MarketItemId != null)
+                    .Select(x => new
+                    {
+                        Quantity = x.Quantity,
+                        BuyPrice = x.BuyPrice,
+                        ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                        MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
+                        MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
+                        MarketItemResellPrice = x.MarketItem.ResellPrice,
+                        MarketItemResellTax = x.MarketItem.ResellTax,
+                        MarketItemExchangeRateMultiplier = x.MarketItem.Currency.ExchangeRateMultiplier
+                    })
+                    .ToList();
+
+                if (!profileInventoryItems.Any())
+                {
+                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
+                }
+
+                var profileInventory = new
+                {
+                    TotalItems = profileInventoryItems
+                        .Sum(x => x.Quantity),
+                    TotalInvested = profileInventoryItems
+                        .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
+                        .Sum(x => (x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
+                    TotalMarketValueLast1hr = profileInventoryItems
+                        .Where(x => x.MarketItemLast1hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast1hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    TotalMarketValueLast24hr = profileInventoryItems
+                        .Where(x => x.MarketItemLast24hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemLast24hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    TotalResellValue = profileInventoryItems
+                        .Where(x => x.MarketItemResellPrice != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemResellPrice / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    TotalResellTax = profileInventoryItems
+                        .Where(x => x.MarketItemResellTax != 0 && x.MarketItemExchangeRateMultiplier != 0)
+                        .Sum(x => (x.MarketItemResellTax / x.MarketItemExchangeRateMultiplier) * x.Quantity)
+                };
+
+                return new ProfileInventoryTotalsDTO()
+                {
+                    TotalItems = profileInventory.TotalItems,
+                    TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
+                    TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
+                    TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
+                    TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
+                    TotalResellTax = currency.CalculateExchange(profileInventory.TotalResellTax),
+                    TotalResellProfit = (
+                        currency.CalculateExchange(profileInventory.TotalResellValue - profileInventory.TotalResellTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
+                    )
+                };
+            }
+        }
+
+        [HttpGet("me/summary")]
+        public async Task<IDictionary<InventoryMarketItemDTO, int>> GetMyInventorySummary()
+        {
+            return await GetInventorySummary(Request.ProfileId());
+        }
+
+        [HttpGet("{steamId}/summary")]
+        public async Task<IDictionary<InventoryMarketItemDTO, int>> GetInventorySummary([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -116,14 +196,108 @@ namespace SCMM.Web.Server.API.Controllers
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var currency = Request.Currency();
 
-                // If this profile doesn't have an inventory loaded yet, force inventory sync now
-                var hasInventory = db.SteamInventoryItems
-                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                    .Any();
-                if (!hasInventory)
+                var profileInventoryItems = db.SteamProfiles
+                    .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
+                    .SelectMany(x =>
+                        x.InventoryItems.Where(x => x.MarketItem != null).Select(y => new
+                        {
+                            MarketItem = y.MarketItem,
+                            MarketItemApp = y.MarketItem.App,
+                            MarketItemDescription = y.MarketItem.Description,
+                            MarketItemCurrency = y.MarketItem.Currency,
+                            Quantity = y.Quantity
+                        })
+                    )
+                    .ToList();
+
+                if (!profileInventoryItems.Any())
                 {
-                    await service.LoadAndRefreshProfileInventory(steamId);
+                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
                 }
+
+                var profileInventoryItemsSummary = new Dictionary<InventoryMarketItemDTO, int>();
+                var marketItems = profileInventoryItems
+                    .Select(x => x.MarketItem)
+                    .Where(x => x != null)
+                    .OrderByDescending(x => x.Last1hrValue);
+
+                foreach (var marketItem in marketItems)
+                {
+                    if (!profileInventoryItemsSummary.Any(x => x.Key.SteamId == marketItem.SteamId))
+                    {
+                        var inventoryMarketItem = _mapper.Map<InventoryMarketItemDTO>(marketItem);
+                        profileInventoryItemsSummary[inventoryMarketItem] = profileInventoryItems
+                            .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
+                            .Sum(x => x.Quantity);
+                    }
+                }
+
+                return profileInventoryItemsSummary;
+            }
+        }
+
+        [HttpGet("me/details")]
+        public async Task<IList<InventoryItemListDTO>> GetMyInventoryDetails()
+        {
+            return await GetInventoryDetails(Request.ProfileId());
+        }
+
+        [HttpGet("{steamId}/details")]
+        public async Task<IList<InventoryItemListDTO>> GetInventoryDetails([FromRoute] string steamId)
+        {
+            if (String.IsNullOrEmpty(steamId))
+            {
+                throw new ArgumentNullException(nameof(steamId));
+            }
+
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetService<SteamService>();
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var currency = Request.Currency();
+                var profile = (SteamProfile)null;
+
+                /*
+                InventoryItemsSummary = new Dictionary<InventoryMarketItemDTO, int>();
+                var marketItems = inventoryItems
+                    .Select(x => x.MarketItem)
+                    .Where(x => x != null)
+                    .OrderByDescending(x => x.Last1hrValue);
+
+                foreach (var marketItem in marketItems)
+                {
+                    if (!InventoryItemsSummary.Any(x => x.Key.SteamId == marketItem.SteamId))
+                    {
+                        InventoryItemsSummary[marketItem] = inventoryItems
+                            .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
+                            .Sum(x => x.Quantity);
+                    }
+                }
+                */
+
+                return null;
+            }
+        }
+
+        [HttpGet("me/performance")]
+        public async Task<ProfileInventoryPerformanceDTO> GetMyInventoryPerformance()
+        {
+            return await GetInventoryPerformance(Request.ProfileId());
+        }
+
+        [HttpGet("{steamId}/performance")]
+        public async Task<ProfileInventoryPerformanceDTO> GetInventoryPerformance([FromRoute] string steamId)
+        {
+            if (String.IsNullOrEmpty(steamId))
+            {
+                throw new ArgumentNullException(nameof(steamId));
+            }
+
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetService<SteamService>();
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var currency = Request.Currency();
 
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
@@ -221,92 +395,6 @@ namespace SCMM.Web.Server.API.Controllers
                     ProfitHistoryGraph = profitHistory.ToDictionary(
                         x => x.Key.ToString("dd MMM yyyy"),
                         x => x.Value
-                    )
-                };
-            }
-        }
-
-        [HttpGet("me/total")]
-        public async Task<ProfileInventoryTotalsDTO> GetMyInventoryTotal()
-        {
-            return await GetInventoryTotal(Request.ProfileId());
-        }
-
-        [HttpGet("{steamId}/total")]
-        public async Task<ProfileInventoryTotalsDTO> GetInventoryTotal([FromRoute] string steamId)
-        {
-            if (String.IsNullOrEmpty(steamId))
-            {
-                throw new ArgumentNullException(nameof(steamId));
-            }
-
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var service = scope.ServiceProvider.GetService<SteamService>();
-                var currency = Request.Currency();
-
-                // If this profile doesn't have an inventory loaded yet, force inventory sync now
-                var hasInventory = db.SteamInventoryItems
-                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                    .Any();
-                if (!hasInventory)
-                {
-                    await service.LoadAndRefreshProfileInventory(steamId);
-                }
-
-                var profileInventoryItems = db.SteamInventoryItems
-                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                    .Where(x => x.MarketItemId != null)
-                    .Select(x => new
-                    {
-                        Quantity = x.Quantity,
-                        BuyPrice = x.BuyPrice,
-                        ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
-                        MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
-                        MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
-                        MarketItemResellPrice = x.MarketItem.ResellPrice,
-                        MarketItemResellTax = x.MarketItem.ResellTax,
-                        MarketItemExchangeRateMultiplier = x.MarketItem.Currency.ExchangeRateMultiplier
-                    })
-                    .ToList();
-
-                if (!profileInventoryItems.Any())
-                {
-                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
-                }
-
-                var profileInventory = new
-                {
-                    TotalItems = profileInventoryItems
-                        .Sum(x => x.Quantity),
-                    TotalInvested = profileInventoryItems
-                        .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
-                        .Sum(x => (x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
-                    TotalMarketValueLast1hr = profileInventoryItems
-                        .Where(x => x.MarketItemLast1hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                        .Sum(x => (x.MarketItemLast1hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                    TotalMarketValueLast24hr = profileInventoryItems
-                        .Where(x => x.MarketItemLast24hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                        .Sum(x => (x.MarketItemLast24hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                    TotalResellValue = profileInventoryItems
-                        .Where(x => x.MarketItemResellPrice != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                        .Sum(x => (x.MarketItemResellPrice / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                    TotalResellTax = profileInventoryItems
-                        .Where(x => x.MarketItemResellTax != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                        .Sum(x => (x.MarketItemResellTax / x.MarketItemExchangeRateMultiplier) * x.Quantity)
-                };
-
-                return new ProfileInventoryTotalsDTO()
-                {
-                    TotalItems = profileInventory.TotalItems,
-                    TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
-                    TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
-                    TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
-                    TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
-                    TotalResellTax= currency.CalculateExchange(profileInventory.TotalResellTax),
-                    TotalResellProfit = (
-                        currency.CalculateExchange(profileInventory.TotalResellValue - profileInventory.TotalResellTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
                     )
                 };
             }

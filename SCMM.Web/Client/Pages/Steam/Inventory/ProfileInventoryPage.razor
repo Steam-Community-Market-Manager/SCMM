@@ -18,51 +18,51 @@
 
 </style>
 
-@if (Profile == null)
-{
-    @if (ProfileNotFound)
+<DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
+<Grid Container Spacing="@Spacing.Two">
+    <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
+        <ResponsiveTextField Label="Steam ID" Placeholder="steam id" Value="@SteamId" OnChange="@(x => OnSteamIdChanged(x))">
+            <StartAdornment>
+                <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+                    <span>https://steamcommunity.com/id/</span>
+                </Typography>
+            </StartAdornment>
+            <EndAdornment>
+                <IconButton OnClick="@ViewProfileInventory" Style="padding:5px;" title="View Profile Inventory">
+                    <SearchIcon />
+                </IconButton>
+            </EndAdornment>
+        </ResponsiveTextField>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
+        <ResponsiveTextField Label="Filter" Placeholder="type an item name or tag..." OnChange="@(x => OnFilterChanged(x))">
+            <StartAdornment>
+                <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+                    <i class="fas fa-fw fa-filter"></i>
+                </Typography>
+            </StartAdornment>
+        </ResponsiveTextField>
+    </Grid>
+</Grid>
+<Grid Container Spacing="@Spacing.Two">
+    @if (InventoryTotal == null)
     {
-        <NotFound />
+        @if (ProfileNotFound)
+        {
+            <NotFound />
+        }
+        else
+        {
+            <Loading />
+        }
     }
     else
     {
-        <Loading />
-    }
-}
-else
-{
-    <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
-    <Grid Container Spacing="@Spacing.Two">
-        <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
-            <ResponsiveTextField Label="Steam ID" Placeholder="steam id" Value="@SteamId" OnChange="@(x => OnSteamIdChanged(x))">
-                <StartAdornment>
-                    <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
-                        <span>https://steamcommunity.com/id/</span>
-                    </Typography>
-                </StartAdornment>
-                <EndAdornment>
-                    <IconButton OnClick="@ViewProfileInventory" Style="padding:5px;" title="View Profile Inventory">
-                        <SearchIcon />
-                    </IconButton>
-                </EndAdornment>
-            </ResponsiveTextField>
-        </Grid>
-        <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
-            <ResponsiveTextField Label="Filter" Placeholder="type an item name or tag..." OnChange="@(x => OnFilterChanged(x))">
-                <StartAdornment>
-                    <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
-                        <i class="fas fa-fw fa-filter"></i>
-                    </Typography>
-                </StartAdornment>
-            </ResponsiveTextField>
-        </Grid>
-    </Grid>
-    <Grid Container Spacing="@Spacing.Two">
-        @if(!ProfileIsMe)
+        @if(Profile != null && !ProfileIsMe)
         {
-        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
-            <InventoryProfileCard Profile="@Profile" />
-        </Grid>
+            <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+                <InventoryProfileCard Profile="@Profile" />
+            </Grid>
         }
         <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
             <InventoryTotalCard Title="Assets">
@@ -74,140 +74,144 @@ else
                 </Total>
             </InventoryTotalCard>
         </Grid>
-        @if (InventoryTotal?.TotalInvested > 0)
+        @if (InventoryTotal.TotalInvested > 0)
         {
-        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
-            <InventoryTotalCard Title="Total Investment" IconClass="Background-Error">
-                <Icon>
-                    <i class="fas fa-fw fa-dollar-sign"></i>
-                </Icon>
-                <Total>
-                    @State.Currency.ToPriceString(InventoryTotal.TotalInvested)
-                </Total>
-            </InventoryTotalCard>
-        </Grid>
+            <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+                <InventoryTotalCard Title="Total Investment" IconClass="Background-Error">
+                    <Icon>
+                        <i class="fas fa-fw fa-dollar-sign"></i>
+                    </Icon>
+                    <Total>
+                        @State.Currency.ToPriceString(InventoryTotal.TotalInvested)
+                    </Total>
+                </InventoryTotalCard>
+            </Grid>
         }
-        @if (InventoryTotal?.TotalMarketValue > 0)
+        @if (InventoryTotal.TotalMarketValue > 0)
         {
-        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
-            <InventoryTotalCard Title="Total Market Value" IconClass="Background-Info">
-                <Icon>
-                    <i class="fas fa-fw fa-dollar-sign"></i>
-                </Icon>
-                <Total>
-                    @State.Currency.ToPriceString(InventoryTotal.TotalMarketValue)
-                    <span>
-                        @if (InventoryTotal.TotalMarket24hrMovement > 0)
-                        {
-                            <span class="Text-Success">
-                                🡱 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
-                            </span>
-                        }
-                        @if (InventoryTotal.TotalMarket24hrMovement < 0)
-                        {
-                            <span class="Text-Error">
-                                🡳 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
-                            </span>
-                        }
-                    </span>
-                </Total>
-            </InventoryTotalCard>
-        </Grid>
+            <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+                <InventoryTotalCard Title="Total Market Value" IconClass="Background-Info">
+                    <Icon>
+                        <i class="fas fa-fw fa-dollar-sign"></i>
+                    </Icon>
+                    <Total>
+                        @State.Currency.ToPriceString(InventoryTotal.TotalMarketValue)
+                        <span>
+                            @if (InventoryTotal.TotalMarket24hrMovement > 0)
+                            {
+                                <span class="Text-Success">
+                                    🡱 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
+                                </span>
+                            }
+                            @if (InventoryTotal.TotalMarket24hrMovement < 0)
+                            {
+                                <span class="Text-Error">
+                                    🡳 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
+                                </span>
+                            }
+                        </span>
+                    </Total>
+                </InventoryTotalCard>
+            </Grid>
         }
-        @if (InventoryTotal?.TotalResellValue > 0)
+        @if (InventoryTotal.TotalResellValue > 0)
         {
-        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
-            <InventoryTotalCard Title="Optimistic Resell Value" IconClass="Background-Success">
-                <Icon>
-                    <i class="fas fa-fw fa-dollar-sign"></i>
-                </Icon>
-                <Total>
-                    @State.Currency.ToPriceString(InventoryTotal.TotalResellValue)
-                    <span>
-                        @if (InventoryTotal.TotalResellProfit > 0)
-                        {
-                            <span class="Text-Success">
-                                🡱 @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit) profit
-                            </span>
-                        }
-                        @if (InventoryTotal.TotalResellProfit < 0)
-                        {
-                            <span class="Text-Error">
-                                🡳 @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit) profit
-                            </span>
-                        }
-                    </span>
-                </Total>
-            </InventoryTotalCard>
-        </Grid>
+            <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+                <InventoryTotalCard Title="Optimistic Resell Value" IconClass="Background-Success">
+                    <Icon>
+                        <i class="fas fa-fw fa-dollar-sign"></i>
+                    </Icon>
+                    <Total>
+                        @State.Currency.ToPriceString(InventoryTotal.TotalResellValue)
+                        <span>
+                            @if (InventoryTotal.TotalResellProfit > 0)
+                            {
+                                <span class="Text-Success">
+                                    🡱 @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit) profit
+                                </span>
+                            }
+                            @if (InventoryTotal.TotalResellProfit < 0)
+                            {
+                                <span class="Text-Error">
+                                    🡳 @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit) profit
+                                </span>
+                            }
+                        </span>
+                    </Total>
+                </InventoryTotalCard>
+            </Grid>
         }
-        @if (ProfileIsMe)
+        @if (Profile != null && ProfileIsMe)
         {
-        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two" Style="padding:8px">
-            <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
-                Last synchronised @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago
-            </Typography>
-            <Button OnClick="@(() => SyncInventory())" Size="@Size.Small"
-                    Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
-                Synchronise
-            </Button>
-        </Grid>
+            <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two" Style="padding:8px">
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
+                    Last synchronised @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago
+                </Typography>
+                <Button OnClick="@(() => SynchroniseInventory())" Size="@Size.Small"
+                        Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
+                    Synchronise
+                </Button>
+            </Grid>
         }
-        <Grid Item ExtraSmall="@GridSize.Twelve">
-            <Tabs Value="@SelectedInventoryPanel"
-                  OnChange="@OnSelectedInventoryPanelChanged"
-                  IndicatorColor="@Color.Primary"
-                  TextColor="@Color.Primary"
-                  Variant="@TabsVariant.FullWidth">
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Summary" Wrapped />
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Return on investment" Wrapped />
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Market activity" Wrapped />
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Market performance" Wrapped />
-            </Tabs>
-            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
-                @if ((int)SelectedInventoryPanel == 0 && InventoryItemsSummary != null)
-                {
-                    <InventoryItemsSummary Items="@InventoryItemsSummary" />
-                }
-            </TabPanel>
-            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
-                @if ((int)SelectedInventoryPanel == 1 && InventoryItemsDetailed != null)
-                {
-                    <Paper Class="Inventory-List-Container">
-                        <InventoryItemsTable Items="@InventoryItemsDetailed" ReadOnly="@(!ProfileIsMe)" />
-                    </Paper>
-                }
-            </TabPanel>
-            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
-                @if ((int)SelectedInventoryPanel == 2)
-                {
-                    <InventoryItemsActivity />
-                }
-            </TabPanel>
-            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
-                @if ((int)SelectedInventoryPanel == 3 && TotalHistoryChart != null)
-                {
-                    <Grid Container>
+    }
+    
+    <Grid Item ExtraSmall="@GridSize.Twelve">
+        <Tabs Value="@SelectedInventoryPanel"
+                OnChange="@(x => OnSelectedInventoryPanelChanged(x))"
+                IndicatorColor="@Color.Primary"
+                TextColor="@Color.Primary"
+                Variant="@TabsVariant.FullWidth">
+            <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Summary" Wrapped />
+            <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Return on investment" Wrapped />
+            <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Market activity" Wrapped />
+            <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Market performance" Wrapped />
+        </Tabs>
+        <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
+            @if ((int)SelectedInventoryPanel == 0 && InventoryItemsSummary != null)
+            {
+                <InventoryItemsSummary Items="@InventoryItemsSummary" />
+            }
+        </TabPanel>
+        <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
+            @if ((int)SelectedInventoryPanel == 1 && InventoryItemsDetailed != null)
+            {
+                <Paper Class="Inventory-List-Container">
+                    <InventoryItemsTable Items="@InventoryItemsDetailed" ReadOnly="@(!ProfileIsMe)" />
+                </Paper>
+            }
+        </TabPanel>
+        <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
+            @if ((int)SelectedInventoryPanel == 2)
+            {
+                <InventoryItemsActivity />
+            }
+        </TabPanel>
+        <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
+            @if ((int)SelectedInventoryPanel == 3)
+            {
+                <Grid Container>
+                    @if(InventoryPerformanceValueHistoryChart != null)
+                    {
                         <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-                            <ChartJsLineChart @ref="TotalHistoryChartJs" Config="@TotalHistoryChart" />
+                            <ChartJsLineChart @ref="InventoryPerformanceValueHistoryChartJs" Config="@InventoryPerformanceValueHistoryChart" />
                         </Grid>
+                    }
+                    @if(InventoryPerformanceValueChart != null)
+                    {
                         <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-                            <ChartJsPieChart @ref="TotalSummaryChartJs" Config="@TotalSummaryChart" />
+                            <ChartJsPieChart @ref="InventoryPerformanceValueChartJs" Config="@InventoryPerformanceValueChart" />
                         </Grid>
-                    </Grid>
-                }
-            </TabPanel>
-        </Grid>
+                    }
+                </Grid>
+            }
+        </TabPanel>
     </Grid>
-}
+</Grid>
 
 @code {
 
     [Parameter]
     public string SteamId { get; set; }
-
-    [Parameter]
-    public bool Sync { get; set; } = false;
 
     private string Filter { get; set; }
 
@@ -221,46 +225,38 @@ else
 
     private IDictionary<InventoryMarketItemDTO, int> InventoryItemsSummary { get; set; }
 
-    private InventoryItemListDTO[] InventoryItemsDetailed { get; set; }
+    private IList<InventoryItemListDTO> InventoryItemsDetailed { get; set; }
 
     private ProfileInventoryTotalsDTO InventoryTotal { get; set; }
 
     private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
-
-    private ChartJsLineChart TotalHistoryChartJs;
-    private ChartJsPieChart TotalSummaryChartJs;
-    private LineConfig TotalHistoryChart;
-    private PieConfig TotalSummaryChart;
     
+    private ChartJsPieChart InventoryPerformanceValueChartJs;
+    private PieConfig InventoryPerformanceValueChart;
+    
+    private ChartJsLineChart InventoryPerformanceValueHistoryChartJs;
+    private LineConfig InventoryPerformanceValueHistoryChart;
+
     protected override async Task OnInitializedAsync()
     {
         SelectedInventoryPanel = await LocalStorage.GetItemAsync<int>("Inventory.SelectedTab");
         await RefreshInventory();
     }
 
-    private async Task RefreshInventory()
+    private async Task RefreshInventory(bool forceReload = false)
     {
         try
         {
-            Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>($"api/inventory/{SteamId}?sync={Sync}");
-            ProfileIsMe = (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId));
-            ProfileNotFound = (Profile == null);
+            Profile = null;
+            ProfileIsMe = false;
+            ProfileNotFound = false;
             InventoryItemsSummary = null;
             InventoryItemsDetailed = null;
-            InventoryTotal = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>($"api/inventory/{SteamId}/total");
-            InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>($"api/inventory/{SteamId}/performance");
-            TotalHistoryChartJs = null;
-            TotalSummaryChartJs = null;
-            TotalHistoryChart = null;
-            TotalSummaryChart = null;
-            if (Profile != null)
-            {
-                OnSelectedInventoryPanelChanged(SelectedInventoryPanel);
-            }
-        }
-        catch (AccessTokenNotAvailableException exception)
-        {
-            exception.Redirect();
+            InventoryTotal = null;
+            InventoryPerformance = null;
+            await LoadProfile(forceReload);
+            await LoadInventoryTotals(forceReload);
+            await OnSelectedInventoryPanelChanged(SelectedInventoryPanel, forceReload);
         }
         catch (Exception)
         {
@@ -268,90 +264,235 @@ else
         }
     }
 
-    private async Task SyncInventory()
+    private async Task OnSelectedInventoryPanelChanged(object value, bool forceReload = false)
     {
-        Sync = true;
-        Profile = null;
-        StateHasChanged();
-        await RefreshInventory();
+        SelectedInventoryPanel = value;
+        await LocalStorage.SetItemAsync<int>("Inventory.SelectedTab", (int) value);
+        switch (SelectedInventoryPanel)
+        {
+            case 0: await LoadInventorySummary(forceReload); break;
+            case 1: await LoadInventoryDetails(forceReload); break;
+            case 2: await LoadInventoryActivity(forceReload); break;
+            case 3: await LoadInventoryPerformance(forceReload); break;
+        }
         StateHasChanged();
     }
     
     private void OnSteamIdChanged(string steamId)
     {
         SteamId = steamId;
+        StateHasChanged();
     }
     
     private void OnFilterChanged(string filter)
     {
         Filter = (string) filter;
         StateHasChanged();
-        Console.WriteLine(filter);
     }
-
-    private async Task ViewProfileInventory()
+    
+    private async Task SynchroniseInventory()
     {
-        Navigation.NavigateTo($"steam/inventory/{SteamId}", forceLoad: true);
-    }
-
-    private void ViewItem(InventoryItemListDTO item)
-    {
-        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
-    }
-
-    private async Task OnSelectedInventoryPanelChanged(object value)
-    {
-        SelectedInventoryPanel = value;
-        await LocalStorage.SetItemAsync<int>("Inventory.SelectedTab", (int) value);
-        switch (SelectedInventoryPanel)
-        {
-            case 0: RecalculateItemsSummary();  break;
-            case 1: RecalculateItemsDetailed();  break;
-            case 2: break;
-            case 3: RedrawPerformanceCharts(); break;
-        }
+        Profile = null;
+        StateHasChanged();
+        await RefreshInventory(forceReload: true);
         StateHasChanged();
     }
-
-    private void RecalculateItemsSummary()
+    
+    private async Task LoadProfile(bool forceReload = false)
     {
-        var inventoryItems = Profile?.InventoryItems;
-        if (inventoryItems?.Any() == true)
+        try
         {
-            InventoryItemsSummary = new Dictionary<InventoryMarketItemDTO, int>();
-            var marketItems = inventoryItems
-                .Select(x => x.MarketItem)
-                .Where(x => x != null)
-                .OrderByDescending(x => x.Last1hrValue);
-
-            foreach (var marketItem in marketItems)
+            if (Profile == null || forceReload)
             {
-                if (!InventoryItemsSummary.Any(x => x.Key.SteamId == marketItem.SteamId))
-                {
-                    InventoryItemsSummary[marketItem] = inventoryItems
-                        .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
-                        .Sum(x => x.Quantity);
-                }
+                Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>(
+                    $"api/inventory/{SteamId}?sync={forceReload}"
+                );
+                ProfileIsMe = (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId));
+                ProfileNotFound = (Profile == null);
             }
         }
-        else
+        catch (Exception)
+        {
+            Profile = null;
+            ProfileIsMe = false;
+            ProfileNotFound = true;
+        }
+    }
+
+    private async Task LoadInventoryTotals(bool forceReload = false)
+    {
+        try
+        {
+            if (InventoryTotal == null || forceReload)
+            {
+                InventoryTotal = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
+                    $"api/inventory/{SteamId}/total"
+                );
+            }
+        }
+        catch (Exception)
+        {
+            InventoryTotal = null;
+        }
+    }
+
+    private async Task LoadInventorySummary(bool forceReload = false)
+    {
+        try
+        {
+            if (InventoryItemsSummary == null || forceReload)
+            {
+                InventoryItemsSummary = await Http.GetFromJsonAsync<IDictionary<InventoryMarketItemDTO, int>>(
+                    $"api/inventory/{SteamId}/summary"
+                );
+            }
+        }
+        catch (Exception)
         {
             InventoryItemsSummary = null;
         }
     }
 
-    private void RecalculateItemsDetailed()
+    private async Task LoadInventoryDetails(bool forceReload = false)
     {
-        InventoryItemsDetailed = Profile?.InventoryItems?.OrderBy(x => x.Name)?.ToArray();
+        try
+        {
+            if (InventoryItemsDetailed == null || forceReload)
+            {
+                InventoryItemsDetailed = await Http.GetFromJsonAsync<IList<InventoryItemListDTO>>(
+                    $"api/inventory/{SteamId}/details"
+                );
+            }
+        }
+        catch (Exception)
+        {
+            InventoryItemsDetailed = null;
+        }
     }
-
-    private void RedrawPerformanceCharts()
+    
+    private async Task LoadInventoryActivity(bool forceReload = false)
     {
+        try
+        {
+            // TODO: This...
+        }
+        catch (Exception)
+        {
+        }
+    }
+    
+    private async Task LoadInventoryPerformance(bool forceReload = false)
+    {
+        try
+        {
+            if (InventoryPerformance == null || forceReload)
+            {
+                InventoryPerformanceValueChart = null;
+                InventoryPerformanceValueHistoryChart = null;
+                InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>(
+                    $"api/inventory/{SteamId}/performance"
+                );
+            
+            }
+            if (InventoryPerformanceValueChart == null || forceReload)
+            {
+                RedrawInventoryPerformanceValueChart();
+            }
+            if (InventoryPerformanceValueHistoryChart == null || forceReload)
+            {
+                RedrawInventoryPerformanceValueHistoryChart();
+            }
+        }
+        catch (Exception)
+        {
+            InventoryPerformanceValueChart = null;
+            InventoryPerformanceValueHistoryChart = null;
+            InventoryPerformance = null;
+        }
+    }
+    
+    private void RedrawInventoryPerformanceValueChart()
+    {
+        InventoryPerformanceValueChart = new PieConfig
+        {
+            Options = new PieOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Animation = new ArcAnimation
+                {
+                    AnimateRotate = true,
+                    AnimateScale = true
+                },
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                }
+            }
+        };
+        
+        InventoryPerformanceValueChart.Data.Labels.AddRange(new[] { 
+            "Invested", 
+            "Resell Fees", 
+            "Resell Profit", 
+            "Resell Value"
+        });
+
         var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
         var localScaleDivisor = Int64.Parse($"1{localScaleString}");
+        if (InventoryTotal != null)
+        {
+            var inventoryValueDataSet = new PieDataset
+            {
+                BackgroundColor = new[] { 
+                    "#d32f2f",
+                    "#f57c00",
+                    "#388e3c",
+                    "#1976d2"
+                },
+                BorderWidth = 0
+            };
 
-        TotalHistoryChart = new LineConfig
+            inventoryValueDataSet.Data.AddRange(new double[] { 
+                (DoubleWrapper)0,
+                (DoubleWrapper)0,
+                (DoubleWrapper)0,
+                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellValue / localScaleDivisor, State.Currency.Scale)
+            });
+        
+            var inventoryValueBreakdownDataSet = new PieDataset
+            {
+                BackgroundColor = new[] { 
+                    "#d32f2f",
+                    "#f57c00",
+                    "#388e3c",
+                    "#1976d2"
+                },
+                BorderWidth = 0
+            };
+
+            inventoryValueBreakdownDataSet.Data.AddRange(new double[] { 
+                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalInvested / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellTax / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellProfit / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)0
+            });
+
+            InventoryPerformanceValueChart.Data.Datasets.Add(inventoryValueDataSet);
+            InventoryPerformanceValueChart.Data.Datasets.Add(inventoryValueBreakdownDataSet);
+        }
+    }
+    
+    private void RedrawInventoryPerformanceValueHistoryChart()
+    {
+        InventoryPerformanceValueHistoryChart = new LineConfig
         {
             Options = new LineOptions
             {
@@ -417,12 +558,18 @@ else
                 }
             }
         };
-
-        TotalHistoryChart.Data.Labels = InventoryPerformance.ValueHistoryGraph.Keys.ToList();
-
-        if (InventoryPerformance.ProfitHistoryGraph != null && InventoryTotal.TotalResellProfit > 0)
+        
+        if (InventoryPerformance != null)
         {
-            var totalProfitDataSet = new LineDataset<DoubleWrapper>
+            InventoryPerformanceValueHistoryChart.Data.Labels = InventoryPerformance.ValueHistoryGraph.Keys.ToList();
+        }
+
+        var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
+        var localScaleDivisor = Int64.Parse($"1{localScaleString}");
+
+        if (InventoryPerformance?.ProfitHistoryGraph != null && InventoryTotal?.TotalResellProfit > 0)
+        {
+            var profitHistoryDataSet = new LineDataset<DoubleWrapper>
             {
                 Label = "Resell Profit",
                 BackgroundColor = "#388e3c",
@@ -433,15 +580,16 @@ else
                 LineTension = 0.1,
                 Fill = true
             };
-            totalProfitDataSet.AddRange(
+            profitHistoryDataSet.AddRange(
                 InventoryPerformance.ProfitHistoryGraph.Values.Select(x => (DoubleWrapper)Math.Round((double)x / localScaleDivisor, State.Currency.Scale)).ToList()
             );
-            TotalHistoryChart.Data.Datasets.Add(totalProfitDataSet);
+
+            InventoryPerformanceValueHistoryChart.Data.Datasets.Add(profitHistoryDataSet);
         }
 
-        if (InventoryPerformance.ValueHistoryGraph != null)
+        if (InventoryPerformance?.ValueHistoryGraph != null)
         {
-            var totalValueDataSet = new LineDataset<DoubleWrapper>
+            var valueHistoryDataSet = new LineDataset<DoubleWrapper>
             {
                 Label = "Market Value",
                 BackgroundColor = "#1976d2",
@@ -452,63 +600,12 @@ else
                 LineTension = 0.1,
                 Fill = true
             };
-            totalValueDataSet.AddRange(
+            valueHistoryDataSet.AddRange(
                 InventoryPerformance.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)Math.Round((double)x / localScaleDivisor, State.Currency.Scale)).ToList()
             );
-            TotalHistoryChart.Data.Datasets.Add(totalValueDataSet);
+
+            InventoryPerformanceValueHistoryChart.Data.Datasets.Add(valueHistoryDataSet);
         }
-
-        TotalSummaryChart = new PieConfig
-        {
-            Options = new PieOptions
-            {
-                Legend = new Legend
-                {
-                    Display = true,
-                    Labels = new LegendLabelConfiguration()
-                    {
-                        FontColor = "#ffffff"
-                    }
-                },
-                Responsive = true,
-                Animation = new ArcAnimation
-                {
-                    AnimateRotate = true,
-                    AnimateScale = true
-                },
-                Tooltips = new Tooltips
-                {
-                    Enabled = true
-                }
-            }
-        };
-        
-        TotalSummaryChart.Data.Labels.AddRange(new[] { 
-            "Invested", 
-            "Resell Fees", 
-            "Resell Profit", 
-            "Resell Value"
-        });
-
-        var inventoryTotals = new PieDataset
-        {
-            BackgroundColor = new[] { 
-                "#d32f2f",
-                "#f57c00",
-                "#388e3c",
-                "#1976d2"
-            },
-            BorderWidth = 0
-        };
-
-        inventoryTotals.Data.AddRange(new double[] { 
-            (DoubleWrapper)Math.Round((double)InventoryTotal.TotalInvested / localScaleDivisor, State.Currency.Scale),
-            (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellTax / localScaleDivisor, State.Currency.Scale),
-            (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellProfit / localScaleDivisor, State.Currency.Scale),
-            (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellValue / localScaleDivisor, State.Currency.Scale)
-        });
-
-        TotalSummaryChart.Data.Datasets.Add(inventoryTotals);
     }
 
     private IEnumerable<InventoryMarketItemDTO> FilterItems(IEnumerable<InventoryMarketItemDTO> items)
@@ -521,5 +618,16 @@ else
         return items.Where(x => 
             x.Name.Contains(Filter, StringComparison.CurrentCultureIgnoreCase)
         );
+    }
+    
+    private async Task ViewProfileInventory()
+    {
+        Navigation.NavigateTo($"steam/inventory/{SteamId}", forceLoad: true);
+    }
+
+    private void ViewItem(InventoryItemListDTO item)
+    {
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 }

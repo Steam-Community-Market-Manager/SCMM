@@ -14,8 +14,6 @@ namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 
         public string AvatarLargeUrl { get; set; }
 
-        public InventoryItemListDTO[] InventoryItems { get; set; }
-
         public DateTimeOffset? LastViewedInventoryOn { get; set; }
 
         public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
