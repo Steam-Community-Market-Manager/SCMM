@@ -254,8 +254,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var currency = Request.Currency();
-                var profile = (SteamProfile)null;
-
+                
                 /*
                 InventoryItemsSummary = new Dictionary<InventoryMarketItemDTO, int>();
                 var marketItems = inventoryItems

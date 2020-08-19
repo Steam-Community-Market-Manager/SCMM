@@ -686,7 +686,7 @@
             HotRightNow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/hotRightNow");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -699,7 +699,7 @@
             AllTimeLow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/allTimeLow");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -712,7 +712,7 @@
             AllTimeHigh = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/allTimeHigh");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -725,7 +725,7 @@
             GoodTimeToBuy = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/goodTimeToBuy");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -738,7 +738,7 @@
             GoodTimeToSell = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/goodTimeToSell");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -751,7 +751,7 @@
             MostProfitable = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostProfitable");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -764,7 +764,7 @@
             MostWanted = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostWanted");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -777,7 +777,7 @@
             MostSaturated = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostSaturated");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -790,7 +790,7 @@
             MostRecent = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostRecent");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -803,7 +803,7 @@
             MostCommon = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostCommon");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -816,7 +816,7 @@
             MostRare = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostRare");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
@@ -829,7 +829,7 @@
             BiggestCrashes = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/biggestCrashes");
             StateHasChanged();
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }

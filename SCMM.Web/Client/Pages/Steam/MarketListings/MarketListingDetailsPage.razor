@@ -79,7 +79,7 @@ else
         {
             Item = await Http.GetFromJsonAsync<MarketItemDetailDTO>($"api/market/{ItemId}");
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             throw;
         }
