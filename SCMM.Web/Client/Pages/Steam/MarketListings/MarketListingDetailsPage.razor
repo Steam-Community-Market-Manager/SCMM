@@ -1,5 +1,4 @@
 @page "/steam/marketplace/{ItemId}"
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
 @inject HttpClient Http
@@ -80,9 +79,9 @@ else
         {
             Item = await Http.GetFromJsonAsync<MarketItemDetailDTO>($"api/market/{ItemId}");
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 

@@ -1,4 +1,3 @@
-using AspNet.Security.OpenId.Steam;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -46,25 +45,9 @@ namespace SCMM.Web.Server
             services.AddSingleton<SteamConfiguration>((s) => steamConfiguration);
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
 
-            services.AddDbContext<IdentityDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("IdentityDbConnection")));
             services.AddDbContext<SteamDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("SteamDbConnection")));
-
-            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<IdentityDbContext>();
-
-            services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, IdentityDbContext>();
-
-            services.AddAuthentication()
-                .AddIdentityServerJwt()
-                .AddSteam(configuration =>
-                {
-                    configuration.ApplicationKey = steamConfiguration.ApplicationKey;
-                });
 
             services.AddTransient<SteamCommunityClient>();
             services.AddTransient<SteamService>();
@@ -112,10 +95,6 @@ namespace SCMM.Web.Server
             app.UseStaticFiles();
 
             app.UseRouting();
-
-            app.UseIdentityServer();
-            app.UseAuthentication();
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

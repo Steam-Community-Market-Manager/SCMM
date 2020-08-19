@@ -1,5 +1,4 @@
 @page "/steam/store"
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.StoreItems
 @using SCMM.Web.Shared
 @inject NavigationManager Navigation
@@ -188,9 +187,9 @@ else
             OnSelectedItemChartChanged(SelectedItemChartPanel);
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 

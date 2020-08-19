@@ -1,5 +1,4 @@
 ﻿@page "/steam/marketstatistics"
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
 @inject NavigationManager Navigation
@@ -687,9 +686,9 @@
             HotRightNow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/hotRightNow");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -700,9 +699,9 @@
             AllTimeLow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/allTimeLow");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -713,9 +712,9 @@
             AllTimeHigh = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/allTimeHigh");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -726,9 +725,9 @@
             GoodTimeToBuy = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/goodTimeToBuy");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -739,9 +738,9 @@
             GoodTimeToSell = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/goodTimeToSell");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -752,9 +751,9 @@
             MostProfitable = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostProfitable");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -765,9 +764,9 @@
             MostWanted = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostWanted");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -778,9 +777,9 @@
             MostSaturated = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostSaturated");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -791,9 +790,9 @@
             MostRecent = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostRecent");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -804,9 +803,9 @@
             MostCommon = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostCommon");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -817,9 +816,9 @@
             MostRare = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostRare");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 
@@ -830,9 +829,9 @@
             BiggestCrashes = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/biggestCrashes");
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 

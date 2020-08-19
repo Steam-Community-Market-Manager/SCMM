@@ -1,5 +1,4 @@
 ﻿@page "/steam/marketplace"
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
 @inject NavigationManager Navigation
@@ -61,9 +60,9 @@ else
             );
             StateHasChanged();
         }
-        catch (AccessTokenNotAvailableException exception)
+        catch (Exception exception)
         {
-            exception.Redirect();
+            throw;
         }
     }
 

@@ -1,5 +1,4 @@
-﻿using AngleSharp.Common;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
