@@ -51,21 +51,21 @@
 <div style="padding:8px">
     @foreach (var item in Items)
     { 
-        <div class="Item-Summary-Root" style="@GetItemStyles(item.Key)" @onclick="@((_) => OnItemClicked(item.Key))">
-            @if (item.Value > 1)
+        <div class="Item-Summary-Root" style="@GetItemStyles(item.Item)" @onclick="@((_) => OnItemClicked(item.Item))">
+            @if (item.Quantity > 1)
             {
                 <Badge Class="Item-Summary-Badge"
-                       Badge="@item.Value.ToString()"
+                       Badge="@item.Quantity.ToString()"
                        Color="@Color.Primary">
-                    <img src="@item.Key.IconUrl" />
+                    <img src="@item.Item.IconUrl" />
                 </Badge>
             }
             else
             {
-                <img src="@item.Key.IconUrl" />
+                <img src="@item.Item.IconUrl" />
             }
             <Typography Variant="@TypographyVariant.Body2">
-                @item.Key.Currency.ToPriceString(item.Key.Last1hrValue)
+                @item.Item.Currency.ToPriceString(item.Item.Last1hrValue)
             </Typography>
         </div>
     }
@@ -74,7 +74,7 @@
 @code {
 
     [Parameter]
-    public IDictionary<InventoryMarketItemDTO, int> Items { get; set; }
+    public IList<ProfileInventoryItemSummaryDTO> Items { get; set; }
 
     private string GetItemStyles(InventoryMarketItemDTO item)
     {

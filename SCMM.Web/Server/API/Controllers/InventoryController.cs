@@ -176,13 +176,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("me/summary")]
-        public async Task<IDictionary<InventoryMarketItemDTO, int>> GetMyInventorySummary()
+        public async Task<IList<ProfileInventoryItemSummaryDTO>> GetMyInventorySummary()
         {
             return await GetInventorySummary(Request.ProfileId());
         }
 
         [HttpGet("{steamId}/summary")]
-        public async Task<IDictionary<InventoryMarketItemDTO, int>> GetInventorySummary([FromRoute] string steamId)
+        public async Task<IList<ProfileInventoryItemSummaryDTO>> GetInventorySummary([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -214,7 +214,7 @@ namespace SCMM.Web.Server.API.Controllers
                     throw new Exception($"Profile with SteamID '{steamId}' was not found");
                 }
 
-                var profileInventoryItemsSummary = new Dictionary<InventoryMarketItemDTO, int>();
+                var profileInventoryItemsSummaries = new List<ProfileInventoryItemSummaryDTO>();
                 var marketItems = profileInventoryItems
                     .Select(x => x.MarketItem)
                     .Where(x => x != null)
@@ -222,16 +222,22 @@ namespace SCMM.Web.Server.API.Controllers
 
                 foreach (var marketItem in marketItems)
                 {
-                    if (!profileInventoryItemsSummary.Any(x => x.Key.SteamId == marketItem.SteamId))
+                    if (!profileInventoryItemsSummaries.Any(x => x.Item.SteamId == marketItem.SteamId))
                     {
-                        var inventoryMarketItem = _mapper.Map<InventoryMarketItemDTO>(marketItem);
-                        profileInventoryItemsSummary[inventoryMarketItem] = profileInventoryItems
-                            .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
-                            .Sum(x => x.Quantity);
+                        var inventoryMarketItem = _mapper.Map<SteamMarketItem, InventoryMarketItemDTO>(
+                            marketItem, Request
+                        );
+                        profileInventoryItemsSummaries.Add(new ProfileInventoryItemSummaryDTO()
+                        {
+                            Item = inventoryMarketItem,
+                            Quantity = profileInventoryItems
+                                .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
+                                .Sum(x => x.Quantity)
+                        });
                     }
                 }
 
-                return profileInventoryItemsSummary;
+                return profileInventoryItemsSummaries;
             }
         }
 

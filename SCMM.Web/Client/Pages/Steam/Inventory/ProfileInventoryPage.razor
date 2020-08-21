@@ -222,7 +222,7 @@
 
     private object SelectedInventoryPanel { get; set; } = 0;
 
-    private IDictionary<InventoryMarketItemDTO, int> InventoryItemsSummary { get; set; }
+    private IList<ProfileInventoryItemSummaryDTO> InventoryItemsSummary { get; set; }
 
     private IList<InventoryItemListDTO> InventoryItemsDetailed { get; set; }
 
@@ -341,7 +341,7 @@
         {
             if (InventoryItemsSummary == null || forceReload)
             {
-                InventoryItemsSummary = await Http.GetFromJsonAsync<IDictionary<InventoryMarketItemDTO, int>>(
+                InventoryItemsSummary = await Http.GetFromJsonAsync<IList<ProfileInventoryItemSummaryDTO>>(
                     $"api/inventory/{SteamId}/summary"
                 );
             }
