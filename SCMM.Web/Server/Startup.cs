@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +9,6 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
-using SCMM.Web.Server.Domain.Models;
 using SCMM.Web.Server.Middleware;
 using SCMM.Web.Server.Services.Jobs;
 
