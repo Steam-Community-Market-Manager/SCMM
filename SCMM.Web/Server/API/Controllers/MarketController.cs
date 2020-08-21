@@ -87,7 +87,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Skip((page * pageSize))
                     .Take(pageSize)
                     .ToList()
-                    .Select(x => _mapper.Map<MarketItemListDTO>(x, opt => opt.AddRequest(Request)))
+                    .Select(x => _mapper.Map<SteamMarketItem, MarketItemListDTO>(x, Request))
                     .ToList();
             }
         }

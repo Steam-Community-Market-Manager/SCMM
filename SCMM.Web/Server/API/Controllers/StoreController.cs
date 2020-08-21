@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
 using System;
 using System.Collections.Generic;
@@ -76,7 +78,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 var itemDtos = items.ToDictionary(
                     x => x,
-                    x => _mapper.Map<StoreItemListDTO>(x, opt => opt.AddRequest(Request))
+                    x => _mapper.Map<SteamStoreItem, StoreItemListDTO>(x, Request)
                 );
 
                 // TODO: Do this better, very lazy
