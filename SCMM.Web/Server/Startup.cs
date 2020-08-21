@@ -11,6 +11,7 @@ using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models;
+using SCMM.Web.Server.Middleware;
 using SCMM.Web.Server.Services.Jobs;
 
 namespace SCMM.Web.Server
@@ -79,13 +80,12 @@ namespace SCMM.Web.Server
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
+                app.UseDevelopmentExceptionHandler();
                 app.UseWebAssemblyDebugging();
             }
             else
             {
-                app.UseExceptionHandler("/Error");
+                app.UseProductionExceptionHandler();
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
