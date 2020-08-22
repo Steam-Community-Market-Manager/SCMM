@@ -1,0 +1,247 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+@using SCMM.Web.Shared; 
+@inherits ComponentBase
+@inject AppState State
+
+<Grid Container>
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        @if(InventoryPerformanceValueHistoryChart == null)
+        {
+            <Loading />
+        }
+        else
+        {
+            <ChartJsLineChart @ref="InventoryPerformanceValueHistoryChartJs" Config="@InventoryPerformanceValueHistoryChart" />
+        }
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        @if(InventoryPerformanceValueChart == null)
+        {
+            <Loading />
+        }
+        else
+        {
+            <ChartJsPieChart @ref="InventoryPerformanceValueChartJs" Config="@InventoryPerformanceValueChart" />
+        }
+    </Grid>
+</Grid>
+
+@code {
+    
+    [Parameter]
+    public ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
+    
+    [Parameter]
+    public ProfileInventoryTotalsDTO InventoryTotal { get; set; }
+
+    private ChartJsPieChart InventoryPerformanceValueChartJs;
+    private PieConfig InventoryPerformanceValueChart;
+    
+    private ChartJsLineChart InventoryPerformanceValueHistoryChartJs;
+    private LineConfig InventoryPerformanceValueHistoryChart;
+    
+    protected override void OnInitialized()
+    {
+        RedrawInventoryPerformanceValueChart();
+        RedrawInventoryPerformanceValueHistoryChart();
+    }
+
+    private void RedrawInventoryPerformanceValueChart()
+    {
+        InventoryPerformanceValueChart = new PieConfig
+        {
+            Options = new PieOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Animation = new ArcAnimation
+                {
+                    AnimateRotate = true,
+                    AnimateScale = true
+                },
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                }
+            }
+        };
+        
+        InventoryPerformanceValueChart.Data.Labels.AddRange(new[] { 
+            "Invested", 
+            "Resell Fees", 
+            "Resell Profit", 
+            "Resell Value"
+        });
+
+        var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
+        var localScaleDivisor = Int64.Parse($"1{localScaleString}");
+        if (InventoryTotal != null)
+        {
+            var inventoryValueDataSet = new PieDataset
+            {
+                BackgroundColor = new[] { 
+                    "#d32f2f",
+                    "#f57c00",
+                    "#388e3c",
+                    "#1976d2"
+                },
+                BorderWidth = 0
+            };
+
+            inventoryValueDataSet.Data.AddRange(new double[] { 
+                (DoubleWrapper)0,
+                (DoubleWrapper)0,
+                (DoubleWrapper)0,
+                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellValue / localScaleDivisor, State.Currency.Scale)
+            });
+        
+            var inventoryValueBreakdownDataSet = new PieDataset
+            {
+                BackgroundColor = new[] { 
+                    "#d32f2f",
+                    "#f57c00",
+                    "#388e3c",
+                    "#1976d2"
+                },
+                BorderWidth = 0
+            };
+
+            inventoryValueBreakdownDataSet.Data.AddRange(new double[] { 
+                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalInvested / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellTax / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellProfit / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)0
+            });
+
+            InventoryPerformanceValueChart.Data.Datasets.Add(inventoryValueDataSet);
+            InventoryPerformanceValueChart.Data.Datasets.Add(inventoryValueBreakdownDataSet);
+        }
+    }
+    
+    private void RedrawInventoryPerformanceValueHistoryChart()
+    {
+        InventoryPerformanceValueHistoryChart = new LineConfig
+        {
+            Options = new LineOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scales = new Scales
+                {
+
+                    xAxes = new List<CartesianAxis>
+                    {
+                        new CategoryAxis
+                        {
+                            Ticks = new CategoryTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    },
+                    yAxes = new List<CartesianAxis>
+                    {
+                        new LinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff",
+                                BeginAtZero = true
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#e0e0e0"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        
+        if (InventoryPerformance != null)
+        {
+            InventoryPerformanceValueHistoryChart.Data.Labels = InventoryPerformance.ValueHistoryGraph.Keys.ToList();
+        }
+
+        var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
+        var localScaleDivisor = Int64.Parse($"1{localScaleString}");
+
+        if (InventoryPerformance?.ProfitHistoryGraph != null && InventoryTotal?.TotalResellProfit > 0)
+        {
+            var profitHistoryDataSet = new LineDataset<DoubleWrapper>
+            {
+                Label = "Resell Profit",
+                BackgroundColor = "#388e3c",
+                BorderColor = "#1b5e20",
+                BorderWidth = 1,
+                PointBorderWidth = 2,
+                PointRadius = 8,
+                LineTension = 0.1,
+                Fill = true
+            };
+            profitHistoryDataSet.AddRange(
+                InventoryPerformance.ProfitHistoryGraph.Values.Select(x => (DoubleWrapper)Math.Round((double)x / localScaleDivisor, State.Currency.Scale)).ToList()
+            );
+
+            InventoryPerformanceValueHistoryChart.Data.Datasets.Add(profitHistoryDataSet);
+        }
+
+        if (InventoryPerformance?.ValueHistoryGraph != null)
+        {
+            var valueHistoryDataSet = new LineDataset<DoubleWrapper>
+            {
+                Label = "Market Value",
+                BackgroundColor = "#1976d2",
+                BorderColor = "#0d47a1",
+                BorderWidth = 1,
+                PointBorderWidth = 2,
+                PointRadius = 8,
+                LineTension = 0.1,
+                Fill = true
+            };
+            valueHistoryDataSet.AddRange(
+                InventoryPerformance.ValueHistoryGraph.Values.Select(x => (DoubleWrapper)Math.Round((double)x / localScaleDivisor, State.Currency.Scale)).ToList()
+            );
+
+            InventoryPerformanceValueHistoryChart.Data.Datasets.Add(valueHistoryDataSet);
+        }
+    }
+
+}

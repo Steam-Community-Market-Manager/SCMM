@@ -1,0 +1,119 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+@using SCMM.Web.Shared; 
+@inherits ComponentBase
+@inject AppState State
+
+@if(Profile != null && !ProfileIsMe)
+{
+    <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+        <InventoryHeaderProfile Profile="@Profile" />
+    </Grid>
+}
+@if(InventoryTotal != null)
+{
+    <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+        <InventoryHeaderTotal Title="Assets">
+            <Icon>
+                <SwapBagIcon />
+            </Icon>
+            <Total>
+                @InventoryTotal.TotalItems
+            </Total>
+        </InventoryHeaderTotal>
+    </Grid>
+    @if (InventoryTotal.TotalInvested > 0)
+    {
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+            <InventoryHeaderTotal Title="Total Investment" IconClass="Background-Error">
+                <Icon>
+                    <i class="fas fa-fw fa-dollar-sign"></i>
+                </Icon>
+                <Total>
+                    @State.Currency.ToPriceString(InventoryTotal.TotalInvested)
+                </Total>
+            </InventoryHeaderTotal>
+        </Grid>
+    }
+    @if (InventoryTotal.TotalMarketValue > 0)
+    {
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+            <InventoryHeaderTotal Title="Total Market Value" IconClass="Background-Info">
+                <Icon>
+                    <i class="fas fa-fw fa-dollar-sign"></i>
+                </Icon>
+                <Total>
+                    @State.Currency.ToPriceString(InventoryTotal.TotalMarketValue)
+                    <span>
+                        @if (InventoryTotal.TotalMarket24hrMovement > 0)
+                        {
+                            <span class="Text-Success">
+                                🡱 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
+                            </span>
+                        }
+                        @if (InventoryTotal.TotalMarket24hrMovement < 0)
+                        {
+                            <span class="Text-Error">
+                                🡳 @State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today
+                            </span>
+                        }
+                    </span>
+                </Total>
+            </InventoryHeaderTotal>
+        </Grid>
+    }
+    @if (InventoryTotal.TotalResellValue > 0)
+    {
+        <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
+            <InventoryHeaderTotal Title="Optimistic Resell Value" IconClass="Background-Success">
+                <Icon>
+                    <i class="fas fa-fw fa-dollar-sign"></i>
+                </Icon>
+                <Total>
+                    @State.Currency.ToPriceString(InventoryTotal.TotalResellValue)
+                    <span>
+                        @if (InventoryTotal.TotalResellProfit > 0)
+                        {
+                            <span class="Text-Success">
+                                🡱 @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit) profit
+                            </span>
+                        }
+                        @if (InventoryTotal.TotalResellProfit < 0)
+                        {
+                            <span class="Text-Error">
+                                🡳 @State.Currency.ToPriceString(InventoryTotal.TotalResellProfit) profit
+                            </span>
+                        }
+                    </span>
+                </Total>
+            </InventoryHeaderTotal>
+        </Grid>
+    }
+}
+@if (Profile != null && ProfileIsMe)
+{
+    <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two" Style="padding:8px">
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
+            Last synchronised @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago
+        </Typography>
+        <Button OnClick="@SynchroniseInventory" Size="@Size.Small"
+                Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
+            Synchronise
+        </Button>
+    </Grid>
+}
+
+@code {
+
+    [Parameter]
+    public ProfileInventoryDetailsDTO Profile { get; set; }
+    
+    [Parameter]
+    public ProfileInventoryTotalsDTO InventoryTotal { get; set; }
+
+    [Parameter]
+    public EventCallback<EventArgs> SynchroniseInventory { get; set; }
+
+    private bool ProfileIsMe => (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId));
+
+}

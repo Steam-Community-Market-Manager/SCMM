@@ -240,13 +240,13 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
-        [HttpGet("me/details")]
+        [HttpGet("me/returnOnInvestment")]
         public async Task<IList<InventoryItemListDTO>> GetMyInventoryDetails()
         {
             return await GetInventoryDetails(Request.ProfileId());
         }
 
-        [HttpGet("{steamId}/details")]
+        [HttpGet("{steamId}/returnOnInvestment")]
         public async Task<IList<InventoryItemListDTO>> GetInventoryDetails([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
@@ -265,6 +265,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Select(x => new
                     {
                         Item = x,
+                        ItemDescription = x.Description,
                         ItemCurrency = x.Currency,
                         MarketItem = x.MarketItem,
                         MarketItemApp = x.MarketItem.App,
