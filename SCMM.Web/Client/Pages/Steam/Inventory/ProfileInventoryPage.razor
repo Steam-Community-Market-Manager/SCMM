@@ -2,6 +2,7 @@
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @namespace SCMM.Web.Client.Pages.Steam.Inventory
+@inject ILogger<ProfileInventoryPage> Logger
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager Navigation
 @inject HttpClient Http
@@ -256,6 +257,7 @@
     {
         try
         {
+            Logger.LogInformation($"Refreshing inventory for '{SteamId}'...");
             Profile = null;
             ProfileIsMe = false;
             ProfileNotFound = false;
@@ -267,8 +269,9 @@
             await LoadInventoryTotals(forceReload);
             await OnSelectedInventoryPanelChanged(SelectedInventoryPanel, forceReload);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error refreshing inventory for '{SteamId}'");
             ProfileNotFound = true;
         }
     }
@@ -313,6 +316,7 @@
         {
             if (Profile == null || forceReload)
             {
+                Logger.LogInformation("Fetching inventory profile...");
                 Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>(
                     $"api/inventory/{SteamId}?sync={forceReload}"
                 );
@@ -320,8 +324,9 @@
                 ProfileNotFound = (Profile == null);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error fetching inventory profile");
             Profile = null;
             ProfileIsMe = false;
             ProfileNotFound = true;
@@ -334,13 +339,15 @@
         {
             if (InventoryTotal == null || forceReload)
             {
+                Logger.LogInformation("Fetching inventory totals...");
                 InventoryTotal = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
                     $"api/inventory/{SteamId}/total"
                 );
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error fetching inventory totals");
             InventoryTotal = null;
         }
     }
@@ -351,13 +358,15 @@
         {
             if (InventoryItemsSummary == null || forceReload)
             {
+                Logger.LogInformation("Fetching inventory summary...");
                 InventoryItemsSummary = await Http.GetFromJsonAsync<IList<ProfileInventoryItemSummaryDTO>>(
                     $"api/inventory/{SteamId}/summary"
                 );
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error fetching inventory summary");
             InventoryItemsSummary = null;
         }
     }
@@ -368,13 +377,15 @@
         {
             if (InventoryItemsDetailed == null || forceReload)
             {
+                Logger.LogInformation("Fetching inventory details...");
                 InventoryItemsDetailed = await Http.GetFromJsonAsync<IList<InventoryItemListDTO>>(
                     $"api/inventory/{SteamId}/details"
                 );
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error fetching inventory details");
             InventoryItemsDetailed = null;
         }
     }
@@ -384,9 +395,11 @@
         try
         {
             // TODO: This...
+            Logger.LogInformation("Fetching inventory activity...");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error fetching inventory activity");
         }
     }
     
@@ -396,6 +409,7 @@
         {
             if (InventoryPerformance == null || forceReload)
             {
+                Logger.LogInformation("Fetching inventory performance...");
                 InventoryPerformanceValueChart = null;
                 InventoryPerformanceValueHistoryChart = null;
                 InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>(
@@ -412,8 +426,9 @@
                 RedrawInventoryPerformanceValueHistoryChart();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Error fetching inventory performance");
             InventoryPerformanceValueChart = null;
             InventoryPerformanceValueHistoryChart = null;
             InventoryPerformance = null;
