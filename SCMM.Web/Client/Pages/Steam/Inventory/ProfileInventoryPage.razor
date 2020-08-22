@@ -176,17 +176,31 @@
                 <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Market performance" Wrapped />
             </Tabs>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
-                @if ((int)SelectedInventoryPanel == 0 && InventoryItemsSummary != null)
+                @if ((int)SelectedInventoryPanel == 0)
                 {
-                    <InventoryItemsSummary Items="@InventoryItemsSummary" />
+                    @if (InventoryItemsSummary == null)
+                    {
+                        <Loading />
+                    }
+                    else
+                    {
+                        <InventoryItemsSummary Items="@InventoryItemsSummary" />
+                    }
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
-                @if ((int)SelectedInventoryPanel == 1 && InventoryItemsDetailed != null)
+                @if ((int)SelectedInventoryPanel == 1)
                 {
-                    <Paper Class="Inventory-List-Container">
-                        <InventoryItemsTable Items="@InventoryItemsDetailed" ReadOnly="@(!ProfileIsMe)" />
-                    </Paper>
+                    @if (InventoryItemsDetailed == null)
+                    {
+                        <Loading />
+                    }
+                    else
+                    {
+                        <Paper Class="Inventory-List-Container">
+                            <InventoryItemsTable Items="@InventoryItemsDetailed" ReadOnly="@(!ProfileIsMe)" />
+                        </Paper>
+                    }
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
@@ -199,18 +213,26 @@
                 @if ((int)SelectedInventoryPanel == 3)
                 {
                     <Grid Container>
-                        @if(InventoryPerformanceValueHistoryChart != null)
-                        {
-                            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                        <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                            @if(InventoryPerformanceValueHistoryChart == null)
+                            {
+                                <Loading />
+                            }
+                            else
+                            {
                                 <ChartJsLineChart @ref="InventoryPerformanceValueHistoryChartJs" Config="@InventoryPerformanceValueHistoryChart" />
-                            </Grid>
-                        }
-                        @if(InventoryPerformanceValueChart != null)
-                        {
-                            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                            }
+                        </Grid>
+                        <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                            @if(InventoryPerformanceValueChart == null)
+                            {
+                                <Loading />
+                            }
+                            else
+                            {
                                 <ChartJsPieChart @ref="InventoryPerformanceValueChartJs" Config="@InventoryPerformanceValueChart" />
-                            </Grid>
-                        }
+                            }
+                        </Grid>
                     </Grid>
                 }
             </TabPanel>
@@ -417,11 +439,13 @@
                 );
             
             }
-            if (InventoryPerformanceValueChart == null || forceReload)
+            // TODO: How to cache rendering of charts?
+            if (true || InventoryPerformanceValueChart == null || forceReload)
             {
                 RedrawInventoryPerformanceValueChart();
             }
-            if (InventoryPerformanceValueHistoryChart == null || forceReload)
+            // TODO: How to cache rendering of charts?
+            if (true || InventoryPerformanceValueHistoryChart == null || forceReload)
             {
                 RedrawInventoryPerformanceValueHistoryChart();
             }

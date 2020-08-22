@@ -195,18 +195,17 @@ namespace SCMM.Web.Server.API.Controllers
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var currency = Request.Currency();
 
-                var profileInventoryItems = db.SteamProfiles
-                    .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                    .SelectMany(x =>
-                        x.InventoryItems.Where(x => x.MarketItem != null).Select(y => new
-                        {
-                            MarketItem = y.MarketItem,
-                            MarketItemApp = y.MarketItem.App,
-                            MarketItemDescription = y.MarketItem.Description,
-                            MarketItemCurrency = y.MarketItem.Currency,
-                            Quantity = y.Quantity
-                        })
-                    )
+                var profileInventoryItems = db.SteamInventoryItems
+                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                    .Where(x => x.MarketItem != null)
+                    .Select(x => new
+                    {
+                        MarketItem = x.MarketItem,
+                        MarketItemApp = x.MarketItem.App,
+                        MarketItemDescription = x.MarketItem.Description,
+                        MarketItemCurrency = x.MarketItem.Currency,
+                        Quantity = x.Quantity
+                    })
                     .ToList();
 
                 if (!profileInventoryItems.Any())
@@ -260,26 +259,34 @@ namespace SCMM.Web.Server.API.Controllers
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var currency = Request.Currency();
-                
-                /*
-                InventoryItemsSummary = new Dictionary<InventoryMarketItemDTO, int>();
-                var marketItems = inventoryItems
-                    .Select(x => x.MarketItem)
-                    .Where(x => x != null)
-                    .OrderByDescending(x => x.Last1hrValue);
 
-                foreach (var marketItem in marketItems)
-                {
-                    if (!InventoryItemsSummary.Any(x => x.Key.SteamId == marketItem.SteamId))
+                var profileInventoryItems = db.SteamInventoryItems
+                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                    .Select(x => new
                     {
-                        InventoryItemsSummary[marketItem] = inventoryItems
-                            .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
-                            .Sum(x => x.Quantity);
-                    }
-                }
-                */
+                        Item = x,
+                        ItemCurrency = x.Currency,
+                        MarketItem = x.MarketItem,
+                        MarketItemApp = x.MarketItem.App,
+                        MarketItemDescription = x.MarketItem.Description,
+                        MarketItemCurrency = x.MarketItem.Currency
+                    })
+                    .ToList();
 
-                return null;
+                if (!profileInventoryItems.Any())
+                {
+                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
+                }
+
+                var profileInventoryItemsDetails = new List<InventoryItemListDTO>();
+                foreach (var profileInventoryItem in profileInventoryItems)
+                {
+                    profileInventoryItemsDetails.Add(
+                         _mapper.Map<SteamInventoryItem, InventoryItemListDTO>(profileInventoryItem.Item, Request)
+                    );
+                }
+
+                return profileInventoryItemsDetails;
             }
         }
 
