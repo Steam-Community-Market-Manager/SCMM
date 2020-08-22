@@ -17,7 +17,8 @@
 
 </style>
 
-<DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
+<DocumentTitle Title="Inventory" />
+
 <Grid Container Spacing="@Spacing.Two">
     <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
         <ResponsiveTextField Label="Steam ID" Placeholder="steam id" Value="@SteamId" OnChange="@(x => OnSteamIdChanged(x))">
@@ -46,17 +47,27 @@
 <Grid Container Spacing="@Spacing.Two">
     @if (InventoryTotal == null)
     {
-        @if (ProfileNotFound)
-        {
-            <NotFound />
-        }
-        else
-        {
-            <Loading />
-        }
+        <Grid ExtraSmall="@GridSize.Twelve">
+            @if (ProfileNotFound)
+            {
+                <NotFound />
+            }
+            else
+            {
+                <Loading />
+            }
+        </Grid>
     }
     else
     {
+        if (Profile != null)
+        {
+            <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
+        }
+        else
+        {
+            <DocumentTitle Title="@($"Inventory - {SteamId}")" />
+        }
         @if(Profile != null && !ProfileIsMe)
         {
             <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
@@ -152,59 +163,58 @@
                 </Button>
             </Grid>
         }
+        <Grid Item ExtraSmall="@GridSize.Twelve">
+            <Tabs Value="@SelectedInventoryPanel"
+                    OnChange="@(x => OnSelectedInventoryPanelChanged(x))"
+                    IndicatorColor="@Color.Primary"
+                    TextColor="@Color.Primary"
+                    Variant="@TabsVariant.FullWidth">
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Summary" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Return on investment" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Market activity" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Market performance" Wrapped />
+            </Tabs>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
+                @if ((int)SelectedInventoryPanel == 0 && InventoryItemsSummary != null)
+                {
+                    <InventoryItemsSummary Items="@InventoryItemsSummary" />
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
+                @if ((int)SelectedInventoryPanel == 1 && InventoryItemsDetailed != null)
+                {
+                    <Paper Class="Inventory-List-Container">
+                        <InventoryItemsTable Items="@InventoryItemsDetailed" ReadOnly="@(!ProfileIsMe)" />
+                    </Paper>
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
+                @if ((int)SelectedInventoryPanel == 2)
+                {
+                    <InventoryItemsActivity />
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
+                @if ((int)SelectedInventoryPanel == 3)
+                {
+                    <Grid Container>
+                        @if(InventoryPerformanceValueHistoryChart != null)
+                        {
+                            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                                <ChartJsLineChart @ref="InventoryPerformanceValueHistoryChartJs" Config="@InventoryPerformanceValueHistoryChart" />
+                            </Grid>
+                        }
+                        @if(InventoryPerformanceValueChart != null)
+                        {
+                            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                                <ChartJsPieChart @ref="InventoryPerformanceValueChartJs" Config="@InventoryPerformanceValueChart" />
+                            </Grid>
+                        }
+                    </Grid>
+                }
+            </TabPanel>
+        </Grid>
     }
-    
-    <Grid Item ExtraSmall="@GridSize.Twelve">
-        <Tabs Value="@SelectedInventoryPanel"
-                OnChange="@(x => OnSelectedInventoryPanelChanged(x))"
-                IndicatorColor="@Color.Primary"
-                TextColor="@Color.Primary"
-                Variant="@TabsVariant.FullWidth">
-            <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Summary" Wrapped />
-            <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Return on investment" Wrapped />
-            <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Market activity" Wrapped />
-            <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Market performance" Wrapped />
-        </Tabs>
-        <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
-            @if ((int)SelectedInventoryPanel == 0 && InventoryItemsSummary != null)
-            {
-                <InventoryItemsSummary Items="@InventoryItemsSummary" />
-            }
-        </TabPanel>
-        <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
-            @if ((int)SelectedInventoryPanel == 1 && InventoryItemsDetailed != null)
-            {
-                <Paper Class="Inventory-List-Container">
-                    <InventoryItemsTable Items="@InventoryItemsDetailed" ReadOnly="@(!ProfileIsMe)" />
-                </Paper>
-            }
-        </TabPanel>
-        <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
-            @if ((int)SelectedInventoryPanel == 2)
-            {
-                <InventoryItemsActivity />
-            }
-        </TabPanel>
-        <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
-            @if ((int)SelectedInventoryPanel == 3)
-            {
-                <Grid Container>
-                    @if(InventoryPerformanceValueHistoryChart != null)
-                    {
-                        <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-                            <ChartJsLineChart @ref="InventoryPerformanceValueHistoryChartJs" Config="@InventoryPerformanceValueHistoryChart" />
-                        </Grid>
-                    }
-                    @if(InventoryPerformanceValueChart != null)
-                    {
-                        <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-                            <ChartJsPieChart @ref="InventoryPerformanceValueChartJs" Config="@InventoryPerformanceValueChart" />
-                        </Grid>
-                    }
-                </Grid>
-            }
-        </TabPanel>
-    </Grid>
 </Grid>
 
 @code {
