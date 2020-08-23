@@ -42,7 +42,7 @@ namespace SCMM.Web.Shared
             var localValue = (decimal)value;
             if (valueCurrency != localCurrency)
             {
-                var baseValue = (value > 0)
+                var baseValue = (value != 0)
                     ? (value / valueCurrency.ExchangeRateMultiplier)
                     : 0m;
 
