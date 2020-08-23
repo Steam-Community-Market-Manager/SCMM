@@ -4,8 +4,8 @@
 @using SCMM.Web.Shared;
 @inherits ComponentBase
 @inject AppState State
- 
-@if (Items != null)
+
+@if (Activity != null)
 {
     <Paper>
         <Table StickyHeader Size="@Size.Small">
@@ -18,27 +18,27 @@
                 </TableRow>
             </TableHead>
             <TableBody>
-                @foreach (var item in Items.Take(100))
+                @foreach (var item in Activity)
                 { 
                 <TableRow>
-                    <TableCell Class="@GetItemClass(item.Key)">
-                        <img src="@item.Value.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                    <TableCell Class="@GetItemClass(item)">
+                        <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                     </TableCell>
-                    <TableCell Component="th" Scope="row" Class="@GetItemClass(item.Key)">
-                        <strong>@item.Value.Name</strong>
+                    <TableCell Component="th" Scope="row" Class="@GetItemClass(item)">
+                        <strong>@item.Name</strong>
                     </TableCell>
-                    <TableCell Class="@GetItemClass(item.Key)">
-                        @if (item.Key.Movement > 0)
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.Movement > 0)
                         {
-                            <span>🡱 increased by @item.Value.Currency.ToPriceString(item.Key.Movement)</span>
+                            <span>🡱 increased by @State.Currency.ToPriceString(item.Movement)</span>
                         }
                         else
                         {
-                            <span>🡳 dropped by @item.Value.Currency.ToPriceString(item.Key.Movement)</span>
+                            <span>🡳 dropped by @State.Currency.ToPriceString(item.Movement)</span>
                         }
                     </TableCell>
-                    <TableCell Class="@GetItemClass(item.Key)">
-                        <span>about @((DateTimeOffset.Now - item.Key.Timestamp).ToDurationString()) ago</span>
+                    <TableCell Class="@GetItemClass(item)">
+                        <span>about @((DateTimeOffset.Now - item.Timestamp).ToDurationString()) ago</span>
                     </TableCell>
                 </TableRow>
                 }
@@ -50,9 +50,9 @@
 @code {
 
     [Parameter]
-    public IDictionary<MarketItemActivityDTO, InventoryMarketItemDTO> Items { get; set; }
+    public IList<ProfileInventoryActivityDTO> Activity { get; set; }
 
-    private string GetItemClass(MarketItemActivityDTO item)
+    private string GetItemClass(ProfileInventoryActivityDTO item)
     {
         if (item.Movement > 0)
         {

@@ -106,7 +106,14 @@
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
                 @if ((int)SelectedInventoryPanel == 2)
                 {
-                    <InventoryItemsActivity />
+                    @if (InventoryItemsActivity == null)
+                    {
+                        <Loading />
+                    }
+                    else
+                    {
+                        <InventoryItemsActivity Activity="@InventoryItemsActivity" />
+                    }
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
@@ -146,6 +153,8 @@
     private IList<ProfileInventoryItemSummaryDTO> InventoryItemsSummary { get; set; }
 
     private IList<InventoryItemListDTO> InventoryItemsInvestment { get; set; }
+    
+    private IList<ProfileInventoryActivityDTO> InventoryItemsActivity { get; set; }
 
     private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
     
@@ -164,6 +173,7 @@
             ProfileLoadError = null;
             InventoryItemsSummary = null;
             InventoryItemsInvestment = null;
+            InventoryItemsActivity = null;
             InventoryTotal = null;
             InventoryPerformance = null;
             await LoadProfile(forceReload);
@@ -293,12 +303,18 @@
     {
         try
         {
-            // TODO: This...
-            Logger.LogInformation("Fetching inventory activity...");
+            if (InventoryItemsActivity == null || forceReload)
+            {
+                Logger.LogInformation("Fetching inventory activity...");
+                InventoryItemsActivity = await Http.GetFromJsonAsync<IList<ProfileInventoryActivityDTO>>(
+                    $"api/inventory/{SteamId}/activity"
+                );
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error fetching inventory activity");
+            InventoryItemsActivity = null;
         }
     }
     

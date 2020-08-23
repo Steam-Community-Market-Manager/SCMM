@@ -291,6 +291,55 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [HttpGet("me/activity")]
+        public async Task<IList<ProfileInventoryActivityDTO>> GetMyInventoryActivity()
+        {
+            return await GetInventoryActivity(Request.ProfileId());
+        }
+
+        [HttpGet("{steamId}/activity")]
+        public async Task<IList<ProfileInventoryActivityDTO>> GetInventoryActivity([FromRoute] string steamId)
+        {
+            if (String.IsNullOrEmpty(steamId))
+            {
+                throw new ArgumentNullException(nameof(steamId));
+            }
+
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetService<SteamService>();
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var currency = Request.Currency();
+
+                var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(12));
+                var profileInventoryActivities = db.SteamInventoryItems
+                    .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                    .Where(x => x.MarketItem != null)
+                    .SelectMany(x => x.MarketItem.Activity/*.Where(x => x.Timestamp >= recentActivityCutoff)*/)
+                    .OrderByDescending(x => x.Timestamp)
+                    .Include(x => x.Item)
+                    .Include(x => x.Item.Description)
+                    .Include(x => x.Item.Currency)
+                    .Take(100)
+                    .ToList();
+
+                if (!profileInventoryActivities.Any())
+                {
+                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
+                }
+
+                var profileInventoryActivitiesDetails = new List<ProfileInventoryActivityDTO>();
+                foreach (var profileInventoryActivity in profileInventoryActivities)
+                {
+                    profileInventoryActivitiesDetails.Add(
+                         _mapper.Map<SteamMarketItemActivity, ProfileInventoryActivityDTO>(profileInventoryActivity, Request)
+                    );
+                }
+
+                return profileInventoryActivitiesDetails;
+            }
+        }
+
         [HttpGet("me/performance")]
         public async Task<ProfileInventoryPerformanceDTO> GetMyInventoryPerformance()
         {

@@ -96,6 +96,10 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Tags, o => o.MapFrom(p => p.Description.Tags.WithoutWorkshopTags()));
             CreateMap<SteamMarketItemActivity, MarketItemActivityDTO>()
                 .ForMember(x => x.Movement, o => o.MapFromUsingCurrencyExchange(p => p.Movement, p => p.Item.Currency));
+            CreateMap<SteamMarketItemActivity, ProfileInventoryActivityDTO>()
+                .ForMember(x => x.Name, o => o.MapFrom(p => p.Item.Description.Name))
+                .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Item.Description.IconLargeUrl))
+                .ForMember(x => x.Movement, o => o.MapFromUsingCurrencyExchange(p => p.Movement, p => p.Item.Currency));
             CreateMap<SteamMarketItemOrder, MarketItemOrderDTO>()
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Item.Currency));
             CreateMap<SteamMarketItemSale, MarketItemSaleDTO>()
