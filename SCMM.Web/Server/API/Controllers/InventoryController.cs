@@ -134,11 +134,6 @@ namespace SCMM.Web.Server.API.Controllers
                     })
                     .ToList();
 
-                if (!profileInventoryItems.Any())
-                {
-                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
-                }
-
                 var profileInventory = new
                 {
                     TotalItems = profileInventoryItems
@@ -208,11 +203,6 @@ namespace SCMM.Web.Server.API.Controllers
                     })
                     .ToList();
 
-                if (!profileInventoryItems.Any())
-                {
-                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
-                }
-
                 var profileInventoryItemsSummaries = new List<ProfileInventoryItemSummaryDTO>();
                 var marketItems = profileInventoryItems
                     .Select(x => x.MarketItem)
@@ -274,11 +264,6 @@ namespace SCMM.Web.Server.API.Controllers
                     })
                     .ToList();
 
-                if (!profileInventoryItems.Any())
-                {
-                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
-                }
-
                 var profileInventoryItemsDetails = new List<InventoryItemListDTO>();
                 foreach (var profileInventoryItem in profileInventoryItems)
                 {
@@ -324,11 +309,6 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.Item.Currency)
                     .Take(100)
                     .ToList();
-
-                if (!profileInventoryActivities.Any())
-                {
-                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
-                }
 
                 var profileInventoryActivitiesDetails = new List<ProfileInventoryActivityDTO>();
                 foreach (var profileInventoryActivity in profileInventoryActivities)
@@ -381,11 +361,6 @@ namespace SCMM.Web.Server.API.Controllers
                         MarketItemExchangeRateMultiplier = x.MarketItem.Currency.ExchangeRateMultiplier
                     })
                     .ToList();
-
-                if (!profileInventoryItems.Any())
-                {
-                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
-                }
 
                 var profileInventory = new
                 {
