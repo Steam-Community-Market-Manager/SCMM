@@ -34,19 +34,19 @@
         }
         else
         {
-        <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@Value"
-                   OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))">
-            <StartAdornment>
-                @if (Item.Currency != null)
-                {
-                    <span style="padding-right:5px;">@Item.Currency.PrefixText</span>
-                }
-                else
-                {
-                    <span style="padding-right:5px;">@State.Currency.PrefixText</span>
-                }
-            </StartAdornment>
-        </InputBase>
+            <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@Value"
+                       OnChange="@((e) => UpdateItemPrice(e.Value.ToString()))">
+                <StartAdornment>
+                    @if (Item.Currency != null)
+                    {
+                        <span style="padding-right:5px;">@Item.Currency.PrefixText</span>
+                    }
+                    else
+                    {
+                        <span style="padding-right:5px;">@State.Currency.PrefixText</span>
+                    }
+                </StartAdornment>
+            </InputBase>
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
@@ -91,7 +91,8 @@
     </TableCell>
     <TableCell Class="@GetItemClass()">
         @if (Item.MarketItem != null && Item.BuyPrice > 0)
-        {@(((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
+        {
+            @(((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
         }
         else
         {

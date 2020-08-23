@@ -231,13 +231,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("me/returnOnInvestment")]
-        public async Task<IList<InventoryItemListDTO>> GetMyInventoryDetails()
+        public async Task<IList<InventoryItemListDTO>> GetMyInventoryInvestment()
         {
-            return await GetInventoryDetails(Request.ProfileId());
+            return await GetInventoryInvestment(Request.ProfileId());
         }
 
         [HttpGet("{steamId}/returnOnInvestment")]
-        public async Task<IList<InventoryItemListDTO>> GetInventoryDetails([FromRoute] string steamId)
+        public async Task<IList<InventoryItemListDTO>> GetInventoryInvestment([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -260,8 +260,15 @@ namespace SCMM.Web.Server.API.Controllers
                         MarketItem = x.MarketItem,
                         MarketItemApp = x.MarketItem.App,
                         MarketItemDescription = x.MarketItem.Description,
-                        MarketItemCurrency = x.MarketItem.Currency
+                        MarketItemCurrency = x.MarketItem.Currency,
+                        HasBuyPrice = (x.BuyPrice > 0),
+                        ReturnOnInvestment = (x.BuyPrice > 0 && (x.MarketItem.ResellPrice - x.MarketItem.ResellTax) > 0 
+                            ? ((decimal)(x.MarketItem.ResellPrice - x.MarketItem.ResellTax) / x.BuyPrice)
+                            : 0
+                        )
                     })
+                    .OrderByDescending(x => x.HasBuyPrice)
+                    .ThenByDescending(x => x.ReturnOnInvestment)
                     .ToList();
 
                 var profileInventoryItemsDetails = new List<InventoryItemListDTO>();
