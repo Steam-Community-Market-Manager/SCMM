@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
-    public class InventoryItemListDTO
+    public class InventoryItemListDTO : IFilterableItem
     {
         public Guid Id { get; set; }
 

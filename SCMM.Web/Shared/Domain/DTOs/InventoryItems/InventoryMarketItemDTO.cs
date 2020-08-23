@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
-    public class InventoryMarketItemDTO
+    public class InventoryMarketItemDTO : IFilterableItem
     {
         public string SteamId { get; set; }
 

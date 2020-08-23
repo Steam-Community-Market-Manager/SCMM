@@ -84,7 +84,7 @@
                     }
                     else
                     {
-                        <InventoryItemsSummary Items="@InventoryItemsSummary" />
+                        <InventoryItemsSummary Items="@FilterItems(InventoryItemsSummary)" />
                     }
                 }
             </TabPanel>
@@ -98,7 +98,7 @@
                     else
                     {
                         <Paper Class="Inventory-Table-Container">
-                            <InventoryItemsInvestment Items="@InventoryItemsInvestment" ReadOnly="@(!ProfileIsMe)" />
+                            <InventoryItemsInvestment Items="@FilterItems(InventoryItemsInvestment)" ReadOnly="@(!ProfileIsMe)" />
                         </Paper>
                     }
                 }
@@ -112,7 +112,7 @@
                     }
                     else
                     {
-                        <InventoryItemsActivity Activity="@InventoryItemsActivity" />
+                        <InventoryItemsActivity Activity="@FilterItems(InventoryItemsActivity)" />
                     }
                 }
             </TabPanel>
@@ -336,8 +336,9 @@
             InventoryPerformance = null;
         }
     }
-    
-    private IEnumerable<InventoryMarketItemDTO> FilterItems(IEnumerable<InventoryMarketItemDTO> items)
+
+    private IEnumerable<T> FilterItems<T>(IEnumerable<T> items)
+        where T : IFilterableItem
     {
         if (String.IsNullOrEmpty(Filter))
         {

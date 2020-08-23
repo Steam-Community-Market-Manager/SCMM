@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
-    public class ProfileInventoryActivityDTO
+    public class ProfileInventoryActivityDTO : IFilterableItem
     {
         public string Name { get; set; }
 

@@ -50,7 +50,7 @@
 @code {
 
     [Parameter]
-    public IList<ProfileInventoryActivityDTO> Activity { get; set; }
+    public IEnumerable<ProfileInventoryActivityDTO> Activity { get; set; }
 
     private string GetItemClass(ProfileInventoryActivityDTO item)
     {
