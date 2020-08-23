@@ -296,7 +296,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var currency = Request.Currency();
 
-                var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(12));
+                var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
                 var profileInventoryActivities = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                     .Where(x => x.MarketItem != null)

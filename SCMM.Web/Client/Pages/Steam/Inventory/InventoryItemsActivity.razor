@@ -29,11 +29,11 @@
                     <TableCell Class="@GetItemClass(item)">
                         @if (item.Movement > 0)
                         {
-                            <span>🡱 value increased by @State.Currency.ToPriceString(item.Movement)</span>
+                            <span>🡱 value increased by @State.Currency.ToPriceString(Math.Abs(item.Movement))</span>
                         }
                         else
                         {
-                            <span>🡳 value dropped by @State.Currency.ToPriceString(item.Movement)</span>
+                            <span>🡳 value dropped by @State.Currency.ToPriceString(Math.Abs(item.Movement))</span>
                         }
                     </TableCell>
                     <TableCell Class="@GetItemClass(item)">
