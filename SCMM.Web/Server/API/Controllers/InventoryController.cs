@@ -315,7 +315,9 @@ namespace SCMM.Web.Server.API.Controllers
                 var profileInventoryActivities = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                     .Where(x => x.MarketItem != null)
-                    .SelectMany(x => x.MarketItem.Activity/*.Where(x => x.Timestamp >= recentActivityCutoff)*/)
+                    .SelectMany(x => 
+                        x.MarketItem.Activity.Where(x => x.Timestamp >= recentActivityCutoff)
+                    )
                     .OrderByDescending(x => x.Timestamp)
                     .Include(x => x.Item)
                     .Include(x => x.Item.Description)

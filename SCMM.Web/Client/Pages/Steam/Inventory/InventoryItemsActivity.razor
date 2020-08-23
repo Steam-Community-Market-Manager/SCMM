@@ -11,7 +11,6 @@
         <Table StickyHeader Size="@Size.Small">
             <TableHead>
                 <TableRow>
-                    <TableCell></TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Activity</TableCell>
                     <TableCell>When</TableCell>
@@ -22,19 +21,19 @@
                 { 
                 <TableRow>
                     <TableCell Class="@GetItemClass(item)">
-                        <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                    </TableCell>
-                    <TableCell Component="th" Scope="row" Class="@GetItemClass(item)">
-                        <strong>@item.Name</strong>
+                        <div style="display:flex; align-content:center; align-items:center">
+                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                            <strong style="margin:8px">@item.Name</strong>
+                        </div>
                     </TableCell>
                     <TableCell Class="@GetItemClass(item)">
                         @if (item.Movement > 0)
                         {
-                            <span>🡱 increased by @State.Currency.ToPriceString(item.Movement)</span>
+                            <span>🡱 value increased by @State.Currency.ToPriceString(item.Movement)</span>
                         }
                         else
                         {
-                            <span>🡳 dropped by @State.Currency.ToPriceString(item.Movement)</span>
+                            <span>🡳 value dropped by @State.Currency.ToPriceString(item.Movement)</span>
                         }
                     </TableCell>
                     <TableCell Class="@GetItemClass(item)">
