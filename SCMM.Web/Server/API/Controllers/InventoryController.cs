@@ -64,14 +64,14 @@ namespace SCMM.Web.Server.API.Controllers
                 else
                 {
                     // Load the profile
-                    var inventory = await db.SteamProfiles
+                    var inventory = db.SteamProfiles
                         .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
                         .Select(x => new
                         {
                             Profile = x,
                             TotalItems = x.InventoryItems.Count
                         })
-                        .FirstOrDefaultAsync();
+                        .FirstOrDefault();
 
                     // If the profile inventory hasn't been loaded before, fetch it now
                     if (inventory == null || inventory.Profile == null || inventory.TotalItems == 0)
@@ -99,13 +99,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("me/total")]
-        public async Task<ProfileInventoryTotalsDTO> GetMyInventoryTotal()
+        public ProfileInventoryTotalsDTO GetMyInventoryTotal()
         {
-            return await GetInventoryTotal(Request.ProfileId());
+            return GetInventoryTotal(Request.ProfileId());
         }
 
         [HttpGet("{steamId}/total")]
-        public async Task<ProfileInventoryTotalsDTO> GetInventoryTotal([FromRoute] string steamId)
+        public ProfileInventoryTotalsDTO GetInventoryTotal([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -171,13 +171,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("me/summary")]
-        public async Task<IList<ProfileInventoryItemSummaryDTO>> GetMyInventorySummary()
+        public IList<ProfileInventoryItemSummaryDTO> GetMyInventorySummary()
         {
-            return await GetInventorySummary(Request.ProfileId());
+            return GetInventorySummary(Request.ProfileId());
         }
 
         [HttpGet("{steamId}/summary")]
-        public async Task<IList<ProfileInventoryItemSummaryDTO>> GetInventorySummary([FromRoute] string steamId)
+        public IList<ProfileInventoryItemSummaryDTO> GetInventorySummary([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -231,13 +231,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("me/returnOnInvestment")]
-        public async Task<IList<InventoryItemListDTO>> GetMyInventoryInvestment()
+        public IList<InventoryItemListDTO> GetMyInventoryInvestment()
         {
-            return await GetInventoryInvestment(Request.ProfileId());
+            return GetInventoryInvestment(Request.ProfileId());
         }
 
         [HttpGet("{steamId}/returnOnInvestment")]
-        public async Task<IList<InventoryItemListDTO>> GetInventoryInvestment([FromRoute] string steamId)
+        public IList<InventoryItemListDTO> GetInventoryInvestment([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -284,13 +284,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("me/activity")]
-        public async Task<IList<ProfileInventoryActivityDTO>> GetMyInventoryActivity()
+        public IList<ProfileInventoryActivityDTO> GetMyInventoryActivity()
         {
-            return await GetInventoryActivity(Request.ProfileId());
+            return GetInventoryActivity(Request.ProfileId());
         }
 
         [HttpGet("{steamId}/activity")]
-        public async Task<IList<ProfileInventoryActivityDTO>> GetInventoryActivity([FromRoute] string steamId)
+        public IList<ProfileInventoryActivityDTO> GetInventoryActivity([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -330,13 +330,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpGet("me/performance")]
-        public async Task<ProfileInventoryPerformanceDTO> GetMyInventoryPerformance()
+        public ProfileInventoryPerformanceDTO GetMyInventoryPerformance()
         {
-            return await GetInventoryPerformance(Request.ProfileId());
+            return GetInventoryPerformance(Request.ProfileId());
         }
 
         [HttpGet("{steamId}/performance")]
-        public async Task<ProfileInventoryPerformanceDTO> GetInventoryPerformance([FromRoute] string steamId)
+        public ProfileInventoryPerformanceDTO GetInventoryPerformance([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -446,12 +446,12 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [HttpPut("item/{inventoryItemId}")]
-        public async void SetInventoryItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
+        public void SetInventoryItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var inventoryItem = await db.SteamInventoryItems.SingleOrDefaultAsync(x => x.Id == inventoryItemId);
+                var inventoryItem = db.SteamInventoryItems.SingleOrDefault(x => x.Id == inventoryItemId);
                 if (inventoryItem == null)
                 {
                     _logger.LogError($"Inventory item with id '{inventoryItemId}' was not found");
@@ -460,7 +460,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 inventoryItem.CurrencyId = command.CurrencyId;
                 inventoryItem.BuyPrice = SteamEconomyHelper.GetPriceValueAsInt(command.Price);
-                await db.SaveChangesAsync();
+                db.SaveChanges();
             }
         }
     }

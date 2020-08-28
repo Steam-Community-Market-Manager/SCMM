@@ -67,9 +67,9 @@
 
     private EventCallback<EventArgs> CreateOnSortClick(string name)
     {
-        return EventCallback.Factory.Create<System.EventArgs>(this, (_) =>
+        return EventCallback.Factory.Create<System.EventArgs>(this, async (_) =>
         {
-            HandleSortClick(name);
+            await HandleSortClick(name);
         });
     }
 
