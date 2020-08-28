@@ -120,7 +120,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                    .Where(x => x.MarketItemId != null)
+                    .Where(x => x.MarketItem != null)
                     .Select(x => new
                     {
                         Quantity = x.Quantity,
@@ -351,7 +351,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                    .Where(x => x.MarketItemId != null)
+                    .Where(x => x.MarketItem != null)
                     .Select(x => new
                     {
                         Quantity = x.Quantity,
