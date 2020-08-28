@@ -1,16 +1,16 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SCMM.Steam.Client;
-using SCMM.Steam.Shared;
-using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
-using SCMM.Web.Server.Middleware;
+using SCMM.Steam.Shared;
+using SCMM.Steam.Client;
+using SCMM.Web.Server.Data;
+using Microsoft.EntityFrameworkCore;
 using SCMM.Web.Server.Services.Jobs;
+using AutoMapper;
+using SCMM.Web.Server.Middleware;
 
 namespace SCMM.Web.Server
 {

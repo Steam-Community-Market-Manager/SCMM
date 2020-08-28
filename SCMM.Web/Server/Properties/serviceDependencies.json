@@ -8,10 +8,6 @@
       "type": "secrets",
       "connectionId": "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT"
     },
-    "mssql1": {
-      "type": "mssql",
-      "connectionId": "IdentityDbConnection"
-    },
     "mssql2": {
       "type": "mssql",
       "connectionId": "SteamDbConnection"
