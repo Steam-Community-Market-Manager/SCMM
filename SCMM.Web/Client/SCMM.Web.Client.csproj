@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <UseBlazorWebAssembly>true</UseBlazorWebAssembly>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <Version>0.4-alpha</Version>
     <AssemblyVersion>0.4.0.0</AssemblyVersion>
@@ -14,12 +14,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Blazored.LocalStorage" Version="3.0.0" />
-    <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0-preview.8.20414.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0-preview.8.20414.8" PrivateAssets="all" />
-    <PackageReference Include="System.Net.Http.Json" Version="5.0.0-preview.8.20407.11" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0-preview.8.20407.11" />
+    <PackageReference Include="System.Net.Http.Json" Version="5.0.0-preview.8.20407.11" />
+    <PackageReference Include="Blazored.LocalStorage" Version="3.0.0" />
+    <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
     <PackageReference Include="Skclusive.Material.Component" Version="3.0.2-preview1" />
   </ItemGroup>
 
