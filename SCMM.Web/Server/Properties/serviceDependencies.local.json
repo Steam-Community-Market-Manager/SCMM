@@ -6,11 +6,6 @@
       "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
       "secretStore": "LocalSecretsFile"
     },
-    "mssql1": {
-      "type": "mssql.local",
-      "connectionId": "IdentityDbConnection",
-      "secretStore": "LocalSecretsFile"
-    },
     "mssql2": {
       "type": "mssql.local",
       "connectionId": "SteamDbConnection",
