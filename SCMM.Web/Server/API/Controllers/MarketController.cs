@@ -108,6 +108,26 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [HttpGet("item/{idOrName}")]
+        public MarketItemListDTO Get([FromRoute] string idOrName)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var id = Guid.Empty;
+                Guid.TryParse(idOrName, out id);
+
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var query = db.SteamMarketItems
+                    .Include(x => x.App)
+                    .Include(x => x.Currency)
+                    .Include(x => x.Description)
+                    .Include(x => x.Description.WorkshopFile)
+                    .SingleOrDefault(x => x.Id == id || x.Description.Name == idOrName);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+            }
+        }
+
         [HttpGet("dashboard/hotRightNow")]
         public IEnumerable<MarketItemListDTO> GetDashboardHotRightNow()
         {
