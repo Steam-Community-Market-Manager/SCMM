@@ -26,8 +26,8 @@
 
     .Item-Summary-Root img {
         margin: calc(var(--theme-spacing, 6) * 2px);
-        max-width: 72px;
-        max-height: 72px;
+        width: 72px;
+        height: 72px;
     }
 
     .Item-Summary-Badge
@@ -51,7 +51,7 @@
 <div style="padding:8px">
     @foreach (var item in Items)
     { 
-        <div class="Item-Summary-Root" style="@GetItemStyles(item.Item)" @onclick="@((_) => OnItemClicked(item.Item))">
+        <div class="Item-Summary-Root" style="@GetItemStyles(item.Item)" @onclick="@((_) => OnItemClicked(item.Item))" title="@item.Item.Name">
             @if (item.Quantity > 1)
             {
                 <Badge Class="Item-Summary-Badge"
