@@ -49,7 +49,7 @@ else
                                     <Typography Variant="@TypographyVariant.Body2">
                                         @if (item.MarketRankTotal > 0)
                                         {
-                                            <small><strong>@item.MarketRankPosition/@item.MarketRankTotal</strong> other @(item.ItemType)'s are cheaper than this</small>
+                                            <small><strong>@item.MarketRankPosition/@item.MarketRankTotal</strong> other @item.ItemType.Pluralise(item.MarketRankPosition) are cheaper than this</small>
                                         }
                                     </Typography>
                                 </TableCell>
