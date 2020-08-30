@@ -2,139 +2,166 @@
 @inject HttpClient Http
 <DocumentTitle Title="About" />
 
-<Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" Style="margin: 0px 0px 8px;">
-    About
-</Typography>
-<Paper Style="padding:16px">
-    <Typography Variant="@TypographyVariant.Body1">
-        <span>SCMM is a tool I created out of fustration trying to track my inventory performance against the Steam Community Market.</span><br />
-        <span>The Steam Community Market has a wealth of useful data, but a poor user interface. My aim is to show this data in more user friendly way that is centered around marketplace trading.</span>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <span>This tool is still under development and may change (or be removed) without notice.</span><br/>
-        <span>I make no claims that the information provided here is accurate, use at your own risk. I'm not responsible for what you do with this information.</span>
-    </Typography>
-    <br/>
-    <Typography Variant="@TypographyVariant.Body1">
-        <span>Acknowledgements</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <ul>
-            <li><a href="https://steamcommunity.com/">Steam Community</a> and <a href="https://partner.steamgames.com/doc/webapi">Steam WebAPI</a> for providing the source data</li>
-            <li><a href="https://fontawesome.com/">Font Awesome</a> and <a href="https://game-icons.net/">game-icons.net</a> for providing various icons</li>
-            <li><a href="https://discord.gg/CRMf95Z">OMIGHTY YouTube</a> Discord community for their feedback</li>
-        </ul>
-    </Typography>
-</Paper>
-
-<Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" Style="margin: 16px 0px 8px;">
-    Frequently Asked Questions
-</Typography>
-<Paper Style="padding:16px">
-    <Typography Variant="@TypographyVariant.Body1">
-        <i class="fas fa-fw fa-question-circle"></i>
-        <span>Why are some of the menu options disabled?</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <span>These features aren't finished yet. They'll be enabled in a future update when they are ready, so stay tuned.</span>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <i class="fas fa-fw fa-question-circle"></i>
-        <span>When will the next update be released?</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <span>I'm not commited to any release schedule, but I do post progress updates in the <a href="https://discord.gg/CRMf95Z">OMIGHTY YouTube</a> Discord from time-to-time.</span>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <i class="fas fa-fw fa-question-circle"></i>
-        <span>I have a suggestion/idea/bug, where should I post it?</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <span>All feedback is appreicated, drop me a message on Discord.</span>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <i class="fas fa-fw fa-question-circle"></i>
-        <span>I want to help with this project, how do I get involved?</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <span>At this time I'm not actively looking for any help, the project is still very early-days and I am not equiped to deal collaboration yet.</span><br/>
-        <span>If you are convinced you have something to contribute, contact me on Discord.</span>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <i class="fas fa-fw fa-question-circle"></i>
-        <span>How do I get in contact with you?</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <span>Discord: Bipolar Penguin#8838</span>
-    </Typography>
-</Paper>
-
-<Typography Variant="@TypographyVariant.H5" Color="@Color.Primary"  Style="margin:16px 0px 8px;">
-    Change History
-</Typography>
-<Paper Style="padding:16px">
-    <Typography Variant="@TypographyVariant.Body1">
-        <span>v0.5 "UI Optimisations"</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <ul>
-            <li>Coming soon...</li>
-        </ul>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <span>v0.4 "Profile State Optimisations" (26/07/2020)</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <ul>
-            <li>Redesigned the profile state management for improved maintenance and simplicity</li>
-            <li>Added navigation option for community help on Discord</li>
-            <li>Various UI tweaks and bug fixes</li>
-        </ul>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <span>v0.3 "Inventory Tool" (19/07/2020)</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <ul>
-            <li>Redesigned the profile inventory value tool user interface (switched to tab layout)</li>
-            <li>Added item summary info to the profile inventory value tool</li>
-            <li>Added market activity info to the profile inventory value tool</li>
-            <li>Added client/server version info to the navigation sidebar</li>
-            <li>Various UI tweaks and bug fixes</li>
-        </ul>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <span>v0.2 "Currencies" (05/07/2020)</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <ul>
-            <li>Added support for changing currencies</li>
-            <li>Added profile inventory value tool page</li>
-            <li>Added pre-loader animation and improved performance (marginally)</li>
-            <li>Added more relevent info to market listing page search table</li>
-            <li>Added sales revenue graph to item store page</li>
-            <li>Added relevent videos from TGG and OMIGHTY to item store page</li>
-            <li>Improved accuracy of dashboard metrics (supply/demand/stonking/crashing/etc)</li>
-            <li>Improved accurancy of market value calculations</li>
-            <li>Improved database performance and reduced bloat from histortic data</li>
-            <li>Various UI tweaks and bug fixes</li>
-        </ul>
-    </Typography>
-    <br />
-    <Typography Variant="@TypographyVariant.Body1">
-        <span>v0.1 "First" (21/06/2020)</span>
-    </Typography>
-    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px">
-        <ul>
-            <li>Initial preview release</li>
-        </ul>
-    </Typography>
-</Paper>
+<Grid Container Spacing="@Spacing.Two">
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
+            About
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1" GutterBottom>
+            <span>SCMM is a tool I created out of the desire to track my inventory performance against the Steam Community Market.</span><br />
+            <span>The market has a wealth of useful infomation, but a very minimalistic user interface. My aim is to bring this information to the surface and build tools around it to assist with marketplace trading.</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1" GutterBottom>
+            <span>This tool is still under development and may change (or be removed) without notice.</span><br/>
+            <span>I make no claims that the information provided here is accurate, so use it at your own risk. I'm not responsible for what you do with this information.</span>
+        </Typography>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
+            Acknowledgements
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1" Style="padding-left:24px" GutterBottom>
+            <ul>
+                <li><a href="https://steamcommunity.com/">Steam Community</a> and <a href="https://partner.steamgames.com/doc/webapi">Steam WebAPI</a> for providing the source data</li>
+                <li><a href="https://fontawesome.com/">Font Awesome</a> and <a href="https://game-icons.net/">game-icons.net</a> for providing various icons</li>
+                <li><a href="https://discord.gg/CRMf95Z">OMIGHTY Discord Community</a> for their suggestions and feedback</li>
+            </ul>
+        </Typography>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
+            Change History
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <span>v0.6 "Account Management" (Planning)</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <ul>
+                <li>Coming soon...</li>
+            </ul>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <span>v0.5 "UI Optimisations" (Developing)</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <ul>
+                <li>Added navigation buttons for account settings and logging out</li>
+                <li>Added "most recent" market statistic dashboards</li>
+                <li>Added "good time to buy" and "good time to sell" market statistic dashboards</li>
+                <li>Added "top sellers" sales info to the item store page</li>
+                <li>Added a high-level breakdown of store item sales revenue (total, steam/publisher, skin author)</li>
+                <li>Added a item filter to the profile inventory page</li>
+                <li>Added a pie chart showing inventory value breakdown to the profile "market performance" tab</li>
+                <li>Added a list of market item value movements to the profile "market activity" tab</li>
+                <li>Profile inventory page can now check other account inventories without having to log out/in each time</li>
+                <li>Profile inventory must now be synced manually after the first load (improves performance when viewing inventory subsequent times)</li>
+                <li>Profile inventory "return on investment" buy price is read-only unless you are logged in as the owning profile</li>
+                <li>Profile inventory "return on investment" tab now sorts by highest RoI% first</li>
+                <li>Profile inventory value now correctly calculates item stacks</li>
+                <li>Profile inventory price parsing now works for currencies that use "," as a decimal separator (i.e. Euro)</li>
+                <li>Return on investment percentage is now scaled from 0 (rather than 100)</li>
+                <li>Store item "market position" calculation now correctly calculates in all currencies</li>
+                <li>Various accuracy improvements for Steam API background jobs (market data calculation)</li>
+                <li>Various performance improvements for Steam API background jobs (market data is updated more frequently)</li>
+                <li>Various logging and error handling improvements to assist with troubleshooting</li>
+                <li>Various responsive UI improvements for smaller displays</li>
+                <li>Various UI tweaks and bug fixes</li>
+            </ul>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <span>v0.4 "Profile State Optimisations" (26/07/2020)</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <ul>
+                <li>Redesigned the profile state management for improved maintenance and simplicity</li>
+                <li>Added navigation option for community help on Discord</li>
+                <li>Various UI tweaks and bug fixes</li>
+            </ul>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <span>v0.3 "Inventory Tool" (19/07/2020)</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <ul>
+                <li>Redesigned the profile inventory value tool user interface (switched to tab layout)</li>
+                <li>Added item summary info to the profile inventory value tool</li>
+                <li>Added market activity info to the profile inventory value tool</li>
+                <li>Added client/server version info to the navigation sidebar</li>
+                <li>Various UI tweaks and bug fixes</li>
+            </ul>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <span>v0.2 "Currencies" (05/07/2020)</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <ul>
+                <li>Added support for changing currencies</li>
+                <li>Added profile inventory value tool page</li>
+                <li>Added pre-loader animation and improved performance (marginally)</li>
+                <li>Added more relevent info to market listing page search table</li>
+                <li>Added sales revenue graph to item store page</li>
+                <li>Added relevent videos from TGG and OMIGHTY to item store page</li>
+                <li>Improved accuracy of dashboard metrics (supply/demand/stonking/crashing/etc)</li>
+                <li>Improved accurancy of market value calculations</li>
+                <li>Improved database performance and reduced bloat from histortic data</li>
+                <li>Various UI tweaks and bug fixes</li>
+            </ul>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <span>v0.1 "First" (21/06/2020)</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <ul>
+                <li>Initial preview release</li>
+            </ul>
+        </Typography>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
+            Frequently Asked Questions
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <i class="fas fa-fw fa-question-circle"></i>
+            <span>Why is everything so slow and laggy?</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <span>This tool is built using <a href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor">Blazor</a>, a fairly new web technology that is not as well optimised as your traditional JavaScript based website. <a href="https://github.com/dotnet/aspnetcore/issues/22432">Performance will improve</a> over time as the technology matures.</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <i class="fas fa-fw fa-question-circle"></i>
+            <span>Why are some of the menu options disabled?</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <span>These features aren't finished yet. They'll be enabled in a future update when they're ready, so stay tuned.</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <i class="fas fa-fw fa-question-circle"></i>
+            <span>When will the next update be released?</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <span>I'm not commited to a release schedule as I work on this in my free time (which varies alot). If you want to follow developments, I post informal progress updates from time-to-time in the <a href="https://discord.gg/CRMf95Z">OMIGHTY YouTube</a> Discord.</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <i class="fas fa-fw fa-question-circle"></i>
+            <span>I have a suggestion/idea/bug, where should I post it?</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <span>All feedback is appreicated, drop me a message on Discord.</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <i class="fas fa-fw fa-question-circle"></i>
+            <span>I want to help with this project, how do I get involved?</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <span>At this time I'm not actively looking for any help, the project is still very early-days and the development environment isn't setup for collaboration yet.</span><br/>
+            <span>If you are convinced you have something to contribute, contact me on Discord.</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body1">
+            <i class="fas fa-fw fa-question-circle"></i>
+            <span>How do I get in contact with you?</span>
+        </Typography>
+        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+            <span>Discord: Bipolar Penguin#8838</span>
+        </Typography>
+    </Grid>
+</Grid>
