@@ -1,6 +1,7 @@
 ﻿@page "/steam/marketstatistics"
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
+@inject ILogger<MarketStatisticsPage> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
@@ -686,9 +687,9 @@
             HotRightNow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/hotRightNow");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'hot right now' market dashboard");
         }
     }
 
@@ -699,9 +700,9 @@
             AllTimeLow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/allTimeLow");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'all time low' market dashboard");
         }
     }
 
@@ -712,9 +713,9 @@
             AllTimeHigh = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/allTimeHigh");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'all time high' market dashboard");
         }
     }
 
@@ -725,9 +726,9 @@
             GoodTimeToBuy = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/goodTimeToBuy");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'good time to buy' market dashboard");
         }
     }
 
@@ -738,9 +739,9 @@
             GoodTimeToSell = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/goodTimeToSell");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'good time to sell' market dashboard");
         }
     }
 
@@ -751,9 +752,9 @@
             MostProfitable = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostProfitable");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'most profitable' market dashboard");
         }
     }
 
@@ -764,9 +765,9 @@
             MostWanted = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostWanted");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'most wanted' market dashboard");
         }
     }
 
@@ -777,9 +778,9 @@
             MostSaturated = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostSaturated");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'most saturated' market dashboard");
         }
     }
 
@@ -790,9 +791,9 @@
             MostRecent = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostRecent");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'most recent' market dashboard");
         }
     }
 
@@ -803,9 +804,9 @@
             MostCommon = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostCommon");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'most common' market dashboard");
         }
     }
 
@@ -816,9 +817,9 @@
             MostRare = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostRare");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'most rare' market dashboard");
         }
     }
 
@@ -829,9 +830,9 @@
             BiggestCrashes = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/biggestCrashes");
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing 'biggest crashes' market dashboard");
         }
     }
 

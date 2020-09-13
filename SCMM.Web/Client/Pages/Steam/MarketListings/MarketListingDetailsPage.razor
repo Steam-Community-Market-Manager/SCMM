@@ -1,6 +1,7 @@
 @page "/steam/marketplace/{ItemId}"
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
+@inject ILogger<MarketListingDetailsPage> Logger
 @inject HttpClient Http
 
 @if (Item == null)
@@ -79,9 +80,9 @@ else
         {
             Item = await Http.GetFromJsonAsync<MarketItemDetailDTO>($"api/market/{ItemId}");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error loading market item details for '{Item.Id}')");
         }
     }
 

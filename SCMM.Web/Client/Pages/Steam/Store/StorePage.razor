@@ -1,6 +1,7 @@
 @page "/steam/store"
 @using SCMM.Web.Shared.Domain.DTOs.StoreItems
 @using SCMM.Web.Shared
+@inject ILogger<StorePage> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
@@ -187,9 +188,9 @@ else
             OnSelectedItemChartChanged(SelectedItemChartPanel);
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing store items");
         }
     }
 

@@ -2,6 +2,7 @@
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @inherits ComponentBase
+@inject ILogger<InventoryItemsInvestmentTableRow> Logger
 @inject HttpClient Http
 @inject AppState State
 
@@ -143,11 +144,18 @@
         {
             Item.Currency = State.Currency;
             Item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
-            await Http.PutAsJsonAsync($"api/inventory/item/{Item.Id}", new UpdateInventoryItemPriceCommand()
+            try 
             {
-                CurrencyId = State.Currency.Id,
-                Price = value
-            });
+                await Http.PutAsJsonAsync($"api/inventory/item/{Item.Id}", new UpdateInventoryItemPriceCommand()
+                {
+                    CurrencyId = State.Currency.Id,
+                    Price = value
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error updating item buy price for '{Item.Id}' (value: '{value}')");
+            }
         }
     }
 

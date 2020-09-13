@@ -175,7 +175,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error refreshing inventory for '{SteamId}'");
+            Logger.LogError(ex, $"Error refreshing inventory for '{SteamId}'");
             ProfileLoadError = ex;
         }
     }
@@ -229,7 +229,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching inventory profile");
+            Logger.LogError(ex, $"Error fetching inventory profile for '{SteamId}'");
             Profile = null;
             ProfileLoadError = ex;
         }
@@ -249,7 +249,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching inventory totals");
+            Logger.LogError(ex, $"Error fetching inventory totals for '{SteamId}'");
             InventoryTotal = null;
         }
     }
@@ -268,7 +268,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching inventory summary");
+            Logger.LogError(ex, $"Error fetching inventory summary for '{SteamId}'");
             InventoryItemsSummary = null;
         }
     }
@@ -287,7 +287,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching inventory investment");
+            Logger.LogError(ex, $"Error fetching inventory investment for '{SteamId}'");
             InventoryItemsInvestment = null;
         }
     }
@@ -306,7 +306,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching inventory activity");
+            Logger.LogError(ex, $"Error fetching inventory activity for '{SteamId}'");
             InventoryItemsActivity = null;
         }
     }
@@ -325,7 +325,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error fetching inventory performance");
+            Logger.LogError(ex, $"Error fetching inventory performance for '{SteamId}'");
             InventoryPerformance = null;
         }
     }
