@@ -112,7 +112,7 @@ namespace SCMM.Web.Shared
                 case var _ when (sales >= 250): suffix = "🔥"; break;
                 default: break;
             }
-            return ($"{sales} {suffix}").Trim();
+            return ($"{((int)sales).ToQuantityString()} {suffix}").Trim();
         }
 
         public static string ToQuantityString(this int quantity)
