@@ -91,7 +91,7 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.MarketItem != null && Item.BuyPrice > 0)
+        @if (Item.MarketItem != null && Item.BuyPrice > 0 && (Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) > 0)
         {
             @(((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
         }
