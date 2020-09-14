@@ -11,6 +11,7 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Middleware;
 using Microsoft.OpenApi.Models;
+using SCMM.Web.Server.Services.Jobs;
 
 namespace SCMM.Web.Server
 {
