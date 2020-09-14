@@ -39,6 +39,8 @@ namespace SCMM.Web.Server
                     options.RequestCollectionOptions.TrackExceptions = true;
                 }
             );
+            
+            services.AddDatabaseDeveloperPageExceptionFilter();
 
             var steamConfiguration = Configuration.GetSteamConfiguration();
             services.AddSingleton<SteamConfiguration>((s) => steamConfiguration);
@@ -80,6 +82,8 @@ namespace SCMM.Web.Server
             {
                 app.UseDevelopmentExceptionHandler();
                 app.UseWebAssemblyDebugging();
+                // Enable automatic DB migrations
+                app.UseMigrationsEndPoint();
             }
             else
             {

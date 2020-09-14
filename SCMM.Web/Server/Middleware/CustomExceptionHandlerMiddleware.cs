@@ -14,7 +14,6 @@ namespace SCMM.Web.Server.Middleware
         public static void UseDevelopmentExceptionHandler(this IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
-            app.UseDatabaseErrorPage();
             app.UseExceptionHandler(x => x.Use(WriteDevelopmentExceptionResponse));
         }
 
