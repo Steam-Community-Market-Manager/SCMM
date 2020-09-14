@@ -75,10 +75,14 @@ namespace SCMM.Web.Server
             
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { 
-                    Title = "SCMM", 
-                    Version = "v1"
-                });
+                c.IncludeXmlComments("SCMM.Web.Server.xml");
+                c.SwaggerDoc("v1", 
+                    new OpenApiInfo { 
+                        Title = "SCMM",
+                        Description = "Steam Community Market Manager API",
+                        Version = "v1"
+                    }
+                );
             });
         }
 
@@ -92,6 +96,11 @@ namespace SCMM.Web.Server
                 app.UseMigrationsEndPoint();
                 // Enable WASM debugging
                 app.UseWebAssemblyDebugging();
+                // Enable Swagger API auto-docs
+                app.UseSwagger();
+                app.UseSwaggerUI(
+                    c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1")
+                );
             }
             else
             {
@@ -99,9 +108,6 @@ namespace SCMM.Web.Server
                 // Force HTTPS using HSTS
                 app.UseHsts();
             }
-
-            app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1"));
 
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();

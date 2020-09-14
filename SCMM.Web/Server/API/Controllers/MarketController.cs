@@ -108,6 +108,11 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Special API for Lovo's bots
+        /// </summary>
+        /// <param name="idOrName">The item's SCMM GUID or Steam Name</param>
+        /// <returns>The market item listing</returns>
         [HttpGet("item/{idOrName}")]
         public MarketItemListDTO Get([FromRoute] string idOrName)
         {
