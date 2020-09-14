@@ -10,7 +10,7 @@ using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Middleware;
-using SCMM.Web.Server.Services.Jobs;
+using Microsoft.OpenApi.Models;
 
 namespace SCMM.Web.Server
 {
@@ -71,6 +71,14 @@ namespace SCMM.Web.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
+            
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { 
+                    Title = "SCMM", 
+                    Version = "v1"
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,14 +87,20 @@ namespace SCMM.Web.Server
             if (env.IsDevelopment())
             {
                 app.UseDevelopmentExceptionHandler();
+                // Enable automatic DB migrations
+                app.UseMigrationsEndPoint();
+                // Enable WASM debugging
                 app.UseWebAssemblyDebugging();
             }
             else
             {
                 app.UseProductionExceptionHandler();
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                // Force HTTPS using HSTS
                 app.UseHsts();
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1"));
 
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
