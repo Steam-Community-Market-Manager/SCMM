@@ -2,6 +2,7 @@
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @inherits ComponentBase
+@inject ILogger<InventoryItemsInvestmentTableRow> Logger
 @inject HttpClient Http
 @inject AppState State
 
@@ -90,7 +91,7 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.MarketItem != null && Item.BuyPrice > 0)
+        @if (Item.MarketItem != null && Item.BuyPrice > 0 && (Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) > 0)
         {
             @(((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
         }
@@ -143,11 +144,18 @@
         {
             Item.Currency = State.Currency;
             Item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
-            await Http.PutAsJsonAsync($"api/inventory/item/{Item.Id}", new UpdateInventoryItemPriceCommand()
+            try 
             {
-                CurrencyId = State.Currency.Id,
-                Price = value
-            });
+                await Http.PutAsJsonAsync($"api/inventory/item/{Item.Id}", new UpdateInventoryItemPriceCommand()
+                {
+                    CurrencyId = State.Currency.Id,
+                    Price = value
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error updating item buy price for '{Item.Id}' (value: '{value}')");
+            }
         }
     }
 

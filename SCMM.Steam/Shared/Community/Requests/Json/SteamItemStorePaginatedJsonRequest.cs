@@ -11,7 +11,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Json
 
         public string AppId { get; set; }
 
-        public string Filter { get; set; }
+        public string Filter { get; set; } = FilterAll;
 
         public string SearchText { get; set; }
 

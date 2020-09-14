@@ -1,5 +1,6 @@
 ﻿@using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
+@inject ILogger<AppNavigation> Logger
 @inject HttpClient Http
 @inject AppState State
 
@@ -52,7 +53,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to refresh inventory totals. {ex.Message}");
+            Logger.LogError(ex, $"Error refreshing inventory totals for '{State.ProfileId}'");
         }
     }
 
@@ -66,7 +67,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to refresh remaining store time. {ex.Message}");
+            Logger.LogError(ex, $"Error refreshing remaining store time");
         }
     }
 

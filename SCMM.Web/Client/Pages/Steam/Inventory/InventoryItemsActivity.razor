@@ -29,15 +29,15 @@
                     <TableCell Class="@GetItemClass(item)">
                         @if (item.Movement > 0)
                         {
-                            <span>🡱 value increased by @State.Currency.ToPriceString(Math.Abs(item.Movement))</span>
+                            <span>🡱 @State.Currency.ToPriceString(Math.Abs(item.Movement))</span>
                         }
                         else
                         {
-                            <span>🡳 value dropped by @State.Currency.ToPriceString(Math.Abs(item.Movement))</span>
+                            <span>🡳 @State.Currency.ToPriceString(Math.Abs(item.Movement))</span>
                         }
                     </TableCell>
                     <TableCell Class="@GetItemClass(item)">
-                        <span>about @((DateTimeOffset.Now - item.Timestamp).ToDurationString()) ago</span>
+                        <span>@((DateTimeOffset.Now - item.Timestamp).ToDurationString()) ago</span>
                     </TableCell>
                 </TableRow>
                 }

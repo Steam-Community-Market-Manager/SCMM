@@ -1,3 +1,4 @@
+@inject ILogger<App> Logger
 @inject ILocalStorageService LocalStorage
 @inject AppState AppState
 @inject HttpClient Http
@@ -43,7 +44,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to initialise app. {ex.Message}");
+            Logger.LogError(ex, "Failed to initialise app state");
         }
     }
 

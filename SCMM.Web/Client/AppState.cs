@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using Microsoft.Extensions.Logging;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
@@ -14,6 +15,13 @@ namespace SCMM.Web.Client
         public const string HttpHeaderLanguage = "language";
         public const string HttpHeaderCurrency = "currency";
         public const string HttpHeaderProfile = "profile";
+
+        private readonly ILogger<AppState> Logger;
+
+        public AppState(ILogger<AppState> logger)
+        {
+            this.Logger = logger;
+        }
 
         public event EventHandler Changed;
 
@@ -67,7 +75,7 @@ namespace SCMM.Web.Client
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to load state. {ex.Message}");
+                Logger.LogError(ex, "Failed to load state from storage");
             }
         }
 
@@ -102,7 +110,7 @@ namespace SCMM.Web.Client
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to save state. {ex.Message}");
+                Logger.LogError(ex, "Failed to save state");
             }
         }
 
@@ -125,7 +133,7 @@ namespace SCMM.Web.Client
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to refresh state. {ex.Message}");
+                Logger.LogError(ex, "Failed to refresh state");
             }
         }
 
@@ -138,7 +146,7 @@ namespace SCMM.Web.Client
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to set state. {ex.Message}");
+                Logger.LogError(ex, "Failed to set state");
             }
 
             await RefreshAsync(http);
@@ -155,7 +163,7 @@ namespace SCMM.Web.Client
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to set state. {ex.Message}");
+                Logger.LogError(ex, "Failed to set state");
             }
 
             if (profile != null)
@@ -172,7 +180,7 @@ namespace SCMM.Web.Client
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to upate profile info. {ex.Message}");
+                    Logger.LogError(ex, $"Failed to update profile info for '{profile?.SteamId}'");
                 }
             }
 
@@ -190,7 +198,7 @@ namespace SCMM.Web.Client
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to set state. {ex.Message}");
+                Logger.LogError(ex, "Failed to set state");
             }
 
             await RefreshAsync(http);

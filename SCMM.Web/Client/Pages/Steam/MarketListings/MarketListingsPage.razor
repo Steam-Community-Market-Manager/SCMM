@@ -1,6 +1,7 @@
 ﻿@page "/steam/marketplace"
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
+@inject ILogger<MarketListingsPage> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
@@ -60,9 +61,9 @@ else
             );
             StateHasChanged();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            Logger.LogError(ex, $"Error listing market items");
         }
     }
 

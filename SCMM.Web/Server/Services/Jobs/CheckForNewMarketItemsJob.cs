@@ -62,7 +62,8 @@ namespace SCMM.Web.Server.Services.Jobs
                         Start = 1,
                         Count = 1,
                         Language = language.SteamId,
-                        CurrencyId = currency.SteamId
+                        CurrencyId = currency.SteamId,
+                        SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName
                     };
 
                     _logger.LogInformation($"Checking for new market items (appId: {app.SteamId})");
@@ -84,7 +85,8 @@ namespace SCMM.Web.Server.Services.Jobs
                                 Start = i,
                                 Count = Math.Min(total - i, pageSize),
                                 Language = language.SteamId,
-                                CurrencyId = currency.SteamId
+                                CurrencyId = currency.SteamId,
+                                SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName
                             }
                         );
                     }

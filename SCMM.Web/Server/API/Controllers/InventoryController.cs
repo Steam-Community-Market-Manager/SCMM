@@ -267,8 +267,7 @@ namespace SCMM.Web.Server.API.Controllers
                             : 0
                         )
                     })
-                    .OrderByDescending(x => x.HasBuyPrice)
-                    .ThenByDescending(x => x.ReturnOnInvestment)
+                    .OrderByDescending(x => x.ReturnOnInvestment)
                     .ToList();
 
                 var profileInventoryItemsDetails = new List<InventoryItemListDTO>();

@@ -3,6 +3,7 @@
 @using SCMM.Web.Shared.Domain.DTOs.Currencies;
 @using SCMM.Web.Shared.Domain.DTOs.Profiles;
 @using System.Timers
+@inject ILogger<Login> Logger
 @inject ILocalStorageService LocalStorage
 @inject HttpClient Http
 @inject AppState State
@@ -187,20 +188,28 @@
 
     protected override async Task OnInitializedAsync()
     {
+        SteamLookupTimer = new Timer(1000);
+        SteamLookupTimer.AutoReset = false;
+        SteamLookupTimer.Elapsed += async (source, e) => await HandleSteamIdLookup(SteamIdText);
+
         try
         {
-            SteamLookupTimer = new Timer(1000);
-            SteamLookupTimer.AutoReset = false;
-            SteamLookupTimer.Elapsed += async (source, e) => await HandleSteamIdLookup(SteamIdText);
             Languages = await Http.GetFromJsonAsync<LanguageListDTO[]>($"api/language");
-            Currencies = await Http.GetFromJsonAsync<CurrencyListDTO[]>($"api/currency");
-
-            await TryGuessLocality();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to initialise component: {ex.Message}");
+            Logger.LogError(ex, $"Error listing languages");
         }
+        try
+        {
+            Currencies = await Http.GetFromJsonAsync<CurrencyListDTO[]>($"api/currency");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing currencies");
+        }
+
+        await TryGuessLocality();
     }
 
     private void OnSteamIdTextChanged(ChangeEventArgs args)
@@ -214,7 +223,7 @@
     {
         try
         {
-            Console.WriteLine($"Looking up steam id: {steamId}...");
+            Logger.LogInformation($"Looking up steam id: {steamId}...");
             SteamIdIsResolving = true;
             StateHasChanged();
             SteamProfile = await Http.GetFromJsonAsync<ProfileDTO>(
@@ -223,7 +232,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to resolve steam id: {ex.Message}");
+            Logger.LogError(ex, $"Error resolving steam id '{steamId}'");
             SteamProfile = null;
         }
         finally
@@ -301,14 +310,14 @@
             Country = country;
             Language = Languages.FirstOrDefault();
             Currency = Currencies.FirstOrDefault(x => x.Name == currencyName);
-            Console.WriteLine($"Auto-detected country: '{Country}'");
-            Console.WriteLine($"Auto-detected language: '{Language?.Name}'");
-            Console.WriteLine($"Auto-detected currency: '{Currency?.Name}'");
+            Logger.LogInformation($"Auto-detected country: '{Country}'");
+            Logger.LogInformation($"Auto-detected language: '{Language?.Name}'");
+            Logger.LogInformation($"Auto-detected currency: '{Currency?.Name}'");
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to auto-detect locality. Error: {ex.Message}");
+            Logger.LogError(ex, $"Failed to auto-detect locality");
         }
     }
 

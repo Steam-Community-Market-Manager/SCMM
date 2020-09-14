@@ -1,4 +1,5 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
+@inject ILogger<AppVersion> Logger
 @inject HttpClient Http
 
 @if (ClientVersion != null)
@@ -20,7 +21,14 @@
     {
         var client = System.Reflection.Assembly.GetExecutingAssembly().GetName();
         ClientVersion = $"{client.Version.Major}.{client.Version.Minor}";
-        ServerVersion = await Http.GetStringAsync("api/version");
+        try 
+        {
+            ServerVersion = await Http.GetStringAsync("api/version");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error detecting server app version");
+        }
     }
 
 }
