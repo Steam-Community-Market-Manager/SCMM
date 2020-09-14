@@ -7,11 +7,14 @@ using SCMM.Web.Server.Domain;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Client;
 using SCMM.Web.Server.Data;
-using Microsoft.EntityFrameworkCore;
+using SCMM.Web.Server.Domain;
+using SCMM.Web.Server.Middleware;
+using Microsoft.OpenApi.Models;
 using SCMM.Web.Server.Services.Jobs;
 using AutoMapper;
 using SCMM.Web.Server.Middleware;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace SCMM.Web.Server
 {
@@ -77,10 +80,14 @@ namespace SCMM.Web.Server
             
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { 
-                    Title = "SCMM", 
-                    Version = "v1"
-                });
+                c.IncludeXmlComments("SCMM.Web.Server.xml");
+                c.SwaggerDoc("v1", 
+                    new OpenApiInfo { 
+                        Title = "SCMM",
+                        Description = "Steam Community Market Manager API",
+                        Version = "v1"
+                    }
+                );
             });
         }
 
@@ -94,6 +101,11 @@ namespace SCMM.Web.Server
                 app.UseMigrationsEndPoint();
                 // Enable WASM debugging
                 app.UseWebAssemblyDebugging();
+                // Enable Swagger API auto-docs
+                app.UseSwagger();
+                app.UseSwaggerUI(
+                    c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1")
+                );
             }
             else
             {
