@@ -11,19 +11,29 @@ body {
     margin: 0;
     min-height: 100vh;
     background: #121212;
+    text-align: center;
     color: #fff;
     overflow: hidden;
 }
 
-.preloader, .preload-root {
+.preloader, .wasm-unsupported-root, .wasm-loading-root {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
 }
 
-.preload-root {
+.wasm-unsupported-root, .wasm-loading-root {
+    display: none;
     position: relative;
+}
+
+.preloader-text {
+    color: #fff;
+}
+
+.preloader-subtext {
+    color: #c7c7c7;
 }
 
 .loading-text {
@@ -84,10 +94,6 @@ body {
     width: 9px;
     height: 15px;
     background: #121212;
-}
-
-.loading-subtext {
-    color: #c7c7c7;
 }
 
 @keyframes dotMove {

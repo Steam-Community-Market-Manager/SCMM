@@ -8,7 +8,7 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
         <link href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" rel="stylesheet" />
-        <link href="/css/preloader.css" rel="stylesheet" />
+        <link href="/css/site.css" rel="stylesheet" />
         <link href="icon-512.png" rel="icon" type="image/png" />
         <link href="icon-512.png" rel="apple-touch-icon" type="image/png" sizes="512x512" />
         <script type="text/javascript">
@@ -28,8 +28,15 @@
     <body>
         <app>
             <div class="preloader">
-                <div class="preload-root">
-                    <p class="loading-text">
+                <div id="wasm-unsupported" class="wasm-unsupported-root">
+                    <img src="images/webassembly.png" />
+                    <p>
+                        <span class="preloader-text">Your browser does not support WebAssembly (WASM)</span><br />
+                        <span class="preloader-subtext">https://caniuse.com/wasm</span>
+                    </p>
+                </div>
+                <div id="wasm-loading" class="wasm-loading-root">
+                    <p class="preloader-text loading-text">
                         <span class="letter">L</span>
                         <span class="letter">o</span>
                         <span class="letter">a</span>
@@ -38,12 +45,33 @@
                         <span class="letter">n</span>
                         <span class="letter">g</span>
                     </p>
-                    <p class="loading-subtext">
-                        <span>please be patient, I'm loading Blazor...</span>
+                    <p class="preloader-subtext">
+                        <span>Initialising Blazor, please wait...</span>
                     </p>
                 </div>
             </div>
         </app>
+        <script type="text/javascript">
+            function wasmIsSupported() {
+                try {
+                    if (typeof WebAssembly === "object" &&
+                        typeof WebAssembly.instantiate === "function") {
+                        const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+                        if (module instanceof WebAssembly.Module) {
+                            return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
+                        }
+                    }
+                } catch (e) {
+                }
+                return false;
+            }
+            if (wasmIsSupported()) {
+                document.getElementById("wasm-loading").style.display = "flex";
+            }
+            else {
+                document.getElementById("wasm-unsupported").style.display = "flex";
+            }
+        </script>
         <script src="_framework/blazor.webassembly.js"></script>
     </body>
 </html>
