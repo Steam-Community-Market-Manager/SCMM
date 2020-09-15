@@ -59,7 +59,8 @@ namespace SCMM.Web.Server.API.Controllers
                 if (sync)
                 {
                     // Load the profile and force an inventory sync
-                    profile = await service.LoadAndRefreshProfileInventory(steamId);
+                    profile = await service.AddOrUpdateSteamProfile(steamId, fetchLatest: true);
+                    profile = await service.FetchProfileInventory(steamId);
                 }
                 else
                 {
@@ -76,7 +77,7 @@ namespace SCMM.Web.Server.API.Controllers
                     // If the profile inventory hasn't been loaded before, fetch it now
                     if (inventory == null || inventory.Profile == null || inventory.TotalItems == 0)
                     {
-                        profile = await service.LoadAndRefreshProfileInventory(steamId);
+                        profile = await service.FetchProfileInventory(steamId);
                     }
                     else
                     {
