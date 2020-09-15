@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Extensions;
@@ -194,6 +195,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
             }
         }
+
         [HttpGet("dashboard/allTimeLow")]
         public IEnumerable<MarketItemListDTO> GetDashboardAllTimeLow()
         {
@@ -234,6 +236,29 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [HttpGet("dashboard/profitableFlips")]
+        public IEnumerable<MarketItemListDTO> GetDashboardProfitableFlips()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var now = DateTimeOffset.UtcNow;
+                var query = db.SteamMarketItems
+                    .Include(x => x.App)
+                    .Include(x => x.Currency)
+                    .Include(x => x.Description)
+                    .Where(x => x.Last24hrValue > x.Last168hrValue)
+                    .Where(x => x.BuyAskingPrice < x.Last24hrValue)
+                    .Where(x => x.BuyAskingPrice > x.AllTimeLowestValue)
+                    .Where(x => x.BuyNowPrice > x.Last24hrValue)
+                    .Where(x => x.BuyNowPrice < x.AllTimeHighestValue)
+                    .Where(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * SteamEconomyHelper.SteamFeeMultiplier)) > 0)
+                    .OrderByDescending(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * SteamEconomyHelper.SteamFeeMultiplier)))
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+            }
+        }
         [HttpGet("dashboard/mostRecent")]
         public IEnumerable<MarketItemListDTO> GetDashboardMostRecent()
         {
