@@ -439,7 +439,7 @@ namespace SCMM.Web.Server.Domain
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
                 IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
-                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge).Uri.ToString(),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl).Uri.ToString(),
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
@@ -480,7 +480,7 @@ namespace SCMM.Web.Server.Domain
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
                 IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
-                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge).Uri.ToString(),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl).Uri.ToString(),
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
