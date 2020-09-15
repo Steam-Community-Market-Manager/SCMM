@@ -303,9 +303,11 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var last504hrSales = last504hrs.Sum(x => x.Quantity);
             var last504hrValue = (long)Math.Round(last504hrs.Length > 0 ? last504hrs.Average(x => x.Price) : 0, 0);
 
-            var allTimeAverage = (long)Math.Round(salesSorted.Length > 0 ? salesSorted.Average(x => x.Price) : 0, 0);
-            var allTimeLow = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Min(x => x.Price));
-            var allTimeHigh = salesSorted.FirstOrDefault(x => x.Price == salesSorted.Max(x => x.Price));
+            // The first three days sees alot of extreme price spikes, filter these out of the overall averages
+            var salesAfterFirstThreeDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(3)).ToArray();
+            var allTimeAverage = (long)Math.Round(salesAfterFirstThreeDays.Length > 0 ? salesAfterFirstThreeDays.Average(x => x.Price) : 0, 0);
+            var allTimeLow = salesAfterFirstThreeDays.FirstOrDefault(x => x.Price == salesAfterFirstThreeDays.Min(x => x.Price));
+            var allTimeHigh = salesAfterFirstThreeDays.FirstOrDefault(x => x.Price == salesAfterFirstThreeDays.Max(x => x.Price));
 
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
