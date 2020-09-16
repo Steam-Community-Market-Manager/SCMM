@@ -8,17 +8,8 @@
     <Found Context="routeData">
         @if (State != null)
         {
-            @if (State.IsValid)
-            {
-                <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
-                </RouteView>
-            }
-            else
-            {
-                <LayoutView Layout="@typeof(LoginLayout)">
-                    <Login />
-                </LayoutView>
-            }
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
+            </RouteView>
         }
     </Found>
     <NotFound>
