@@ -12,6 +12,9 @@ using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Middleware;
 using Microsoft.OpenApi.Models;
 using SCMM.Web.Server.Services.Jobs;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using AspNet.Security.OpenId.Steam;
+using System;
 
 namespace SCMM.Web.Server
 {
@@ -45,9 +48,32 @@ namespace SCMM.Web.Server
             services.AddSingleton<SteamConfiguration>((s) => steamConfiguration);
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
 
+            var authConfiguration = services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = SteamAuthenticationDefaults.AuthenticationScheme;
+            });
+            authConfiguration.AddCookie(options =>
+            {
+                options.LoginPath = "/signin";
+                options.LogoutPath = "/signout";
+                options.AccessDeniedPath = "/";
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                options.Cookie.Name = "scmmLoginSecure";
+                options.Cookie.IsEssential = true;
+                options.Cookie.HttpOnly = false;
+            });
+            authConfiguration.AddSteam(options =>
+            {
+                options.ApplicationKey = steamConfiguration.ApplicationKey;
+            });
+
             services.AddDbContext<SteamDbContext>(options =>
                 options.UseSqlServer(
-                    Configuration.GetConnectionString("SteamDbConnection")));
+                    Configuration.GetConnectionString("SteamDbConnection")
+                )
+            );
 
             services.AddTransient<SteamCommunityClient>();
             services.AddTransient<SteamService>();
@@ -114,6 +140,9 @@ namespace SCMM.Web.Server
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
