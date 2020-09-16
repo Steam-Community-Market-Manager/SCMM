@@ -11,7 +11,11 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
     {
         public static string LanguageId(this HttpRequest request)
         {
-            return request.Headers.FirstOrDefault(x => x.Key == AppState.HttpHeaderLanguage).Value;
+            if (request.Headers.ContainsKey(AppState.HttpHeaderLanguage))
+            {
+                return request.Headers.FirstOrDefault(x => x.Key == AppState.HttpHeaderLanguage).Value.ToString();
+            }
+            return AppState.DefaultLanguage;
         }
 
         public static LanguageDetailedDTO Language(this HttpRequest request)
@@ -21,7 +25,11 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
 
         public static string CurrencyId(this HttpRequest request)
         {
-            return request.Headers.FirstOrDefault(x => x.Key == AppState.HttpHeaderCurrency).Value;
+            if (request.Headers.ContainsKey(AppState.HttpHeaderCurrency))
+            {
+                return request.Headers.FirstOrDefault(x => x.Key == AppState.HttpHeaderCurrency).Value.ToString();
+            }
+            return AppState.DefaultCurrency;
         }
 
         public static CurrencyDetailedDTO Currency(this HttpRequest request)
@@ -31,7 +39,11 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
 
         public static string ProfileId(this HttpRequest request)
         {
-            return request.Headers.FirstOrDefault(x => x.Key == AppState.HttpHeaderProfile).Value;
+            if (request.Headers.ContainsKey(AppState.HttpHeaderProfile))
+            {
+                return request.Headers.FirstOrDefault(x => x.Key == AppState.HttpHeaderProfile).Value.ToString();
+            }
+            return null;
         }
     }
 }
