@@ -304,10 +304,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var last504hrValue = (long)Math.Round(last504hrs.Length > 0 ? last504hrs.Average(x => x.Price) : 0, 0);
 
             // The first three days sees alot of extreme price spikes, filter these out of the overall averages
-            var salesAfterFirstThreeDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(3)).ToArray();
-            var allTimeAverage = (long)Math.Round(salesAfterFirstThreeDays.Length > 0 ? salesAfterFirstThreeDays.Average(x => x.Price) : 0, 0);
-            var allTimeLow = salesAfterFirstThreeDays.FirstOrDefault(x => x.Price == salesAfterFirstThreeDays.Min(x => x.Price));
-            var allTimeHigh = salesAfterFirstThreeDays.FirstOrDefault(x => x.Price == salesAfterFirstThreeDays.Max(x => x.Price));
+            var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
+            var allTimeAverage = (long)Math.Round(salesAfterFirstSevenDays.Length > 0 ? salesAfterFirstSevenDays.Average(x => x.Price) : 0, 0);
+            var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.Price == salesAfterFirstSevenDays.Min(x => x.Price));
+            var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.Price == salesAfterFirstSevenDays.Max(x => x.Price));
 
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
