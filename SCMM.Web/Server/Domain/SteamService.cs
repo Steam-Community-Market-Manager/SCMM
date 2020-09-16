@@ -312,11 +312,14 @@ namespace SCMM.Web.Server.Domain
                 {
                     if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagAcceptedYear))
                     {
-                        var culture = CultureInfo.InvariantCulture;
-                        var acceptedOn = workshopFile.AcceptedOn.UtcDateTime;
-                        int acceptedOnWeek = culture.Calendar.GetWeekOfYear(acceptedOn, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
-                        assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedYear] = acceptedOn.ToString("yyyy");
-                        assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedWeek] = $"Week {acceptedOnWeek}";
+                        if (workshopFile.AcceptedOn.HasValue)
+                        {
+                            var culture = CultureInfo.InvariantCulture;
+                            var acceptedOn = workshopFile.AcceptedOn.Value.UtcDateTime;
+                            int acceptedOnWeek = culture.Calendar.GetWeekOfYear(acceptedOn, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
+                            assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedYear] = acceptedOn.ToString("yyyy");
+                            assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedWeek] = $"Week {acceptedOnWeek}";
+                        }
                     }
                 }
 

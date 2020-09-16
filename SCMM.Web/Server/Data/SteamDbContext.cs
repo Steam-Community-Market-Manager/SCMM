@@ -41,6 +41,8 @@ namespace SCMM.Web.Server.Data
             builder.Entity<SteamProfile>()
                 .HasOne(x => x.Currency);
             builder.Entity<SteamProfile>()
+                .OwnsOne(x => x.Roles);
+            builder.Entity<SteamProfile>()
                 .HasMany(x => x.InventoryItems)
                 .WithOne(x => x.Owner);
             builder.Entity<SteamProfile>()

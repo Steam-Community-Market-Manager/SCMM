@@ -15,7 +15,7 @@
         public const string SteamAssetTagAcceptedYear = "accepted.year";
         public const string SteamAssetTagAcceptedWeek = "accepted.week";
 
-        public const string SteamProfileIdRegex = @"id\/(.*)\/";
+        public const string SteamProfileIdRegex = @"\/id\/([^\/]*)";
 
         public static readonly string[] SteamIgnoredWorkshopTags = { "Skin", "Version3" };
 

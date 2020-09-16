@@ -15,6 +15,8 @@ using SCMM.Web.Server.Services.Jobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using AspNet.Security.OpenId.Steam;
 using System;
+using AspNet.Security.OpenId;
+using System.Security.Claims;
 
 namespace SCMM.Web.Server
 {
@@ -67,6 +69,17 @@ namespace SCMM.Web.Server
             authConfiguration.AddSteam(options =>
             {
                 options.ApplicationKey = steamConfiguration.ApplicationKey;
+                options.Events = new OpenIdAuthenticationEvents
+                {
+                    OnTicketReceived = async (ctx) => {
+                        var securityService = ctx.HttpContext.RequestServices.GetRequiredService<SecurityService>();
+                        ctx.Principal.AddIdentity(
+                            await securityService.LoginSteamProfileAsync(
+                                ctx.Principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                            )
+                        );
+                    }
+                };
             });
 
             services.AddDbContext<SteamDbContext>(options =>
@@ -76,6 +89,8 @@ namespace SCMM.Web.Server
             );
 
             services.AddTransient<SteamCommunityClient>();
+
+            services.AddTransient<SecurityService>();
             services.AddTransient<SteamService>();
             services.AddTransient<SteamLanguageService>();
             services.AddTransient<SteamCurrencyService>();

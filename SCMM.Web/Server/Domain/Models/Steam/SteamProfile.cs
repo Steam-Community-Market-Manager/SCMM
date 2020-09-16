@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SCMM.Web.Server.Data.Types;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -8,6 +9,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
     {
         public SteamProfile()
         {
+            Roles = new PersistableStringCollection();
             InventoryItems = new Collection<SteamInventoryItem>();
             WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
         }
@@ -35,6 +37,12 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public DateTimeOffset? LastViewedInventoryOn { get; set; }
 
         public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
+
+        public DateTimeOffset? LastSignedInOn { get; set; }
+
+        public int DonatorLevel { get; set; }
+
+        public PersistableStringCollection Roles { get; set; }
 
         public ICollection<SteamInventoryItem> InventoryItems { get; set; }
 

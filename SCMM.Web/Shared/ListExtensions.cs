@@ -5,6 +5,16 @@ namespace SCMM.Web.Shared
 {
     public static class ListExtensions
     {
+        public static TList AddIfMissing<TList, TElement>(this TList list, TElement element)
+            where TList : ICollection<TElement>
+        {
+            if (!list.Contains(element))
+            {
+                list.Add(element);
+            }
+            return list;
+        }
+
         public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(this IEnumerable<TSource> source, int size)
         {
             TSource[] bucket = null;

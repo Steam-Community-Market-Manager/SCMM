@@ -25,9 +25,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public DateTimeOffset CreatedOn { get; set; }
 
-        public DateTimeOffset AcceptedOn { get; set; }
-
         public DateTimeOffset UpdatedOn { get; set; }
+
+        public DateTimeOffset? AcceptedOn { get; set; }
 
         public int Subscriptions { get; set; }
 

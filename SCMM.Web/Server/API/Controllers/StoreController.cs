@@ -38,7 +38,9 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var nextStoreUpdateUtc = db.SteamAssetWorkshopFiles
-                    .Select(p => p.AcceptedOn).Max().UtcDateTime;
+                    .Where(x => x.AcceptedOn != null)
+                    .Select(x => x.AcceptedOn.Value)
+                    .Max().UtcDateTime;
 
                 // Store normally updates every thursday or friday around 9pm (UK time)
                 nextStoreUpdateUtc = (nextStoreUpdateUtc.Date + new TimeSpan(21, 0, 0));
