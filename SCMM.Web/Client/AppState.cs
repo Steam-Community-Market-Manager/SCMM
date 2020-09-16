@@ -16,6 +16,9 @@ namespace SCMM.Web.Client
         public const string HttpHeaderCurrency = "currency";
         public const string HttpHeaderProfile = "profile";
 
+        public const string DefaultLanguage = "English";
+        public const string DefaultCurrency = "USD";
+
         private readonly ILogger<AppState> Logger;
 
         public AppState(ILogger<AppState> logger)
