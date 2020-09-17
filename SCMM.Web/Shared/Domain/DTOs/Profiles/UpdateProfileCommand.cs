@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Web.Shared.Domain.DTOs.Profiles
 {
-    public class UpdateProfileStateCommand
+    public class UpdateProfileCommand
     {
         public string Country { get; set; }
 

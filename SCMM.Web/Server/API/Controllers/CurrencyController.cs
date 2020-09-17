@@ -10,7 +10,6 @@ using System.Linq;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class CurrencyController : ControllerBase
@@ -26,6 +25,7 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IEnumerable<CurrencyListDTO> Get()
         {

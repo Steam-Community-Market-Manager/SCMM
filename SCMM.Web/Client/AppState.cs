@@ -4,6 +4,8 @@ using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -14,8 +16,6 @@ namespace SCMM.Web.Client
     {
         public const string HttpHeaderLanguage = "language";
         public const string HttpHeaderCurrency = "currency";
-        public const string HttpHeaderProfile = "profile";
-
         public const string DefaultLanguage = "English";
         public const string DefaultCurrency = "USD";
 
@@ -26,8 +26,6 @@ namespace SCMM.Web.Client
             this.Logger = logger;
         }
 
-        public event EventHandler Changed;
-
         public string LanguageId { get; set; }
 
         public LanguageDetailedDTO Language => Profile?.Language;
@@ -36,19 +34,15 @@ namespace SCMM.Web.Client
 
         public CurrencyDetailedDTO Currency => Profile?.Currency;
 
-        public bool IsValid => (
-            !String.IsNullOrEmpty(LanguageId) && !String.IsNullOrEmpty(CurrencyId)
-        );
-
-        public string ProfileId { get; set; }
-
         public ProfileDetailedDTO Profile { get; set; }
 
-        public bool HasProfile => (
-            !String.IsNullOrEmpty(ProfileId) && Profile != null && Profile.Id != Guid.Empty
+        public bool IsAuthenticated => (
+            Profile != null && Profile.Id != Guid.Empty
         );
 
-        public void SetHeadersFor(HttpClient client)
+        public event EventHandler Changed;
+
+        public void AddHeadersTo(HttpClient client)
         {
             if (!String.IsNullOrEmpty(LanguageId))
             {
@@ -60,40 +54,29 @@ namespace SCMM.Web.Client
                 client.DefaultRequestHeaders.Remove(HttpHeaderCurrency);
                 client.DefaultRequestHeaders.Add(HttpHeaderCurrency, CurrencyId);
             }
-            if (!String.IsNullOrEmpty(ProfileId))
-            {
-                client.DefaultRequestHeaders.Remove(HttpHeaderProfile);
-                client.DefaultRequestHeaders.Add(HttpHeaderProfile, ProfileId);
-            }
         }
 
-        public async Task LoadAsync(ILocalStorageService storage)
+        // TODO: Store this info as a cookie with a fixed-expiry
+        public async Task<bool> ReadFromStorageAsync(ILocalStorageService storage)
         {
             try
             {
-                ProfileId = await storage.GetItemAsync<string>(nameof(ProfileId));
                 LanguageId = await storage.GetItemAsync<string>(nameof(LanguageId));
                 CurrencyId = await storage.GetItemAsync<string>(nameof(CurrencyId));
-                Changed?.Invoke(this, new EventArgs());
+                return (!String.IsNullOrEmpty(LanguageId) && !String.IsNullOrEmpty(CurrencyId));
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Failed to load state from storage");
+                Logger.LogWarning(ex, "Failed to load state from storage");
+                return false;
             }
         }
 
-        public async Task SaveAsync(ILocalStorageService storage)
+        // TODO: Store this info as a cookie with a fixed-expiry
+        public async Task WriteToStorageAsync(ILocalStorageService storage)
         {
             try
             {
-                if (!String.IsNullOrEmpty(ProfileId))
-                {
-                    await storage.SetItemAsync<string>(nameof(ProfileId), ProfileId);
-                }
-                else
-                {
-                    await storage.RemoveItemAsync(nameof(ProfileId));
-                }
                 if (!String.IsNullOrEmpty(LanguageId))
                 {
                     await storage.SetItemAsync<string>(nameof(LanguageId), LanguageId);
@@ -113,7 +96,38 @@ namespace SCMM.Web.Client
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Failed to save state");
+                Logger.LogWarning(ex, "Failed to save state to storage");
+            }
+        }
+
+        public async Task TryGuessLocalityAsync(HttpClient http)
+        {
+            try
+            {
+                // Assign defaults just incase something goes wrong
+                LanguageId = DefaultLanguage;
+                CurrencyId = DefaultCurrency;
+
+                // Detect currency from the IP address and associated country
+                var country = await http.GetStringAsync("https://ipinfo.io/country");
+                if (!String.IsNullOrEmpty(country))
+                {
+                    var countryCurrencyTable = await http.GetFromJsonAsync<IDictionary<string, string>>("/json/country-currency.json");
+                    if (countryCurrencyTable != null)
+                    {
+                        var currencyName = countryCurrencyTable.FirstOrDefault(x => x.Key == country.Trim()).Value;
+                        if (!String.IsNullOrEmpty(currencyName))
+                        {
+                            CurrencyId = currencyName;
+                        }
+                    }
+                }
+
+                // TODO: Detect language from the browser
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, $"Failed to auto-detect locality, falling back to default");
             }
         }
 
@@ -121,90 +135,20 @@ namespace SCMM.Web.Client
         {
             try
             {
-                if (IsValid)
-                {
-                    SetHeadersFor(http);
-                    Profile = await http.GetFromJsonAsync<ProfileDetailedDTO>(
-                        $"api/profile/me"
-                    );
-                }
-                else
-                {
-                    Profile = null;
-                }
+                AddHeadersTo(http);
+                Profile = await http.GetFromJsonAsync<ProfileDetailedDTO>(
+                    $"api/profile/me"
+                );
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to refresh the profile state");
+                Profile = null;
+            }
+            finally
+            {
                 Changed?.Invoke(this, new EventArgs());
             }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Failed to refresh state");
-            }
-        }
-
-        public async Task LoginAsync(HttpClient http, ILocalStorageService storage, string profileId)
-        {
-            try
-            {
-                ProfileId = profileId;
-                await SaveAsync(storage);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Failed to set state");
-            }
-
-            await RefreshAsync(http);
-        }
-
-        public async Task LoginAndUpdateProfileAsync(HttpClient http, ILocalStorageService storage, ProfileDTO profile, string country, string language, string currency)
-        {
-            try
-            {
-                LanguageId = language;
-                CurrencyId = currency;
-                ProfileId = profile?.SteamId;
-                await SaveAsync(storage);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Failed to set state");
-            }
-
-            if (profile != null)
-            {
-                try
-                {
-                    SetHeadersFor(http);
-                    await http.PutAsJsonAsync("api/profile/me", new UpdateProfileStateCommand()
-                    {
-                        Country = country,
-                        Language = language,
-                        Currency = currency
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"Failed to update profile info for '{profile?.SteamId}'");
-                }
-            }
-
-            await RefreshAsync(http);
-        }
-
-        public async Task LogoutAsync(HttpClient http, ILocalStorageService storage)
-        {
-            try
-            {
-                LanguageId = null;
-                CurrencyId = null;
-                ProfileId = null;
-                await SaveAsync(storage);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Failed to set state");
-            }
-
-            await RefreshAsync(http);
         }
     }
 }

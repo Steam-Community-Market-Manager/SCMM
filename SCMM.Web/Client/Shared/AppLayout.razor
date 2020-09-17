@@ -10,9 +10,15 @@
         <ReleaseVersionBadge />
     </TitleContent>
     <SidebarContent>
-        @if (State.HasProfile)
+        @if (State.IsAuthenticated)
         {
             <Profile Name="@State.Profile.Name" Avatar="@State.Profile.AvatarLargeUrl" />
+        }
+        else
+        {
+            <a href="/signin">
+                <img src="/images/sits_01.png" alt="Sign-in through Steam" style="padding:16px" />
+            </a>
         }
         <AppNavigation />
     </SidebarContent>

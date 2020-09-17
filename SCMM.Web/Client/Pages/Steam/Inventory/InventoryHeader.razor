@@ -114,6 +114,6 @@
     [Parameter]
     public EventCallback<EventArgs> SynchroniseInventory { get; set; }
 
-    private bool ProfileIsMe => (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId));
+    private bool ProfileIsMe => (Profile != null && (State.Profile?.SteamId == Profile?.SteamId || State.Profile?.SteamId == Profile?.ProfileId));
 
 }

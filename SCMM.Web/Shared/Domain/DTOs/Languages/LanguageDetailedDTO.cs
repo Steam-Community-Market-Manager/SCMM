@@ -11,7 +11,5 @@ namespace SCMM.Web.Shared.Domain.DTOs.Languages
         public string Name { get; set; }
 
         public string CultureName { get; set; }
-
-        public bool IsDefault { get; set; }
     }
 }

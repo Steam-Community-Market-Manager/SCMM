@@ -15,7 +15,6 @@ using System.Linq;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class StoreController : ControllerBase
@@ -31,6 +30,7 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet("nextUpdateExpectedOn")]
         public DateTimeOffset GetNextUpdateExpectedOn()
         {
@@ -60,6 +60,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IEnumerable<StoreItemListDTO> Get()
         {
@@ -80,7 +81,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 var itemDtos = items.ToDictionary(
                     x => x,
-                    x => _mapper.Map<SteamStoreItem, StoreItemListDTO>(x, Request)
+                    x => _mapper.Map<SteamStoreItem, StoreItemListDTO>(x, this)
                 );
 
                 // TODO: Do this better, very lazy

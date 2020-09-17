@@ -41,7 +41,7 @@ else
 
     private async Task RefreshInventoryTotals()
     {
-        if (!State.HasProfile)
+        if (!State.IsAuthenticated)
         {
             return;
         }
@@ -53,7 +53,7 @@ else
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error refreshing inventory totals for '{State.ProfileId}'");
+            Logger.LogError(ex, $"Error refreshing inventory totals for '{State.Profile?.SteamId}'");
         }
     }
 
@@ -88,21 +88,21 @@ else
         }
 
         var items = new List<NavigationItem>();
-        if (State.HasProfile)
+        if (State.IsAuthenticated)
         {
             items.AddRange(new List<NavigationItem>
             {
                 new NavigationItem
                 {
-                    Icon = @<SwapBagIcon />,
+                    Icon = @<CashIcon />,
                     Title = "Inventory",
-                    Path = $"steam/inventory/{State.ProfileId}",
+                    Path = $"steam/inventory/{State.Profile?.SteamId}",
                     SubTitle = inventoryValue,
                     Prefix = true
                 },
                 new NavigationItem
                 {
-                    Icon = @<CashIcon />,
+                    Icon = @<CardExchangeIcon />,
                     Title = "Trade History",
                     Path =  "steam/history",
                     Prefix =  true,
@@ -116,7 +116,7 @@ else
             {
                 new NavigationItem
                 {
-                    Icon = @<SwapBagIcon />,
+                    Icon = @<CashIcon />,
                     Title = "Inventory Value",
                     Path = $"steam/inventory",
                     Prefix = true
@@ -132,6 +132,13 @@ else
             new NavigationItem
             {
                 Icon = @<ChartIcon />,
+                Title = "Marketplace",
+                Path = "steam/marketplace",
+                Prefix = true
+            },
+            new NavigationItem
+            {
+                Icon = @<PodiumIcon />,
                 Title = "Market Statistics",
                 Path = "steam/marketstatistics",
                 Prefix = true
@@ -144,17 +151,10 @@ else
                 Prefix =  true,
                 Disabled = true
             },
-            new NavigationItem
-            {
-                Icon = @<TakeMyMoneyIcon />,
-                Title = "Market Listings",
-                Path = "steam/marketplace",
-                Prefix = true
-            },
             null,
             new NavigationItem
             {
-                Icon = @<PriceTagIcon />,
+                Icon = @<ShopIcon />,
                 Title = "Item Store",
                 SubTitle = storeUpdateTimeRemaining,
                 Path =  "steam/store",
@@ -162,9 +162,17 @@ else
             },
             new NavigationItem
             {
-                Icon = @<SprayIcon />,
+                Icon = @<PencilRulerIcon />,
                 Title = "Item Workshop",
                 Path =  "steam/workshop",
+                Prefix =  true,
+                Disabled = true
+            },
+            new NavigationItem
+            {
+                Icon = @<PaletteIcon />,
+                Title = "Item Skins",
+                Path =  "skins",
                 Prefix =  true,
                 Disabled = true
             }
@@ -179,7 +187,7 @@ else
             {
                 Icon = @<DiscussionIcon />,
                 Title = "Community",
-                SubTitle = "Chat on Discord",
+                SubTitle = "Join the Discord",
                 Path =  "https://discord.gg/CRMf95Z",
                 Prefix =  false
             },
@@ -199,6 +207,31 @@ else
                 OnClick = DonationOpen
             }
         });
+        if (State.IsAuthenticated)
+        {
+            if (items.Any())
+            {
+                items.Add(null);
+            }
+            items.AddRange(new List<NavigationItem>
+            {
+                new NavigationItem
+                {
+                    Icon = @<CogIcon />,
+                    Title = "Settings",
+                    SubTitle = "Manage your account",
+                    Path = "settings",
+                    Prefix = true,
+                    Disabled = true
+                },
+                new NavigationItem
+                {
+                    Icon = @<ExitDoorIcon />,
+                    Title = "Sign out",
+                    Path =  "signout"
+                }
+            });
+        }
 
         return items;
     }

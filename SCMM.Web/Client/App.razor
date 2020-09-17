@@ -27,7 +27,10 @@
     {
         try
         {
-            await AppState.LoadAsync(LocalStorage);
+            if (!(await AppState.ReadFromStorageAsync(LocalStorage)))
+            {
+                await AppState.TryGuessLocalityAsync(Http);
+            }
             await AppState.RefreshAsync(Http);
 
             State = AppState;

@@ -17,7 +17,6 @@ using System.Linq.Expressions;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class MarketController : ControllerBase
@@ -33,6 +32,7 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IEnumerable<MarketItemListDTO> Get(
             [FromQuery] string filter = null,
@@ -88,11 +88,12 @@ namespace SCMM.Web.Server.API.Controllers
                     .Skip((page * pageSize))
                     .Take(pageSize)
                     .ToList()
-                    .Select(x => _mapper.Map<SteamMarketItem, MarketItemListDTO>(x, Request))
+                    .Select(x => _mapper.Map<SteamMarketItem, MarketItemListDTO>(x, this))
                     .ToList();
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public MarketItemDetailDTO Get([FromRoute] Guid id)
         {
@@ -105,7 +106,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.Description.WorkshopFile)
                     .SingleOrDefault(x => x.Id == id);
 
-                return _mapper.Map<SteamMarketItem, MarketItemDetailDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemDetailDTO>(query, this);
             }
         }
 
@@ -114,6 +115,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="idOrName">The item's SCMM GUID or Steam Name</param>
         /// <returns>The market item listing</returns>
+        [AllowAnonymous]
         [HttpGet("item/{idOrName}")]
         public MarketItemListDTO Get([FromRoute] string idOrName)
         {
@@ -130,10 +132,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.Description.WorkshopFile)
                     .SingleOrDefault(x => x.Id == id || x.Description.Name == idOrName);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/hotRightNow")]
         public IEnumerable<MarketItemListDTO> GetDashboardHotRightNow()
         {
@@ -146,10 +149,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => x.Last24hrSales)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/goodTimeToBuy")]
         public IEnumerable<MarketItemListDTO> GetDashboardGoodTimeToBuy()
         {
@@ -169,10 +173,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => ((decimal)x.Last48hrValue / x.Last1hrValue) * 100)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/goodTimeToSell")]
         public IEnumerable<MarketItemListDTO> GetDashboardGoodTimeToSell()
         {
@@ -192,10 +197,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => ((decimal)x.Last1hrValue / x.Last48hrValue) * 100)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/allTimeLow")]
         public IEnumerable<MarketItemListDTO> GetDashboardAllTimeLow()
         {
@@ -212,10 +218,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .ThenBy(x => x.Last1hrValue - x.Last24hrValue)
                     .Take(20);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/allTimeHigh")]
         public IEnumerable<MarketItemListDTO> GetDashboardAllTimeHigh()
         {
@@ -232,10 +239,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
                     .Take(20);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/profitableFlips")]
         public IEnumerable<MarketItemListDTO> GetDashboardProfitableFlips()
         {
@@ -256,9 +264,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * SteamEconomyHelper.SteamFeeMultiplier)))
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
+
+        [AllowAnonymous]
         [HttpGet("dashboard/mostRecent")]
         public IEnumerable<MarketItemListDTO> GetDashboardMostRecent()
         {
@@ -271,10 +281,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => x.FirstSeenOn)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/mostProfitable")]
         public IEnumerable<MarketItemListDTO> GetDashboardMostProfitable()
         {
@@ -288,10 +299,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => x.Last1hrValue - x.First24hrValue)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/mostWanted")]
         public IEnumerable<MarketItemListDTO> GetDashboardMostWanted()
         {
@@ -304,10 +316,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => x.Demand)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/mostSaturated")]
         public IEnumerable<MarketItemListDTO> GetDashboardMostSaturated()
         {
@@ -320,10 +333,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => x.Supply)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/mostCommon")]
         public IEnumerable<MarketItemListDTO> GetDashboardMostCommon()
         {
@@ -338,10 +352,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/mostRare")]
         public IEnumerable<MarketItemListDTO> GetDashboardMostRare()
         {
@@ -356,10 +371,11 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderBy(x => x.Description.WorkshopFile.Subscriptions)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("dashboard/biggestCrashes")]
         public IEnumerable<MarketItemListDTO> GetDashboardBiggestCrashes()
         {
@@ -376,7 +392,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderBy(x => x.Last1hrValue - x.AllTimeHighestValue)
                     .Take(10);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, Request);
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
         }
     }
