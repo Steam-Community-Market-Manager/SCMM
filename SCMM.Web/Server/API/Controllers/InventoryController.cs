@@ -50,12 +50,6 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            // TODO: This should probably be public, the information is public and read-only after all
-            if (sync && !String.Equals(User.SteamId(), steamId, StringComparison.OrdinalIgnoreCase))
-            {
-                return Unauthorized();
-            }
-
             using (var scope = _scopeFactory.CreateScope())
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
