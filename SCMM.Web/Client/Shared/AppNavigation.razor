@@ -8,24 +8,24 @@
 
 <style>
 
-    .SignInButton img:hover {
+    .SignIn-Button img:hover {
         cursor: pointer;
     }
 
-    .SignInButton img {
+    .SignIn-Button img {
         padding: 16px;
     }
 
-    .SignInDialogTips {
+    .SignIn-Dialog-Tips {
         margin-left: 20px;
     }
 
-    .SignInDialogTips img {
+    .SignIn-Dialog-Tips img {
         width: 100%;
         max-width: max-content;
     }
 
-    .SignInDialogButton img {
+    .SignIn-Dialog-Button img {
         padding: 8px;
     }
 
@@ -39,7 +39,7 @@ else
 {
     @if (!State.IsAuthenticated)
     {
-        <a class="SignInButton" @onclick="@SignInWarningOpen">
+        <a class="SignIn-Button" @onclick="@SignInWarningOpen">
             <img src="/images/sits_01.png" alt="Sign-in through Steam" title="Sign-in through Steam" />
         </a>
     }
@@ -54,7 +54,7 @@ else
     </DialogTitle>
     <DialogContent>
         <DialogContentText>
-            <ul class="SignInDialogTips">
+            <ul class="SignIn-Dialog-Tips">
                 <li>
                     <p>Only enter your password on offical Steam websites.</p>
                     <img src="/images/steam_secure_login.png" />
@@ -65,7 +65,7 @@ else
         </DialogContentText>
     </DialogContent>
     <DialogActions>
-        <a class="SignInDialogButton" @onclick="@SignIn">
+        <a class="SignIn-Dialog-Button" @onclick="@SignIn">
             <img src="/images/sits_01.png" alt="Continue to sign-in through Steam" title="Continue to sign-in through Steam" />
         </a>
     </DialogActions>
