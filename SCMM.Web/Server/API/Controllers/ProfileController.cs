@@ -38,7 +38,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 
                 // If the user is authenticated, use their database profile
-                if (User?.Identity?.IsAuthenticated == true)
+                if (User.Identity.IsAuthenticated)
                 {
                     var profileId = User.Id();
                     var profile = await db.SteamProfiles
@@ -69,16 +69,30 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var steamService = scope.ServiceProvider.GetService<SteamService>();
-                var profile = await steamService.AddOrUpdateSteamProfile(User.SteamId());
+                var profileId = User.Id();
+                var profile = await db.SteamProfiles
+                    .Include(x => x.Language)
+                    .Include(x => x.Currency)
+                    .FirstOrDefaultAsync(x => x.Id == profileId);
+
                 if (profile == null)
                 {
                     throw new Exception($"Profile with Steam ID '{User.SteamId()}' was not found");
                 }
 
-                profile.Country = (command.Country ?? profile.Country);
-                profile.Language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.Name == command.Language);
-                profile.Currency = await db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == command.Currency);
+                if (!String.IsNullOrEmpty(command.Country))
+                {
+                    profile.Country = command.Country;
+                }
+                if (!String.IsNullOrEmpty(command.Language))
+                {
+                    profile.Language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.Name == command.Language);
+                }
+                if (!String.IsNullOrEmpty(command.Currency))
+                {
+                    profile.Currency = await db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == command.Currency);
+                }
+
                 db.SaveChanges();
             }
         }
