@@ -9,7 +9,7 @@ namespace SCMM.Web.Client.Shared.Component
             return @"
                 var WindowInterop = WindowInterop || {};
                 WindowInterop.open = function (url) {
-                    window.open(url);
+                    window.location.href = url;
                 };
                 WindowInterop.openInNewTab = function (url) {
                     window.open(url, '_blank');
