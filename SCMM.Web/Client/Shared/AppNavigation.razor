@@ -83,7 +83,7 @@ else
         if (StoreUpdatesOn != null)
         {
             storeUpdateTimeRemaining = (StoreUpdatesOn.Value - DateTimeOffset.Now).ToDurationString(
-                showDays: true, showHours: true, showMinutes: false, showSeconds: false, suffix: "left", zero: "due any moment now"
+                showDays: true, showHours: true, showMinutes: false, showSeconds: false, suffix: "remaining", zero: "due any moment now"
             );
         }
 
