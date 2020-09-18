@@ -62,13 +62,20 @@ namespace SCMM.Web.Server.Domain
 
             // Update any dynamic roles that are missing
             var profile = dbProfile?.Profile;
+            var dynamicRoles = new List<string>();
             if (dbProfile?.IsCreator == true)
             {
-                dbProfile.Profile.Roles.AddIfMissing(Roles.Creator);
+                dynamicRoles.Add(Roles.Creator);
             }
             if (dbProfile?.IsDonator == true)
             {
-                dbProfile.Profile.Roles.AddIfMissing(Roles.Donator);
+                dynamicRoles.Add(Roles.Donator);
+            }
+            if (dynamicRoles.Any())
+            {
+                profile.Roles = new Data.Types.PersistableStringCollection(
+                    profile.Roles.Union(dynamicRoles)
+                );
             }
 
             // Update the extended profile information from Steam
