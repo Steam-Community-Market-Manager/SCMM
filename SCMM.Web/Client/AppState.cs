@@ -26,6 +26,8 @@ namespace SCMM.Web.Client
             this.Logger = logger;
         }
 
+        public event EventHandler Changed;
+
         public string LanguageId { get; set; }
 
         public LanguageDetailedDTO Language => Profile?.Language;
@@ -40,7 +42,10 @@ namespace SCMM.Web.Client
             Profile != null && Profile.Id != Guid.Empty
         );
 
-        public event EventHandler Changed;
+        public bool IsInRole(string role)
+        {
+            return Profile?.Roles?.Any(x => String.Equals(x, role, StringComparison.OrdinalIgnoreCase)) == true;
+        }
 
         public void AddHeadersTo(HttpClient client)
         {

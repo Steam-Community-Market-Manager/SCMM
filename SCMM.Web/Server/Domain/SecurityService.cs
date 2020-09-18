@@ -6,6 +6,7 @@ using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Shared;
+using SCMM.Web.Shared.Domain;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System;

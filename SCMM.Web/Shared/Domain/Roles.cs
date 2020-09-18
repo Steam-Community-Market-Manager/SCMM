@@ -1,4 +1,4 @@
-﻿namespace SCMM.Web.Server.Domain.Models.Steam
+﻿namespace SCMM.Web.Shared.Domain
 {
     public static class Roles
     {

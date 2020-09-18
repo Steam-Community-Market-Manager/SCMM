@@ -13,5 +13,7 @@ namespace SCMM.Web.Shared.Domain.DTOs.Profiles
         public LanguageDetailedDTO Language { get; set; }
 
         public CurrencyDetailedDTO Currency { get; set; }
+
+        public string[] Roles { get; set; }
     }
 }
