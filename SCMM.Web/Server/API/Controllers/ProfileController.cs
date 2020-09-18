@@ -36,7 +36,13 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                
+                var defaultProfile = new ProfileDetailedDTO()
+                {
+                    Name = "Guest",
+                    Language = this.Language(),
+                    Currency = this.Currency()
+                };
+
                 // If the user is authenticated, use their database profile
                 if (User.Identity.IsAuthenticated)
                 {
@@ -46,18 +52,17 @@ namespace SCMM.Web.Server.API.Controllers
                         .Include(x => x.Currency)
                         .FirstOrDefaultAsync(x => x.Id == profileId);
 
-                    return _mapper.Map<ProfileDetailedDTO>(profile);
+                    // Map the DB profile over top of the default profile
+                    // NOTE: This is done so that the language/currency pass-through if they haven't been set yet
+                    return _mapper.Map(
+                        profile, defaultProfile
+                    );
                 }
 
                 // Else, use a transient guest profile
                 else
                 {
-                    return new ProfileDetailedDTO()
-                    {
-                        Name = "Guest",
-                        Language = this.Language(),
-                        Currency = this.Currency()
-                    };
+                    return defaultProfile;
                 }
             }
         }

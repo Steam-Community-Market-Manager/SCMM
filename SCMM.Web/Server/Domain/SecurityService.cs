@@ -48,7 +48,7 @@ namespace SCMM.Web.Server.Domain
             }
 
             // Load the profile from our database (if it exists)
-            var dbProfile = _db.SteamProfiles
+            var profileQuery = _db.SteamProfiles
                 .Include(x => x.Language)
                 .Include(x => x.Currency)
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
@@ -59,15 +59,15 @@ namespace SCMM.Web.Server.Domain
                     IsDonator = x.DonatorLevel > 0
                 })
                 .FirstOrDefault();
+            var profile = profileQuery?.Profile;
 
             // Update any dynamic roles that are missing
-            var profile = dbProfile?.Profile;
             var dynamicRoles = new List<string>();
-            if (dbProfile?.IsCreator == true)
+            if (profileQuery?.IsCreator == true)
             {
                 dynamicRoles.Add(Roles.Creator);
             }
-            if (dbProfile?.IsDonator == true)
+            if (profileQuery?.IsDonator == true)
             {
                 dynamicRoles.Add(Roles.Donator);
             }
@@ -164,8 +164,14 @@ namespace SCMM.Web.Server.Domain
             claims.AddIfMissing(new Claim(ClaimTypes.AvatarUrl, profile.AvatarUrl));
             claims.AddIfMissing(new Claim(ClaimTypes.AvatarLargeUrl, profile.AvatarLargeUrl));
             claims.AddIfMissing(new Claim(ClaimTypes.Country, profile.Country));
-            claims.AddIfMissing(new Claim(ClaimTypes.Language, profile.Language?.Name));
-            claims.AddIfMissing(new Claim(ClaimTypes.Currency, profile.Currency?.Name));
+            if (profile.Language != null)
+            {
+                claims.AddIfMissing(new Claim(ClaimTypes.Language, profile.Language.Name));
+            }
+            if (profile.Currency != null)
+            {
+                claims.AddIfMissing(new Claim(ClaimTypes.Currency, profile.Currency.Name));
+            }
             foreach (var role in profile.Roles)
             {
                 claims.AddIfMissing(new Claim(ClaimTypes.Role, role));

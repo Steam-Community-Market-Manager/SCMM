@@ -12,8 +12,8 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
         {
             var languageName = AppState.DefaultLanguage;
 
-            // If the user is authenticated, use their preferred language
-            if (controller.User.Identity.IsAuthenticated)
+            // If the user is authenticated, use their preferred language (if any)
+            if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.Language()))
             {
                 languageName = controller.User.Language();
             }
@@ -30,8 +30,8 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
         {
             var currencyName = AppState.DefaultCurrency;
 
-            // If the user is authenticated, use their preferred currency
-            if (controller.User.Identity.IsAuthenticated)
+            // If the user is authenticated, use their preferred currency (if any)
+            if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.Currency()))
             {
                 currencyName = controller.User.Currency();
             }
