@@ -3,6 +3,7 @@
 @inject ILogger<AppNavigation> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 @inject AppState State
 
 <style>
@@ -64,7 +65,7 @@ else
         </DialogContentText>
     </DialogContent>
     <DialogActions>
-        <a class="SignInDialogButton" href="/signin">
+        <a class="SignInDialogButton" @onclick="@SignIn">
             <img src="/images/sits_01.png" alt="Continue to sign-in through Steam" title="Continue to sign-in through Steam" />
         </a>
     </DialogActions>
@@ -149,7 +150,7 @@ else
         if (State.IsAuthenticated)
         {
             items.AddRange(new List<NavigationItem>
-{
+            {
                 new NavigationItem
                 {
                     Icon = @<CashIcon />,
@@ -167,10 +168,10 @@ else
                     Disabled = true
                 }
             });
-            }
-            else
-            {
-                items.AddRange(new List<NavigationItem>
+        }
+        else
+        {
+            items.AddRange(new List<NavigationItem>
             {
                 new NavigationItem
                 {
@@ -180,12 +181,12 @@ else
                     Prefix = true
                 }
             });
-            }
-            if (items.Any())
-            {
-                items.Add(null);
-            }
-            items.AddRange(new List<NavigationItem>
+        }
+        if (items.Any())
+        {
+            items.Add(null);
+        }
+        items.AddRange(new List<NavigationItem>
         {
             new NavigationItem
             {
@@ -235,11 +236,11 @@ else
                 Disabled = true
             }
         });
-            if (items.Any())
-            {
-                items.Add(null);
-            }
-            items.AddRange(new List<NavigationItem>
+        if (items.Any())
+        {
+            items.Add(null);
+        }
+        items.AddRange(new List<NavigationItem>
         {
             new NavigationItem
             {
@@ -265,13 +266,13 @@ else
                 OnClick = DonationOpen
             }
         });
-            if (State.IsAuthenticated)
+        if (State.IsAuthenticated)
+        {
+            if (items.Any())
             {
-                if (items.Any())
-                {
-                    items.Add(null);
-                }
-                items.AddRange(new List<NavigationItem>
+                items.Add(null);
+            }
+            items.AddRange(new List<NavigationItem>
             {
                 new NavigationItem
                 {
@@ -286,35 +287,42 @@ else
                 {
                     Icon = @<ExitDoorIcon />,
                     Title = "Sign out",
-                    Path =  "signout"
+                    OnClick = SignOut
                 }
             });
-            }
-
-            return items;
         }
 
-        private void DonationOpen()
-        {
-            DonateDialogOpened = true;
-            StateHasChanged();
-        }
+        return items;
+    }
 
-        private void SignInWarningOpen()
-        {
-            SignInDialogOpened = true;
-            StateHasChanged();
-        }
+    private void DonationOpen()
+    {
+        DonateDialogOpened = true;
+        StateHasChanged();
+    }
 
-        private void SignInWarningClose()
-        {
-            SignInDialogOpened = false;
-            StateHasChanged();
-        }
+    private void SignInWarningOpen()
+    {
+        SignInDialogOpened = true;
+        StateHasChanged();
+    }
 
-        private void SignIn()
-        {
-            Navigation.NavigateTo($"signin");
-        }
+    private void SignInWarningClose()
+    {
+        SignInDialogOpened = false;
+        StateHasChanged();
+    }
+
+    private void SignIn()
+    {
+        var url = $"signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}";
+        JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
+    }
+
+    private void SignOut()
+    {
+        var url = $"signout?returnUrl={Uri.EscapeDataString(Navigation.Uri)}";
+        JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
+    }
 
 }
