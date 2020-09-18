@@ -38,5 +38,19 @@ namespace SCMM.Web.Server.API.Controllers
                     .ToList();
             }
         }
+
+        [AllowAnonymous]
+        [HttpGet("withDetails")]
+        public IEnumerable<LanguageDetailedDTO> GetWithDetails()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                return db.SteamLanguages
+                    .OrderBy(x => x.Name)
+                    .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
+                    .ToList();
+            }
+        }
     }
 }

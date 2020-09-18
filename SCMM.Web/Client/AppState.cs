@@ -155,5 +155,21 @@ namespace SCMM.Web.Client
                 Changed?.Invoke(this, new EventArgs());
             }
         }
+
+        public void ChangeCurrency(CurrencyDetailedDTO currency)
+        {
+            if (currency == null)
+            {
+                return;
+            }
+
+            CurrencyId = currency.Name;
+            if (Profile != null)
+            {
+                Profile.Currency = currency;
+            }
+
+            Changed?.Invoke(this, new EventArgs());
+        }
     }
 }
