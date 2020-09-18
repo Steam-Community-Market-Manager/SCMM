@@ -13,12 +13,12 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
             var languageName = AppState.DefaultLanguage;
 
             // If the user is authenticated, use their preferred language
-            if (controller?.User?.Identity?.IsAuthenticated == true)
+            if (controller.User.Identity.IsAuthenticated)
             {
                 languageName = controller.User.Language();
             }
             // If the language was specified in the request headers, use that
-            else if (controller?.Request?.Headers?.ContainsKey(AppState.HttpHeaderLanguage) == true)
+            else if (controller.Request.Headers.ContainsKey(AppState.HttpHeaderLanguage))
             {
                 languageName = controller.Request.Headers[AppState.HttpHeaderLanguage].ToString();
             }
@@ -31,12 +31,12 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
             var currencyName = AppState.DefaultCurrency;
 
             // If the user is authenticated, use their preferred currency
-            if (controller?.User?.Identity?.IsAuthenticated == true)
+            if (controller.User.Identity.IsAuthenticated)
             {
                 currencyName = controller.User.Currency();
             }
             // If the currency was specified in the request headers, use that
-            else if (controller?.Request?.Headers?.ContainsKey(AppState.HttpHeaderCurrency) == true)
+            else if (controller.Request.Headers.ContainsKey(AppState.HttpHeaderCurrency))
             {
                 currencyName = controller.Request.Headers[AppState.HttpHeaderCurrency].ToString();
             }

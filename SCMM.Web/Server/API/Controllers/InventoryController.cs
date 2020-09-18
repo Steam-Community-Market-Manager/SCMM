@@ -470,10 +470,15 @@ namespace SCMM.Web.Server.API.Controllers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var inventoryItem = db.SteamInventoryItems.SingleOrDefault(x => x.Id == inventoryItemId);
+                var inventoryItem = db.SteamInventoryItems.FirstOrDefault(x => x.Id == inventoryItemId);
                 if (inventoryItem == null)
                 {
                     _logger.LogError($"Inventory item with id '{inventoryItemId}' was not found");
+                    return;
+                }
+                if (!User.Is(inventoryItem.OwnerId))
+                {
+                    _logger.LogError($"Inventory item with id '{inventoryItemId}' does not belong to you");
                     return;
                 }
 

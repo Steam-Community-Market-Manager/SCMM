@@ -1,10 +1,21 @@
-﻿using System;
+﻿using SCMM.Web.Server.Domain.Models.Steam;
+using System;
 using System.Security.Claims;
 
 namespace SCMM.Web.Server.API.Controllers.Extensions
 {
     public static class ClaimsPrincipalExtensions
     {
+        public static bool Is(this ClaimsPrincipal user, SteamProfile profile)
+        {
+            return (user.Identity.IsAuthenticated && user.Id() == profile.Id);
+        }
+
+        public static bool Is(this ClaimsPrincipal user, Guid profileId)
+        {
+            return (user.Identity.IsAuthenticated && user.Id() == profileId);
+        }
+        
         public static Guid Id(this ClaimsPrincipal user)
         {
             Guid id;
