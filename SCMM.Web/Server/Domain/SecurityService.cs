@@ -158,12 +158,30 @@ namespace SCMM.Web.Server.Domain
         {
             var claims = new List<Claim>();
             claims.AddIfMissing(new Claim(ClaimTypes.Id, profile.Id.ToString()));
-            claims.AddIfMissing(new Claim(ClaimTypes.SteamId, profile.SteamId));
-            claims.AddIfMissing(new Claim(ClaimTypes.ProfileId, profile.ProfileId));
-            claims.AddIfMissing(new Claim(ClaimTypes.Name, profile.Name));
-            claims.AddIfMissing(new Claim(ClaimTypes.AvatarUrl, profile.AvatarUrl));
-            claims.AddIfMissing(new Claim(ClaimTypes.AvatarLargeUrl, profile.AvatarLargeUrl));
-            claims.AddIfMissing(new Claim(ClaimTypes.Country, profile.Country));
+            if (!String.IsNullOrEmpty(profile.SteamId))
+            {
+                claims.AddIfMissing(new Claim(ClaimTypes.SteamId, profile.SteamId));
+            }
+            if (!String.IsNullOrEmpty(profile.ProfileId))
+            {
+                claims.AddIfMissing(new Claim(ClaimTypes.ProfileId, profile.ProfileId));
+            }
+            if (!String.IsNullOrEmpty(profile.Name))
+            {
+                claims.AddIfMissing(new Claim(ClaimTypes.Name, profile.Name));
+            }
+            if (!String.IsNullOrEmpty(profile.AvatarUrl))
+            {
+                claims.AddIfMissing(new Claim(ClaimTypes.AvatarUrl, profile.AvatarUrl));
+            }
+            if (!String.IsNullOrEmpty(profile.AvatarLargeUrl))
+            {
+                claims.AddIfMissing(new Claim(ClaimTypes.AvatarLargeUrl, profile.AvatarLargeUrl)); ;
+            }
+            if (!String.IsNullOrEmpty(profile.Country))
+            {
+                claims.AddIfMissing(new Claim(ClaimTypes.Country, profile.Country));
+            }
             if (profile.Language != null)
             {
                 claims.AddIfMissing(new Claim(ClaimTypes.Language, profile.Language.Name));
