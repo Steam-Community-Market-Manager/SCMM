@@ -216,7 +216,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
                     .ThenBy(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(20);
+                    .Take(10);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
@@ -237,7 +237,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= 0)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
                     .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
-                    .Take(20);
+                    .Take(10);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
