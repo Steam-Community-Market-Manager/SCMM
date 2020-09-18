@@ -13,6 +13,7 @@
         @if (State.IsAuthenticated)
         {
             <Profile Name="@State.Profile.Name" Avatar="@State.Profile.AvatarLargeUrl" />
+            <ProfileFlairs />
         }
         <AppNavigation />
     </SidebarContent>
