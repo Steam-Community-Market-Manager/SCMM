@@ -130,7 +130,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
-                    .SingleOrDefault(x => x.Id == id || x.Description.Name == idOrName);
+                    .FirstOrDefault(x => x.Id == id || x.Description.Name == idOrName);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
             }
