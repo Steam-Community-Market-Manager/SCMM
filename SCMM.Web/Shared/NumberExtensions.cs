@@ -187,7 +187,25 @@ namespace SCMM.Web.Shared
             return ((percentage != 0) ? $"{prefix} {percentage}%" : "∞").Trim();
         }
 
-        public static string ToGCDRatioString(this long a, long b)
+        public static bool IsSaturated(this int supply, int demand)
+        {
+            if (supply == 0 || demand == 0)
+            {
+                return false;
+            }
+            return ((supply / demand) >= 1);
+        }
+
+        public static bool IsStarved(this int supply, int demand)
+        {
+            if (supply == 0 || demand == 0)
+            {
+                return false;
+            }
+            return ((supply / demand) < 1);
+        }
+
+        public static string ToGCDRatioString(this int a, int b)
         {
             if (a == 0 || b == 0)
             {
