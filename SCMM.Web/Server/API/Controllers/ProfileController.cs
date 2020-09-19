@@ -9,6 +9,8 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -103,20 +105,17 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("steam/{steamId}/summary")]
-        public async Task<ProfileDTO> GetSteamIdSummary([FromRoute] string steamId)
+        [HttpGet("donators")]
+        public IEnumerable<ProfileDTO> GetDonators()
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var service = scope.ServiceProvider.GetService<SteamService>();
-                var profile = await service.AddOrUpdateSteamProfile(steamId);
-                if (profile == null)
-                {
-                    _logger.LogError($"Profile with SteamID '{steamId}' was not found");
-                    return null;
-                }
-
-                return _mapper.Map<ProfileDTO>(profile);
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                return db.SteamProfiles
+                    .Where(x => x.DonatorLevel > 0)
+                    .OrderByDescending(x => x.DonatorLevel)
+                    .Select(x => _mapper.Map<ProfileDTO>(x))
+                    .ToList();
             }
         }
     }
