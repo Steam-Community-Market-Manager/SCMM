@@ -210,6 +210,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var yesterday = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(1));
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
@@ -218,6 +219,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Last1hrValue > 50 /* cents */)
                     .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
+                    .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
                     .ThenBy(x => x.Last1hrValue - x.Last24hrValue)
                     .Take(10);
@@ -232,6 +234,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var yesterday = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(1));
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
@@ -240,6 +243,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Last1hrValue > 50 /* cents */)
                     .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= 0)
+                    .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
                     .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
                     .Take(10);
