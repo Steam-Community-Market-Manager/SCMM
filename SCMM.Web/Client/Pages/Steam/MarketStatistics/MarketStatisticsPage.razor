@@ -454,23 +454,30 @@
             <CardHeader>
                 <TitleContent>
                     <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
-                        Most Wanted
+                        Most Saturated
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Highest number of buy orders.
+                        Highest supply vs. demand ratio.
                     </Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent Style="padding:0px">
-                @if (MostWanted == null)
+                @if (MostSaturated == null)
                 {
                     <Loading />
                 }
                 else
                 {
                     <Table Size="@Size.Small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell></TableCell>
+                                <TableCell>Supply</TableCell>
+                                <TableCell>Demand</TableCell>
+                            </TableRow>
+                        </TableHead>
                         <TableBody>
-                            @foreach (var item in MostWanted)
+                            @foreach (var item in MostSaturated)
                             {
                                 <TableRow Hover OnClick="@((_) => ViewItem(item))">
                                     <TableCell>
@@ -478,6 +485,9 @@
                                             <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                                             <strong style="margin:8px">@item.Name</strong>
                                         </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <strong class="Text-NoWrap">@item.Supply.ToQuantityString()</strong>
                                     </TableCell>
                                     <TableCell>
                                         <span class="Text-NoWrap">@item.Demand.ToQuantityString()</span>
@@ -490,29 +500,36 @@
             </CardContent>
         </Card>
     </Grid>
-
+    
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
         <Card>
             <CardHeader>
                 <TitleContent>
                     <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
-                        Most Saturated
+                        Most Starved
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Highest number of sell orders.
+                        Highest demand vs. supply ratio.
                     </Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent Style="padding:0px">
-                @if (MostSaturated == null)
+                @if (MostStarved == null)
                 {
                     <Loading />
                 }
                 else
                 {
                     <Table Size="@Size.Small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell></TableCell>
+                                <TableCell>Demand</TableCell>
+                                <TableCell>Supply</TableCell>
+                            </TableRow>
+                        </TableHead>
                         <TableBody>
-                            @foreach (var item in MostSaturated)
+                            @foreach (var item in MostStarved)
                             {
                                 <TableRow Hover OnClick="@((_) => ViewItem(item))">
                                     <TableCell>
@@ -520,6 +537,9 @@
                                             <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
                                             <strong style="margin:8px">@item.Name</strong>
                                         </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <strong class="Text-NoWrap">@item.Demand.ToQuantityString()</strong>
                                     </TableCell>
                                     <TableCell>
                                         <span class="Text-NoWrap">@item.Supply.ToQuantityString()</span>
@@ -596,8 +616,8 @@
     private MarketItemListDTO[] MostProfitable { get; set; }
     private MarketItemListDTO[] ProfitableFlips { get; set; }
     private MarketItemListDTO[] HotRightNow { get; set; }
-    private MarketItemListDTO[] MostWanted { get; set; }
     private MarketItemListDTO[] MostSaturated { get; set; }
+    private MarketItemListDTO[] MostStarved { get; set; }
     private MarketItemListDTO[] MostRecent { get; set; }
     private MarketItemListDTO[] MostCommon { get; set; }
     private MarketItemListDTO[] MostRare { get; set; }
@@ -614,6 +634,7 @@
         await RefreshHotRightNow();
         await RefreshMostWanted();
         await RefreshMostSaturated();
+        await RefreshMostStarved();
         await RefreshMostRecent();
         await RefreshMostCommon();
         await RefreshMostRare();
@@ -718,19 +739,6 @@
         }
     }
 
-    private async Task RefreshMostWanted()
-    {
-        try
-        {
-            MostWanted = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostWanted");
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'most wanted' market dashboard");
-        }
-    }
-
     private async Task RefreshMostSaturated()
     {
         try
@@ -741,6 +749,19 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'most saturated' market dashboard");
+        }
+    }
+
+    private async Task RefreshMostStarved()
+    {
+        try
+        {
+            MostStarved = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostStarved");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'most starved' market dashboard");
         }
     }
 

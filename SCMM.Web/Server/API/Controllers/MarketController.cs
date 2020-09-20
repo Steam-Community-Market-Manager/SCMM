@@ -304,23 +304,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("dashboard/mostWanted")]
-        public IEnumerable<MarketItemListDTO> GetDashboardMostWanted()
-        {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var query = db.SteamMarketItems
-                    .Include(x => x.App)
-                    .Include(x => x.Description)
-                    .OrderByDescending(x => x.Demand)
-                    .Take(10);
-
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
-            }
-        }
-
-        [AllowAnonymous]
         [HttpGet("dashboard/mostSaturated")]
         public IEnumerable<MarketItemListDTO> GetDashboardMostSaturated()
         {
@@ -330,7 +313,26 @@ namespace SCMM.Web.Server.API.Controllers
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
-                    .OrderByDescending(x => x.Supply)
+                    .Where(x => x.Supply > 0 && x.Demand > 0) // This doesn't work for some reason?!
+                    .OrderByDescending(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal) x.Supply / x.Demand) : 0)
+                    .Take(10);
+
+                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("dashboard/mostStarved")]
+        public IEnumerable<MarketItemListDTO> GetDashboardMostStarved()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var query = db.SteamMarketItems
+                    .Include(x => x.App)
+                    .Include(x => x.Description)
+                    .Where(x => x.Supply > 0 && x.Demand > 0) // This doesn't work for some reason?!
+                    .OrderBy(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal) x.Supply / x.Demand) : 0)
                     .Take(10);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
