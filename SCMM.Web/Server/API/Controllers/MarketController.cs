@@ -146,6 +146,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .OrderByDescending(x => x.Last24hrSales)
                     .Take(10);
 
@@ -165,6 +166,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.BuyNowPrice < x.Last48hrValue)
                     .Where(x => x.Last1hrValue < x.AllTimeAverageValue)
                     .Where(x => x.Last1hrValue < x.Last24hrValue)
@@ -189,6 +191,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.BuyNowPrice > x.Last48hrValue)
                     .Where(x => x.Last1hrValue > x.AllTimeAverageValue)
                     .Where(x => x.Last1hrValue > x.Last24hrValue)
@@ -212,6 +215,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Last1hrValue > 50 /* cents */)
                     .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
@@ -233,6 +237,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Last1hrValue > 50 /* cents */)
                     .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= 0)
                     .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
@@ -255,6 +260,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Last24hrValue > x.Last168hrValue)
                     .Where(x => x.BuyAskingPrice < x.Last24hrValue)
                     .Where(x => x.BuyAskingPrice > x.AllTimeLowestValue)
@@ -278,6 +284,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .OrderByDescending(x => x.FirstSeenOn)
                     .Take(10);
 
@@ -296,6 +303,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .OrderByDescending(x => x.Last1hrValue - x.First24hrValue)
                     .Take(10);
 
@@ -313,6 +321,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Supply > 0 && x.Demand > 0) // This doesn't work for some reason?!
                     .OrderByDescending(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal) x.Supply / x.Demand) : 0)
                     .Take(10);
@@ -331,6 +340,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Supply > 0 && x.Demand > 0) // This doesn't work for some reason?!
                     .OrderBy(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal) x.Supply / x.Demand) : 0)
                     .Take(10);
@@ -350,6 +360,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
                     .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
                     .Take(10);
@@ -369,6 +380,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
                     .OrderBy(x => x.Description.WorkshopFile.Subscriptions)
                     .Take(10);
@@ -389,6 +401,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
+                    .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.AllTimeLowestValueOn > x.AllTimeHighestValueOn)
                     .Where(x => x.Last1hrValue < x.AllTimeHighestValue)
                     .OrderBy(x => x.Last1hrValue - x.AllTimeHighestValue)
