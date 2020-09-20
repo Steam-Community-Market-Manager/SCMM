@@ -189,20 +189,21 @@ namespace SCMM.Web.Shared
 
         public static bool IsSaturated(this int supply, int demand)
         {
-            if (supply == 0 || demand == 0)
-            {
-                return false;
-            }
-            return ((supply / demand) >= 1);
+            return (supply >= demand);
         }
 
         public static bool IsStarved(this int supply, int demand)
         {
-            if (supply == 0 || demand == 0)
+            return (demand > supply);
+        }
+
+        public static string ToRatioPercentageString(this int a, int b)
+        {
+            if (a == 0 || b == 0)
             {
-                return false;
+                return "∞";
             }
-            return ((supply / demand) < 1);
+            return $"{(Math.Abs((int)Math.Floor(((double) a / b * 100) - 100))).ToQuantityString()}%";
         }
 
         public static string ToGCDRatioString(this int a, int b)
