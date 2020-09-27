@@ -35,19 +35,22 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                 return;
             }
 
-            var me = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
-            var meIndex = orderedStoreItems.IndexOf(me);
-            var beforeMeIndex = Math.Min((orderedStoreItems.IndexOf(me) + 1), orderedStoreItems.Count - 1);
-            var beforeMeItem = (beforeMeIndex != meIndex) ? orderedStoreItems.ElementAtOrDefault(beforeMeIndex) : null;
-            var afterMeIndex = Math.Max((orderedStoreItems.IndexOf(me) - 1), 0);
-            var afterMeItem = (afterMeIndex != meIndex) ? orderedStoreItems.ElementAtOrDefault(afterMeIndex) : null;
-            var totalSubscribers = (Description?.WorkshopFile?.Subscriptions ?? 0);
+            var item = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
+            var itemIndex = orderedStoreItems.IndexOf(item);
+            var itemSubscribers = (Description?.WorkshopFile?.Subscriptions ?? 0);
+            var beforeItemIndex = Math.Min((orderedStoreItems.IndexOf(item) + 1), orderedStoreItems.Count - 1);
+            var beforeItem = (beforeItemIndex != itemIndex) ? orderedStoreItems.ElementAtOrDefault(beforeItemIndex) : null;
+            var afterItemIndex = Math.Max((orderedStoreItems.IndexOf(item) - 1), 0);
+            var afterItem = (afterItemIndex != itemIndex) ? orderedStoreItems.ElementAtOrDefault(afterItemIndex) : null;
 
-            var newTotalSalesMin = (beforeMeItem != null)
-                ? Math.Max(beforeMeItem.TotalSalesMin + 1, totalSubscribers)
-                : totalSubscribers; // bottom of the list
-            var newTotalSalesMax = (afterMeItem != null)
-                ? (int?)Math.Max(afterMeItem.TotalSalesMin - 1, TotalSalesMin)
+            // TODO: Redo this based on total revenue, not subscriber counts
+            TotalSalesMin = itemSubscribers;
+            /*
+            var newTotalSalesMin = (beforeItem != null)
+                ? Math.Max(beforeItem.TotalSalesMin + 1, itemSubscribers)
+                : itemSubscribers; // bottom of the list
+            var newTotalSalesMax = (afterItem != null)
+                ? (int?)Math.Max(afterItem.TotalSalesMin - 1, TotalSalesMin)
                 : Int32.MaxValue; // top of the list
 
             // Minimum sales should never drop below its current value. If another item overtakes us in sales, 
@@ -56,6 +59,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
             // Maximum sales should be null if we have no idea how many could have been sold.
             TotalSalesMax = (TotalSalesMin != newTotalSalesMax) ? newTotalSalesMax : null;
+            */
         }
     }
 }
