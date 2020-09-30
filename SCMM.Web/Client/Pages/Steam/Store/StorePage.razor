@@ -47,15 +47,15 @@ else
                                         <i class="fas fa-fw fa-shopping-cart"></i>
                                         @if (item.TotalSalesMax == null)
                                         {
-                                        <span>@item.TotalSalesMin.ToQuantityString()</span>
+                                        <span>@item.TotalSalesMin.ToQuantityString() or more</span>
                                         }
-                                        else if (item.TotalSalesMax < Int32.MaxValue)
+                                        else if (item.TotalSalesMin == item.TotalSalesMax)
                                         {
-                                        <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
+                                        <span>@item.TotalSalesMin.ToQuantityString()</span>
                                         }
                                         else
                                         {
-                                        <span>@item.TotalSalesMin.ToQuantityString() or more</span>
+                                        <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
                                         }
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>

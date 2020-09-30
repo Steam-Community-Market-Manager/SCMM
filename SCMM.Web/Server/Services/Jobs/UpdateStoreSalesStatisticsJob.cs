@@ -121,14 +121,11 @@ namespace SCMM.Web.Server.Services.Jobs
                     storeItem = service.UpdateStoreItemRank(storeItem, storeRankPosition, storeRankTotal);
                 }
 
-                // Calculate total sales twice, once in both directions (to get correct min/max values)
-                foreach (var storeItem in storeItems.OrderByDescending(x => x.StoreRankPosition))
+                // Calculate total sales
+                var orderedStoreItems = storeItems.OrderBy(x => x.StoreRankPosition).ToList();
+                foreach (var storeItem in orderedStoreItems)
                 {
-                    storeItem.RecalculateTotalSales(storeItems);
-                }
-                foreach (var storeItem in storeItems.OrderBy(x => x.StoreRankPosition))
-                {
-                    storeItem.RecalculateTotalSales(storeItems);
+                    storeItem.RecalculateTotalSales(orderedStoreItems);
                 }
 
                 await db.SaveChangesAsync();
