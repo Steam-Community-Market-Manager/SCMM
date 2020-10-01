@@ -7,6 +7,7 @@ using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;
+using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Types;
 using SCMM.Web.Server.Domain.Models.Steam;

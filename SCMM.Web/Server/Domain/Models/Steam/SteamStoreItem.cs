@@ -1,5 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using SCMM.Web.Server.Data.Types;
+﻿using SCMM.Web.Server.Data.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;

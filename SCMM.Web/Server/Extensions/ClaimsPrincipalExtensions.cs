@@ -15,7 +15,7 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
         {
             return (user.Identity.IsAuthenticated && user.Id() == profileId);
         }
-        
+
         public static Guid Id(this ClaimsPrincipal user)
         {
             Guid id;

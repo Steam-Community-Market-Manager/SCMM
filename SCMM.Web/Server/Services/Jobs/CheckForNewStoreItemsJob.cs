@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Steam.Shared;
+using SCMM.Discord.Client;
+using SCMM.Steam.Client;
+using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -19,13 +21,15 @@ namespace SCMM.Web.Server.Services.Jobs
     {
         private readonly ILogger<CheckForNewStoreItemsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly DiscordClient _discordClient;
         private readonly SteamConfiguration _steamConfiguration;
 
-        public CheckForNewStoreItemsJob(IConfiguration configuration, ILogger<CheckForNewStoreItemsJob> logger, IServiceScopeFactory scopeFactory)
+        public CheckForNewStoreItemsJob(IConfiguration configuration, ILogger<CheckForNewStoreItemsJob> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
             : base(logger, configuration.GetJobConfiguration<CheckForNewStoreItemsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _discordClient = discordClient;
             _steamConfiguration = configuration.GetSteamConfiguration();
         }
 

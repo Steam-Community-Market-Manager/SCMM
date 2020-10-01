@@ -21,7 +21,7 @@ namespace SCMM.Web.Server.Controllers
         {
             return SignOut(
                 new AuthenticationProperties
-                { 
+                {
                     RedirectUri = returnUrl
                 }
             );

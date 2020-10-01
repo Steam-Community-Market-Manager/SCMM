@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Web.Server.Data;
@@ -19,12 +20,14 @@ namespace SCMM.Web.Server.Services.Jobs
     {
         private readonly ILogger<CheckForNewMarketItemsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly DiscordClient _discordClient;
 
-        public CheckForNewMarketItemsJob(IConfiguration configuration, ILogger<CheckForNewMarketItemsJob> logger, IServiceScopeFactory scopeFactory)
+        public CheckForNewMarketItemsJob(IConfiguration configuration, ILogger<CheckForNewMarketItemsJob> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
             : base(logger, configuration.GetJobConfiguration<CheckForNewMarketItemsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _discordClient = discordClient;
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)

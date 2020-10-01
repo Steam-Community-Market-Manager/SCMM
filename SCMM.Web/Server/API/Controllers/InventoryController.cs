@@ -198,7 +198,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                
+
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                     .Where(x => x.MarketItem != null)
@@ -259,7 +259,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                
+
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                     .Select(x => new
@@ -272,7 +272,7 @@ namespace SCMM.Web.Server.API.Controllers
                         MarketItemDescription = x.MarketItem.Description,
                         MarketItemCurrency = x.MarketItem.Currency,
                         HasBuyPrice = (x.BuyPrice > 0),
-                        ReturnOnInvestment = (x.BuyPrice > 0 && (x.MarketItem.ResellPrice - x.MarketItem.ResellTax) > 0 
+                        ReturnOnInvestment = (x.BuyPrice > 0 && (x.MarketItem.ResellPrice - x.MarketItem.ResellTax) > 0
                             ? ((decimal)(x.MarketItem.ResellPrice - x.MarketItem.ResellTax) / x.BuyPrice)
                             : 0
                         )
@@ -314,12 +314,12 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                
+
                 var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
                 var profileInventoryActivities = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                     .Where(x => x.MarketItem != null)
-                    .SelectMany(x => 
+                    .SelectMany(x =>
                         x.MarketItem.Activity.Where(x => x.Timestamp >= recentActivityCutoff)
                     )
                     .OrderByDescending(x => x.Timestamp)

@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using SCMM.Web.Server.API.Controllers.Extensions;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared;
@@ -11,8 +9,6 @@ using SCMM.Web.Shared.Domain.DTOs.Languages;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
-using System;
-using System.Linq.Expressions;
 
 namespace SCMM.Web.Server
 {
@@ -120,7 +116,7 @@ namespace SCMM.Web.Server
                     (src, dst, _, context) =>
                     {
                         var currency = context.Items.ContainsKey(AutoMapperConfigurationExtensions.ContextKeyCurrency)
-                            ? (CurrencyDetailedDTO) context.Options.Items[AutoMapperConfigurationExtensions.ContextKeyCurrency]
+                            ? (CurrencyDetailedDTO)context.Options.Items[AutoMapperConfigurationExtensions.ContextKeyCurrency]
                             : null;
                         return (currency != null && src.StorePrices.ContainsKey(currency.Name))
                             ? src.StorePrices[currency.Name]

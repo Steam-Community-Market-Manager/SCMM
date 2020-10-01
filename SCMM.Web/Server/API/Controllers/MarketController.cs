@@ -327,7 +327,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.Description)
                     .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Supply > 0 && x.Demand > 0) // This doesn't work for some reason?!
-                    .OrderByDescending(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal) x.Supply / x.Demand) : 0)
+                    .OrderByDescending(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal)x.Supply / x.Demand) : 0)
                     .Take(10);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
@@ -346,7 +346,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.Description)
                     .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                     .Where(x => x.Supply > 0 && x.Demand > 0) // This doesn't work for some reason?!
-                    .OrderBy(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal) x.Supply / x.Demand) : 0)
+                    .OrderBy(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal)x.Supply / x.Demand) : 0)
                     .Take(10);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);

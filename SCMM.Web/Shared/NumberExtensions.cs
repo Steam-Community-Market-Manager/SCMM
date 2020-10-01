@@ -203,7 +203,7 @@ namespace SCMM.Web.Shared
             {
                 return "∞";
             }
-            return $"{(Math.Abs((int)Math.Floor(((double) a / b * 100) - 100))).ToQuantityString()}%";
+            return $"{(Math.Abs((int)Math.Floor(((double)a / b * 100) - 100))).ToQuantityString()}%";
         }
 
         public static string ToGCDRatioString(this int a, int b)

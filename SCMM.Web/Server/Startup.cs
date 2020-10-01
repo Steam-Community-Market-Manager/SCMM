@@ -1,21 +1,22 @@
+using AspNet.Security.OpenId;
+using AspNet.Security.OpenId.Steam;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using SCMM.Discord.Client;
 using SCMM.Steam.Client;
-using SCMM.Steam.Shared;
+using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Middleware;
-using Microsoft.OpenApi.Models;
 using SCMM.Web.Server.Services.Jobs;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using AspNet.Security.OpenId.Steam;
 using System;
-using AspNet.Security.OpenId;
 using System.Security.Claims;
 
 namespace SCMM.Web.Server
@@ -46,8 +47,10 @@ namespace SCMM.Web.Server
                 }
             );
 
-            var steamConfiguration = Configuration.GetSteamConfiguration();
-            services.AddSingleton<SteamConfiguration>((s) => steamConfiguration);
+            services.AddSingleton<DiscordConfiguration>((s) => Configuration.GetDiscoardConfiguration());
+            services.AddSingleton<DiscordClient>();
+
+            services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
 
             var authConfiguration = services.AddAuthentication(options =>
@@ -68,10 +71,11 @@ namespace SCMM.Web.Server
             });
             authConfiguration.AddSteam(options =>
             {
-                options.ApplicationKey = steamConfiguration.ApplicationKey;
+                options.ApplicationKey = Configuration.GetSteamConfiguration().ApplicationKey;
                 options.Events = new OpenIdAuthenticationEvents
                 {
-                    OnTicketReceived = async (ctx) => {
+                    OnTicketReceived = async (ctx) =>
+                    {
                         var securityService = ctx.HttpContext.RequestServices.GetRequiredService<SecurityService>();
                         ctx.Principal.AddIdentity(
                             await securityService.LoginSteamProfileAsync(
@@ -113,12 +117,13 @@ namespace SCMM.Web.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
-            
+
             services.AddSwaggerGen(c =>
             {
                 c.IncludeXmlComments("SCMM.Web.Server.xml");
-                c.SwaggerDoc("v1", 
-                    new OpenApiInfo { 
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo
+                    {
                         Title = "SCMM",
                         Description = "Steam Community Market Manager API",
                         Version = "v1"

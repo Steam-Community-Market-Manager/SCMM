@@ -6,12 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.API.Controllers.Extensions;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
