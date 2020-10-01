@@ -40,15 +40,15 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
             var item = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
             var itemIndex = orderedStoreItems.IndexOf(item);
-            var itemSubscribers = (Description?.WorkshopFile?.Subscriptions ?? 0);
+            var itemSales = Math.Max(TotalSalesMin, Description?.WorkshopFile?.Subscriptions ?? 0);
             var itemPrice = (item?.StorePrices[currency] ?? 0);
-            var itemRevenue = (itemPrice * itemSubscribers);
+            var itemRevenue = (itemPrice * itemSales);
 
             var beforeItemIndex = Math.Min((orderedStoreItems.IndexOf(item) + 1), orderedStoreItems.Count - 1);
             var beforeItem = (beforeItemIndex != itemIndex) ? orderedStoreItems.ElementAtOrDefault(beforeItemIndex) : null;
-            var beforeItemSubscribers = (beforeItem?.Description?.WorkshopFile?.Subscriptions ?? 0);
+            var beforeItemSales = Math.Max(beforeItem?.TotalSalesMin ?? 0, beforeItem?.Description?.WorkshopFile?.Subscriptions ?? 0);
             var beforeItemPrice = (beforeItem?.StorePrices[currency] ?? 0);
-            var beforeItemRevenue = (beforeItemPrice * beforeItemSubscribers);
+            var beforeItemRevenue = (beforeItemPrice * beforeItemSales);
 
             // If the item BELOW us in the top sellers has earned more revenue than us,
             // calculate min sales by inflating our subscriber count so that the revenue is at least equal
@@ -61,14 +61,14 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             // Otherwise, we've earnt more revenue than the item below us, so just rely on subscriber count for minimum sales
             else
             {
-                newTotalSalesMin = itemSubscribers;
+                newTotalSalesMin = itemSales;
             }
 
             var afterItemIndex = Math.Max((orderedStoreItems.IndexOf(item) - 1), 0);
             var afterItem = (afterItemIndex != itemIndex) ? orderedStoreItems.ElementAtOrDefault(afterItemIndex) : null;
-            var afterItemSubscribers = (afterItem?.Description?.WorkshopFile?.Subscriptions ?? 0);
+            var afterItemSales = Math.Max(afterItem?.TotalSalesMin ?? 0, afterItem?.Description?.WorkshopFile?.Subscriptions ?? 0);
             var afterItemPrice = (afterItem?.StorePrices[currency] ?? 0);
-            var afterItemRevenue = (afterItemPrice * afterItemSubscribers);
+            var afterItemRevenue = (afterItemPrice * afterItemSales);
 
             // If the item ABOVE us in the top sellers has earned more revenue than us,
             // calculate max sales by inflating our subscriber count so that the revenue is at least equal
@@ -81,11 +81,11 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             // Otherwise, we've earnt more revenue than the item below us, so just rely on subscriber count for minimum sales
             else
             {
-                newTotalSalesMax = itemSubscribers;
+                newTotalSalesMax = itemSales;
             }
 
             // Minimum sales should be the subscriber count if we are unsure
-            TotalSalesMin = (beforeItem != null) ? newTotalSalesMin : itemSubscribers;
+            TotalSalesMin = (beforeItem != null) ? newTotalSalesMin : itemSales;
 
             // Maximum sales should be null if we are unsure
             TotalSalesMax = (afterItem != null) ? newTotalSalesMax : null;
