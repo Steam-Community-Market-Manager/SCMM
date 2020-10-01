@@ -142,11 +142,6 @@ namespace SCMM.Web.Server
                 app.UseMigrationsEndPoint();
                 // Enable WASM debugging
                 app.UseWebAssemblyDebugging();
-                // Enable Swagger API auto-docs
-                app.UseSwagger();
-                app.UseSwaggerUI(
-                    c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1")
-                );
             }
             else
             {
@@ -154,6 +149,12 @@ namespace SCMM.Web.Server
                 // Force HTTPS using HSTS
                 app.UseHsts();
             }
+
+            // Enable Swagger API auto-docs
+            app.UseSwagger();
+            app.UseSwaggerUI(
+                c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1")
+            );
 
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();

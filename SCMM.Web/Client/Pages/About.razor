@@ -6,6 +6,10 @@
 
 <style>
 
+    .Typography-H5 {
+        margin-top: 16px;
+    }
+
     .Donators-Root {
         padding-left: 24px;
     }
@@ -43,12 +47,12 @@
 
 </style>
 
-<Grid Container Spacing="@Spacing.Two">
+<Grid Container Spacing="@Spacing.Four">
     <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
         <Grid Container>
             <Grid Item ExtraSmall="@GridSize.Twelve">
                 <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
-                    About
+                    <i class="fas fa-fw fa-info-circle"></i> About
                 </Typography>
                 <Typography Variant="@TypographyVariant.Body1" GutterBottom>
                     <span>SCMM is a website created out of the desire to track Steam inventory performance against the community market.</span><br />
@@ -61,7 +65,7 @@
             </Grid>
             <Grid Item ExtraSmall="@GridSize.Twelve">
                 <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
-                    Change History
+                    <i class="fas fa-fw fa-list-alt"></i>  Change History
                 </Typography>
                 <Typography Variant="@TypographyVariant.Body1">
                     <span>v0.6 "Account Management"</span>
@@ -153,13 +157,61 @@
         <Grid Container>
             <Grid Item ExtraSmall="@GridSize.Twelve">
                 <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
-                    Acknowledgements
+                    <i class="fas fa-fw fa-question-circle"></i>  Frequently Asked Questions
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1">
+                    <i class="fas fa-fw fa-question-circle"></i>
+                    <span>Why is the website so slow?</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <span>This tool is built using <a href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor" target="_blank">Blazor</a>, a fairly new web technology that is not as well optimised as your traditional JavaScript based website. <a href="https://github.com/dotnet/aspnetcore/issues/22432" target="_blank">Performance will improve</a> over time as the technology matures.</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1">
+                    <i class="fas fa-fw fa-question-circle"></i>
+                    <span>Why are some of the menu options disabled?</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <span>These features aren't finished yet. They'll be enabled in a future update, so stay tuned.</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1">
+                    <i class="fas fa-fw fa-question-circle"></i>
+                    <span>When will the next update be released?</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <span>I'm not commited to a release schedule as I work on this in my free time (which varies alot). If you want to follow developments, I post informal progress updates from time-to-time in the <a href="https://discord.gg/CRMf95Z" target="_blank">OMIGHTY YouTube</a> Discord.</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1">
+                    <i class="fas fa-fw fa-question-circle"></i>
+                    <span>I have a suggestion/idea/bug, where should I post it?</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <span>All feedback is appreicated, drop me a message on Discord.</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1">
+                    <i class="fas fa-fw fa-question-circle"></i>
+                    <span>I want to help with this project, how do I get involved?</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <span>At this time I'm not actively looking for any help, the project is still very early-days and the development environment isn't setup for collaboration yet.</span><br/>
+                    <span>If you are convinced you have something to contribute, contact me on Discord.</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1">
+                    <i class="fas fa-fw fa-question-circle"></i>
+                    <span>How do I get in contact with you?</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <span>Discord: Bipolar Penguin#8838</span>
+                </Typography>
+            </Grid>
+            <Grid Item ExtraSmall="@GridSize.Twelve">
+                <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
+                    <i class="fas fa-fw fa-award"></i> Acknowledgements
                 </Typography>
                 <Typography Variant="@TypographyVariant.Body1" Style="padding-left:24px" GutterBottom>
                     <ul>
-                        <li><a href="https://steamcommunity.com/">Steam Community</a> and <a href="https://partner.steamgames.com/doc/webapi">Steam WebAPI</a> for providing the source data</li>
-                        <li><a href="https://fontawesome.com/">Font Awesome</a> and <a href="https://game-icons.net/">game-icons.net</a> for providing various icons</li>
-                        <li><a href="https://discord.gg/CRMf95Z">OMIGHTY Discord Community</a> for their suggestions and feedback</li>
+                        <li><a href="https://steamcommunity.com/" target="_blank">Steam Community</a> and <a href="https://partner.steamgames.com/doc/webapi" target="_blank">Steam WebAPI</a> for providing the source data</li>
+                        <li><a href="https://fontawesome.com/" target="_blank">Font Awesome</a> and <a href="https://game-icons.net/" target="_blank">game-icons.net</a> for providing various icons</li>
+                        <li><a href="https://discord.gg/CRMf95Z" target="_blank">OMIGHTY Discord Community</a> for their suggestions and feedback</li>
                     </ul>
                 </Typography>
                 @if(Donators == null)
@@ -190,50 +242,26 @@
             </Grid>
             <Grid Item ExtraSmall="@GridSize.Twelve">
                 <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
-                    Frequently Asked Questions
+                    <i class="fas fa-fw fa-book"></i> API Documentation
                 </Typography>
-                <Typography Variant="@TypographyVariant.Body1">
-                    <i class="fas fa-fw fa-question-circle"></i>
-                    <span>Why is everything so slow and laggy?</span>
+                <Typography Variant="@TypographyVariant.Body1" GutterBottom>
+                    <span>The SCMM API is open to everyone, free and unrestricted (although this may change in the future).</span><br />
                 </Typography>
-                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
-                    <span>This tool is built using <a href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor">Blazor</a>, a fairly new web technology that is not as well optimised as your traditional JavaScript based website. <a href="https://github.com/dotnet/aspnetcore/issues/22432">Performance will improve</a> over time as the technology matures.</span>
+                <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary" GutterBottom>
+                    <i class="fas fa-fw fa-arrow-right"></i>
+                    <span><a href="/swagger" target="_blank">View Swagger Documentation</a></span>
                 </Typography>
-                <Typography Variant="@TypographyVariant.Body1">
-                    <i class="fas fa-fw fa-question-circle"></i>
-                    <span>Why are some of the menu options disabled?</span>
+            </Grid>
+            <Grid Item ExtraSmall="@GridSize.Twelve">
+                <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
+                    <i class="fab fa-fw fa-discord"></i> Discord Bot
                 </Typography>
-                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
-                    <span>These features aren't finished yet. They'll be enabled in a future update, so stay tuned.</span>
+                <Typography Variant="@TypographyVariant.Body1" GutterBottom>
+                    <span>The SCMM Bot can join your Discord server, providing the community with alerts whenever new items appear on the store or marketplace.</span><br />
                 </Typography>
-                <Typography Variant="@TypographyVariant.Body1">
-                    <i class="fas fa-fw fa-question-circle"></i>
-                    <span>When will the next update be released?</span>
-                </Typography>
-                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
-                    <span>I'm not commited to a release schedule as I work on this in my free time (which varies alot). If you want to follow developments, I post informal progress updates from time-to-time in the <a href="https://discord.gg/CRMf95Z">OMIGHTY YouTube</a> Discord.</span>
-                </Typography>
-                <Typography Variant="@TypographyVariant.Body1">
-                    <i class="fas fa-fw fa-question-circle"></i>
-                    <span>I have a suggestion/idea/bug, where should I post it?</span>
-                </Typography>
-                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
-                    <span>All feedback is appreicated, drop me a message on Discord.</span>
-                </Typography>
-                <Typography Variant="@TypographyVariant.Body1">
-                    <i class="fas fa-fw fa-question-circle"></i>
-                    <span>I want to help with this project, how do I get involved?</span>
-                </Typography>
-                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
-                    <span>At this time I'm not actively looking for any help, the project is still very early-days and the development environment isn't setup for collaboration yet.</span><br/>
-                    <span>If you are convinced you have something to contribute, contact me on Discord.</span>
-                </Typography>
-                <Typography Variant="@TypographyVariant.Body1">
-                    <i class="fas fa-fw fa-question-circle"></i>
-                    <span>How do I get in contact with you?</span>
-                </Typography>
-                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
-                    <span>Discord: Bipolar Penguin#8838</span>
+                <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary" GutterBottom>
+                    <i class="fas fa-fw fa-arrow-right"></i>
+                    <span><a href="https://discord.com/api/oauth2/authorize?client_id=761034518424715264&permissions=10240&scope=bot" target="_blank">Invite SCMM Bot to your server</a></span>
                 </Typography>
             </Grid>
         </Grid>
