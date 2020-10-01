@@ -83,7 +83,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     }
                 }
 
-                await db.SaveChangesAsync();
+                db.SaveChanges();
             }
         }
     }

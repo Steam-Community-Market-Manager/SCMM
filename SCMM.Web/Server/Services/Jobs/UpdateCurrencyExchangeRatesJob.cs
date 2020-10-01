@@ -90,7 +90,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         currency.ExchangeRateMultiplier = ((decimal)localPrice / systemCurrencyPrice);
                     }
 
-                    await db.SaveChangesAsync();
+                    db.SaveChanges();
                     Thread.Sleep(3000); // Delay between requests to avoid server ban
                 }
 

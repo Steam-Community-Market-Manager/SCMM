@@ -653,17 +653,17 @@ namespace SCMM.Web.Server.Domain
         /// UPDATE BELOW...
         ///
 
-        public async Task<IEnumerable<SteamMarketItem>> FindOrAddSteamMarketItems(IEnumerable<SteamMarketSearchItem> items)
+        public async Task<IEnumerable<SteamMarketItem>> FindOrAddSteamMarketItems(IEnumerable<SteamMarketSearchItem> items, SteamCurrency currency)
         {
             var dbItems = new List<SteamMarketItem>();
             foreach (var item in items)
             {
-                dbItems.Add(await FindOrAddSteamMarketItem(item));
+                dbItems.Add(await FindOrAddSteamMarketItem(item, currency));
             }
             return dbItems;
         }
 
-        public async Task<SteamMarketItem> FindOrAddSteamMarketItem(SteamMarketSearchItem item)
+        public async Task<SteamMarketItem> FindOrAddSteamMarketItem(SteamMarketSearchItem item, SteamCurrency currency)
         {
             if (String.IsNullOrEmpty(item?.AssetDescription.AppId))
             {
@@ -677,6 +677,8 @@ namespace SCMM.Web.Server.Domain
             }
 
             var dbItem = _db.SteamMarketItems
+                .Include(x => x.App)
+                .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .FirstOrDefault(x => x.Description != null && x.Description.SteamId == item.AssetDescription.ClassId);
 
@@ -693,8 +695,14 @@ namespace SCMM.Web.Server.Domain
 
             dbApp.MarketItems.Add(dbItem = new SteamMarketItem()
             {
+                App = dbApp,
                 AppId = dbApp.Id,
-                Description = assetDescription
+                Description = assetDescription,
+                DescriptionId = assetDescription.Id,
+                Currency = currency,
+                CurrencyId = currency.Id,
+                Supply = item.SellListings,
+                BuyNowPrice = item.SellPrice
             });
 
             return dbItem;

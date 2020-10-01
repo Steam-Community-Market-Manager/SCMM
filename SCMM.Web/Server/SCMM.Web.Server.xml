@@ -51,7 +51,7 @@
              UPDATE BELOW...
             
         </member>
-        <member name="M:SCMM.Web.Server.Domain.SteamService.FindOrAddSteamMarketItems(System.Collections.Generic.IEnumerable{SCMM.Steam.Shared.Community.Models.SteamMarketSearchItem})">
+        <member name="M:SCMM.Web.Server.Domain.SteamService.FindOrAddSteamMarketItems(System.Collections.Generic.IEnumerable{SCMM.Steam.Shared.Community.Models.SteamMarketSearchItem},SCMM.Web.Server.Domain.Models.Steam.SteamCurrency)">
             
              UPDATE BELOW...
             

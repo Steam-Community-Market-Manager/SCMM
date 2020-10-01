@@ -109,9 +109,9 @@ namespace SCMM.Web.Server.Services.Jobs
                             imageUrl: app.IconLargeUrl,
                             color: ColorTranslator.FromHtml(app.PrimaryColor)
                         );
-                    }
 
-                    await db.SaveChangesAsync();
+                        db.SaveChanges();
+                    }
                 }
             }
         }
@@ -119,10 +119,10 @@ namespace SCMM.Web.Server.Services.Jobs
         private string GenerateStoreItemPriceList(SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
         {
             var prices = new List<String>();
-            foreach (var price in storeItem.StorePrices.OrderBy(x => x.Key))
+            foreach (var currency in currencies)
             {
-                var currency = currencies.FirstOrDefault(x => x.Name == price.Key);
-                if (currency != null)
+                var price = storeItem.StorePrices.FirstOrDefault(x => x.Key == currency.Name);
+                if (price.Value > 0)
                 {
                     var priceString = currency.ToPriceString(price.Value)?.Trim();
                     if (!String.IsNullOrEmpty(priceString))

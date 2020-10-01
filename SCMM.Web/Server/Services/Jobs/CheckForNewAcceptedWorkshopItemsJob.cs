@@ -125,10 +125,10 @@ namespace SCMM.Web.Server.Services.Jobs
                                     );
                                 }
                             }
+
+                            db.SaveChanges();
                         }
                     }
-
-                    await db.SaveChangesAsync();
                 }
             }
         }

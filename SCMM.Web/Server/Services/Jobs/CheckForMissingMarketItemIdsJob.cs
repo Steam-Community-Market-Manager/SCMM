@@ -68,7 +68,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 if (updatedItems.Any())
                 {
-                    await db.SaveChangesAsync();
+                    db.SaveChanges();
                 }
             }
         }

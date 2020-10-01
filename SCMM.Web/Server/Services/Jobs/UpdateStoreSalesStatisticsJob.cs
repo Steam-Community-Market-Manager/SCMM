@@ -129,7 +129,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     storeItem.RecalculateTotalSales(orderedStoreItems);
                 }
 
-                await db.SaveChangesAsync();
+                db.SaveChanges();
             }
         }
 
@@ -174,7 +174,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 );
             }
 
-            await db.SaveChangesAsync();
+            db.SaveChanges();
         }
     }
 }
