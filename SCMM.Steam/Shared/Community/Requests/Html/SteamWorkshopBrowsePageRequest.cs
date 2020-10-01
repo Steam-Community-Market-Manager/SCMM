@@ -4,6 +4,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Html
 {
     public class SteamWorkshopBrowsePageRequest : SteamRequest
     {
+        public const string BrowseSortAccepted = "accepted";
         public const string BrowseSortMostPopular = "mostpopular";
         public const string BrowseSortMostRecent = "mostrecent";
         public const string SectionItems = "mtxitems";
