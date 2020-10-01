@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -79,17 +80,17 @@ namespace SCMM.Discord.Client
             GC.SuppressFinalize(this);
         }
 
-        public Task BroadcastMessage(string message, string title = null, string description = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public Task BroadcastMessage(string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
-            return BroadcastMessage(null, null, message, title: title, description: description, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+            return BroadcastMessage(null, null, message, title: title, description: description, fields: fields, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
         }
 
-        public Task BroadcastMessage(string channel, string message, string title = null, string description = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public Task BroadcastMessage(string channel, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
-            return BroadcastMessage(null, channel, message, title: title, description: description, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+            return BroadcastMessage(null, channel, message, title: title, description: description, url: url, fields: fields, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
         }
 
-        public async Task BroadcastMessage(string guild, string channel, string message, string title = null, string description = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public async Task BroadcastMessage(string guild, string channel, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             EnsureClientIsReady();
 
@@ -109,12 +110,22 @@ namespace SCMM.Discord.Client
                 try
                 {
                     // If the title is not null, we assume you have emdeded content
-                    Embed embed = null;
+                    var embed = (Embed) null;
                     if (!String.IsNullOrEmpty(title))
                     {
+                        var fieldBuilders = new List<EmbedFieldBuilder>();
+                        if (fields != null)
+                        {
+                            fieldBuilders = fields.Select(x => new EmbedFieldBuilder()
+                                .WithName(x.Key)
+                                .WithValue(x.Value)
+                            ).ToList();
+                        }
+
                         embed = new EmbedBuilder()
                             .WithTitle(title)
                             .WithDescription(description)
+                            .WithFields(fieldBuilders)
                             .WithUrl(url)
                             .WithImageUrl(imageUrl)
                             .WithThumbnailUrl(thumbnailUrl)

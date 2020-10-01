@@ -4,13 +4,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
+using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
+using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
+using SCMM.Web.Shared;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,6 +52,12 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
+                var currencies = await db.SteamCurrencies.Where(x => x.IsCommon).ToListAsync();
+                if (currencies == null)
+                {
+                    return;
+                }
+
                 var language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.IsDefault);
                 if (language == null)
                 {
@@ -67,10 +78,36 @@ namespace SCMM.Web.Server.Services.Jobs
                         continue;
                     }
 
+                    var newStoreItems = new List<SteamStoreItem>();
                     foreach (var asset in response.Data.Assets)
                     {
-                        await steamService.AddOrUpdateAppStoreItem(
+                        var storeItem = await steamService.AddOrUpdateAppStoreItem(
                             app, language, asset, timeChecked
+                        );
+                        if (storeItem.IsTransient)
+                        {
+                            newStoreItems.Add(storeItem);
+                        }
+                    }
+
+                    if (newStoreItems.Any())
+                    {
+                        await discord.BroadcastMessage(
+                            //channel: "store",
+                            message: null,
+                            title: $"{app.Name} store has been updated",
+                            description: $"{newStoreItems.Count} new item(s) have been added to the {app.Name} store.",
+                            fields: newStoreItems.ToDictionary(
+                                x => x.Description?.Name,
+                                x => GenerateStoreItemPriceList(x, currencies)
+                            ),
+                            url: new SteamItemStorePageRequest()
+                            { 
+                                AppId = app.SteamId 
+                            }.Uri.ToString(),
+                            thumbnailUrl: app.IconUrl,
+                            imageUrl: app.IconLargeUrl,
+                            color: ColorTranslator.FromHtml(app.PrimaryColor)
                         );
                     }
 
@@ -79,5 +116,23 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
+        private string GenerateStoreItemPriceList(SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
+        {
+            var prices = new List<String>();
+            foreach (var price in storeItem.StorePrices.OrderBy(x => x.Key))
+            {
+                var currency = currencies.FirstOrDefault(x => x.Name == price.Key);
+                if (currency != null)
+                {
+                    var priceString = currency.ToPriceString(price.Value)?.Trim();
+                    if (!String.IsNullOrEmpty(priceString))
+                    {
+                        prices.Add($"{currency.Name} {priceString}");
+                    }
+                }
+            }
+
+            return String.Join("  •  ", prices).Trim(' ', '•');
+        }
     }
 }

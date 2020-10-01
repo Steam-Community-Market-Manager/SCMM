@@ -41,6 +41,11 @@
             If true, this is the system currency that all others are converted from
             </summary>
         </member>
+        <member name="P:SCMM.Web.Server.Domain.Models.Steam.SteamCurrency.IsCommon">
+            <summary>
+            If true, this is a "cool" price which is highlighted when presenting "common" currencies
+            </summary>
+        </member>
         <member name="M:SCMM.Web.Server.Domain.SteamService.AddOrUpdateAssetWorkshopFile(SCMM.Web.Server.Domain.Models.Steam.SteamApp,System.String)">
             
              UPDATE BELOW...

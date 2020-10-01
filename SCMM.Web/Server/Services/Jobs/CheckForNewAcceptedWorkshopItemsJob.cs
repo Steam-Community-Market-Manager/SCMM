@@ -15,6 +15,7 @@ using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -114,10 +115,13 @@ namespace SCMM.Web.Server.Services.Jobs
                                         message: null,
                                         title: $"{publishedFile.Title} has been accepted!",
                                         description: $"This workshop item was just accepted in-game and should appear on the {app.Name} store shortly.",
-                                        url: new SteamWorkshopViewFileDetailsRequest(publishedFile.PublishedFileId.ToString()).Uri.ToString(),
+                                        url: new SteamWorkshopViewFileDetailsRequest()
+                                        {
+                                            Id = publishedFile.PublishedFileId.ToString()
+                                        }.Uri.ToString(),
                                         thumbnailUrl: app.IconUrl,
                                         imageUrl: publishedFile.PreviewUrl.ToString(),
-                                        color: Color.Green                                        
+                                        color: ColorTranslator.FromHtml(app.PrimaryColor)                                       
                                     );
                                 }
                             }
