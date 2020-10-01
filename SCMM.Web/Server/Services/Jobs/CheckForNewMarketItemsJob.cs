@@ -20,20 +20,19 @@ namespace SCMM.Web.Server.Services.Jobs
     {
         private readonly ILogger<CheckForNewMarketItemsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly DiscordClient _discordClient;
 
-        public CheckForNewMarketItemsJob(IConfiguration configuration, ILogger<CheckForNewMarketItemsJob> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
+        public CheckForNewMarketItemsJob(IConfiguration configuration, ILogger<CheckForNewMarketItemsJob> logger, IServiceScopeFactory scopeFactory)
             : base(logger, configuration.GetJobConfiguration<CheckForNewMarketItemsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
-            _discordClient = discordClient;
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();

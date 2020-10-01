@@ -2,6 +2,8 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -77,14 +79,36 @@ namespace SCMM.Discord.Client
             GC.SuppressFinalize(this);
         }
 
-        public async Task BroadcastMessage(string message, string title = null, string description = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public Task BroadcastMessage(string message, string title = null, string description = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        {
+            return BroadcastMessage(null, null, message, title: title, description: description, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+        }
+
+        public Task BroadcastMessage(string channel, string message, string title = null, string description = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        {
+            return BroadcastMessage(null, channel, message, title: title, description: description, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+        }
+
+        public async Task BroadcastMessage(string guild, string channel, string message, string title = null, string description = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             EnsureClientIsReady();
 
-            foreach (var guild in _client.Guilds)
+            // If guild is null, we'll broadcast to all guilds
+            var guilds = _client.Guilds
+                .Where(x => String.IsNullOrEmpty(guild) || Regex.IsMatch(x.Name, guild));
+            foreach (var targetGuild in guilds)
             {
+                // If the channel is null, we'll broadcast to the default channel
+                var targetChannel = targetGuild.TextChannels
+                    .FirstOrDefault(x => !String.IsNullOrEmpty(guild) && Regex.IsMatch(x.Name, channel));
+                if (targetChannel == null)
+                {
+                    targetChannel = targetGuild.DefaultChannel;
+                }
+
                 try
                 {
+                    // If the title is not null, we assume you have emdeded content
                     Embed embed = null;
                     if (!String.IsNullOrEmpty(title))
                     {
@@ -100,14 +124,15 @@ namespace SCMM.Discord.Client
                             .Build();
                     }
 
-                    await guild.DefaultChannel.SendMessageAsync(
+                    // Send the message
+                    await targetChannel.SendMessageAsync(
                         text: message,
                         embed: embed
                     );
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to broadcast message to Discord channel (guild: {guild.Id}, name: {guild.Name}, channel: {guild.DefaultChannel.Name})");
+                    _logger.LogError(ex, $"Failed to broadcast message to Discord (guild: {targetGuild.Name}, channel: {targetChannel.Name})");
                 }
             }
         }

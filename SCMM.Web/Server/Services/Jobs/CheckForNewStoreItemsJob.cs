@@ -21,15 +21,13 @@ namespace SCMM.Web.Server.Services.Jobs
     {
         private readonly ILogger<CheckForNewStoreItemsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly DiscordClient _discordClient;
         private readonly SteamConfiguration _steamConfiguration;
 
-        public CheckForNewStoreItemsJob(IConfiguration configuration, ILogger<CheckForNewStoreItemsJob> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
+        public CheckForNewStoreItemsJob(IConfiguration configuration, ILogger<CheckForNewStoreItemsJob> logger, IServiceScopeFactory scopeFactory)
             : base(logger, configuration.GetJobConfiguration<CheckForNewStoreItemsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
-            _discordClient = discordClient;
             _steamConfiguration = configuration.GetSteamConfiguration();
         }
 
@@ -38,6 +36,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                 var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();

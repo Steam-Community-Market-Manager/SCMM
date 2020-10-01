@@ -29,6 +29,9 @@
 
         public const string SteamMarketListingItemNameIdRegex = @"Market_LoadOrderSpread\((.*)\)";
 
+        public const string SteamWorkshopItemClass = "workshopItem";
+        public const string SteamWorkshopItemPublishedFileIdAttribute = "data-publishedfileid";
+
         public const string DefaultContextId = "2";
     }
 }

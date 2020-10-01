@@ -32,6 +32,11 @@ namespace SCMM.Steam.Client
             return await GetJson<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(request);
         }
 
+        public async Task<XElement> GetItemWorkshopPage(SteamWorkshopBrowsePageRequest request)
+        {
+            return await GetHtml<SteamWorkshopBrowsePageRequest>(request);
+        }
+
         public async Task<XElement> GetItemStorePage(SteamItemStorePageRequest request)
         {
             return await GetHtml<SteamItemStorePageRequest>(request);
