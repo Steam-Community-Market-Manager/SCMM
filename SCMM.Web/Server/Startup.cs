@@ -152,10 +152,16 @@ namespace SCMM.Web.Server
             }
 
             // Enable Swagger API auto-docs
-            app.UseSwagger();
-            app.UseSwaggerUI(
-                c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1")
-            );
+            app.UseSwagger(config =>
+            {
+                config.RouteTemplate = "docs/{documentname}/swagger.json";
+            });
+            app.UseSwaggerUI(config => 
+            {
+                config.RoutePrefix = "docs";
+                config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM v1");
+                config.OAuth2RedirectUrl("/signin");
+            });
 
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
