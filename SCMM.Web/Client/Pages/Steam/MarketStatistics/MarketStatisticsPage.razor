@@ -41,10 +41,6 @@
                                 1m
                             </Button>
                             <Divider Orientation="@Orientation.Vertical" />
-                            <Button OnClick="@(() => RefreshSalesPerDay(7))" Color="@Color.TextSecondary">
-                                7d
-                            </Button>
-                            <Divider Orientation="@Orientation.Vertical" />
                             <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
                                 <strong>17,306 today</strong>
                             </Typography>
@@ -801,11 +797,26 @@
             BackgroundColor = "#000000",
             BorderColor = "#000000",
             BorderWidth = 2,
-            //PointBorderWidth = 1,
-            //PointRadius = 1,
+            PointBorderWidth = 2,
             //LineTension = 0.1,
             Fill = false
         };
+        if (SalesPerDay.Count >= 500)
+        {
+            salesDataSet.PointRadius = 1;
+        }
+        else if (SalesPerDay.Count >= 300)
+        {
+            salesDataSet.PointRadius = 2;
+        }
+        else if (SalesPerDay.Count >= 150)
+        {
+            salesDataSet.PointRadius = 3;
+        }
+        else
+        {
+            salesDataSet.PointRadius = 4;
+        }
         salesDataSet.AddRange(
             SalesPerDay.Select(x => (DoubleWrapper)x.Value).ToList()
         );
