@@ -85,65 +85,81 @@ namespace SCMM.Discord.Client
             return BroadcastMessage(null, null, message, title: title, description: description, fields: fields, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
         }
 
-        public Task BroadcastMessage(string channel, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public Task BroadcastMessage(string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
-            return BroadcastMessage(null, channel, message, title: title, description: description, url: url, fields: fields, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+            return BroadcastMessage(null, channelPattern, message, title: title, description: description, url: url, fields: fields, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
         }
 
-        public async Task BroadcastMessage(string guild, string channel, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public async Task BroadcastMessage(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             EnsureClientIsReady();
 
             // If guild is null, we'll broadcast to all guilds
             var guilds = _client.Guilds
-                .Where(x => String.IsNullOrEmpty(guild) || Regex.IsMatch(x.Name, guild));
-            foreach (var targetGuild in guilds)
+                .Where(x => String.IsNullOrEmpty(guildPattern) || Regex.IsMatch(x.Name, guildPattern));
+            foreach (var guild in guilds)
             {
                 // If the channel is null, we'll broadcast to the default channel
-                var targetChannel = targetGuild.TextChannels
-                    .FirstOrDefault(x => !String.IsNullOrEmpty(guild) && Regex.IsMatch(x.Name, channel));
-                if (targetChannel == null)
+                var channels = guild.TextChannels
+                    .Where(x => !String.IsNullOrEmpty(guildPattern) && Regex.IsMatch(x.Name, channelPattern))
+                    .ToList();
+                if (!channels.Any())
                 {
-                    targetChannel = targetGuild.DefaultChannel;
+                    channels.Add(guild.DefaultChannel);
                 }
 
-                try
+                foreach (var channel in channels)
                 {
-                    // If the title is not null, we assume you have emdeded content
-                    var embed = (Embed) null;
-                    if (!String.IsNullOrEmpty(title))
+                    // Make sure we have permission to send messages here
+                    var channelPermissions = guild.CurrentUser.GetPermissions(channel);
+                    if (!channelPermissions.SendMessages)
                     {
-                        var fieldBuilders = new List<EmbedFieldBuilder>();
-                        if (fields != null)
-                        {
-                            fieldBuilders = fields.Select(x => new EmbedFieldBuilder()
-                                .WithName(x.Key)
-                                .WithValue(x.Value)
-                            ).ToList();
-                        }
-
-                        embed = new EmbedBuilder()
-                            .WithTitle(title)
-                            .WithDescription(description)
-                            .WithFields(fieldBuilders)
-                            .WithUrl(url)
-                            .WithImageUrl(imageUrl)
-                            .WithThumbnailUrl(thumbnailUrl)
-                            .WithColor((color != null ? (Color)color.Value : Color.Default))
-                            .WithFooter(x => x.Text = "https://scmm.app")
-                            .WithCurrentTimestamp()
-                            .Build();
+                        continue;
                     }
 
-                    // Send the message
-                    await targetChannel.SendMessageAsync(
-                        text: message,
-                        embed: embed
-                    );
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to broadcast message to Discord (guild: {targetGuild.Name}, channel: {targetChannel.Name})");
+                    try
+                    {
+                        // If the title is not null, we assume you have emdeded content
+                        var embed = (Embed)null;
+                        if (!String.IsNullOrEmpty(title))
+                        {
+                            var fieldBuilders = new List<EmbedFieldBuilder>();
+                            if (fields != null)
+                            {
+                                fieldBuilders = fields.Select(x => new EmbedFieldBuilder()
+                                    .WithName(x.Key)
+                                    .WithValue(x.Value)
+                                ).ToList();
+                            }
+
+                            embed = new EmbedBuilder()
+                                .WithTitle(title)
+                                .WithDescription(description)
+                                .WithFields(fieldBuilders)
+                                .WithUrl(url)
+                                .WithImageUrl(imageUrl)
+                                .WithThumbnailUrl(thumbnailUrl)
+                                .WithColor((color != null ? (Color)color.Value : Color.Default))
+                                .WithFooter(x => x.Text = "https://scmm.app")
+                                .WithCurrentTimestamp()
+                                .Build();
+                        }
+
+                        // Send the message
+                        await channel.SendMessageAsync(
+                            text: message,
+                            embed: embed
+                        );
+
+                        // Break out of the channel loop.
+                        // We only want to send the message to the FIRST channel that matches our critera PER guild
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to broadcast message to Discord (guild: {guild.Name}, channel: {channel.Name})");
+                        continue;
+                    }
                 }
             }
         }

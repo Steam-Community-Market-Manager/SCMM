@@ -93,7 +93,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     if (newStoreItems.Any())
                     {
                         await discord.BroadcastMessage(
-                            //channel: "store",
+                            channelPattern: $"announcement|store|skin|{app.Name}",
                             message: null,
                             title: $"{app.Name} store has been updated",
                             description: $"{newStoreItems.Count} new item(s) have been added to the {app.Name} store.",

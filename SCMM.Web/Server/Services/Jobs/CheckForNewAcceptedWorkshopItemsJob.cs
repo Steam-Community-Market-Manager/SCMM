@@ -111,7 +111,7 @@ namespace SCMM.Web.Server.Services.Jobs
                                 if (workshopFile != null)
                                 {
                                     await discord.BroadcastMessage(
-                                        //channel: "store",
+                                        channelPattern: $"announcement|workshop|store|skin|{app.Name}",
                                         message: null,
                                         title: $"{publishedFile.Title} has been accepted!",
                                         description: $"This workshop item was just accepted in-game and should appear on the {app.Name} store shortly.",
