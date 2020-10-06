@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -133,6 +134,38 @@ namespace SCMM.Web.Server.API.Controllers
                     .FirstOrDefault(x => x.Id == id || x.Description.Name == idOrName);
 
                 return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("dashboard/salesPerDay")]
+        public IDictionary<string, int> GetSalesPerDay([FromQuery] int? maxDays = null)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+                var query = db.SteamMarketItemSale
+                    .Where(x => x.Timestamp.Date < yesterday.Date)
+                    .GroupBy(x => x.Timestamp.Date)
+                    .OrderByDescending(x => x.Key.Date)
+                    .Select(x => new
+                    {
+                        Date = x.Key,
+                        Sales = x.Sum(y => y.Quantity)
+                    });
+
+                if (maxDays > 0)
+                {
+                    query = query.Take(maxDays.Value);
+                }
+
+                var salesPerDay = query.ToList();
+                salesPerDay.Reverse(); // newest at bottom
+                return salesPerDay.ToDictionary(
+                    x => x.Date.ToString("dd MMM yyyy"),
+                    x => x.Sales
+                );
             }
         }
 

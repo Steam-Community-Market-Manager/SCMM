@@ -10,49 +10,61 @@
 
 <DocumentTitle Title="Market Statistics" />
 <Grid Container Spacing="@Spacing.Two">
-    
-    <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">    
         <Card>
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
-                        Most Recent
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Lowest market age.
-                    </Typography>
+                    <Grid Container>
+                        <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Three">
+                            <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                                Market Sales
+                            </Typography>
+                            <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                                Total number of sales per day
+                            </Typography>
+                        </Grid>
+                        <Grid Item Container ExtraSmall="@GridSize.Twelve" Small="@GridSize.Nine" Style="flex-direction: row-reverse">
+                            <Button OnClick="@(() => RefreshSalesPerDay(null))" Color="@Color.TextSecondary">
+                                All
+                            </Button>
+                            <Divider Orientation="@Orientation.Vertical" />
+                            <Button OnClick="@(() => RefreshSalesPerDay(365))" Color="@Color.TextSecondary">
+                                12m
+                            </Button>
+                            <Divider Orientation="@Orientation.Vertical" />
+                            <Button OnClick="@(() => RefreshSalesPerDay(182))" Color="@Color.TextSecondary">
+                                6m
+                            </Button>
+                            <Divider Orientation="@Orientation.Vertical" />
+                            <Button OnClick="@(() => RefreshSalesPerDay(30))" Color="@Color.TextSecondary">
+                                1m
+                            </Button>
+                            <Divider Orientation="@Orientation.Vertical" />
+                            <Button OnClick="@(() => RefreshSalesPerDay(7))" Color="@Color.TextSecondary">
+                                7d
+                            </Button>
+                            <Divider Orientation="@Orientation.Vertical" />
+                            <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
+                                <strong>17,306 today</strong>
+                            </Typography>
+                        </Grid>
+                    </Grid>
                 </TitleContent>
             </CardHeader>
             <CardContent Style="padding:0px">
-                @if (MostRecent == null)
+                @if (SalesPerDayChart == null)
                 {
                     <Loading />
                 }
                 else
                 {
-                    <Table Size="@Size.Small">
-                        <TableBody>
-                            @foreach (var item in MostRecent)
-                            {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.MarketAge</span>
-                                    </TableCell>
-                                </TableRow>
-                            }
-                        </TableBody>
-                    </Table>
+                    <ChartJsLineChart @ref="SalesPerDayChartJs" Config="@SalesPerDayChart" />
                 }
             </CardContent>
         </Card>
     </Grid>
-
+    
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
         <Card>
             <CardHeader>
@@ -85,6 +97,48 @@
                                     </TableCell>
                                     <TableCell>
                                         <span class="Text-NoWrap">@item.Last24hrSales.ToSalesActivityString()</span>
+                                    </TableCell>
+                                </TableRow>
+                            }
+                        </TableBody>
+                    </Table>
+                }
+            </CardContent>
+        </Card>
+    </Grid>
+
+    <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+        <Card>
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                        Most Recent
+                    </Typography>
+                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                        Lowest market age.
+                    </Typography>
+                </TitleContent>
+            </CardHeader>
+            <CardContent Style="padding:0px">
+                @if (MostRecent == null)
+                {
+                    <Loading />
+                }
+                else
+                {
+                    <Table Size="@Size.Small">
+                        <TableBody>
+                            @foreach (var item in MostRecent)
+                            {
+                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableCell>
+                                        <div style="display:flex; align-content:center; align-items:center">
+                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                            <strong style="margin:8px">@item.Name</strong>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span class="Text-NoWrap">@item.MarketAge</span>
                                     </TableCell>
                                 </TableRow>
                             }
@@ -608,6 +662,11 @@
 </Grid>
 
 @code {
+    
+    private IDictionary<string, int> SalesPerDay { get; set; }
+    private ChartJsLineChart SalesPerDayChartJs;
+    private LineConfig SalesPerDayChart;
+
 
     private MarketItemListDTO[] GoodTimeToBuy { get; set; }
     private MarketItemListDTO[] GoodTimeToSell { get; set; }
@@ -625,6 +684,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await RefreshSalesPerDay(30);
         await RefreshGoodTimeToBuy();
         await RefreshGoodTimeToSell();
         await RefreshAllTimeLow();
@@ -645,6 +705,112 @@
         //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+    }
+    
+    private async Task RefreshSalesPerDay(int? maxDays = null)
+    {
+        try
+        {
+            SalesPerDay = null;
+            SalesPerDayChart = null;
+            StateHasChanged();
+            SalesPerDay = await Http.GetFromJsonAsync<IDictionary<string, int>>($"api/market/dashboard/salesPerDay?maxDays={maxDays}");
+            RedrawSalesPerDayChart();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'sales per day' market dashboard");
+        }
+    }
+    
+    private void RedrawSalesPerDayChart()
+    {
+        SalesPerDayChart = new LineConfig
+        {
+            Options = new LineOptions
+            {
+                Legend = new Legend
+                {
+                    Display = false,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scales = new Scales
+                {
+
+                    xAxes = new List<CartesianAxis>
+                    {
+                        new CategoryAxis
+                        {
+                            Ticks = new CategoryTicks()
+                            {
+                                Display = true,
+                                FontColor = "#999999"
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#999999"
+                            }
+                        }
+                    },
+                    yAxes = new List<CartesianAxis>
+                    {
+                        new LinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks()
+                            {
+                                Display = true,
+                                FontColor = "#ffffff",
+                                BeginAtZero = true
+                            },
+                            ScaleLabel = new ScaleLabel()
+                            {
+                                Display = true,
+                                FontColor = "#999999"
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = true,
+                                Color = "#999999"
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        
+        SalesPerDayChart.Data.Labels = SalesPerDay.Keys.ToList();
+
+        var salesDataSet = new LineDataset<DoubleWrapper>
+        {
+            Label = "Market Sales",
+            BackgroundColor = "#000000",
+            BorderColor = "#000000",
+            BorderWidth = 2,
+            //PointBorderWidth = 1,
+            //PointRadius = 1,
+            //LineTension = 0.1,
+            Fill = false
+        };
+        salesDataSet.AddRange(
+            SalesPerDay.Select(x => (DoubleWrapper)x.Value).ToList()
+        );
+
+        SalesPerDayChart.Data.Datasets.Add(salesDataSet);
     }
 
     private async Task RefreshProfitableFlips()
