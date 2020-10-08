@@ -265,6 +265,11 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             }
 
             var salesSorted = salesSafe.OrderBy(y => y.Timestamp).ToArray();
+            if (salesSorted.Any())
+            {
+                return;
+            }
+
             var earliestTimestamp = salesSorted.Min(x => x.Timestamp);
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
 
@@ -303,12 +308,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             var last504hrSales = last504hrs.Sum(x => x.Quantity);
             var last504hrValue = (long)Math.Round(last504hrs.Length > 0 ? last504hrs.Average(x => x.Price) : 0, 0);
 
-            // The first three days sees alot of extreme price spikes, filter these out of the overall averages
-            var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
-            var allTimeAverage = (long)Math.Round(salesAfterFirstSevenDays.Length > 0 ? salesAfterFirstSevenDays.Average(x => x.Price) : 0, 0);
-            var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.Price == salesAfterFirstSevenDays.Min(x => x.Price));
-            var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.Price == salesAfterFirstSevenDays.Max(x => x.Price));
-
+            FirstSeenOn = salesSorted.FirstOrDefault()?.Timestamp;
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
             Last1hrValue = last1hrValue;
@@ -330,12 +330,20 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             Last336hrValue = last336hrValue;
             Last504hrSales = last504hrSales;
             Last504hrValue = last504hrValue;
-            AllTimeAverageValue = allTimeAverage;
-            AllTimeHighestValue = (allTimeHigh?.Price ?? 0);
-            AllTimeHighestValueOn = allTimeHigh?.Timestamp;
-            AllTimeLowestValue = (allTimeLow?.Price ?? 0);
-            AllTimeLowestValueOn = allTimeLow?.Timestamp;
-            FirstSeenOn = salesSorted.FirstOrDefault()?.Timestamp;
+
+            // The first three days sees alot of extreme price spikes, filter these out of the overall averages
+            var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
+            if (salesAfterFirstSevenDays.Any())
+            {
+                var allTimeAverage = (long)Math.Round(salesAfterFirstSevenDays.Length > 0 ? salesAfterFirstSevenDays.Average(x => x.Price) : 0, 0);
+                var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.Price == salesAfterFirstSevenDays.Min(x => x.Price));
+                var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.Price == salesAfterFirstSevenDays.Max(x => x.Price));
+                AllTimeAverageValue = allTimeAverage;
+                AllTimeHighestValue = (allTimeHigh?.Price ?? 0);
+                AllTimeHighestValueOn = allTimeHigh?.Timestamp;
+                AllTimeLowestValue = (allTimeLow?.Price ?? 0);
+                AllTimeLowestValueOn = allTimeLow?.Timestamp;
+            }
 
             var mostRecentSales = salesSorted.Reverse().Take(10).ToArray();
             if (mostRecentSales != null && mostRecentSales.Any())
