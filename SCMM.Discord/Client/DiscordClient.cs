@@ -101,11 +101,16 @@ namespace SCMM.Discord.Client
             {
                 // If the channel is null, we'll broadcast to the default channel
                 var channels = guild.TextChannels
-                    .Where(x => !String.IsNullOrEmpty(guildPattern) && Regex.IsMatch(x.Name, channelPattern))
+                    .Where(x => !String.IsNullOrEmpty(channelPattern) && Regex.IsMatch(x.Name, channelPattern))
                     .ToList();
                 if (!channels.Any())
                 {
                     channels.Add(guild.DefaultChannel);
+                    var generalChannel = guild.TextChannels.FirstOrDefault(x => Regex.IsMatch(x.Name, "general"));
+                    if (generalChannel != null)
+                    {
+                        channels.Add(generalChannel);
+                    }
                 }
 
                 foreach (var channel in channels)
