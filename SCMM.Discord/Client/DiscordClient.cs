@@ -99,18 +99,14 @@ namespace SCMM.Discord.Client
                 .Where(x => String.IsNullOrEmpty(guildPattern) || Regex.IsMatch(x.Name, guildPattern));
             foreach (var guild in guilds)
             {
-                // If the channel is null, we'll broadcast to the default channel
+                // If the channel is null, we'll broadcast to the first channel that we have permission to
                 var channels = guild.TextChannels
-                    .Where(x => !String.IsNullOrEmpty(channelPattern) && Regex.IsMatch(x.Name, channelPattern))
+                    .Where(x => String.IsNullOrEmpty(channelPattern) || Regex.IsMatch(x.Name, channelPattern))
                     .ToList();
-                if (!channels.Any())
+                if (!channels.Any() && !String.IsNullOrEmpty(channelPattern))
                 {
-                    channels.Add(guild.DefaultChannel);
-                    var generalChannel = guild.TextChannels.FirstOrDefault(x => Regex.IsMatch(x.Name, "general"));
-                    if (generalChannel != null)
-                    {
-                        channels.Add(generalChannel);
-                    }
+                    // If the channel pattern didn't match anything, broadcast to the first channel that we havve permission to
+                    channels.AddRange(guild.TextChannels);
                 }
 
                 foreach (var channel in channels)
