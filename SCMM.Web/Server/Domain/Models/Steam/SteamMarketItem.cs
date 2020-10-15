@@ -265,7 +265,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
             }
 
             var salesSorted = salesSafe.OrderBy(y => y.Timestamp).ToArray();
-            if (salesSorted.Any())
+            if (!salesSorted.Any())
             {
                 return;
             }
