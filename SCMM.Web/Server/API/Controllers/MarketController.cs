@@ -146,7 +146,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
                 var query = db.SteamMarketItemSale
-                    .Where(x => x.Timestamp.Date < yesterday.Date)
+                    .Where(x => x.Timestamp.Date <= yesterday.Date)
                     .GroupBy(x => x.Timestamp.Date)
                     .OrderByDescending(x => x.Key.Date)
                     .Select(x => new
@@ -243,7 +243,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var yesterday = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(1));
+                var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
@@ -267,7 +267,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var yesterday = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(1));
+                var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var query = db.SteamMarketItems
                     .Include(x => x.App)
