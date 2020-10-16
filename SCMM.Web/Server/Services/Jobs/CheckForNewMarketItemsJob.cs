@@ -1,13 +1,19 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Discord.Client;
 using SCMM.Steam.Client;
+using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
+using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
+using SCMM.Web.Shared;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -31,6 +37,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
+                var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
@@ -43,6 +50,12 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
                 if (language == null)
+                {
+                    return;
+                }
+
+                var currencies = await db.SteamCurrencies.Where(x => x.IsCommon).ToListAsync();
+                if (currencies == null)
                 {
                     return;
                 }
@@ -98,7 +111,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 }
 
                 // Add a 10 second delay between requests to avoid "Too Many Requests" error
-                var newItems = await Observable.Interval(TimeSpan.FromSeconds(10))
+                var newMarketItems = await Observable.Interval(TimeSpan.FromSeconds(10))
                     .Zip(pageRequests, (x, y) => y)
                     .Select(x => Observable.FromAsync(() =>
                     {
@@ -109,18 +122,82 @@ namespace SCMM.Web.Server.Services.Jobs
                     .Where(x => x?.Success == true && x?.Results?.Count > 0)
                     .SelectMany(x =>
                     {
-                        var tasks = steamService.FindOrAddSteamMarketItems(x.Results);
+                        var tasks = steamService.FindOrAddSteamMarketItems(x.Results, currency);
                         Task.WaitAll(tasks);
                         return tasks.Result;
                     })
                     .Where(x => x?.IsTransient == true)
+                    .Where(x => x?.App != null && x?.Description != null)
                     .ToList();
 
-                if (newItems.Any())
+                if (newMarketItems.Any())
                 {
-                    await db.SaveChangesAsync();
+                    foreach (var marketItem in newMarketItems)
+                    {
+                        var fields = new Dictionary<string, string>();
+                        var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
+                        if (storeItem != null)
+                        {
+                            fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, currencies));
+                        }
+                        if (marketItem != null)
+                        {
+                            fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
+                        }
+                        await discord.BroadcastMessage(
+                            channelPattern: $"announcement|market|store|skin|{marketItem.App.Name}",
+                            message: null,
+                            title: $"{marketItem.Description.Name} is now on the market",
+                            description: $"This item just appeared on the marketplace for the first time.",
+                            fields: fields,
+                            url: new SteamMarketListingPageRequest()
+                            {
+                                AppId = marketItem.App.SteamId,
+                                MarketHashName = marketItem.Description.Name
+                            }.Uri.ToString(),
+                            thumbnailUrl: marketItem.App.IconUrl,
+                            imageUrl: marketItem.Description.IconLargeUrl,
+                            color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
+                        );
+                    }
+
+                    db.SaveChanges();
                 }
             }
+        }
+
+        private string GenerateStoreItemPriceList(SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
+        {
+            var prices = new List<String>();
+            foreach (var currency in currencies)
+            {
+                var price = storeItem.StorePrices.FirstOrDefault(x => x.Key == currency.Name);
+                if (price.Value > 0)
+                {
+                    var priceString = currency.ToPriceString(price.Value)?.Trim();
+                    if (!String.IsNullOrEmpty(priceString))
+                    {
+                        prices.Add($"{currency.Name} {priceString}");
+                    }
+                }
+            }
+
+            return String.Join("  •  ", prices).Trim(' ', '•');
+        }
+
+        private string GenerateMarketItemPriceList(SteamMarketItem marketItem, IEnumerable<SteamCurrency> currencies)
+        {
+            var prices = new List<String>();
+            foreach (var currency in currencies)
+            {
+                var priceString = currency.ToPriceString(currency.CalculateExchange(marketItem.BuyNowPrice, marketItem.Currency))?.Trim();
+                if (!String.IsNullOrEmpty(priceString))
+                {
+                    prices.Add($"{currency.Name} {priceString}");
+                }
+            }
+
+            return String.Join("  •  ", prices).Trim(' ', '•');
         }
     }
 }

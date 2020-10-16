@@ -44,7 +44,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                     item.RecalculateOrders();
                     item.RecalculateSales();
-                    await db.SaveChangesAsync();
+                    db.SaveChanges();
                 }
             }
         }

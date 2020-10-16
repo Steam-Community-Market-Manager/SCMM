@@ -6,14 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.API.Controllers.Extensions;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class ProfileController : ControllerBase
@@ -29,83 +29,91 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet("me")]
-        public async Task<ProfileDetailedDTO> GetMyState()
+        public async Task<ProfileDetailedDTO> GetMyProfile()
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-
-                var language = Request.Language();
-                if (language == null)
+                var defaultProfile = new ProfileDetailedDTO()
                 {
-                    throw new Exception($"Language '{Request.LanguageId()}' is not supported");
-                }
+                    Name = "Guest",
+                    Language = this.Language(),
+                    Currency = this.Currency()
+                };
 
-                var currency = Request.Currency();
-                if (currency == null)
+                // If the user is authenticated, use their database profile
+                if (User.Identity.IsAuthenticated)
                 {
-                    throw new Exception($"Currency '{Request.CurrencyId()}' is not supported");
-                }
-
-                var profileId = Request.ProfileId();
-                var profileState = new ProfileDetailedDTO();
-                if (!String.IsNullOrEmpty(profileId))
-                {
+                    var profileId = User.Id();
                     var profile = await db.SteamProfiles
                         .Include(x => x.Language)
                         .Include(x => x.Currency)
-                        .FirstOrDefaultAsync(
-                            x => x.SteamId == profileId || x.ProfileId == profileId
-                        );
+                        .FirstOrDefaultAsync(x => x.Id == profileId);
 
-                    if (profile == null)
-                    {
-                        throw new Exception($"Profile with Steam ID '{profileId}' was not found");
-                    }
-
-                    _mapper.Map(profile, profileState);
+                    // Map the DB profile over top of the default profile
+                    // NOTE: This is done so that the language/currency pass-through if they haven't been set yet
+                    return _mapper.Map(
+                        profile, defaultProfile
+                    );
                 }
 
-                profileState.Language = language;
-                profileState.Currency = currency;
-                return profileState;
+                // Else, use a transient guest profile
+                else
+                {
+                    return defaultProfile;
+                }
             }
         }
 
+        [Authorize]
         [HttpPut("me")]
-        public async void SetMyState([FromBody] UpdateProfileStateCommand command)
+        public async void SetMyProfile([FromBody] UpdateProfileCommand command)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var steamService = scope.ServiceProvider.GetService<SteamService>();
-                var profile = await steamService.AddOrUpdateSteamProfile(Request.ProfileId());
+                var profileId = User.Id();
+                var profile = await db.SteamProfiles
+                    .Include(x => x.Language)
+                    .Include(x => x.Currency)
+                    .FirstOrDefaultAsync(x => x.Id == profileId);
+
                 if (profile == null)
                 {
-                    throw new Exception($"Profile with Steam ID '{Request.ProfileId()}' was not found");
+                    throw new Exception($"Profile with Steam ID '{User.SteamId()}' was not found");
                 }
 
-                profile.Country = (command.Country ?? profile.Country);
-                profile.Language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.Name == command.Language);
-                profile.Currency = await db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == command.Currency);
-                await db.SaveChangesAsync();
+                if (!String.IsNullOrEmpty(command.Country))
+                {
+                    profile.Country = command.Country;
+                }
+                if (!String.IsNullOrEmpty(command.Language))
+                {
+                    profile.Language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.Name == command.Language);
+                }
+                if (!String.IsNullOrEmpty(command.Currency))
+                {
+                    profile.Currency = await db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == command.Currency);
+                }
+
+                db.SaveChanges();
             }
         }
-        [HttpGet("steam/{steamId}/summary")]
-        public async Task<ProfileDTO> GetSteamIdSummary([FromRoute] string steamId)
+
+        [AllowAnonymous]
+        [HttpGet("donators")]
+        public IEnumerable<ProfileDTO> GetDonators()
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var service = scope.ServiceProvider.GetService<SteamService>();
-                var profile = await service.AddOrUpdateSteamProfile(steamId);
-                if (profile == null)
-                {
-                    _logger.LogError($"Profile with SteamID '{steamId}' was not found");
-                    return null;
-                }
-
-                return _mapper.Map<ProfileDTO>(profile);
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                return db.SteamProfiles
+                    .Where(x => x.DonatorLevel > 0)
+                    .OrderByDescending(x => x.DonatorLevel)
+                    .Select(x => _mapper.Map<ProfileDTO>(x))
+                    .ToList();
             }
         }
     }

@@ -8,17 +8,8 @@
     <Found Context="routeData">
         @if (State != null)
         {
-            @if (State.IsValid)
-            {
-                <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
-                </RouteView>
-            }
-            else
-            {
-                <LayoutView Layout="@typeof(LoginLayout)">
-                    <Login />
-                </LayoutView>
-            }
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
+            </RouteView>
         }
     </Found>
     <NotFound>
@@ -36,7 +27,11 @@
     {
         try
         {
-            await AppState.LoadAsync(LocalStorage);
+            if (!(await AppState.ReadFromStorageAsync(LocalStorage)))
+            {
+                await AppState.TryGuessLocalityAsync(Http);
+                await AppState.WriteToStorageAsync(LocalStorage);
+            }
             await AppState.RefreshAsync(Http);
 
             State = AppState;

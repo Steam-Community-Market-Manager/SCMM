@@ -10,7 +10,6 @@ using System.Linq;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class CurrencyController : ControllerBase
@@ -26,6 +25,7 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IEnumerable<CurrencyListDTO> Get()
         {
@@ -35,6 +35,20 @@ namespace SCMM.Web.Server.API.Controllers
                 return db.SteamCurrencies
                     .OrderBy(x => x.Name)
                     .Select(x => _mapper.Map<CurrencyListDTO>(x))
+                    .ToList();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("withDetails")]
+        public IEnumerable<CurrencyDetailedDTO> GetWithDetails()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                return db.SteamCurrencies
+                    .OrderBy(x => x.Name)
+                    .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
                     .ToList();
             }
         }

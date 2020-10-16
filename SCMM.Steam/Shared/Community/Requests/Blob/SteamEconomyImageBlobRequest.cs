@@ -5,15 +5,15 @@ namespace SCMM.Steam.Shared.Community.Requests.Blob
     public class SteamEconomyImageBlobRequest : SteamRequest
     {
         public SteamEconomyImageBlobRequest() { }
-        public SteamEconomyImageBlobRequest(string iconId)
+        public SteamEconomyImageBlobRequest(string id)
         {
-            IconId = iconId;
+            Id = id;
         }
 
-        public string IconId { get; set; }
+        public string Id { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{SteamConstants.SteamCommunityAssetUrl}/economy/image/{Uri.EscapeDataString(IconId)}"
+            $"{SteamConstants.SteamCommunityAssetUrl}/economy/image/{Uri.EscapeDataString(Id)}"
         );
     }
 }

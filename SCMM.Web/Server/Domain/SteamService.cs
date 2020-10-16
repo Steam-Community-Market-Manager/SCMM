@@ -7,6 +7,7 @@ using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;
+using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Types;
 using SCMM.Web.Server.Domain.Models.Steam;
@@ -37,7 +38,7 @@ namespace SCMM.Web.Server.Domain
             _communityClient = communityClient;
         }
 
-        public async Task<Models.Steam.SteamProfile> AddOrUpdateSteamProfile(string steamId)
+        public async Task<Models.Steam.SteamProfile> AddOrUpdateSteamProfile(string steamId, bool fetchLatest = false)
         {
             if (string.IsNullOrEmpty(steamId))
             {
@@ -47,7 +48,7 @@ namespace SCMM.Web.Server.Domain
             var profile = await _db.SteamProfiles.FirstOrDefaultAsync(
                 x => x.SteamId == steamId || x.ProfileId == steamId
             );
-            if (profile != null)
+            if (profile != null && !fetchLatest)
             {
                 // Nothing to update
                 return profile;
@@ -74,15 +75,16 @@ namespace SCMM.Web.Server.Domain
                     profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
                 }
 
-                profile = new Models.Steam.SteamProfile()
+                profile = profile ?? new Models.Steam.SteamProfile()
                 {
                     SteamId = steamId,
-                    ProfileId = profileId,
-                    Name = response.Data.Nickname?.Trim(),
-                    AvatarUrl = response.Data.AvatarMediumUrl,
-                    AvatarLargeUrl = response.Data.AvatarFullUrl,
-                    Country = response.Data.CountryCode
+                    ProfileId = profileId
                 };
+
+                profile.Name = response.Data.Nickname?.Trim();
+                profile.AvatarUrl = response.Data.AvatarMediumUrl;
+                profile.AvatarLargeUrl = response.Data.AvatarFullUrl;
+                profile.Country = response.Data.CountryCode;
             }
 
             // Else, it is probably a string profile id...
@@ -99,27 +101,28 @@ namespace SCMM.Web.Server.Domain
                     return null;
                 }
 
-                profile = new Models.Steam.SteamProfile()
+                profile = profile ?? new Models.Steam.SteamProfile()
                 {
                     SteamId = response.SteamID64.ToString(),
-                    ProfileId = profileId,
-                    Name = response.SteamID?.Trim(),
-                    AvatarUrl = response.AvatarMedium,
-                    AvatarLargeUrl = response.AvatarFull,
-                    Country = response.Location
+                    ProfileId = profileId
                 };
+
+                profile.Name = response.SteamID?.Trim();
+                profile.AvatarUrl = response.AvatarMedium;
+                profile.AvatarLargeUrl = response.AvatarFull;
+                profile.Country = response.Location;
             }
 
-            if (profile != null)
+            if (profile.Id == Guid.Empty)
             {
                 _db.SteamProfiles.Add(profile);
-                await _db.SaveChangesAsync();
             }
 
+            await _db.SaveChangesAsync();
             return profile;
         }
 
-        public async Task<Models.Steam.SteamProfile> LoadAndRefreshProfileInventory(string steamId)
+        public async Task<Models.Steam.SteamProfile> FetchProfileInventory(string steamId)
         {
             var profile = await _db.SteamProfiles
                 .Include(x => x.InventoryItems).ThenInclude(x => x.App)
@@ -310,11 +313,14 @@ namespace SCMM.Web.Server.Domain
                 {
                     if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagAcceptedYear))
                     {
-                        var culture = CultureInfo.InvariantCulture;
-                        var acceptedOn = workshopFile.AcceptedOn.UtcDateTime;
-                        int acceptedOnWeek = culture.Calendar.GetWeekOfYear(acceptedOn, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
-                        assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedYear] = acceptedOn.ToString("yyyy");
-                        assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedWeek] = $"Week {acceptedOnWeek}";
+                        if (workshopFile.AcceptedOn.HasValue)
+                        {
+                            var culture = CultureInfo.InvariantCulture;
+                            var acceptedOn = workshopFile.AcceptedOn.Value.UtcDateTime;
+                            int acceptedOnWeek = culture.Calendar.GetWeekOfYear(acceptedOn, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
+                            assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedYear] = acceptedOn.ToString("yyyy");
+                            assetDescription.Tags[SteamConstants.SteamAssetTagAcceptedWeek] = $"Week {acceptedOnWeek}";
+                        }
                     }
                 }
 
@@ -439,7 +445,7 @@ namespace SCMM.Web.Server.Domain
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
                 IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
-                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge).Uri.ToString(),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl).Uri.ToString(),
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
@@ -480,7 +486,7 @@ namespace SCMM.Web.Server.Domain
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
                 IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
-                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge).Uri.ToString(),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl).Uri.ToString(),
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
@@ -647,17 +653,17 @@ namespace SCMM.Web.Server.Domain
         /// UPDATE BELOW...
         ///
 
-        public async Task<IEnumerable<SteamMarketItem>> FindOrAddSteamMarketItems(IEnumerable<SteamMarketSearchItem> items)
+        public async Task<IEnumerable<SteamMarketItem>> FindOrAddSteamMarketItems(IEnumerable<SteamMarketSearchItem> items, SteamCurrency currency)
         {
             var dbItems = new List<SteamMarketItem>();
             foreach (var item in items)
             {
-                dbItems.Add(await FindOrAddSteamMarketItem(item));
+                dbItems.Add(await FindOrAddSteamMarketItem(item, currency));
             }
             return dbItems;
         }
 
-        public async Task<SteamMarketItem> FindOrAddSteamMarketItem(SteamMarketSearchItem item)
+        public async Task<SteamMarketItem> FindOrAddSteamMarketItem(SteamMarketSearchItem item, SteamCurrency currency)
         {
             if (String.IsNullOrEmpty(item?.AssetDescription.AppId))
             {
@@ -671,6 +677,8 @@ namespace SCMM.Web.Server.Domain
             }
 
             var dbItem = _db.SteamMarketItems
+                .Include(x => x.App)
+                .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .FirstOrDefault(x => x.Description != null && x.Description.SteamId == item.AssetDescription.ClassId);
 
@@ -687,8 +695,14 @@ namespace SCMM.Web.Server.Domain
 
             dbApp.MarketItems.Add(dbItem = new SteamMarketItem()
             {
+                App = dbApp,
                 AppId = dbApp.Id,
-                Description = assetDescription
+                Description = assetDescription,
+                DescriptionId = assetDescription.Id,
+                Currency = currency,
+                CurrencyId = currency.Id,
+                Supply = item.SellListings,
+                BuyNowPrice = item.SellPrice
             });
 
             return dbItem;

@@ -12,8 +12,7 @@
             <TableCell>Name</TableCell>
             <TableCell>Market Age</TableCell>
             <TableCell>Subscribers</TableCell>
-            <TableCell>Supply</TableCell>
-            <TableCell>Demand</TableCell>
+            <TableCell>Supply : Demand</TableCell>
             <TableCell>Buy Now</TableCell>
             <TableCell>All-Time Low</TableCell>
             <TableCell>All-Time High</TableCell>
@@ -47,10 +46,15 @@
                     }
                 </TableCell>
                 <TableCell>
-                    @item.Supply
-                </TableCell>
-                <TableCell>
-                    @item.Demand
+                    <span>@item.Supply.ToGCDRatioString(item.Demand)</span>
+                    @if (item.Supply.IsSaturated(item.Demand))
+                    {
+                        <span class="Text-Error">  (Saturated)</span>
+                    }
+                    @if (item.Supply.IsStarved(item.Demand))
+                    {
+                        <span class="Text-Success">  (Starved)</span>
+                    }
                 </TableCell>
                 <TableCell>
                     @item.Currency.ToPriceString(item.BuyNowPrice)

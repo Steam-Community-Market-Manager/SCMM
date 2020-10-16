@@ -22,30 +22,4 @@
         Variant="@TypographyVariant.H6">
         @Name
     </Typography>
-    <div class="Profile-Actions">
-        @if (State.HasProfile)
-        {
-        <a @onclick="@ViewSettings" title="Settings">
-            <i class="fas fa-fw fa-cog"></i>
-        </a>
-        <a @onclick="@Logout" title="Logout">
-            <i class="fas fa-fw fa-sign-out-alt"></i>
-        </a>
-        }
-    </div>
 </Component>
-
-@code {
-
-    private void ViewSettings()
-    {
-        Navigation.NavigateTo("/settings");
-    }
-
-    private async Task Logout()
-    {
-        await State.LogoutAsync(Http, LocalStorage);
-        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
-    }
-
-} 

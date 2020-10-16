@@ -25,6 +25,12 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public string IconLargeUrl { get; set; }
 
+        public string PrimaryColor { get; set; }
+
+        public string SecondaryColor { get; set; }
+
+        public string BackgroundColor { get; set; }
+
         public ICollection<SteamAssetFilter> Filters { get; set; }
 
         public ICollection<SteamAssetDescription> Assets { get; set; }

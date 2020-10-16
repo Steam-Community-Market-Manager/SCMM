@@ -15,7 +15,6 @@ using System.Linq;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class StoreController : ControllerBase
@@ -31,6 +30,7 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet("nextUpdateExpectedOn")]
         public DateTimeOffset GetNextUpdateExpectedOn()
         {
@@ -38,7 +38,9 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var nextStoreUpdateUtc = db.SteamAssetWorkshopFiles
-                    .Select(p => p.AcceptedOn).Max().UtcDateTime;
+                    .Where(x => x.AcceptedOn != null)
+                    .Select(x => x.AcceptedOn.Value)
+                    .Max().UtcDateTime;
 
                 // Store normally updates every thursday or friday around 9pm (UK time)
                 nextStoreUpdateUtc = (nextStoreUpdateUtc.Date + new TimeSpan(21, 0, 0));
@@ -58,6 +60,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IEnumerable<StoreItemListDTO> Get()
         {
@@ -78,7 +81,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 var itemDtos = items.ToDictionary(
                     x => x,
-                    x => _mapper.Map<SteamStoreItem, StoreItemListDTO>(x, Request)
+                    x => _mapper.Map<SteamStoreItem, StoreItemListDTO>(x, this)
                 );
 
                 // TODO: Do this better, very lazy

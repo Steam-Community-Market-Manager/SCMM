@@ -10,7 +10,6 @@ using System.Linq;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class LanguageController : ControllerBase
@@ -26,6 +25,7 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IEnumerable<LanguageListDTO> Get()
         {
@@ -35,6 +35,20 @@ namespace SCMM.Web.Server.API.Controllers
                 return db.SteamLanguages
                     .OrderBy(x => x.Name)
                     .Select(x => _mapper.Map<LanguageListDTO>(x))
+                    .ToList();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("withDetails")]
+        public IEnumerable<LanguageDetailedDTO> GetWithDetails()
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetService<SteamDbContext>();
+                return db.SteamLanguages
+                    .OrderBy(x => x.Name)
+                    .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
                     .ToList();
             }
         }

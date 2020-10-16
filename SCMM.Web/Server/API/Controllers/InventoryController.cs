@@ -19,7 +19,6 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class InventoryController : ControllerBase
@@ -35,31 +34,33 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet("me")]
-        public async Task<ProfileInventoryDetailsDTO> GetMyInventoryProfile([FromQuery] bool sync = false)
+        public async Task<IActionResult> GetMyInventoryProfile([FromQuery] bool sync = false)
         {
-            return await GetInventoryProfile(Request.ProfileId(), sync);
+            return await GetInventoryProfile(User.SteamId(), sync);
         }
 
+        [AllowAnonymous]
         [HttpGet("{steamId}")]
-        public async Task<ProfileInventoryDetailsDTO> GetInventoryProfile([FromRoute] string steamId, [FromQuery] bool sync = false)
+        public async Task<IActionResult> GetInventoryProfile([FromRoute] string steamId, [FromQuery] bool sync = false)
         {
             if (String.IsNullOrEmpty(steamId))
             {
-                throw new ArgumentNullException(nameof(steamId));
+                return NotFound();
             }
 
             using (var scope = _scopeFactory.CreateScope())
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var currency = Request.Currency();
                 var profile = (SteamProfile)null;
 
                 if (sync)
                 {
                     // Load the profile and force an inventory sync
-                    profile = await service.LoadAndRefreshProfileInventory(steamId);
+                    profile = await service.AddOrUpdateSteamProfile(steamId, fetchLatest: true);
+                    profile = await service.FetchProfileInventory(steamId);
                 }
                 else
                 {
@@ -76,7 +77,7 @@ namespace SCMM.Web.Server.API.Controllers
                     // If the profile inventory hasn't been loaded before, fetch it now
                     if (inventory == null || inventory.Profile == null || inventory.TotalItems == 0)
                     {
-                        profile = await service.LoadAndRefreshProfileInventory(steamId);
+                        profile = await service.FetchProfileInventory(steamId);
                     }
                     else
                     {
@@ -86,24 +87,31 @@ namespace SCMM.Web.Server.API.Controllers
 
                 if (profile == null)
                 {
-                    throw new Exception($"Profile with SteamID '{steamId}' was not found");
+                    NotFound($"Profile with SteamID '{steamId}' was not found");
                 }
 
-                profile.LastViewedInventoryOn = DateTimeOffset.Now;
-                db.SaveChanges();
+                if (User.Is(profile))
+                {
+                    profile.LastViewedInventoryOn = DateTimeOffset.Now;
+                    db.SaveChanges();
+                }
 
-                return _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(
-                    profile, Request
+                return Ok(
+                    _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(
+                        profile, this
+                    )
                 );
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("me/total")]
         public ProfileInventoryTotalsDTO GetMyInventoryTotal()
         {
-            return GetInventoryTotal(Request.ProfileId());
+            return GetInventoryTotal(User.SteamId());
         }
 
+        [AllowAnonymous]
         [HttpGet("{steamId}/total")]
         public ProfileInventoryTotalsDTO GetInventoryTotal([FromRoute] string steamId)
         {
@@ -116,7 +124,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
                 var service = scope.ServiceProvider.GetService<SteamService>();
-                var currency = Request.Currency();
+                var currency = this.Currency();
 
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
@@ -170,12 +178,14 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("me/summary")]
         public IList<ProfileInventoryItemSummaryDTO> GetMyInventorySummary()
         {
-            return GetInventorySummary(Request.ProfileId());
+            return GetInventorySummary(User.SteamId());
         }
 
+        [AllowAnonymous]
         [HttpGet("{steamId}/summary")]
         public IList<ProfileInventoryItemSummaryDTO> GetInventorySummary([FromRoute] string steamId)
         {
@@ -188,7 +198,6 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var currency = Request.Currency();
 
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
@@ -214,7 +223,7 @@ namespace SCMM.Web.Server.API.Controllers
                     if (!profileInventoryItemsSummaries.Any(x => x.Item.SteamId == marketItem.SteamId))
                     {
                         var inventoryMarketItem = _mapper.Map<SteamMarketItem, InventoryMarketItemDTO>(
-                            marketItem, Request
+                            marketItem, this
                         );
                         profileInventoryItemsSummaries.Add(new ProfileInventoryItemSummaryDTO()
                         {
@@ -230,12 +239,14 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("me/returnOnInvestment")]
         public IList<InventoryItemListDTO> GetMyInventoryInvestment()
         {
-            return GetInventoryInvestment(Request.ProfileId());
+            return GetInventoryInvestment(User.SteamId());
         }
 
+        [AllowAnonymous]
         [HttpGet("{steamId}/returnOnInvestment")]
         public IList<InventoryItemListDTO> GetInventoryInvestment([FromRoute] string steamId)
         {
@@ -248,7 +259,6 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var currency = Request.Currency();
 
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
@@ -262,7 +272,7 @@ namespace SCMM.Web.Server.API.Controllers
                         MarketItemDescription = x.MarketItem.Description,
                         MarketItemCurrency = x.MarketItem.Currency,
                         HasBuyPrice = (x.BuyPrice > 0),
-                        ReturnOnInvestment = (x.BuyPrice > 0 && (x.MarketItem.ResellPrice - x.MarketItem.ResellTax) > 0 
+                        ReturnOnInvestment = (x.BuyPrice > 0 && (x.MarketItem.ResellPrice - x.MarketItem.ResellTax) > 0
                             ? ((decimal)(x.MarketItem.ResellPrice - x.MarketItem.ResellTax) / x.BuyPrice)
                             : 0
                         )
@@ -274,7 +284,9 @@ namespace SCMM.Web.Server.API.Controllers
                 foreach (var profileInventoryItem in profileInventoryItems)
                 {
                     profileInventoryItemsDetails.Add(
-                         _mapper.Map<SteamInventoryItem, InventoryItemListDTO>(profileInventoryItem.Item, Request)
+                        _mapper.Map<SteamInventoryItem, InventoryItemListDTO>(
+                            profileInventoryItem.Item, this
+                        )
                     );
                 }
 
@@ -282,12 +294,14 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("me/activity")]
         public IList<ProfileInventoryActivityDTO> GetMyInventoryActivity()
         {
-            return GetInventoryActivity(Request.ProfileId());
+            return GetInventoryActivity(User.SteamId());
         }
 
+        [AllowAnonymous]
         [HttpGet("{steamId}/activity")]
         public IList<ProfileInventoryActivityDTO> GetInventoryActivity([FromRoute] string steamId)
         {
@@ -300,13 +314,12 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var currency = Request.Currency();
 
                 var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
                 var profileInventoryActivities = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                     .Where(x => x.MarketItem != null)
-                    .SelectMany(x => 
+                    .SelectMany(x =>
                         x.MarketItem.Activity.Where(x => x.Timestamp >= recentActivityCutoff)
                     )
                     .OrderByDescending(x => x.Timestamp)
@@ -320,7 +333,9 @@ namespace SCMM.Web.Server.API.Controllers
                 foreach (var profileInventoryActivity in profileInventoryActivities)
                 {
                     profileInventoryActivitiesDetails.Add(
-                         _mapper.Map<SteamMarketItemActivity, ProfileInventoryActivityDTO>(profileInventoryActivity, Request)
+                        _mapper.Map<SteamMarketItemActivity, ProfileInventoryActivityDTO>(
+                            profileInventoryActivity, this
+                        )
                     );
                 }
 
@@ -328,12 +343,14 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("me/performance")]
         public ProfileInventoryPerformanceDTO GetMyInventoryPerformance()
         {
-            return GetInventoryPerformance(Request.ProfileId());
+            return GetInventoryPerformance(User.SteamId());
         }
 
+        [AllowAnonymous]
         [HttpGet("{steamId}/performance")]
         public ProfileInventoryPerformanceDTO GetInventoryPerformance([FromRoute] string steamId)
         {
@@ -346,7 +363,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var currency = Request.Currency();
+                var currency = this.Currency();
 
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
@@ -444,16 +461,22 @@ namespace SCMM.Web.Server.API.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("item/{inventoryItemId}")]
         public void SetInventoryItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var inventoryItem = db.SteamInventoryItems.SingleOrDefault(x => x.Id == inventoryItemId);
+                var inventoryItem = db.SteamInventoryItems.FirstOrDefault(x => x.Id == inventoryItemId);
                 if (inventoryItem == null)
                 {
                     _logger.LogError($"Inventory item with id '{inventoryItemId}' was not found");
+                    return;
+                }
+                if (!User.Is(inventoryItem.OwnerId))
+                {
+                    _logger.LogError($"Inventory item with id '{inventoryItemId}' does not belong to you");
                     return;
                 }
 

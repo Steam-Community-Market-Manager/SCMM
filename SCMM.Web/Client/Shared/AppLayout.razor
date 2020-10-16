@@ -6,13 +6,32 @@
         <AppLogo />
     </LogoContent>
     <TitleContent>
-        <span>Rust - Steam Community Market</span>
-        <ReleaseVersionBadge />
+        <Hidden SmallDown Context="HiddenContext">
+            <div Class="@HiddenContext.Class">
+                <span>Rust - Steam Community Market Manager</span>
+                <ReleaseVersionBadge />
+            </div>
+        </Hidden>
+        <Hidden ExtraSmallDown MediumUp Context="HiddenContext">
+            <div Class="@HiddenContext.Class">
+                <span>Rust - SCMM</span>
+                <ReleaseVersionBadge />
+            </div>
+        </Hidden>
+        <Hidden SmallUp Context="HiddenContext">
+            <div Class="@HiddenContext.Class">
+                <span>SCMM</span>
+            </div>
+        </Hidden>
     </TitleContent>
+    <ActionsContent>
+        <CurrencySelector />
+    </ActionsContent>
     <SidebarContent>
-        @if (State.HasProfile)
+        @if (State.IsAuthenticated)
         {
             <Profile Name="@State.Profile.Name" Avatar="@State.Profile.AvatarLargeUrl" />
+            <ProfileFlairs />
         }
         <AppNavigation />
     </SidebarContent>

@@ -42,5 +42,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         /// If true, this is the system currency that all others are converted from
         /// </summary>
         public bool IsDefault { get; set; }
+
+        /// <summary>
+        /// If true, this is a "cool" price which is highlighted when presenting "common" currencies
+        /// </summary>
+        public bool IsCommon { get; set; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
+﻿namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
     public interface IFilterableItem
     {

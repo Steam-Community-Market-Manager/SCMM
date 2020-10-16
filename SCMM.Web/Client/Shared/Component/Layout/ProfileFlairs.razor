@@ -1,0 +1,57 @@
+﻿@namespace SCMM.Web.Client.Shared.Component.Layout
+@inject AppState State
+
+<style>
+
+    .Profile-Roles {
+        text-align: center;
+    }
+
+    .Profile-Role .Chip-Label > span {
+        padding: 0px 8px;
+    }
+
+    .Profile-Role-Creator {
+        color: #81c784;
+    }
+
+    .Profile-Role-Donator {
+        color: gold;
+    }
+
+    .Profile-Role-VIP {
+        color: #e57373;
+        font-weight: bold;
+    }
+
+</style>
+
+<Typography class="Profile-Roles" Variant="@TypographyVariant.Body2">
+    @if (State.IsInRole(SCMM.Web.Shared.Domain.Roles.Creator))
+    {
+        <div class="Profile-Role Profile-Role-Creator Chip-Root">
+            <span class="Chip-Label">
+                <i class="fas fa-fw fa-paint-brush"></i>
+                <span>@SCMM.Web.Shared.Domain.Roles.Creator</span>
+            </span>
+        </div>
+    }
+    @if (State.IsInRole(SCMM.Web.Shared.Domain.Roles.Donator))
+    {
+        <div class="Profile-Role Profile-Role-Donator Chip-Root">
+            <span class="Chip-Label">
+                <i class="fas fa-fw fa-crown"></i>
+                <span>@SCMM.Web.Shared.Domain.Roles.Donator</span>
+            </span>
+        </div>
+    }
+    @if (State.IsInRole(SCMM.Web.Shared.Domain.Roles.VIP))
+    {
+        <div class="Profile-Role Profile-Role-VIP Chip-Root">
+            <span class="Chip-Label">
+                <i class="fas fa-fw fa-star"></i>
+                <span>@SCMM.Web.Shared.Domain.Roles.VIP</span>
+            </span>
+        </div>
+    }
+</Typography>

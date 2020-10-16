@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Community.Requests.Html;
+using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -121,17 +122,14 @@ namespace SCMM.Web.Server.Services.Jobs
                     storeItem = service.UpdateStoreItemRank(storeItem, storeRankPosition, storeRankTotal);
                 }
 
-                // Calculate total sales twice, once in both directions (to get correct min/max values)
-                foreach (var storeItem in storeItems.OrderByDescending(x => x.StoreRankPosition))
+                // Calculate total sales
+                var orderedStoreItems = storeItems.OrderBy(x => x.StoreRankPosition).ToList();
+                foreach (var storeItem in orderedStoreItems)
                 {
-                    storeItem.RecalculateTotalSales(storeItems);
-                }
-                foreach (var storeItem in storeItems.OrderBy(x => x.StoreRankPosition))
-                {
-                    storeItem.RecalculateTotalSales(storeItems);
+                    storeItem.RecalculateTotalSales(orderedStoreItems);
                 }
 
-                await db.SaveChangesAsync();
+                db.SaveChanges();
             }
         }
 
@@ -176,7 +174,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 );
             }
 
-            await db.SaveChangesAsync();
+            db.SaveChanges();
         }
     }
 }

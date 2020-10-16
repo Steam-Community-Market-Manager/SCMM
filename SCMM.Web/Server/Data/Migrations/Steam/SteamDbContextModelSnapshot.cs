@@ -15,7 +15,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.5")
+                .HasAnnotation("ProductVersion", "3.1.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -25,6 +25,9 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("BackgroundColor")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("IconLargeUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -33,6 +36,12 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PrimaryColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SecondaryColor")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SteamId")
@@ -94,7 +103,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("AcceptedOn")
+                    b.Property<DateTimeOffset?>("AcceptedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("AppId")
@@ -145,6 +154,9 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.Property<decimal>("ExchangeRateMultiplier")
                         .HasColumnType("decimal(29,21)");
+
+                    b.Property<bool>("IsCommon")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
@@ -490,8 +502,14 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid?>("CurrencyId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("DonatorLevel")
+                        .HasColumnType("int");
+
                     b.Property<Guid?>("LanguageId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("LastSignedInOn")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("LastUpdatedInventoryOn")
                         .HasColumnType("datetimeoffset");
@@ -746,6 +764,22 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasOne("SCMM.Web.Server.Domain.Models.Steam.SteamLanguage", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageId");
+
+                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableStringCollection", "Roles", b1 =>
+                        {
+                            b1.Property<Guid>("SteamProfileId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamProfileId");
+
+                            b1.ToTable("SteamProfiles");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamProfileId");
+                        });
                 });
 
             modelBuilder.Entity("SCMM.Web.Server.Domain.Models.Steam.SteamStoreItem", b =>

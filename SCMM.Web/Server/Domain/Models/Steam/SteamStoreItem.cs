@@ -1,5 +1,6 @@
 ﻿using SCMM.Web.Server.Data.Types;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SCMM.Web.Server.Domain.Models.Steam
@@ -27,7 +28,7 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public PersistableGraphDataSet TotalSalesGraph { get; set; }
 
-        public void RecalculateTotalSales(SteamStoreItem[] storeItems)
+        public void RecalculateTotalSales(IEnumerable<SteamStoreItem> storeItems)
         {
             var orderedStoreItems = storeItems?.OrderBy(x => x.StoreRankPosition)?.ToList();
             if (orderedStoreItems == null)
@@ -35,27 +36,59 @@ namespace SCMM.Web.Server.Domain.Models.Steam
                 return;
             }
 
-            var me = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
-            var meIndex = orderedStoreItems.IndexOf(me);
-            var beforeMeIndex = Math.Min((orderedStoreItems.IndexOf(me) + 1), orderedStoreItems.Count - 1);
-            var beforeMeItem = (beforeMeIndex != meIndex) ? orderedStoreItems.ElementAtOrDefault(beforeMeIndex) : null;
-            var afterMeIndex = Math.Max((orderedStoreItems.IndexOf(me) - 1), 0);
-            var afterMeItem = (afterMeIndex != meIndex) ? orderedStoreItems.ElementAtOrDefault(afterMeIndex) : null;
-            var totalSubscribers = (Description?.WorkshopFile?.Subscriptions ?? 0);
+            const string currency = "USD";
 
-            var newTotalSalesMin = (beforeMeItem != null)
-                ? Math.Max(beforeMeItem.TotalSalesMin + 1, totalSubscribers)
-                : totalSubscribers; // bottom of the list
-            var newTotalSalesMax = (afterMeItem != null)
-                ? (int?)Math.Max(afterMeItem.TotalSalesMin - 1, TotalSalesMin)
-                : Int32.MaxValue; // top of the list
+            var item = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
+            var itemIndex = orderedStoreItems.IndexOf(item);
+            var itemSales = Math.Max(TotalSalesMin, Description?.WorkshopFile?.Subscriptions ?? 0);
+            var itemPrice = (item?.StorePrices[currency] ?? 0);
+            var itemRevenue = (itemPrice * itemSales);
 
-            // Minimum sales should never drop below its current value. If another item overtakes us in sales, 
-            // we need to remember we still sold alot rather than falling back to subscriber count (which isn't an accurate representation of sales)
-            TotalSalesMin = Math.Max(TotalSalesMin, newTotalSalesMin);
+            var beforeItemIndex = Math.Min((orderedStoreItems.IndexOf(item) + 1), orderedStoreItems.Count - 1);
+            var beforeItem = (beforeItemIndex != itemIndex) ? orderedStoreItems.ElementAtOrDefault(beforeItemIndex) : null;
+            var beforeItemSales = Math.Max(beforeItem?.TotalSalesMin ?? 0, beforeItem?.Description?.WorkshopFile?.Subscriptions ?? 0);
+            var beforeItemPrice = (beforeItem?.StorePrices[currency] ?? 0);
+            var beforeItemRevenue = (beforeItemPrice * beforeItemSales);
 
-            // Maximum sales should be null if we have no idea how many could have been sold.
-            TotalSalesMax = (TotalSalesMin != newTotalSalesMax) ? newTotalSalesMax : null;
+            // If the item BELOW us in the top sellers has earned more revenue than us,
+            // calculate min sales by inflating our subscriber count so that the revenue is at least equal
+            var newTotalSalesMin = item.TotalSalesMin;
+            if (beforeItemRevenue > itemRevenue && beforeItemRevenue > 0 && itemPrice > 0)
+            {
+                var minSubscribersToMeetRevenue = (int)(beforeItemRevenue / itemPrice);
+                newTotalSalesMin = minSubscribersToMeetRevenue;
+            }
+            // Otherwise, we've earnt more revenue than the item below us, so just rely on subscriber count for minimum sales
+            else
+            {
+                newTotalSalesMin = itemSales;
+            }
+
+            var afterItemIndex = Math.Max((orderedStoreItems.IndexOf(item) - 1), 0);
+            var afterItem = (afterItemIndex != itemIndex) ? orderedStoreItems.ElementAtOrDefault(afterItemIndex) : null;
+            var afterItemSales = Math.Max(afterItem?.TotalSalesMin ?? 0, afterItem?.Description?.WorkshopFile?.Subscriptions ?? 0);
+            var afterItemPrice = (afterItem?.StorePrices[currency] ?? 0);
+            var afterItemRevenue = (afterItemPrice * afterItemSales);
+
+            // If the item ABOVE us in the top sellers has earned more revenue than us,
+            // calculate max sales by inflating our subscriber count so that the revenue is at least equal
+            var newTotalSalesMax = item.TotalSalesMax;
+            if (afterItemRevenue > itemRevenue && afterItemRevenue > 0 & itemPrice > 0)
+            {
+                var minSubscribersToMeetRevenue = (int)(afterItemRevenue / itemPrice);
+                newTotalSalesMax = minSubscribersToMeetRevenue;
+            }
+            // Otherwise, we've earnt more revenue than the item below us, so just rely on subscriber count for minimum sales
+            else
+            {
+                newTotalSalesMax = itemSales;
+            }
+
+            // Minimum sales should be the subscriber count if we are unsure
+            TotalSalesMin = (beforeItem != null) ? newTotalSalesMin : itemSales;
+
+            // Maximum sales should be null if we are unsure
+            TotalSalesMax = (afterItem != null) ? newTotalSalesMax : null;
         }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
+using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -88,7 +89,7 @@ namespace SCMM.Web.Server.Services.Jobs
                             );
                         }
 
-                        await db.SaveChangesAsync();
+                        db.SaveChanges();
                     }
                 }
             }

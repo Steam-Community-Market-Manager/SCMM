@@ -28,23 +28,29 @@
 </Grid>
 
 @code {
-    
+
     [Parameter]
     public ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
-    
+
     [Parameter]
     public ProfileInventoryTotalsDTO InventoryTotal { get; set; }
 
     private ChartJsPieChart InventoryPerformanceValueChartJs;
     private PieConfig InventoryPerformanceValueChart;
-    
+
     private ChartJsLineChart InventoryPerformanceValueHistoryChartJs;
     private LineConfig InventoryPerformanceValueHistoryChart;
-    
+
     protected override void OnInitialized()
     {
-        RedrawInventoryPerformanceValueChart();
-        RedrawInventoryPerformanceValueHistoryChart();
+        if (InventoryTotal != null)
+        {
+            RedrawInventoryPerformanceValueChart();
+            if (InventoryPerformance != null)
+            {
+                RedrawInventoryPerformanceValueHistoryChart();
+            }
+        }
     }
 
     private void RedrawInventoryPerformanceValueChart()
@@ -73,11 +79,11 @@
                 }
             }
         };
-        
-        InventoryPerformanceValueChart.Data.Labels.AddRange(new[] { 
-            "Invested", 
-            "Resell Fees", 
-            "Resell Profit", 
+
+        InventoryPerformanceValueChart.Data.Labels.AddRange(new[] {
+            "Invested",
+            "Resell Fees",
+            "Resell Profit",
             "Resell Value"
         });
 
@@ -87,7 +93,7 @@
         {
             var inventoryValueDataSet = new PieDataset
             {
-                BackgroundColor = new[] { 
+                BackgroundColor = new[] {
                     "#d32f2f",
                     "#f57c00",
                     "#388e3c",
@@ -96,16 +102,16 @@
                 BorderWidth = 0
             };
 
-            inventoryValueDataSet.Data.AddRange(new double[] { 
+            inventoryValueDataSet.Data.AddRange(new double[] {
                 (DoubleWrapper)0,
                 (DoubleWrapper)0,
                 (DoubleWrapper)0,
                 (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellValue / localScaleDivisor, State.Currency.Scale)
             });
-        
+
             var inventoryValueBreakdownDataSet = new PieDataset
             {
-                BackgroundColor = new[] { 
+                BackgroundColor = new[] {
                     "#d32f2f",
                     "#f57c00",
                     "#388e3c",
@@ -114,7 +120,7 @@
                 BorderWidth = 0
             };
 
-            inventoryValueBreakdownDataSet.Data.AddRange(new double[] { 
+            inventoryValueBreakdownDataSet.Data.AddRange(new double[] {
                 (DoubleWrapper)Math.Round((double)InventoryTotal.TotalInvested / localScaleDivisor, State.Currency.Scale),
                 (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellTax / localScaleDivisor, State.Currency.Scale),
                 (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellProfit / localScaleDivisor, State.Currency.Scale),
@@ -125,7 +131,7 @@
             InventoryPerformanceValueChart.Data.Datasets.Add(inventoryValueBreakdownDataSet);
         }
     }
-    
+
     private void RedrawInventoryPerformanceValueHistoryChart()
     {
         InventoryPerformanceValueHistoryChart = new LineConfig
@@ -194,7 +200,7 @@
                 }
             }
         };
-        
+
         if (InventoryPerformance != null)
         {
             InventoryPerformanceValueHistoryChart.Data.Labels = InventoryPerformance.ValueHistoryGraph.Keys.ToList();

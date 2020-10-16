@@ -5,7 +5,7 @@ namespace SCMM.Steam.Shared
 {
     public static class SteamEconomyHelper
     {
-        public const decimal SteamFeeMultiplier = 0.8695652173928261m; // 13%
+        public const decimal SteamFeeMultiplier = 0.1304347826071739m; // 13%
         public const decimal SteamFeePlatformMultiplier = 0.0304347811170578m; // 3%
         public const decimal SteamFeePublisherMultiplier = 0.100000001490116119m; // 10%
 

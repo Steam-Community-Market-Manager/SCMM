@@ -11,8 +11,6 @@ namespace SCMM.Web.Server.Domain
 {
     public class SteamCurrencyService
     {
-        private const string DefaultCacheKey = "default";
-
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         private readonly SteamDbContext _db;
@@ -33,18 +31,10 @@ namespace SCMM.Web.Server.Domain
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetPriority(CacheItemPriority.NeverRemove);
 
-            Cache.Set(DefaultCacheKey, currencies.FirstOrDefault(x => x.IsDefault));
             foreach (var currency in currencies)
             {
                 Cache.Set(currency.Name, currency, cacheOptions);
             }
-        }
-
-        public static CurrencyDetailedDTO GetDefaultCached()
-        {
-            CurrencyDetailedDTO value = null;
-            Cache.TryGetValue(DefaultCacheKey, out value);
-            return value;
         }
 
         public static CurrencyDetailedDTO GetByNameCached(string name)

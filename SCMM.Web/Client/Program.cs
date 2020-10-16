@@ -23,7 +23,7 @@ namespace SCMM.Web.Client
                 var state = serviceProvider.GetService<AppState>();
                 if (state != null)
                 {
-                    state.SetHeadersFor(client);
+                    state.AddHeadersTo(client);
                 }
             });
 

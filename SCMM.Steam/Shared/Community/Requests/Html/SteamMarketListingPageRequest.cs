@@ -9,7 +9,7 @@ namespace SCMM.Steam.Shared.Community.Requests.Html
         public string MarketHashName { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{SteamConstants.SteamCommunityUrl}/market/listings/{Uri.EscapeDataString(AppId)}/{Uri.EscapeDataString(MarketHashName)}"
+            $"{SteamConstants.SteamCommunityUrl}/market/listings/{Uri.EscapeDataString(AppId ?? String.Empty)}/{Uri.EscapeUriString(MarketHashName?.Replace(" ", "%20") ?? String.Empty)}"
         );
     }
 }

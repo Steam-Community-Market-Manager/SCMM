@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using SCMM.Web.Server.API.Controllers.Extensions;
 using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain.DTOs;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
@@ -10,8 +9,6 @@ using SCMM.Web.Shared.Domain.DTOs.Languages;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
-using System;
-using System.Linq.Expressions;
 
 namespace SCMM.Web.Server
 {
@@ -118,8 +115,11 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.StorePrice, o => o.MapFrom(
                     (src, dst, _, context) =>
                     {
-                        return context.Items.ContainsKey(AutoMappingExtensions.ContextKeyCurrencyId)
-                            ? src.StorePrices[(string)context.Options.Items[AutoMappingExtensions.ContextKeyCurrencyId]]
+                        var currency = context.Items.ContainsKey(AutoMapperConfigurationExtensions.ContextKeyCurrency)
+                            ? (CurrencyDetailedDTO)context.Options.Items[AutoMapperConfigurationExtensions.ContextKeyCurrency]
+                            : null;
+                        return (currency != null && src.StorePrices.ContainsKey(currency.Name))
+                            ? src.StorePrices[currency.Name]
                             : 0;
                     }
                 ))
@@ -131,87 +131,6 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Views, o => o.MapFrom(p => p.Description.WorkshopFile.Views))
                 .ForMember(x => x.AcceptedOn, o => o.MapFrom(p => p.Description.WorkshopFile.AcceptedOn))
                 .ForMember(x => x.Tags, o => o.MapFrom(p => p.Description.Tags.WithoutWorkshopTags()));
-        }
-    }
-
-    public static class AutoMappingExtensions
-    {
-        public const string ContextKeyLanguageId = "languageId";
-        public const string ContextKeyLanguage = "language";
-        public const string ContextKeyCurrencyId = "currencyId";
-        public const string ContextKeyCurrency = "currency";
-        public const string ContextKeyProfileId = "profileId";
-
-        public static IMappingOperationOptions AddRequest(this IMappingOperationOptions opt, HttpRequest request)
-        {
-            opt.Items[ContextKeyLanguageId] = request.LanguageId();
-            opt.Items[ContextKeyLanguage] = request.Language();
-            opt.Items[ContextKeyCurrencyId] = request.CurrencyId();
-            opt.Items[ContextKeyCurrency] = request.Currency();
-            opt.Items[ContextKeyProfileId] = request.ProfileId();
-            return opt;
-        }
-
-        public static void MapFromCurrency<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, CurrencyDTO> memberOptions)
-        {
-            memberOptions.MapFrom((src, dst, _, context) =>
-            {
-                return context.Items.ContainsKey(ContextKeyCurrency)
-                    ? (CurrencyDTO)context.Options.Items[ContextKeyCurrency]
-                    : null;
-            });
-        }
-
-        public static void MapFromUsingCurrencyExchange<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, long> memberOptions, Expression<Func<TSource, long>> valueExpression, Expression<Func<TSource, SteamCurrency>> currencyExpression)
-        {
-            memberOptions.MapFrom((src, dst, _, context) =>
-            {
-                if (!context.Items.ContainsKey(ContextKeyCurrency))
-                {
-                    return 0L;
-                }
-
-                var value = valueExpression.Compile().Invoke(src);
-                if (value == 0)
-                {
-                    return 0L;
-                }
-
-                var valueCurrency = currencyExpression.Compile().Invoke(src);
-                if (valueCurrency == null)
-                {
-                    return 0L;
-                }
-
-                var targetCurrency = (CurrencyDetailedDTO)context.Items[ContextKeyCurrency];
-                return targetCurrency.CalculateExchange(value, valueCurrency);
-            });
-        }
-
-        public static void MapFromUsingCurrencyExchange<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, long?> memberOptions, Expression<Func<TSource, long?>> valueExpression, Expression<Func<TSource, SteamCurrency>> currencyExpression)
-        {
-            memberOptions.MapFrom((src, dst, _, context) =>
-            {
-                if (!context.Items.ContainsKey(ContextKeyCurrency))
-                {
-                    return (long?) null;
-                }
-
-                var value = valueExpression.Compile().Invoke(src);
-                if (value == null)
-                {
-                    return (long?) null;
-                }
-
-                var valueCurrency = currencyExpression.Compile().Invoke(src);
-                if (valueCurrency == null)
-                {
-                    return (long?) null;
-                }
-
-                var targetCurrency = (CurrencyDetailedDTO)context.Items[ContextKeyCurrency];
-                return targetCurrency.CalculateExchange(value.Value, valueCurrency);
-            });
         }
     }
 }

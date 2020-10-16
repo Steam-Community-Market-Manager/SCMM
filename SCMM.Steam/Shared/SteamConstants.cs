@@ -15,7 +15,7 @@
         public const string SteamAssetTagAcceptedYear = "accepted.year";
         public const string SteamAssetTagAcceptedWeek = "accepted.week";
 
-        public const string SteamProfileIdRegex = @"id\/(.*)\/";
+        public const string SteamProfileIdRegex = @"\/id\/([^\/]*)";
 
         public static readonly string[] SteamIgnoredWorkshopTags = { "Skin", "Version3" };
 
@@ -28,6 +28,9 @@
         public const string SteamStoreItemDefLinkRegex = @"detail\/(\d+)";
 
         public const string SteamMarketListingItemNameIdRegex = @"Market_LoadOrderSpread\((.*)\)";
+
+        public const string SteamWorkshopItemClass = "workshopItem";
+        public const string SteamWorkshopItemPublishedFileIdAttribute = "data-publishedfileid";
 
         public const string DefaultContextId = "2";
     }

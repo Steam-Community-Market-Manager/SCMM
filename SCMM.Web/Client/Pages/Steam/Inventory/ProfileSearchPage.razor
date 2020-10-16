@@ -41,9 +41,8 @@
         SteamId = (string)args.Value;
     }
 
-    private async Task ViewProfileInventory()
+    private void ViewProfileInventory()
     {
-        await State.LoginAsync(Http, LocalStorage, SteamId);
         Navigation.NavigateTo($"steam/inventory/{SteamId}");
     }
 

@@ -5,7 +5,6 @@ using System.Reflection;
 
 namespace SCMM.Web.Server.API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class VersionController : ControllerBase
@@ -17,6 +16,7 @@ namespace SCMM.Web.Server.API.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public string Get()
         {

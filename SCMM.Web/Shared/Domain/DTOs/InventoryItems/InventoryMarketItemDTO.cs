@@ -14,6 +14,10 @@
 
         public string IconUrl { get; set; }
 
+        public int Supply { get; set; }
+
+        public int Demand { get; set; }
+
         public CurrencyDTO Currency { get; set; }
 
         public long BuyAskingPrice { get; set; }

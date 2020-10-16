@@ -91,7 +91,8 @@
                     else
                     {
                         <Paper>
-                            <InventoryItemsInvestment Items="@FilterItems(InventoryItemsInvestment)" ReadOnly="@(!ProfileIsMe)" />
+                            <InventoryItemsInvestment Items="@FilterItems(InventoryItemsInvestment)" 
+                                                      ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
                         </Paper>
                     }
                 }
@@ -137,7 +138,7 @@
 
     private Exception ProfileLoadError { get; set; }
     
-    private bool ProfileIsMe => (Profile != null && (State.ProfileId == Profile?.SteamId || State.ProfileId == Profile?.ProfileId));
+    private bool ProfileIsMe => (Profile != null && State.IsAuthenticated && State.Profile?.SteamId == Profile?.SteamId);
 
     private object SelectedInventoryPanel { get; set; } = 0;
 

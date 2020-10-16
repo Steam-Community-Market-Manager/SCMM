@@ -16,8 +16,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>C:\Development\SCMM\SCMM.Web\Server\SCMM.Web.Server.xml</DocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>C:\Development\SCMM\SCMM.Web\Server\SCMM.Web.Server.xml</DocumentationFile>
+  </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="AspNet.Security.OpenId.Steam" Version="3.1.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0-beta3" />
     <PackageReference Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Version="2.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.0-rc.1.20451.17" />
@@ -35,9 +40,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SCMM.Discord\Client\SCMM.Discord.Client.csproj" />
     <ProjectReference Include="..\..\SCMM.Steam\Client\SCMM.Steam.Client.csproj" />
     <ProjectReference Include="..\Client\SCMM.Web.Client.csproj" />
     <ProjectReference Include="..\Shared\SCMM.Web.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App_Data\jobs\triggered\RestartIISEvery6Hours\restart.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="App_Data\jobs\triggered\RestartIISEvery6Hours\settings.job">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

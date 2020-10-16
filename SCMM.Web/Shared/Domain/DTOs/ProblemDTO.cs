@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Shared.Domain.DTOs
+﻿namespace SCMM.Web.Shared.Domain.DTOs
 {
     public class ProblemDTO
     {

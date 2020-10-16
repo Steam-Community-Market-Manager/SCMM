@@ -1,4 +1,4 @@
-﻿namespace SCMM.Steam.Shared
+﻿namespace SCMM.Steam.Client
 {
     public class SteamConfiguration
     {

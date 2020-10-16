@@ -18,6 +18,7 @@ namespace SCMM.Web.Server.Data
         public DbSet<SteamApp> SteamApps { get; set; }
         public DbSet<SteamStoreItem> SteamStoreItems { get; set; }
         public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
+        public DbSet<SteamMarketItemSale> SteamMarketItemSale { get; set; }
         public DbSet<SteamInventoryItem> SteamInventoryItems { get; set; }
         public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
         public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
@@ -40,6 +41,8 @@ namespace SCMM.Web.Server.Data
                 .HasOne(x => x.Language);
             builder.Entity<SteamProfile>()
                 .HasOne(x => x.Currency);
+            builder.Entity<SteamProfile>()
+                .OwnsOne(x => x.Roles);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.InventoryItems)
                 .WithOne(x => x.Owner);

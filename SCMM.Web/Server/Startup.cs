@@ -4,17 +4,20 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SCMM.Web.Server.Domain;
-using SCMM.Steam.Shared;
 using SCMM.Steam.Client;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Middleware;
-using Microsoft.OpenApi.Models;
 using SCMM.Web.Server.Services.Jobs;
 using AutoMapper;
-using SCMM.Web.Server.Middleware;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Discord.Client;
+using SCMM.Web.Server.Configuration;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System;
+using AspNet.Security.OpenId.Steam;
+using AspNet.Security.OpenId;
+using System.Security.Claims;
 
 namespace SCMM.Web.Server
 {
@@ -46,15 +49,54 @@ namespace SCMM.Web.Server
             
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            var steamConfiguration = Configuration.GetSteamConfiguration();
-            services.AddSingleton<SteamConfiguration>((s) => steamConfiguration);
+            services.AddSingleton<DiscordConfiguration>((s) => Configuration.GetDiscoardConfiguration());
+            services.AddSingleton<DiscordClient>();
+
+            services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
+
+            var authConfiguration = services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = SteamAuthenticationDefaults.AuthenticationScheme;
+            });
+            authConfiguration.AddCookie(options =>
+            {
+                options.LoginPath = "/signin";
+                options.LogoutPath = "/signout";
+                options.AccessDeniedPath = "/";
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                options.Cookie.Name = "scmmLoginSecure";
+                options.Cookie.IsEssential = true;
+                options.Cookie.HttpOnly = false;
+            });
+            authConfiguration.AddSteam(options =>
+            {
+                options.ApplicationKey = Configuration.GetSteamConfiguration().ApplicationKey;
+                options.Events = new OpenIdAuthenticationEvents
+                {
+                    OnTicketReceived = async (ctx) =>
+                    {
+                        var securityService = ctx.HttpContext.RequestServices.GetRequiredService<SecurityService>();
+                        ctx.Principal.AddIdentity(
+                            await securityService.LoginSteamProfileAsync(
+                                ctx.Principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                            )
+                        );
+                    }
+                };
+            });
 
             services.AddDbContext<SteamDbContext>(options =>
                 options.UseSqlServer(
-                    Configuration.GetConnectionString("SteamDbConnection")));
+                    Configuration.GetConnectionString("SteamDbConnection")
+                )
+            );
 
             services.AddTransient<SteamCommunityClient>();
+
+            services.AddTransient<SecurityService>();
             services.AddTransient<SteamService>();
             services.AddTransient<SteamLanguageService>();
             services.AddTransient<SteamCurrencyService>();
@@ -66,6 +108,7 @@ namespace SCMM.Web.Server
             services.AddHostedService<CheckForMissingAssetTagsJob>();
             services.AddHostedService<CheckForMissingMarketItemIdsJob>();
             services.AddHostedService<CheckForNewMarketItemsJob>();
+            services.AddHostedService<CheckForNewAcceptedWorkshopItemsJob>();
             services.AddHostedService<CheckForNewStoreItemsJob>();
             services.AddHostedService<UpdateAssetWorkshopStatisticsJob>();
             services.AddHostedService<UpdateMarketItemOrdersJob>();
@@ -77,12 +120,13 @@ namespace SCMM.Web.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
-            
+
             services.AddSwaggerGen(c =>
             {
                 c.IncludeXmlComments("SCMM.Web.Server.xml");
-                c.SwaggerDoc("v1", 
-                    new OpenApiInfo { 
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo
+                    {
                         Title = "SCMM",
                         Description = "Steam Community Market Manager API",
                         Version = "v1"
@@ -101,11 +145,6 @@ namespace SCMM.Web.Server
                 app.UseMigrationsEndPoint();
                 // Enable WASM debugging
                 app.UseWebAssemblyDebugging();
-                // Enable Swagger API auto-docs
-                app.UseSwagger();
-                app.UseSwaggerUI(
-                    c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1")
-                );
             }
             else
             {
@@ -114,14 +153,26 @@ namespace SCMM.Web.Server
                 app.UseHsts();
             }
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SCMM v1"));
+            // Enable Swagger API auto-docs
+            app.UseSwagger(config =>
+            {
+                config.RouteTemplate = "docs/{documentname}/swagger.json";
+            });
+            app.UseSwaggerUI(config => 
+            {
+                config.RoutePrefix = "docs";
+                config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM v1");
+                config.OAuth2RedirectUrl("/signin");
+            });
 
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
