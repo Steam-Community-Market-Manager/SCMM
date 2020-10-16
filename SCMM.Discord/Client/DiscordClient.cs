@@ -102,22 +102,20 @@ namespace SCMM.Discord.Client
                 // If the channel is null, we'll broadcast to the first channel that we have permission to
                 var channels = guild.TextChannels
                     .Where(x => String.IsNullOrEmpty(channelPattern) || Regex.IsMatch(x.Name, channelPattern))
+                    .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
                     .ToList();
                 if (!channels.Any() && !String.IsNullOrEmpty(channelPattern))
                 {
                     // If the channel pattern didn't match anything, broadcast to the first channel that we havve permission to
-                    channels.AddRange(guild.TextChannels);
+                    var firstChannel = guild.TextChannels.FirstOrDefault(x => guild.CurrentUser.GetPermissions(x).SendMessages);
+                    if (firstChannel != null)
+                    {
+                        channels.Add(firstChannel);
+                    }
                 }
 
                 foreach (var channel in channels)
                 {
-                    // Make sure we have permission to send messages here
-                    var channelPermissions = guild.CurrentUser.GetPermissions(channel);
-                    if (!channelPermissions.SendMessages)
-                    {
-                        continue;
-                    }
-
                     try
                     {
                         // If the title is not null, we assume you have emdeded content
