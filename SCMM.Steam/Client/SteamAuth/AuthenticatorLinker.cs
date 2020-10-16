@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Specialized;
 using System.Net;
-using System.Security.Cryptography;
 using System.Threading;
 
 namespace SteamAuth
@@ -53,14 +52,21 @@ namespace SteamAuth
             if (!hasPhone && PhoneNumber == null)
                 return LinkResult.MustProvidePhoneNumber;
 
-            if (!hasPhone) {
-                if (confirmationEmailSent) {
-                    if (!_checkEmailConfirmation()) {
+            if (!hasPhone)
+            {
+                if (confirmationEmailSent)
+                {
+                    if (!_checkEmailConfirmation())
+                    {
+                        return LinkResult.GeneralFailure;
+                    }
+                }
+                else if (!_addPhoneNumber())
+                {
                     return LinkResult.GeneralFailure;
                 }
-                } else if (!_addPhoneNumber()) {
-                    return LinkResult.GeneralFailure;
-                } else {
+                else
+                {
                     confirmationEmailSent = true;
                     return LinkResult.MustConfirmEmail;
                 }
@@ -197,7 +203,8 @@ namespace SteamAuth
             return addPhoneNumberResponse.Success;
         }
 
-        private bool _checkEmailConfirmation() {
+        private bool _checkEmailConfirmation()
+        {
             var postData = new NameValueCollection();
             postData.Add("op", "email_confirmation");
             postData.Add("arg", "");
@@ -207,10 +214,11 @@ namespace SteamAuth
             if (response == null) return false;
 
             var emailConfirmationResponse = JsonConvert.DeserializeObject<AddPhoneResponse>(response);
-             return emailConfirmationResponse.Success;
+            return emailConfirmationResponse.Success;
         }
 
-        private bool _hasPhoneAttached() {
+        private bool _hasPhoneAttached()
+        {
             var postData = new NameValueCollection();
             postData.Add("op", "has_phone");
             postData.Add("arg", "null");
@@ -282,7 +290,7 @@ namespace SteamAuth
 
         public static string GenerateDeviceID()
         {
-          return "android:" + Guid.NewGuid().ToString();
+            return "android:" + Guid.NewGuid().ToString();
         }
     }
 }

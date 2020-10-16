@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SteamAuth
+﻿namespace SteamAuth
 {
     public class Confirmation
     {
@@ -32,7 +26,7 @@ namespace SteamAuth
         /// The type of this confirmation.
         /// </summary>
         public ConfirmationType ConfType;
-        
+
         public Confirmation(ulong id, ulong key, int type, ulong creator)
         {
             this.ID = id;

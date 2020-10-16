@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using System;
 using System.Net;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace SteamAuth
 {
@@ -78,7 +78,7 @@ namespace SteamAuth
                 [JsonProperty("server_time")]
                 public long ServerTime { get; set; }
             }
-            
+
         }
     }
 }

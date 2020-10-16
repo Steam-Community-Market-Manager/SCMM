@@ -21,8 +21,4 @@
     <ProjectReference Include="..\Shared\SCMM.Steam.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="SteamAuth\" />
-  </ItemGroup>
-
 </Project>

@@ -1,10 +1,10 @@
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Skclusive.Material.Component;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Blazored.LocalStorage;
-using Skclusive.Material.Component;
 
 namespace SCMM.Web.Client
 {

@@ -111,10 +111,10 @@ namespace SteamAuth
 
             if (loginResponse.Message != null)
             {
-                if(loginResponse.Message.Contains("There have been too many login failures"))
+                if (loginResponse.Message.Contains("There have been too many login failures"))
                     return LoginResult.TooManyFailedLogins;
 
-                if(loginResponse.Message.Contains("Incorrect login"))
+                if (loginResponse.Message.Contains("Incorrect login"))
                     return LoginResult.BadCredentials;
             }
 
@@ -209,7 +209,7 @@ namespace SteamAuth
 
                 [JsonProperty("oauth_token")]
                 public string OAuthToken { get; set; }
-                
+
                 [JsonProperty("wgtoken")]
                 public string SteamLogin { get; set; }
 

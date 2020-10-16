@@ -1,22 +1,22 @@
+using AspNet.Security.OpenId;
+using AspNet.Security.OpenId.Steam;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SCMM.Web.Server.Domain;
+using Microsoft.OpenApi.Models;
+using SCMM.Discord.Client;
 using SCMM.Steam.Client;
+using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Middleware;
 using SCMM.Web.Server.Services.Jobs;
-using AutoMapper;
-using Microsoft.OpenApi.Models;
-using Microsoft.EntityFrameworkCore;
-using SCMM.Discord.Client;
-using SCMM.Web.Server.Configuration;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using System;
-using AspNet.Security.OpenId.Steam;
-using AspNet.Security.OpenId;
 using System.Security.Claims;
 
 namespace SCMM.Web.Server
@@ -46,7 +46,7 @@ namespace SCMM.Web.Server
                     options.RequestCollectionOptions.TrackExceptions = true;
                 }
             );
-            
+
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddSingleton<DiscordConfiguration>((s) => Configuration.GetDiscoardConfiguration());
@@ -158,7 +158,7 @@ namespace SCMM.Web.Server
             {
                 config.RouteTemplate = "docs/{documentname}/swagger.json";
             });
-            app.UseSwaggerUI(config => 
+            app.UseSwaggerUI(config =>
             {
                 config.RoutePrefix = "docs";
                 config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM v1");
