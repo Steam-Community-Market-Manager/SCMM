@@ -121,7 +121,14 @@ namespace SCMM.Web.Server
 
             services.AddSwaggerGen(c =>
             {
-                c.IncludeXmlComments("SCMM.Web.Server.xml");
+                try
+                {
+                    c.IncludeXmlComments("SCMM.Web.Server.xml");
+                }
+                catch (Exception)
+                {
+                    // Probably haven't generated XML docs, not a deal breaker...
+                }
                 c.SwaggerDoc("v1",
                     new OpenApiInfo
                     {
