@@ -89,7 +89,9 @@ namespace SCMM.Web.Server
             services.AddDbContext<SteamDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("SteamDbConnection")
-                )
+                ),
+                ServiceLifetime.Transient,
+                ServiceLifetime.Singleton
             );
 
             services.AddTransient<SteamCommunityClient>();
