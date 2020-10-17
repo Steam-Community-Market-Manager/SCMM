@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Domain.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
@@ -36,27 +37,8 @@ namespace SCMM.Web.Server.API.Controllers
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var nextStoreUpdateUtc = db.SteamAssetWorkshopFiles
-                    .Where(x => x.AcceptedOn != null)
-                    .Select(x => x.AcceptedOn.Value)
-                    .Max().UtcDateTime;
-
-                // Store normally updates every thursday or friday around 9pm (UK time)
-                nextStoreUpdateUtc = (nextStoreUpdateUtc.Date + new TimeSpan(21, 0, 0));
-                do
-                {
-                    nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
-                } while (nextStoreUpdateUtc.DayOfWeek != DayOfWeek.Thursday);
-
-                // If the expected store date is still in the past, assume it is a day late
-                // NOTE: Has a tolerance of 3hrs from the expected time
-                while ((nextStoreUpdateUtc + TimeSpan.FromHours(3)) <= DateTime.UtcNow)
-                {
-                    nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
-                }
-
-                return new DateTimeOffset(nextStoreUpdateUtc, TimeZoneInfo.Utc.BaseUtcOffset);
+                var service = scope.ServiceProvider.GetService<SteamService>();
+                return service.GetStoreNextUpdateExpectedOn();
             }
         }
 

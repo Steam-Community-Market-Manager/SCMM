@@ -38,6 +38,30 @@ namespace SCMM.Web.Server.Domain
             _communityClient = communityClient;
         }
 
+        public DateTimeOffset GetStoreNextUpdateExpectedOn()
+        {
+            var nextStoreUpdateUtc = _db.SteamAssetWorkshopFiles
+                .Where(x => x.AcceptedOn != null)
+                .Select(x => x.AcceptedOn.Value)
+                .Max().UtcDateTime;
+
+            // Store normally updates every thursday or friday around 9pm (UK time)
+            nextStoreUpdateUtc = (nextStoreUpdateUtc.Date + new TimeSpan(21, 0, 0));
+            do
+            {
+                nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
+            } while (nextStoreUpdateUtc.DayOfWeek != DayOfWeek.Thursday);
+
+            // If the expected store date is still in the past, assume it is a day late
+            // NOTE: Has a tolerance of 3hrs from the expected time
+            while ((nextStoreUpdateUtc + TimeSpan.FromHours(3)) <= DateTime.UtcNow)
+            {
+                nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
+            }
+
+            return new DateTimeOffset(nextStoreUpdateUtc, TimeZoneInfo.Utc.BaseUtcOffset);
+        }
+
         public async Task<Models.Steam.SteamProfile> AddOrUpdateSteamProfile(string steamId, bool fetchLatest = false)
         {
             if (string.IsNullOrEmpty(steamId))
