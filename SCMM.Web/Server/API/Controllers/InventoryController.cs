@@ -133,7 +133,7 @@ namespace SCMM.Web.Server.API.Controllers
                     {
                         Quantity = x.Quantity,
                         BuyPrice = x.BuyPrice,
-                        ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                        ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
                         MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
                         MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
                         MarketItemResellPrice = x.MarketItem.ResellPrice,
@@ -372,7 +372,7 @@ namespace SCMM.Web.Server.API.Controllers
                     {
                         Quantity = x.Quantity,
                         BuyPrice = x.BuyPrice,
-                        ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                        ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
                         MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
                         MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
                         MarketItemLast48hrValue = x.MarketItem.Last48hrValue,
