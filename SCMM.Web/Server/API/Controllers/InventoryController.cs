@@ -54,35 +54,25 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var service = scope.ServiceProvider.GetService<SteamService>();
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var profile = (SteamProfile)null;
+                
+                // Load the profile
+                var inventory = db.SteamProfiles
+                    .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
+                    .Select(x => new
+                    {
+                        Profile = x,
+                        TotalItems = x.InventoryItems.Count,
+                        LastUpdatedOn = x.LastUpdatedInventoryOn
+                    })
+                    .FirstOrDefault();
 
-                if (sync)
+                // If the profile inventory hasn't been loaded before or it is older than the cache period, fetch it now
+                var profile = inventory?.Profile;
+                if (profile == null || inventory?.TotalItems == 0 || inventory?.LastUpdatedOn < DateTime.Now.Subtract(TimeSpan.FromHours(6)) || sync)
                 {
                     // Load the profile and force an inventory sync
                     profile = await service.AddOrUpdateSteamProfile(steamId, fetchLatest: true);
                     profile = await service.FetchProfileInventory(steamId);
-                }
-                else
-                {
-                    // Load the profile
-                    var inventory = db.SteamProfiles
-                        .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                        .Select(x => new
-                        {
-                            Profile = x,
-                            TotalItems = x.InventoryItems.Count
-                        })
-                        .FirstOrDefault();
-
-                    // If the profile inventory hasn't been loaded before, fetch it now
-                    if (inventory == null || inventory.Profile == null || inventory.TotalItems == 0)
-                    {
-                        profile = await service.FetchProfileInventory(steamId);
-                    }
-                    else
-                    {
-                        profile = inventory.Profile;
-                    }
                 }
 
                 if (profile == null)
