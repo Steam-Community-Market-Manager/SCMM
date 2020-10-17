@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using SCMM.Web.Server.API.Controllers.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 

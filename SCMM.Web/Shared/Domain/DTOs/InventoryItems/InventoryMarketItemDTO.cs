@@ -1,4 +1,6 @@
-﻿namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
+﻿using SCMM.Web.Shared.Domain.DTOs.Currencies;
+
+namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
     public class InventoryMarketItemDTO : IFilterableItem
     {

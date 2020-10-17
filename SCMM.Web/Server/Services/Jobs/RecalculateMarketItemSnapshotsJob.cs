@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System.Linq;
 using System.Threading;

@@ -28,12 +28,12 @@ namespace SCMM.Discord.Client
             _commands = new CommandService();
             _client = new DiscordSocketClient();
             _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client);
-            _client.Log += LogClientMessage;
-            _client.Ready += async () => _clientIsReady.Set();
+            _client.Log += OnClientLogAsync;
+            _client.Ready += OnClientReadAsync;
             _clientIsReady = new ManualResetEvent(false);
         }
 
-        private Task LogClientMessage(LogMessage message)
+        private Task OnClientLogAsync(LogMessage message)
         {
             switch (message.Severity)
             {
@@ -51,6 +51,12 @@ namespace SCMM.Discord.Client
                     break;
             }
 
+            return Task.CompletedTask;
+        }
+
+        private Task OnClientReadAsync()
+        {
+            _clientIsReady.Set();
             return Task.CompletedTask;
         }
 

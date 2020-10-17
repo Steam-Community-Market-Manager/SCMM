@@ -2,7 +2,7 @@
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 
-namespace SCMM.Web.Server.Configuration
+namespace SCMM.Web.Server.Extensions
 {
     public static class ConfigurationExtensions
     {

@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
-namespace SCMM.Web.Server.Domain.Models.Steam
+namespace SCMM.Web.Server.Data.Models.Steam
 {
     public class SteamMarketItem : SteamItem
     {

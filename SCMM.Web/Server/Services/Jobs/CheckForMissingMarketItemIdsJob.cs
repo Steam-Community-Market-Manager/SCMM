@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Linq;

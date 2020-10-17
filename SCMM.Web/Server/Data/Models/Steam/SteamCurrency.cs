@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SCMM.Web.Server.Domain.Models.Steam
+namespace SCMM.Web.Server.Data.Models.Steam
 {
     public class SteamCurrency : Entity, ICurrency, IExchangeableCurrency
     {

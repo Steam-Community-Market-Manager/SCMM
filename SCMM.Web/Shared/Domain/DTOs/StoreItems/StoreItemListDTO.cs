@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SCMM.Web.Shared.Domain.DTOs.Currencies;
+using System;
 using System.Collections.Generic;
 
 namespace SCMM.Web.Shared.Domain.DTOs.StoreItems

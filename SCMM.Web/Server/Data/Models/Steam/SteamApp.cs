@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace SCMM.Web.Server.Domain.Models.Steam
+namespace SCMM.Web.Server.Data.Models.Steam
 {
     public class SteamApp : Entity
     {

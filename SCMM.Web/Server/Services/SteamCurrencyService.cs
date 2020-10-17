@@ -2,21 +2,21 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Shared.Domain.DTOs.Languages;
+using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Domain
+namespace SCMM.Web.Server.Services
 {
-    public class SteamLanguageService
+    public class SteamCurrencyService
     {
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         private readonly SteamDbContext _db;
         private readonly IMapper _mapper;
 
-        public SteamLanguageService(SteamDbContext db, IMapper mapper)
+        public SteamCurrencyService(SteamDbContext db, IMapper mapper)
         {
             _db = db;
             _mapper = mapper;
@@ -24,27 +24,27 @@ namespace SCMM.Web.Server.Domain
 
         public async Task RepopulateCache()
         {
-            var languages = await _db.SteamLanguages
-                .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
+            var currencies = await _db.SteamCurrencies
+                .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
                 .ToListAsync();
 
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetPriority(CacheItemPriority.NeverRemove);
 
-            foreach (var language in languages)
+            foreach (var currency in currencies)
             {
-                Cache.Set(language.Name, language, cacheOptions);
+                Cache.Set(currency.Name, currency, cacheOptions);
             }
         }
 
-        public static LanguageDetailedDTO GetByNameCached(string name)
+        public static CurrencyDetailedDTO GetByNameCached(string name)
         {
             if (String.IsNullOrEmpty(name))
             {
                 return null;
             }
 
-            LanguageDetailedDTO value = null;
+            CurrencyDetailedDTO value = null;
             Cache.TryGetValue(name, out value);
             return value;
         }

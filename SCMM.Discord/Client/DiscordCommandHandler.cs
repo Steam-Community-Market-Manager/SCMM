@@ -62,7 +62,7 @@ namespace SCMM.Discord.Client
             );
         }
 
-        public async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        public Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
             var commandName = command.IsSpecified ? command.Value.Name : "unspecified";
             if (result.IsSuccess)
@@ -77,9 +77,11 @@ namespace SCMM.Discord.Client
                     $"Discord command '{commandName}' execution failed (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
                 );
             }
+
+            return Task.CompletedTask;
         }
 
-        public async Task OnCommandLogAsync(LogMessage message)
+        public Task OnCommandLogAsync(LogMessage message)
         {
             if (message.Exception is CommandException commandException)
             {
@@ -90,6 +92,8 @@ namespace SCMM.Discord.Client
                     $"Discord command '{command.Name}' unhandled exception (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username})"
                 );
             }
+
+            return Task.CompletedTask;
         }
     }
 }

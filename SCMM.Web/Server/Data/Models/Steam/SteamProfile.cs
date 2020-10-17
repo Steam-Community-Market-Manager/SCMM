@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace SCMM.Web.Server.Domain.Models.Steam
+namespace SCMM.Web.Server.Data.Models.Steam
 {
     public class SteamProfile : Entity
     {
