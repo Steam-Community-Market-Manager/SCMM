@@ -1,0 +1,21 @@
+﻿
+.SignIn-Button img:hover {
+    cursor: pointer;
+}
+
+.SignIn-Button img {
+    padding: 16px;
+}
+
+.SignIn-Dialog-Tips {
+    margin-left: 20px;
+}
+
+.SignIn-Dialog-Tips img {
+    width: 100%;
+    max-width: max-content;
+}
+
+.SignIn-Dialog-Button img {
+    padding: 8px;
+}
