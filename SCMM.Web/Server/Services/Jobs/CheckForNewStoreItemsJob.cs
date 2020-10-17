@@ -101,8 +101,8 @@ namespace SCMM.Web.Server.Services.Jobs
                                 x => GenerateStoreItemPriceList(x, currencies)
                             ),
                             url: new SteamItemStorePageRequest()
-                            { 
-                                AppId = app.SteamId 
+                            {
+                                AppId = app.SteamId
                             }.Uri.ToString(),
                             thumbnailUrl: app.IconUrl,
                             imageUrl: app.IconLargeUrl,

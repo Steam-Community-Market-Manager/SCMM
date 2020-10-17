@@ -213,7 +213,7 @@ namespace SCMM.Web.Server.API.Controllers
                             item.Description.MarketItem.Last1hrValue, item.Description.MarketItem.Currency
                         );
                     }
-                    else if (item.Description.StoreItem != null) 
+                    else if (item.Description.StoreItem != null)
                     {
                         itemSummary.Value = item.Description.StoreItem.StorePrices.FirstOrDefault(x => x.Key == this.Currency().Name).Value;
                     }
@@ -222,7 +222,7 @@ namespace SCMM.Web.Server.API.Controllers
                     itemSummary.Quantity = profileInventoryItems
                         .Where(x => x.Description.SteamId == item.Description.SteamId)
                         .Sum(x => x.Quantity);
-                        
+
                     profileInventoryItemsSummaries.Add(itemSummary);
                 }
             }

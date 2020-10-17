@@ -231,22 +231,38 @@ namespace SCMM.Web.Shared
             var text = new StringBuilder();
             if (timeSpan.Days > 0 && showDays == true)
             {
-                if (text.Length > 0) text.Append(", ");
+                if (text.Length > 0)
+                {
+                    text.Append(", ");
+                }
+
                 text.AppendFormat("{0} day{1} ", timeSpan.Days, timeSpan.Days > 1 ? "s" : String.Empty);
             }
             if (timeSpan.Hours > 0 && showHours == true)
             {
-                if (text.Length > 0) text.Append(", ");
+                if (text.Length > 0)
+                {
+                    text.Append(", ");
+                }
+
                 text.AppendFormat("{0} hour{1} ", timeSpan.Hours, timeSpan.Hours > 1 ? "s" : String.Empty);
             }
             if (timeSpan.Minutes > 0 && showMinutes == true)
             {
-                if (text.Length > 0) text.Append(", ");
+                if (text.Length > 0)
+                {
+                    text.Append(", ");
+                }
+
                 text.AppendFormat("{0} minute{1} ", timeSpan.Minutes, timeSpan.Minutes > 1 ? "s" : String.Empty);
             }
             if (timeSpan.Minutes <= 0 && timeSpan.Seconds > 0 && showSeconds == true)
             {
-                if (text.Length > 0) text.Append(", ");
+                if (text.Length > 0)
+                {
+                    text.Append(", ");
+                }
+
                 text.AppendFormat("{0} second{1} ", timeSpan.Seconds, timeSpan.Seconds > 1 ? "s" : String.Empty);
             }
             if (text.Length != 0 && !String.IsNullOrEmpty(suffix))

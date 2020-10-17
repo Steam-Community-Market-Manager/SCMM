@@ -1,5 +1,4 @@
-﻿using Discord;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -120,7 +118,7 @@ namespace SCMM.Web.Server.Services.Jobs
                                         }.Uri.ToString(),
                                         thumbnailUrl: app.IconUrl,
                                         imageUrl: publishedFile.PreviewUrl.ToString(),
-                                        color: ColorTranslator.FromHtml(app.PrimaryColor)                                       
+                                        color: ColorTranslator.FromHtml(app.PrimaryColor)
                                     );
                                 }
                             }

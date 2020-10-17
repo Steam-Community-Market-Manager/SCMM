@@ -166,7 +166,7 @@ namespace SCMM.Web.Server
             {
                 config.RouteTemplate = "docs/{documentname}/swagger.json";
             });
-            app.UseSwaggerUI(config => 
+            app.UseSwaggerUI(config =>
             {
                 config.RoutePrefix = "docs";
                 config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM v1");

@@ -149,10 +149,10 @@ namespace SCMM.Web.Server.API.Controllers
             var from = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(2));
             var to = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItemSale
-                .Where(x => x.Timestamp.Date >= from &&  x.Timestamp.Date <= to.Date)
+                .Where(x => x.Timestamp.Date >= from && x.Timestamp.Date <= to.Date)
                 .GroupBy(x => x.Timestamp.Date)
                 .OrderByDescending(x => x.Key.Date)
-                .Select(x =>  x.Sum(y => y.Quantity));
+                .Select(x => x.Sum(y => y.Quantity));
 
             return query.SingleOrDefault();
         }

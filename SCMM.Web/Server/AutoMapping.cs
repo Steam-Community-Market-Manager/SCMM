@@ -2,7 +2,6 @@
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared;
-using SCMM.Web.Shared.Domain.DTOs;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using SCMM.Web.Shared.Domain.DTOs.Languages;

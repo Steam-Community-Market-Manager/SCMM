@@ -27,7 +27,7 @@ namespace SCMM.Web.Server.API.Controllers
         [AllowAnonymous]
         [HttpGet]
         public IEnumerable<LanguageListDTO> Get()
-    {
+        {
             return _db.SteamLanguages
                 .OrderBy(x => x.Name)
                 .Select(x => _mapper.Map<LanguageListDTO>(x))

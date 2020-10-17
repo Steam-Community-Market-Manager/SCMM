@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SCMM.Web.Client;
-using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
