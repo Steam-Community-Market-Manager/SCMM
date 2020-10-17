@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
@@ -15,13 +14,13 @@ namespace SCMM.Web.Server.API.Controllers
     public class CurrencyController : ControllerBase
     {
         private readonly ILogger<CurrencyController> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly SteamDbContext _db;
         private readonly IMapper _mapper;
 
-        public CurrencyController(ILogger<CurrencyController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
+        public CurrencyController(ILogger<CurrencyController> logger, SteamDbContext db, IMapper mapper)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _db = db;
             _mapper = mapper;
         }
 
@@ -29,28 +28,20 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet]
         public IEnumerable<CurrencyListDTO> Get()
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamCurrencies
-                    .OrderBy(x => x.Name)
-                    .Select(x => _mapper.Map<CurrencyListDTO>(x))
-                    .ToList();
-            }
+            return _db.SteamCurrencies
+                .OrderBy(x => x.Name)
+                .Select(x => _mapper.Map<CurrencyListDTO>(x))
+                .ToList();
         }
 
         [AllowAnonymous]
         [HttpGet("withDetails")]
         public IEnumerable<CurrencyDetailedDTO> GetWithDetails()
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamCurrencies
-                    .OrderBy(x => x.Name)
-                    .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
-                    .ToList();
-            }
+            return _db.SteamCurrencies
+                .OrderBy(x => x.Name)
+                .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
+                .ToList();
         }
     }
 }

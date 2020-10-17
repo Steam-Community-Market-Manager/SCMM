@@ -13,7 +13,7 @@
         </member>
         <member name="M:SCMM.Web.Server.Discord.Modules.StoreModule.SayStoreNextUpdateExpectedOnAsync">
             <summary>
-             ~store remaining
+             !store remaining
             </summary>
             <returns></returns>
         </member>
