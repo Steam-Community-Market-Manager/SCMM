@@ -144,7 +144,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         {
                             fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
                         }
-                        await discord.BroadcastMessage(
+                        await discord.BroadcastMessageAsync(
                             channelPattern: $"announcement|market|store|skin|{marketItem.App.Name}",
                             message: null,
                             title: $"{marketItem.Description.Name} is now on the market",

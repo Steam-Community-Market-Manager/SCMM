@@ -99,6 +99,7 @@ namespace SCMM.Web.Server
             services.AddTransient<SteamLanguageService>();
             services.AddTransient<SteamCurrencyService>();
 
+            services.AddHostedService<StartDiscordClientJob>();
             services.AddHostedService<RepopulateCacheJob>();
             services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();

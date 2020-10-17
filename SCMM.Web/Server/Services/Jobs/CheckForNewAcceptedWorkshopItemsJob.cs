@@ -110,7 +110,7 @@ namespace SCMM.Web.Server.Services.Jobs
                                 var workshopFile = await service.AddOrUpdateAssetWorkshopFile(app, publishedFile.PublishedFileId.ToString());
                                 if (workshopFile != null)
                                 {
-                                    await discord.BroadcastMessage(
+                                    await discord.BroadcastMessageAsync(
                                         channelPattern: $"announcement|workshop|store|skin|{app.Name}",
                                         message: null,
                                         title: $"{publishedFile.Title} has been accepted!",
