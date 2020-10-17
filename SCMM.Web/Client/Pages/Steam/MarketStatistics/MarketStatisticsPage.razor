@@ -40,10 +40,13 @@
                             <Button OnClick="@(() => RefreshSalesPerDay(30))" Color="@Color.TextSecondary">
                                 1m
                             </Button>
-                            <Divider Orientation="@Orientation.Vertical" />
-                            <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
-                                <strong>17,306 today</strong>
-                            </Typography>
+                            @if (SalesToday > 0)
+                            {
+                                <Divider Orientation="@Orientation.Vertical" />
+                                <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
+                                    <strong>@SalesToday today</strong>
+                                </Typography>
+                            }
                         </Grid>
                     </Grid>
                 </TitleContent>
@@ -658,7 +661,8 @@
 </Grid>
 
 @code {
-    
+
+    private int SalesToday { get; set; }
     private IDictionary<string, int> SalesPerDay { get; set; }
     private ChartJsLineChart SalesPerDayChartJs;
     private LineConfig SalesPerDayChart;
@@ -702,14 +706,16 @@
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
-    
+
     private async Task RefreshSalesPerDay(int? maxDays = null)
     {
         try
         {
+            SalesToday = 0;
             SalesPerDay = null;
             SalesPerDayChart = null;
             StateHasChanged();
+            SalesToday = await Http.GetFromJsonAsync<int>($"api/market/dashboard/salesToday");
             SalesPerDay = await Http.GetFromJsonAsync<IDictionary<string, int>>($"api/market/dashboard/salesPerDay?maxDays={maxDays}");
             RedrawSalesPerDayChart();
             StateHasChanged();
@@ -719,7 +725,7 @@
             Logger.LogError(ex, $"Error listing 'sales per day' market dashboard");
         }
     }
-    
+
     private void RedrawSalesPerDayChart()
     {
         SalesPerDayChart = new LineConfig
@@ -788,7 +794,7 @@
                 }
             }
         };
-        
+
         SalesPerDayChart.Data.Labels = SalesPerDay.Keys.ToList();
 
         var salesDataSet = new LineDataset<DoubleWrapper>
