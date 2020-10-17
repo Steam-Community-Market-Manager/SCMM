@@ -206,41 +206,47 @@ namespace SCMM.Web.Server.API.Controllers
 
                 var profileInventoryItems = db.SteamInventoryItems
                     .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                    .Where(x => x.MarketItem != null)
-                    .Select(x => new
-                    {
-                        MarketItem = x.MarketItem,
-                        MarketItemApp = x.MarketItem.App,
-                        MarketItemDescription = x.MarketItem.Description,
-                        MarketItemCurrency = x.MarketItem.Currency,
-                        Quantity = x.Quantity
-                    })
+                    .Where(x => x.Description != null && x.Description.SteamId != null)
+                    .Include(x => x.Description)
+                    .Include(x => x.Description.App)
+                    .Include(x => x.Description.StoreItem)
+                    .Include(x => x.Description.MarketItem)
+                    .Include(x => x.Description.MarketItem.Currency)
                     .ToList();
 
                 var profileInventoryItemsSummaries = new List<ProfileInventoryItemSummaryDTO>();
-                var marketItems = profileInventoryItems
-                    .Select(x => x.MarketItem)
-                    .Where(x => x != null)
-                    .OrderByDescending(x => x.Last1hrValue);
-
-                foreach (var marketItem in marketItems)
+                foreach (var item in profileInventoryItems)
                 {
-                    if (!profileInventoryItemsSummaries.Any(x => x.Item.SteamId == marketItem.SteamId))
+                    if (!profileInventoryItemsSummaries.Any(x => x.SteamId == item.Description.SteamId))
                     {
-                        var inventoryMarketItem = _mapper.Map<SteamMarketItem, InventoryMarketItemDTO>(
-                            marketItem, this
+                        var itemSummary = _mapper.Map<SteamAssetDescription, ProfileInventoryItemSummaryDTO>(
+                            item.Description, this
                         );
-                        profileInventoryItemsSummaries.Add(new ProfileInventoryItemSummaryDTO()
+
+                        // Calculate the item's value
+                        if (item.Description.MarketItem != null && item.Description.MarketItem.Currency != null)
                         {
-                            Item = inventoryMarketItem,
-                            Quantity = profileInventoryItems
-                                .Where(x => x.MarketItem?.SteamId == marketItem.SteamId)
-                                .Sum(x => x.Quantity)
-                        });
+                            itemSummary.Value = this.Currency().CalculateExchange(
+                                item.Description.MarketItem.Last1hrValue, item.Description.MarketItem.Currency
+                            );
+                        }
+                        else if (item.Description.StoreItem != null) 
+                        {
+                            itemSummary.Value = item.Description.StoreItem.StorePrices.FirstOrDefault(x => x.Key == this.Currency().Name).Value;
+                        }
+
+                        // Calculate the item's quantity
+                        itemSummary.Quantity = profileInventoryItems
+                            .Where(x => x.Description.SteamId == item.Description.SteamId)
+                            .Sum(x => x.Quantity);
+                        
+                        profileInventoryItemsSummaries.Add(itemSummary);
                     }
                 }
 
-                return Ok(profileInventoryItemsSummaries);
+                return Ok(
+                    profileInventoryItemsSummaries.OrderByDescending(x => x.Value)
+                );
             }
         }
 
