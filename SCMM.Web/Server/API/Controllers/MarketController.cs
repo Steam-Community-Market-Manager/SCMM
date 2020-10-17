@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -96,18 +97,27 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public MarketItemDetailDTO Get([FromRoute] Guid id)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(MarketItemDetailDTO), StatusCodes.Status200OK)]
+        public IActionResult Get([FromRoute] Guid id)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var query = db.SteamMarketItems
+                var item = db.SteamMarketItems
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
-                    .SingleOrDefault(x => x.Id == id);
+                    .FirstOrDefault(x => x.Id == id);
 
-                return _mapper.Map<SteamMarketItem, MarketItemDetailDTO>(query, this);
+                if (item == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(
+                    _mapper.Map<SteamMarketItem, MarketItemDetailDTO>(item, this)
+                );
             }
         }
 
@@ -118,7 +128,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <returns>The market item listing</returns>
         [AllowAnonymous]
         [HttpGet("item/{idOrName}")]
-        public MarketItemListDTO Get([FromRoute] string idOrName)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(MarketItemListDTO), StatusCodes.Status200OK)]
+        public IActionResult Get([FromRoute] string idOrName)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -126,14 +138,21 @@ namespace SCMM.Web.Server.API.Controllers
                 Guid.TryParse(idOrName, out id);
 
                 var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                var query = db.SteamMarketItems
+                var item = db.SteamMarketItems
                     .Include(x => x.App)
                     .Include(x => x.Currency)
                     .Include(x => x.Description)
                     .Include(x => x.Description.WorkshopFile)
                     .FirstOrDefault(x => x.Id == id || x.Description.Name == idOrName);
 
-                return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+                if (item == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(
+                    _mapper.Map<SteamMarketItem, MarketItemListDTO>(item, this)
+                );
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +37,8 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("me")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProfileInventoryDetailsDTO), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMyInventoryProfile([FromQuery] bool sync = false)
         {
             return await GetInventoryProfile(User.SteamId(), sync);
@@ -43,6 +46,8 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("{steamId}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProfileInventoryDetailsDTO), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetInventoryProfile([FromRoute] string steamId, [FromQuery] bool sync = false)
         {
             if (String.IsNullOrEmpty(steamId))
@@ -96,18 +101,22 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("me/total")]
-        public ProfileInventoryTotalsDTO GetMyInventoryTotal()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
+        public IActionResult GetMyInventoryTotal()
         {
             return GetInventoryTotal(User.SteamId());
         }
 
         [AllowAnonymous]
         [HttpGet("{steamId}/total")]
-        public ProfileInventoryTotalsDTO GetInventoryTotal([FromRoute] string steamId)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
+        public IActionResult GetInventoryTotal([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
-                throw new ArgumentNullException(nameof(steamId));
+                return NotFound();
             }
 
             using (var scope = _scopeFactory.CreateScope())
@@ -153,35 +162,41 @@ namespace SCMM.Web.Server.API.Controllers
                         .Sum(x => (x.MarketItemResellTax / x.MarketItemExchangeRateMultiplier) * x.Quantity)
                 };
 
-                return new ProfileInventoryTotalsDTO()
-                {
-                    TotalItems = profileInventory.TotalItems,
-                    TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
-                    TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
-                    TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
-                    TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
-                    TotalResellTax = currency.CalculateExchange(profileInventory.TotalResellTax),
-                    TotalResellProfit = (
-                        currency.CalculateExchange(profileInventory.TotalResellValue - profileInventory.TotalResellTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
-                    )
-                };
+                return Ok(
+                    new ProfileInventoryTotalsDTO()
+                    {
+                        TotalItems = profileInventory.TotalItems,
+                        TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
+                        TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
+                        TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
+                        TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
+                        TotalResellTax = currency.CalculateExchange(profileInventory.TotalResellTax),
+                        TotalResellProfit = (
+                            currency.CalculateExchange(profileInventory.TotalResellValue - profileInventory.TotalResellTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
+                        )
+                    }
+                );
             }
         }
 
         [AllowAnonymous]
         [HttpGet("me/summary")]
-        public IList<ProfileInventoryItemSummaryDTO> GetMyInventorySummary()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IList<ProfileInventoryItemSummaryDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetMyInventorySummary()
         {
             return GetInventorySummary(User.SteamId());
         }
 
         [AllowAnonymous]
         [HttpGet("{steamId}/summary")]
-        public IList<ProfileInventoryItemSummaryDTO> GetInventorySummary([FromRoute] string steamId)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IList<ProfileInventoryItemSummaryDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetInventorySummary([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
-                throw new ArgumentNullException(nameof(steamId));
+                return NotFound();
             }
 
             using (var scope = _scopeFactory.CreateScope())
@@ -225,24 +240,28 @@ namespace SCMM.Web.Server.API.Controllers
                     }
                 }
 
-                return profileInventoryItemsSummaries;
+                return Ok(profileInventoryItemsSummaries);
             }
         }
 
         [AllowAnonymous]
         [HttpGet("me/returnOnInvestment")]
-        public IList<InventoryItemListDTO> GetMyInventoryInvestment()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IList<InventoryItemListDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetMyInventoryInvestment()
         {
             return GetInventoryInvestment(User.SteamId());
         }
 
         [AllowAnonymous]
         [HttpGet("{steamId}/returnOnInvestment")]
-        public IList<InventoryItemListDTO> GetInventoryInvestment([FromRoute] string steamId)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IList<InventoryItemListDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetInventoryInvestment([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
-                throw new ArgumentNullException(nameof(steamId));
+                return NotFound();
             }
 
             using (var scope = _scopeFactory.CreateScope())
@@ -280,24 +299,28 @@ namespace SCMM.Web.Server.API.Controllers
                     );
                 }
 
-                return profileInventoryItemsDetails;
+                return Ok(profileInventoryItemsDetails);
             }
         }
 
         [AllowAnonymous]
         [HttpGet("me/activity")]
-        public IList<ProfileInventoryActivityDTO> GetMyInventoryActivity()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IList<ProfileInventoryActivityDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetMyInventoryActivity()
         {
             return GetInventoryActivity(User.SteamId());
         }
 
         [AllowAnonymous]
         [HttpGet("{steamId}/activity")]
-        public IList<ProfileInventoryActivityDTO> GetInventoryActivity([FromRoute] string steamId)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IList<ProfileInventoryActivityDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetInventoryActivity([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
-                throw new ArgumentNullException(nameof(steamId));
+                return NotFound();
             }
 
             using (var scope = _scopeFactory.CreateScope())
@@ -329,24 +352,28 @@ namespace SCMM.Web.Server.API.Controllers
                     );
                 }
 
-                return profileInventoryActivitiesDetails;
+                return Ok(profileInventoryActivitiesDetails);
             }
         }
 
         [AllowAnonymous]
         [HttpGet("me/performance")]
-        public ProfileInventoryPerformanceDTO GetMyInventoryPerformance()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProfileInventoryPerformanceDTO), StatusCodes.Status200OK)]
+        public IActionResult GetMyInventoryPerformance()
         {
             return GetInventoryPerformance(User.SteamId());
         }
 
         [AllowAnonymous]
         [HttpGet("{steamId}/performance")]
-        public ProfileInventoryPerformanceDTO GetInventoryPerformance([FromRoute] string steamId)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProfileInventoryPerformanceDTO), StatusCodes.Status200OK)]
+        public IActionResult GetInventoryPerformance([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
-                throw new ArgumentNullException(nameof(steamId));
+                return NotFound();
             }
 
             using (var scope = _scopeFactory.CreateScope())
@@ -437,23 +464,27 @@ namespace SCMM.Web.Server.API.Controllers
                 profitHistory[today.Subtract(TimeSpan.FromDays(1))] = last24hrValue - SteamEconomyHelper.GetSteamFeeAsInt(last24hrValue) - totalInvested;
                 profitHistory[today.Subtract(TimeSpan.FromDays(0))] = last1hrValue - SteamEconomyHelper.GetSteamFeeAsInt(last1hrValue) - totalInvested;
 
-                return new ProfileInventoryPerformanceDTO()
-                {
-                    ValueHistoryGraph = valueHistory.ToDictionary(
-                        x => x.Key.ToString("dd MMM yyyy"),
-                        x => x.Value
-                    ),
-                    ProfitHistoryGraph = profitHistory.ToDictionary(
-                        x => x.Key.ToString("dd MMM yyyy"),
-                        x => x.Value
-                    )
-                };
+                return Ok(
+                    new ProfileInventoryPerformanceDTO()
+                    {
+                        ValueHistoryGraph = valueHistory.ToDictionary(
+                            x => x.Key.ToString("dd MMM yyyy"),
+                            x => x.Value
+                        ),
+                        ProfitHistoryGraph = profitHistory.ToDictionary(
+                            x => x.Key.ToString("dd MMM yyyy"),
+                            x => x.Value
+                        )
+                    }
+                );
             }
         }
 
         [Authorize]
         [HttpPut("item/{inventoryItemId}")]
-        public void SetInventoryItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult SetInventoryItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -462,17 +493,18 @@ namespace SCMM.Web.Server.API.Controllers
                 if (inventoryItem == null)
                 {
                     _logger.LogError($"Inventory item with id '{inventoryItemId}' was not found");
-                    return;
+                    return NotFound();
                 }
                 if (!User.Is(inventoryItem.OwnerId))
                 {
                     _logger.LogError($"Inventory item with id '{inventoryItemId}' does not belong to you");
-                    return;
+                    return NotFound();
                 }
 
                 inventoryItem.CurrencyId = command.CurrencyId;
                 inventoryItem.BuyPrice = SteamEconomyHelper.GetPriceValueAsInt(command.Price);
                 db.SaveChanges();
+                return Ok();
             }
         }
     }
