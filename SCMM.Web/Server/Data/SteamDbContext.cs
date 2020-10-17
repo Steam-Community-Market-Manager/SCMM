@@ -102,6 +102,14 @@ namespace SCMM.Web.Server.Data
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.WorkshopFile);
             builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.StoreItem)
+                .WithOne(x => x.Description)
+                .HasForeignKey<SteamStoreItem>(x => x.DescriptionId);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.MarketItem)
+                .WithOne(x => x.Description)
+                .HasForeignKey<SteamMarketItem>(x => x.DescriptionId);
+            builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Tags);
 
             builder.Entity<SteamAssetWorkshopFile>()

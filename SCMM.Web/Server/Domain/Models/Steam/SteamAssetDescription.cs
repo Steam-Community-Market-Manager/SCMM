@@ -37,5 +37,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public PersistableStringDictionary Tags { get; set; }
 
         public DateTimeOffset? LastCheckedOn { get; set; }
+
+        public SteamStoreItem StoreItem { get; set; }
+
+        public SteamMarketItem MarketItem { get; set; }
     }
 }

@@ -18,8 +18,10 @@ namespace SCMM.Web.Server.Domain.Models.Steam
 
         public int Quantity { get; set; }
 
+        // TODO: Replace this with Description.MarketItem
         public Guid? MarketItemId { get; set; }
 
+        // TODO: Replace this with Description.MarketItem
         public SteamMarketItem MarketItem { get; set; }
     }
 }
