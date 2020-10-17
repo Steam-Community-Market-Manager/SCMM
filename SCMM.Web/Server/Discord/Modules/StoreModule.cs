@@ -31,9 +31,18 @@ namespace SCMM.Web.Server.Discord.Modules
                 showMinutes: false,
                 showSeconds: false
             );
-            await ReplyAsync(
-                $"Next store update is expected in about **{remainingTime}** from now"
-            );
+            if (!String.IsNullOrEmpty(remainingTime))
+            {
+                await ReplyAsync(
+                    $"Next store update is expected in about **{remainingTime}** from now"
+                );
+            }
+            else
+            {
+                await ReplyAsync(
+                    $"Next store update is expected **any moment** now"
+                );
+            }
         }
     }
 }
