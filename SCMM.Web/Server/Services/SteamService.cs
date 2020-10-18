@@ -29,6 +29,8 @@ namespace SCMM.Web.Server.Services
 {
     public class SteamService
     {
+        private readonly TimeSpan DefaultCachePeriod = TimeSpan.FromHours(6);
+
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
@@ -73,9 +75,31 @@ namespace SCMM.Web.Server.Services
             return new DateTimeOffset(nextStoreUpdateUtc, TimeZoneInfo.Utc.BaseUtcOffset);
         }
 
-        public ProfileInventoryTotalsDTO GetProfileInventoryTotal(string steamId, string currencyName)
+        public async Task<ProfileInventoryTotalsDTO> GetProfileInventoryTotal(string steamId, string currencyName)
         {
             var currency = _currencyService.GetByNameOrDefault(currencyName);
+
+            // Load the profile
+            var inventory = _db.SteamProfiles
+                .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
+                .Select(x => new
+                {
+                    Profile = x,
+                    TotalItems = x.InventoryItems.Count,
+                    LastUpdatedOn = x.LastUpdatedInventoryOn
+                })
+                .FirstOrDefault();
+
+            // If the profile inventory hasn't been loaded before or it is older than the cache period, fetch it now
+            var profile = inventory?.Profile;
+            if (profile == null || inventory?.TotalItems == 0 || inventory?.LastUpdatedOn < DateTime.Now.Subtract(DefaultCachePeriod))
+            {
+                // Load the profile and force an inventory sync
+                profile = await AddOrUpdateSteamProfile(steamId, fetchLatest: true);
+                profile = await FetchProfileInventory(steamId);
+            }
+
+            // Load the profile inventory
             var profileInventoryItems = _db.SteamInventoryItems
                 .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                 .Where(x => x.MarketItemId != null)
@@ -207,7 +231,7 @@ namespace SCMM.Web.Server.Services
                 _db.SteamProfiles.Add(profile);
             }
 
-            await _db.SaveChangesAsync();
+            _db.SaveChanges();
             return profile;
         }
 
@@ -321,7 +345,7 @@ namespace SCMM.Web.Server.Services
                 }
 
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
-                await _db.SaveChangesAsync();
+                _db.SaveChanges();
             }
 
             return profile;
@@ -349,7 +373,7 @@ namespace SCMM.Web.Server.Services
             };
 
             app.Filters.Add(newFilter);
-            await _db.SaveChangesAsync();
+            _db.SaveChanges();
             return newFilter;
         }
 
@@ -483,7 +507,7 @@ namespace SCMM.Web.Server.Services
             };
 
             _db.SteamAssetWorkshopFiles.Add(dbWorkshopFile);
-            await _db.SaveChangesAsync();
+            _db.SaveChanges();
             return dbWorkshopFile;
         }
 
@@ -540,7 +564,7 @@ namespace SCMM.Web.Server.Services
             };
 
             _db.SteamAssetDescriptions.Add(dbAssetDescription);
-            await _db.SaveChangesAsync();
+            _db.SaveChanges();
             return dbAssetDescription;
         }
 
@@ -581,7 +605,7 @@ namespace SCMM.Web.Server.Services
             };
 
             _db.SteamAssetDescriptions.Add(dbAssetDescription);
-            await _db.SaveChangesAsync();
+            _db.SaveChanges();
             return dbAssetDescription;
         }
 
@@ -802,7 +826,7 @@ namespace SCMM.Web.Server.Services
             if (!String.IsNullOrEmpty(itemNameId))
             {
                 item.SteamId = itemNameId;
-                await _db.SaveChangesAsync();
+                _db.SaveChanges();
             }
 
             return item;

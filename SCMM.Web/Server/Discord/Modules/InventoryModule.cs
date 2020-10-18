@@ -50,7 +50,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var inventoryTotal = _steam.GetProfileInventoryTotal(steamId, currency.Name);
+            var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, currency.Name);
             if (inventoryTotal == null)
             {
                 await ReplyAsync($"Beep boop! Unable to access inventory for \"{steamId}\", their profile privacy is probably set to private.");
