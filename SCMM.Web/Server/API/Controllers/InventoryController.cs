@@ -13,6 +13,11 @@ using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Drawing.Text;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -104,6 +109,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("{steamId}/total")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
         public IActionResult GetInventoryTotal([FromRoute] string steamId)
@@ -113,58 +119,13 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var currency = this.Currency();
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                .Where(x => x.MarketItemId != null)
-                .Select(x => new
-                {
-                    Quantity = x.Quantity,
-                    BuyPrice = x.BuyPrice,
-                    ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
-                    MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
-                    MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
-                    MarketItemResellPrice = x.MarketItem.ResellPrice,
-                    MarketItemResellTax = x.MarketItem.ResellTax,
-                    MarketItemExchangeRateMultiplier = x.MarketItem.Currency.ExchangeRateMultiplier
-                })
-                .ToList();
-
-            var profileInventory = new
+            var inventoryTotal = _steam.GetProfileInventoryTotal(steamId, this.Currency().Name);
+            if (inventoryTotal == null)
             {
-                TotalItems = profileInventoryItems
-                    .Sum(x => x.Quantity),
-                TotalInvested = profileInventoryItems
-                    .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
-                    .Sum(x => (x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
-                TotalMarketValueLast1hr = profileInventoryItems
-                    .Where(x => x.MarketItemLast1hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast1hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                TotalMarketValueLast24hr = profileInventoryItems
-                    .Where(x => x.MarketItemLast24hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast24hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                TotalResellValue = profileInventoryItems
-                    .Where(x => x.MarketItemResellPrice != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemResellPrice / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                TotalResellTax = profileInventoryItems
-                    .Where(x => x.MarketItemResellTax != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemResellTax / x.MarketItemExchangeRateMultiplier) * x.Quantity)
-            };
+                return BadRequest();
+            }
 
-            return Ok(
-                new ProfileInventoryTotalsDTO()
-                {
-                    TotalItems = profileInventory.TotalItems,
-                    TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
-                    TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
-                    TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
-                    TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
-                    TotalResellTax = currency.CalculateExchange(profileInventory.TotalResellTax),
-                    TotalResellProfit = (
-                        currency.CalculateExchange(profileInventory.TotalResellValue - profileInventory.TotalResellTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
-                    )
-                }
-            );
+            return Ok(inventoryTotal);
         }
 
         [AllowAnonymous]
@@ -448,6 +409,91 @@ namespace SCMM.Web.Server.API.Controllers
                     )
                 }
             );
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{steamId}/mosaic")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int rows = 5, [FromQuery] int columns = 5)
+        {
+            if (String.IsNullOrEmpty(steamId))
+            {
+                return NotFound();
+            }
+
+            rows = Math.Max(1, rows);
+            columns = Math.Max(1, columns);
+            var maxItems = (rows * columns);
+            var inventoryItemDescriptions = _db.SteamInventoryItems
+                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                .Where(x => x.Description != null && x.Description.MarketItem != null)
+                .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
+                .Select(x => x.Description)
+                .ToList();
+
+            var items = new Queue<SteamAssetDescription>();
+            foreach (var inventoryItemDescription in inventoryItemDescriptions)
+            {
+                if (!items.Contains(inventoryItemDescription))
+                {
+                    items.Enqueue(inventoryItemDescription);
+                }
+            }
+
+            const int tileSize = 128;
+            var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
+            using (var graphics = Graphics.FromImage(mosaic))
+            {
+                const int badgeSize = 32;
+                const int badgePadding = 8;
+                var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
+                var solidBlack = new SolidBrush(Color.FromArgb(255, 0, 0, 0));
+                var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
+                for (int r = 0; r < rows; r++)
+                {
+                    for (int c = 0; c < columns; c++)
+                    {
+                        var item = items.Dequeue();
+                        if (item == null)
+                        {
+                            continue;
+                        }
+
+                        var imageRaw = await _steam.GetImage(item.IconUrl);
+                        if (imageRaw == null)
+                        {
+                            continue;
+                        }
+
+                        var image = Image.FromStream(new MemoryStream(imageRaw));
+                        graphics.DrawImage(image, c * tileSize, r * tileSize, tileSize, tileSize);
+
+                        var count = Math.Min(99, inventoryItemDescriptions.Count(x => x.SteamId == item.SteamId));
+                        if (count > 1)
+                        {
+                            var fontSize = 24;
+                            var fontOffset = 2;
+                            if (count >= 10)
+                            {
+                                fontSize = 20;
+                                fontOffset = 5;
+                            }
+                            var font = new Font(sansSerif, fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+                            graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                            graphics.FillEllipse(solidBlue, new Rectangle((c * tileSize) + tileSize - badgeSize, (r * tileSize), badgeSize, badgeSize));
+                            graphics.DrawString($"{count}", font, solidBlack, new PointF((c * tileSize) + tileSize - (badgeSize - badgePadding + fontOffset), (float)((r * tileSize) + (badgePadding / 4) + (fontOffset / 4))));
+                        }
+                    }
+                }
+            }
+
+            using (var mosaicStream = new MemoryStream())
+            {
+                mosaic.Save(mosaicStream, ImageFormat.Png);
+                var mosaicRaw = mosaicStream.ToArray();
+                return File(mosaicRaw, "image/png");
+            }
         }
 
         [Authorize]

@@ -19,5 +19,10 @@ namespace SCMM.Web.Server.Extensions
                 .GetSection("Steam")
                 .Get<SteamConfiguration>();
         }
+
+        public static string GetBaseUrl(this IConfiguration configuration)
+        {
+            return configuration.GetValue<string>("BaseUrl");
+        }
     }
 }
