@@ -10,6 +10,8 @@ namespace SCMM.Discord.Client
 {
     public class DiscordCommandHandler
     {
+        public const char CommandPrefix = '>';
+
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
         private readonly CommandService _commands;
@@ -46,7 +48,7 @@ namespace SCMM.Discord.Client
 
             // Determine if the message is a command based on the prefix and make sure other bots don't trigger our commands
             int commandArgPos = 0;
-            if (!(message.HasCharPrefix('!', ref commandArgPos) ||
+            if (!(message.HasCharPrefix(CommandPrefix, ref commandArgPos) ||
                 message.HasMentionPrefix(_client.CurrentUser, ref commandArgPos)) ||
                 message.Author.IsBot)
             {
@@ -71,7 +73,7 @@ namespace SCMM.Discord.Client
                     $"Discord command '{commandName}' executed successfully (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username})"
                 );
             }
-            else
+            else if (result.Error != CommandError.UnknownCommand)
             {
                 _logger.LogError(
                     $"Discord command '{commandName}' execution failed (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
