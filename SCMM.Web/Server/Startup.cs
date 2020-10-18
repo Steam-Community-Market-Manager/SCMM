@@ -90,6 +90,8 @@ namespace SCMM.Web.Server
                 options =>
                 {
                     options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"));
+                    options.EnableSensitiveDataLogging();
+                    options.EnableDetailedErrors();
                 }
             );
 
