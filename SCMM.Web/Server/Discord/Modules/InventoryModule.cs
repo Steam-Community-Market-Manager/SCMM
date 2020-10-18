@@ -93,7 +93,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 .WithTitle(profile.Name)
                 .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
                 .WithFields(fields)
-                .WithUrl($"{_configuration.GetBaseUrl()}/steam/{profile.SteamId}")
+                .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
                 .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=3&columns=5&timestamp={DateTime.UtcNow.Ticks}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
