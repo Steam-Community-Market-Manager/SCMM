@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Reflection;
@@ -31,10 +32,13 @@ namespace SCMM.Discord.Client
             _commands.CommandExecuted += OnCommandExecutedAsync;
             _commands.Log += OnCommandLogAsync;
 
-            await _commands.AddModulesAsync(
-                assembly: Assembly.GetEntryAssembly(),
-                services: _services
-            );
+            using (var scope = _services.CreateScope())
+            {
+                await _commands.AddModulesAsync(
+                    assembly: Assembly.GetEntryAssembly(),
+                    services: scope.ServiceProvider
+                );
+            }
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage msg)
@@ -55,13 +59,16 @@ namespace SCMM.Discord.Client
                 return;
             }
 
-            // Execute the command
-            var context = new SocketCommandContext(_client, message);
-            var result = await _commands.ExecuteAsync(
-                context: context,
-                argPos: commandArgPos,
-                services: _services
-            );
+            using (var scope = _services.CreateScope())
+            {
+                // Execute the command
+                var context = new SocketCommandContext(_client, message);
+                var result = await _commands.ExecuteAsync(
+                    context: context,
+                    argPos: commandArgPos,
+                    services: scope.ServiceProvider
+                );
+            }
         }
 
         public Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)

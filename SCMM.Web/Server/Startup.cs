@@ -86,20 +86,19 @@ namespace SCMM.Web.Server
                 };
             });
 
-            services.AddDbContext<SteamDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("SteamDbConnection")
-                ),
-                ServiceLifetime.Transient,
-                ServiceLifetime.Singleton
+            services.AddDbContext<SteamDbContext>(
+                options =>
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"));
+                }
             );
 
-            services.AddTransient<SteamCommunityClient>();
+            services.AddScoped<SteamCommunityClient>();
 
-            services.AddTransient<SecurityService>();
-            services.AddTransient<SteamService>();
-            services.AddTransient<SteamLanguageService>();
-            services.AddTransient<SteamCurrencyService>();
+            services.AddScoped<SecurityService>();
+            services.AddScoped<SteamService>();
+            services.AddScoped<SteamLanguageService>();
+            services.AddScoped<SteamCurrencyService>();
 
             services.AddHostedService<StartDiscordClientJob>();
             services.AddHostedService<RepopulateCacheJob>();
