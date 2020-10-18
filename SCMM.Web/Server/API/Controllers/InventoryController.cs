@@ -103,7 +103,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("me/total")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventoryTotal()
+        public Task<IActionResult> GetMyInventoryTotal()
         {
             return GetInventoryTotal(User.SteamId());
         }
@@ -113,14 +113,14 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
-        public IActionResult GetInventoryTotal([FromRoute] string steamId)
+        public async Task<IActionResult> GetInventoryTotal([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
                 return NotFound();
             }
 
-            var inventoryTotal = _steam.GetProfileInventoryTotal(steamId, this.Currency().Name);
+            var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, this.Currency().Name);
             if (inventoryTotal == null)
             {
                 return BadRequest();
