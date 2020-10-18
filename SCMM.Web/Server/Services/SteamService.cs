@@ -116,6 +116,11 @@ namespace SCMM.Web.Server.Services
                 })
                 .ToList();
 
+            if (!profileInventoryItems.Any())
+            {
+                return null;
+            }
+
             var profileInventory = new
             {
                 TotalItems = profileInventoryItems
@@ -280,6 +285,7 @@ namespace SCMM.Web.Server.Services
                 });
                 if (inventory?.Success != true)
                 {
+                    // Inventory is probably private
                     continue;
                 }
 

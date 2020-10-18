@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
@@ -454,7 +455,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     for (int c = 0; c < columns; c++)
                     {
-                        var item = items.Dequeue();
+                        var item = (items.Any() ? items.Dequeue() : null);
                         if (item == null)
                         {
                             continue;
