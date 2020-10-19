@@ -2,15 +2,11 @@
   "dependencies": {
     "appInsights1": {
       "type": "appInsights",
-      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY"
+      "connectionId": "APPINSIGHTS_CONNECTIONSTRING"
     },
     "mssql2": {
       "type": "mssql",
       "connectionId": "SteamDbConnection"
-    },
-    "secrets1": {
-      "type": "secrets",
-      "connectionId": "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT"
     }
   }
 }
