@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Data.Models.Steam;
 
 namespace SCMM.Web.Server.Data
 {
@@ -101,6 +101,14 @@ namespace SCMM.Web.Server.Data
 
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.WorkshopFile);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.StoreItem)
+                .WithOne(x => x.Description)
+                .HasForeignKey<SteamStoreItem>(x => x.DescriptionId);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.MarketItem)
+                .WithOne(x => x.Description)
+                .HasForeignKey<SteamMarketItem>(x => x.DescriptionId);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Tags);
 

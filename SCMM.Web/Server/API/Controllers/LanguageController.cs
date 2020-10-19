@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
@@ -15,13 +14,13 @@ namespace SCMM.Web.Server.API.Controllers
     public class LanguageController : ControllerBase
     {
         private readonly ILogger<LanguageController> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly SteamDbContext _db;
         private readonly IMapper _mapper;
 
-        public LanguageController(ILogger<LanguageController> logger, IServiceScopeFactory scopeFactory, IMapper mapper)
+        public LanguageController(ILogger<LanguageController> logger, SteamDbContext db, IMapper mapper)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _db = db;
             _mapper = mapper;
         }
 
@@ -29,28 +28,20 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet]
         public IEnumerable<LanguageListDTO> Get()
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamLanguages
-                    .OrderBy(x => x.Name)
-                    .Select(x => _mapper.Map<LanguageListDTO>(x))
-                    .ToList();
-            }
+            return _db.SteamLanguages
+                .OrderBy(x => x.Name)
+                .Select(x => _mapper.Map<LanguageListDTO>(x))
+                .ToList();
         }
 
         [AllowAnonymous]
         [HttpGet("withDetails")]
         public IEnumerable<LanguageDetailedDTO> GetWithDetails()
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetService<SteamDbContext>();
-                return db.SteamLanguages
-                    .OrderBy(x => x.Name)
-                    .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
-                    .ToList();
-            }
+            return _db.SteamLanguages
+                .OrderBy(x => x.Name)
+                .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
+                .ToList();
         }
     }
 }

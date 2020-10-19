@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Shared;
-using SCMM.Web.Shared.Domain.DTOs;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
 using System.Linq.Expressions;

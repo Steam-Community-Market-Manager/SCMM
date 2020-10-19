@@ -113,5 +113,9 @@ namespace SCMM.Steam.Client
         {
             return await GetBinary<SteamEconomyImageBlobRequest>(request);
         }
+        public async Task<byte[]> GetImage(SteamBlobRequest request)
+        {
+            return await GetBinary<SteamBlobRequest>(request);
+        }
     }
 }

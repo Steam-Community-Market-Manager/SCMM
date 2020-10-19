@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SCMM.Web.Client;
-using SCMM.Web.Server.Domain;
+using SCMM.Web.Server.Services;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
 
-namespace SCMM.Web.Server.API.Controllers.Extensions
+namespace SCMM.Web.Server.Extensions
 {
     public static class ControllerBaseExtensions
     {

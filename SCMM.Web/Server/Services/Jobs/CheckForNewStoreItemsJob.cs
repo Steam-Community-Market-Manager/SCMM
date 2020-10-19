@@ -5,10 +5,9 @@ using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Html;
-using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SCMM.Web.Shared;
 using SteamWebAPI2.Interfaces;
@@ -92,7 +91,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                     if (newStoreItems.Any())
                     {
-                        await discord.BroadcastMessage(
+                        await discord.BroadcastMessageAsync(
                             channelPattern: $"announcement|store|skin|{app.Name}",
                             message: null,
                             title: $"{app.Name} store has been updated",

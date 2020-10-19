@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared;
-using SCMM.Web.Shared.Domain.DTOs;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
@@ -28,6 +27,10 @@ namespace SCMM.Web.Server
             CreateMap<SteamProfile, ProfileDTO>();
             CreateMap<SteamProfile, ProfileDetailedDTO>();
             CreateMap<SteamProfile, ProfileInventoryDetailsDTO>();
+
+            CreateMap<SteamAssetDescription, ProfileInventoryItemSummaryDTO>()
+                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
+                .ForMember(x => x.Currency, o => o.MapFromCurrency());
 
             CreateMap<SteamInventoryItem, InventoryItemListDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))

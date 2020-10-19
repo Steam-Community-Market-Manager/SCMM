@@ -1,8 +1,8 @@
-﻿using SCMM.Web.Server.Domain.Models.Steam;
+﻿using SCMM.Web.Server.Data.Models.Steam;
 using System;
 using System.Security.Claims;
 
-namespace SCMM.Web.Server.API.Controllers.Extensions
+namespace SCMM.Web.Server.Extensions
 {
     public static class ClaimsPrincipalExtensions
     {
@@ -19,28 +19,28 @@ namespace SCMM.Web.Server.API.Controllers.Extensions
         public static Guid Id(this ClaimsPrincipal user)
         {
             Guid id;
-            Guid.TryParse(user?.FindFirst(Domain.Models.Steam.ClaimTypes.Id)?.Value, out id);
+            Guid.TryParse(user?.FindFirst(Data.Models.ClaimTypes.Id)?.Value, out id);
             return id;
         }
 
         public static string SteamId(this ClaimsPrincipal user)
         {
-            return user?.FindFirst(Domain.Models.Steam.ClaimTypes.SteamId)?.Value;
+            return user?.FindFirst(Data.Models.ClaimTypes.SteamId)?.Value;
         }
 
         public static string Name(this ClaimsPrincipal user)
         {
-            return user?.FindFirst(Domain.Models.Steam.ClaimTypes.Name)?.Value ?? user.Identity?.Name;
+            return user?.FindFirst(Data.Models.ClaimTypes.Name)?.Value ?? user.Identity?.Name;
         }
 
         public static string Language(this ClaimsPrincipal user)
         {
-            return user?.FindFirst(Domain.Models.Steam.ClaimTypes.Language)?.Value;
+            return user?.FindFirst(Data.Models.ClaimTypes.Language)?.Value;
         }
 
         public static string Currency(this ClaimsPrincipal user)
         {
-            return user?.FindFirst(Domain.Models.Steam.ClaimTypes.Currency)?.Value;
+            return user?.FindFirst(Data.Models.ClaimTypes.Currency)?.Value;
         }
     }
 }

@@ -7,8 +7,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SCMM.Web.Shared;
 using System;
@@ -144,7 +143,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         {
                             fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
                         }
-                        await discord.BroadcastMessage(
+                        await discord.BroadcastMessageAsync(
                             channelPattern: $"announcement|market|store|skin|{marketItem.App.Name}",
                             message: null,
                             title: $"{marketItem.Description.Name} is now on the market",

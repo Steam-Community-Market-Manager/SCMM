@@ -3,9 +3,9 @@ using Microsoft.Extensions.Configuration;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Community.Requests.Html;
-using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain.Models.Steam;
+using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain;
 using SteamWebAPI2.Interfaces;
@@ -16,9 +16,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ClaimTypes = SCMM.Web.Server.Domain.Models.Steam.ClaimTypes;
+using ClaimTypes = SCMM.Web.Server.Data.Models.ClaimTypes;
 
-namespace SCMM.Web.Server.Domain
+namespace SCMM.Web.Server.Services
 {
     public class SecurityService
     {

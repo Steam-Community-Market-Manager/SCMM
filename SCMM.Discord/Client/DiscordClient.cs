@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,23 +15,25 @@ namespace SCMM.Discord.Client
     {
         private readonly ILogger<DiscordClient> _logger;
         private readonly DiscordConfiguration _configuration;
+        private readonly CommandService _commands;
         private readonly DiscordSocketClient _client;
-        private readonly Task _clientStartTask;
-        private readonly ManualResetEvent _clientReady;
+        private readonly DiscordCommandHandler _commandHandler;
+        private readonly ManualResetEvent _clientIsReady;
         private bool disposedValue;
 
-        public DiscordClient(ILogger<DiscordClient> logger, DiscordConfiguration configuration)
+        public DiscordClient(ILogger<DiscordClient> logger, DiscordConfiguration configuration, IServiceProvider serviceProvider)
         {
             _logger = logger;
             _configuration = configuration;
+            _commands = new CommandService();
             _client = new DiscordSocketClient();
-            _client.Log += LogClientMessage;
-            _client.Ready += async () => _clientReady.Set();
-            _clientStartTask = LoginAndStartClient();
-            _clientReady = new ManualResetEvent(false);
+            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client);
+            _client.Log += OnClientLogAsync;
+            _client.Ready += OnClientReadAsync;
+            _clientIsReady = new ManualResetEvent(false);
         }
 
-        private Task LogClientMessage(LogMessage message)
+        private Task OnClientLogAsync(LogMessage message)
         {
             switch (message.Severity)
             {
@@ -51,15 +54,15 @@ namespace SCMM.Discord.Client
             return Task.CompletedTask;
         }
 
-        private async Task LoginAndStartClient()
+        private Task OnClientReadAsync()
         {
-            await _client.LoginAsync(TokenType.Bot, _configuration.BotToken);
-            await _client.StartAsync();
+            _clientIsReady.Set();
+            return Task.CompletedTask;
         }
 
         private void EnsureClientIsReady()
         {
-            _clientReady.WaitOne(TimeSpan.FromSeconds(30));
+            _clientIsReady.WaitOne(TimeSpan.FromSeconds(30));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -80,17 +83,31 @@ namespace SCMM.Discord.Client
             GC.SuppressFinalize(this);
         }
 
-        public Task BroadcastMessage(string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public async Task ConnectAsync()
         {
-            return BroadcastMessage(null, null, message, title: title, description: description, fields: fields, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+            await _client.LoginAsync(TokenType.Bot, _configuration.BotToken);
+            await _client.StartAsync();
+
+            await _commandHandler.AddCommandsAsync();
         }
 
-        public Task BroadcastMessage(string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public async Task DisconnectAsync()
         {
-            return BroadcastMessage(null, channelPattern, message, title: title, description: description, url: url, fields: fields, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+            await _client.LogoutAsync();
+            await _client.StopAsync();
         }
 
-        public async Task BroadcastMessage(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public Task BroadcastMessageAsync(string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        {
+            return BroadcastMessageAsync(null, null, message, title: title, description: description, fields: fields, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+        }
+
+        public Task BroadcastMessageAsync(string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        {
+            return BroadcastMessageAsync(null, channelPattern, message, title: title, description: description, url: url, fields: fields, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
+        }
+
+        public async Task BroadcastMessageAsync(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             EnsureClientIsReady();
 

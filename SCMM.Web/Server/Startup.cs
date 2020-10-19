@@ -11,10 +11,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
-using SCMM.Web.Server.Configuration;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Domain;
+using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Middleware;
+using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Jobs;
 using System;
 using System.Security.Claims;
@@ -88,19 +88,23 @@ namespace SCMM.Web.Server
                 };
             });
 
-            services.AddDbContext<SteamDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("SteamDbConnection")
-                )
+            services.AddDbContext<SteamDbContext>(
+                options =>
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"));
+                    options.EnableSensitiveDataLogging();
+                    options.EnableDetailedErrors();
+                }
             );
 
-            services.AddTransient<SteamCommunityClient>();
+            services.AddScoped<SteamCommunityClient>();
 
-            services.AddTransient<SecurityService>();
-            services.AddTransient<SteamService>();
-            services.AddTransient<SteamLanguageService>();
-            services.AddTransient<SteamCurrencyService>();
+            services.AddScoped<SecurityService>();
+            services.AddScoped<SteamService>();
+            services.AddScoped<SteamLanguageService>();
+            services.AddScoped<SteamCurrencyService>();
 
+            services.AddHostedService<StartDiscordClientJob>();
             services.AddHostedService<RepopulateCacheJob>();
             services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
@@ -123,7 +127,14 @@ namespace SCMM.Web.Server
 
             services.AddSwaggerGen(c =>
             {
-                c.IncludeXmlComments("SCMM.Web.Server.xml");
+                try
+                {
+                    c.IncludeXmlComments("SCMM.Web.Server.xml");
+                }
+                catch (Exception)
+                {
+                    // Probably haven't generated XML docs, not a deal breaker...
+                }
                 c.SwaggerDoc("v1",
                     new OpenApiInfo
                     {

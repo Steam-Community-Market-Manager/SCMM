@@ -1,4 +1,4 @@
-﻿namespace SCMM.Web.Shared.Domain.DTOs
+﻿namespace SCMM.Web.Shared.Domain.DTOs.Currencies
 {
     public class CurrencyDTO : ICurrency
     {

@@ -51,22 +51,25 @@
 <div style="padding:8px">
     @foreach (var item in Items)
     { 
-        <div class="Item-Summary-Root" style="@GetItemStyles(item.Item)" @onclick="@((_) => OnItemClicked(item.Item))" title="@item.Item.Name">
+        <div class="Item-Summary-Root" style="@GetItemStyles(item)" @onclick="@((_) => OnItemClicked(item))" title="@item.Name">
             @if (item.Quantity > 1)
             {
                 <Badge Class="Item-Summary-Badge"
                        Badge="@item.Quantity.ToString()"
                        Color="@Color.Primary">
-                    <img src="@item.Item.IconUrl" />
+                    <img src="@item.IconUrl" />
                 </Badge>
             }
             else
             {
-                <img src="@item.Item.IconUrl" />
+                <img src="@item.IconUrl" />
             }
-            <Typography Variant="@TypographyVariant.Body2">
-                @item.Item.Currency.ToPriceString(item.Item.Last1hrValue)
-            </Typography>
+            @if (item.Value != null)
+            {
+                <Typography Variant="@TypographyVariant.Body2">
+                        @item.Currency.ToPriceString(item.Value.Value)
+                </Typography>
+            }
         </div>
     }
 </div>
@@ -76,12 +79,12 @@
     [Parameter]
     public IEnumerable<ProfileInventoryItemSummaryDTO> Items { get; set; }
 
-    private string GetItemStyles(InventoryMarketItemDTO item)
+    private string GetItemStyles(ProfileInventoryItemSummaryDTO item)
     {
         return $"border: 2px solid {item.ForegroundColour}";
     }
 
-    private void OnItemClicked(InventoryMarketItemDTO item)
+    private void OnItemClicked(ProfileInventoryItemSummaryDTO item)
     {
         //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";

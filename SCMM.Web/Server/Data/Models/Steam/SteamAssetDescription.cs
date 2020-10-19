@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SCMM.Web.Server.Domain.Models.Steam
+namespace SCMM.Web.Server.Data.Models.Steam
 {
     public class SteamAssetDescription : Entity
     {
@@ -37,5 +37,9 @@ namespace SCMM.Web.Server.Domain.Models.Steam
         public PersistableStringDictionary Tags { get; set; }
 
         public DateTimeOffset? LastCheckedOn { get; set; }
+
+        public SteamStoreItem StoreItem { get; set; }
+
+        public SteamMarketItem MarketItem { get; set; }
     }
 }

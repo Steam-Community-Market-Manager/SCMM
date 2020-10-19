@@ -2,7 +2,7 @@
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 
-namespace SCMM.Web.Server.Configuration
+namespace SCMM.Web.Server.Extensions
 {
     public static class ConfigurationExtensions
     {
@@ -18,6 +18,11 @@ namespace SCMM.Web.Server.Configuration
             return configuration
                 .GetSection("Steam")
                 .Get<SteamConfiguration>();
+        }
+
+        public static string GetBaseUrl(this IConfiguration configuration)
+        {
+            return configuration.GetValue<string>("BaseUrl");
         }
     }
 }

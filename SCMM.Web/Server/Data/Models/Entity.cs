@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SCMM.Web.Server.Domain.Models
+namespace SCMM.Web.Server.Data.Models
 {
     public abstract class Entity
     {
