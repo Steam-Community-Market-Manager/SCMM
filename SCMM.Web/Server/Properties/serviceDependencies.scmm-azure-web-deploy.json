@@ -1,19 +1,13 @@
 {
   "dependencies": {
     "appInsights1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/microsoft.insights/components/scmm-app-insights",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/scmm-app-insights",
       "type": "appInsights.azure",
-      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
-      "secretStore": "AzureAppSettings"
-    },
-    "secrets1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/Microsoft.KeyVault/vaults/scmm-key-vault",
-      "type": "secrets.keyVault",
-      "connectionId": "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT",
+      "connectionId": "APPINSIGHTS_CONNECTIONSTRING",
       "secretStore": "AzureAppSettings"
     },
     "mssql2": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/Microsoft.Sql/servers/scmm/databases/SCMM.Steam",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/scmm/databases/SCMM.Steam",
       "type": "mssql.azure",
       "connectionId": "SteamDbConnection",
       "secretStore": "AzureAppSettings"
