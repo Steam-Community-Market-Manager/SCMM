@@ -97,6 +97,7 @@ namespace SCMM.Web.Server
 
             services.AddScoped<SteamCommunityClient>();
 
+            services.AddScoped<ImageService>();
             services.AddScoped<SecurityService>();
             services.AddScoped<SteamService>();
             services.AddScoped<SteamLanguageService>();
