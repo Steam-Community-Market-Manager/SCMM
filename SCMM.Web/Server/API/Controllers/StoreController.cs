@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ using SCMM.Web.Shared.Domain.DTOs.StoreItems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -22,26 +24,28 @@ namespace SCMM.Web.Server.API.Controllers
         private readonly ILogger<StoreController> _logger;
         private readonly SteamDbContext _db;
         private readonly SteamService _steam;
+        private readonly ImageService _images;
         private readonly IMapper _mapper;
 
-        public StoreController(ILogger<StoreController> logger, SteamDbContext db, SteamService steam, IMapper mapper)
+        public StoreController(ILogger<StoreController> logger, SteamDbContext db, SteamService steam, ImageService images, IMapper mapper)
         {
             _logger = logger;
             _db = db;
             _steam = steam;
+            _images = images;
             _mapper = mapper;
         }
 
         [AllowAnonymous]
         [HttpGet("nextUpdateExpectedOn")]
-        public DateTimeOffset GetNextUpdateExpectedOn()
+        public DateTimeOffset GetStoreNextUpdateExpectedOn()
         {
             return _steam.GetStoreNextUpdateExpectedOn();
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<StoreItemListDTO> Get()
+        public IEnumerable<StoreItemListDTO> GetStore()
         {
             var latestStore = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
             var items = _db.SteamStoreItems
@@ -102,6 +106,40 @@ namespace SCMM.Web.Server.API.Controllers
             return itemDtos
                 .Select(x => x.Value)
                 .ToList();
+        }
+
+        [AllowAnonymous]
+        [HttpGet("mosaic")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStoreMosaic()
+        {
+            var latestStore = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
+            var storeItemDescriptions = _db.SteamStoreItems
+                .Where(x => x.Description.WorkshopFile.AcceptedOn == latestStore)
+                .OrderBy(x => x.Description.Name)
+                .Select(x => x.Description.IconUrl)
+                .Take(SteamConstants.SteamStoreItemsMax)
+                .ToList();
+
+            if (!storeItemDescriptions.Any())
+            {
+                return NotFound();
+            }
+
+            var mosaic = await _images.GetImageMosaic(
+                storeItemDescriptions.Select(x => 
+                    new ImageSource()
+                    {
+                        Url = x
+                    }
+                ),
+                tileSize: 152, 
+                columns: 4,
+                rows: (int) Math.Ceiling((float) storeItemDescriptions.Count / 4)
+            );
+
+            return File(mosaic, "image/png");
         }
     }
 }

@@ -14,11 +14,6 @@ using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,13 +26,15 @@ namespace SCMM.Web.Server.API.Controllers
         private readonly ILogger<InventoryController> _logger;
         private readonly SteamDbContext _db;
         private readonly SteamService _steam;
+        private readonly ImageService _images;
         private readonly IMapper _mapper;
 
-        public InventoryController(ILogger<InventoryController> logger, SteamDbContext db, SteamService steam, IMapper mapper)
+        public InventoryController(ILogger<InventoryController> logger, SteamDbContext db, SteamService steam, ImageService images, IMapper mapper)
         {
             _logger = logger;
             _db = db;
             _steam = steam;
+            _images = images;
             _mapper = mapper;
         }
 
@@ -423,78 +420,28 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            rows = Math.Max(1, rows);
-            columns = Math.Max(1, columns);
-            var maxItems = (rows * columns);
-            var inventoryItemDescriptions = _db.SteamInventoryItems
+            var inventoryItemIcons = _db.SteamInventoryItems
                 .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
                 .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
-                .Select(x => x.Description)
+                .Select(x => x.Description.IconUrl)
                 .ToList();
 
-            var items = new Queue<SteamAssetDescription>();
-            foreach (var inventoryItemDescription in inventoryItemDescriptions)
+            var images = new List<ImageSource>();
+            foreach (var inventoryItemIcon in inventoryItemIcons)
             {
-                if (!items.Contains(inventoryItemDescription))
+                if (!images.Any(x => x.Url == inventoryItemIcon))
                 {
-                    items.Enqueue(inventoryItemDescription);
-                }
-            }
-
-            const int tileSize = 128;
-            var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
-            using (var graphics = Graphics.FromImage(mosaic))
-            {
-                const int badgeSize = 32;
-                const int badgePadding = 8;
-                var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
-                var solidBlack = new SolidBrush(Color.FromArgb(255, 0, 0, 0));
-                var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
-                for (int r = 0; r < rows; r++)
-                {
-                    for (int c = 0; c < columns; c++)
+                    images.Add(new ImageSource()
                     {
-                        var item = (items.Any() ? items.Dequeue() : null);
-                        if (item == null)
-                        {
-                            continue;
-                        }
-
-                        var imageRaw = await _steam.GetImage(item.IconUrl);
-                        if (imageRaw == null)
-                        {
-                            continue;
-                        }
-
-                        var image = Image.FromStream(new MemoryStream(imageRaw));
-                        graphics.DrawImage(image, c * tileSize, r * tileSize, tileSize, tileSize);
-
-                        var count = Math.Min(99, inventoryItemDescriptions.Count(x => x.SteamId == item.SteamId));
-                        if (count > 1)
-                        {
-                            var fontSize = 24;
-                            var fontOffset = 2;
-                            if (count >= 10)
-                            {
-                                fontSize = 20;
-                                fontOffset = 5;
-                            }
-                            var font = new Font(sansSerif, fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-                            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                            graphics.FillEllipse(solidBlue, new Rectangle((c * tileSize) + tileSize - badgeSize, (r * tileSize), badgeSize, badgeSize));
-                            graphics.DrawString($"{count}", font, solidBlack, new PointF((c * tileSize) + tileSize - (badgeSize - badgePadding + fontOffset), (float)((r * tileSize) + (badgePadding / 4) + (fontOffset / 4))));
-                        }
-                    }
+                        Url = inventoryItemIcon,
+                        BadgeCount = inventoryItemIcons.Count(x => x == inventoryItemIcon)
+                    });
                 }
             }
 
-            using (var mosaicStream = new MemoryStream())
-            {
-                mosaic.Save(mosaicStream, ImageFormat.Png);
-                var mosaicRaw = mosaicStream.ToArray();
-                return File(mosaicRaw, "image/png");
-            }
+            var mosaic = await _images.GetImageMosaic(images, 128, columns, rows);
+            return File(mosaic, "image/png");
         }
 
         [Authorize]
