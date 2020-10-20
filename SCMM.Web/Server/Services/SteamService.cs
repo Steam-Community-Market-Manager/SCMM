@@ -205,10 +205,15 @@ namespace SCMM.Web.Server.Services
                 profile.Country = response.Data.CountryCode;
             }
 
-            // Else, it is probably a string profile id...
+            // Else, it is probably a custom named profile or profile page url...
             else
             {
                 var profileId = steamId;
+                if (Regex.IsMatch(steamId, SteamConstants.SteamProfileIdRegex))
+                {
+                    profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
+                }
+
                 var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
                 {
                     ProfileId = profileId,
