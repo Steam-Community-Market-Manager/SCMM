@@ -39,21 +39,21 @@ namespace SCMM.Web.Server.Discord.Modules
             var profile = await _steam.AddOrUpdateSteamProfile(steamId, fetchLatest: true);
             if (profile == null)
             {
-                await ReplyAsync($"Beep boop! Unable to find Steam profile \"{steamId}\". Make sure the SteamID is correct and that the profile is set to public.");
+                await ReplyAsync($"Beep boop! I'm unable to find that Steam profile (or it's private).\nIf you're using a custom profile name, you can also use your full profile page URL instead");
                 return;
             }
 
             var currency = _currencies.GetByNameOrDefault(currencyName);
             if (currency == null)
             {
-                await ReplyAsync($"Beep boop! \"{currencyName}\" is not a supported currency.");
+                await ReplyAsync($"Beep boop! I don't support that currency.");
                 return;
             }
 
             var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, currency.Name);
             if (inventoryTotal == null)
             {
-                await ReplyAsync($"Beep boop! Unable to access inventory for \"{steamId}\", their profile privacy is probably set to private.");
+                await ReplyAsync($"Beep boop! Unable to access the Steam inventory for that profile, it's private.");
                 return;
             }
 
