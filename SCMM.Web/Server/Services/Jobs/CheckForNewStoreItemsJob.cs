@@ -15,6 +15,7 @@ using SteamWebAPI2.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace SCMM.Web.Server.Services.Jobs
     public class CheckForNewStoreItemsJob : CronJobService
     {
         private readonly ILogger<CheckForNewStoreItemsJob> _logger;
+        private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly SteamConfiguration _steamConfiguration;
 
@@ -31,6 +33,7 @@ namespace SCMM.Web.Server.Services.Jobs
             : base(logger, configuration.GetJobConfiguration<CheckForNewStoreItemsJob>())
         {
             _logger = logger;
+            _configuration = configuration;
             _scopeFactory = scopeFactory;
             _steamConfiguration = configuration.GetSteamConfiguration();
         }
@@ -91,25 +94,30 @@ namespace SCMM.Web.Server.Services.Jobs
 
                     if (newStoreItems.Any())
                     {
+                        db.SaveChanges();
+
+                        var culture = CultureInfo.InvariantCulture;
+                        var storeDate = DateTimeOffset.UtcNow.Date;
+                        int storeDateWeek = culture.Calendar.GetWeekOfYear(storeDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
+                        var storeTitle = $"{storeDate.ToString("yyyy")} Week {storeDateWeek}";
                         await discord.BroadcastMessageAsync(
                             channelPattern: $"announcement|store|skin|{app.Name}",
                             message: null,
-                            title: $"{app.Name} store has been updated",
+                            title: $"{app.Name} Store - {storeTitle}",
                             description: $"{newStoreItems.Count} new item(s) have been added to the {app.Name} store.",
-                            fields: newStoreItems.ToDictionary(
+                            fields: newStoreItems.OrderBy(x => x.Description.Name).ToDictionary(
                                 x => x.Description?.Name,
                                 x => GenerateStoreItemPriceList(x, currencies)
                             ),
                             url: new SteamItemStorePageRequest()
                             {
                                 AppId = app.SteamId
-                            }.Uri.ToString(),
+                            },
                             thumbnailUrl: app.IconUrl,
-                            imageUrl: app.IconLargeUrl,
+                            imageUrl: $"{_configuration.GetBaseUrl()}/api/store/mosaic?timestamp={DateTime.UtcNow.Ticks}",
                             color: ColorTranslator.FromHtml(app.PrimaryColor)
                         );
 
-                        db.SaveChanges();
                     }
                 }
             }
@@ -118,7 +126,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private string GenerateStoreItemPriceList(SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
         {
             var prices = new List<String>();
-            foreach (var currency in currencies)
+            foreach (var currency in currencies.OrderBy(x => x.Name))
             {
                 var price = storeItem.StorePrices.FirstOrDefault(x => x.Key == currency.Name);
                 if (price.Value > 0)

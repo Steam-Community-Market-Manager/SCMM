@@ -563,8 +563,8 @@ namespace SCMM.Web.Server.Services
                 Name = assetDescription.MarketName,
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
-                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
-                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl).Uri.ToString(),
+                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl),
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
@@ -604,8 +604,8 @@ namespace SCMM.Web.Server.Services
                 Name = assetDescription.MarketName,
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
-                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
-                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl).Uri.ToString(),
+                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl),
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };

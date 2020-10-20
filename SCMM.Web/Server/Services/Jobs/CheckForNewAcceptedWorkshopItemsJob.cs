@@ -9,6 +9,7 @@ using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
+using Steam.Models;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System;
@@ -102,28 +103,36 @@ namespace SCMM.Web.Server.Services.Jobs
                                 continue;
                             }
 
+                            var newWorkshopFiles = new List<PublishedFileDetailsModel>();
                             foreach (var publishedFile in response.Data)
                             {
                                 var workshopFile = await service.AddOrUpdateAssetWorkshopFile(app, publishedFile.PublishedFileId.ToString());
                                 if (workshopFile != null)
                                 {
-                                    await discord.BroadcastMessageAsync(
-                                        channelPattern: $"announcement|workshop|store|skin|{app.Name}",
-                                        message: null,
-                                        title: $"{publishedFile.Title} has been accepted!",
-                                        description: $"This workshop item was just accepted in-game and should appear on the {app.Name} store shortly.",
-                                        url: new SteamWorkshopViewFileDetailsRequest()
-                                        {
-                                            Id = publishedFile.PublishedFileId.ToString()
-                                        }.Uri.ToString(),
-                                        thumbnailUrl: app.IconUrl,
-                                        imageUrl: publishedFile.PreviewUrl.ToString(),
-                                        color: ColorTranslator.FromHtml(app.PrimaryColor)
-                                    );
+                                    newWorkshopFiles.Add(publishedFile);
                                 }
                             }
 
-                            db.SaveChanges();
+                            if (newWorkshopFiles.Any())
+                            {
+                                db.SaveChanges();
+
+                                await discord.BroadcastMessageAsync(
+                                    channelPattern: $"announcement|workshop|skin|{app.Name}",
+                                    message: null,
+                                    title: $"{app.Name} Workshop - New items accepted!",
+                                    description: $"{newWorkshopFiles.Count} new item(s) have been accepted for {app.Name} and should appear on the store page shortly.",
+                                    url: new SteamWorkshopBrowsePageRequest()
+                                    {
+                                        AppId = app.SteamId,
+                                        BrowseSort = SteamWorkshopBrowsePageRequest.BrowseSortAccepted,
+                                        Section = SteamWorkshopBrowsePageRequest.SectionItems
+                                    },
+                                    thumbnailUrl: app.IconUrl,
+                                    imageUrl: app.IconLargeUrl,
+                                    color: ColorTranslator.FromHtml(app.PrimaryColor)
+                                );
+                            }
                         }
                     }
                 }
