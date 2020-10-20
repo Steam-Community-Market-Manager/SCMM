@@ -113,11 +113,13 @@ namespace SCMM.Discord.Client
 
             // If guild is null, we'll broadcast to all guilds
             var guilds = _client.Guilds
+                .OrderBy(x => x.Name)
                 .Where(x => String.IsNullOrEmpty(guildPattern) || Regex.IsMatch(x.Name, guildPattern));
             foreach (var guild in guilds)
             {
                 // If the channel is null, we'll broadcast to the first channel that we have permission to
                 var channels = guild.TextChannels
+                    .OrderBy(x => x.Name)
                     .Where(x => String.IsNullOrEmpty(channelPattern) || Regex.IsMatch(x.Name, channelPattern))
                     .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
                     .ToList();
