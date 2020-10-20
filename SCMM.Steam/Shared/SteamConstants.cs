@@ -2,10 +2,10 @@
 {
     public static class SteamConstants
     {
-        public const string SteamStoreUrl = "https://store.steampowered.com/";
-        public const string SteamCommunityUrl = "https://steamcommunity.com/";
-        public const string SteamCommunityAssetUrl = "https://steamcommunity-a.akamaihd.net/";
-        public const string SteamWebApiUrl = "https://api.steampowered.com/";
+        public const string SteamStoreUrl = "https://store.steampowered.com";
+        public const string SteamCommunityUrl = "https://steamcommunity.com";
+        public const string SteamCommunityAssetUrl = "https://steamcommunity-a.akamaihd.net";
+        public const string SteamWebApiUrl = "https://api.steampowered.com";
 
         public const string SteamAssetTagCategory = "steamcat";
         public const string SteamAssetTagItemType = "itemclass";

@@ -60,7 +60,7 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request.Uri}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed");
             }
 
             return null;
@@ -84,7 +84,7 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request.Uri}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed");
             }
 
             return null;
@@ -126,7 +126,7 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request.Uri}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed");
             }
 
             return null;
@@ -149,7 +149,7 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request.Uri}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed");
             }
 
             return default(TResponse);
@@ -168,7 +168,7 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request.Uri}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed");
             }
 
             return default(TResponse);
