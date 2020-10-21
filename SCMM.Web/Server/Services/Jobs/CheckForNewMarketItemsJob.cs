@@ -184,7 +184,7 @@ namespace SCMM.Web.Server.Services.Jobs
             var prices = new List<String>();
             foreach (var currency in currencies.OrderBy(x => x.Name))
             {
-                var price = storeItem.StorePrices.FirstOrDefault(x => x.Key == currency.Name);
+                var price = storeItem.Prices.FirstOrDefault(x => x.Key == currency.Name);
                 if (price.Value > 0)
                 {
                     var priceString = currency.ToPriceString(price.Value)?.Trim();

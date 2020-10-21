@@ -66,11 +66,10 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var now = DateTime.UtcNow;
-                var timeChecked = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
                 foreach (var app in steamApps)
                 {
                     _logger.LogInformation($"Checking for new store items (appId: {app.SteamId})");
+                    var currency = currencies.FirstOrDefault(x => x.IsDefault);
                     var response = await steamEconomy.GetAssetPricesAsync(
                         UInt32.Parse(app.SteamId), String.Empty, language.SteamId
                     );
@@ -84,7 +83,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     foreach (var asset in response.Data.Assets)
                     {
                         var storeItem = await steamService.AddOrUpdateAppStoreItem(
-                            app, language, asset, timeChecked
+                            app, currency, language, asset, DateTimeOffset.Now
                         );
                         if (storeItem.IsTransient)
                         {
@@ -94,12 +93,52 @@ namespace SCMM.Web.Server.Services.Jobs
 
                     if (newStoreItems.Any())
                     {
-                        db.SaveChanges();
-
                         var culture = CultureInfo.InvariantCulture;
                         var storeDate = DateTimeOffset.UtcNow.Date;
                         int storeDateWeek = culture.Calendar.GetWeekOfYear(storeDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
                         var storeTitle = $"{storeDate.ToString("yyyy")} Week {storeDateWeek}";
+                        var latestStore = db.SteamItemStores
+                            .Where(x => x.AppId == app.Id)
+                            .GroupBy(x => 1)
+                            .Select(x => x.Max(y => y.Start))
+                            .FirstOrDefault();
+                        var itemStore = db.SteamItemStores
+                            .Where(x => x.Start == latestStore)
+                            .Include(x => x.Items).ThenInclude(x => x.Item)
+                            .Include(x => x.Items).ThenInclude(x => x.Item.Description)
+                            .FirstOrDefault();
+
+                        if (itemStore == null || itemStore.Start.Date != DateTimeOffset.UtcNow.Date)
+                        {
+                            if (itemStore != null)
+                            {
+                                itemStore.End = DateTimeOffset.UtcNow;
+                            }
+                            db.SteamItemStores.Add(
+                                itemStore = new SteamItemStore()
+                                {
+                                    App = app,
+                                    AppId = app.Id,
+                                    Name = storeTitle,
+                                    Start = DateTimeOffset.UtcNow
+                                }
+                            );
+                        }
+
+                        foreach(var item in newStoreItems)
+                        {
+                            if (!itemStore.Items.Any(x => x.Item.SteamId == item.SteamId))
+                            {
+                                itemStore.Items.Add(new SteamStoreItemItemStore()
+                                {
+                                    Store = itemStore,
+                                    Item = item
+                                });
+                            }
+                        }
+
+                        db.SaveChanges();
+
                         await discord.BroadcastMessageAsync(
                             channelPattern: $"announcement|store|skin|{app.Name}",
                             message: null,
@@ -117,7 +156,6 @@ namespace SCMM.Web.Server.Services.Jobs
                             imageUrl: $"{_configuration.GetBaseUrl()}/api/store/mosaic?timestamp={DateTime.UtcNow.Ticks}",
                             color: ColorTranslator.FromHtml(app.PrimaryColor)
                         );
-
                     }
                 }
             }
@@ -128,7 +166,7 @@ namespace SCMM.Web.Server.Services.Jobs
             var prices = new List<String>();
             foreach (var currency in currencies.OrderBy(x => x.Name))
             {
-                var price = storeItem.StorePrices.FirstOrDefault(x => x.Key == currency.Name);
+                var price = storeItem.Prices.FirstOrDefault(x => x.Key == currency.Name);
                 if (price.Value > 0)
                 {
                     var priceString = currency.ToPriceString(price.Value)?.Trim();

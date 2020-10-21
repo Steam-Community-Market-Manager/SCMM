@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201021041408_SteamItemStores")]
+    partial class SteamItemStores
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -571,17 +573,17 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<Guid>("AppId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CurrencyId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("DescriptionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long>("Price")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StoreRankPosition")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StoreRankTotal")
+                        .HasColumnType("int");
 
                     b.Property<int?>("TotalSalesMax")
                         .HasColumnType("int");
@@ -592,8 +594,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasKey("Id");
 
                     b.HasIndex("AppId");
-
-                    b.HasIndex("CurrencyId");
 
                     b.HasIndex("DescriptionId")
                         .IsUnique()
@@ -609,9 +609,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.Property<Guid>("StoreId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Index")
-                        .HasColumnType("int");
 
                     b.HasKey("ItemId", "StoreId");
 
@@ -864,13 +861,25 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SCMM.Web.Server.Data.Models.Steam.SteamCurrency", "Currency")
-                        .WithMany()
-                        .HasForeignKey("CurrencyId");
-
                     b.HasOne("SCMM.Web.Server.Data.Models.Steam.SteamAssetDescription", "Description")
                         .WithOne("StoreItem")
                         .HasForeignKey("SCMM.Web.Server.Data.Models.Steam.SteamStoreItem", "DescriptionId");
+
+                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableGraphDataSet", "StoreRankGraph", b1 =>
+                        {
+                            b1.Property<Guid>("SteamStoreItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamStoreItemId");
+
+                            b1.ToTable("SteamStoreItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamStoreItemId");
+                        });
 
                     b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableGraphDataSet", "TotalSalesGraph", b1 =>
                         {
@@ -888,7 +897,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                                 .HasForeignKey("SteamStoreItemId");
                         });
 
-                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistablePriceDictionary", "Prices", b1 =>
+                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistablePriceDictionary", "StorePrices", b1 =>
                         {
                             b1.Property<Guid>("SteamStoreItemId")
                                 .HasColumnType("uniqueidentifier");
@@ -918,25 +927,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .HasForeignKey("StoreId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableGraphDataSet", "IndexGraph", b1 =>
-                        {
-                            b1.Property<Guid>("SteamStoreItemItemStoreItemId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<Guid>("SteamStoreItemItemStoreStoreId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Serialised")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("SteamStoreItemItemStoreItemId", "SteamStoreItemItemStoreStoreId");
-
-                            b1.ToTable("SteamStoreItemItemStore");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SteamStoreItemItemStoreItemId", "SteamStoreItemItemStoreStoreId");
-                        });
                 });
 #pragma warning restore 612, 618
         }

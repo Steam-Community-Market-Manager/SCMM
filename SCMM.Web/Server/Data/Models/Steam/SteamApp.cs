@@ -9,10 +9,12 @@ namespace SCMM.Web.Server.Data.Models.Steam
         public SteamApp()
         {
             Filters = new Collection<SteamAssetFilter>();
-            Assets = new Collection<SteamAssetDescription>();
             WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
-            StoreItems = new Collection<SteamStoreItem>();
+            Assets = new Collection<SteamAssetDescription>();
+            InventoryItems = new Collection<SteamInventoryItem>();
             MarketItems = new Collection<SteamMarketItem>();
+            StoreItems = new Collection<SteamStoreItem>();
+            ItemStores = new Collection<SteamItemStore>();
         }
 
         [Required]
@@ -33,12 +35,17 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public ICollection<SteamAssetFilter> Filters { get; set; }
 
+        public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }
+
         public ICollection<SteamAssetDescription> Assets { get; set; }
 
-        public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }
+        public ICollection<SteamInventoryItem> InventoryItems { get; set; }
+
+        public ICollection<SteamMarketItem> MarketItems { get; set; }
 
         public ICollection<SteamStoreItem> StoreItems { get; set; }
 
-        public ICollection<SteamMarketItem> MarketItems { get; set; }
+        public ICollection<SteamItemStore> ItemStores { get; set; }
+
     }
 }

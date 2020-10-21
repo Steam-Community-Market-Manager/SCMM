@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 {
-    public class StoreItemListDTO
+    public class StoreItemDetailDTO
     {
         public string SteamId { get; set; }
 
@@ -29,8 +29,6 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
         public long StorePrice { get; set; }
 
         public int StoreRankPosition { get; set; }
-
-        public int StoreRankTotal { get; set; }
 
         public IDictionary<string, double> StoreRankHistory { get; set; }
 

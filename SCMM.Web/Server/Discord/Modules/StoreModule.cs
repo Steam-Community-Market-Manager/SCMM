@@ -25,7 +25,15 @@ namespace SCMM.Web.Server.Discord.Modules
         [Summary("Echoes time remaining until the next expected store update")]
         public async Task SayStoreNextUpdateExpectedOnAsync()
         {
-            var remainingTime = (_steam.GetStoreNextUpdateExpectedOn() - DateTimeOffset.Now).ToDurationString(
+            var nextUpdateExpectedOn = _steam.GetStoreNextUpdateExpectedOn();
+            if (nextUpdateExpectedOn == null)
+            {
+                await ReplyAsync(
+                    $"I have no idea, something went wrong trying to figure it out"
+                );
+            }
+
+            var remainingTime = (nextUpdateExpectedOn.Value - DateTimeOffset.Now).ToDurationString(
                 showDays: true,
                 showHours: true,
                 showMinutes: false,

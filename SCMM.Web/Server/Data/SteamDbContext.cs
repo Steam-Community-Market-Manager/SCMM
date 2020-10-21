@@ -16,6 +16,7 @@ namespace SCMM.Web.Server.Data
         public DbSet<SteamCurrency> SteamCurrencies { get; set; }
         public DbSet<SteamProfile> SteamProfiles { get; set; }
         public DbSet<SteamApp> SteamApps { get; set; }
+        public DbSet<SteamItemStore> SteamItemStores { get; set; }
         public DbSet<SteamStoreItem> SteamStoreItems { get; set; }
         public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
         public DbSet<SteamMarketItemSale> SteamMarketItemSale { get; set; }
@@ -54,31 +55,55 @@ namespace SCMM.Web.Server.Data
                 .OwnsMany(x => x.Filters)
                 .OwnsOne(x => x.Options);
             builder.Entity<SteamApp>()
+                .HasMany(x => x.WorkshopFiles)
+                .WithOne(x => x.App);
+            builder.Entity<SteamApp>()
                 .HasMany(x => x.Assets)
                 .WithOne(x => x.App);
             builder.Entity<SteamApp>()
-                .HasMany(x => x.WorkshopFiles)
+                .HasMany(x => x.InventoryItems)
+                .WithOne(x => x.App);
+            builder.Entity<SteamApp>()
+                .HasMany(x => x.MarketItems)
                 .WithOne(x => x.App);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.StoreItems)
                 .WithOne(x => x.App);
             builder.Entity<SteamApp>()
-                .HasMany(x => x.MarketItems)
+                .HasMany(x => x.ItemStores)
                 .WithOne(x => x.App);
 
             builder.Entity<SteamStoreItem>()
                 .HasOne(x => x.Description);
             builder.Entity<SteamStoreItem>()
-                .OwnsOne(x => x.StorePrices);
+                .HasOne(x => x.Currency);
             builder.Entity<SteamStoreItem>()
-                .OwnsOne(x => x.StoreRankGraph);
+                .OwnsOne(x => x.Prices);
             builder.Entity<SteamStoreItem>()
                 .OwnsOne(x => x.TotalSalesGraph);
 
-            builder.Entity<SteamMarketItem>()
-                .HasOne(x => x.Currency);
+            builder.Entity<SteamItemStore>()
+                .OwnsOne(x => x.Media);
+
+            builder.Entity<SteamStoreItemItemStore>()
+                .HasKey(bc => new { bc.ItemId, bc.StoreId });
+            builder.Entity<SteamStoreItemItemStore>()
+                .HasOne(bc => bc.Item)
+                .WithMany(b => b.Stores)
+                .HasForeignKey(bc => bc.ItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SteamStoreItemItemStore>()
+                .HasOne(bc => bc.Store)
+                .WithMany(b => b.Items)
+                .HasForeignKey(bc => bc.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SteamStoreItemItemStore>()
+                .OwnsOne(x => x.IndexGraph);
+
             builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Description);
+            builder.Entity<SteamMarketItem>()
+                .HasOne(x => x.Currency);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.BuyOrders)
                 .WithOne(x => x.Item);
@@ -93,11 +118,9 @@ namespace SCMM.Web.Server.Data
                 .WithOne(x => x.Item);
 
             builder.Entity<SteamInventoryItem>()
-                .HasOne(x => x.App);
+                .HasOne(x => x.Description);
             builder.Entity<SteamInventoryItem>()
                 .HasOne(x => x.Currency);
-            builder.Entity<SteamInventoryItem>()
-                .HasOne(x => x.Description);
 
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.WorkshopFile);

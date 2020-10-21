@@ -6,6 +6,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SteamWebAPI2.Interfaces;
@@ -41,103 +42,97 @@ namespace SCMM.Web.Server.Services.Jobs
                 var service = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
-                await UpdateStoreSubscribers(db, service);
-                await UpdateStoreTopSellers(db, commnityClient, service);
-            }
-        }
+                var appItemStores = db.SteamItemStores
+                    .Include(x => x.App)
+                    .Include(x => x.Items).ThenInclude(x => x.Item)
+                    .Include(x => x.Items).ThenInclude(x => x.Item.Stores)
+                    .Include(x => x.Items).ThenInclude(x => x.Item.Description)
+                    .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile)
+                    .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
+                    .ToList();
 
-        private async Task UpdateStoreTopSellers(SteamDbContext db, SteamCommunityClient commnityClient, SteamService service)
-        {
-            var appStoreItems = db.SteamStoreItems
-                .Include(x => x.App)
-                .Include(x => x.Description.WorkshopFile)
-                .Where(x => x.Description.WorkshopFile.AcceptedOn == x.App.StoreItems.Max(x => x.Description.WorkshopFile.AcceptedOn))
-                .Take(SteamConstants.SteamStoreItemsMax)
-                .ToList();
-
-            var appStores = appStoreItems.GroupBy(x => x.App.SteamId).ToList();
-            foreach (var appStore in appStores)
-            {
-                _logger.LogInformation($"Updating store item top seller statistics (app: {appStore.Key})");
-                var storePage = await commnityClient.GetItemStorePage(new SteamItemStorePageRequest()
+                foreach (var appItemStore in appItemStores)
                 {
-                    AppId = appStore.Key,
-                    Start = 0,
-                    Count = SteamItemStorePageRequest.MaxPageSize,
-                    Filter = SteamItemStorePageRequest.FilterFeatured
-                });
-                if (storePage == null)
-                {
-                    _logger.LogError("Failed to get item store details");
-                    continue;
-                }
-
-                var storeItemIds = new List<string>();
-                var storeItemDefs = storePage.Descendants()
-                    .Where(x => x.Attribute("class")?.Value?.Contains(SteamConstants.SteamStoreItemDef) == true);
-                foreach (var storeItemDef in storeItemDefs)
-                {
-                    var storeItemName = storeItemDef.Descendants()
-                        .FirstOrDefault(x => x.Attribute("class")?.Value?.Contains(SteamConstants.SteamStoreItemDefName) == true);
-                    if (storeItemName != null)
-                    {
-                        var storeItemLink = storeItemName.Descendants()
-                            .Where(x => x.Name.LocalName == "a")
-                            .Select(x => x.Attribute("href"))
-                            .FirstOrDefault();
-                        if (!String.IsNullOrEmpty(storeItemLink?.Value))
-                        {
-                            var storeItemIdMatchGroup = Regex.Match(storeItemLink.Value, SteamConstants.SteamStoreItemDefLinkRegex).Groups;
-                            var storeItemId = (storeItemIdMatchGroup.Count > 1)
-                                ? storeItemIdMatchGroup[1].Value.Trim()
-                                : null;
-                            if (!String.IsNullOrEmpty(storeItemId))
-                            {
-                                storeItemIds.Add(storeItemId);
-                            }
-                        }
-                    }
-                }
-
-                // Top sellers only shows the top 9 store items, this ensures all items are accounted for
-                var storeItems = appStore.ToArray();
-                var missingStoreItems = storeItems.Where(x => !storeItemIds.Contains(x.SteamId));
-                foreach (var storeItem in missingStoreItems)
-                {
-                    storeItemIds.Add(storeItem.SteamId);
-                }
-
-                // Update the store position for all the items
-                foreach (var storeItemId in storeItemIds)
-                {
-                    var storeItem = storeItems.FirstOrDefault(x => x.SteamId == storeItemId);
-                    if (storeItem == null)
-                    {
-                        continue;
-                    }
-
-                    var storeRankPosition = (storeItemIds.IndexOf(storeItemId) + 1);
-                    var storeRankTotal = storeItemIds.Count;
-                    storeItem = service.UpdateStoreItemRank(storeItem, storeRankPosition, storeRankTotal);
-                }
-
-                // Calculate total sales
-                var orderedStoreItems = storeItems.OrderBy(x => x.StoreRankPosition).ToList();
-                foreach (var storeItem in orderedStoreItems)
-                {
-                    storeItem.RecalculateTotalSales(orderedStoreItems);
+                    await UpdateItemStoreSubscribers(db, service, appItemStore);
+                    await UpdateItemStoreTopSellers(db, commnityClient, service, appItemStore);
                 }
 
                 db.SaveChanges();
             }
         }
 
-        private async Task UpdateStoreSubscribers(SteamDbContext db, SteamService service)
+        private async Task UpdateItemStoreTopSellers(SteamDbContext db, SteamCommunityClient commnityClient, SteamService service, SteamItemStore itemStore)
         {
-            var assetDescriptions = db.SteamStoreItems
-                .Where(x => x.Description.WorkshopFile.SteamId != null)
-                .Where(x => x.Description.WorkshopFile.AcceptedOn == x.App.StoreItems.Max(x => x.Description.WorkshopFile.AcceptedOn))
-                .Include(x => x.Description.WorkshopFile)
+            _logger.LogInformation($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
+            var storePage = await commnityClient.GetItemStorePage(new SteamItemStorePageRequest()
+            {
+                AppId = itemStore.App.SteamId,
+                Start = 0,
+                Count = SteamItemStorePageRequest.MaxPageSize,
+                Filter = SteamItemStorePageRequest.FilterFeatured
+            });
+            if (storePage == null)
+            {
+                _logger.LogError("Failed to get item store details");
+                return;
+            }
+
+            var storeItemIds = new List<string>();
+            var storeItemDefs = storePage.Descendants()
+                .Where(x => x.Attribute("class")?.Value?.Contains(SteamConstants.SteamStoreItemDef) == true);
+            foreach (var storeItemDef in storeItemDefs)
+            {
+                var storeItemName = storeItemDef.Descendants()
+                    .FirstOrDefault(x => x.Attribute("class")?.Value?.Contains(SteamConstants.SteamStoreItemDefName) == true);
+                if (storeItemName != null)
+                {
+                    var storeItemLink = storeItemName.Descendants()
+                        .Where(x => x.Name.LocalName == "a")
+                        .Select(x => x.Attribute("href"))
+                        .FirstOrDefault();
+                    if (!String.IsNullOrEmpty(storeItemLink?.Value))
+                    {
+                        var storeItemIdMatchGroup = Regex.Match(storeItemLink.Value, SteamConstants.SteamStoreItemDefLinkRegex).Groups;
+                        var storeItemId = (storeItemIdMatchGroup.Count > 1)
+                            ? storeItemIdMatchGroup[1].Value.Trim()
+                            : null;
+                        if (!String.IsNullOrEmpty(storeItemId))
+                        {
+                            storeItemIds.Add(storeItemId);
+                        }
+                    }
+                }
+            }
+
+            // The "top sellers" list only shows the top 9 store items, this ensures all items are accounted for
+            var storeItems = itemStore.Items.ToArray();
+            var missingStoreItems = storeItems.Where(x => !storeItemIds.Contains(x.Item.SteamId));
+            foreach (var storeItem in missingStoreItems)
+            {
+                storeItemIds.Add(storeItem.Item.SteamId);
+            }
+
+            // Update the store item indecies
+            foreach (var storeItem in storeItems)
+            {
+                service.UpdateStoreItemIndex(storeItem, storeItemIds.IndexOf(storeItem.Item.SteamId));
+            }
+
+            // Calculate total sales
+            var orderedStoreItems = storeItems.OrderBy(x => x.Index).ToList();
+            foreach (var storeItem in orderedStoreItems)
+            {
+                storeItem.Item.RecalculateTotalSales(itemStore);
+            }
+
+            db.SaveChanges();
+        }
+
+        private async Task UpdateItemStoreSubscribers(SteamDbContext db, SteamService service, SteamItemStore itemStore)
+        {
+            var assetDescriptions = itemStore.Items
+                .Select(x => x.Item)
+                .Where(x => x.Description?.WorkshopFile?.SteamId != null)
                 .Select(x => x.Description)
                 .Take(SteamConstants.SteamStoreItemsMax)
                 .ToList();
@@ -146,7 +141,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 .Select(x => UInt64.Parse(x.WorkshopFile.SteamId))
                 .ToList();
 
-            _logger.LogInformation($"Updating store item workshop statistics (ids: {workshopFileIds.Count})");
+            _logger.LogInformation($"Updating item store workshop statistics (ids: {workshopFileIds.Count})");
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
             var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
             var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(workshopFileIds);

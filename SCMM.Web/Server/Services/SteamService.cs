@@ -51,15 +51,20 @@ namespace SCMM.Web.Server.Services
             return await _communityClient.GetImage(new SteamBlobRequest(url));
         }
 
-        public DateTimeOffset GetStoreNextUpdateExpectedOn()
+        public DateTimeOffset? GetStoreNextUpdateExpectedOn()
         {
-            var nextStoreUpdateUtc = _db.SteamAssetWorkshopFiles
+            var lastItemAcceptedOn = _db.SteamAssetWorkshopFiles
                 .Where(x => x.AcceptedOn != null)
-                .Select(x => x.AcceptedOn.Value)
-                .Max().UtcDateTime;
+                .GroupBy(x => 1)
+                .Select(x => x.Max(y => y.AcceptedOn))
+                .FirstOrDefault()?.UtcDateTime;
+            if (lastItemAcceptedOn == null)
+            {
+                return null;
+            }
 
-            // Store normally updates every thursday or friday around 9pm (UK time)
-            nextStoreUpdateUtc = (nextStoreUpdateUtc.Date + new TimeSpan(21, 0, 0));
+            // Store normally updates every thursday or friday around 9pm (UTC time)
+            var nextStoreUpdateUtc = (lastItemAcceptedOn.Value.Date + new TimeSpan(21, 0, 0));
             do
             {
                 nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
@@ -483,14 +488,13 @@ namespace SCMM.Web.Server.Services
             return assetDescription;
         }
 
-        public SteamStoreItem UpdateStoreItemRank(SteamStoreItem storeItem, int storeRankPosition, int storeRankTotal)
+        public SteamStoreItemItemStore UpdateStoreItemIndex(SteamStoreItemItemStore storeItem, int storeIndex)
         {
             var utcDate = DateTime.UtcNow.Date;
-            storeItem.StoreRankPosition = storeRankPosition;
-            storeItem.StoreRankTotal = storeRankTotal;
-            storeItem.StoreRankGraph[utcDate] = storeRankPosition;
-            storeItem.StoreRankGraph = new Data.Types.PersistableGraphDataSet(
-                storeItem.StoreRankGraph
+            storeItem.Index = storeIndex;
+            storeItem.IndexGraph[utcDate] = storeIndex;
+            storeItem.IndexGraph = new Data.Types.PersistableGraphDataSet(
+                storeItem.IndexGraph
             );
 
             return storeItem;
@@ -620,7 +624,7 @@ namespace SCMM.Web.Server.Services
             return dbAssetDescription;
         }
 
-        public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamLanguage language, AssetModel asset, DateTime timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, SteamLanguage language, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Description)
@@ -630,10 +634,12 @@ namespace SCMM.Web.Server.Services
             if (dbItem != null)
             {
                 // Update prices
-                if (asset.Prices != null)
-                {
-                    dbItem.StorePrices = new PersistablePriceDictionary(GetPriceTable(asset.Prices));
-                }
+                // TODO: Move this to a seperate job (to avoid spam?)
+                //if (asset.Prices != null)
+                //{
+                //    dbItem.Prices = new PersistablePriceDictionary(GetPriceTable(asset.Prices));
+                //    dbItem.Price = dbItem.Prices.FirstOrDefault(x => x.Key == currency.Name).Value;
+                //}
                 return dbItem;
             }
 
@@ -648,12 +654,14 @@ namespace SCMM.Web.Server.Services
                 assetDescription.WorkshopFile.AcceptedOn = timeChecked;
             }
 
+            var prices = GetPriceTable(asset.Prices);
             app.StoreItems.Add(dbItem = new SteamStoreItem()
             {
                 SteamId = asset.Name,
                 AppId = app.Id,
                 Description = assetDescription,
-                StorePrices = new PersistablePriceDictionary(GetPriceTable(asset.Prices))
+                Prices = new PersistablePriceDictionary(prices),
+                Price = prices.FirstOrDefault(x => x.Key == currency.Name).Value
             });
 
             return dbItem;

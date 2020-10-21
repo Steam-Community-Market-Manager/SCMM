@@ -8,9 +8,16 @@
 @inject AppState State
 
 <DocumentTitle Title="Item Store" />
-@if (Items == null)
+@if (Store == null)
 {
-    <Loading />
+    @if(StoreException == null)
+    {
+        <Loading />
+    }
+    else
+    {
+        <Error Exception="@StoreException" />
+    }
 }
 else
 {
@@ -19,7 +26,7 @@ else
             <Paper>
                 <Table Narrow="true">
                     <TableBody>
-                        @foreach (var item in Items.OrderBy(x => x.StoreRankPosition))
+                        @foreach (var item in Store.Items.OrderBy(x => x.StoreRankPosition))
                         {
                             <TableRow>
                                 <TableCell Class="align-top">
@@ -47,20 +54,23 @@ else
                                         <i class="fas fa-fw fa-shopping-cart"></i>
                                         @if (item.TotalSalesMax == null)
                                         {
-                                        <span>@item.TotalSalesMin.ToQuantityString() or more</span>
+                                        <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() or more</span>
                                         }
                                         else if (item.TotalSalesMin == item.TotalSalesMax)
                                         {
-                                        <span>@item.TotalSalesMin.ToQuantityString()</span>
+                                        <span style="padding:8px">@item.TotalSalesMin.ToQuantityString()</span>
                                         }
                                         else
                                         {
-                                        <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
+                                        <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
                                         }
                                     </Typography>
                                     <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
                                         <i class="fas fa-fw fa-user"></i>
-                                        <span>@item.Subscriptions.ToQuantityString()</span>
+                                        @if (item.Subscriptions > 0)
+                                        {
+                                            <span style="padding:8px">@item.Subscriptions.ToQuantityString()</span>
+                                        }
                                     </Typography>
                                 </TableCell>
                                 <TableCell Class="align-top" Align="@Align.Right">
@@ -100,7 +110,7 @@ else
                                             <i class="fas fa-fw fa-exclamation-circle"></i>
                                         </Icon>
                                         <MessageContent>
-                                            <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Items.Sum(x => x.TotalSalesMin * x.StorePrice))) so far.</span>
+                                            <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Store.Items.Sum(x => x.TotalSalesMin * x.StorePrice))) so far.</span>
                                             <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than what is shown here. Steam doesn't publicly advertise exact sales figures, this is the just a rough estimate.</span>
                                         </MessageContent>
                                     </Alert>
@@ -122,12 +132,12 @@ else
                         </Paper>
                     }
                 </Grid>
-                <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
-                    <YouTubeVideo VideoId="TB7L1tINHvA" />
-                </Grid>
-                <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
-                    <YouTubeVideo VideoId="9g2xYep57x8" />
-                </Grid>
+                @foreach (var media in Store.Media)
+                {
+                    <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
+                        <YouTubeVideo VideoId="@media" />
+                    </Grid>
+                }
             </Grid>
         </Grid>
     </Grid>
@@ -135,7 +145,9 @@ else
 
 @code {
 
-    private StoreItemListDTO[] Items { get; set; }
+    private ItemStoreDTO Store { get; set; }
+
+    private Exception StoreException { get; set; }
 
     private object SelectedItemChartPanel { get; set; } = 1;
 
@@ -153,36 +165,38 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshItems();
+        await RefreshStore();
     }
 
-    private void BuyItem(StoreItemListDTO item)
+    private void BuyItem(StoreItemDetailDTO item)
     {
         string url = $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
-    private void ViewItem(StoreItemListDTO item)
+    private void ViewItem(StoreItemDetailDTO item)
     {
         string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.SteamWorkshopId}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
-    private async Task RefreshItems()
+    private async Task RefreshStore()
     {
         try
         {
-            Items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"api/store");
+            StoreException = null;
+            Store = await Http.GetFromJsonAsync<ItemStoreDTO>($"api/store");
             OnSelectedItemChartChanged(SelectedItemChartPanel);
-            StateHasChanged();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing store items");
+            StoreException = ex;
+            Logger.LogError(ex, $"Error loading the store");
         }
+        StateHasChanged();
     }
 
-    private string GetItemStyles(StoreItemListDTO item)
+    private string GetItemStyles(StoreItemDetailDTO item)
     {
         return $"color: {item.ForegroundColour}";
     }
@@ -274,7 +288,7 @@ else
         };
 
         ItemRevenueChart.Data.Labels.AddRange(
-            Items.Select(x => x.Name).ToArray()
+            Store.Items.Select(x => x.Name).ToArray()
         );
 
         var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
@@ -288,7 +302,7 @@ else
             BorderWidth = 1
         };
         authorRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)Math.Round((double)((x.TotalSalesMin * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
+            Store.Items.Select(x => (DoubleWrapper)Math.Round((double)((x.TotalSalesMin * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
         );
 
         var totalRevenue = new BarDataset<DoubleWrapper>
@@ -299,7 +313,7 @@ else
             BorderWidth = 1
         };
         totalRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
+            Store.Items.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
         );
 
         ItemRevenueChart.Data.Datasets.AddRange(new[] {
@@ -377,7 +391,7 @@ else
         };
 
         ItemRankChart.Data.Labels.AddRange(
-            Items.Select(x => x.Name).ToArray()
+            Store.Items.Select(x => x.Name).ToArray()
         );
 
         var itemSubscriptions = new BarDataset<DoubleWrapper>
@@ -388,7 +402,7 @@ else
             BorderWidth = 1
         };
         itemSubscriptions.AddRange(
-            Items.Select(x => (DoubleWrapper)x.Subscriptions)
+            Store.Items.Select(x => (DoubleWrapper)x.Subscriptions)
         );
 
         var itemTotalSalesMin = new BarDataset<DoubleWrapper>
@@ -399,7 +413,7 @@ else
             BorderWidth = 1
         };
         itemTotalSalesMin.AddRange(
-            Items.Select(x => (DoubleWrapper)x.TotalSalesMin)
+            Store.Items.Select(x => (DoubleWrapper)x.TotalSalesMin)
         );
 
         ItemRankChart.Data.Datasets.AddRange(new[] {
@@ -409,7 +423,7 @@ else
 
     private void RedrawItemRankHistoryChart()
     {
-        var startOfWeek = Items.FirstOrDefault()?.AcceptedOn.UtcDateTime;
+        var startOfWeek = Store.Items.FirstOrDefault()?.AcceptedOn.UtcDateTime;
         if (startOfWeek == null)
         {
             return;
@@ -486,13 +500,13 @@ else
             .Select(x => x.ToString("dd MMMM yyyy"))
             .ToList();
 
-        foreach (var item in Items)
+        foreach (var item in Store.Items)
         {
             var itemDataSet = new LineDataset<DoubleWrapper>
             {
                 Label = item.Name,
-                BackgroundColor = GraphDataSetColours[Array.IndexOf(Items, item)],
-                BorderColor = GraphDataSetColours[Array.IndexOf(Items, item)],
+                BackgroundColor = GraphDataSetColours[Store.Items.IndexOf(item)],
+                BorderColor = GraphDataSetColours[Store.Items.IndexOf(item)],
                 BorderWidth = 3,
                 LineTension = 0.1,
                 Fill = false
@@ -518,7 +532,7 @@ else
         };
     }
 
-    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(StoreItemListDTO item, DateTime startOfWeek)
+    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(StoreItemDetailDTO item, DateTime startOfWeek)
     {
         var dataSet = new List<DoubleWrapper>();
         if (item?.SubscriptionsHistory?.Any() != true)

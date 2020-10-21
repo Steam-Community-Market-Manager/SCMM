@@ -17,7 +17,10 @@ namespace SCMM.Web.Client.Shared.Component.Navigation
         public string Component { set; get; } = "div";
 
         [Parameter]
-        public string Title { set; get; }
+        public Exception Exception { set; get; }
+
+        [Parameter]
+        public string Title { set; get; } = "Whoops!";
 
         [Parameter]
         public string SubTitle { set; get; }

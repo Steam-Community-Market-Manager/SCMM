@@ -174,7 +174,7 @@ namespace SCMM.Web.Server.API.Controllers
                     }
                     else if (item.Description.StoreItem != null)
                     {
-                        itemSummary.Value = item.Description.StoreItem.StorePrices.FirstOrDefault(x => x.Key == this.Currency().Name).Value;
+                        itemSummary.Value = item.Description.StoreItem.Prices.FirstOrDefault(x => x.Key == this.Currency().Name).Value;
                     }
 
                     // Calculate the item's quantity

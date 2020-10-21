@@ -46,6 +46,22 @@
             If true, this is a "cool" price which is highlighted when presenting "common" currencies
             </summary>
         </member>
+        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItem.Prices">
+            <summary>
+            Store prices are generally fixed and don't fluxuate with currency exhange rates.
+            Because of this, we need to keep a list of all the fixed store prices in each currency.
+            </summary>
+        </member>
+        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItemItemStore.Index">
+            <summary>
+            Used to track the current sales position in the store
+            </summary>
+        </member>
+        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItemItemStore.IndexGraph">
+            <summary>
+            Used to track the historic sales positions in the store
+            </summary>
+        </member>
         <member name="M:SCMM.Web.Server.Discord.Modules.InventoryModule.SayProfileInventoryValueAsync(System.String,System.String)">
             <summary>
              !inventory [steamId] [currencyName]

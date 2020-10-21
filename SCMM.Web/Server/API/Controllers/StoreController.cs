@@ -38,57 +38,61 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("nextUpdateExpectedOn")]
-        public DateTimeOffset GetStoreNextUpdateExpectedOn()
+        public DateTimeOffset? GetStoreNextUpdateExpectedOn()
         {
             return _steam.GetStoreNextUpdateExpectedOn();
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<StoreItemListDTO> GetStore()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ItemStoreDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStore()
         {
-            var latestStore = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
-            var items = _db.SteamStoreItems
-                .Include(x => x.App)
-                .Include(x => x.Description)
-                .Include(x => x.Description.WorkshopFile)
-                .Include(x => x.Description.WorkshopFile.Creator)
-                .Where(x => x.Description.WorkshopFile.AcceptedOn == latestStore)
-                .OrderBy(x => x.StoreRankPosition)
-                .ThenByDescending(x => x.Description.WorkshopFile.Subscriptions)
-                .Take(SteamConstants.SteamStoreItemsMax)
-                .ToList();
+            var latestStore = _db.SteamItemStores
+                .GroupBy(x => 1)
+                .Select(x => x.Max(y => y.Start))
+                .FirstOrDefault();
+            var itemStore = _db.SteamItemStores
+                .Where(x => x.Start == latestStore)
+                .Include(x => x.Items).ThenInclude(x => x.Item)
+                .Include(x => x.Items).ThenInclude(x => x.Item.App)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile.Creator)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem.Currency)
+                .FirstOrDefault();
 
-            var itemDtos = items.ToDictionary(
-                x => x,
-                x => _mapper.Map<SteamStoreItem, StoreItemListDTO>(x, this)
-            );
+            var itemStoreDetail = _mapper.Map<SteamItemStore, ItemStoreDTO>(itemStore, this);
+            if (itemStoreDetail == null)
+            {
+                return NotFound();
+            }
 
             // TODO: Do this better, very lazy
-            foreach (var pair in itemDtos.Where(x => x.Value.Tags != null))
+            var itemStoreTaggedItems = itemStoreDetail.Items.Where(x => x.Tags != null);
+            foreach (var item in itemStoreTaggedItems)
             {
-                var item = pair.Key;
-                var itemDto = pair.Value;
-                var itemType = Uri.EscapeDataString(itemDto.ItemType ?? String.Empty);
+                var itemType = Uri.EscapeDataString(item.ItemType ?? String.Empty);
                 if (String.IsNullOrEmpty(itemType))
                 {
                     continue;
                 }
 
-                var systemCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-                var itemPrice = item.StorePrices.FirstOrDefault(x => x.Key == systemCurrency.Name).Value;
-                if (itemPrice <= 0)
+                var itemPrice = itemStore.Items.Select(x => x.Item).FirstOrDefault(x => x.SteamId == item.SteamId)?.Price;
+                if (itemPrice == null || itemPrice <= 0)
                 {
                     continue;
                 }
 
                 var marketRank = _db.SteamApps
-                    .Where(x => x.SteamId == itemDto.SteamAppId)
+                    .Where(x => x.SteamId == item.SteamAppId)
                     .Select(app => new
                     {
                         Position = app.MarketItems
                             .Where(x => x.Description.Tags.Serialised.Contains(itemType))
-                            .Where(x => x.BuyNowPrice < itemPrice)
+                            .Where(x => x.BuyNowPrice < itemPrice.Value)
                             .Count(),
                         Total = app.MarketItems
                             .Where(x => x.Description.Tags.Serialised.Contains(itemType))
@@ -98,14 +102,12 @@ namespace SCMM.Web.Server.API.Controllers
 
                 if (marketRank.Total > 1)
                 {
-                    itemDto.MarketRankPosition = marketRank.Position;
-                    itemDto.MarketRankTotal = marketRank.Total;
+                    item.MarketRankPosition = marketRank.Position;
+                    item.MarketRankTotal = marketRank.Total;
                 }
             }
 
-            return itemDtos
-                .Select(x => x.Value)
-                .ToList();
+            return Ok(itemStoreDetail);
         }
 
         [AllowAnonymous]
@@ -114,11 +116,15 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStoreMosaic()
         {
-            var latestStore = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
-            var storeItemDescriptions = _db.SteamStoreItems
-                .Where(x => x.Description.WorkshopFile.AcceptedOn == latestStore)
-                .OrderBy(x => x.Description.Name)
-                .Select(x => x.Description.IconUrl)
+            var latestStore = _db.SteamItemStores
+                .GroupBy(x => 1)
+                .Select(x => x.Max(y => y.Start))
+                .FirstOrDefault();
+            var storeItemDescriptions = _db.SteamItemStores
+                .Where(x => x.Start == latestStore)
+                .SelectMany(x => x.Items.Select(x => x.Item.Description))
+                .OrderBy(x => x.Name)
+                .Select(x => x.IconUrl)
                 .Take(SteamConstants.SteamStoreItemsMax)
                 .ToList();
 

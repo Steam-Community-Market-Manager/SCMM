@@ -105,15 +105,18 @@ namespace SCMM.Web.Server
             CreateMap<SteamMarketItemSale, MarketItemSaleDTO>()
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Item.Currency));
 
-            CreateMap<SteamStoreItem, StoreItemListDTO>()
-                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
-                .ForMember(x => x.SteamWorkshopId, o => o.MapFrom(p => p.Description.WorkshopFile.SteamId))
-                .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
-                .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
-                .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
-                .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
-                .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Description.WorkshopFile.Creator.Name))
-                .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Description.Tags.GetItemType(p.Description.Name)))
+            CreateMap<SteamItemStore, ItemStoreDTO>();
+
+            CreateMap<SteamStoreItemItemStore, StoreItemDetailDTO>()
+                .ForMember(x => x.SteamId, o => o.MapFrom(p => p.Item.SteamId))
+                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.Item.App.SteamId))
+                .ForMember(x => x.SteamWorkshopId, o => o.MapFrom(p => p.Item.Description.WorkshopFile.SteamId))
+                .ForMember(x => x.Name, o => o.MapFrom(p => p.Item.Description.Name))
+                .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Item.Description.BackgroundColour))
+                .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Item.Description.ForegroundColour))
+                .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Item.Description.IconUrl))
+                .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Item.Description.WorkshopFile.Creator.Name))
+                .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Item.Description.Tags.GetItemType(p.Item.Description.Name)))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.StorePrice, o => o.MapFrom(
                     (src, dst, _, context) =>
@@ -121,19 +124,22 @@ namespace SCMM.Web.Server
                         var currency = context.Items.ContainsKey(AutoMapperConfigurationExtensions.ContextKeyCurrency)
                             ? (CurrencyDetailedDTO)context.Options.Items[AutoMapperConfigurationExtensions.ContextKeyCurrency]
                             : null;
-                        return (currency != null && src.StorePrices.ContainsKey(currency.Name))
-                            ? src.StorePrices[currency.Name]
+                        return (currency != null && src.Item.Prices.ContainsKey(currency.Name))
+                            ? src.Item.Prices[currency.Name]
                             : 0;
                     }
                 ))
-                .ForMember(x => x.StoreRankHistory, o => o.MapFrom(p => p.StoreRankGraph.ToGraphDictionary()))
-                .ForMember(x => x.TotalSalesHistory, o => o.MapFrom(p => p.TotalSalesGraph.ToGraphDictionary()))
-                .ForMember(x => x.SubscriptionsHistory, o => o.MapFrom(p => p.Description.WorkshopFile.SubscriptionsGraph.ToGraphDictionary()))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.WorkshopFile.Subscriptions))
-                .ForMember(x => x.Favourited, o => o.MapFrom(p => p.Description.WorkshopFile.Favourited))
-                .ForMember(x => x.Views, o => o.MapFrom(p => p.Description.WorkshopFile.Views))
-                .ForMember(x => x.AcceptedOn, o => o.MapFrom(p => p.Description.WorkshopFile.AcceptedOn))
-                .ForMember(x => x.Tags, o => o.MapFrom(p => p.Description.Tags.WithoutWorkshopTags()));
+                .ForMember(x => x.StoreRankPosition, o => o.MapFrom(p => p.Index))
+                .ForMember(x => x.StoreRankHistory, o => o.MapFrom(p => p.IndexGraph.ToGraphDictionary()))
+                .ForMember(x => x.TotalSalesMin, o => o.MapFrom(p => p.Item.TotalSalesMin))
+                .ForMember(x => x.TotalSalesMax, o => o.MapFrom(p => p.Item.TotalSalesMax))
+                .ForMember(x => x.TotalSalesHistory, o => o.MapFrom(p => p.Item.TotalSalesGraph.ToGraphDictionary()))
+                .ForMember(x => x.SubscriptionsHistory, o => o.MapFrom(p => p.Item.Description.WorkshopFile.SubscriptionsGraph.ToGraphDictionary()))
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Item.Description.WorkshopFile.Subscriptions))
+                .ForMember(x => x.Favourited, o => o.MapFrom(p => p.Item.Description.WorkshopFile.Favourited))
+                .ForMember(x => x.Views, o => o.MapFrom(p => p.Item.Description.WorkshopFile.Views))
+                .ForMember(x => x.AcceptedOn, o => o.MapFrom(p => p.Item.Description.WorkshopFile.AcceptedOn))
+                .ForMember(x => x.Tags, o => o.MapFrom(p => p.Item.Description.Tags.WithoutWorkshopTags()));
         }
     }
 }
