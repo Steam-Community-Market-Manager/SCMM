@@ -107,17 +107,18 @@ namespace SCMM.Web.Server.Services
             // Load the profile inventory
             var profileInventoryItems = _db.SteamInventoryItems
                 .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                .Where(x => x.MarketItemId != null)
+                // TODO: Use MarketItem or StoreItem for value calculation
+                .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
                 {
                     Quantity = x.Quantity,
                     BuyPrice = x.BuyPrice,
                     ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
-                    MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
-                    MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
-                    MarketItemResellPrice = x.MarketItem.ResellPrice,
-                    MarketItemResellTax = x.MarketItem.ResellTax,
-                    MarketItemExchangeRateMultiplier = x.MarketItem.Currency.ExchangeRateMultiplier
+                    MarketItemLast1hrValue = x.Description.MarketItem.Last1hrValue,
+                    MarketItemLast24hrValue = x.Description.MarketItem.Last24hrValue,
+                    MarketItemResellPrice = x.Description.MarketItem.ResellPrice,
+                    MarketItemResellTax = x.Description.MarketItem.ResellTax,
+                    MarketItemExchangeRateMultiplier = x.Description.MarketItem.Currency.ExchangeRateMultiplier
                 })
                 .ToList();
 
@@ -256,9 +257,6 @@ namespace SCMM.Web.Server.Services
                 .Include(x => x.InventoryItems).ThenInclude(x => x.App)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Description)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Currency)
                 .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
             if (profile == null)
             {
@@ -310,9 +308,6 @@ namespace SCMM.Web.Server.Services
                     {
                         continue;
                     }
-                    var marketItem = await _db.SteamMarketItems
-                        .Include(x => x.Currency)
-                        .FirstOrDefaultAsync(x => x.Description.SteamId == asset.ClassId);
                     var inventoryItem = new SteamInventoryItem()
                     {
                         SteamId = asset.AssetId,
@@ -322,8 +317,6 @@ namespace SCMM.Web.Server.Services
                         AppId = app.Id,
                         Description = assetDescription,
                         DescriptionId = assetDescription.Id,
-                        MarketItem = marketItem,
-                        MarketItemId = marketItem?.Id,
                         Quantity = asset.Amount
                     };
 
@@ -337,17 +330,6 @@ namespace SCMM.Web.Server.Services
                     if (existingAsset != null)
                     {
                         existingAsset.Quantity = asset.Amount;
-                        if (existingAsset.MarketItemId == null)
-                        {
-                            var marketItem = await _db.SteamMarketItems
-                                .Include(x => x.Currency)
-                                .FirstOrDefaultAsync(x => x.Description.SteamId == asset.ClassId);
-                            if (marketItem != null)
-                            {
-                                existingAsset.MarketItem = marketItem;
-                                existingAsset.MarketItemId = marketItem.Id;
-                            }
-                        }
                     }
                 }
 

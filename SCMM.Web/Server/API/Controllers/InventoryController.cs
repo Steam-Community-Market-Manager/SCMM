@@ -213,18 +213,20 @@ namespace SCMM.Web.Server.API.Controllers
 
             var profileInventoryItems = _db.SteamInventoryItems
                 .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+                // TODO: Allow both MarketItem and StoreItem here
+                .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
                 {
                     Item = x,
                     ItemDescription = x.Description,
                     ItemCurrency = x.Currency,
-                    MarketItem = x.MarketItem,
-                    MarketItemApp = x.MarketItem.App,
-                    MarketItemDescription = x.MarketItem.Description,
-                    MarketItemCurrency = x.MarketItem.Currency,
+                    MarketItem = x.Description.MarketItem,
+                    MarketItemApp = x.Description.MarketItem.App,
+                    MarketItemDescription = x.Description.MarketItem.Description,
+                    MarketItemCurrency = x.Description.MarketItem.Currency,
                     HasBuyPrice = (x.BuyPrice > 0),
-                    ReturnOnInvestment = (x.BuyPrice > 0 && (x.MarketItem.ResellPrice - x.MarketItem.ResellTax) > 0
-                        ? ((decimal)(x.MarketItem.ResellPrice - x.MarketItem.ResellTax) / x.BuyPrice)
+                    ReturnOnInvestment = (x.BuyPrice > 0 && (x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) > 0
+                        ? ((decimal)(x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) / x.BuyPrice)
                         : 0
                     )
                 })
@@ -267,9 +269,9 @@ namespace SCMM.Web.Server.API.Controllers
             var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
             var profileInventoryActivities = _db.SteamInventoryItems
                 .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                .Where(x => x.MarketItem != null)
+                .Where(x => x.Description.MarketItem != null)
                 .SelectMany(x =>
-                    x.MarketItem.Activity.Where(x => x.Timestamp >= recentActivityCutoff)
+                    x.Description.MarketItem.Activity.Where(x => x.Timestamp >= recentActivityCutoff)
                 )
                 .OrderByDescending(x => x.Timestamp)
                 .Include(x => x.Item)
@@ -314,21 +316,21 @@ namespace SCMM.Web.Server.API.Controllers
             var currency = this.Currency();
             var profileInventoryItems = _db.SteamInventoryItems
                 .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                .Where(x => x.MarketItemId != null)
+                .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
                 {
                     Quantity = x.Quantity,
                     BuyPrice = x.BuyPrice,
                     ExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
-                    MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
-                    MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
-                    MarketItemLast48hrValue = x.MarketItem.Last48hrValue,
-                    MarketItemLast72hrValue = x.MarketItem.Last72hrValue,
-                    MarketItemLast96hrValue = x.MarketItem.Last96hrValue,
-                    MarketItemLast120hrValue = x.MarketItem.Last120hrValue,
-                    MarketItemLast144hrValue = x.MarketItem.Last144hrValue,
-                    MarketItemLast168hrValue = x.MarketItem.Last168hrValue,
-                    MarketItemExchangeRateMultiplier = x.MarketItem.Currency.ExchangeRateMultiplier
+                    MarketItemLast1hrValue = x.Description.MarketItem.Last1hrValue,
+                    MarketItemLast24hrValue = x.Description.MarketItem.Last24hrValue,
+                    MarketItemLast48hrValue = x.Description.MarketItem.Last48hrValue,
+                    MarketItemLast72hrValue = x.Description.MarketItem.Last72hrValue,
+                    MarketItemLast96hrValue = x.Description.MarketItem.Last96hrValue,
+                    MarketItemLast120hrValue = x.Description.MarketItem.Last120hrValue,
+                    MarketItemLast144hrValue = x.Description.MarketItem.Last144hrValue,
+                    MarketItemLast168hrValue = x.Description.MarketItem.Last168hrValue,
+                    MarketItemExchangeRateMultiplier = x.Description.MarketItem.Currency.ExchangeRateMultiplier
                 })
                 .ToList();
 

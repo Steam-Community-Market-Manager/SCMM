@@ -17,11 +17,5 @@ namespace SCMM.Web.Server.Data.Models.Steam
         public long? BuyPrice { get; set; }
 
         public int Quantity { get; set; }
-
-        // TODO: Replace this with Description.MarketItem
-        public Guid? MarketItemId { get; set; }
-
-        // TODO: Replace this with Description.MarketItem
-        public SteamMarketItem MarketItem { get; set; }
     }
 }
