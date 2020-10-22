@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SCMM.Discord\Client\SCMM.Discord.Client.csproj" />
+    <ProjectReference Include="..\..\SCMM.Google\Client\SCMM.Google.Client.csproj" />
     <ProjectReference Include="..\..\SCMM.Steam\Client\SCMM.Steam.Client.csproj" />
     <ProjectReference Include="..\Client\SCMM.Web.Client.csproj" />
     <ProjectReference Include="..\Shared\SCMM.Web.Shared.csproj" />

@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using SCMM.Discord.Client;
+using SCMM.Google.Client;
 using SCMM.Steam.Client;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
@@ -49,6 +50,9 @@ namespace SCMM.Web.Server
 
             services.AddSingleton<DiscordConfiguration>((s) => Configuration.GetDiscoardConfiguration());
             services.AddSingleton<DiscordClient>();
+
+            services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());
+            services.AddSingleton<GoogleClient>();
 
             services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
