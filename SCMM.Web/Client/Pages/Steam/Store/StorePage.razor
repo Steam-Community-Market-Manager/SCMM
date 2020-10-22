@@ -26,7 +26,7 @@ else
             <Paper>
                 <Table Narrow="true">
                     <TableBody>
-                        @foreach (var item in Store.Items.OrderBy(x => x.StoreRankPosition))
+                        @foreach (var item in Store.Items.OrderBy(x => x.StoreIndex))
                         {
                             <TableRow>
                                 <TableCell Class="align-top">
@@ -50,36 +50,42 @@ else
                                         <i class="fas fa-fw fa-tag"></i>
                                         @item.Currency.ToPriceString(item.StorePrice)
                                     </Typography>
-                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
-                                        <i class="fas fa-fw fa-shopping-cart"></i>
-                                        @if (item.TotalSalesMax == null)
-                                        {
-                                        <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() or more</span>
-                                        }
-                                        else if (item.TotalSalesMin == item.TotalSalesMax)
-                                        {
-                                        <span style="padding:8px">@item.TotalSalesMin.ToQuantityString()</span>
-                                        }
-                                        else
-                                        {
-                                        <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
-                                        }
-                                    </Typography>
-                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
-                                        <i class="fas fa-fw fa-user"></i>
-                                        @if (item.Subscriptions > 0)
-                                        {
-                                            <span style="padding:8px">@item.Subscriptions.ToQuantityString()</span>
-                                        }
-                                    </Typography>
+                                    @if (item.HasWorkshopFile)
+                                    {
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
+                                            <i class="fas fa-fw fa-shopping-cart"></i>
+                                            @if (item.TotalSalesMax == null)
+                                            {
+                                            <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() or more</span>
+                                            }
+                                            else if (item.TotalSalesMin == item.TotalSalesMax)
+                                            {
+                                            <span style="padding:8px">@item.TotalSalesMin.ToQuantityString()</span>
+                                            }
+                                            else
+                                            {
+                                            <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
+                                            }
+                                        </Typography>
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
+                                            <i class="fas fa-fw fa-user"></i>
+                                            @if (item.Subscriptions > 0)
+                                            {
+                                                <span style="padding:8px">@item.Subscriptions.Value.ToQuantityString()</span>
+                                            }
+                                        </Typography>
+                                    }
                                 </TableCell>
                                 <TableCell Class="align-top" Align="@Align.Right">
                                     <Typography GutterBottom="true" class="Theme-Success">
                                         <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">Buy</Button>
                                     </Typography>
-                                    <Typography>
-                                        <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">View</Button>
-                                    </Typography>
+                                    @if (item.HasWorkshopFile)
+                                    {
+                                        <Typography>
+                                            <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">View</Button>
+                                        </Typography>
+                                    }
                                 </TableCell>
                             </TableRow>
                         }
@@ -219,6 +225,10 @@ else
 
     private void RedrawItemRevenueChart()
     {
+        var storeItems = Store.Items
+            .Where(x => x.HasWorkshopFile)
+            .ToList();
+
         ItemRevenueChart = new BarConfig
         {
             Options = new BarOptions
@@ -288,7 +298,7 @@ else
         };
 
         ItemRevenueChart.Data.Labels.AddRange(
-            Store.Items.Select(x => x.Name).ToArray()
+            storeItems.Select(x => x.Name).ToArray()
         );
 
         var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
@@ -302,7 +312,7 @@ else
             BorderWidth = 1
         };
         authorRevenue.AddRange(
-            Store.Items.Select(x => (DoubleWrapper)Math.Round((double)((x.TotalSalesMin * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
+            storeItems.Select(x => (DoubleWrapper)Math.Round((double)((x.TotalSalesMin * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
         );
 
         var totalRevenue = new BarDataset<DoubleWrapper>
@@ -313,7 +323,7 @@ else
             BorderWidth = 1
         };
         totalRevenue.AddRange(
-            Store.Items.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
+            storeItems.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
         );
 
         ItemRevenueChart.Data.Datasets.AddRange(new[] {
@@ -323,6 +333,10 @@ else
 
     private void RedrawItemRankChart()
     {
+        var storeItems = Store.Items
+            .Where(x => x.HasWorkshopFile)
+            .ToList();
+
         ItemRankChart = new BarConfig
         {
             Options = new BarOptions
@@ -391,7 +405,7 @@ else
         };
 
         ItemRankChart.Data.Labels.AddRange(
-            Store.Items.Select(x => x.Name).ToArray()
+            storeItems.Select(x => x.Name).ToArray()
         );
 
         var itemSubscriptions = new BarDataset<DoubleWrapper>
@@ -402,7 +416,7 @@ else
             BorderWidth = 1
         };
         itemSubscriptions.AddRange(
-            Store.Items.Select(x => (DoubleWrapper)x.Subscriptions)
+            storeItems.Select(x => (DoubleWrapper)x.Subscriptions)
         );
 
         var itemTotalSalesMin = new BarDataset<DoubleWrapper>
@@ -413,7 +427,7 @@ else
             BorderWidth = 1
         };
         itemTotalSalesMin.AddRange(
-            Store.Items.Select(x => (DoubleWrapper)x.TotalSalesMin)
+            storeItems.Select(x => (DoubleWrapper)x.TotalSalesMin)
         );
 
         ItemRankChart.Data.Datasets.AddRange(new[] {
@@ -423,11 +437,10 @@ else
 
     private void RedrawItemRankHistoryChart()
     {
-        var startOfWeek = Store.Items.FirstOrDefault()?.AcceptedOn.UtcDateTime;
-        if (startOfWeek == null)
-        {
-            return;
-        }
+        var startOfWeek = Store.Start.DateTime;
+        var storeItems = Store.Items
+            .Where(x => x.HasWorkshopFile)
+            .ToList();
 
         ItemRankHistoryChart = new LineConfig
         {
@@ -496,23 +509,23 @@ else
             }
         };
 
-        ItemRankHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek.Value)
+        ItemRankHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek)
             .Select(x => x.ToString("dd MMMM yyyy"))
             .ToList();
 
-        foreach (var item in Store.Items)
+        foreach (var item in storeItems)
         {
             var itemDataSet = new LineDataset<DoubleWrapper>
             {
                 Label = item.Name,
-                BackgroundColor = GraphDataSetColours[Store.Items.IndexOf(item)],
-                BorderColor = GraphDataSetColours[Store.Items.IndexOf(item)],
+                BackgroundColor = GraphDataSetColours[storeItems.IndexOf(item)],
+                BorderColor = GraphDataSetColours[storeItems.IndexOf(item)],
                 BorderWidth = 3,
                 LineTension = 0.1,
                 Fill = false
             };
             itemDataSet.AddRange(
-                GetItemSubscriptionDataset(item, startOfWeek.Value)
+                GetItemSubscriptionDataset(item, startOfWeek)
             );
             ItemRankHistoryChart.Data.Datasets.Add(itemDataSet);
         }

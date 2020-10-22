@@ -12,6 +12,12 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 
         public string SteamWorkshopId { get; set; }
 
+        public bool HasWorkshopFile => !String.IsNullOrEmpty(SteamWorkshopId);
+
+        public string SteamMarketItemId { get; set; }
+
+        public bool HasMarketListing => !String.IsNullOrEmpty(SteamMarketItemId);
+
         public string Name { get; set; }
 
         public string BackgroundColour { get; set; }
@@ -20,17 +26,23 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 
         public string IconUrl { get; set; }
 
+        public string ItemType { get; set; }
+
         public string AuthorName { get; set; }
 
-        public string ItemType { get; set; }
+        public string AuthorAvatarUrl { get; set; }
 
         public CurrencyDTO Currency { get; set; }
 
         public long StorePrice { get; set; }
 
-        public int StoreRankPosition { get; set; }
+        public int StoreIndex { get; set; }
 
-        public IDictionary<string, double> StoreRankHistory { get; set; }
+        public IDictionary<string, double> StoreIndexHistory { get; set; }
+
+        public long? MarketPrice { get; set; }
+
+        public long? MarketQuantity { get; set; }
 
         public int MarketRankPosition { get; set; }
 
@@ -44,13 +56,13 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 
         public IDictionary<string, double> SubscriptionsHistory { get; set; }
 
-        public int Subscriptions { get; set; }
+        public int? Subscriptions { get; set; }
 
-        public int Favourited { get; set; }
+        public int? Favourited { get; set; }
 
-        public int Views { get; set; }
+        public int? Views { get; set; }
 
-        public DateTimeOffset AcceptedOn { get; set; }
+        public DateTimeOffset? AcceptedOn { get; set; }
 
         public IDictionary<string, string> Tags { get; set; }
     }
