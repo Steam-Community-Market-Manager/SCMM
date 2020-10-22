@@ -227,6 +227,7 @@ else
     {
         var storeItems = Store.Items
             .Where(x => x.HasWorkshopFile)
+            .OrderBy(x => x.StoreIndex)
             .ToList();
 
         ItemRevenueChart = new BarConfig
@@ -335,6 +336,7 @@ else
     {
         var storeItems = Store.Items
             .Where(x => x.HasWorkshopFile)
+            .OrderBy(x => x.StoreIndex)
             .ToList();
 
         ItemRankChart = new BarConfig
@@ -440,6 +442,7 @@ else
         var startOfWeek = Store.Start.DateTime;
         var storeItems = Store.Items
             .Where(x => x.HasWorkshopFile)
+            .OrderBy(x => x.StoreIndex)
             .ToList();
 
         ItemRankHistoryChart = new LineConfig
