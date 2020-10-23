@@ -169,7 +169,7 @@ namespace SCMM.Web.Server.Services.Jobs
                                 MarketHashName = marketItem.Description.Name
                             },
                             thumbnailUrl: marketItem.App.IconUrl,
-                            imageUrl: marketItem.Description.IconLargeUrl,
+                            imageUrl: marketItem.Description.IconUrl,
                             color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
                         );
                     }
