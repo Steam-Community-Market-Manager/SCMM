@@ -39,7 +39,7 @@ namespace SCMM.Web.Server.Discord.Modules
             var profile = await _steam.AddOrUpdateSteamProfile(steamId, fetchLatest: true);
             if (profile == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find that Steam profile (or it's private).\nIf you're using a custom profile name, you can also use your full profile page URL instead");
+                await ReplyAsync($"Beep boop! I'm unable to find that Steam profile (it might be private).\nIf you're using a custom profile name, you can also use your full profile page URL instead");
                 return;
             }
 
@@ -53,7 +53,7 @@ namespace SCMM.Web.Server.Discord.Modules
             var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, currency.Name);
             if (inventoryTotal == null)
             {
-                await ReplyAsync($"Beep boop! Unable to access the Steam inventory for that profile, it's private.");
+                await ReplyAsync($"Beep boop! I'm unable to value that profiles inventory. It's either private, or doesn't contain any items that I monitor.");
                 return;
             }
 

@@ -139,6 +139,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                         db.SaveChanges();
 
+                        // TODO: Delay and send over message bus
                         await discord.BroadcastMessageAsync(
                             channelPattern: $"announcement|store|skin|{app.Name}",
                             message: null,

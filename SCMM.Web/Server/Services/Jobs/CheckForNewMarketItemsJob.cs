@@ -131,13 +131,15 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 if (newMarketItems.Any())
                 {
+                    db.SaveChanges();
+
                     foreach (var marketItem in newMarketItems)
                     {
                         var fields = new Dictionary<string, string>();
                         var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
                         if (storeItem != null)
                         {
-                            var estimatedSales = "Unknown";
+                            var estimatedSales = String.Empty;
                             if(storeItem.TotalSalesMax == null)
                             {
                                 estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} or more";
@@ -150,13 +152,18 @@ namespace SCMM.Web.Server.Services.Jobs
                             {
                                 estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
                             }
-                            fields.Add("Estimated Sales", estimatedSales);
+                            if (!String.IsNullOrEmpty(estimatedSales))
+                            {
+                                fields.Add("Estimated Sales", estimatedSales);
+                            }
                             fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, currencies));
                         }
                         if (marketItem != null)
                         {
                             fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
                         }
+
+                        // TODO: Delay and send over message bus
                         await discord.BroadcastMessageAsync(
                             channelPattern: $"announcement|market|skin|{marketItem.App.Name}",
                             message: null,
@@ -173,8 +180,6 @@ namespace SCMM.Web.Server.Services.Jobs
                             color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
                         );
                     }
-
-                    db.SaveChanges();
                 }
             }
         }

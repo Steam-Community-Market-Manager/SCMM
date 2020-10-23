@@ -296,6 +296,11 @@ namespace SCMM.Web.Server.Services
                     // Inventory is probably private
                     continue;
                 }
+                if (inventory?.Assets?.Any() != true)
+                {
+                    // Inventory doesn't have any items for this app
+                    continue;
+                }
 
                 // Add assets
                 var missingAssets = inventory.Assets
