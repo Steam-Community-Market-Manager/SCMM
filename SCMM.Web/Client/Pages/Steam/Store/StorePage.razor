@@ -7,6 +7,56 @@
 @inject IJSRuntime JSRuntime
 @inject AppState State
 
+<style>
+
+    .Store-Item .CardContent-Root:last-child
+    {
+        padding-bottom: 8px;
+    }
+
+    .Store-Item .Paper-Root
+    {
+        width: 100%;
+        height: 100%
+    }
+    
+    .Store-Item .Image-Root 
+    {
+        text-align: center;
+    }
+
+    .Store-Item .Image-Root img 
+    {
+        width: 100%;
+        max-width: 144px;
+    }
+
+    .Store-Item .Button-Root
+    {
+        width: 100%;
+    }
+    
+    .Store-Item .Button-Root i
+    {
+        margin-right: 6px;
+    }
+    
+    .Store-Item .Price-Root
+    {
+        width: 100%;
+        text-align: center;
+        padding: 8px;
+    }
+    
+    .Store-Item .Price-Root
+    {
+        width: 100%;
+        text-align: center;
+        padding: 8px;
+    }
+
+</style>
+
 <DocumentTitle Title="Item Store" />
 @if (Store == null)
 {
@@ -22,130 +72,152 @@
 else
 {
     <Grid Container Spacing="@Spacing.Two">
-        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six" style="width:100%">
-            <Paper>
-                <Table Narrow="true">
-                    <TableBody>
-                        @foreach (var item in Store.Items.OrderBy(x => x.StoreIndex))
-                        {
-                            <TableRow>
-                                <TableCell Class="align-top">
-                                    <Hidden ExtraSmallDown>
-                                        <img src="@item.IconUrl" style="width:72px" />
-                                    </Hidden>
-                                </TableCell>
-                                <TableCell Class="align-top">
-                                    <Typography Variant="@TypographyVariant.H6" Style="@GetItemStyles(item)" GutterBottom>
-                                        @item.Name
+        @foreach (var item in Store.Items.OrderBy(x => x.StoreIndex))
+        {
+            <Grid Item Class="Store-Item" ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Medium="@GridSize.Four" ExtraLarge="@GridSize.Three">
+                <Card>
+                    <CardHeader DisableTypography="true">
+                        <AvatarContent>
+                            <div title="@item.AuthorName">
+                                <Avatar Src="@item.AuthorAvatarUrl" Alt="@item.AuthorName">
+                                </Avatar>
+                            </div>
+                        </AvatarContent>
+                        <TitleContent>
+                            <Typography Variant="@TypographyVariant.H6" Style="@GetItemStyles(item)">
+                                <span>@item.Name</span>
+                            </Typography>
+                        </TitleContent>
+                        <SubHeaderContent>
+                            @if (!String.IsNullOrEmpty(item.ItemType))
+                            {
+                                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary">
+                                    <span>@item.ItemType</span>
+                                </Typography>
+                            }
+                        </SubHeaderContent>
+                    </CardHeader>
+                    <CardContent>
+                        <Grid Container Spacing="@Spacing.Two">
+                            <Grid Item ExtraSmall="@GridSize.Six">
+                                <div class="Image-Root">
+                                    <img src="@item.IconUrl" />
+                                </div>
+                            </Grid>
+                            <Grid Item ExtraSmall="@GridSize.Six">
+                                @if (item.MarketRankTotal > 0)
+                                {
+                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
+                                        <i class="fas fa-fw fa-balance-scale-left"></i>
+                                        <span>@item.MarketRankPosition cheaper @item.ItemType.Pluralise(item.MarketRankPosition) in the marketplace (@item.MarketRankTotal total).</span>
                                     </Typography>
-                                    @if (item.MarketRankTotal > 0)
-                                    {
-                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary">
-                                        <span><strong>@item.MarketRankPosition/@item.MarketRankTotal</strong> other @item.ItemType.Pluralise(item.MarketRankPosition) are cheaper than this.</span>
-                                    </Typography>
-                                    }
-                                </TableCell>
-                                <TableCell Class="align-top">
-                                    <Typography Variant="@TypographyVariant.Body1" GutterBottom NoWrap>
-                                        <i class="fas fa-fw fa-tag"></i>
-                                        @item.Currency.ToPriceString(item.StorePrice)
-                                    </Typography>
-                                    @if (item.HasWorkshopFile)
-                                    {
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
-                                            <i class="fas fa-fw fa-shopping-cart"></i>
-                                            @if (item.TotalSalesMax == null)
-                                            {
+                                }
+                                @if (item.HasWorkshopFile)
+                                {
+                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
+                                        <i class="fas fa-fw fa-shopping-cart"></i>
+                                        @if (item.TotalSalesMax == null)
+                                        {
                                             <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() or more</span>
-                                            }
-                                            else if (item.TotalSalesMin == item.TotalSalesMax)
-                                            {
+                                        }
+                                        else if (item.TotalSalesMin == item.TotalSalesMax)
+                                        {
                                             <span style="padding:8px">@item.TotalSalesMin.ToQuantityString()</span>
-                                            }
-                                            else
-                                            {
+                                        }
+                                        else
+                                        {
                                             <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
-                                            }
-                                        </Typography>
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
-                                            <i class="fas fa-fw fa-user"></i>
-                                            @if (item.Subscriptions > 0)
-                                            {
-                                                <span style="padding:8px">@item.Subscriptions.Value.ToQuantityString()</span>
-                                            }
-                                        </Typography>
-                                    }
-                                </TableCell>
-                                <TableCell Class="align-top" Align="@Align.Right">
-                                    <Typography GutterBottom="true" class="Theme-Success">
-                                        <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">Buy</Button>
+                                        }
                                     </Typography>
-                                    @if (item.HasWorkshopFile)
-                                    {
-                                        <Typography>
-                                            <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">View</Button>
-                                        </Typography>
-                                    }
-                                </TableCell>
-                            </TableRow>
+                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
+                                        <i class="fas fa-fw fa-user"></i>
+                                        @if (item.Subscriptions > 0)
+                                        {
+                                            <span style="padding:8px">@item.Subscriptions.Value.ToQuantityString()</span>
+                                        }
+                                    </Typography>
+                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
+                                        <i class="fas fa-fw fa-eye"></i>
+                                        @if (item.Views > 0)
+                                        {
+                                            <span style="padding:8px">@item.Views.Value.ToQuantityString()</span>
+                                        }
+                                    </Typography>
+                                }
+                            </Grid>
+                            <Grid Item ExtraSmall="@GridSize.Six">
+                                <Typography Class="Theme-Success">
+                                    <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">
+                                        <i class="fas fa-fw fa-shopping-cart"></i>
+                                        <strong>@item.Currency.ToPriceString(item.StorePrice)</strong>
+                                    </Button>
+                                </Typography>
+                            </Grid>
+                            <Grid Item ExtraSmall="@GridSize.Six">
+                                @if (item.HasWorkshopFile)
+                                {
+                                    <Typography>
+                                        <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
+                                            <i class="fas fa-fw fa-eye"></i>
+                                            <span>View</span>
+                                        </Button>
+                                    </Typography>
+                                }
+                            </Grid>
+                        </Grid>
+                    </CardContent>
+                </Card>
+            </Grid>   
+        }
+        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+            @if (ItemRevenueChart != null || ItemRankChart != null || ItemRankHistoryChart != null)
+            {
+                <Paper>
+                    <Tabs Value="@SelectedItemChartPanel"
+                            OnChange="@OnSelectedItemChartChanged"
+                            IndicatorColor="@Color.Primary"
+                            TextColor="@Color.Primary"
+                            Variant="@TabsVariant.FullWidth">
+                        <Tab Id="store-tab" Control="store-tab-panel" Value="0" Label="Sales Revenue" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel" Value="1" Label="Sales Overview" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel" Value="2" Label="Sales History" Wrapped />
+                    </Tabs>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
+                        @if (ItemRevenueChart != null)
+                        {
+                            <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
+                                <Icon>
+                                    <i class="fas fa-fw fa-exclamation-circle"></i>
+                                </Icon>
+                                <MessageContent>
+                                    <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Store.Items.Sum(x => x.TotalSalesMin * x.StorePrice))) so far.</span>
+                                    <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than what is shown here. Steam doesn't publicly advertise exact sales figures, this is the just a rough estimate.</span>
+                                </MessageContent>
+                            </Alert>
+                            <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
                         }
-                    </TableBody>
-                </Table>
-            </Paper>
+                    </TabPanel>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
+                        @if (ItemRankChart != null)
+                        {
+                            <ChartJsBarChart @ref="ItemRankChartJs" Config="@ItemRankChart" />
+                        }
+                    </TabPanel>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
+                        @if (ItemRankHistoryChart != null)
+                        {
+                            <ChartJsLineChart @ref="ItemRankHistoryChartJs" Config="@ItemRankHistoryChart" />
+                        }
+                    </TabPanel>
+                </Paper>
+            }
         </Grid>
-        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six" style="width:100%">
-            <Grid Container>
-                <Grid ExtraSmall="@GridSize.Twelve">
-                    @if (ItemRevenueChart != null || ItemRankChart != null || ItemRankHistoryChart != null)
-                    {
-                        <Paper>
-                            <Tabs Value="@SelectedItemChartPanel"
-                                  OnChange="@OnSelectedItemChartChanged"
-                                  IndicatorColor="@Color.Primary"
-                                  TextColor="@Color.Primary"
-                                  Variant="@TabsVariant.FullWidth">
-                                <Tab Id="store-tab" Control="store-tab-panel" Value="0" Label="Sales Revenue" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel" Value="1" Label="Sales Overview" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel" Value="2" Label="Sales History" Wrapped />
-                            </Tabs>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
-                                @if (ItemRevenueChart != null)
-                                {
-                                    <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
-                                        <Icon>
-                                            <i class="fas fa-fw fa-exclamation-circle"></i>
-                                        </Icon>
-                                        <MessageContent>
-                                            <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Store.Items.Sum(x => x.TotalSalesMin * x.StorePrice))) so far.</span>
-                                            <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than what is shown here. Steam doesn't publicly advertise exact sales figures, this is the just a rough estimate.</span>
-                                        </MessageContent>
-                                    </Alert>
-                                    <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
-                                }
-                            </TabPanel>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
-                                @if (ItemRankChart != null)
-                                {
-                                    <ChartJsBarChart @ref="ItemRankChartJs" Config="@ItemRankChart" />
-                                }
-                            </TabPanel>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
-                                @if (ItemRankHistoryChart != null)
-                                {
-                                    <ChartJsLineChart @ref="ItemRankHistoryChartJs" Config="@ItemRankHistoryChart" />
-                                }
-                            </TabPanel>
-                        </Paper>
-                    }
-                </Grid>
-                @foreach (var media in Store.Media)
-                {
-                    <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
-                        <YouTubeVideo VideoId="@media" />
-                    </Grid>
-                }
+        @foreach (var media in Store.Media)
+        {
+            <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+                <YouTubeVideo VideoId="@media" />
             </Grid>
-        </Grid>
+        }
     </Grid>
 }
 
