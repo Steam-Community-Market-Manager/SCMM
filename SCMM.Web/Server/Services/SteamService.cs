@@ -450,7 +450,7 @@ namespace SCMM.Web.Server.Services
                         maxSubscriptions = (int)Math.Max(maxSubscriptions, workshopFile.SubscriptionsGraph[utcDate]);
                     }
                     workshopFile.SubscriptionsGraph[utcDate] = maxSubscriptions;
-                    workshopFile.SubscriptionsGraph = new Data.Types.PersistableGraphDataSet(
+                    workshopFile.SubscriptionsGraph = new Data.Types.PersistableDailyGraphDataSet(
                         workshopFile.SubscriptionsGraph
                     );
                 }
@@ -477,10 +477,10 @@ namespace SCMM.Web.Server.Services
 
         public SteamStoreItemItemStore UpdateStoreItemIndex(SteamStoreItemItemStore storeItem, int storeIndex)
         {
-            var utcDate = DateTime.UtcNow.Date;
+            var utcDateTime = (DateTime.UtcNow.Date + TimeSpan.FromHours(DateTime.UtcNow.TimeOfDay.Hours));
             storeItem.Index = storeIndex;
-            storeItem.IndexGraph[utcDate] = storeIndex;
-            storeItem.IndexGraph = new Data.Types.PersistableGraphDataSet(
+            storeItem.IndexGraph[utcDateTime] = storeIndex;
+            storeItem.IndexGraph = new Data.Types.PersistableHourlyGraphDataSet(
                 storeItem.IndexGraph
             );
 

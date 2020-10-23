@@ -7,10 +7,18 @@ namespace SCMM.Web.Shared
 {
     public static class SteamExtensions
     {
-        public static IEnumerable<KeyValuePair<string, double>> ToGraphDictionary(this IDictionary<DateTime, double> graph)
+        public static IEnumerable<KeyValuePair<string, double>> ToDailyGraphDictionary(this IDictionary<DateTime, double> graph)
         {
             return graph?.ToDictionary(
                 x => x.Key.ToString("dd MMM yyyy"),
+                x => x.Value
+            );
+        }
+
+        public static IEnumerable<KeyValuePair<string, double>> ToHourlyGraphDictionary(this IDictionary<DateTime, double> graph)
+        {
+            return graph?.ToDictionary(
+                x => x.Key.ToString("dd MMM yyyy htt"),
                 x => x.Value
             );
         }

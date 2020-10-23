@@ -8,7 +8,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
     {
         public SteamAssetWorkshopFile()
         {
-            SubscriptionsGraph = new PersistableGraphDataSet();
+            SubscriptionsGraph = new PersistableDailyGraphDataSet();
         }
 
         [Required]
@@ -31,7 +31,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public int Subscriptions { get; set; }
 
-        public PersistableGraphDataSet SubscriptionsGraph { get; set; }
+        public PersistableDailyGraphDataSet SubscriptionsGraph { get; set; }
 
         public int Favourited { get; set; }
 

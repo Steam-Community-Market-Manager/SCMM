@@ -12,7 +12,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
         {
             Stores = new Collection<SteamStoreItemItemStore>();
             Prices = new PersistablePriceDictionary();
-            TotalSalesGraph = new PersistableGraphDataSet();
+            TotalSalesGraph = new PersistableDailyGraphDataSet();
         }
 
         public Guid? CurrencyId { get; set; }
@@ -33,7 +33,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public int? TotalSalesMax { get; set; }
 
-        public PersistableGraphDataSet TotalSalesGraph { get; set; }
+        public PersistableDailyGraphDataSet TotalSalesGraph { get; set; }
 
         public void RecalculateTotalSales(SteamItemStore store)
         {

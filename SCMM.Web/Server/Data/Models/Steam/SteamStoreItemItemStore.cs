@@ -8,7 +8,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
     {
         public SteamStoreItemItemStore()
         {
-            IndexGraph = new PersistableGraphDataSet();
+            IndexGraph = new PersistableHourlyGraphDataSet();
         }
 
         [Required]
@@ -29,7 +29,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
         /// <summary>
         /// Used to track the historic sales positions in the store
         /// </summary>
-        public PersistableGraphDataSet IndexGraph { get; set; }
+        public PersistableHourlyGraphDataSet IndexGraph { get; set; }
 
     }
 }

@@ -5,14 +5,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace SCMM.Web.Server.Data.Types
 {
     [ComplexType]
-    public class PersistableGraphDataSet : PersistableScalarDictionary<DateTime, double>
+    public class PersistableDailyGraphDataSet : PersistableScalarDictionary<DateTime, double>
     {
-        public PersistableGraphDataSet()
+        public PersistableDailyGraphDataSet()
             : base()
         {
         }
 
-        public PersistableGraphDataSet(IDictionary<DateTime, double> dictionary, IEqualityComparer<DateTime> comparer = null)
+        public PersistableDailyGraphDataSet(IDictionary<DateTime, double> dictionary, IEqualityComparer<DateTime> comparer = null)
             : base(dictionary, comparer)
         {
         }
