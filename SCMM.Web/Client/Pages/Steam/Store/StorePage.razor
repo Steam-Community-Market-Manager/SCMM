@@ -261,7 +261,10 @@ else
                         <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Sales Revenue" Wrapped />
                         <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Sales Overview" Wrapped />
                         <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Sales History" Wrapped />
-                        <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace vs Store" Wrapped />
+                        @if (Store.End != null)
+                        {
+                            <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace vs Store" Wrapped />
+                        }
                     </Tabs>
                     <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
                         @if ((int)SelectedItemChartPanel == 0)
@@ -409,7 +412,11 @@ else
             StoreException = null;
             StateHasChanged();
             Store = await Http.GetFromJsonAsync<ItemStoreDetailedDTO>($"api/store/{storeId}");
-            OnSelectedItemChartChanged(SelectedItemChartPanel);
+            if (Store != null)
+            {
+                SelectedItemChartPanel = (Store.End == null ? 1 : 3);
+                OnSelectedItemChartChanged(SelectedItemChartPanel);
+            }
         }
         catch (Exception ex)
         {
@@ -810,7 +817,8 @@ else
                 {
                     Ticks = new LinearCartesianTicks()
                     {
-                        Display = false
+                        Display = false,
+                        BeginAtZero = true                        
                     }
                 }
             }
