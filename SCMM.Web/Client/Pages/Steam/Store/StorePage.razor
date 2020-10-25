@@ -252,19 +252,20 @@ else
                 </Grid>   
             }
             <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-                @if (ItemRevenueChart != null || ItemRankChart != null || ItemRankHistoryChart != null)
-                {
-                    <Paper>
-                        <Tabs Value="@SelectedItemChartPanel"
-                              OnChange="@OnSelectedItemChartChanged"
-                              IndicatorColor="@Color.Primary"
-                              TextColor="@Color.Primary"
-                              Variant="@TabsVariant.FullWidth">
-                            <Tab Id="store-tab" Control="store-tab-panel" Value="0" Label="Sales Revenue" Wrapped />
-                            <Tab Id="store-tab" Control="store-tab-panel" Value="1" Label="Sales Overview" Wrapped />
-                            <Tab Id="store-tab" Control="store-tab-panel" Value="2" Label="Sales History" Wrapped />
-                        </Tabs>
-                        <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
+                <Paper>
+                    <Tabs Value="@SelectedItemChartPanel"
+                          OnChange="@OnSelectedItemChartChanged"
+                          IndicatorColor="@Color.Primary"
+                          TextColor="@Color.Primary"
+                          Variant="@TabsVariant.FullWidth">
+                        <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Sales Revenue" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Sales Overview" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Sales History" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace vs Store" Wrapped />
+                    </Tabs>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
+                        @if ((int)SelectedItemChartPanel == 0)
+                        {
                             @if (ItemRevenueChart != null)
                             {
                                 <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
@@ -278,21 +279,52 @@ else
                                 </Alert>
                                 <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
                             }
-                        </TabPanel>
-                        <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
+                            else
+                            {
+                                <Error Title="Unavailable" SubTitle="No data" />
+                            }
+                        }
+                    </TabPanel>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
+                        @if ((int)SelectedItemChartPanel == 1)
+                        {
                             @if (ItemRankChart != null)
                             {
                                 <ChartJsBarChart @ref="ItemRankChartJs" Config="@ItemRankChart" />
                             }
-                        </TabPanel>
-                        <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
+                            else
+                            {
+                                <Error Title="Unavailable" SubTitle="No data" />
+                            }
+                        }
+                    </TabPanel>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
+                        @if ((int)SelectedItemChartPanel == 2)
+                        {
                             @if (ItemRankHistoryChart != null)
                             {
                                 <ChartJsLineChart @ref="ItemRankHistoryChartJs" Config="@ItemRankHistoryChart" />
                             }
-                        </TabPanel>
-                    </Paper>
-                }
+                            else
+                            {
+                                <Error Title="Unavailable" SubTitle="No data" />
+                            }
+                        }
+                    </TabPanel>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="3">
+                        @if ((int)SelectedItemChartPanel == 3)
+                        {
+                            @if (ItemStoreVerusMarketChart != null)
+                            {
+                                <ChartJsRadarChart @ref="ItemStoreVerusMarketChartJs" Config="@ItemStoreVerusMarketChart" />
+                            }
+                            else
+                            {
+                                <Error Title="Unavailable" SubTitle="No data" />
+                            }
+                        }
+                    </TabPanel>
+                </Paper>
             </Grid>
             @foreach (var media in Store.Media)
             {
@@ -322,11 +354,15 @@ else
 
     private ChartJsLineChart ItemRankHistoryChartJs { get; set; }
 
+    private ChartJsRadarChart ItemStoreVerusMarketChartJs { get; set; }
+
     private BarConfig ItemRevenueChart { get; set; }
 
     private BarConfig ItemRankChart { get; set; }
 
     private LineConfig ItemRankHistoryChart { get; set; }
+
+    private RadarConfig ItemStoreVerusMarketChart { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -398,11 +434,13 @@ else
         ItemRevenueChart = null;
         ItemRankChart = null;
         ItemRankHistoryChart = null;
+        ItemStoreVerusMarketChart = null;
         switch (SelectedItemChartPanel)
         {
             case 0: RedrawItemRevenueChart(); break;
             case 1: RedrawItemRankChart(); break;
             case 2: RedrawItemRankHistoryChart(); break;
+            case 3: RedrawItemStoreVerusMarketChart(); break;
         }
 
         StateHasChanged();
@@ -419,6 +457,11 @@ else
             .Where(x => x.HasWorkshopFile)
             .OrderBy(x => x.StoreIndex)
             .ToList();
+
+        if (!storeItems.Any())
+        {
+            return;
+        }
 
         ItemRevenueChart = new BarConfig
         {
@@ -529,6 +572,11 @@ else
             .OrderBy(x => x.StoreIndex)
             .ToList();
 
+        if (!storeItems.Any())
+        {
+            return;
+        }
+
         ItemRankChart = new BarConfig
         {
             Options = new BarOptions
@@ -635,6 +683,11 @@ else
             .OrderBy(x => x.StoreIndex)
             .ToList();
 
+        if (!storeItems.Any())
+        {
+            return;
+        }
+
         ItemRankHistoryChart = new LineConfig
         {
             Options = new LineOptions
@@ -722,6 +775,76 @@ else
             );
             ItemRankHistoryChart.Data.Datasets.Add(itemDataSet);
         }
+    }
+
+    private void RedrawItemStoreVerusMarketChart()
+    {
+        var storeItems = Store.Items
+            .Where(x => x.HasMarketListing)
+            .OrderBy(x => x.StoreIndex)
+            .ToList();
+
+        if (!storeItems.Any())
+        {
+            return;
+        }
+
+        ItemStoreVerusMarketChart = new RadarConfig
+        {
+            Options = new RadarOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scale = new Scale()
+                {
+                    Ticks = new LinearCartesianTicks()
+                    {
+                        Display = false
+                    }
+                }
+            }
+        };
+
+        ItemStoreVerusMarketChart.Data.Labels.AddRange(
+            storeItems.Select(x => x.Name).ToArray()
+        );
+
+        var itemMarketPrices = new RadarDataset
+        {
+            Label = "Market Price",
+            BackgroundColor = "#bbdefb",
+            BorderColor = "#0d47a1",
+            BorderWidth = 1,
+            Data = storeItems
+                .Select(x => (double)x.Currency.ToPrice(x.MarketPrice ?? 0))
+                .ToList()
+        };
+
+        var itemStorePrices = new RadarDataset
+        {
+            Label = "Store Price",
+            BackgroundColor = "#c8e6c9",
+            BorderColor = "#1b5e20",
+            BorderWidth = 1,
+            Data = storeItems
+            .Select(x => (double)x.Currency.ToPrice(x.StorePrice))
+            .ToList()
+        };
+
+        ItemStoreVerusMarketChart.Data.Datasets.AddRange(new[] {
+            itemMarketPrices, itemStorePrices
+        });
     }
 
     IEnumerable<DateTime> GetSkinWeekDates(DateTime startOfWeek)
