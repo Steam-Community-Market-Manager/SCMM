@@ -24,6 +24,8 @@ namespace SCMM.Web.Server.Data
         public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
         public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
 
+        public DbSet<DiscordGuild> DiscordGuilds { get; set; }
+
         public SteamDbContext(DbContextOptions<SteamDbContext> options)
             : base(options)
         {
@@ -137,6 +139,11 @@ namespace SCMM.Web.Server.Data
 
             builder.Entity<SteamAssetWorkshopFile>()
                 .OwnsOne(x => x.SubscriptionsGraph);
+
+            builder.Entity<DiscordGuild>()
+                .HasMany(x => x.Configurations);
+            builder.Entity<DiscordConfiguration>()
+                .OwnsOne(x => x.List);
         }
     }
 }

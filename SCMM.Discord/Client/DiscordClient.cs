@@ -181,5 +181,17 @@ namespace SCMM.Discord.Client
                 }
             }
         }
+
+        public IDictionary<ulong, string> Guilds
+        {
+            get
+            {
+                EnsureClientIsReady();
+                return _client.Guilds.ToDictionary(
+                    x => x.Id,
+                    x => x.Name
+                );
+            }
+        }
     }
 }
