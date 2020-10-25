@@ -112,6 +112,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.SteamId, o => o.MapFrom(p => p.Item.SteamId))
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.Item.App.SteamId))
                 .ForMember(x => x.SteamWorkshopId, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? p.Item.Description.WorkshopFile.SteamId : null))
+                .ForMember(x => x.SteamMarketItemId, o => o.MapFrom(p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.SteamId : null))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Item.Description.Name))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Item.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Item.Description.ForegroundColour))
@@ -120,6 +121,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? p.Item.Description.WorkshopFile.Creator.Name : p.Item.App.Name))
                 .ForMember(x => x.AuthorAvatarUrl, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? p.Item.Description.WorkshopFile.Creator.AvatarUrl : p.Item.App.IconUrl))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
+                .ForMember(x => x.StoreIsStillAvailable, o => o.MapFrom(p => (p.Store != null && p.Store.End == null)))
                 .ForMember(x => x.StorePrice, o => o.MapFrom(
                     (src, dst, _, context) =>
                     {

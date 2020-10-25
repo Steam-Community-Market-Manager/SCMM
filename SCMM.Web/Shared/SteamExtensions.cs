@@ -61,6 +61,12 @@ namespace SCMM.Web.Shared
                     itemTags.FirstOrDefault(x => x.Key.StartsWith(SteamConstants.SteamAssetTagWorkshop)).Value
                 );
             }
+            else if (itemTags.ContainsKey(SteamConstants.SteamAssetTagCategory))
+            {
+                itemType = Uri.EscapeDataString(
+                    itemTags.FirstOrDefault(x => x.Key.StartsWith(SteamConstants.SteamAssetTagCategory)).Value
+                );
+            }
             else if (!String.IsNullOrEmpty(itemName))
             {
                 /*
