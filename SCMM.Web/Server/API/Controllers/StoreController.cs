@@ -37,24 +37,56 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("nextUpdateExpectedOn")]
-        public DateTimeOffset? GetStoreNextUpdateExpectedOn()
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IEnumerable<ItemStoreListDTO>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStores()
         {
-            return _steam.GetStoreNextUpdateExpectedOn();
+            var appId = this.App();
+            var itemStores = _db.SteamItemStores
+                .Where(x => x.App.SteamId == appId)
+                .OrderBy(x => x.Start)
+                .ToList();
+
+            var itemStoresList = itemStores.Select(x => _mapper.Map<SteamItemStore, ItemStoreListDTO>(x, this));
+            if (!itemStoresList.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(itemStoresList);
         }
 
         [AllowAnonymous]
-        [HttpGet]
+        [HttpGet("current")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ItemStoreDTO), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetStore()
+        [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCurrentStore()
         {
-            var latestStore = _db.SteamItemStores
-                .GroupBy(x => 1)
-                .Select(x => x.Max(y => y.Start))
+            var appId = this.App();
+            var latestItemStoreId = _db.SteamItemStores
+                .Where(x => x.App.SteamId == appId)
+                .Where(x => x.End == null)
+                .OrderByDescending(x => x.Start)
+                .Select(x => x.Id)
                 .FirstOrDefault();
+
+            if (latestItemStoreId == Guid.Empty)
+            {
+                return NotFound();
+            }
+
+            return await GetStore(latestItemStoreId);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{storeId}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStore([FromRoute] Guid storeId)
+        {
             var itemStore = _db.SteamItemStores
-                .Where(x => x.Start == latestStore)
+                .Where(x => x.Id == storeId)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.App)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description)
@@ -64,7 +96,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem.Currency)
                 .FirstOrDefault();
 
-            var itemStoreDetail = _mapper.Map<SteamItemStore, ItemStoreDTO>(itemStore, this);
+            var itemStoreDetail = _mapper.Map<SteamItemStore, ItemStoreDetailedDTO>(itemStore, this);
             if (itemStoreDetail == null)
             {
                 return NotFound();
@@ -111,17 +143,13 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("mosaic")]
+        [HttpGet("{storeId}/mosaic")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetStoreMosaic()
+        public async Task<IActionResult> GetStoreMosaic([FromRoute] Guid storeId)
         {
-            var latestStore = _db.SteamItemStores
-                .GroupBy(x => 1)
-                .Select(x => x.Max(y => y.Start))
-                .FirstOrDefault();
             var storeItemDescriptions = _db.SteamItemStores
-                .Where(x => x.Start == latestStore)
+                .Where(x => x.Id == storeId)
                 .SelectMany(x => x.Items.Select(x => x.Item.Description))
                 .OrderBy(x => x.Name)
                 .Select(x => x.IconUrl)
@@ -146,6 +174,13 @@ namespace SCMM.Web.Server.API.Controllers
             );
 
             return File(mosaic, "image/png");
+        }
+
+        [AllowAnonymous]
+        [HttpGet("nextStoreExpectedOn")]
+        public DateTimeOffset? GetNextStoreExpectedOn()
+        {
+            return _steam.GetStoreNextUpdateExpectedOn();
         }
     }
 }

@@ -121,7 +121,7 @@ else
         try
         {
             StoreUpdatesOn = await Http.GetFromJsonAsync<DateTimeOffset>(
-                $"api/store/nextUpdateExpectedOn"
+                $"api/store/nextStoreExpectedOn"
             );
         }
         catch (Exception ex)

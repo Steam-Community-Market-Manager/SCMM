@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 {
-    public class ItemStoreDTO
+    public class ItemStoreDetailedDTO
     {
+        public Guid Id { get; set; }
+
         public string Name { get; set; }
 
         public DateTimeOffset Start { get; set; }

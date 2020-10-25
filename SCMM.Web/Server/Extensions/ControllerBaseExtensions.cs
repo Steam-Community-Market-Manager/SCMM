@@ -8,6 +8,12 @@ namespace SCMM.Web.Server.Extensions
 {
     public static class ControllerBaseExtensions
     {
+        public static string App(this ControllerBase controller)
+        {
+            // TODO: Make this configurable by the client
+            return "252490"; // Rust"
+        }
+
         public static LanguageDetailedDTO Language(this ControllerBase controller)
         {
             var languageName = AppState.DefaultLanguage;

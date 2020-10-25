@@ -105,7 +105,8 @@ namespace SCMM.Web.Server
             CreateMap<SteamMarketItemSale, MarketItemSaleDTO>()
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Item.Currency));
 
-            CreateMap<SteamItemStore, ItemStoreDTO>();
+            CreateMap<SteamItemStore, ItemStoreListDTO>();
+            CreateMap<SteamItemStore, ItemStoreDetailedDTO>();
 
             CreateMap<SteamStoreItemItemStore, StoreItemDetailDTO>()
                 .ForMember(x => x.SteamId, o => o.MapFrom(p => p.Item.SteamId))
