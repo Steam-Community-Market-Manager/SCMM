@@ -29,7 +29,9 @@ namespace SCMM.Discord.Client
             _client = new DiscordSocketClient();
             _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client);
             _client.Log += OnClientLogAsync;
-            _client.Ready += OnClientReadAsync;
+            _client.Ready += OnClientReadyAsync;
+            _client.JoinedGuild += (x) => Task.Run(() => GuildJoined?.Invoke(x.Id, x.Name));
+            _client.LeftGuild += (x) => Task.Run(() => GuildLeft?.Invoke(x.Id, x.Name));
             _clientIsReady = new ManualResetEvent(false);
         }
 
@@ -54,9 +56,10 @@ namespace SCMM.Discord.Client
             return Task.CompletedTask;
         }
 
-        private Task OnClientReadAsync()
+        private Task OnClientReadyAsync()
         {
             _clientIsReady.Set();
+            Ready?.Invoke(Guilds);
             return Task.CompletedTask;
         }
 
@@ -193,5 +196,9 @@ namespace SCMM.Discord.Client
                 );
             }
         }
+
+        public event Action<IDictionary<ulong, string>> Ready;
+        public event Action<ulong, string> GuildJoined;
+        public event Action<ulong, string> GuildLeft;
     }
 }
