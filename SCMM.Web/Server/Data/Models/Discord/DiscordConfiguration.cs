@@ -1,7 +1,7 @@
 ﻿using SCMM.Web.Server.Data.Types;
 using System.ComponentModel.DataAnnotations;
 
-namespace SCMM.Web.Server.Data.Models.Steam
+namespace SCMM.Web.Server.Data.Models.Discord
 {
     public class DiscordConfiguration : Entity
     {

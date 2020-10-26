@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Collections.Generic;

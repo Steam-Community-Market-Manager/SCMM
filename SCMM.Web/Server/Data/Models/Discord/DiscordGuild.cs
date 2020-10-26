@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace SCMM.Web.Server.Data.Models.Steam
+namespace SCMM.Web.Server.Data.Models.Discord
 {
     public class DiscordGuild : Entity
     {
