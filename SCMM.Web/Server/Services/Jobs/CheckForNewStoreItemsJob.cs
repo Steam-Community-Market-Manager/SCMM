@@ -6,6 +6,7 @@ using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -139,26 +140,39 @@ namespace SCMM.Web.Server.Services.Jobs
 
                         db.SaveChanges();
 
-                        // TODO: Delay and send over message bus
-                        await discord.BroadcastMessageAsync(
-                            channelPattern: $"announcement|store|skin|{app.Name}",
-                            message: null,
-                            title: $"{app.Name} Store - {storeTitle}",
-                            description: $"{newStoreItems.Count} new item(s) have been added to the {app.Name} store.",
-                            fields: newStoreItems.OrderBy(x => x.Description.Name).ToDictionary(
-                                x => x.Description?.Name,
-                                x => GenerateStoreItemPriceList(x, currencies)
-                            ),
-                            url: new SteamItemStorePageRequest()
-                            {
-                                AppId = app.SteamId
-                            },
-                            thumbnailUrl: app.IconUrl,
-                            imageUrl: $"{_configuration.GetBaseUrl()}/api/store/mosaic?timestamp={DateTime.UtcNow.Ticks}",
-                            color: ColorTranslator.FromHtml(app.PrimaryColor)
-                        );
+                        await BroadcastNewStoreItemsNotification(discord, db, app, storeTitle, newStoreItems, currencies);
                     }
                 }
+            }
+        }
+
+        private async Task BroadcastNewStoreItemsNotification(DiscordClient discord, SteamDbContext db, SteamApp app, string storeTitle, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
+        {
+            // NOTE: Delay for a bit to allow the database to flush before we generate the notification.
+            //       This helps ensure that the mosaic image will generate correctly the first time.
+            Thread.Sleep(10000);
+
+            var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
+            foreach (var guild in guilds)
+            {
+                await discord.BroadcastMessageAsync(
+                    guildPattern: guild.DiscordId,
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel) ?? $"announcement|store|skin|{app.Name}",
+                    message: null,
+                    title: $"{app.Name} Store - {storeTitle}",
+                    description: $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
+                    fields: newStoreItems.OrderBy(x => x.Description.Name).ToDictionary(
+                        x => x.Description?.Name,
+                        x => GenerateStoreItemPriceList(x, currencies)
+                    ),
+                    url: new SteamItemStorePageRequest()
+                    {
+                        AppId = app.SteamId
+                    },
+                    thumbnailUrl: app.IconUrl,
+                    imageUrl: $"{_configuration.GetBaseUrl()}/api/store/mosaic?timestamp={DateTime.UtcNow.Ticks}",
+                    color: ColorTranslator.FromHtml(app.PrimaryColor)
+                );
             }
         }
 

@@ -1,11 +1,16 @@
 ﻿using Discord;
 using Discord.Commands;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SCMM.Discord.Client;
+using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Discord.Modules
@@ -14,18 +19,20 @@ namespace SCMM.Web.Server.Discord.Modules
     public class InventoryModule : ModuleBase<SocketCommandContext>
     {
         private readonly IConfiguration _configuration;
+        private readonly SteamDbContext _db;
         private readonly SteamService _steam;
         private readonly SteamCurrencyService _currencies;
 
-        public InventoryModule(IConfiguration configuration, SteamService steam, SteamCurrencyService currencies)
+        public InventoryModule(IConfiguration configuration, SteamDbContext db, SteamService steam, SteamCurrencyService currencies)
         {
             _configuration = configuration;
+            _db = db;
             _steam = steam;
             _currencies = currencies;
         }
 
         /// <summary>
-        ///  !inventory [steamId] [currencyName]
+        /// !inventory [steamId] [currencyName]
         /// </summary>
         /// <returns></returns>
         [Command()]
@@ -36,6 +43,15 @@ namespace SCMM.Web.Server.Discord.Modules
             [Summary("The currency name prices should be displayed as")] string currencyName = null
         )
         {
+            var guild = _db.DiscordGuilds
+                .Include(x => x.Configurations)
+                .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
+            if (guild == null)
+            {
+                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild");
+                return;
+            }
+
             var profile = await _steam.AddOrUpdateSteamProfile(steamId, fetchLatest: true);
             if (profile == null)
             {
@@ -43,7 +59,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var currency = _currencies.GetByNameOrDefault(currencyName);
+            var currency = _currencies.GetByNameOrDefault(currencyName ?? guild.Get(Data.Models.Discord.DiscordConfiguration.CurrencyDefault));
             if (currency == null)
             {
                 await ReplyAsync($"Beep boop! I don't support that currency.");
@@ -57,53 +73,60 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var color = Color.Blue;
-            var fields = new List<EmbedFieldBuilder>();
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("Market Value")
-                .WithValue($"{currency.ToPriceString(inventoryTotal.TotalMarketValue)} {currency.Name}")
-            );
-            if (inventoryTotal.TotalInvested > 0)
+            await Task.Run(async () =>
             {
-                var profitLoss = String.Empty;
-                var profitLossPrefix = String.Empty;
-                if (inventoryTotal.TotalResellProfit >= 0)
-                {
-                    profitLoss = "Profit";
-                    profitLossPrefix = "🡱";
-                    color = Color.Green;
-                }
-                else
-                {
-                    profitLoss = "Loss";
-                    profitLossPrefix = "🡳";
-                    color = Color.Red;
-                }
-                fields.Add(new EmbedFieldBuilder()
-                    .WithName("Invested")
-                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalInvested)} {currency.Name}")
-                );
-                fields.Add(new EmbedFieldBuilder()
-                    .WithName(profitLoss)
-                    .WithValue($"{profitLossPrefix} {currency.ToPriceString(inventoryTotal.TotalResellProfit)} {currency.Name}")
-                );
-            }
+                // NOTE: Delay for a bit to allow the database to flush before we generate the notification.
+                //       This helps ensure that the mosaic image will generate correctly the first time.
+                Thread.Sleep(1000);
 
-            var embed = new EmbedBuilder()
-                .WithTitle(profile.Name)
-                .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
-                .WithFields(fields)
-                .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
-                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=3&columns=5&timestamp={DateTime.UtcNow.Ticks}")
-                .WithThumbnailUrl(profile.AvatarUrl)
-                .WithColor(color)
-                .WithFooter(x => x.Text = _configuration.GetBaseUrl())
-                .WithCurrentTimestamp()
-                .Build();
+                var color = Color.Blue;
+                var fields = new List<EmbedFieldBuilder>();
+                fields.Add(new EmbedFieldBuilder()
+                    .WithName("Market Value")
+                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalMarketValue)} {currency.Name}")
+                );
+                if (inventoryTotal.TotalInvested > 0)
+                {
+                    var profitLoss = String.Empty;
+                    var profitLossPrefix = String.Empty;
+                    if (inventoryTotal.TotalResellProfit >= 0)
+                    {
+                        profitLoss = "Profit";
+                        profitLossPrefix = "🡱";
+                        color = Color.Green;
+                    }
+                    else
+                    {
+                        profitLoss = "Loss";
+                        profitLossPrefix = "🡳";
+                        color = Color.Red;
+                    }
+                    fields.Add(new EmbedFieldBuilder()
+                        .WithName("Invested")
+                        .WithValue($"{currency.ToPriceString(inventoryTotal.TotalInvested)} {currency.Name}")
+                    );
+                    fields.Add(new EmbedFieldBuilder()
+                        .WithName(profitLoss)
+                        .WithValue($"{profitLossPrefix} {currency.ToPriceString(inventoryTotal.TotalResellProfit)} {currency.Name}")
+                    );
+                }
 
-            await ReplyAsync(
-                embed: embed
-            );
+                var embed = new EmbedBuilder()
+                    .WithTitle(profile.Name)
+                    .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
+                    .WithFields(fields)
+                    .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
+                    .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=3&columns=5&timestamp={DateTime.UtcNow.Ticks}")
+                    .WithThumbnailUrl(profile.AvatarUrl)
+                    .WithColor(color)
+                    .WithFooter(x => x.Text = _configuration.GetBaseUrl())
+                    .WithCurrentTimestamp()
+                    .Build();
+
+                await ReplyAsync(
+                    embed: embed
+                );
+            });
         }
     }
 }

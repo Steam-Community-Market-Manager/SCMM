@@ -64,13 +64,13 @@
         </member>
         <member name="M:SCMM.Web.Server.Discord.Modules.InventoryModule.SayProfileInventoryValueAsync(System.String,System.String)">
             <summary>
-             !inventory [steamId] [currencyName]
+            !inventory [steamId] [currencyName]
             </summary>
             <returns></returns>
         </member>
         <member name="M:SCMM.Web.Server.Discord.Modules.StoreModule.SayStoreNextUpdateExpectedOnAsync">
             <summary>
-             !store remaining
+            !store remaining
             </summary>
             <returns></returns>
         </member>

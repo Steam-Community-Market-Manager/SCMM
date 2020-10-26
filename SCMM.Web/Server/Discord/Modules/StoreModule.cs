@@ -17,7 +17,7 @@ namespace SCMM.Web.Server.Discord.Modules
         }
 
         /// <summary>
-        ///  !store remaining
+        /// !store remaining
         /// </summary>
         /// <returns></returns>
         [Command("remaining")]

@@ -135,52 +135,61 @@ namespace SCMM.Web.Server.Services.Jobs
 
                     foreach (var marketItem in newMarketItems)
                     {
-                        var fields = new Dictionary<string, string>();
                         var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
-                        if (storeItem != null)
-                        {
-                            var estimatedSales = String.Empty;
-                            if(storeItem.TotalSalesMax == null)
-                            {
-                                estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} or more";
-                            }
-                            else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax)
-                            {
-                                estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()}";
-                            }
-                            else
-                            {
-                                estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
-                            }
-                            if (!String.IsNullOrEmpty(estimatedSales))
-                            {
-                                fields.Add("Estimated Sales", estimatedSales);
-                            }
-                            fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, currencies));
-                        }
-                        if (marketItem != null)
-                        {
-                            fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
-                        }
-
-                        // TODO: Delay and send over message bus
-                        await discord.BroadcastMessageAsync(
-                            channelPattern: $"announcement|market|skin|{marketItem.App.Name}",
-                            message: null,
-                            title: $"{marketItem.Description.Name} is now available in the marketplace",
-                            description: $"This item just appeared in the marketplace for the first time, or has reappeared after previously not having any listings.",
-                            fields: fields,
-                            url: new SteamMarketListingPageRequest()
-                            {
-                                AppId = marketItem.App.SteamId,
-                                MarketHashName = marketItem.Description.Name
-                            },
-                            thumbnailUrl: marketItem.App.IconUrl,
-                            imageUrl: marketItem.Description.IconUrl,
-                            color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
-                        );
+                        await BroadcastNewMarketItemNotification(discord, db, marketItem, storeItem, currencies);
                     }
                 }
+            }
+        }
+
+        private async Task BroadcastNewMarketItemNotification(DiscordClient discord, SteamDbContext db, SteamMarketItem marketItem, SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
+        {
+            var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
+            foreach (var guild in guilds)
+            {
+                var fields = new Dictionary<string, string>();
+                if (storeItem != null)
+                {
+                    var estimatedSales = String.Empty;
+                    if (storeItem.TotalSalesMax == null)
+                    {
+                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} or more";
+                    }
+                    else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax)
+                    {
+                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()}";
+                    }
+                    else
+                    {
+                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
+                    }
+                    if (!String.IsNullOrEmpty(estimatedSales))
+                    {
+                        fields.Add("Estimated Sales", estimatedSales);
+                    }
+                    fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, currencies));
+                }
+                if (marketItem != null)
+                {
+                    fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
+                }
+
+                await discord.BroadcastMessageAsync(
+                    guildPattern: guild.DiscordId,
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel) ?? $"announcement|market|skin|{marketItem.App.Name}",
+                    message: null,
+                    title: $"{marketItem.Description.Name} is now available in the marketplace",
+                    description: $"This item just appeared in the marketplace for the first time, or has reappeared after previously not having any listings.",
+                    fields: fields,
+                    url: new SteamMarketListingPageRequest()
+                    {
+                        AppId = marketItem.App.SteamId,
+                        MarketHashName = marketItem.Description.Name
+                    },
+                    thumbnailUrl: marketItem.App.IconUrl,
+                    imageUrl: marketItem.Description.IconUrl,
+                    color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
+                );
             }
         }
 
