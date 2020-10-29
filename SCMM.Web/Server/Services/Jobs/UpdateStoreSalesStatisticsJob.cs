@@ -141,6 +141,11 @@ namespace SCMM.Web.Server.Services.Jobs
                 .Select(x => UInt64.Parse(x.WorkshopFile.SteamId))
                 .ToList();
 
+            if (!workshopFileIds.Any())
+            {
+                return;
+            }
+
             _logger.LogInformation($"Updating item store workshop statistics (ids: {workshopFileIds.Count})");
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
             var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();

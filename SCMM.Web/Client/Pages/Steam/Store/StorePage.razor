@@ -205,7 +205,7 @@ else
                                             }
                                         </Typography>
                                     }
-                                    @if (!item.StoreIsStillAvailable)
+                                    @if (!item.IsStillAvailableInStore)
                                     {
                                         <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
                                             <span>This item is no longer available, grab it from the marketplace instead.</span>
@@ -220,7 +220,7 @@ else
                                 </Grid>
                                 <Grid Item Class="Action-Root" ExtraSmall="@GridSize.Six">
                                     <Typography Class="Theme-Success">
-                                        <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary" Disabled="@(!item.StoreIsStillAvailable)">
+                                        <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary" Disabled="@(!item.IsStillAvailableInStore)">
                                             <i class="fas fa-fw fa-shopping-cart"></i>
                                             <strong>@item.Currency.ToPriceString(item.StorePrice)</strong>
                                         </Button>
@@ -258,72 +258,71 @@ else
                           IndicatorColor="@Color.Primary"
                           TextColor="@Color.Primary"
                           Variant="@TabsVariant.FullWidth">
-                        <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Sales Revenue" Wrapped />
-                        <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Sales Overview" Wrapped />
-                        <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Sales History" Wrapped />
-                        @if (Store.End != null)
+                        <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Sales" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Subscribers" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Subscriber Timeline" Wrapped />
+                        @if (Store.Items.Any(x => x.HasMarketListing))
                         {
-                            <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace vs Store" Wrapped />
+                            <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace Performance" Wrapped />
                         }
                     </Tabs>
                     <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
                         @if ((int)SelectedItemChartPanel == 0)
                         {
-                            @if (ItemRevenueChart != null)
+                            @if (ItemSalesChart != null)
                             {
                                 <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
                                     <Icon>
                                         <i class="fas fa-fw fa-exclamation-circle"></i>
                                     </Icon>
                                     <MessageContent>
-                                        <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Store.Items.Sum(x => x.TotalSalesMin * x.StorePrice))) so far.</span>
-                                        <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than what is shown here. Steam doesn't publicly advertise exact sales figures, this is the just a rough estimate.</span>
+                                        <span><strong>TL;DR;</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
                                     </MessageContent>
                                 </Alert>
-                                <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
+                                <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
                             }
                             else
                             {
-                                <Error Title="Unavailable" SubTitle="No data" />
+                                <Error Title="Unavailable" SubTitle="No data yet" />
                             }
                         }
                     </TabPanel>
                     <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
                         @if ((int)SelectedItemChartPanel == 1)
                         {
-                            @if (ItemRankChart != null)
+                            @if (ItemSubscribersChart != null)
                             {
-                                <ChartJsBarChart @ref="ItemRankChartJs" Config="@ItemRankChart" />
+                                <ChartJsBarChart @ref="ItemSubscribersChartJs" Config="@ItemSubscribersChart" />
                             }
                             else
                             {
-                                <Error Title="Unavailable" SubTitle="No data" />
+                                <Error Title="Unavailable" SubTitle="No data yet" />
                             }
                         }
                     </TabPanel>
                     <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
                         @if ((int)SelectedItemChartPanel == 2)
                         {
-                            @if (ItemRankHistoryChart != null)
+                            @if (ItemSubscribersHistoryChart != null)
                             {
-                                <ChartJsLineChart @ref="ItemRankHistoryChartJs" Config="@ItemRankHistoryChart" />
+                                <ChartJsLineChart @ref="ItemSubscribersHistoryChartJs" Config="@ItemSubscribersHistoryChart" />
                             }
                             else
                             {
-                                <Error Title="Unavailable" SubTitle="No data" />
+                                <Error Title="Unavailable" SubTitle="No data yet" />
                             }
                         }
                     </TabPanel>
                     <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="3">
                         @if ((int)SelectedItemChartPanel == 3)
                         {
-                            @if (ItemStoreVerusMarketChart != null)
+                            @if (ItemMarketplacePerformanceChart != null)
                             {
-                                <ChartJsRadarChart @ref="ItemStoreVerusMarketChartJs" Config="@ItemStoreVerusMarketChart" />
+                                <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
                             }
                             else
                             {
-                                <Error Title="Unavailable" SubTitle="No data" />
+                                <Error Title="Unavailable" SubTitle="No data yet" />
                             }
                         }
                     </TabPanel>
@@ -351,21 +350,21 @@ else
 
     private object SelectedItemChartPanel { get; set; } = 1;
 
-    private ChartJsBarChart ItemRevenueChartJs { get; set; }
+    private ChartJsBarChart ItemSalesChartJs { get; set; }
 
-    private ChartJsBarChart ItemRankChartJs { get; set; }
+    private ChartJsBarChart ItemSubscribersChartJs { get; set; }
 
-    private ChartJsLineChart ItemRankHistoryChartJs { get; set; }
+    private ChartJsLineChart ItemSubscribersHistoryChartJs { get; set; }
 
-    private ChartJsRadarChart ItemStoreVerusMarketChartJs { get; set; }
+    private ChartJsRadarChart ItemMarketplacePerformanceChartJs { get; set; }
 
-    private BarConfig ItemRevenueChart { get; set; }
+    private BarConfig ItemSalesChart { get; set; }
 
-    private BarConfig ItemRankChart { get; set; }
+    private BarConfig ItemSubscribersChart { get; set; }
 
-    private LineConfig ItemRankHistoryChart { get; set; }
+    private LineConfig ItemSubscribersHistoryChart { get; set; }
 
-    private RadarConfig ItemStoreVerusMarketChart { get; set; }
+    private RadarConfig ItemMarketplacePerformanceChart { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -374,7 +373,7 @@ else
 
     private void BuyItem(StoreItemDetailDTO item)
     {
-        string url = (item.StoreIsStillAvailable)
+        string url = (item.IsStillAvailableInStore)
             ? $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/"
             : $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
@@ -414,7 +413,7 @@ else
             Store = await Http.GetFromJsonAsync<ItemStoreDetailedDTO>($"api/store/{storeId}");
             if (Store != null)
             {
-                SelectedItemChartPanel = (Store.End == null ? 1 : 3);
+                SelectedItemChartPanel = (Store.End == null ? 0 : 3);
                 OnSelectedItemChartChanged(SelectedItemChartPanel);
             }
         }
@@ -438,16 +437,16 @@ else
     private void OnSelectedItemChartChanged(object value)
     {
         SelectedItemChartPanel = value;
-        ItemRevenueChart = null;
-        ItemRankChart = null;
-        ItemRankHistoryChart = null;
-        ItemStoreVerusMarketChart = null;
+        ItemSalesChart = null;
+        ItemSubscribersChart = null;
+        ItemSubscribersHistoryChart = null;
+        ItemMarketplacePerformanceChart = null;
         switch (SelectedItemChartPanel)
         {
-            case 0: RedrawItemRevenueChart(); break;
-            case 1: RedrawItemRankChart(); break;
-            case 2: RedrawItemRankHistoryChart(); break;
-            case 3: RedrawItemStoreVerusMarketChart(); break;
+            case 0: RedrawItemSalesChart(); break;
+            case 1: RedrawItemSubscribersChart(); break;
+            case 2: RedrawItemSubscribersTimelineChart(); break;
+            case 3: RedrawItemMarketplacePerformanceChart(); break;
         }
 
         StateHasChanged();
@@ -458,7 +457,7 @@ else
         return $"color: {item.ForegroundColour}";
     }
 
-    private void RedrawItemRevenueChart()
+    private void RedrawItemSalesChart()
     {
         var storeItems = Store.Items
             .Where(x => x.HasWorkshopFile)
@@ -470,7 +469,7 @@ else
             return;
         }
 
-        ItemRevenueChart = new BarConfig
+        ItemSalesChart = new BarConfig
         {
             Options = new BarOptions
             {
@@ -538,7 +537,7 @@ else
             }
         };
 
-        ItemRevenueChart.Data.Labels.AddRange(
+        ItemSalesChart.Data.Labels.AddRange(
             storeItems.Select(x => x.Name).ToArray()
         );
 
@@ -567,12 +566,12 @@ else
             storeItems.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
         );
 
-        ItemRevenueChart.Data.Datasets.AddRange(new[] {
+        ItemSalesChart.Data.Datasets.AddRange(new[] {
             authorRevenue, totalRevenue
         });
     }
 
-    private void RedrawItemRankChart()
+    private void RedrawItemSubscribersChart()
     {
         var storeItems = Store.Items
             .Where(x => x.HasWorkshopFile)
@@ -584,13 +583,13 @@ else
             return;
         }
 
-        ItemRankChart = new BarConfig
+        ItemSubscribersChart = new BarConfig
         {
             Options = new BarOptions
             {
                 Legend = new Legend
                 {
-                    Display = true,
+                    Display = false,
                     Labels = new LegendLabelConfiguration()
                     {
                         FontColor = "#ffffff"
@@ -651,7 +650,7 @@ else
             }
         };
 
-        ItemRankChart.Data.Labels.AddRange(
+        ItemSubscribersChart.Data.Labels.AddRange(
             storeItems.Select(x => x.Name).ToArray()
         );
 
@@ -666,23 +665,12 @@ else
             storeItems.Select(x => (DoubleWrapper)x.Subscriptions)
         );
 
-        var itemTotalSalesMin = new BarDataset<DoubleWrapper>
-        {
-            Label = "Minimum Sales",
-            BackgroundColor = "#6BC16F",
-            BorderColor = "#335E33",
-            BorderWidth = 1
-        };
-        itemTotalSalesMin.AddRange(
-            storeItems.Select(x => (DoubleWrapper)x.TotalSalesMin)
-        );
-
-        ItemRankChart.Data.Datasets.AddRange(new[] {
-            itemSubscriptions, itemTotalSalesMin
+        ItemSubscribersChart.Data.Datasets.AddRange(new[] {
+            itemSubscriptions
         });
     }
 
-    private void RedrawItemRankHistoryChart()
+    private void RedrawItemSubscribersTimelineChart()
     {
         var startOfWeek = Store.Start.DateTime;
         var storeItems = Store.Items
@@ -695,7 +683,7 @@ else
             return;
         }
 
-        ItemRankHistoryChart = new LineConfig
+        ItemSubscribersHistoryChart = new LineConfig
         {
             Options = new LineOptions
             {
@@ -762,7 +750,7 @@ else
             }
         };
 
-        ItemRankHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek)
+        ItemSubscribersHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek)
             .Select(x => x.ToString("dd MMMM yyyy"))
             .ToList();
 
@@ -780,11 +768,11 @@ else
             itemDataSet.AddRange(
                 GetItemSubscriptionDataset(item, startOfWeek)
             );
-            ItemRankHistoryChart.Data.Datasets.Add(itemDataSet);
+            ItemSubscribersHistoryChart.Data.Datasets.Add(itemDataSet);
         }
     }
 
-    private void RedrawItemStoreVerusMarketChart()
+    private void RedrawItemMarketplacePerformanceChart()
     {
         var storeItems = Store.Items
             .Where(x => x.HasMarketListing)
@@ -796,7 +784,7 @@ else
             return;
         }
 
-        ItemStoreVerusMarketChart = new RadarConfig
+        ItemMarketplacePerformanceChart = new RadarConfig
         {
             Options = new RadarOptions
             {
@@ -818,13 +806,13 @@ else
                     Ticks = new LinearCartesianTicks()
                     {
                         Display = false,
-                        BeginAtZero = true                        
+                        BeginAtZero = true
                     }
                 }
             }
         };
 
-        ItemStoreVerusMarketChart.Data.Labels.AddRange(
+        ItemMarketplacePerformanceChart.Data.Labels.AddRange(
             storeItems.Select(x => x.Name).ToArray()
         );
 
@@ -850,7 +838,7 @@ else
             .ToList()
         };
 
-        ItemStoreVerusMarketChart.Data.Datasets.AddRange(new[] {
+        ItemMarketplacePerformanceChart.Data.Datasets.AddRange(new[] {
             itemMarketPrices, itemStorePrices
         });
     }

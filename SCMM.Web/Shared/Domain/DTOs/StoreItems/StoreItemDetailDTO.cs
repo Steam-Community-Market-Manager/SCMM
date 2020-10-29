@@ -34,7 +34,7 @@ namespace SCMM.Web.Shared.Domain.DTOs.StoreItems
 
         public CurrencyDTO Currency { get; set; }
 
-        public bool StoreIsStillAvailable { get; set; }
+        public bool IsStillAvailableInStore { get; set; }
 
         public long StorePrice { get; set; }
 
