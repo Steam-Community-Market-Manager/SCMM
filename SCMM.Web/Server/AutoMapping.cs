@@ -39,7 +39,15 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
-                .ForMember(x => x.BuyPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyPrice, p => p.Currency));
+                .ForMember(x => x.BuyPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyPrice, p => p.Currency))
+                .ForMember(x => x.Supply, o => o.MapFrom(p => p.Description.MarketItem != null ? (int?) p.Description.MarketItem.Supply : null))
+                .ForMember(x => x.Demand, o => o.MapFrom(p => p.Description.MarketItem != null ? (int?) p.Description.MarketItem.Demand : null))
+                .ForMember(x => x.BuyAskingPrice, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?) p.Description.MarketItem.BuyAskingPrice : null))
+                .ForMember(x => x.BuyNowPrice, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.BuyNowPrice : null))
+                .ForMember(x => x.ResellPrice, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.ResellPrice : null))
+                .ForMember(x => x.ResellTax, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.ResellTax : null))
+                .ForMember(x => x.ResellProfit, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.ResellProfit : null))
+                .ForMember(x => x.Last1hrValue, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.Last1hrValue : null));
 
             CreateMap<SteamMarketItem, InventoryMarketItemDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))

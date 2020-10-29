@@ -213,19 +213,17 @@ namespace SCMM.Web.Server.API.Controllers
 
             var profileInventoryItems = _db.SteamInventoryItems
                 .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                // TODO: Allow both MarketItem and StoreItem here
-                .Where(x => x.Description.MarketItem != null)
+                .Include(x => x.App)
+                .Include(x => x.Currency)
+                .Include(x => x.Description.MarketItem)
+                .Include(x => x.Description.MarketItem.Currency)
+                .Include(x => x.Description.StoreItem)
+                .Include(x => x.Description.StoreItem.Currency)
                 .Select(x => new
                 {
                     Item = x,
-                    ItemDescription = x.Description,
-                    ItemCurrency = x.Currency,
-                    MarketItem = x.Description.MarketItem,
-                    MarketItemApp = x.Description.MarketItem.App,
-                    MarketItemDescription = x.Description.MarketItem.Description,
-                    MarketItemCurrency = x.Description.MarketItem.Currency,
-                    HasBuyPrice = (x.BuyPrice > 0),
-                    ReturnOnInvestment = (x.BuyPrice > 0 && (x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) > 0
+                    // TODO: Allow both MarketItem and StoreItem here
+                    ReturnOnInvestment = (x.BuyPrice > 0 && x.Description.MarketItem != null && (x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) > 0
                         ? ((decimal)(x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) / x.BuyPrice)
                         : 0
                     )

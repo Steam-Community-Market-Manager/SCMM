@@ -51,9 +51,9 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.MarketItem != null)
+        @if (Item.Last1hrValue != null)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.Last1hrValue)
+            @Item.Currency.ToPriceString(Item.Last1hrValue.Value)
         }
         else
         {
@@ -61,14 +61,14 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.MarketItem != null)
+        @if (Item.Supply != null && Item.Demand != null)
         {
-            <span>@Item.MarketItem.Supply.ToGCDRatioString(Item.MarketItem.Demand)</span>
-            @if (Item.MarketItem.Supply.IsSaturated(Item.MarketItem.Demand))
+            <span>@Item.Supply.Value.ToGCDRatioString(Item.Demand.Value)</span>
+            @if (Item.Supply.Value.IsSaturated(Item.Demand.Value))
             {
                 <span class="Text-Error">  (Saturated)</span>
             }
-            @if (Item.MarketItem.Supply.IsStarved(Item.MarketItem.Demand))
+            @if (Item.Supply.Value.IsStarved(Item.Demand.Value))
             {
                 <span class="Text-Success">  (Starved)</span>
             }
@@ -79,9 +79,9 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.MarketItem != null)
+        @if (Item.ResellPrice != null)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellPrice) 
+            @Item.Currency.ToPriceString(Item.ResellPrice.Value) 
         }
         else
         {
@@ -89,9 +89,9 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.MarketItem != null)
+        @if (Item.ResellTax != null)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellTax) 
+            @Item.Currency.ToPriceString(Item.ResellTax.Value) 
         }
         else
         {
@@ -99,9 +99,9 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.MarketItem != null && Item.BuyPrice > 0)
+        @if (Item.ResellPrice != null && Item.ResellTax != null && Item.BuyPrice > 0 && (Item.ResellPrice - Item.ResellTax) > 0)
         {
-            @Item.MarketItem.Currency.ToPriceString(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax - Item.BuyPrice.Value) 
+            @Item.Currency.ToPriceString(Item.ResellPrice.Value - Item.ResellTax.Value - Item.BuyPrice.Value) 
         }
         else
         {
@@ -109,9 +109,9 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.MarketItem != null && Item.BuyPrice > 0 && (Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) > 0)
+        @if (Item.ResellPrice != null && Item.ResellTax != null && Item.BuyPrice > 0 && (Item.ResellPrice - Item.ResellTax) > 0)
         {
-            @(((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
+            @(((int)Math.Round(((decimal)(Item.ResellPrice.Value - Item.ResellTax.Value) / Item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
         }
         else
         {
@@ -139,11 +139,11 @@
 
     private string GetItemClass()
     {
-        if (Item.BuyPrice == 0 || Item.BuyPrice == null || Item.MarketItem == null)
+        if (Item.BuyPrice == 0 || Item.BuyPrice == null || Item.ResellPrice == null || Item.ResellTax == null)
         {
             return null;
         }
-        var roi = ((int)Math.Round(((decimal)(Item.MarketItem.ResellPrice - Item.MarketItem.ResellTax) / Item.BuyPrice.Value) * 100, 0));
+        var roi = ((int)Math.Round(((decimal)(Item.ResellPrice.Value - Item.ResellTax.Value) / Item.BuyPrice.Value) * 100, 0));
         if (roi >= 100)
         {
             return "Background-Success";
