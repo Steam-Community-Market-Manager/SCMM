@@ -251,7 +251,7 @@ else
                     </Card>
                 </Grid>   
             }
-            <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
                 <Paper>
                     <Tabs Value="@SelectedItemChartPanel"
                           OnChange="@OnSelectedItemChartChanged"
@@ -328,12 +328,17 @@ else
                     </TabPanel>
                 </Paper>
             </Grid>
-            @foreach (var media in Store.Media)
-            {
-                <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-                    <YouTubeVideo VideoId="@media" />
+            
+            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                <Grid Container Spacing="@Spacing.Two">
+                    @foreach (var media in Store.Media)
+                    {
+                        <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
+                            <YouTubeVideo VideoId="@media" />
+                        </Grid>
+                    }
                 </Grid>
-            }
+            </Grid>
         }
     </Grid>
 }
