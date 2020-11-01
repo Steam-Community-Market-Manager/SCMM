@@ -44,6 +44,18 @@ namespace SCMM.Web.Server.Data.Models.Steam
                 return;
             }
 
+            // NOTE: This approach just assumes a 10-20% increase over subscriptions
+            var item = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
+            var itemIndex = orderedStoreItems.IndexOf(item);
+            var itemUniqueSales = (Description?.WorkshopFile?.Subscriptions ?? 0);
+            var itemDuplicateSales = (int) Math.Floor(itemUniqueSales > 0 ? ((decimal)itemUniqueSales / Math.Max(10, 20 - itemIndex)) : 0);
+            var itemTotalSales = (itemUniqueSales + itemDuplicateSales);
+            TotalSalesMin = itemTotalSales;
+            TotalSalesMax = null;
+
+            // NOTE: This approach calculates the revenue earned based on subscribers and the position in the top sellers list
+            // TODO: Steam glitches the top sellers order so often that all the items just end up with the same sales eventually
+            /*
             var item = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
             var itemIndex = orderedStoreItems.IndexOf(item);
             var itemSales = Math.Max(TotalSalesMin, Description?.WorkshopFile?.Subscriptions ?? 0);
@@ -95,6 +107,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
             // Maximum sales should be null if we are unsure
             TotalSalesMax = (afterItem != null) ? newTotalSalesMax : null;
+            */
         }
     }
 }

@@ -106,7 +106,9 @@ namespace SCMM.Web.Server.Services.Jobs
 
             // The "top sellers" list only shows the top 9 store items, this ensures all items are accounted for
             var storeItems = itemStore.Items.ToArray();
-            var missingStoreItems = storeItems.Where(x => !storeItemIds.Contains(x.Item.SteamId));
+            var missingStoreItems = storeItems
+                .Where(x => !storeItemIds.Contains(x.Item.SteamId))
+                .OrderByDescending(x => x.Item.Description?.WorkshopFile?.Subscriptions ?? 0);
             foreach (var storeItem in missingStoreItems)
             {
                 storeItemIds.Add(storeItem.Item.SteamId);
