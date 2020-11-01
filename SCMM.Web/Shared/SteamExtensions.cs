@@ -35,10 +35,11 @@ namespace SCMM.Web.Shared
                 return null;
             }
             return timespan.Value.ToDurationString(
-                showDays: true,
+                showWeeks: false,
                 showHours: false,
                 showMinutes: false,
-                showSeconds: false
+                showSeconds: false,
+                maxGranularity: 2
             );
         }
 

@@ -70,12 +70,12 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
+                .ForMember(x => x.StorePrice, o => o.MapFromUsingCurrencyExchange(p => p.Description.StoreItem != null ? (long?) p.Description.StoreItem.Price : null, p => p.Description.StoreItem.Currency))
                 .ForMember(x => x.BuyAskingPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyAskingPrice, p => p.Currency))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyNowPrice, p => p.Currency))
                 .ForMember(x => x.ResellPrice, o => o.MapFromUsingCurrencyExchange(p => p.ResellPrice, p => p.Currency))
                 .ForMember(x => x.ResellTax, o => o.MapFromUsingCurrencyExchange(p => p.ResellTax, p => p.Currency))
                 .ForMember(x => x.ResellProfit, o => o.MapFromUsingCurrencyExchange(p => p.ResellProfit, p => p.Currency))
-                .ForMember(x => x.First24hrValue, o => o.MapFromUsingCurrencyExchange(p => p.First24hrValue, p => p.Currency))
                 .ForMember(x => x.Last1hrValue, o => o.MapFromUsingCurrencyExchange(p => p.Last1hrValue, p => p.Currency))
                 .ForMember(x => x.Last24hrValue, o => o.MapFromUsingCurrencyExchange(p => p.Last24hrValue, p => p.Currency))
                 .ForMember(x => x.Last48hrValue, o => o.MapFromUsingCurrencyExchange(p => p.Last48hrValue, p => p.Currency))
@@ -89,8 +89,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.AllTimeHighestValue, o => o.MapFromUsingCurrencyExchange(p => p.AllTimeHighestValue, p => p.Currency))
                 .ForMember(x => x.AllTimeLowestValue, o => o.MapFromUsingCurrencyExchange(p => p.AllTimeLowestValue, p => p.Currency))
                 .ForMember(x => x.MarketAge, o => o.MapFrom(p => p.MarketAge.ToMarketAgeString()))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.WorkshopFile.Subscriptions))
-                .ForMember(x => x.Tags, o => o.MapFrom(p => p.Description.Tags.WithoutWorkshopTags()));
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.WorkshopFile != null ? (int?) p.Description.WorkshopFile.Subscriptions : null));
 
             CreateMap<SteamMarketItem, MarketItemDetailDTO>()
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
@@ -98,9 +97,9 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconLargeUrl))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.WorkshopFile.Subscriptions))
-                .ForMember(x => x.Favourited, o => o.MapFrom(p => p.Description.WorkshopFile.Favourited))
-                .ForMember(x => x.Views, o => o.MapFrom(p => p.Description.WorkshopFile.Views))
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.WorkshopFile != null ? (int?)p.Description.WorkshopFile.Subscriptions : null))
+                .ForMember(x => x.Favourited, o => o.MapFrom(p => p.Description.WorkshopFile != null ? (int?)p.Description.WorkshopFile.Favourited : null))
+                .ForMember(x => x.Views, o => o.MapFrom(p => p.Description.WorkshopFile != null ? (int?)p.Description.WorkshopFile.Views : null))
                 .ForMember(x => x.Tags, o => o.MapFrom(p => p.Description.Tags.WithoutWorkshopTags()));
             CreateMap<SteamMarketItemActivity, MarketItemActivityDTO>()
                 .ForMember(x => x.Movement, o => o.MapFromUsingCurrencyExchange(p => p.Movement, p => p.Item.Currency));

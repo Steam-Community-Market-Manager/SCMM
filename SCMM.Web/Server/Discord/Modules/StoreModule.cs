@@ -34,8 +34,6 @@ namespace SCMM.Web.Server.Discord.Modules
             }
 
             var remainingTime = (nextUpdateExpectedOn.Value - DateTimeOffset.Now).ToDurationString(
-                showDays: true,
-                showHours: true,
                 showMinutes: false,
                 showSeconds: false
             );
