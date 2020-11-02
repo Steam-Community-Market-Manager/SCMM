@@ -19,6 +19,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public string ProfileId { get; set; }
 
+        public string DiscordId { get; set; }
+
         public string Name { get; set; }
 
         public string AvatarUrl { get; set; }
