@@ -22,12 +22,12 @@ namespace SCMM.Web.Server.API.Controllers
     public class StoreController : ControllerBase
     {
         private readonly ILogger<StoreController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
         private readonly ImageService _images;
         private readonly IMapper _mapper;
 
-        public StoreController(ILogger<StoreController> logger, SteamDbContext db, SteamService steam, ImageService images, IMapper mapper)
+        public StoreController(ILogger<StoreController> logger, ScmmDbContext db, SteamService steam, ImageService images, IMapper mapper)
         {
             _logger = logger;
             _db = db;

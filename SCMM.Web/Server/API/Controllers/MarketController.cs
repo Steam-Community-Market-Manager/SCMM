@@ -22,10 +22,10 @@ namespace SCMM.Web.Server.API.Controllers
     public class MarketController : ControllerBase
     {
         private readonly ILogger<MarketController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly IMapper _mapper;
 
-        public MarketController(ILogger<MarketController> logger, SteamDbContext db, IMapper mapper)
+        public MarketController(ILogger<MarketController> logger, ScmmDbContext db, IMapper mapper)
         {
             _logger = logger;
             _db = db;

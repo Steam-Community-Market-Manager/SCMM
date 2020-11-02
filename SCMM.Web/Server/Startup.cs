@@ -90,7 +90,7 @@ namespace SCMM.Web.Server
                 };
             });
 
-            services.AddDbContext<SteamDbContext>(
+            services.AddDbContext<ScmmDbContext>(
                 options =>
                 {
                     options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"));

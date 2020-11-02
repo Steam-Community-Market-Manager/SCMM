@@ -24,12 +24,12 @@ namespace SCMM.Web.Server.API.Controllers
     public class InventoryController : ControllerBase
     {
         private readonly ILogger<InventoryController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
         private readonly ImageService _images;
         private readonly IMapper _mapper;
 
-        public InventoryController(ILogger<InventoryController> logger, SteamDbContext db, SteamService steam, ImageService images, IMapper mapper)
+        public InventoryController(ILogger<InventoryController> logger, ScmmDbContext db, SteamService steam, ImageService images, IMapper mapper)
         {
             _logger = logger;
             _db = db;

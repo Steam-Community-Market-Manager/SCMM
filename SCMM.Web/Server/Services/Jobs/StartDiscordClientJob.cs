@@ -48,7 +48,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 try
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                    var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
                     var discordGuilds = db.DiscordGuilds.ToList();
 
                     // Add any guilds that we've joined
@@ -104,7 +104,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 try
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                    var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
                     var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == id.ToString());
                     if (discordGuild == null)
                     {
@@ -129,7 +129,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 try
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                    var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
                     var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == id.ToString());
                     if (discordGuild != null)
                     {

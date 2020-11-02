@@ -39,7 +39,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
                 var steamApps = db.SteamApps.ToList();
                 if (!steamApps.Any())
@@ -142,7 +142,7 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        private async Task BroadcastNewMarketItemNotification(DiscordClient discord, SteamDbContext db, SteamMarketItem marketItem, SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
+        private async Task BroadcastNewMarketItemNotification(DiscordClient discord, ScmmDbContext db, SteamMarketItem marketItem, SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
         {
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)

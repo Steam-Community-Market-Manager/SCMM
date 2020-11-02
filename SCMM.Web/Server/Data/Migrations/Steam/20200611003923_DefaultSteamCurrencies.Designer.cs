@@ -9,7 +9,7 @@ using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
-    [DbContext(typeof(SteamDbContext))]
+    [DbContext(typeof(ScmmDbContext))]
     [Migration("20200611003923_DefaultSteamCurrencies")]
     partial class DefaultSteamCurrencies
     {

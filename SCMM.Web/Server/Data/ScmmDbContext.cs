@@ -5,7 +5,7 @@ using SCMM.Web.Server.Data.Models.Steam;
 
 namespace SCMM.Web.Server.Data
 {
-    public class SteamDbContext : DbContext
+    public class ScmmDbContext : DbContext
     {
         public static readonly ILoggerFactory DebugLoggerFactory =
             LoggerFactory.Create(builder =>
@@ -28,7 +28,7 @@ namespace SCMM.Web.Server.Data
         public DbSet<SteamProfileInventoryItem> SteamProfileInventoryItems { get; set; }
         public DbSet<SteamProfileMarketItem> SteamProfileMarketItems { get; set; }
 
-        public SteamDbContext(DbContextOptions<SteamDbContext> options)
+        public ScmmDbContext(DbContextOptions<ScmmDbContext> options)
             : base(options)
         {
         }
@@ -55,9 +55,6 @@ namespace SCMM.Web.Server.Data
                 .WithOne(x => x.App);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.Assets)
-                .WithOne(x => x.App);
-            builder.Entity<SteamApp>()
-                .HasMany(x => x.InventoryItems)
                 .WithOne(x => x.App);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.MarketItems)

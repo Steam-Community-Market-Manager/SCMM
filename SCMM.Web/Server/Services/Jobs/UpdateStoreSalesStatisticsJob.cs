@@ -40,7 +40,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var service = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
                 var appItemStores = db.SteamItemStores
                     .Include(x => x.App)
@@ -61,7 +61,7 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        private async Task UpdateItemStoreTopSellers(SteamDbContext db, SteamCommunityClient commnityClient, SteamService service, SteamItemStore itemStore)
+        private async Task UpdateItemStoreTopSellers(ScmmDbContext db, SteamCommunityClient commnityClient, SteamService service, SteamItemStore itemStore)
         {
             _logger.LogInformation($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
             var storePage = await commnityClient.GetItemStorePage(new SteamItemStorePageRequest()
@@ -130,7 +130,7 @@ namespace SCMM.Web.Server.Services.Jobs
             db.SaveChanges();
         }
 
-        private async Task UpdateItemStoreSubscribers(SteamDbContext db, SteamService service, SteamItemStore itemStore)
+        private async Task UpdateItemStoreSubscribers(ScmmDbContext db, SteamService service, SteamItemStore itemStore)
         {
             var assetDescriptions = itemStore.Items
                 .Select(x => x.Item)

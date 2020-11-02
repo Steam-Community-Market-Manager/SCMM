@@ -17,10 +17,10 @@ namespace SCMM.Web.Server.API.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly ILogger<ProfileController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly IMapper _mapper;
 
-        public ProfileController(ILogger<ProfileController> logger, SteamDbContext db, IMapper mapper)
+        public ProfileController(ILogger<ProfileController> logger, ScmmDbContext db, IMapper mapper)
         {
             _logger = logger;
             _db = db;

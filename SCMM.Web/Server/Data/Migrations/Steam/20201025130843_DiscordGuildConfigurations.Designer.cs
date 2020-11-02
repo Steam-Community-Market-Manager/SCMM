@@ -9,7 +9,7 @@ using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
-    [DbContext(typeof(SteamDbContext))]
+    [DbContext(typeof(ScmmDbContext))]
     [Migration("20201025130843_DiscordGuildConfigurations")]
     partial class DiscordGuildConfigurations
     {

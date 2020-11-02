@@ -19,11 +19,11 @@ namespace SCMM.Web.Server.Discord.Modules
     public class InventoryModule : ModuleBase<SocketCommandContext>
     {
         private readonly IConfiguration _configuration;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
         private readonly SteamCurrencyService _currencies;
 
-        public InventoryModule(IConfiguration configuration, SteamDbContext db, SteamService steam, SteamCurrencyService currencies)
+        public InventoryModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, SteamCurrencyService currencies)
         {
             _configuration = configuration;
             _db = db;

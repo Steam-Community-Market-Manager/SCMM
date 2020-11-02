@@ -43,7 +43,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
                 var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
@@ -174,7 +174,7 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        private async Task BroadcastNewStoreItemsNotification(DiscordClient discord, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
+        private async Task BroadcastNewStoreItemsNotification(DiscordClient discord, ScmmDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
         {
             // NOTE: Delay for a bit to allow the database to flush before we generate the notification.
             //       This helps ensure that the mosaic image will generate correctly the first time.

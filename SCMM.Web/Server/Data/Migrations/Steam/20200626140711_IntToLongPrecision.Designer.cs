@@ -9,7 +9,7 @@ using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
-    [DbContext(typeof(SteamDbContext))]
+    [DbContext(typeof(ScmmDbContext))]
     [Migration("20200626140711_IntToLongPrecision")]
     partial class IntToLongPrecision
     {

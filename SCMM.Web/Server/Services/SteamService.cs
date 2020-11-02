@@ -31,13 +31,13 @@ namespace SCMM.Web.Server.Services
     {
         private readonly TimeSpan DefaultCachePeriod = TimeSpan.FromHours(6);
 
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
         private readonly SteamCurrencyService _currencyService;
         private readonly SteamLanguageService _languageService;
 
-        public SteamService(SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService)
+        public SteamService(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();

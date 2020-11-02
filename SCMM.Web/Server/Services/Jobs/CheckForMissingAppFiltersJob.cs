@@ -30,7 +30,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
                 var appsWithMissingFilters = db.SteamApps
                     .Where(x => x.Filters.Count == 0)

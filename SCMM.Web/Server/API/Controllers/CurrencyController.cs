@@ -14,10 +14,10 @@ namespace SCMM.Web.Server.API.Controllers
     public class CurrencyController : ControllerBase
     {
         private readonly ILogger<CurrencyController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly IMapper _mapper;
 
-        public CurrencyController(ILogger<CurrencyController> logger, SteamDbContext db, IMapper mapper)
+        public CurrencyController(ILogger<CurrencyController> logger, ScmmDbContext db, IMapper mapper)
         {
             _logger = logger;
             _db = db;

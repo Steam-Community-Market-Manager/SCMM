@@ -43,7 +43,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var service = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
                 var steamApps = await db.SteamApps.ToListAsync();
                 if (!steamApps.Any())
@@ -125,7 +125,7 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        private async Task BroadcastNewAcceptedWorkshopItemsNotification(DiscordClient discord, SteamDbContext db, SteamApp app, IEnumerable<PublishedFileDetailsModel> newWorkshopFiles)
+        private async Task BroadcastNewAcceptedWorkshopItemsNotification(DiscordClient discord, ScmmDbContext db, SteamApp app, IEnumerable<PublishedFileDetailsModel> newWorkshopFiles)
         {
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)

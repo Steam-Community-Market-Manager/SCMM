@@ -14,10 +14,10 @@ namespace SCMM.Web.Server.API.Controllers
     public class LanguageController : ControllerBase
     {
         private readonly ILogger<LanguageController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly IMapper _mapper;
 
-        public LanguageController(ILogger<LanguageController> logger, SteamDbContext db, IMapper mapper)
+        public LanguageController(ILogger<LanguageController> logger, ScmmDbContext db, IMapper mapper)
         {
             _logger = logger;
             _db = db;
