@@ -35,11 +35,7 @@
         </TableRow>
     </TableHead>
     <TableBody>
-        @if (Items == null)
-        {
-            <Loading />
-        }
-        else
+        @if (Items != null)
         {
             @foreach (var item in Items)
             {
@@ -93,7 +89,11 @@
         }
     </TableBody>
 </Table>
-@if (Items != null)
+@if (Items == null)
+{
+    <Loading />
+}
+else
 {
     <Button OnClick="@OnMoreItemsRequested" Disabled="@NoMoreItems" Style="width:100%">more...</Button>
 }
@@ -104,7 +104,7 @@
     public IList<MarketItemListDTO> Items { get; set; }
 
     [Parameter]
-    public bool NoMoreItems { get; set; } = false;
+    public bool NoMoreItems { get; set; }
 
     [Parameter]
     public Action OnMoreItemsRequested { set; get; }
@@ -113,10 +113,10 @@
     public Action<MarketItemListDTO> OnItemClick { set; get; }
 
     [Parameter]
-    public string OrderBy { set; get; } = nameof(MarketItemListDTO.Last24hrSales);
+    public string OrderBy { set; get; }
 
     [Parameter]
-    public Sort Direction { set; get; } = Sort.Ascending;
+    public Sort Direction { set; get; }
 
     [Parameter]
     public Action<string, Sort> OnSortChanged { set; get; }

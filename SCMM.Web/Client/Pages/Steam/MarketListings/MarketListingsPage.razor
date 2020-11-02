@@ -54,22 +54,22 @@
         var response = await Http.GetFromJsonAsync<MarketItemListPaginatedDTO>(
             $"api/market?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&sort={Uri.EscapeDataString(OrderBy)}&sortDesc={Direction == Sort.Descending}&page={PageMore}&pageSize={PageSize}"
         );
-        if (response?.Items?.Any() == true)
+        if (response != null)
         {
-            var items = new List<MarketItemListDTO>(Items);
-            foreach (var item in response.Items)
+            NoMoreItems = ((response.Page + 1) * response.PageSize) >= response.Total;
+            if (response.Items?.Any() == true)
             {
-                if (!items.Any(x => x.Id == item.Id))
+                var items = new List<MarketItemListDTO>(Items);
+                foreach (var item in response.Items)
                 {
-                    items.Add(item);
+                    if (!items.Any(x => x.Id == item.Id))
+                    {
+                        items.Add(item);
+                    }
                 }
+                Items = items;
+                StateHasChanged();
             }
-            if (Items.Count == items.Count)
-            {
-                NoMoreItems = true;
-            }
-            Items = items;
-            StateHasChanged();
         }
     }
 
@@ -106,6 +106,7 @@
                 $"api/market?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&sort={OrderBy}&sortDesc={Direction == Sort.Descending}&page={Page}&pageSize={PageSize}"
             );
             Items = response.Items;
+            NoMoreItems = ((response.Page + 1) * response.PageSize) >= response.Total;
             StateHasChanged();
         }
         catch (Exception ex)
