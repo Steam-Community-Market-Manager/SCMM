@@ -35,6 +35,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public PersistableDailyGraphDataSet TotalSalesGraph { get; set; }
 
+        public SteamStoreItemFlags Flags { get; set; }
+
         public void RecalculateTotalSales(SteamItemStore store)
         {
             var mapping = Stores.FirstOrDefault(x => x.Store == store);

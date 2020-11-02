@@ -23,7 +23,7 @@ namespace SCMM.Web.Server.Data.Types
             {
                 return DateTime.ParseExact(rawKey, "dd-MM-yyyy:HH", null);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return DateTime.ParseExact(rawKey, "dd-MM-yyyy", null);
             }

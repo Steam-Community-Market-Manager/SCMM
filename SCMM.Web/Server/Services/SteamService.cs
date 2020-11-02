@@ -105,8 +105,8 @@ namespace SCMM.Web.Server.Services
             }
 
             // Load the profile inventory
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var profileInventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 // TODO: Use MarketItem or StoreItem for value calculation
                 .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
@@ -313,11 +313,11 @@ namespace SCMM.Web.Server.Services
                     {
                         continue;
                     }
-                    var inventoryItem = new SteamInventoryItem()
+                    var inventoryItem = new SteamProfileInventoryItem()
                     {
                         SteamId = asset.AssetId,
-                        Owner = profile,
-                        OwnerId = profile.Id,
+                        Profile = profile,
+                        ProfileId = profile.Id,
                         App = app,
                         AppId = app.Id,
                         Description = assetDescription,
@@ -354,7 +354,7 @@ namespace SCMM.Web.Server.Services
             return profile;
         }
 
-        public async Task<Data.Models.Steam.SteamAssetFilter> AddOrUpdateAppAssetFilter(SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
+        public Data.Models.Steam.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
         {
             var existingFilter = app.Filters.FirstOrDefault(x => x.SteamId == filter.Name);
             if (existingFilter != null)
@@ -827,7 +827,7 @@ namespace SCMM.Web.Server.Services
             return dbItem;
         }
 
-        public async Task<SteamMarketItem> UpdateMarketItemNameId(SteamMarketItem item, string itemNameId)
+        public SteamMarketItem UpdateMarketItemNameId(SteamMarketItem item, string itemNameId)
         {
             if (!String.IsNullOrEmpty(itemNameId))
             {

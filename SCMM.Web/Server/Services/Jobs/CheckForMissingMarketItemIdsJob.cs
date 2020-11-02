@@ -62,7 +62,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         )
                     )
                     .Merge()
-                    .Where(x => !String.IsNullOrEmpty(x.Result.SteamId))
+                    .Where(x => !String.IsNullOrEmpty(x.SteamId))
                     .ToList();
 
                 if (updatedItems.Any())

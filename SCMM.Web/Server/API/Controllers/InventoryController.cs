@@ -146,8 +146,8 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var profileInventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.SteamId != null)
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
@@ -211,8 +211,8 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var profileInventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description.MarketItem)
@@ -235,7 +235,7 @@ namespace SCMM.Web.Server.API.Controllers
             foreach (var profileInventoryItem in profileInventoryItems)
             {
                 profileInventoryItemsDetails.Add(
-                    _mapper.Map<SteamInventoryItem, InventoryItemListDTO>(
+                    _mapper.Map<SteamProfileInventoryItem, InventoryItemListDTO>(
                         profileInventoryItem.Item, this
                     )
                 );
@@ -265,8 +265,8 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
-            var profileInventoryActivities = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var profileInventoryActivities = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description.MarketItem != null)
                 .SelectMany(x =>
                     x.Description.MarketItem.Activity.Where(x => x.Timestamp >= recentActivityCutoff)
@@ -312,8 +312,8 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var currency = this.Currency();
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var profileInventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
                 {
@@ -420,8 +420,8 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var inventoryItemIcons = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var inventoryItemIcons = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
                 .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
                 .Select(x => x.Description.IconUrl)
@@ -460,13 +460,13 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var inventoryItem = _db.SteamInventoryItems.FirstOrDefault(x => x.Id == inventoryItemId);
+            var inventoryItem = _db.SteamProfileInventoryItems.FirstOrDefault(x => x.Id == inventoryItemId);
             if (inventoryItem == null)
             {
                 _logger.LogError($"Inventory item with id '{inventoryItemId}' was not found");
                 return NotFound();
             }
-            if (!User.Is(inventoryItem.OwnerId))
+            if (!User.Is(inventoryItem.ProfileId))
             {
                 _logger.LogError($"Inventory item with id '{inventoryItemId}' does not belong to you");
                 return NotFound();

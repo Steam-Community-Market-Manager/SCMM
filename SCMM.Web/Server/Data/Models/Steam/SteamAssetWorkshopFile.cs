@@ -19,6 +19,13 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public SteamApp App { get; set; }
 
+        [Required]
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public string ImageUrl { get; set; }
+
         public Guid? CreatorId { get; set; }
 
         public SteamProfile Creator { get; set; }
@@ -36,6 +43,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
         public int Favourited { get; set; }
 
         public int Views { get; set; }
+
+        public SteamAssetWorkshopFileFlags Flags { get; set; }
 
         public DateTimeOffset? LastCheckedOn { get; set; }
     }

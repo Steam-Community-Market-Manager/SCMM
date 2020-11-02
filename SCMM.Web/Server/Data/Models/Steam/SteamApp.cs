@@ -11,7 +11,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
             Filters = new Collection<SteamAssetFilter>();
             WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
             Assets = new Collection<SteamAssetDescription>();
-            InventoryItems = new Collection<SteamInventoryItem>();
+            InventoryItems = new Collection<SteamProfileInventoryItem>();
             MarketItems = new Collection<SteamMarketItem>();
             StoreItems = new Collection<SteamStoreItem>();
             ItemStores = new Collection<SteamItemStore>();
@@ -39,7 +39,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public ICollection<SteamAssetDescription> Assets { get; set; }
 
-        public ICollection<SteamInventoryItem> InventoryItems { get; set; }
+        public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
 
         public ICollection<SteamMarketItem> MarketItems { get; set; }
 

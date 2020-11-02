@@ -13,19 +13,20 @@ namespace SCMM.Web.Server.Data
                 builder.AddDebug();
             });
 
+        public DbSet<DiscordGuild> DiscordGuilds { get; set; }
+
         public DbSet<SteamLanguage> SteamLanguages { get; set; }
         public DbSet<SteamCurrency> SteamCurrencies { get; set; }
-        public DbSet<SteamProfile> SteamProfiles { get; set; }
         public DbSet<SteamApp> SteamApps { get; set; }
         public DbSet<SteamItemStore> SteamItemStores { get; set; }
         public DbSet<SteamStoreItem> SteamStoreItems { get; set; }
         public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
         public DbSet<SteamMarketItemSale> SteamMarketItemSale { get; set; }
-        public DbSet<SteamInventoryItem> SteamInventoryItems { get; set; }
         public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
         public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
-
-        public DbSet<DiscordGuild> DiscordGuilds { get; set; }
+        public DbSet<SteamProfile> SteamProfiles { get; set; }
+        public DbSet<SteamProfileInventoryItem> SteamProfileInventoryItems { get; set; }
+        public DbSet<SteamProfileMarketItem> SteamProfileMarketItems { get; set; }
 
         public SteamDbContext(DbContextOptions<SteamDbContext> options)
             : base(options)
@@ -41,18 +42,10 @@ namespace SCMM.Web.Server.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<SteamProfile>()
-                .HasOne(x => x.Language);
-            builder.Entity<SteamProfile>()
-                .HasOne(x => x.Currency);
-            builder.Entity<SteamProfile>()
-                .OwnsOne(x => x.Roles);
-            builder.Entity<SteamProfile>()
-                .HasMany(x => x.InventoryItems)
-                .WithOne(x => x.Owner);
-            builder.Entity<SteamProfile>()
-                .HasMany(x => x.WorkshopFiles)
-                .WithOne(x => x.Creator);
+            builder.Entity<DiscordGuild>()
+                .HasMany(x => x.Configurations);
+            builder.Entity<DiscordConfiguration>()
+                .OwnsOne(x => x.List);
 
             builder.Entity<SteamApp>()
                 .OwnsMany(x => x.Filters)
@@ -120,9 +113,9 @@ namespace SCMM.Web.Server.Data
                 .HasMany(x => x.Activity)
                 .WithOne(x => x.Item);
 
-            builder.Entity<SteamInventoryItem>()
+            builder.Entity<SteamProfileInventoryItem>()
                 .HasOne(x => x.Description);
-            builder.Entity<SteamInventoryItem>()
+            builder.Entity<SteamProfileInventoryItem>()
                 .HasOne(x => x.Currency);
 
             builder.Entity<SteamAssetDescription>()
@@ -141,9 +134,24 @@ namespace SCMM.Web.Server.Data
             builder.Entity<SteamAssetWorkshopFile>()
                 .OwnsOne(x => x.SubscriptionsGraph);
 
-            builder.Entity<DiscordGuild>()
-                .HasMany(x => x.Configurations);
-            builder.Entity<DiscordConfiguration>()
+            builder.Entity<SteamProfile>()
+                .HasOne(x => x.Language);
+            builder.Entity<SteamProfile>()
+                .HasOne(x => x.Currency);
+            builder.Entity<SteamProfile>()
+                .OwnsOne(x => x.Roles);
+            builder.Entity<SteamProfile>()
+                .HasMany(x => x.InventoryItems)
+                .WithOne(x => x.Profile);
+            builder.Entity<SteamProfile>()
+                .HasMany(x => x.MarketItems)
+                .WithOne(x => x.Profile);
+            builder.Entity<SteamProfile>()
+                .HasMany(x => x.WorkshopFiles)
+                .WithOne(x => x.Creator);
+            builder.Entity<SteamProfile>()
+                 .HasMany(x => x.Configurations);
+            builder.Entity<SteamProfileConfiguration>()
                 .OwnsOne(x => x.List);
         }
     }

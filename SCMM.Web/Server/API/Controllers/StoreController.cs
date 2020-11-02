@@ -40,7 +40,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<ItemStoreListDTO>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetStores()
+        public IActionResult GetStores()
         {
             var appId = this.App();
             var itemStores = _db.SteamItemStores
@@ -61,7 +61,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("current")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetCurrentStore()
+        public IActionResult GetCurrentStore()
         {
             var appId = this.App();
             var latestItemStoreId = _db.SteamItemStores
@@ -76,14 +76,14 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            return await GetStore(latestItemStoreId);
+            return GetStore(latestItemStoreId);
         }
 
         [AllowAnonymous]
         [HttpGet("{storeId}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetStore([FromRoute] Guid storeId)
+        public IActionResult GetStore([FromRoute] Guid storeId)
         {
             var itemStore = _db.SteamItemStores
                 .Where(x => x.Id == storeId)

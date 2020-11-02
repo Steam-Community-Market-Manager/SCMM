@@ -55,7 +55,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var appFilters = response.Facets.Where(x => x.Value?.AppId == app.SteamId).Select(x => x.Value);
                     foreach (var appFilter in appFilters)
                     {
-                        await steamService.AddOrUpdateAppAssetFilter(app, appFilter);
+                        steamService.AddOrUpdateAppAssetFilter(app, appFilter);
                     }
                 }
 
