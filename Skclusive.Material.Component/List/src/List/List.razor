@@ -1,0 +1,19 @@
+﻿@namespace Skclusive.Material.List
+@inherits ListComponent
+
+<CascadingValue
+    Value="ListContext">
+    <Component
+        RootRef="@RootRef"
+        Tag="@Component"
+        Class="@_Class"
+        Style="@_Style"
+        Role="@Role"
+        TabIndex="@TabIndex"
+        OnClick="@HandleClick"
+        OnKeyDown="@HandleKeyDownAsync"
+        @attributes="Attributes">
+        @SubheaderContent
+        @ChildContent
+    </Component>
+</CascadingValue>

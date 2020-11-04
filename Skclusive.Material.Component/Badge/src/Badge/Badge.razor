@@ -1,0 +1,22 @@
+﻿@namespace Skclusive.Material.Badge
+@inherits BadgeComponent
+
+<Component
+    RootRef="@RootRef"
+    Tag="@Component"
+    Class="@_Class"
+    Style="@_Style"
+    @attributes="Attributes">
+    @ChildContent
+    <span
+        class="@_BadgeClass"
+        style="@_BadgeStyle">
+        @if (CanRenderContent)
+        {
+            @BadgeContent
+        } else
+        {
+            @BadgeDisplay
+        }
+    </span>
+</Component>
