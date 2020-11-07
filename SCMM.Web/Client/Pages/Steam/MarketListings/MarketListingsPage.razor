@@ -18,10 +18,20 @@
 </style>
 
 <MarketListingsSearch OnSearch="@(async (x) => await RefreshItems(x))" />
+@if (Items == null)
+{
+    <Loading />
+}
+else 
+{
+    <MarketItemsSummary Items="@Items" />
+}
+<!--
 <Paper Class="Market-List-Container">
     <MarketListingsTable Items="@Items" NoMoreItems="@NoMoreItems" OnMoreItemsRequested="@(() => OnMoreItemsRequested())" OnItemClick="@((x) => OnItemSelectionChanged(x))"
                          OrderBy="@OrderBy" Direction="@Direction" OnSortChanged="@((orderBy, direction) => OnSortChanged(orderBy, direction))" />
 </Paper>
+-->
 
 @code {
 
@@ -39,7 +49,7 @@
 
     private int PageMore { get; set; } = 0;
 
-    private int PageSize { get; set; } = 30;
+    private int PageSize { get; set; } = 100;
 
     protected override async Task OnInitializedAsync()
     {
