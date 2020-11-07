@@ -1,4 +1,5 @@
-﻿using SCMM.Web.Shared.Domain.DTOs.Currencies;
+﻿using SCMM.Web.Shared.Data.Models.Steam;
+using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
 using System.Collections.Generic;
 
@@ -11,6 +12,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
         public string SteamId { get; set; }
 
         public string SteamAppId { get; set; }
+
+        public string SteamDescriptionId { get; set; }
 
         public string Name { get; set; }
 
@@ -85,5 +88,9 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
         public string MarketAge { get; set; }
 
         public int? Subscriptions { get; set; }
+
+        public SteamMarketItemFlags Flags { get; set; }
+
+        public SteamProfileMarketItemFlags ProfileFlags { get; set; }
     }
 }

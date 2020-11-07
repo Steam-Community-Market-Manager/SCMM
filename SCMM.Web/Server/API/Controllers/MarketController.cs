@@ -95,14 +95,37 @@ namespace SCMM.Web.Server.API.Controllers
                 .Take(pageSize)
                 .ToList()
                 .Select(x => _mapper.Map<SteamMarketItem, MarketItemListDTO>(x, this))
-                .ToArray();
+                .ToList();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var profileId = User.Id();
+                var assetDescriptionIds = items.Select(x => x.SteamDescriptionId).ToList();
+                var profileMarketItems = _db.SteamProfileMarketItems
+                    .Where(x => x.ProfileId == profileId)
+                    .Where(x => assetDescriptionIds.Contains(x.Description.SteamId))
+                    .Select(x => new
+                    {
+                        SteamDescriptionId = x.Description.SteamId,
+                        Flags = x.Flags
+                    })
+                    .ToList();
+                foreach (var profileMarketItem in profileMarketItems)
+                {
+                    var item = items.FirstOrDefault(x => x.SteamDescriptionId == profileMarketItem.SteamDescriptionId);
+                    if (item != null)
+                    {
+                        item.ProfileFlags = profileMarketItem.Flags;
+                    }
+                }
+            }
 
             return new MarketItemListPaginatedDTO()
             {
                 Page = page,
                 PageSize = pageSize,
                 Total = total,
-                Items = items
+                Items = items.ToArray()
             };
         }
 
