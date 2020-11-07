@@ -27,7 +27,7 @@ namespace SCMM.Discord.Client
             _configuration = configuration;
             _commands = new CommandService();
             _client = new DiscordSocketClient();
-            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client);
+            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client, configuration);
             _client.Log += OnClientLogAsync;
             _client.Ready += OnClientReadyAsync;
             _client.JoinedGuild += (x) => Task.Run(() => GuildJoined?.Invoke(x.Id, x.Name));
