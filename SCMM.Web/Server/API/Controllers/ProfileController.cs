@@ -93,17 +93,25 @@ namespace SCMM.Web.Server.API.Controllers
                 throw new Exception($"Profile with Steam ID '{User.SteamId()}' was not found");
             }
 
-            if (!String.IsNullOrEmpty(command.Country))
+            if (command.DiscordId != null)
             {
-                profile.Country = command.Country;
+                profile.DiscordId = command.DiscordId;
             }
-            if (!String.IsNullOrEmpty(command.Language))
+            if (command.Language != null)
             {
                 profile.Language = _db.SteamLanguages.FirstOrDefault(x => x.Name == command.Language);
             }
-            if (!String.IsNullOrEmpty(command.Currency))
+            if (command.Currency != null)
             {
                 profile.Currency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == command.Currency);
+            }
+            if (command.TradeUrl != null)
+            {
+                profile.TradeUrl = command.TradeUrl;
+            }
+            if (command.GamblingOffset != null)
+            {
+                profile.GamblingOffset = command.GamblingOffset.Value;
             }
 
             _db.SaveChanges();
