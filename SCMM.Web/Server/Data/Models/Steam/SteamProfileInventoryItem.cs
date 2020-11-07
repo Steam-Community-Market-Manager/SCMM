@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SCMM.Web.Shared.Data.Models.Steam;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Web.Server.Data.Models.Steam

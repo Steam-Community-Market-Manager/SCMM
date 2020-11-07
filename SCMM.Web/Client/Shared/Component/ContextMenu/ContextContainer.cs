@@ -18,12 +18,20 @@ namespace SCMM.Web.Client.Shared.Component.ContextMenu
         [Parameter]
         public bool Open { set; get; }
 
+        [Parameter]
+        public bool Invisible { get; set; }
+
         protected double MouseX { get; set; }
 
         protected double MouseY { get; set; }
 
         protected void HandleMenuOpen(MouseEventArgs args)
         {
+            if (Invisible)
+            {
+                return;
+            }
+
             // TODO: Make this accessible on mobile devices by implementing a "long click" option
             if (args.Button == 2)
             {

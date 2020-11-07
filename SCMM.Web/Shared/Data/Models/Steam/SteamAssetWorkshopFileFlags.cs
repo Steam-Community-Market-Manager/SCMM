@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Web.Server.Data.Models.Steam
+namespace SCMM.Web.Shared.Data.Models.Steam
 {
     [Flags]
     public enum SteamAssetWorkshopFileFlags : byte

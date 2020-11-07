@@ -11,6 +11,7 @@ using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Shared;
+using SCMM.Web.Shared.Data.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using System;
 using System.Collections.Generic;
@@ -181,6 +182,12 @@ namespace SCMM.Web.Server.API.Controllers
                     itemSummary.Quantity = profileInventoryItems
                         .Where(x => x.Description.SteamId == item.Description.SteamId)
                         .Sum(x => x.Quantity);
+
+                    // Calculate the item's flags
+                    itemSummary.Flags = profileInventoryItems
+                        .Where(x => x.Description.SteamId == item.Description.SteamId)
+                        .Select(x => x.Flags)
+                        .Aggregate((x, y) => x | y);
 
                     profileInventoryItemsSummaries.Add(itemSummary);
                 }
@@ -474,6 +481,50 @@ namespace SCMM.Web.Server.API.Controllers
 
             inventoryItem.CurrencyId = command.CurrencyId;
             inventoryItem.BuyPrice = SteamEconomyHelper.GetPriceValueAsInt(command.Price);
+            _db.SaveChanges();
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPut("item/{itemOrAssetId}/{flag}")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult SetInventoryItemFlag([FromRoute] string itemOrAssetId, [FromRoute] string flag, [FromBody] bool value)
+        {
+            SteamProfileInventoryItemFlags flagValue;
+            if (!Enum.TryParse<SteamProfileInventoryItemFlags>(flag, true, out flagValue))
+            {
+                return BadRequest();
+            }
+            if (String.IsNullOrEmpty(itemOrAssetId))
+            {
+                return NotFound();
+            }
+
+            var profileId = User.Id();
+            var inventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.ProfileId == profileId)
+                .Where(x => x.SteamId == itemOrAssetId || x.Description.SteamId == itemOrAssetId)
+                .ToList();
+            if (!(inventoryItems?.Any() == true))
+            {
+                _logger.LogError($"No inventory items found that match id '{itemOrAssetId}' for your profile");
+                return NotFound();
+            }
+
+            foreach (var inventoryItem in inventoryItems)
+            {
+                if (value)
+                {
+                    inventoryItem.Flags |= flagValue;
+                }
+                else
+                {
+                    inventoryItem.Flags &= ~flagValue;
+                }
+            }
+
             _db.SaveChanges();
             return Ok();
         }

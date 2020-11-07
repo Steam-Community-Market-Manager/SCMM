@@ -1,0 +1,180 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+@using SCMM.Web.Shared.Data.Models.Steam;
+@using SCMM.Web.Shared; 
+@inherits ComponentBase
+@inject ILogger<InventoryItemsSummary> Logger
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+
+<style>
+
+    .Item-Summary-Root {
+        display: inline-flex;
+    }
+
+    .Item-Summary-Body {
+        display: flex;
+        flex-direction: column;
+        align-content: center;
+        align-items: center;
+        width: 104px;
+        height: 128px;
+        margin: 8px;
+        border-radius: 3px;
+        background-color: var(--theme-palette-background-paper, #fff);
+    }
+
+    .Item-Summary-Body:hover {
+        background-color: #666666;
+        cursor: pointer;
+    }
+
+    .Item-Summary-Root img {
+        margin: calc(var(--theme-spacing, 6) * 2px);
+        width: 72px;
+        height: 72px;
+    }
+
+    .Item-Summary-Badge-Top {
+        margin: calc(var(--theme-spacing, 6) * 2px);
+    }
+    
+    .Item-Summary-Badge-Flags > .Badge-Badge {
+        color: var(--theme-palette-primary-contrast-text, #fff);
+        background-color: #a5d6a7;
+    }
+    
+    .Item-Summary-Badge-Flags > .Badge-Badge i {
+        margin: 2px;
+    }
+
+    .Item-Summary-Badge > .Badge-Badge {        
+        transform: scale(1) translate(0%, 0%);
+    }
+    
+    .Item-Summary-Badge > .Badge-Invisible {        
+        transform: scale(0);
+    }
+    
+    .Item-Summary-Badge img {
+        margin: 0px;
+    }
+
+</style>
+
+<ContextContainer Class="Item-Summary-Root" Invisible="@ReadOnly">
+    <ChildContent>
+        <div class="Item-Summary-Body" style="@GetItemStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
+            <Badge Class="Item-Summary-Badge Item-Summary-Badge-Flags Item-Summary-Badge-Top"
+                    Invisible="@(!Item.Flags.HasFlag(SCMM.Web.Shared.Data.Models.Steam.SteamProfileInventoryItemFlags.WantToSell) && !Item.Flags.HasFlag(SCMM.Web.Shared.Data.Models.Steam.SteamProfileInventoryItemFlags.WantToTrade))"
+                    Color="@Color.Custom"
+                    Horizontal="@Horizontal.Left"
+                    Vertical="@Vertical.Top">
+                <BadgeContent>
+                    @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
+                    {
+                        <i class="fas fa-hand-holding-usd" />
+                    }
+                    @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
+                    {
+                        <i class="fas fa-exchange-alt" />
+                    }
+                </BadgeContent>
+                <ChildContent>
+                    <Badge Class="Item-Summary-Badge Item-Summary-Quantity-Badge"
+                            Invisible="@(Item.Quantity <= 1)"
+                            Badge="@Item.Quantity.ToString()"
+                            Max="99"
+                            Color="@Color.Primary"
+                            Horizontal="@Horizontal.Right"
+                            Vertical="@Vertical.Top">
+                        <img src="@Item.IconUrl" />
+                    </Badge>
+                </ChildContent>
+            </Badge>
+            @if (Item.Value != null)
+            {
+                <Typography Variant="@TypographyVariant.Body2">
+                    @Item.Currency.ToPriceString(Item.Value.Value)
+                </Typography>
+            }
+        </div>
+    </ChildContent>
+    <ContextMenu>
+        @if (!ReadOnly)
+        {
+            @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
+            {
+                <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToSell, false))">
+                    <i class="fas fa-fw fa-hand-holding-usd" style="margin-right:8px"></i>
+                    <span>I want to keep this item</span>
+                </ContextMenuItem>
+            }
+            else
+            {
+                <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToSell, true))">
+                    <i class="fas fa-fw fa-hand-holding-usd" style="margin-right:8px"></i>
+                    <span>I'm open to selling this item</span>
+                </ContextMenuItem>
+            }
+            @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
+            {
+                <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToTrade, false))">
+                    <i class="fas fa-fw fa-exchange-alt" style="margin-right:8px"></i>
+                    <span>I want to keep this item</span>
+                </ContextMenuItem>
+            }
+            else
+            {
+                <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToTrade, true))">
+                    <i class="fas fa-fw fa-exchange-alt" style="margin-right:8px"></i>
+                    <span>I'm accepting trades for this item</span>
+                </ContextMenuItem>
+            }
+        }
+    </ContextMenu>
+</ContextContainer>
+
+@code {
+
+    [Parameter]
+    public ProfileInventoryItemSummaryDTO Item { get; set; }
+    
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    private string GetItemStyles(ProfileInventoryItemSummaryDTO item)
+    {
+        return $"border: 2px solid {item.ForegroundColour}";
+    }
+
+    private void OnItemClicked(ProfileInventoryItemSummaryDTO item)
+    {
+        //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+    }
+
+    private async Task UpdateItemFlag(ProfileInventoryItemSummaryDTO item, SteamProfileInventoryItemFlags flag, bool value)
+    {
+        try
+        {
+            if (value)
+            {
+                item.Flags |= flag;
+            }
+            else 
+            {
+                item.Flags &= ~flag;
+            }
+            StateHasChanged();
+
+            await Http.PutAsJsonAsync($"api/inventory/item/{item.SteamId}/{flag}", value);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error updating flag for item '{item.Name}' (flag: {flag}, value: {value})");
+        }
+    }
+}

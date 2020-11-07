@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Web.Server.Data.Models.Steam
+namespace SCMM.Web.Shared.Data.Models.Steam
 {
     [Flags]
     public enum SteamProfileInventoryItemFlags : byte
@@ -10,6 +10,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
         Marketable = 0x02,
 
         WantToTrade = 0x10,
-        WantToSell = 0x20
+        WantToSell = 0x20,
+
+        Pinned = 0x80
     }
 }

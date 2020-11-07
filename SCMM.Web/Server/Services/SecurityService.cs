@@ -16,7 +16,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ClaimTypes = SCMM.Web.Server.Data.Models.ClaimTypes;
+using ClaimTypes = SCMM.Web.Shared.Data.Models.ClaimTypes;
 
 namespace SCMM.Web.Server.Services
 {

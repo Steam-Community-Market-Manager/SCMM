@@ -77,7 +77,8 @@
                     }
                     else
                     {
-                        <InventoryItemsSummary Items="@FilterItems(InventoryItemsSummary)" />
+                        <InventoryItemsSummary Items="@FilterItems(InventoryItemsSummary)"
+                                               ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
                     }
                 }
             </TabPanel>

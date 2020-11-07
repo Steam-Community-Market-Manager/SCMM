@@ -1,4 +1,5 @@
-﻿using SCMM.Web.Shared.Domain.DTOs.Currencies;
+﻿using SCMM.Web.Shared.Data.Models.Steam;
+using SCMM.Web.Shared.Domain.DTOs.Currencies;
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
@@ -21,5 +22,7 @@ namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
         public int Quantity { get; set; }
 
         public long? Value { get; set; }
+
+        public SteamProfileInventoryItemFlags Flags { get; set; }
     }
 }

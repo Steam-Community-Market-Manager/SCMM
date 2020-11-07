@@ -3,10 +3,13 @@
 
 <div class="@_Class" style="@_Style" @attributes="Attributes" @oncontextmenu="HandleMenuOpen" @oncontextmenu:preventDefault="true">
     @ChildContent
-    <CascadingValue Value="this">
-        <Menu Open="@Open" OnClose="@HandleMenuClose" AnchorType="@AnchorType.Location" AnchorLeft="@MouseX" AnchorTop="@MouseY" Dense="true" DisablePadding="true"
-              Variant="@MenuVariant.Menu" AutoFocus="false" DisableAutoFocusItem="true">
-            @ContextMenu
-        </Menu>
-    </CascadingValue>
+    @if (!Invisible) 
+    {
+        <CascadingValue Value="this">
+            <Menu Open="@Open" OnClose="@HandleMenuClose" AnchorType="@AnchorType.Location" AnchorLeft="@MouseX" AnchorTop="@MouseY" Dense="true" DisablePadding="true"
+                  Variant="@MenuVariant.Menu" AutoFocus="false" DisableAutoFocusItem="true">
+                @ContextMenu
+            </Menu>
+        </CascadingValue>
+    }
 </div>

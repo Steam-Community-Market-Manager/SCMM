@@ -1,4 +1,4 @@
-﻿namespace SCMM.Web.Server.Data.Models
+﻿namespace SCMM.Web.Shared.Data.Models
 {
     public static class ClaimTypes
     {
