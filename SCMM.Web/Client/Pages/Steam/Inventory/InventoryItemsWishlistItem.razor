@@ -7,37 +7,6 @@
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 
-<style>
-
-    .Item-Summary-Root {
-        display: inline-flex;
-    }
-
-    .Item-Summary-Body {
-        display: flex;
-        flex-direction: column;
-        align-content: center;
-        align-items: center;
-        width: 104px;
-        height: 128px;
-        margin: 8px;
-        border-radius: 3px;
-        background-color: var(--theme-palette-background-paper, #fff);
-    }
-
-    .Item-Summary-Body:hover {
-        background-color: #666666;
-        cursor: pointer;
-    }
-
-    .Item-Summary-Root img {
-        margin: calc(var(--theme-spacing, 6) * 2px);
-        width: 72px;
-        height: 72px;
-    }
-
-</style>
-
 @if (Item.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
 {
     <ContextContainer Class="Item-Summary-Root" Invisible="@ReadOnly">
