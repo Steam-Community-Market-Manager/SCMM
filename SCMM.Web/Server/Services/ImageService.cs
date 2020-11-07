@@ -139,14 +139,10 @@ namespace SCMM.Web.Server.Services
             }
 
             var columns = 5;
-            var rows = 5;
+            var rows = (int) Math.Ceiling((float)Math.Max(haveTileCount, wantTileCount) / columns);
             fontSize = Math.Max(24, fontSize);
             var textPadding = (int) Math.Ceiling(fontSize * 0.5);
             tileSize = Math.Max(8, tileSize);
-
-            // If there are rows than we have images for, reduces the row count to the minimum required to render the images
-            var minimumRowsToRenderTiles = (int)Math.Ceiling((float)Math.Max(haveTileCount, wantTileCount) / columns);
-            rows = Math.Min(minimumRowsToRenderTiles, rows);
 
             var mosaic = new Bitmap((columns + 1 + columns) * tileSize, (rows * tileSize) + fontSize + (textPadding * 2));
             using (var graphics = Graphics.FromImage(mosaic))
@@ -154,9 +150,9 @@ namespace SCMM.Web.Server.Services
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
                 var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
-                var gradientTop = Color.FromArgb(66, 66, 66);
-                var gradientBottom = Color.FromArgb(33, 33, 33);
-                var bluePen = new Pen(Color.FromArgb(33, 33, 33), 3);
+                var gradientTop = Color.FromArgb(133, 133, 133);
+                var gradientBottom = Color.FromArgb(99, 99, 99);
+                var bluePen = new Pen(Color.FromArgb(66, 66, 66), 3);
                 bluePen.LineJoin = LineJoin.Round;
 
                 var x = 0;
