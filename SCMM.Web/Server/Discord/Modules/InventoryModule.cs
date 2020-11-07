@@ -2,7 +2,6 @@
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SCMM.Discord.Client;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
@@ -10,7 +9,6 @@ using SCMM.Web.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Discord.Modules
@@ -75,10 +73,6 @@ namespace SCMM.Web.Server.Discord.Modules
 
             await Task.Run(async () =>
             {
-                // NOTE: Delay for a bit to allow the database to flush before we generate the notification.
-                //       This helps ensure that the mosaic image will generate correctly the first time.
-                Thread.Sleep(1000);
-
                 var color = Color.Blue;
                 var fields = new List<EmbedFieldBuilder>();
                 fields.Add(new EmbedFieldBuilder()

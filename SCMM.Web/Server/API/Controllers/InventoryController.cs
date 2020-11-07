@@ -361,7 +361,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{steamId}/mosaic")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int rows = 5, [FromQuery] int columns = 5)
+        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int columns = 5, [FromQuery] int rows = 5)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -388,7 +388,70 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
-            var mosaic = await _images.GetImageMosaic(images, 128, columns, rows);
+            var mosaic = await _images.GetImageMosaic(
+                images, 
+                tileSize: 128, 
+                columns: columns, 
+                rows: rows
+            );
+
+            return File(mosaic, "image/png");
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{steamId}/trade/mosaic")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetInventoryTradeMosaic([FromRoute] string steamId)
+        {
+            if (String.IsNullOrEmpty(steamId))
+            {
+                return NotFound();
+            }
+
+            var inventoryItemIcons = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => x.Description != null && x.Description.MarketItem != null)
+                .Where(x => x.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) || x.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
+                .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
+                .Select(x => x.Description.IconUrl)
+                .ToList();
+
+            var inventoryItemImages = new List<ImageSource>();
+            foreach (var inventoryItemIcon in inventoryItemIcons)
+            {
+                if (!inventoryItemImages.Any(x => x.Url == inventoryItemIcon))
+                {
+                    inventoryItemImages.Add(new ImageSource()
+                    {
+                        Url = inventoryItemIcon,
+                        BadgeCount = inventoryItemIcons.Count(x => x == inventoryItemIcon)
+                    });
+                }
+            }
+
+            var marketItemIcons = _db.SteamProfileMarketItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => x.Description != null && x.Description.MarketItem != null)
+                .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
+                .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
+                .Select(x => x.Description.IconUrl)
+                .ToList();
+
+            var marketItemImages = new List<ImageSource>();
+            foreach (var marketItemIcon in marketItemIcons)
+            {
+                if (!marketItemImages.Any(x => x.Url == marketItemIcon))
+                {
+                    marketItemImages.Add(new ImageSource()
+                    {
+                        Url = marketItemIcon,
+                        BadgeCount = marketItemIcons.Count(x => x == marketItemIcon)
+                    });
+                }
+            }
+
+            var mosaic = await _images.GetTradeImageMosaic(inventoryItemImages, marketItemImages);
             return File(mosaic, "image/png");
         }
     }

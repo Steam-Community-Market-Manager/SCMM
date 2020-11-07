@@ -42,7 +42,7 @@ namespace SCMM.Web.Server.Services
             return image;
         }
 
-        public async Task<byte[]> GetImageMosaic(IEnumerable<ImageSource> imageSources, int tileSize, int columns, int rows)
+        public async Task<byte[]> GetImageMosaic(IEnumerable<ImageSource> imageSources, int tileSize = 128, int columns = 5, int rows = 5)
         {
             var tileCount = imageSources.Count();
             if (tileCount < 1)
@@ -61,6 +61,8 @@ namespace SCMM.Web.Server.Services
             var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
             using (var graphics = Graphics.FromImage(mosaic))
             {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
                 var badgeSize = (int) Math.Ceiling(tileSize * 0.25f);
                 var badgePadding = (int) Math.Ceiling(tileSize * 0.0625f);
                 var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
@@ -96,7 +98,6 @@ namespace SCMM.Web.Server.Services
                                 fontSize = 20;
                                 fontOffset = 5;
                             }
-                            graphics.SmoothingMode = SmoothingMode.AntiAlias;
                             graphics.FillEllipse(
                                 solidBlue, 
                                 new Rectangle(
@@ -117,6 +118,124 @@ namespace SCMM.Web.Server.Services
                             );
                         }
                     }
+                }
+            }
+
+            using (var mosaicStream = new MemoryStream())
+            {
+                mosaic.Save(mosaicStream, ImageFormat.Png);
+                var mosaicRaw = mosaicStream.ToArray();
+                return mosaicRaw;
+            }
+        }
+
+        public async Task<byte[]> GetTradeImageMosaic(IEnumerable<ImageSource> haveImageSources, IEnumerable<ImageSource> wantImageSources, int fontSize = 48, int tileSize = 128)
+        {
+            var haveTileCount = haveImageSources.Count();
+            var wantTileCount = wantImageSources.Count();
+            if (wantTileCount < 1)
+            {
+                return null;
+            }
+
+            var columns = 5;
+            var rows = 5;
+            fontSize = Math.Max(24, fontSize);
+            var textPadding = (int) Math.Ceiling(fontSize * 0.5);
+            tileSize = Math.Max(8, tileSize);
+
+            // If there are rows than we have images for, reduces the row count to the minimum required to render the images
+            var minimumRowsToRenderTiles = (int)Math.Ceiling((float)Math.Max(haveTileCount, wantTileCount) / columns);
+            rows = Math.Min(minimumRowsToRenderTiles, rows);
+
+            var mosaic = new Bitmap((columns + 1 + columns) * tileSize, (rows * tileSize) + fontSize + (textPadding * 2));
+            using (var graphics = Graphics.FromImage(mosaic))
+            {
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
+                var gradientTop = Color.FromArgb(66, 66, 66);
+                var gradientBottom = Color.FromArgb(33, 33, 33);
+                var bluePen = new Pen(Color.FromArgb(33, 33, 33), 3);
+                bluePen.LineJoin = LineJoin.Round;
+
+                var x = 0;
+                var y = 0;
+
+                if (haveImageSources.Any())
+                {
+                    var path = new GraphicsPath();
+                    path.AddString(
+                        $"Have", sansSerif, (int)FontStyle.Bold, fontSize, new PointF(x + textPadding, y + textPadding), StringFormat.GenericTypographic
+                    );
+                    graphics.DrawPath(bluePen, path);
+                    graphics.FillPath(
+                        new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical), 
+                        path
+                    );
+
+                    y += (fontSize + (textPadding * 2));
+                    var haveImageQueue = new Queue<ImageSource>(haveImageSources);
+                    for (int r = 0; r < rows; r++)
+                    {
+                        for (int c = 0; c < columns; c++)
+                        {
+                            var imageSource = (haveImageQueue.Any() ? haveImageQueue.Dequeue() : null);
+                            if (imageSource == null)
+                            {
+                                continue;
+                            }
+
+                            var imageRaw = await GetImageCached(imageSource.Url);
+                            if (imageRaw == null)
+                            {
+                                continue;
+                            }
+
+                            var image = Image.FromStream(new MemoryStream(imageRaw));
+                            graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
+                        }
+                    }
+                    x += ((columns * tileSize) + tileSize);
+                    y = 0;
+                }
+
+                if (wantImageSources.Any())
+                {
+                    var path = new GraphicsPath();
+                    path.AddString(
+                        $"Want", sansSerif, (int)FontStyle.Bold, fontSize, new PointF(x + textPadding, y + textPadding), StringFormat.GenericTypographic
+                    );
+                    graphics.DrawPath(bluePen, path);
+                    graphics.FillPath(
+                        new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical),
+                        path
+                    );
+
+                    y += (fontSize + (textPadding * 2));
+                    var wantImageQueue = new Queue<ImageSource>(wantImageSources);
+                    for (int r = 0; r < rows; r++)
+                    {
+                        for (int c = 0; c < columns; c++)
+                        {
+                            var imageSource = (wantImageQueue.Any() ? wantImageQueue.Dequeue() : null);
+                            if (imageSource == null)
+                            {
+                                continue;
+                            }
+
+                            var imageRaw = await GetImageCached(imageSource.Url);
+                            if (imageRaw == null)
+                            {
+                                continue;
+                            }
+
+                            var image = Image.FromStream(new MemoryStream(imageRaw));
+                            graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
+                        }
+                    }
+                    x += ((columns * tileSize) + tileSize);
+                    y = 0;
                 }
             }
 

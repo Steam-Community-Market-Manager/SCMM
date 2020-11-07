@@ -74,6 +74,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.TradeModule.SayProfileTradeRequestAsync(System.String)">
+            <summary>
+            !trade [steamId]
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:SCMM.Web.Server.Services.SteamService.AddOrUpdateAssetWorkshopFile(SCMM.Web.Server.Data.Models.Steam.SteamApp,System.String)">
             
              UPDATE BELOW...
