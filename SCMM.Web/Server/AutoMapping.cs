@@ -49,6 +49,20 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.ResellProfit, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.ResellProfit : null))
                 .ForMember(x => x.Last1hrValue, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.Last1hrValue : null));
 
+            CreateMap<SteamProfileMarketItem, ProfileInventoryItemWishDTO>()
+                .ForMember(x => x.SteamId, o => o.MapFrom(p => p.Description.SteamId))
+                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
+                .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
+                .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
+                .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
+                .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
+                .ForMember(x => x.Currency, o => o.MapFromCurrency())
+                .ForMember(x => x.Supply, o => o.MapFrom(p => p.Description.MarketItem != null ? (int?)p.Description.MarketItem.Supply : null))
+                .ForMember(x => x.Demand, o => o.MapFrom(p => p.Description.MarketItem != null ? (int?)p.Description.MarketItem.Demand : null))
+                .ForMember(x => x.BuyAskingPrice, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.BuyAskingPrice : null))
+                .ForMember(x => x.BuyNowPrice, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.BuyNowPrice : null))
+                .ForMember(x => x.Last24hrSales, o => o.MapFrom(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.Last24hrSales : null));
+
             CreateMap<SteamMarketItem, InventoryMarketItemDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
@@ -65,6 +79,7 @@ namespace SCMM.Web.Server
 
             CreateMap<SteamMarketItem, MarketItemListDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
+                .ForMember(x => x.SteamDescriptionId, o => o.MapFrom(p => p.Description.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))

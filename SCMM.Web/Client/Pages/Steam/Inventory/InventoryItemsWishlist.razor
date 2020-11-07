@@ -1,0 +1,20 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+@inherits ComponentBase
+
+<div style="padding:8px">
+    @foreach (var item in Items)
+    {
+        <InventoryItemsWishlistItem Item="@item" ReadOnly="@ReadOnly" />
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public IEnumerable<ProfileInventoryItemWishDTO> Items { get; set; }
+    
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+}

@@ -40,15 +40,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("me")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProfileInventoryDetailsDTO), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetMyInventoryProfile([FromQuery] bool sync = false)
-        {
-            return await GetInventoryProfile(User.SteamId(), sync);
-        }
-
-        [AllowAnonymous]
         [HttpGet("{steamId}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProfileInventoryDetailsDTO), StatusCodes.Status200OK)]
@@ -98,15 +89,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("me/total")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
-        public Task<IActionResult> GetMyInventoryTotal()
-        {
-            return GetInventoryTotal(User.SteamId());
-        }
-
-        [AllowAnonymous]
         [HttpGet("{steamId}/total")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -125,15 +107,6 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             return Ok(inventoryTotal);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("me/summary")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<ProfileInventoryItemSummaryDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventorySummary()
-        {
-            return GetInventorySummary(User.SteamId());
         }
 
         [AllowAnonymous]
@@ -199,15 +172,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("me/returnOnInvestment")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<InventoryItemListDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventoryInvestment()
-        {
-            return GetInventoryInvestment(User.SteamId());
-        }
-
-        [AllowAnonymous]
         [HttpGet("{steamId}/returnOnInvestment")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IList<InventoryItemListDTO>), StatusCodes.Status200OK)]
@@ -238,73 +202,50 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.ReturnOnInvestment)
                 .ToList();
 
-            var profileInventoryItemsDetails = new List<InventoryItemListDTO>();
+            var profileInventoryItemSummaries = new List<InventoryItemListDTO>();
             foreach (var profileInventoryItem in profileInventoryItems)
             {
-                profileInventoryItemsDetails.Add(
+                profileInventoryItemSummaries.Add(
                     _mapper.Map<SteamProfileInventoryItem, InventoryItemListDTO>(
                         profileInventoryItem.Item, this
                     )
                 );
             }
 
-            return Ok(profileInventoryItemsDetails);
+            return Ok(profileInventoryItemSummaries);
         }
 
         [AllowAnonymous]
-        [HttpGet("me/activity")]
+        [HttpGet("{steamId}/wishlist")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<ProfileInventoryActivityDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventoryActivity()
-        {
-            return GetInventoryActivity(User.SteamId());
-        }
-
-        [AllowAnonymous]
-        [HttpGet("{steamId}/activity")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<ProfileInventoryActivityDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetInventoryActivity([FromRoute] string steamId)
+        [ProducesResponseType(typeof(IList<ProfileInventoryItemWishDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetInventoryWishlist([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
                 return NotFound();
             }
 
-            var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
-            var profileInventoryActivities = _db.SteamProfileInventoryItems
+            var profileMarketItems = _db.SteamProfileMarketItems
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
-                .Where(x => x.Description.MarketItem != null)
-                .SelectMany(x =>
-                    x.Description.MarketItem.Activity.Where(x => x.Timestamp >= recentActivityCutoff)
-                )
-                .OrderByDescending(x => x.Timestamp)
-                .Include(x => x.Item)
-                .Include(x => x.Item.Description)
-                .Include(x => x.Item.Currency)
-                .Take(100)
+                .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
+                .Include(x => x.App)
+                .Include(x => x.Description.MarketItem)
+                .Include(x => x.Description.MarketItem.Currency)
+                .OrderBy(x => x.Description.Name)
                 .ToList();
 
-            var profileInventoryActivitiesDetails = new List<ProfileInventoryActivityDTO>();
-            foreach (var profileInventoryActivity in profileInventoryActivities)
+            var profileInventoryItemWishes = new List<ProfileInventoryItemWishDTO>();
+            foreach (var profileMarketItem in profileMarketItems)
             {
-                profileInventoryActivitiesDetails.Add(
-                    _mapper.Map<SteamMarketItemActivity, ProfileInventoryActivityDTO>(
-                        profileInventoryActivity, this
+                profileInventoryItemWishes.Add(
+                    _mapper.Map<SteamProfileMarketItem, ProfileInventoryItemWishDTO>(
+                        profileMarketItem, this
                     )
                 );
             }
 
-            return Ok(profileInventoryActivitiesDetails);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("me/performance")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProfileInventoryPerformanceDTO), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventoryPerformance()
-        {
-            return GetInventoryPerformance(User.SteamId());
+            return Ok(profileInventoryItemWishes);
         }
 
         [AllowAnonymous]
@@ -449,84 +390,6 @@ namespace SCMM.Web.Server.API.Controllers
 
             var mosaic = await _images.GetImageMosaic(images, 128, columns, rows);
             return File(mosaic, "image/png");
-        }
-
-        [Authorize]
-        [HttpPut("item/{inventoryItemId}")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult SetInventoryItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
-        {
-            if (command == null || command.CurrencyId == Guid.Empty)
-            {
-                return BadRequest();
-            }
-            if (inventoryItemId == Guid.Empty)
-            {
-                return NotFound();
-            }
-
-            var inventoryItem = _db.SteamProfileInventoryItems.FirstOrDefault(x => x.Id == inventoryItemId);
-            if (inventoryItem == null)
-            {
-                _logger.LogError($"Inventory item with id '{inventoryItemId}' was not found");
-                return NotFound();
-            }
-            if (!User.Is(inventoryItem.ProfileId))
-            {
-                _logger.LogError($"Inventory item with id '{inventoryItemId}' does not belong to you");
-                return NotFound();
-            }
-
-            inventoryItem.CurrencyId = command.CurrencyId;
-            inventoryItem.BuyPrice = SteamEconomyHelper.GetPriceValueAsInt(command.Price);
-            _db.SaveChanges();
-            return Ok();
-        }
-
-        [Authorize]
-        [HttpPut("item/{itemOrAssetId}/{flag}")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult SetInventoryItemFlag([FromRoute] string itemOrAssetId, [FromRoute] string flag, [FromBody] bool value)
-        {
-            SteamProfileInventoryItemFlags flagValue;
-            if (!Enum.TryParse<SteamProfileInventoryItemFlags>(flag, true, out flagValue))
-            {
-                return BadRequest();
-            }
-            if (String.IsNullOrEmpty(itemOrAssetId))
-            {
-                return NotFound();
-            }
-
-            var profileId = User.Id();
-            var inventoryItems = _db.SteamProfileInventoryItems
-                .Where(x => x.ProfileId == profileId)
-                .Where(x => x.SteamId == itemOrAssetId || x.Description.SteamId == itemOrAssetId)
-                .ToList();
-            if (!(inventoryItems?.Any() == true))
-            {
-                _logger.LogError($"No inventory items found that match id '{itemOrAssetId}' for your profile");
-                return NotFound();
-            }
-
-            foreach (var inventoryItem in inventoryItems)
-            {
-                if (value)
-                {
-                    inventoryItem.Flags |= flagValue;
-                }
-                else
-                {
-                    inventoryItem.Flags &= ~flagValue;
-                }
-            }
-
-            _db.SaveChanges();
-            return Ok();
         }
     }
 }

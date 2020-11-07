@@ -10,8 +10,6 @@ namespace SCMM.Web.Shared.Data.Models.Steam
         Marketable = 0x02,
 
         WantToTrade = 0x10,
-        WantToSell = 0x20,
-
-        Pinned = 0x80
+        WantToSell = 0x20
     }
 }

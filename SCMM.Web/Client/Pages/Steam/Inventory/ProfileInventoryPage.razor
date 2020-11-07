@@ -63,10 +63,10 @@
                     IndicatorColor="@Color.Primary"
                     TextColor="@Color.Primary"
                     Variant="@TabsVariant.FullWidth">
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Summary" Wrapped />
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Return on investment" Wrapped />
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Market activity" Wrapped />
-                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Market performance" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Inventory" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Wishlist" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Investment" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Performance" Wrapped />
             </Tabs>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
                 @if ((int)SelectedInventoryPanel == 0)
@@ -77,13 +77,27 @@
                     }
                     else
                     {
-                        <InventoryItemsSummary Items="@FilterItems(InventoryItemsSummary)"
+                        <InventoryItemsSummary Items="@FilterItems(InventoryItemsSummary)" ProfileName="@Profile.Name" ProfileIsMe="@ProfileIsMe"
                                                ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
                     }
                 }
             </TabPanel>
-            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="1">
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="1">
                 @if ((int)SelectedInventoryPanel == 1)
+                {
+                    @if (InventoryItemsWishlist == null)
+                    {
+                        <Loading />
+                    }
+                    else
+                    {
+                        <InventoryItemsWishlist Items="@FilterItems(InventoryItemsWishlist)"
+                                                ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
+                    }
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="2">
+                @if ((int)SelectedInventoryPanel == 2)
                 {
                     @if (InventoryItemsInvestment == null)
                     {
@@ -95,19 +109,6 @@
                             <InventoryItemsInvestment Items="@FilterItems(InventoryItemsInvestment)" 
                                                       ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
                         </Paper>
-                    }
-                }
-            </TabPanel>
-            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="2">
-                @if ((int)SelectedInventoryPanel == 2)
-                {
-                    @if (InventoryItemsActivity == null)
-                    {
-                        <Loading />
-                    }
-                    else
-                    {
-                        <InventoryItemsActivity Activity="@FilterItems(InventoryItemsActivity)" />
                     }
                 }
             </TabPanel>
@@ -147,9 +148,9 @@
 
     private IList<ProfileInventoryItemSummaryDTO> InventoryItemsSummary { get; set; }
 
+    private IList<ProfileInventoryItemWishDTO> InventoryItemsWishlist { get; set; }
+
     private IList<InventoryItemListDTO> InventoryItemsInvestment { get; set; }
-    
-    private IList<ProfileInventoryActivityDTO> InventoryItemsActivity { get; set; }
 
     private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
     
@@ -167,8 +168,8 @@
             Profile = null;
             ProfileLoadError = null;
             InventoryItemsSummary = null;
+            InventoryItemsWishlist = null;
             InventoryItemsInvestment = null;
-            InventoryItemsActivity = null;
             InventoryTotal = null;
             InventoryPerformance = null;
             await LoadProfile(forceReload);
@@ -189,8 +190,8 @@
         switch (SelectedInventoryPanel)
         {
             case 0: await LoadInventorySummary(forceReload); break;
-            case 1: await LoadInventoryInvestment(forceReload); break;
-            case 2: await LoadInventoryActivity(forceReload); break;
+            case 1: await LoadInventoryWishlist(forceReload); break;
+            case 2: await LoadInventoryInvestment(forceReload); break;
             case 3: await LoadInventoryPerformance(forceReload); break;
         }
         StateHasChanged();
@@ -274,7 +275,26 @@
             InventoryItemsSummary = null;
         }
     }
-
+    
+    private async Task LoadInventoryWishlist(bool forceReload = false)
+    {
+        try
+        {
+            if (InventoryItemsWishlist == null || forceReload)
+            {
+                Logger.LogInformation("Fetching inventory wishlist...");
+                InventoryItemsWishlist = await Http.GetFromJsonAsync<IList<ProfileInventoryItemWishDTO>>(
+                    $"api/inventory/{SteamId}/wishlist"
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory wishlist for '{SteamId}'");
+            InventoryItemsWishlist = null;
+        }
+    }
+    
     private async Task LoadInventoryInvestment(bool forceReload = false)
     {
         try
@@ -291,25 +311,6 @@
         {
             Logger.LogError(ex, $"Error fetching inventory investment for '{SteamId}'");
             InventoryItemsInvestment = null;
-        }
-    }
-    
-    private async Task LoadInventoryActivity(bool forceReload = false)
-    {
-        try
-        {
-            if (InventoryItemsActivity == null || forceReload)
-            {
-                Logger.LogInformation("Fetching inventory activity...");
-                InventoryItemsActivity = await Http.GetFromJsonAsync<IList<ProfileInventoryActivityDTO>>(
-                    $"api/inventory/{SteamId}/activity"
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error fetching inventory activity for '{SteamId}'");
-            InventoryItemsActivity = null;
         }
     }
     

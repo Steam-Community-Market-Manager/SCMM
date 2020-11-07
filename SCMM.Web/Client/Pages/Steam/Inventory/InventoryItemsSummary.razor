@@ -5,7 +5,7 @@
 <div style="padding:8px">
     @foreach (var item in Items)
     {
-        <InventoryItemsSummaryItem Item="@item" ReadOnly="@ReadOnly" />
+        <InventoryItemsSummaryItem Item="@item" ProfileName="@ProfileName" ProfileIsMe="@ProfileIsMe" ReadOnly="@ReadOnly" />
     }
 </div>
 
@@ -14,6 +14,12 @@
     [Parameter]
     public IEnumerable<ProfileInventoryItemSummaryDTO> Items { get; set; }
     
+    [Parameter]
+    public string ProfileName { get; set; }
+
+    [Parameter]
+    public bool ProfileIsMe { get; set; }
+
     [Parameter]
     public bool ReadOnly { get; set; }
 

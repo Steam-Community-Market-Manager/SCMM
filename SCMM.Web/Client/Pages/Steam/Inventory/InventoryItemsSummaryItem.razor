@@ -3,7 +3,7 @@
 @using SCMM.Web.Shared.Data.Models.Steam;
 @using SCMM.Web.Shared; 
 @inherits ComponentBase
-@inject ILogger<InventoryItemsSummary> Logger
+@inject ILogger<InventoryItemsSummaryItem> Logger
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 
@@ -42,7 +42,7 @@
     
     .Item-Summary-Badge-Flags > .Badge-Badge {
         color: var(--theme-palette-primary-contrast-text, #fff);
-        background-color: #a5d6a7;
+        background-color: #90caf9;
     }
     
     .Item-Summary-Badge-Flags > .Badge-Badge i {
@@ -67,18 +67,18 @@
     <ChildContent>
         <div class="Item-Summary-Body" style="@GetItemStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
             <Badge Class="Item-Summary-Badge Item-Summary-Badge-Flags Item-Summary-Badge-Top"
-                    Invisible="@(!Item.Flags.HasFlag(SCMM.Web.Shared.Data.Models.Steam.SteamProfileInventoryItemFlags.WantToSell) && !Item.Flags.HasFlag(SCMM.Web.Shared.Data.Models.Steam.SteamProfileInventoryItemFlags.WantToTrade))"
+                    Invisible="@(!Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) && !Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))"
                     Color="@Color.Custom"
                     Horizontal="@Horizontal.Left"
                     Vertical="@Vertical.Top">
                 <BadgeContent>
                     @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
                     {
-                        <i class="fas fa-hand-holding-usd" />
+                        <i class="fas fa-hand-holding-usd" title="@((ProfileIsMe ? "You want" : $"{ProfileName} wants") + " to sell this")"/>
                     }
                     @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
                     {
-                        <i class="fas fa-exchange-alt" />
+                        <i class="fas fa-exchange-alt" title="@((ProfileIsMe ? "You're" : $"{ProfileName} is") + " interested in trade offers for this")" />
                     }
                 </BadgeContent>
                 <ChildContent>
@@ -102,36 +102,33 @@
         </div>
     </ChildContent>
     <ContextMenu>
-        @if (!ReadOnly)
+        @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
         {
-            @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
-            {
-                <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToSell, false))">
-                    <i class="fas fa-fw fa-hand-holding-usd" style="margin-right:8px"></i>
-                    <span>I want to keep this item</span>
-                </ContextMenuItem>
-            }
-            else
-            {
-                <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToSell, true))">
-                    <i class="fas fa-fw fa-hand-holding-usd" style="margin-right:8px"></i>
-                    <span>I'm open to selling this item</span>
-                </ContextMenuItem>
-            }
-            @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
-            {
-                <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToTrade, false))">
-                    <i class="fas fa-fw fa-exchange-alt" style="margin-right:8px"></i>
-                    <span>I want to keep this item</span>
-                </ContextMenuItem>
-            }
-            else
-            {
-                <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToTrade, true))">
-                    <i class="fas fa-fw fa-exchange-alt" style="margin-right:8px"></i>
-                    <span>I'm accepting trades for this item</span>
-                </ContextMenuItem>
-            }
+            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToSell, false))">
+                <i class="fas fa-fw fa-hand-holding-usd" style="margin-right:8px"></i>
+                <span>I don't want to sell this anymore</span>
+            </ContextMenuItem>
+        }
+        else
+        {
+            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToSell, true))">
+                <i class="fas fa-fw fa-hand-holding-usd" style="margin-right:8px"></i>
+                <span>I want to sell this</span>
+            </ContextMenuItem>
+        }
+        @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
+        {
+            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToTrade, false))">
+                <i class="fas fa-fw fa-exchange-alt" style="margin-right:8px"></i>
+                <span>I'm not interested in trade offers anymore</span>
+            </ContextMenuItem>
+        }
+        else
+        {
+            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToTrade, true))">
+                <i class="fas fa-fw fa-exchange-alt" style="margin-right:8px"></i>
+                <span>I'm interested in trade offers for this</span>
+            </ContextMenuItem>
         }
     </ContextMenu>
 </ContextContainer>
@@ -141,6 +138,12 @@
     [Parameter]
     public ProfileInventoryItemSummaryDTO Item { get; set; }
     
+    [Parameter]
+    public string ProfileName { get; set; }
+
+    [Parameter]
+    public bool ProfileIsMe { get; set; }
+
     [Parameter]
     public bool ReadOnly { get; set; }
 
@@ -170,7 +173,7 @@
             }
             StateHasChanged();
 
-            await Http.PutAsJsonAsync($"api/inventory/item/{item.SteamId}/{flag}", value);
+            await Http.PutAsJsonAsync($"api/profile/inventory/item/{item.SteamId}/{flag}", value);
         }
         catch (Exception ex)
         {

@@ -164,7 +164,7 @@
             Item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
             try 
             {
-                await Http.PutAsJsonAsync($"api/inventory/item/{Item.Id}", new UpdateInventoryItemPriceCommand()
+                await Http.PutAsJsonAsync($"api/profile/inventory/item/{Item.Id}/buyPrice", new UpdateInventoryItemPriceCommand()
                 {
                     CurrencyId = State.Currency.Id,
                     Price = value

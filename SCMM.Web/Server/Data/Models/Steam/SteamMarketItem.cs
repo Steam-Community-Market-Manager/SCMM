@@ -1,4 +1,5 @@
 ﻿using SCMM.Steam.Shared;
+using SCMM.Web.Shared.Data.Models.Steam;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

@@ -1,0 +1,105 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+@using SCMM.Web.Shared.Data.Models.Steam;
+@using SCMM.Web.Shared; 
+@inherits ComponentBase
+@inject ILogger<InventoryItemsWishlistItem> Logger
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+
+<style>
+
+    .Item-Summary-Root {
+        display: inline-flex;
+    }
+
+    .Item-Summary-Body {
+        display: flex;
+        flex-direction: column;
+        align-content: center;
+        align-items: center;
+        width: 104px;
+        height: 128px;
+        margin: 8px;
+        border-radius: 3px;
+        background-color: var(--theme-palette-background-paper, #fff);
+    }
+
+    .Item-Summary-Body:hover {
+        background-color: #666666;
+        cursor: pointer;
+    }
+
+    .Item-Summary-Root img {
+        margin: calc(var(--theme-spacing, 6) * 2px);
+        width: 72px;
+        height: 72px;
+    }
+
+</style>
+
+@if (Item.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
+{
+    <ContextContainer Class="Item-Summary-Root" Invisible="@ReadOnly">
+        <ChildContent>
+            <div class="Item-Summary-Body" style="@GetItemStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
+                <img src="@Item.IconUrl" />
+                @if (Item.BuyNowPrice > 0)
+                {
+                    <Typography Variant="@TypographyVariant.Body2">
+                        @Item.Currency.ToPriceString(Item.BuyNowPrice)
+                    </Typography>
+                }
+            </div>
+        </ChildContent>
+        <ContextMenu>
+            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileMarketItemFlags.WantToBuy, false))">
+                <i class="fas fa-fw fa-trash" style="margin-right:8px"></i>
+                <span>Remove from my wishlist</span>
+            </ContextMenuItem>
+        </ContextMenu>
+    </ContextContainer>
+}
+
+@code {
+
+    [Parameter]
+    public ProfileInventoryItemWishDTO Item { get; set; }
+    
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    private string GetItemStyles(ProfileInventoryItemWishDTO item)
+    {
+        return $"border: 2px solid {item.ForegroundColour}";
+    }
+
+    private void OnItemClicked(ProfileInventoryItemWishDTO item)
+    {
+        //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+    }
+
+    private async Task UpdateItemFlag(ProfileInventoryItemWishDTO item, SteamProfileMarketItemFlags flag, bool value)
+    {
+        try
+        {
+            if (value)
+            {
+                item.Flags |= flag;
+            }
+            else 
+            {
+                item.Flags &= ~flag;
+            }
+            StateHasChanged();
+
+            await Http.PutAsJsonAsync($"api/profile/market/item/{item.SteamId}/{flag}", value);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error updating flag for item '{item.Name}' (flag: {flag}, value: {value})");
+        }
+    }
+}

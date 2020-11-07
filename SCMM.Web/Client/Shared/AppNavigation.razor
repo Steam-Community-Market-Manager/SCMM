@@ -107,7 +107,7 @@ else
         try
         {
             InventoryTotals = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
-                $"api/inventory/me/total"
+                $"api/inventory/{State.Profile?.SteamId}/total"
             );
         }
         catch (Exception ex)
