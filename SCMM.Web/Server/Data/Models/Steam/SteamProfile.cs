@@ -28,6 +28,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public string AvatarLargeUrl { get; set; }
 
+        public string TradeUrl { get; set; }
+
         public string Country { get; set; }
 
         public Guid? LanguageId { get; set; }
