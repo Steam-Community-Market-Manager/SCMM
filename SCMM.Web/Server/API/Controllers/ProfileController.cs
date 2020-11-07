@@ -49,9 +49,10 @@ namespace SCMM.Web.Server.API.Controllers
 
                 // Map the DB profile over top of the default profile
                 // NOTE: This is done so that the language/currency pass-through if they haven't been set yet
-                return _mapper.Map(
-                    profile, defaultProfile
-                );
+                var authenticatedProfile = _mapper.Map<ProfileDetailedDTO>(profile);
+                authenticatedProfile.Language = (authenticatedProfile.Language ?? defaultProfile.Language);
+                authenticatedProfile.Currency = (authenticatedProfile.Currency ?? defaultProfile.Currency);
+                return authenticatedProfile;
             }
 
             // Else, use a transient guest profile
