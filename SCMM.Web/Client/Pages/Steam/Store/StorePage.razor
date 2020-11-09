@@ -136,7 +136,7 @@ else
             @foreach (var item in Store.Items.OrderBy(x => x.StoreIndex))
             {
                 <Grid Item Class="Store-Item" ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Medium="@GridSize.Four" ExtraLarge="@GridSize.Three">
-                    <Card>
+                    <Card style="@GetCardStyles(item)">
                         <CardHeader DisableTypography="true">
                             <AvatarContent>
                                 <div title="@item.AuthorName">
@@ -145,7 +145,7 @@ else
                                 </div>
                             </AvatarContent>
                             <TitleContent>
-                                <Typography Variant="@TypographyVariant.H6" Style="@GetItemStyles(item)">
+                                <Typography Variant="@TypographyVariant.H6" Style="@GetNameStyles(item)">
                                     <span>@item.Name</span>
                                 </Typography>
                             </TitleContent>
@@ -375,7 +375,7 @@ else
     {
         await RefreshStores();
     }
-
+    
     private void BuyItem(StoreItemDetailDTO item)
     {
         string url = (item.IsStillAvailableInStore)
@@ -456,8 +456,13 @@ else
 
         StateHasChanged();
     }
+    
+    private string GetCardStyles(StoreItemDetailDTO item)
+    {
+        return $"border: 2px solid {item.ForegroundColour}";
+    }
 
-    private string GetItemStyles(StoreItemDetailDTO item)
+    private string GetNameStyles(StoreItemDetailDTO item)
     {
         return $"color: {item.ForegroundColour}";
     }
