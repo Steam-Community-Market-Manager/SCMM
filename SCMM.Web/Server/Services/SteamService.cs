@@ -31,13 +31,13 @@ namespace SCMM.Web.Server.Services
     {
         private readonly TimeSpan DefaultCachePeriod = TimeSpan.FromHours(6);
 
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
         private readonly SteamCurrencyService _currencyService;
         private readonly SteamLanguageService _languageService;
 
-        public SteamService(SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService)
+        public SteamService(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
@@ -51,15 +51,20 @@ namespace SCMM.Web.Server.Services
             return await _communityClient.GetImage(new SteamBlobRequest(url));
         }
 
-        public DateTimeOffset GetStoreNextUpdateExpectedOn()
+        public DateTimeOffset? GetStoreNextUpdateExpectedOn()
         {
-            var nextStoreUpdateUtc = _db.SteamAssetWorkshopFiles
+            var lastItemAcceptedOn = _db.SteamAssetWorkshopFiles
                 .Where(x => x.AcceptedOn != null)
-                .Select(x => x.AcceptedOn.Value)
-                .Max().UtcDateTime;
+                .GroupBy(x => 1)
+                .Select(x => x.Max(y => y.AcceptedOn))
+                .FirstOrDefault()?.UtcDateTime;
+            if (lastItemAcceptedOn == null)
+            {
+                return null;
+            }
 
-            // Store normally updates every thursday or friday around 9pm (UK time)
-            nextStoreUpdateUtc = (nextStoreUpdateUtc.Date + new TimeSpan(21, 0, 0));
+            // Store normally updates every thursday or friday around 9pm (UTC time)
+            var nextStoreUpdateUtc = (lastItemAcceptedOn.Value.Date + new TimeSpan(21, 0, 0));
             do
             {
                 nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
@@ -100,19 +105,20 @@ namespace SCMM.Web.Server.Services
             }
 
             // Load the profile inventory
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                .Where(x => x.MarketItem != null)
+            var profileInventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                // TODO: Use MarketItem or StoreItem for value calculation
+                .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
                 {
                     Quantity = x.Quantity,
                     BuyPrice = x.BuyPrice,
                     ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
-                    MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
-                    MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
-                    MarketItemResellPrice = x.MarketItem.ResellPrice,
-                    MarketItemResellTax = x.MarketItem.ResellTax,
-                    MarketItemExchangeRateMultiplier = (x.MarketItem.Currency != null ? x.MarketItem.Currency.ExchangeRateMultiplier : 0)
+                    MarketItemLast1hrValue = x.Description.MarketItem.Last1hrValue,
+                    MarketItemLast24hrValue = x.Description.MarketItem.Last24hrValue,
+                    MarketItemResellPrice = x.Description.MarketItem.ResellPrice,
+                    MarketItemResellTax = x.Description.MarketItem.ResellTax,
+                    MarketItemExchangeRateMultiplier = (x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : 0)
                 })
                 .ToList();
 
@@ -205,10 +211,15 @@ namespace SCMM.Web.Server.Services
                 profile.Country = response.Data.CountryCode;
             }
 
-            // Else, it is probably a string profile id...
+            // Else, it is probably a custom named profile or profile page url...
             else
             {
                 var profileId = steamId;
+                if (Regex.IsMatch(steamId, SteamConstants.SteamProfileIdRegex))
+                {
+                    profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
+                }
+
                 var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
                 {
                     ProfileId = profileId,
@@ -246,9 +257,6 @@ namespace SCMM.Web.Server.Services
                 .Include(x => x.InventoryItems).ThenInclude(x => x.App)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Description)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.MarketItem.Currency)
                 .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
             if (profile == null)
             {
@@ -288,6 +296,11 @@ namespace SCMM.Web.Server.Services
                     // Inventory is probably private
                     continue;
                 }
+                if (inventory?.Assets?.Any() != true)
+                {
+                    // Inventory doesn't have any items for this app
+                    continue;
+                }
 
                 // Add assets
                 var missingAssets = inventory.Assets
@@ -300,20 +313,15 @@ namespace SCMM.Web.Server.Services
                     {
                         continue;
                     }
-                    var marketItem = await _db.SteamMarketItems
-                        .Include(x => x.Currency)
-                        .FirstOrDefaultAsync(x => x.Description.SteamId == asset.ClassId);
-                    var inventoryItem = new SteamInventoryItem()
+                    var inventoryItem = new SteamProfileInventoryItem()
                     {
                         SteamId = asset.AssetId,
-                        Owner = profile,
-                        OwnerId = profile.Id,
+                        Profile = profile,
+                        ProfileId = profile.Id,
                         App = app,
                         AppId = app.Id,
                         Description = assetDescription,
                         DescriptionId = assetDescription.Id,
-                        MarketItem = marketItem,
-                        MarketItemId = marketItem?.Id,
                         Quantity = asset.Amount
                     };
 
@@ -327,17 +335,6 @@ namespace SCMM.Web.Server.Services
                     if (existingAsset != null)
                     {
                         existingAsset.Quantity = asset.Amount;
-                        if (existingAsset.MarketItemId == null)
-                        {
-                            var marketItem = await _db.SteamMarketItems
-                                .Include(x => x.Currency)
-                                .FirstOrDefaultAsync(x => x.Description.SteamId == asset.ClassId);
-                            if (marketItem != null)
-                            {
-                                existingAsset.MarketItem = marketItem;
-                                existingAsset.MarketItemId = marketItem.Id;
-                            }
-                        }
                     }
                 }
 
@@ -357,7 +354,7 @@ namespace SCMM.Web.Server.Services
             return profile;
         }
 
-        public async Task<Data.Models.Steam.SteamAssetFilter> AddOrUpdateAppAssetFilter(SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
+        public Data.Models.Steam.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
         {
             var existingFilter = app.Filters.FirstOrDefault(x => x.SteamId == filter.Name);
             if (existingFilter != null)
@@ -453,7 +450,7 @@ namespace SCMM.Web.Server.Services
                         maxSubscriptions = (int)Math.Max(maxSubscriptions, workshopFile.SubscriptionsGraph[utcDate]);
                     }
                     workshopFile.SubscriptionsGraph[utcDate] = maxSubscriptions;
-                    workshopFile.SubscriptionsGraph = new Data.Types.PersistableGraphDataSet(
+                    workshopFile.SubscriptionsGraph = new Data.Types.PersistableDailyGraphDataSet(
                         workshopFile.SubscriptionsGraph
                     );
                 }
@@ -478,14 +475,13 @@ namespace SCMM.Web.Server.Services
             return assetDescription;
         }
 
-        public SteamStoreItem UpdateStoreItemRank(SteamStoreItem storeItem, int storeRankPosition, int storeRankTotal)
+        public SteamStoreItemItemStore UpdateStoreItemIndex(SteamStoreItemItemStore storeItem, int storeIndex)
         {
-            var utcDate = DateTime.UtcNow.Date;
-            storeItem.StoreRankPosition = storeRankPosition;
-            storeItem.StoreRankTotal = storeRankTotal;
-            storeItem.StoreRankGraph[utcDate] = storeRankPosition;
-            storeItem.StoreRankGraph = new Data.Types.PersistableGraphDataSet(
-                storeItem.StoreRankGraph
+            var utcDateTime = (DateTime.UtcNow.Date + TimeSpan.FromHours(DateTime.UtcNow.TimeOfDay.Hours));
+            storeItem.Index = storeIndex;
+            storeItem.IndexGraph[utcDateTime] = storeIndex;
+            storeItem.IndexGraph = new Data.Types.PersistableHourlyGraphDataSet(
+                storeItem.IndexGraph
             );
 
             return storeItem;
@@ -563,8 +559,8 @@ namespace SCMM.Web.Server.Services
                 Name = assetDescription.MarketName,
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
-                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
-                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl).Uri.ToString(),
+                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl),
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
@@ -604,8 +600,8 @@ namespace SCMM.Web.Server.Services
                 Name = assetDescription.MarketName,
                 BackgroundColour = assetDescription.BackgroundColor.SteamColourToHexString(),
                 ForegroundColour = assetDescription.NameColor.SteamColourToHexString(),
-                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl).Uri.ToString(),
-                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl).Uri.ToString(),
+                IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl),
+                IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl),
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
@@ -615,7 +611,7 @@ namespace SCMM.Web.Server.Services
             return dbAssetDescription;
         }
 
-        public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamLanguage language, AssetModel asset, DateTime timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, SteamLanguage language, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Description)
@@ -625,10 +621,12 @@ namespace SCMM.Web.Server.Services
             if (dbItem != null)
             {
                 // Update prices
-                if (asset.Prices != null)
-                {
-                    dbItem.StorePrices = new PersistablePriceDictionary(GetPriceTable(asset.Prices));
-                }
+                // TODO: Move this to a seperate job (to avoid spam?)
+                //if (asset.Prices != null)
+                //{
+                //    dbItem.Prices = new PersistablePriceDictionary(GetPriceTable(asset.Prices));
+                //    dbItem.Price = dbItem.Prices.FirstOrDefault(x => x.Key == currency.Name).Value;
+                //}
                 return dbItem;
             }
 
@@ -643,12 +641,14 @@ namespace SCMM.Web.Server.Services
                 assetDescription.WorkshopFile.AcceptedOn = timeChecked;
             }
 
+            var prices = GetPriceTable(asset.Prices);
             app.StoreItems.Add(dbItem = new SteamStoreItem()
             {
                 SteamId = asset.Name,
                 AppId = app.Id,
                 Description = assetDescription,
-                StorePrices = new PersistablePriceDictionary(GetPriceTable(asset.Prices))
+                Prices = new PersistablePriceDictionary(prices),
+                Price = prices.FirstOrDefault(x => x.Key == currency.Name).Value
             });
 
             return dbItem;
@@ -827,7 +827,7 @@ namespace SCMM.Web.Server.Services
             return dbItem;
         }
 
-        public async Task<SteamMarketItem> UpdateMarketItemNameId(SteamMarketItem item, string itemNameId)
+        public SteamMarketItem UpdateMarketItemNameId(SteamMarketItem item, string itemNameId)
         {
             if (!String.IsNullOrEmpty(itemNameId))
             {

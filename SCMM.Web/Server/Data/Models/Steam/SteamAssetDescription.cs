@@ -1,4 +1,5 @@
 ﻿using SCMM.Web.Server.Data.Types;
+using SCMM.Web.Shared.Data.Models.Steam;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -22,6 +23,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
         [Required]
         public string Name { get; set; }
 
+        public string Description { get; set; }
+
         public string BackgroundColour { get; set; }
 
         public string ForegroundColour { get; set; }
@@ -30,13 +33,15 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public string IconLargeUrl { get; set; }
 
+        public PersistableStringDictionary Tags { get; set; }
+
+        public SteamAssetDescriptionFlags Flags { get; set; }
+
+        public DateTimeOffset? LastCheckedOn { get; set; }
+
         public Guid? WorkshopFileId { get; set; }
 
         public SteamAssetWorkshopFile WorkshopFile { get; set; }
-
-        public PersistableStringDictionary Tags { get; set; }
-
-        public DateTimeOffset? LastCheckedOn { get; set; }
 
         public SteamStoreItem StoreItem { get; set; }
 

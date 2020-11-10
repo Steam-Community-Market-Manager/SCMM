@@ -16,17 +16,17 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ClaimTypes = SCMM.Web.Server.Data.Models.ClaimTypes;
+using ClaimTypes = SCMM.Web.Shared.Data.Models.ClaimTypes;
 
 namespace SCMM.Web.Server.Services
 {
     public class SecurityService
     {
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
 
-        public SecurityService(SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient)
+        public SecurityService(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();

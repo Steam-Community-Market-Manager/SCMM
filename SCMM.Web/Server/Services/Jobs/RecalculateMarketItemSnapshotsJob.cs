@@ -27,7 +27,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
                 var itemIds = await db.SteamMarketItems
                     .Select(x => x.Id)

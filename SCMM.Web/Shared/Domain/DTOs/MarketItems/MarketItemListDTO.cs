@@ -1,4 +1,5 @@
-﻿using SCMM.Web.Shared.Domain.DTOs.Currencies;
+﻿using SCMM.Web.Shared.Data.Models.Steam;
+using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
 using System.Collections.Generic;
 
@@ -11,6 +12,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
         public string SteamId { get; set; }
 
         public string SteamAppId { get; set; }
+
+        public string SteamDescriptionId { get; set; }
 
         public string Name { get; set; }
 
@@ -28,6 +31,8 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public int Demand { get; set; }
 
+        public long? StorePrice { get; set; }
+
         public long BuyAskingPrice { get; set; }
 
         public long BuyNowPrice { get; set; }
@@ -37,8 +42,6 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
         public long ResellTax { get; set; }
 
         public long ResellProfit { get; set; }
-
-        public long First24hrValue { get; set; }
 
         public long Last1hrSales { get; set; }
 
@@ -78,14 +81,16 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public long AllTimeLowestValue { get; set; }
 
-        public bool HasAppreciated { get; set; }
+        public bool? HasAppreciated => (StorePrice != null ? (bool?)(Last1hrValue >= StorePrice) : null);
 
-        public bool HasDepreciated { get; set; }
+        public bool? HasDepreciated => (StorePrice != null ? (bool?)(Last1hrValue < StorePrice) : null);
 
         public string MarketAge { get; set; }
 
-        public int Subscriptions { get; set; }
+        public int? Subscriptions { get; set; }
 
-        public IDictionary<string, string> Tags { get; set; }
+        public SteamMarketItemFlags Flags { get; set; }
+
+        public SteamProfileMarketItemFlags ProfileFlags { get; set; }
     }
 }

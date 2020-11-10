@@ -1,0 +1,30 @@
+﻿@namespace Skclusive.Material.Selection
+@inherits SwitchBaseComponent
+
+<IconButton
+    RootRef="@RootRef"
+    Class="@_Class"
+    Style="@_Style"
+    Component="@Component"
+    Disabled="@Disabled"
+    tabIndex="@TabIndex"
+    DisableRipple="@DisableRipple"
+    OnFocus="@HandleFocusAsync"
+    OnBlur="@HandleBlurAsync"
+    @attributes="Attributes">
+    <input
+        @ref="ChildRef.Current"
+        id="@InputId"
+        autofocus="@AutoFocus"
+        type="@Type"
+        name="@Name"
+        value="@Value"
+        checked="@IsChecked"
+        class="@_InputClass"
+        style="@_InputStyle"
+        disabled="@Disabled"
+        tabIndex="@TabIndex"
+        @onchange="HandleChangeAsync"
+        @attributes="InputProps"/>
+    @(IsChecked.HasValue && IsChecked.Value ? CheckedIcon: Icon)
+</IconButton>

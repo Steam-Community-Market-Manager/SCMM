@@ -14,10 +14,10 @@ namespace SCMM.Web.Server.Services
     {
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly IMapper _mapper;
 
-        public SteamLanguageService(SteamDbContext db, IMapper mapper)
+        public SteamLanguageService(ScmmDbContext db, IMapper mapper)
         {
             _db = db;
             _mapper = mapper;

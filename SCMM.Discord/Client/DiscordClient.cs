@@ -27,9 +27,11 @@ namespace SCMM.Discord.Client
             _configuration = configuration;
             _commands = new CommandService();
             _client = new DiscordSocketClient();
-            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client);
+            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client, configuration);
             _client.Log += OnClientLogAsync;
-            _client.Ready += OnClientReadAsync;
+            _client.Ready += OnClientReadyAsync;
+            _client.JoinedGuild += (x) => Task.Run(() => GuildJoined?.Invoke(x.Id, x.Name));
+            _client.LeftGuild += (x) => Task.Run(() => GuildLeft?.Invoke(x.Id, x.Name));
             _clientIsReady = new ManualResetEvent(false);
         }
 
@@ -54,9 +56,10 @@ namespace SCMM.Discord.Client
             return Task.CompletedTask;
         }
 
-        private Task OnClientReadAsync()
+        private Task OnClientReadyAsync()
         {
             _clientIsReady.Set();
+            Ready?.Invoke(Guilds);
             return Task.CompletedTask;
         }
 
@@ -113,11 +116,13 @@ namespace SCMM.Discord.Client
 
             // If guild is null, we'll broadcast to all guilds
             var guilds = _client.Guilds
-                .Where(x => String.IsNullOrEmpty(guildPattern) || Regex.IsMatch(x.Name, guildPattern));
+                .OrderBy(x => x.Name)
+                .Where(x => String.IsNullOrEmpty(guildPattern) || Regex.IsMatch(x.Id.ToString(), guildPattern) || Regex.IsMatch(x.Name, guildPattern));
             foreach (var guild in guilds)
             {
                 // If the channel is null, we'll broadcast to the first channel that we have permission to
                 var channels = guild.TextChannels
+                    .OrderBy(x => x.Name)
                     .Where(x => String.IsNullOrEmpty(channelPattern) || Regex.IsMatch(x.Name, channelPattern))
                     .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
                     .ToList();
@@ -179,5 +184,21 @@ namespace SCMM.Discord.Client
                 }
             }
         }
+
+        public IDictionary<ulong, string> Guilds
+        {
+            get
+            {
+                EnsureClientIsReady();
+                return _client.Guilds.ToDictionary(
+                    x => x.Id,
+                    x => x.Name
+                );
+            }
+        }
+
+        public event Action<IDictionary<ulong, string>> Ready;
+        public event Action<ulong, string> GuildJoined;
+        public event Action<ulong, string> GuildLeft;
     }
 }

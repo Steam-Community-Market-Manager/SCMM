@@ -18,10 +18,42 @@
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0-rc.2.20475.5" />
     <PackageReference Include="Blazored.LocalStorage" Version="3.0.0" />
     <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
-    <PackageReference Include="Skclusive.Material.Component" Version="3.0.2-preview1" />
+
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Skclusive.Material.Component\AppBar\src\AppBar.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Avatar\src\Avatar.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Badge\src\Badge.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Baseline\src\Baseline.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Button\src\Button.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Card\src\Card.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Container\src\Container.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Dialog\src\Dialog.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Divider\src\Divider.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Drawer\src\Drawer.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Form\src\Form.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Grid\src\Grid.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Hidden\src\Hidden.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Icon\src\Icon.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Input\src\Input.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\List\src\List.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Material\src\Material.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Menu\src\Menu.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Modal\src\Modal.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Paper\src\Paper.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\PopOver\src\PopOver.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Progress\src\Progress.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Script\src\Script.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Selection\src\Selection.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Table\src\Table.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Tab\src\Tab.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Text\src\Text.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Theme\src\Theme.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Toolbar\src\Toolbar.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Transition\src\Transition.csproj" />
+    <ProjectReference Include="..\..\Skclusive.Material.Component\Typography\src\Typography.csproj" />
     <ProjectReference Include="..\Shared\SCMM.Web.Shared.csproj" />
   </ItemGroup>
 

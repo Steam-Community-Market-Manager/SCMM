@@ -39,7 +39,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
                 var steamApps = db.SteamApps.ToList();
                 if (!steamApps.Any())
@@ -131,46 +131,74 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 if (newMarketItems.Any())
                 {
+                    db.SaveChanges();
+
                     foreach (var marketItem in newMarketItems)
                     {
-                        var fields = new Dictionary<string, string>();
                         var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
-                        if (storeItem != null)
-                        {
-                            fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, currencies));
-                        }
-                        if (marketItem != null)
-                        {
-                            fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
-                        }
-                        await discord.BroadcastMessageAsync(
-                            channelPattern: $"announcement|market|store|skin|{marketItem.App.Name}",
-                            message: null,
-                            title: $"{marketItem.Description.Name} is now on the market",
-                            description: $"This item just appeared on the marketplace for the first time.",
-                            fields: fields,
-                            url: new SteamMarketListingPageRequest()
-                            {
-                                AppId = marketItem.App.SteamId,
-                                MarketHashName = marketItem.Description.Name
-                            }.Uri.ToString(),
-                            thumbnailUrl: marketItem.App.IconUrl,
-                            imageUrl: marketItem.Description.IconLargeUrl,
-                            color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
-                        );
+                        await BroadcastNewMarketItemNotification(discord, db, marketItem, storeItem, currencies);
                     }
-
-                    db.SaveChanges();
                 }
+            }
+        }
+
+        private async Task BroadcastNewMarketItemNotification(DiscordClient discord, ScmmDbContext db, SteamMarketItem marketItem, SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
+        {
+            var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
+            foreach (var guild in guilds)
+            {
+                var fields = new Dictionary<string, string>();
+                if (storeItem != null)
+                {
+                    var estimatedSales = String.Empty;
+                    if (storeItem.TotalSalesMax == null)
+                    {
+                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} or more";
+                    }
+                    else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax)
+                    {
+                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()}";
+                    }
+                    else
+                    {
+                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
+                    }
+                    if (!String.IsNullOrEmpty(estimatedSales))
+                    {
+                        fields.Add("Estimated Sales", estimatedSales);
+                    }
+                    fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, currencies));
+                }
+                if (marketItem != null)
+                {
+                    fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
+                }
+
+                await discord.BroadcastMessageAsync(
+                    guildPattern: guild.DiscordId,
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertsChannel) ?? $"announcement|market|skin|{marketItem.App.Name}",
+                    message: null,
+                    title: $"{marketItem.Description.Name} is now available in the marketplace",
+                    description: $"This item just appeared in the marketplace for the first time, or has reappeared after previously not having any listings.",
+                    fields: fields,
+                    url: new SteamMarketListingPageRequest()
+                    {
+                        AppId = marketItem.App.SteamId,
+                        MarketHashName = marketItem.Description.Name
+                    },
+                    thumbnailUrl: marketItem.App.IconUrl,
+                    imageUrl: marketItem.Description.IconUrl,
+                    color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
+                );
             }
         }
 
         private string GenerateStoreItemPriceList(SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
         {
             var prices = new List<String>();
-            foreach (var currency in currencies)
+            foreach (var currency in currencies.OrderBy(x => x.Name))
             {
-                var price = storeItem.StorePrices.FirstOrDefault(x => x.Key == currency.Name);
+                var price = storeItem.Prices.FirstOrDefault(x => x.Key == currency.Name);
                 if (price.Value > 0)
                 {
                     var priceString = currency.ToPriceString(price.Value)?.Trim();
@@ -187,7 +215,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private string GenerateMarketItemPriceList(SteamMarketItem marketItem, IEnumerable<SteamCurrency> currencies)
         {
             var prices = new List<String>();
-            foreach (var currency in currencies)
+            foreach (var currency in currencies.OrderBy(x => x.Name))
             {
                 var priceString = currency.ToPriceString(currency.CalculateExchange(marketItem.BuyNowPrice, marketItem.Currency))?.Trim();
                 if (!String.IsNullOrEmpty(priceString))

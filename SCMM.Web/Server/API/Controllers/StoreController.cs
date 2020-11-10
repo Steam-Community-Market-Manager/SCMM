@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ using SCMM.Web.Shared.Domain.DTOs.StoreItems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -20,71 +22,109 @@ namespace SCMM.Web.Server.API.Controllers
     public class StoreController : ControllerBase
     {
         private readonly ILogger<StoreController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
+        private readonly ImageService _images;
         private readonly IMapper _mapper;
 
-        public StoreController(ILogger<StoreController> logger, SteamDbContext db, SteamService steam, IMapper mapper)
+        public StoreController(ILogger<StoreController> logger, ScmmDbContext db, SteamService steam, ImageService images, IMapper mapper)
         {
             _logger = logger;
             _db = db;
             _steam = steam;
+            _images = images;
             _mapper = mapper;
         }
 
         [AllowAnonymous]
-        [HttpGet("nextUpdateExpectedOn")]
-        public DateTimeOffset GetNextUpdateExpectedOn()
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IEnumerable<ItemStoreListDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetStores()
         {
-            return _steam.GetStoreNextUpdateExpectedOn();
+            var appId = this.App();
+            var itemStores = _db.SteamItemStores
+                .Where(x => x.App.SteamId == appId)
+                .OrderBy(x => x.Start)
+                .ToList();
+
+            var itemStoresList = itemStores.Select(x => _mapper.Map<SteamItemStore, ItemStoreListDTO>(x, this));
+            if (!itemStoresList.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(itemStoresList);
         }
 
         [AllowAnonymous]
-        [HttpGet]
-        public IEnumerable<StoreItemListDTO> Get()
+        [HttpGet("current")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
+        public IActionResult GetCurrentStore()
         {
-            var latestStore = _db.SteamAssetWorkshopFiles.Select(p => p.AcceptedOn).Max();
-            var items = _db.SteamStoreItems
-                .Include(x => x.App)
-                .Include(x => x.Description)
-                .Include(x => x.Description.WorkshopFile)
-                .Include(x => x.Description.WorkshopFile.Creator)
-                .Where(x => x.Description.WorkshopFile.AcceptedOn == latestStore)
-                .OrderBy(x => x.StoreRankPosition)
-                .ThenByDescending(x => x.Description.WorkshopFile.Subscriptions)
-                .Take(SteamConstants.SteamStoreItemsMax)
-                .ToList();
+            var appId = this.App();
+            var latestItemStoreId = _db.SteamItemStores
+                .Where(x => x.App.SteamId == appId)
+                .Where(x => x.End == null)
+                .OrderByDescending(x => x.Start)
+                .Select(x => x.Id)
+                .FirstOrDefault();
 
-            var itemDtos = items.ToDictionary(
-                x => x,
-                x => _mapper.Map<SteamStoreItem, StoreItemListDTO>(x, this)
-            );
+            if (latestItemStoreId == Guid.Empty)
+            {
+                return NotFound();
+            }
+
+            return GetStore(latestItemStoreId);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{storeId}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
+        public IActionResult GetStore([FromRoute] Guid storeId)
+        {
+            var itemStore = _db.SteamItemStores
+                .Where(x => x.Id == storeId)
+                .Include(x => x.Items).ThenInclude(x => x.Item)
+                .Include(x => x.Items).ThenInclude(x => x.Item.App)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile.Creator)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem.Currency)
+                .FirstOrDefault();
+
+            var itemStoreDetail = _mapper.Map<SteamItemStore, ItemStoreDetailedDTO>(itemStore, this);
+            if (itemStoreDetail == null)
+            {
+                return NotFound();
+            }
 
             // TODO: Do this better, very lazy
-            foreach (var pair in itemDtos.Where(x => x.Value.Tags != null))
+            var itemStoreTaggedItems = itemStoreDetail.Items.Where(x => x.Tags != null);
+            foreach (var item in itemStoreTaggedItems)
             {
-                var item = pair.Key;
-                var itemDto = pair.Value;
-                var itemType = Uri.EscapeDataString(itemDto.ItemType ?? String.Empty);
+                var itemType = Uri.EscapeDataString(item.ItemType ?? String.Empty);
                 if (String.IsNullOrEmpty(itemType))
                 {
                     continue;
                 }
 
-                var systemCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-                var itemPrice = item.StorePrices.FirstOrDefault(x => x.Key == systemCurrency.Name).Value;
-                if (itemPrice <= 0)
+                var itemPrice = itemStore.Items.Select(x => x.Item).FirstOrDefault(x => x.SteamId == item.SteamId)?.Price;
+                if (itemPrice == null || itemPrice <= 0)
                 {
                     continue;
                 }
 
                 var marketRank = _db.SteamApps
-                    .Where(x => x.SteamId == itemDto.SteamAppId)
+                    .Where(x => x.SteamId == item.SteamAppId)
                     .Select(app => new
                     {
                         Position = app.MarketItems
                             .Where(x => x.Description.Tags.Serialised.Contains(itemType))
-                            .Where(x => x.BuyNowPrice < itemPrice)
+                            .Where(x => x.BuyNowPrice < itemPrice.Value)
                             .Count(),
                         Total = app.MarketItems
                             .Where(x => x.Description.Tags.Serialised.Contains(itemType))
@@ -94,14 +134,53 @@ namespace SCMM.Web.Server.API.Controllers
 
                 if (marketRank.Total > 1)
                 {
-                    itemDto.MarketRankPosition = marketRank.Position;
-                    itemDto.MarketRankTotal = marketRank.Total;
+                    item.MarketRankPosition = marketRank.Position;
+                    item.MarketRankTotal = marketRank.Total;
                 }
             }
 
-            return itemDtos
-                .Select(x => x.Value)
+            return Ok(itemStoreDetail);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{storeId}/mosaic")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStoreMosaic([FromRoute] Guid storeId)
+        {
+            var storeItemDescriptions = _db.SteamItemStores
+                .Where(x => x.Id == storeId)
+                .SelectMany(x => x.Items.Select(x => x.Item.Description))
+                .OrderBy(x => x.Name)
+                .Select(x => x.IconUrl)
+                .Take(SteamConstants.SteamStoreItemsMax)
                 .ToList();
+
+            if (!storeItemDescriptions.Any())
+            {
+                return NotFound();
+            }
+
+            var mosaic = await _images.GetImageMosaic(
+                storeItemDescriptions.Select(x => 
+                    new ImageSource()
+                    {
+                        Url = x
+                    }
+                ),
+                tileSize: 152, 
+                columns: 4,
+                rows: (int) Math.Ceiling((float) storeItemDescriptions.Count / 4)
+            );
+
+            return File(mosaic, "image/png");
+        }
+
+        [AllowAnonymous]
+        [HttpGet("nextStoreExpectedOn")]
+        public DateTimeOffset? GetNextStoreExpectedOn()
+        {
+            return _steam.GetStoreNextUpdateExpectedOn();
         }
     }
 }

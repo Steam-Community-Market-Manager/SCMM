@@ -1,4 +1,5 @@
 ﻿using SCMM.Web.Server.Data.Types;
+using SCMM.Web.Shared.Data.Models.Steam;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,7 +9,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
     {
         public SteamAssetWorkshopFile()
         {
-            SubscriptionsGraph = new PersistableGraphDataSet();
+            SubscriptionsGraph = new PersistableDailyGraphDataSet();
         }
 
         [Required]
@@ -18,6 +19,13 @@ namespace SCMM.Web.Server.Data.Models.Steam
         public Guid AppId { get; set; }
 
         public SteamApp App { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public string ImageUrl { get; set; }
 
         public Guid? CreatorId { get; set; }
 
@@ -31,11 +39,13 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public int Subscriptions { get; set; }
 
-        public PersistableGraphDataSet SubscriptionsGraph { get; set; }
+        public PersistableDailyGraphDataSet SubscriptionsGraph { get; set; }
 
         public int Favourited { get; set; }
 
         public int Views { get; set; }
+
+        public SteamAssetWorkshopFileFlags Flags { get; set; }
 
         public DateTimeOffset? LastCheckedOn { get; set; }
     }

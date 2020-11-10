@@ -443,7 +443,7 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in MostCommon)
+                            @foreach (var item in MostCommon.Where(x => x.Subscriptions != null))
                             {
                                 <TableRow Hover OnClick="@((_) => ViewItem(item))">
                                     <TableCell>
@@ -455,7 +455,7 @@
                                     <TableCell>
                                         <span class="Text-NoWrap">
                                             <i class="fas fa-fw fa-user"></i>
-                                            @item.Subscriptions.ToQuantityString()
+                                            @item.Subscriptions.Value.ToQuantityString()
                                         </span>
                                     </TableCell>
                                 </TableRow>
@@ -488,7 +488,7 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in MostRare)
+                            @foreach (var item in MostRare.Where(x => x.Subscriptions != null))
                             {
                                 <TableRow Hover OnClick="@((_) => ViewItem(item))">
                                     <TableCell>
@@ -500,7 +500,7 @@
                                     <TableCell>
                                         <span class="Text-NoWrap">
                                             <i class="fas fa-fw fa-user"></i>
-                                            @item.Subscriptions.ToQuantityString()
+                                            @item.Subscriptions.Value.ToQuantityString()
                                         </span>
                                     </TableCell>
                                 </TableRow>

@@ -32,15 +32,15 @@ else
             <Typography Paragraph="true">
                 <Typography Variant="@TypographyVariant.Body1" NoWrap>
                     <i class="fas fa-fw fa-user"></i>
-                    @Item.Subscriptions.ToQuantityString()
+                    @Item.Subscriptions.Value.ToQuantityString()
                 </Typography>
                 <Typography Variant="@TypographyVariant.Body1" NoWrap>
                     <i class="fas fa-fw fa-eye"></i>
-                    @Item.Views.ToQuantityString()
+                    @Item.Views.Value.ToQuantityString()
                 </Typography>
                 <Typography Variant="@TypographyVariant.Body1" NoWrap>
                     <i class="fas fa-fw fa-heart"></i>
-                    @Item.Favourited.ToQuantityString()
+                    @Item.Favourited.Value.ToQuantityString()
                 </Typography>
             </Typography>
         </Grid>

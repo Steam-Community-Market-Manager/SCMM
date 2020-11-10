@@ -1,4 +1,5 @@
 ﻿using SCMM.Steam.Shared;
+using SCMM.Web.Shared.Data.Models.Steam;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -188,6 +189,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
         public DateTimeOffset? FirstSeenOn { get; set; }
 
         public TimeSpan? MarketAge => (DateTimeOffset.Now - FirstSeenOn);
+
+        public SteamMarketItemFlags Flags { get; set; }
 
         // How long since orders were last checked
         public DateTimeOffset? LastCheckedOrdersOn { get; set; }

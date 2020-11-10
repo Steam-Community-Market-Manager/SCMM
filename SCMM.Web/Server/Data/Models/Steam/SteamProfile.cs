@@ -1,16 +1,18 @@
 ﻿using SCMM.Web.Server.Data.Types;
+using SCMM.Web.Shared.Data.Models.Steam;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace SCMM.Web.Server.Data.Models.Steam
 {
-    public class SteamProfile : Entity
+    public class SteamProfile : ConfigurableEntity<SteamProfileConfiguration>
     {
         public SteamProfile()
         {
             Roles = new PersistableStringCollection();
-            InventoryItems = new Collection<SteamInventoryItem>();
+            InventoryItems = new Collection<SteamProfileInventoryItem>();
+            MarketItems = new Collection<SteamProfileMarketItem>();
             WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
         }
 
@@ -18,11 +20,15 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public string ProfileId { get; set; }
 
+        public string DiscordId { get; set; }
+
         public string Name { get; set; }
 
         public string AvatarUrl { get; set; }
 
         public string AvatarLargeUrl { get; set; }
+
+        public string TradeUrl { get; set; }
 
         public string Country { get; set; }
 
@@ -42,9 +48,17 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public int DonatorLevel { get; set; }
 
+        public long GamblingOffset { get; set; }
+
+        public SteamProfileFlags Flags { get; set; }
+
+        public SteamVisibilityType Privacy { get; set; }
+
         public PersistableStringCollection Roles { get; set; }
 
-        public ICollection<SteamInventoryItem> InventoryItems { get; set; }
+        public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
+
+        public ICollection<SteamProfileMarketItem> MarketItems { get; set; }
 
         public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }
     }

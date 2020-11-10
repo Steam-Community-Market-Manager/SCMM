@@ -7,205 +7,479 @@
 @inject IJSRuntime JSRuntime
 @inject AppState State
 
+<style>
+
+    .Store-List {
+        margin: -16px;
+        padding-bottom: 0px
+    }
+
+    .Store .TabIndicator-Root {
+        top: 0px;
+    }
+
+    .Store-Item .Card-Root {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .Store-Item .CardContent-Root {
+        flex-grow: 1;
+    }
+
+    .Store-Item .CardContent-Root:last-child {
+        padding-bottom: 16px;
+    }
+
+    .Store-Item .CardContent-Root > .Grid-Root {
+        height: 100%;
+    }
+
+    .Store-Item .Paper-Root {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .Store-Item .Image-Root {
+        text-align: center;
+    }
+
+    .Store-Item .Image-Root img {
+        width: 100%;
+        max-width: 144px;
+    }
+
+    .Store-Item .Button-Root {
+        width: 100%;
+    }
+    
+    .Store-Item .Button-Root i {
+        margin-right: 6px;
+    }
+    
+    .Store-Item .Price-Root {
+        width: 100%;
+        text-align: center;
+        padding: 8px;
+    }
+    
+    .Store-Item .Price-Root {
+        width: 100%;
+        text-align: center;
+        padding: 8px;
+    }
+
+    .Store-Item .Action-Root {
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .Store-Item .Action-Root .Typography-Root {
+        width: 100%;
+    }
+
+</style>
+
 <DocumentTitle Title="Item Store" />
-@if (Items == null)
+
+@if (Stores == null)
 {
-    <Loading />
+    @if(StoreException == null)
+    {
+        <Loading />
+    }
+    else
+    {
+        <Error Exception="@StoreException" />
+    }
 }
 else
 {
     <Grid Container Spacing="@Spacing.Two">
-        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six" style="width:100%">
-            <Paper>
-                <Table Narrow="true">
-                    <TableBody>
-                        @foreach (var item in Items.OrderBy(x => x.StoreRankPosition))
+        @if(Stores.Any())
+        {
+            <Grid Item ExtraSmall="@GridSize.Twelve">
+                <Tabs Class="Store-List"
+                      Value="@SelectedStore"
+                      OnChange="@OnSelectedStoreChanged"
+                      IndicatorColor="@Color.Primary"
+                      TextColor="@Color.Primary"
+                      Variant="@TabsVariant.Scrollable"
+                      Style="margin:-16px; padding-bottom:0px">
+                    <IndicatorContent>
+                        <div />
+                    </IndicatorContent>
+                    <ChildContent>
+                        @foreach (var store in Stores.OrderByDescending(x => x.Start))
                         {
-                            <TableRow>
-                                <TableCell Class="align-top">
-                                    <Hidden ExtraSmallDown>
-                                        <img src="@item.IconUrl" style="width:72px" />
-                                    </Hidden>
-                                </TableCell>
-                                <TableCell Class="align-top">
-                                    <Typography Variant="@TypographyVariant.H6" Style="@GetItemStyles(item)" GutterBottom>
-                                        @item.Name
+                            <Tab Class="Store" Id="@store.Id.ToString()" Value="@store" Label="@store.Name" />
+                        }
+                    </ChildContent>
+                </Tabs>
+            </Grid>
+        }
+        @if (Store == null)
+        {
+            <Grid Item ExtraSmall="@GridSize.Twelve">
+                @if(StoreException == null)
+                {
+                    <Loading />
+                }
+                else
+                {
+                    <Error Exception="@StoreException" />
+                }
+            </Grid>
+        }
+        else
+        {
+            @foreach (var item in Store.Items.OrderBy(x => x.StoreIndex))
+            {
+                <Grid Item Class="Store-Item" ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Medium="@GridSize.Four" ExtraLarge="@GridSize.Three">
+                    <Card style="@GetCardStyles(item)">
+                        <CardHeader DisableTypography="true">
+                            <AvatarContent>
+                                <div title="@item.AuthorName">
+                                    <Avatar Src="@item.AuthorAvatarUrl" Alt="@item.AuthorName">
+                                    </Avatar>
+                                </div>
+                            </AvatarContent>
+                            <TitleContent>
+                                <Typography Variant="@TypographyVariant.H6" Style="@GetNameStyles(item)">
+                                    <span>@item.Name</span>
+                                </Typography>
+                            </TitleContent>
+                            <SubHeaderContent>
+                                @if (!String.IsNullOrEmpty(item.ItemType))
+                                {
+                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary">
+                                        <span>@item.ItemType</span>
                                     </Typography>
+                                }
+                            </SubHeaderContent>
+                        </CardHeader>
+                        <CardContent>
+                            <Grid Container Spacing="@Spacing.Two">
+                                <Grid Item ExtraSmall="@GridSize.Six">
+                                    <div class="Image-Root">
+                                        <img src="@item.IconUrl" />
+                                    </div>
+                                </Grid>
+                                <Grid Item ExtraSmall="@GridSize.Six">
                                     @if (item.MarketRankTotal > 0)
                                     {
-                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary">
-                                        <span><strong>@item.MarketRankPosition/@item.MarketRankTotal</strong> other @item.ItemType.Pluralise(item.MarketRankPosition) are cheaper than this.</span>
-                                    </Typography>
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary" GutterBottom>
+                                            <i class="fas fa-fw fa-balance-scale-left"></i>
+                                            <span>@item.MarketRankPosition cheaper @item.ItemType.Pluralise(item.MarketRankPosition) in the marketplace (@item.MarketRankTotal total).</span>
+                                        </Typography>
                                     }
-                                </TableCell>
-                                <TableCell Class="align-top">
-                                    <Typography Variant="@TypographyVariant.Body1" GutterBottom NoWrap>
-                                        <i class="fas fa-fw fa-tag"></i>
-                                        @item.Currency.ToPriceString(item.StorePrice)
+                                    @if (item.HasWorkshopFile)
+                                    {
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary" NoWrap>
+                                            <i class="fas fa-fw fa-shopping-cart"></i>
+                                            @if (item.TotalSalesMax == null)
+                                            {
+                                                <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() or more</span>
+                                            }
+                                            else if (item.TotalSalesMin == item.TotalSalesMax)
+                                            {
+                                                <span style="padding:8px">@item.TotalSalesMin.ToQuantityString()</span>
+                                            }
+                                            else
+                                            {
+                                                <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
+                                            }
+                                        </Typography>
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary" NoWrap>
+                                            <i class="fas fa-fw fa-user"></i>
+                                            @if (item.Subscriptions > 0)
+                                            {
+                                                <span style="padding:8px">@item.Subscriptions.Value.ToQuantityString()</span>
+                                            }
+                                        </Typography>
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary" NoWrap GutterBottom>
+                                            <i class="fas fa-fw fa-eye"></i>
+                                            @if (item.Views > 0)
+                                            {
+                                                <span style="padding:8px">@item.Views.Value.ToQuantityString()</span>
+                                            }
+                                        </Typography>
+                                    }
+                                    @if (!item.IsStillAvailableInStore)
+                                    {
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                            <span>This item is no longer available, grab it from the marketplace instead.</span>
+                                        </Typography>
+                                    }
+                                    else if (item.HasMarketListing)
+                                    {
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                            <span>This item is also available in the marketplace.</span>
+                                        </Typography>
+                                    }
+                                </Grid>
+                                <Grid Item Class="Action-Root" ExtraSmall="@GridSize.Six">
+                                    <Typography Class="Theme-Success">
+                                        <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary" Disabled="@(!item.IsStillAvailableInStore)">
+                                            <i class="fas fa-fw fa-shopping-cart"></i>
+                                            <strong>@item.Currency.ToPriceString(item.StorePrice)</strong>
+                                        </Button>
                                     </Typography>
-                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
-                                        <i class="fas fa-fw fa-shopping-cart"></i>
-                                        @if (item.TotalSalesMax == null)
-                                        {
-                                        <span>@item.TotalSalesMin.ToQuantityString() or more</span>
-                                        }
-                                        else if (item.TotalSalesMin == item.TotalSalesMax)
-                                        {
-                                        <span>@item.TotalSalesMin.ToQuantityString()</span>
-                                        }
-                                        else
-                                        {
-                                        <span>@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
-                                        }
-                                    </Typography>
-                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" NoWrap>
-                                        <i class="fas fa-fw fa-user"></i>
-                                        <span>@item.Subscriptions.ToQuantityString()</span>
-                                    </Typography>
-                                </TableCell>
-                                <TableCell Class="align-top" Align="@Align.Right">
-                                    <Typography GutterBottom="true" class="Theme-Success">
-                                        <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">Buy</Button>
-                                    </Typography>
-                                    <Typography>
-                                        <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">View</Button>
-                                    </Typography>
-                                </TableCell>
-                            </TableRow>
+                                </Grid>
+                                <Grid Item Class="Action-Root" ExtraSmall="@GridSize.Six">
+                                    @if (item.HasMarketListing)
+                                    {
+                                        <Typography>
+                                            <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">
+                                                <i class="fas fa-fw fa-balance-scale-left"></i>
+                                                <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
+                                            </Button>
+                                        </Typography>
+                                    }
+                                    else if (item.HasWorkshopFile)
+                                    {
+                                        <Typography>
+                                            <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
+                                                <i class="fas fa-fw fa-eye"></i>
+                                                <span>View</span>
+                                            </Button>
+                                        </Typography>
+                                    }
+                                </Grid>
+                            </Grid>
+                        </CardContent>
+                    </Card>
+                </Grid>   
+            }
+            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                <Paper>
+                    <Tabs Value="@SelectedItemChartPanel"
+                          OnChange="@OnSelectedItemChartChanged"
+                          IndicatorColor="@Color.Primary"
+                          TextColor="@Color.Primary"
+                          Variant="@TabsVariant.FullWidth">
+                        <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Sales" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Subscribers" Wrapped />
+                        <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Subscriber Timeline" Wrapped />
+                        @if (Store.Items.Any(x => x.HasMarketListing))
+                        {
+                            <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace Performance" Wrapped />
                         }
-                    </TableBody>
-                </Table>
-            </Paper>
-        </Grid>
-        <Grid Item Large="@GridSize.Twelve" ExtraLarge="@GridSize.Six" style="width:100%">
-            <Grid Container>
-                <Grid ExtraSmall="@GridSize.Twelve">
-                    @if (ItemRevenueChart != null || ItemRankChart != null || ItemRankHistoryChart != null)
+                    </Tabs>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
+                        @if ((int)SelectedItemChartPanel == 0)
+                        {
+                            @if (ItemSalesChart != null)
+                            {
+                                <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
+                                    <Icon>
+                                        <i class="fas fa-fw fa-exclamation-circle"></i>
+                                    </Icon>
+                                    <MessageContent>
+                                        <span><strong>TL;DR;</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
+                                    </MessageContent>
+                                </Alert>
+                                <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
+                            }
+                            else
+                            {
+                                <Error Title="Unavailable" SubTitle="No data yet" />
+                            }
+                        }
+                    </TabPanel>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
+                        @if ((int)SelectedItemChartPanel == 1)
+                        {
+                            @if (ItemSubscribersChart != null)
+                            {
+                                <ChartJsBarChart @ref="ItemSubscribersChartJs" Config="@ItemSubscribersChart" />
+                            }
+                            else
+                            {
+                                <Error Title="Unavailable" SubTitle="No data yet" />
+                            }
+                        }
+                    </TabPanel>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
+                        @if ((int)SelectedItemChartPanel == 2)
+                        {
+                            @if (ItemSubscribersHistoryChart != null)
+                            {
+                                <ChartJsLineChart @ref="ItemSubscribersHistoryChartJs" Config="@ItemSubscribersHistoryChart" />
+                            }
+                            else
+                            {
+                                <Error Title="Unavailable" SubTitle="No data yet" />
+                            }
+                        }
+                    </TabPanel>
+                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="3">
+                        @if ((int)SelectedItemChartPanel == 3)
+                        {
+                            @if (ItemMarketplacePerformanceChart != null)
+                            {
+                                <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
+                            }
+                            else
+                            {
+                                <Error Title="Unavailable" SubTitle="No data yet" />
+                            }
+                        }
+                    </TabPanel>
+                </Paper>
+            </Grid>
+            
+            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                <Grid Container Spacing="@Spacing.Two">
+                    @foreach (var media in Store.Media)
                     {
-                        <Paper>
-                            <Tabs Value="@SelectedItemChartPanel"
-                                  OnChange="@OnSelectedItemChartChanged"
-                                  IndicatorColor="@Color.Primary"
-                                  TextColor="@Color.Primary"
-                                  Variant="@TabsVariant.FullWidth">
-                                <Tab Id="store-tab" Control="store-tab-panel" Value="0" Label="Sales Revenue" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel" Value="1" Label="Sales Overview" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel" Value="2" Label="Sales History" Wrapped />
-                            </Tabs>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
-                                @if (ItemRevenueChart != null)
-                                {
-                                    <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
-                                        <Icon>
-                                            <i class="fas fa-fw fa-exclamation-circle"></i>
-                                        </Icon>
-                                        <MessageContent>
-                                            <span><strong>TL;DR;</strong> Revenue is at least @(State.Currency.ToPriceString(Items.Sum(x => x.TotalSalesMin * x.StorePrice))) so far.</span>
-                                            <span>This graph represents the <strong>minimum</strong> revenue earned per-item from store purchases. Because an individual can purchase multiple copies of the same item, actual revenue will always be higher than what is shown here. Steam doesn't publicly advertise exact sales figures, this is the just a rough estimate.</span>
-                                        </MessageContent>
-                                    </Alert>
-                                    <ChartJsBarChart @ref="ItemRevenueChartJs" Config="@ItemRevenueChart" />
-                                }
-                            </TabPanel>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
-                                @if (ItemRankChart != null)
-                                {
-                                    <ChartJsBarChart @ref="ItemRankChartJs" Config="@ItemRankChart" />
-                                }
-                            </TabPanel>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
-                                @if (ItemRankHistoryChart != null)
-                                {
-                                    <ChartJsLineChart @ref="ItemRankHistoryChartJs" Config="@ItemRankHistoryChart" />
-                                }
-                            </TabPanel>
-                        </Paper>
+                        <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
+                            <YouTubeVideo VideoId="@media" />
+                        </Grid>
                     }
                 </Grid>
-                <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
-                    <YouTubeVideo VideoId="TB7L1tINHvA" />
-                </Grid>
-                <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
-                    <YouTubeVideo VideoId="P7xhT-6FdsA" />
-                </Grid>
             </Grid>
-        </Grid>
+        }
     </Grid>
 }
 
 @code {
 
-    private StoreItemListDTO[] Items { get; set; }
+    private ItemStoreListDTO[] Stores { get; set; }
+
+    private ItemStoreListDTO SelectedStore { get; set; }
+
+    private ItemStoreDetailedDTO Store { get; set; }
+
+    private Exception StoreException { get; set; }
 
     private object SelectedItemChartPanel { get; set; } = 1;
 
-    private ChartJsBarChart ItemRevenueChartJs { get; set; }
+    private ChartJsBarChart ItemSalesChartJs { get; set; }
 
-    private ChartJsBarChart ItemRankChartJs { get; set; }
+    private ChartJsBarChart ItemSubscribersChartJs { get; set; }
 
-    private ChartJsLineChart ItemRankHistoryChartJs { get; set; }
+    private ChartJsLineChart ItemSubscribersHistoryChartJs { get; set; }
 
-    private BarConfig ItemRevenueChart { get; set; }
+    private ChartJsRadarChart ItemMarketplacePerformanceChartJs { get; set; }
 
-    private BarConfig ItemRankChart { get; set; }
+    private BarConfig ItemSalesChart { get; set; }
 
-    private LineConfig ItemRankHistoryChart { get; set; }
+    private BarConfig ItemSubscribersChart { get; set; }
+
+    private LineConfig ItemSubscribersHistoryChart { get; set; }
+
+    private RadarConfig ItemMarketplacePerformanceChart { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshItems();
+        await RefreshStores();
     }
-
-    private void BuyItem(StoreItemListDTO item)
+    
+    private void BuyItem(StoreItemDetailDTO item)
     {
-        string url = $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/";
+        string url = (item.IsStillAvailableInStore)
+            ? $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/"
+            : $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
-    private void ViewItem(StoreItemListDTO item)
+    private void ViewItem(StoreItemDetailDTO item)
     {
         string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.SteamWorkshopId}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
-    private async Task RefreshItems()
+    private async Task RefreshStores()
     {
         try
         {
-            Items = await Http.GetFromJsonAsync<StoreItemListDTO[]>($"api/store");
-            OnSelectedItemChartChanged(SelectedItemChartPanel);
-            StateHasChanged();
+            Stores = await Http.GetFromJsonAsync<ItemStoreListDTO[]>($"api/store");
+            if (Stores.Any())
+            {
+                OnSelectedStoreChanged(Stores.Last());
+            }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing store items");
+            StoreException = ex;
+            Logger.LogError(ex, $"Error loading the store");
         }
+        StateHasChanged();
     }
 
-    private string GetItemStyles(StoreItemListDTO item)
+    private async Task RefreshStore(Guid storeId)
     {
-        return $"color: {item.ForegroundColour}";
+        try
+        {
+            Store = null;
+            StoreException = null;
+            StateHasChanged();
+            Store = await Http.GetFromJsonAsync<ItemStoreDetailedDTO>($"api/store/{storeId}");
+            if (Store != null)
+            {
+                SelectedItemChartPanel = (Store.End == null ? 0 : 3);
+                OnSelectedItemChartChanged(SelectedItemChartPanel);
+            }
+        }
+        catch (Exception ex)
+        {
+            StoreException = ex;
+            Logger.LogError(ex, $"Error loading the store");
+        }
+        StateHasChanged();
+    }
+
+    private void OnSelectedStoreChanged(object value)
+    {
+        SelectedStore = (ItemStoreListDTO) value;
+        if (SelectedStore != null)
+        {
+            RefreshStore(SelectedStore.Id);
+        }
     }
 
     private void OnSelectedItemChartChanged(object value)
     {
         SelectedItemChartPanel = value;
-        ItemRevenueChart = null;
-        ItemRankChart = null;
-        ItemRankHistoryChart = null;
+        ItemSalesChart = null;
+        ItemSubscribersChart = null;
+        ItemSubscribersHistoryChart = null;
+        ItemMarketplacePerformanceChart = null;
         switch (SelectedItemChartPanel)
         {
-            case 0: RedrawItemRevenueChart(); break;
-            case 1: RedrawItemRankChart(); break;
-            case 2: RedrawItemRankHistoryChart(); break;
+            case 0: RedrawItemSalesChart(); break;
+            case 1: RedrawItemSubscribersChart(); break;
+            case 2: RedrawItemSubscribersTimelineChart(); break;
+            case 3: RedrawItemMarketplacePerformanceChart(); break;
         }
 
         StateHasChanged();
     }
-
-    private void RedrawItemRevenueChart()
+    
+    private string GetCardStyles(StoreItemDetailDTO item)
     {
-        ItemRevenueChart = new BarConfig
+        return $"border: 2px solid {item.ForegroundColour}";
+    }
+
+    private string GetNameStyles(StoreItemDetailDTO item)
+    {
+        return $"color: {item.ForegroundColour}";
+    }
+
+    private void RedrawItemSalesChart()
+    {
+        var storeItems = Store.Items
+            .Where(x => x.HasWorkshopFile)
+            .OrderBy(x => x.StoreIndex)
+            .ToList();
+
+        if (!storeItems.Any())
+        {
+            return;
+        }
+
+        ItemSalesChart = new BarConfig
         {
             Options = new BarOptions
             {
@@ -273,8 +547,8 @@ else
             }
         };
 
-        ItemRevenueChart.Data.Labels.AddRange(
-            Items.Select(x => x.Name).ToArray()
+        ItemSalesChart.Data.Labels.AddRange(
+            storeItems.Select(x => x.Name).ToArray()
         );
 
         var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
@@ -288,7 +562,7 @@ else
             BorderWidth = 1
         };
         authorRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)Math.Round((double)((x.TotalSalesMin * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
+            storeItems.Select(x => (DoubleWrapper)Math.Round((double)((x.TotalSalesMin * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
         );
 
         var totalRevenue = new BarDataset<DoubleWrapper>
@@ -299,23 +573,33 @@ else
             BorderWidth = 1
         };
         totalRevenue.AddRange(
-            Items.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
+            storeItems.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
         );
 
-        ItemRevenueChart.Data.Datasets.AddRange(new[] {
+        ItemSalesChart.Data.Datasets.AddRange(new[] {
             authorRevenue, totalRevenue
         });
     }
 
-    private void RedrawItemRankChart()
+    private void RedrawItemSubscribersChart()
     {
-        ItemRankChart = new BarConfig
+        var storeItems = Store.Items
+            .Where(x => x.HasWorkshopFile)
+            .OrderBy(x => x.StoreIndex)
+            .ToList();
+
+        if (!storeItems.Any())
+        {
+            return;
+        }
+
+        ItemSubscribersChart = new BarConfig
         {
             Options = new BarOptions
             {
                 Legend = new Legend
                 {
-                    Display = true,
+                    Display = false,
                     Labels = new LegendLabelConfiguration()
                     {
                         FontColor = "#ffffff"
@@ -376,8 +660,8 @@ else
             }
         };
 
-        ItemRankChart.Data.Labels.AddRange(
-            Items.Select(x => x.Name).ToArray()
+        ItemSubscribersChart.Data.Labels.AddRange(
+            storeItems.Select(x => x.Name).ToArray()
         );
 
         var itemSubscriptions = new BarDataset<DoubleWrapper>
@@ -388,34 +672,28 @@ else
             BorderWidth = 1
         };
         itemSubscriptions.AddRange(
-            Items.Select(x => (DoubleWrapper)x.Subscriptions)
+            storeItems.Select(x => (DoubleWrapper)x.Subscriptions)
         );
 
-        var itemTotalSalesMin = new BarDataset<DoubleWrapper>
-        {
-            Label = "Minimum Sales",
-            BackgroundColor = "#6BC16F",
-            BorderColor = "#335E33",
-            BorderWidth = 1
-        };
-        itemTotalSalesMin.AddRange(
-            Items.Select(x => (DoubleWrapper)x.TotalSalesMin)
-        );
-
-        ItemRankChart.Data.Datasets.AddRange(new[] {
-            itemSubscriptions, itemTotalSalesMin
+        ItemSubscribersChart.Data.Datasets.AddRange(new[] {
+            itemSubscriptions
         });
     }
 
-    private void RedrawItemRankHistoryChart()
+    private void RedrawItemSubscribersTimelineChart()
     {
-        var startOfWeek = Items.FirstOrDefault()?.AcceptedOn.UtcDateTime;
-        if (startOfWeek == null)
+        var startOfWeek = Store.Start.DateTime;
+        var storeItems = Store.Items
+            .Where(x => x.HasWorkshopFile)
+            .OrderBy(x => x.StoreIndex)
+            .ToList();
+
+        if (!storeItems.Any())
         {
             return;
         }
 
-        ItemRankHistoryChart = new LineConfig
+        ItemSubscribersHistoryChart = new LineConfig
         {
             Options = new LineOptions
             {
@@ -482,26 +760,97 @@ else
             }
         };
 
-        ItemRankHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek.Value)
+        ItemSubscribersHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek)
             .Select(x => x.ToString("dd MMMM yyyy"))
             .ToList();
 
-        foreach (var item in Items)
+        foreach (var item in storeItems)
         {
             var itemDataSet = new LineDataset<DoubleWrapper>
             {
                 Label = item.Name,
-                BackgroundColor = GraphDataSetColours[Array.IndexOf(Items, item)],
-                BorderColor = GraphDataSetColours[Array.IndexOf(Items, item)],
+                BackgroundColor = GraphDataSetColours[storeItems.IndexOf(item)],
+                BorderColor = GraphDataSetColours[storeItems.IndexOf(item)],
                 BorderWidth = 3,
                 LineTension = 0.1,
                 Fill = false
             };
             itemDataSet.AddRange(
-                GetItemSubscriptionDataset(item, startOfWeek.Value)
+                GetItemSubscriptionDataset(item, startOfWeek)
             );
-            ItemRankHistoryChart.Data.Datasets.Add(itemDataSet);
+            ItemSubscribersHistoryChart.Data.Datasets.Add(itemDataSet);
         }
+    }
+
+    private void RedrawItemMarketplacePerformanceChart()
+    {
+        var storeItems = Store.Items
+            .Where(x => x.HasMarketListing)
+            .OrderBy(x => x.StoreIndex)
+            .ToList();
+
+        if (!storeItems.Any())
+        {
+            return;
+        }
+
+        ItemMarketplacePerformanceChart = new RadarConfig
+        {
+            Options = new RadarOptions
+            {
+                Legend = new Legend
+                {
+                    Display = true,
+                    Labels = new LegendLabelConfiguration()
+                    {
+                        FontColor = "#ffffff"
+                    }
+                },
+                Responsive = true,
+                Tooltips = new Tooltips
+                {
+                    Enabled = true
+                },
+                Scale = new Scale()
+                {
+                    Ticks = new LinearCartesianTicks()
+                    {
+                        Display = false,
+                        BeginAtZero = true
+                    }
+                }
+            }
+        };
+
+        ItemMarketplacePerformanceChart.Data.Labels.AddRange(
+            storeItems.Select(x => x.Name).ToArray()
+        );
+
+        var itemMarketPrices = new RadarDataset
+        {
+            Label = "Market Price",
+            BackgroundColor = "#bbdefb",
+            BorderColor = "#0d47a1",
+            BorderWidth = 1,
+            Data = storeItems
+                .Select(x => (double)x.Currency.ToPrice(x.MarketPrice ?? 0))
+                .ToList()
+        };
+
+        var itemStorePrices = new RadarDataset
+        {
+            Label = "Store Price",
+            BackgroundColor = "#c8e6c9",
+            BorderColor = "#1b5e20",
+            BorderWidth = 1,
+            Data = storeItems
+            .Select(x => (double)x.Currency.ToPrice(x.StorePrice))
+            .ToList()
+        };
+
+        ItemMarketplacePerformanceChart.Data.Datasets.AddRange(new[] {
+            itemMarketPrices, itemStorePrices
+        });
     }
 
     IEnumerable<DateTime> GetSkinWeekDates(DateTime startOfWeek)
@@ -518,7 +867,7 @@ else
         };
     }
 
-    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(StoreItemListDTO item, DateTime startOfWeek)
+    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(StoreItemDetailDTO item, DateTime startOfWeek)
     {
         var dataSet = new List<DoubleWrapper>();
         if (item?.SubscriptionsHistory?.Any() != true)

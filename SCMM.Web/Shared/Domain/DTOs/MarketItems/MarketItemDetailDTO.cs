@@ -18,11 +18,11 @@ namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 
         public CurrencyDTO Currency { get; set; }
 
-        public int Subscriptions { get; set; }
+        public int? Subscriptions { get; set; }
 
-        public int Favourited { get; set; }
+        public int? Favourited { get; set; }
 
-        public int Views { get; set; }
+        public int? Views { get; set; }
 
         public IDictionary<string, string> Tags { get; set; }
     }

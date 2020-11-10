@@ -46,15 +46,109 @@
             If true, this is a "cool" price which is highlighted when presenting "common" currencies
             </summary>
         </member>
+        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItem.Prices">
+            <summary>
+            Store prices are generally fixed and don't fluxuate with currency exhange rates.
+            Because of this, we need to keep a list of all the fixed store prices in each currency.
+            </summary>
+        </member>
+        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItemItemStore.Index">
+            <summary>
+            Used to track the current sales position in the store
+            </summary>
+        </member>
+        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItemItemStore.IndexGraph">
+            <summary>
+            Used to track the historic sales positions in the store
+            </summary>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.GetModuleHelpAsync">
+            <summary>
+            !config help
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.GetConfigNamesAsync">
+            <summary>
+            !config names
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.GetConfigValueAsync(System.String)">
+            <summary>
+            !config get [name]
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.SetConfigValueAsync(System.String,System.String)">
+            <summary>
+            !config set [name] [value]
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.AddConfigValueAsync(System.String,System.String)">
+            <summary>
+            !config add [name] [value]
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.RemoveConfigValueAsync(System.String,System.String)">
+            <summary>
+            !config add [name] [value]
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.ClearConfigValueAsync(System.String)">
+            <summary>
+            !config clear [name]
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.ListConfigValueAsync(System.String)">
+            <summary>
+            !config get [name]
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.HelpModule.GetModuleHelpAsync">
+            <summary>
+            !help
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.InventoryModule.GetModuleHelpAsync">
+            <summary>
+            !inventory help
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:SCMM.Web.Server.Discord.Modules.InventoryModule.SayProfileInventoryValueAsync(System.String,System.String)">
             <summary>
-             !inventory [steamId] [currencyName]
+            !inventory [steamId] [currencyName]
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.StoreModule.GetModuleHelpAsync">
+            <summary>
+            !inventory help
             </summary>
             <returns></returns>
         </member>
         <member name="M:SCMM.Web.Server.Discord.Modules.StoreModule.SayStoreNextUpdateExpectedOnAsync">
             <summary>
-             !store remaining
+            !store remaining
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.TradeModule.GetModuleHelpAsync">
+            <summary>
+            !trade help
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SCMM.Web.Server.Discord.Modules.TradeModule.SayProfileTradeRequestAsync(System.String)">
+            <summary>
+            !trade [steamId]
             </summary>
             <returns></returns>
         </member>

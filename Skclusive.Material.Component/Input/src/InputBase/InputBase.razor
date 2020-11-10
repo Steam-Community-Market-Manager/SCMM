@@ -1,0 +1,35 @@
+﻿@namespace Skclusive.Material.Input
+@inherits InputBaseComponent
+
+<Component
+   RootRef="@RootRef"
+   Tag="@Component"
+   Class="@_Class"
+   Style="@_Style"
+   @attributes="Attributes">
+   @StartAdornment
+   <Component
+      RootRef="@context.RefBack"
+      @ref="Input"
+      Tag="@_Input"
+      id="@Id"
+      type="@Type"
+      name="@Name"
+      class="@_InputClass"
+      value="@_Value"
+      disabled="@Disabled"
+      autofocus="@AutoFocus"
+      autocomplete="@AutoComplete"
+      placeholder="@PlaceHolder"
+      readonly="@ReadOnly"
+      required="@Required"
+      aria-required="@Required"
+      aria-invalid="@Error"
+      rows="@Rows"
+      @onchange="HandleChangeAsync"
+      @onfocus="HandleFocusAsync"
+      @onblur="HandleBlurAsync"
+      @oninput="HandleInputAsync" />
+      @EndAdornment
+      @RenderSuffix?.Invoke(_Notched)
+</Component>

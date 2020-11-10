@@ -30,7 +30,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
                 var appsWithMissingFilters = db.SteamApps
                     .Where(x => x.Filters.Count == 0)
@@ -55,7 +55,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var appFilters = response.Facets.Where(x => x.Value?.AppId == app.SteamId).Select(x => x.Value);
                     foreach (var appFilter in appFilters)
                     {
-                        await steamService.AddOrUpdateAppAssetFilter(app, appFilter);
+                        steamService.AddOrUpdateAppAssetFilter(app, appFilter);
                     }
                 }
 

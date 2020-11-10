@@ -7,10 +7,18 @@ namespace SCMM.Web.Shared
 {
     public static class SteamExtensions
     {
-        public static IEnumerable<KeyValuePair<string, double>> ToGraphDictionary(this IDictionary<DateTime, double> graph)
+        public static IEnumerable<KeyValuePair<string, double>> ToDailyGraphDictionary(this IDictionary<DateTime, double> graph)
         {
             return graph?.ToDictionary(
                 x => x.Key.ToString("dd MMM yyyy"),
+                x => x.Value
+            );
+        }
+
+        public static IEnumerable<KeyValuePair<string, double>> ToHourlyGraphDictionary(this IDictionary<DateTime, double> graph)
+        {
+            return graph?.ToDictionary(
+                x => x.Key.ToString("dd MMM yyyy htt"),
                 x => x.Value
             );
         }
@@ -27,10 +35,11 @@ namespace SCMM.Web.Shared
                 return null;
             }
             return timespan.Value.ToDurationString(
-                showDays: true,
+                showWeeks: false,
                 showHours: false,
                 showMinutes: false,
-                showSeconds: false
+                showSeconds: false,
+                maxGranularity: 2
             );
         }
 
@@ -51,6 +60,12 @@ namespace SCMM.Web.Shared
             {
                 itemType = Uri.EscapeDataString(
                     itemTags.FirstOrDefault(x => x.Key.StartsWith(SteamConstants.SteamAssetTagWorkshop)).Value
+                );
+            }
+            else if (itemTags.ContainsKey(SteamConstants.SteamAssetTagCategory))
+            {
+                itemType = Uri.EscapeDataString(
+                    itemTags.FirstOrDefault(x => x.Key.StartsWith(SteamConstants.SteamAssetTagCategory)).Value
                 );
             }
             else if (!String.IsNullOrEmpty(itemName))

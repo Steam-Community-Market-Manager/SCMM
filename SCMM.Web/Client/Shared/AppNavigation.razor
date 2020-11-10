@@ -82,7 +82,7 @@ else
         try
         {
             InventoryTotals = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
-                $"api/inventory/me/total"
+                $"api/inventory/{State.Profile?.SteamId}/total"
             );
         }
         catch (Exception ex)
@@ -96,7 +96,7 @@ else
         try
         {
             StoreUpdatesOn = await Http.GetFromJsonAsync<DateTimeOffset>(
-                $"api/store/nextUpdateExpectedOn"
+                $"api/store/nextStoreExpectedOn"
             );
         }
         catch (Exception ex)
@@ -117,7 +117,7 @@ else
         if (StoreUpdatesOn != null)
         {
             storeUpdateTimeRemaining = (StoreUpdatesOn.Value - DateTimeOffset.Now).ToDurationString(
-                showDays: true, showHours: true, showMinutes: false, showSeconds: false, suffix: "remaining", zero: "due any moment now"
+                showMinutes: false, showSeconds: false, suffix: "remaining", zero: "due any moment now"
             );
         }
 
@@ -255,8 +255,7 @@ else
                     Title = "Settings",
                     SubTitle = "Manage your account",
                     Path = "settings",
-                    Prefix = true,
-                    Disabled = true
+                    Prefix = true
                 },
                 new NavigationItem
                 {

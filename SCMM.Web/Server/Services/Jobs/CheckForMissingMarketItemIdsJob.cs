@@ -32,7 +32,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
                 var itemsWithMissingIds = db.SteamMarketItems
                     .Where(x => String.IsNullOrEmpty(x.SteamId))
@@ -62,7 +62,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         )
                     )
                     .Merge()
-                    .Where(x => !String.IsNullOrEmpty(x.Result.SteamId))
+                    .Where(x => !String.IsNullOrEmpty(x.SteamId))
                     .ToList();
 
                 if (updatedItems.Any())

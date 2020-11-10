@@ -4,6 +4,7 @@
 @inject ILogger<MarketListingsPage> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
+@inject ILocalStorageService LocalStorage
 @inject IJSRuntime JSRuntime
 
 <DocumentTitle Title="Market Listings" />
@@ -14,33 +15,81 @@
         max-height: calc(100vh - 150px);
         overflow: auto;
     }
-
 </style>
 
 <MarketListingsSearch OnSearch="@(async (x) => await RefreshItems(x))" />
-
 @if (Items == null)
 {
     <Loading />
 }
-else
+else 
 {
-    <Paper Class="Market-List-Container">
-        <MarketListingsTable Items="@Items" OnItemClick="@((x) => OnItemSelectionChanged(x))" />
-    </Paper>
+    <MarketItemsSummary Items="@Items" />
 }
+<!--
+<Paper Class="Market-List-Container">
+    <MarketListingsTable Items="@Items" NoMoreItems="@NoMoreItems" OnMoreItemsRequested="@(() => OnMoreItemsRequested())" OnItemClick="@((x) => OnItemSelectionChanged(x))"
+                         OrderBy="@OrderBy" Direction="@Direction" OnSortChanged="@((orderBy, direction) => OnSortChanged(orderBy, direction))" />
+</Paper>
+-->
 
 @code {
 
-    private MarketItemListDTO[] Items { get; set; }
+    private IList<MarketItemListDTO> Items { get; set; }
+
+    private bool NoMoreItems { get; set; } = false;
+
+    private string Filter { get; set; }
+
+    private string OrderBy { set; get; } = nameof(MarketItemListDTO.Last24hrSales);
+
+    private Sort Direction { set; get; } = Sort.Ascending;
 
     private int Page { get; set; } = 0;
 
-    private int PageSize { get; set; } = 25;
+    private int PageMore { get; set; } = 0;
+
+    private int PageSize { get; set; } = 100;
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshItems();
+        OrderBy = await LocalStorage.GetItemAsync<string>("Market.SortBy");
+        Direction = await LocalStorage.GetItemAsync<Sort>("Market.SortDirection");
+        await RefreshItems(Filter);
+    }
+
+    private async Task OnMoreItemsRequested()
+    {
+        PageMore++;
+        var response = await Http.GetFromJsonAsync<MarketItemListPaginatedDTO>(
+            $"api/market?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&sort={Uri.EscapeDataString(OrderBy)}&sortDesc={Direction == Sort.Descending}&page={PageMore}&pageSize={PageSize}"
+        );
+        if (response != null)
+        {
+            NoMoreItems = ((response.Page + 1) * response.PageSize) >= response.Total;
+            if (response.Items?.Any() == true)
+            {
+                var items = new List<MarketItemListDTO>(Items);
+                foreach (var item in response.Items)
+                {
+                    if (!items.Any(x => x.Id == item.Id))
+                    {
+                        items.Add(item);
+                    }
+                }
+                Items = items;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void OnSortChanged(string orderBy, Sort direction)
+    {
+        OrderBy = orderBy;
+        Direction = direction;
+        RefreshItems(Filter);
+        LocalStorage.SetItemAsync<string>("Market.SortBy", OrderBy);
+        LocalStorage.SetItemAsync<Sort>("Market.SortDirection", Direction);
     }
 
     private void OnItemSelectionChanged(MarketItemListDTO item)
@@ -54,11 +103,20 @@ else
     {
         try
         {
+            PageMore = 0;
+            NoMoreItems = false;
+            if (!String.IsNullOrEmpty(filter))
+            {
+                Filter = filter;
+            }
+
             Items = null;
             StateHasChanged();
-            Items = await Http.GetFromJsonAsync<MarketItemListDTO[]>(
-                $"api/market?filter={Uri.EscapeDataString(filter ?? String.Empty)}&pageSize={PageSize}"
+            var response = await Http.GetFromJsonAsync<MarketItemListPaginatedDTO>(
+                $"api/market?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&sort={OrderBy}&sortDesc={Direction == Sort.Descending}&page={Page}&pageSize={PageSize}"
             );
+            Items = response.Items;
+            NoMoreItems = ((response.Page + 1) * response.PageSize) >= response.Total;
             StateHasChanged();
         }
         catch (Exception ex)

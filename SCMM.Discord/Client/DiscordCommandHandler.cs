@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -11,19 +12,19 @@ namespace SCMM.Discord.Client
 {
     public class DiscordCommandHandler
     {
-        public const char CommandPrefix = '>';
-
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _client;
+        private readonly DiscordConfiguration _configuration;
 
-        public DiscordCommandHandler(ILogger logger, IServiceProvider services, CommandService commands, DiscordSocketClient client)
+        public DiscordCommandHandler(ILogger logger, IServiceProvider services, CommandService commands, DiscordSocketClient client, DiscordConfiguration configuration)
         {
             _logger = logger;
             _services = services;
             _commands = commands;
             _client = client;
+            _configuration = configuration;
         }
 
         public async Task AddCommandsAsync()
@@ -52,7 +53,7 @@ namespace SCMM.Discord.Client
 
             // Determine if the message is a command based on the prefix and make sure other bots don't trigger our commands
             int commandArgPos = 0;
-            if (!(message.HasCharPrefix(CommandPrefix, ref commandArgPos) ||
+            if (!(message.HasCharPrefix(_configuration.CommandPrefix.FirstOrDefault(), ref commandArgPos) ||
                 message.HasMentionPrefix(_client.CurrentUser, ref commandArgPos)) ||
                 message.Author.IsBot)
             {

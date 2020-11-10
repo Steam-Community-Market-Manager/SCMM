@@ -36,7 +36,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
                 var assetDescriptions = db.SteamAssetDescriptions
                     .Where(x => x.WorkshopFile.SteamId != null)
                     .Include(x => x.WorkshopFile)

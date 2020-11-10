@@ -1,0 +1,161 @@
+@page "/settings"
+@using SCMM.Web.Shared.Domain.DTOs.Profiles;
+@using SCMM.Web.Shared;
+@inject ILogger<Settings> Logger
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject AppState State
+<DocumentTitle Title="Settings" />
+
+<style>
+
+</style>
+
+<Grid Container Spacing="@Spacing.Four">
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        <Card>
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="@TypographyVariant.H5" Color="@Color.TextPrimary">
+                        Profile
+                    </Typography>
+                </TitleContent>
+            </CardHeader>
+            <CardContent>
+                <Grid Container Spacing="@Spacing.Two">
+                    <Grid Item ExtraSmall="@GridSize.Three">
+                        <Avatar Alt="@State.Profile.Name" Src="@State.Profile.AvatarLargeUrl" Style="margin-left: auto; margin-right: auto; width:152px; height: 152px" />
+                    </Grid>
+                    <Grid Item ExtraSmall="@GridSize.Nine">
+                        <Grid Container Spacing="@Spacing.Two">
+                            <Grid Item ExtraSmall="@GridSize.Twelve">
+                              <TextField Label="Name" Variant="@TextFieldVariant.Outlined" Margin="@Margin.Normal" FullWidth Shrink Disabled="true"
+                                         Value="@State.Profile.Name" />
+                            </Grid>
+                            <Grid Item ExtraSmall="@GridSize.Twelve">
+                              <TextField Label="Steam ID" Variant="@TextFieldVariant.Outlined" Margin="@Margin.Normal" FullWidth Shrink Disabled="true"
+                                         Value="@State.Profile.SteamId" />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    <Grid Item ExtraSmall="@GridSize.Twelve">
+                        <TextField Label="Steam Trade URL" Variant="@TextFieldVariant.Outlined" Margin="@Margin.Normal" FullWidth Shrink
+                                   Value="@Update.TradeUrl" Helper="We use this to offer trades to anybody that is interested in trading with you."
+                                   OnChange="@((e) => Update.TradeUrl = (string) e.Value)" />
+                    </Grid>
+                    <Grid Item ExtraSmall="@GridSize.Six">
+                        <TextField Label="Language" Variant="@TextFieldVariant.Outlined" Margin="@Margin.Normal" FullWidth Shrink Disabled="true"
+                                   Value="@State.Profile.Language.Name" />
+                    </Grid>
+                    <Grid Item ExtraSmall="@GridSize.Six">
+                        <TextField Label="Currency" Variant="@TextFieldVariant.Outlined" Margin="@Margin.Normal" FullWidth Shrink Disabled="true"
+                                   Value="@State.Profile.Currency.Name" />
+                    </Grid>
+                    <Grid Item ExtraSmall="@GridSize.Six">
+                        <TextField Label="Discord ID" Variant="@TextFieldVariant.Outlined" Margin="@Margin.Normal" FullWidth Shrink
+                                   Value="@Update.DiscordId" Helper="If you have item alerts setup, we'll use this to PM you on Discord. You'll also be able to use your Discord name with the SCMM bot instead of your Steam Id."
+                                   OnChange="@((e) => Update.DiscordId = (string) e.Value)" />
+                    </Grid>
+                    <Grid Item ExtraSmall="@GridSize.Six">
+                        <TextField Label="Gambling Offset" Variant="@TextFieldVariant.Outlined" Margin="@Margin.Normal" FullWidth Shrink Disabled="true"
+                                   Value="@State.Profile.Currency.ToPriceString(State.Profile.GamblingOffset)" Helper="If you use gambling sites, enter your total win/lose amount here. We use this to calculate your inventory total profit." />
+                    </Grid>
+                </Grid>
+            </CardContent>
+            <CardActions style="padding: 16px">
+                <Button OnClick="@OnUpdateProfile" Variant="@ButtonVariant.Contained" Color="@Color.Primary" style="margin-right: 8px" >
+                    Update
+                </Button>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    @UpdateMessage
+                </Typography>
+            </CardActions>
+        </Card>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+        <Card>
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="@TypographyVariant.H5" Color="@Color.TextPrimary">
+                        Your Data
+                    </Typography>
+                </TitleContent>
+            </CardHeader>
+            <CardContent>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
+                    <span>This is where you can manage all data SCMM collects about you. You may download a copy, or delete it.</span><br/>
+                    <span>Your data includes things like:</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <ul>
+                        <li>Your Steam profile details</li>
+                        <li>Your Steam inventory item details (including quantities and purchase prices)</li>
+                        <li>Your marketplace item wishlist</li>
+                        <li>All of the information shown on this page</li>
+                    </ul>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
+                    <span><strong>NOTE:</strong> If you are an accepted workshop creator and you choose to delete your data, we will still retain a copy of your basic Steam profile information (i.e. id, name, avatar). This is nessecary for completeness of the Steam item database.</span>
+                </Typography>
+            </CardContent>
+            <CardActions style="padding: 16px">
+                <Button OnClick="@OnDownloadYourData" Color="@Color.Primary" style="margin-right: 8px" Disabled="true">
+                    Download Your Data
+                </Button>
+                <Button OnClick="@OnDeleteYourData" Variant="@ButtonVariant.Outlined" Color="@Color.Secondary" Disabled="true">
+                    Delete Your Data
+                </Button>
+            </CardActions>
+        </Card>
+    </Grid>
+</Grid>
+
+@code {
+    
+    private UpdateProfileCommand Update { get; set; }
+
+    private string UpdateMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!State.IsAuthenticated)
+        {
+            var url = $"signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}";
+            JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
+        }
+        else 
+        {
+            Update = new UpdateProfileCommand()
+            {
+                DiscordId = State.Profile.DiscordId,
+                TradeUrl = State.Profile.TradeUrl
+            };
+        }
+    }
+    
+    public async Task OnUpdateProfile(EventArgs args)
+    {
+        try 
+        {
+            await Http.PutAsJsonAsync($"api/profile/me", Update);
+            UpdateMessage = "Updated!";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error updating profile details");
+            UpdateMessage = $"Error: {ex.Message}.";
+        }
+        StateHasChanged();
+    }
+
+    public async Task OnDownloadYourData(EventArgs args)
+    {
+
+    }
+    
+    public async Task OnDeleteYourData(EventArgs args)
+    {
+
+    }
+}

@@ -1,0 +1,81 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.MarketListings
+@using SCMM.Web.Shared.Domain.DTOs.MarketItems;
+@inherits ComponentBase
+
+<style>
+
+    .Item-Summary-Root {
+        display: inline-flex;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .Store-Item .CardContent-Root > .Grid-Root {
+        height: 100%;
+    }
+
+    .Store-Item .Paper-Root {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .Item-Summary-Body {
+        display: flex;
+        flex-direction: column;
+        align-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        border-radius: 3px;
+        background-color: var(--theme-palette-background-paper, #fff);
+    }
+
+    .Item-Summary-Body:hover {
+        background-color: #666666;
+        cursor: pointer;
+    }
+
+    .Item-Summary-Root img {
+        width: 100%;
+        height: 100%;
+        padding: 8px;
+    }
+
+    .Item-Summary-Badge-Top {
+        margin: calc(var(--theme-spacing, 6) * 2px);
+    }
+    
+    .Item-Summary-Badge-Flags > .Badge-Badge {
+        color: var(--theme-palette-primary-contrast-text, #fff);
+        background-color: #90caf9;
+    }
+    
+    .Item-Summary-Badge-Flags > .Badge-Badge i {
+        margin: 2px;
+    }
+
+    .Item-Summary-Badge > .Badge-Badge {        
+        transform: scale(1) translate(0%, 0%);
+    }
+    
+    .Item-Summary-Badge > .Badge-Invisible {        
+        transform: scale(0);
+    }
+    
+</style>
+
+<Grid Container Spacing="@Spacing.Two">
+    @foreach (var item in Items)
+    {
+        <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Medium="@GridSize.Four" ExtraLarge="@GridSize.Three">
+            <MarketItemsSummaryItem Item="@item" />
+        </Grid>
+    }
+</Grid>
+
+@code {
+
+    [Parameter]
+    public IEnumerable<MarketItemListDTO> Items { get; set; }
+
+}

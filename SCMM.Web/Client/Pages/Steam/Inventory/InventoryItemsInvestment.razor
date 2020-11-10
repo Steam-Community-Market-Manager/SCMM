@@ -85,19 +85,19 @@
             else if (OrderBy == "buyPrice")
                 return Items.OrderBy(row => row.BuyPrice);
             else if (OrderBy == "marketValue")
-                return Items.OrderBy(row => row.MarketItem?.Last1hrValue);
+                return Items.OrderBy(row => row.Last1hrValue);
             else if (OrderBy == "resellPrice")
-                return Items.OrderBy(row => row.MarketItem?.ResellPrice);
+                return Items.OrderBy(row => row.ResellPrice);
             else if (OrderBy == "resellFees")
-                return Items.OrderBy(row => row.MarketItem?.ResellTax);
+                return Items.OrderBy(row => row.ResellTax);
             else if (OrderBy == "resellProfit")
                 return Items
                     .Where(x => x.BuyPrice > 0)
-                    .OrderBy(row => row.MarketItem?.ResellProfit - row.BuyPrice);
+                    .OrderBy(row => row.ResellProfit - row.BuyPrice);
             else if (OrderBy == "resellROI")
                 return Items
                     .Where(x => x.BuyPrice > 0)
-                    .OrderBy(row => (decimal)(row.MarketItem.ResellPrice - row.MarketItem.ResellTax) / row.BuyPrice.Value);
+                    .OrderBy(row => (decimal)(row.ResellPrice - row.ResellTax) / row.BuyPrice.Value);
         }
         else
         {
@@ -106,19 +106,19 @@
             else if (OrderBy == "buyPrice")
                 return Items.OrderByDescending(row => row.BuyPrice);
             else if (OrderBy == "marketValue")
-                return Items.OrderByDescending(row => row.MarketItem?.Last1hrValue);
+                return Items.OrderByDescending(row => row.Last1hrValue);
             else if (OrderBy == "resellPrice")
-                return Items.OrderByDescending(row => row.MarketItem?.ResellPrice);
+                return Items.OrderByDescending(row => row.ResellPrice);
             else if (OrderBy == "resellFees")
-                return Items.OrderByDescending(row => row.MarketItem?.ResellTax);
+                return Items.OrderByDescending(row => row.ResellTax);
             else if (OrderBy == "resellProfit")
                 return Items
                     .Where(x => x.BuyPrice > 0)
-                    .OrderByDescending(row => row.MarketItem?.ResellProfit - row.BuyPrice);
+                    .OrderByDescending(row => row.ResellProfit - row.BuyPrice);
             else if (OrderBy == "resellROI")
                 return Items
                     .Where(x => x.BuyPrice > 0)
-                    .OrderByDescending(row => (decimal)(row.MarketItem.ResellPrice - row.MarketItem.ResellTax) / row.BuyPrice.Value);
+                    .OrderByDescending(row => (decimal)(row.ResellPrice - row.ResellTax) / row.BuyPrice.Value);
         }
         return Items;
     }

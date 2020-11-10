@@ -25,6 +25,20 @@ namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 
         public int Quantity { get; set; }
 
-        public InventoryMarketItemDTO MarketItem { get; set; }
+        public int? Supply { get; set; }
+
+        public int? Demand { get; set; }
+
+        public long? BuyAskingPrice { get; set; }
+
+        public long? BuyNowPrice { get; set; }
+
+        public long? ResellPrice { get; set; }
+
+        public long? ResellTax { get; set; }
+
+        public long? ResellProfit { get; set; }
+
+        public long? Last1hrValue { get; set; }
     }
 }

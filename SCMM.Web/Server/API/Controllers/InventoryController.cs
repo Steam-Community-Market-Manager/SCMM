@@ -11,14 +11,10 @@ using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Shared;
+using SCMM.Web.Shared.Data.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,25 +25,18 @@ namespace SCMM.Web.Server.API.Controllers
     public class InventoryController : ControllerBase
     {
         private readonly ILogger<InventoryController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
+        private readonly ImageService _images;
         private readonly IMapper _mapper;
 
-        public InventoryController(ILogger<InventoryController> logger, SteamDbContext db, SteamService steam, IMapper mapper)
+        public InventoryController(ILogger<InventoryController> logger, ScmmDbContext db, SteamService steam, ImageService images, IMapper mapper)
         {
             _logger = logger;
             _db = db;
             _steam = steam;
+            _images = images;
             _mapper = mapper;
-        }
-
-        [AllowAnonymous]
-        [HttpGet("me")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProfileInventoryDetailsDTO), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetMyInventoryProfile([FromQuery] bool sync = false)
-        {
-            return await GetInventoryProfile(User.SteamId(), sync);
         }
 
         [AllowAnonymous]
@@ -100,15 +89,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("me/total")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
-        public Task<IActionResult> GetMyInventoryTotal()
-        {
-            return GetInventoryTotal(User.SteamId());
-        }
-
-        [AllowAnonymous]
         [HttpGet("{steamId}/total")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -130,15 +110,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("me/summary")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<ProfileInventoryItemSummaryDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventorySummary()
-        {
-            return GetInventorySummary(User.SteamId());
-        }
-
-        [AllowAnonymous]
         [HttpGet("{steamId}/summary")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IList<ProfileInventoryItemSummaryDTO>), StatusCodes.Status200OK)]
@@ -149,8 +120,8 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var profileInventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.SteamId != null)
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
@@ -177,13 +148,19 @@ namespace SCMM.Web.Server.API.Controllers
                     }
                     else if (item.Description.StoreItem != null)
                     {
-                        itemSummary.Value = item.Description.StoreItem.StorePrices.FirstOrDefault(x => x.Key == this.Currency().Name).Value;
+                        itemSummary.Value = item.Description.StoreItem.Prices.FirstOrDefault(x => x.Key == this.Currency().Name).Value;
                     }
 
                     // Calculate the item's quantity
                     itemSummary.Quantity = profileInventoryItems
                         .Where(x => x.Description.SteamId == item.Description.SteamId)
                         .Sum(x => x.Quantity);
+
+                    // Calculate the item's flags
+                    itemSummary.Flags = profileInventoryItems
+                        .Where(x => x.Description.SteamId == item.Description.SteamId)
+                        .Select(x => x.Flags)
+                        .Aggregate((x, y) => x | y);
 
                     profileInventoryItemsSummaries.Add(itemSummary);
                 }
@@ -192,15 +169,6 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 profileInventoryItemsSummaries.OrderByDescending(x => x.Value)
             );
-        }
-
-        [AllowAnonymous]
-        [HttpGet("me/returnOnInvestment")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<InventoryItemListDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventoryInvestment()
-        {
-            return GetInventoryInvestment(User.SteamId());
         }
 
         [AllowAnonymous]
@@ -214,93 +182,70 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var profileInventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Include(x => x.App)
+                .Include(x => x.Currency)
+                .Include(x => x.Description.MarketItem)
+                .Include(x => x.Description.MarketItem.Currency)
+                .Include(x => x.Description.StoreItem)
+                .Include(x => x.Description.StoreItem.Currency)
                 .Select(x => new
                 {
                     Item = x,
-                    ItemDescription = x.Description,
-                    ItemCurrency = x.Currency,
-                    MarketItem = x.MarketItem,
-                    MarketItemApp = x.MarketItem.App,
-                    MarketItemDescription = x.MarketItem.Description,
-                    MarketItemCurrency = x.MarketItem.Currency,
-                    HasBuyPrice = (x.BuyPrice > 0),
-                    ReturnOnInvestment = (x.BuyPrice > 0 && (x.MarketItem.ResellPrice - x.MarketItem.ResellTax) > 0
-                        ? ((decimal)(x.MarketItem.ResellPrice - x.MarketItem.ResellTax) / x.BuyPrice)
+                    // TODO: Allow both MarketItem and StoreItem here
+                    ReturnOnInvestment = (x.BuyPrice > 0 && x.Description.MarketItem != null && (x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) > 0
+                        ? ((decimal)(x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) / x.BuyPrice)
                         : 0
                     )
                 })
                 .OrderByDescending(x => x.ReturnOnInvestment)
                 .ToList();
 
-            var profileInventoryItemsDetails = new List<InventoryItemListDTO>();
+            var profileInventoryItemSummaries = new List<InventoryItemListDTO>();
             foreach (var profileInventoryItem in profileInventoryItems)
             {
-                profileInventoryItemsDetails.Add(
-                    _mapper.Map<SteamInventoryItem, InventoryItemListDTO>(
+                profileInventoryItemSummaries.Add(
+                    _mapper.Map<SteamProfileInventoryItem, InventoryItemListDTO>(
                         profileInventoryItem.Item, this
                     )
                 );
             }
 
-            return Ok(profileInventoryItemsDetails);
+            return Ok(profileInventoryItemSummaries);
         }
 
         [AllowAnonymous]
-        [HttpGet("me/activity")]
+        [HttpGet("{steamId}/wishlist")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<ProfileInventoryActivityDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventoryActivity()
-        {
-            return GetInventoryActivity(User.SteamId());
-        }
-
-        [AllowAnonymous]
-        [HttpGet("{steamId}/activity")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<ProfileInventoryActivityDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetInventoryActivity([FromRoute] string steamId)
+        [ProducesResponseType(typeof(IList<ProfileInventoryItemWishDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetInventoryWishlist([FromRoute] string steamId)
         {
             if (String.IsNullOrEmpty(steamId))
             {
                 return NotFound();
             }
 
-            var recentActivityCutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
-            var profileInventoryActivities = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                .Where(x => x.MarketItem != null)
-                .SelectMany(x =>
-                    x.MarketItem.Activity.Where(x => x.Timestamp >= recentActivityCutoff)
-                )
-                .OrderByDescending(x => x.Timestamp)
-                .Include(x => x.Item)
-                .Include(x => x.Item.Description)
-                .Include(x => x.Item.Currency)
-                .Take(100)
+            var profileMarketItems = _db.SteamProfileMarketItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
+                .Include(x => x.App)
+                .Include(x => x.Description.MarketItem)
+                .Include(x => x.Description.MarketItem.Currency)
+                .OrderBy(x => x.Description.Name)
                 .ToList();
 
-            var profileInventoryActivitiesDetails = new List<ProfileInventoryActivityDTO>();
-            foreach (var profileInventoryActivity in profileInventoryActivities)
+            var profileInventoryItemWishes = new List<ProfileInventoryItemWishDTO>();
+            foreach (var profileMarketItem in profileMarketItems)
             {
-                profileInventoryActivitiesDetails.Add(
-                    _mapper.Map<SteamMarketItemActivity, ProfileInventoryActivityDTO>(
-                        profileInventoryActivity, this
+                profileInventoryItemWishes.Add(
+                    _mapper.Map<SteamProfileMarketItem, ProfileInventoryItemWishDTO>(
+                        profileMarketItem, this
                     )
                 );
             }
 
-            return Ok(profileInventoryActivitiesDetails);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("me/performance")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProfileInventoryPerformanceDTO), StatusCodes.Status200OK)]
-        public IActionResult GetMyInventoryPerformance()
-        {
-            return GetInventoryPerformance(User.SteamId());
+            return Ok(profileInventoryItemWishes);
         }
 
         [AllowAnonymous]
@@ -315,23 +260,23 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var currency = this.Currency();
-            var profileInventoryItems = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
-                .Where(x => x.MarketItem != null)
+            var profileInventoryItems = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
                 {
                     Quantity = x.Quantity,
                     BuyPrice = x.BuyPrice,
                     ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
-                    MarketItemLast1hrValue = x.MarketItem.Last1hrValue,
-                    MarketItemLast24hrValue = x.MarketItem.Last24hrValue,
-                    MarketItemLast48hrValue = x.MarketItem.Last48hrValue,
-                    MarketItemLast72hrValue = x.MarketItem.Last72hrValue,
-                    MarketItemLast96hrValue = x.MarketItem.Last96hrValue,
-                    MarketItemLast120hrValue = x.MarketItem.Last120hrValue,
-                    MarketItemLast144hrValue = x.MarketItem.Last144hrValue,
-                    MarketItemLast168hrValue = x.MarketItem.Last168hrValue,
-                    MarketItemExchangeRateMultiplier = (x.MarketItem.Currency != null ? x.MarketItem.Currency.ExchangeRateMultiplier : 0)
+                    MarketItemLast1hrValue = x.Description.MarketItem.Last1hrValue,
+                    MarketItemLast24hrValue = x.Description.MarketItem.Last24hrValue,
+                    MarketItemLast48hrValue = x.Description.MarketItem.Last48hrValue,
+                    MarketItemLast72hrValue = x.Description.MarketItem.Last72hrValue,
+                    MarketItemLast96hrValue = x.Description.MarketItem.Last96hrValue,
+                    MarketItemLast120hrValue = x.Description.MarketItem.Last120hrValue,
+                    MarketItemLast144hrValue = x.Description.MarketItem.Last144hrValue,
+                    MarketItemLast168hrValue = x.Description.MarketItem.Last168hrValue,
+                    MarketItemExchangeRateMultiplier = (x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : 0)
                 })
                 .ToList();
 
@@ -416,119 +361,98 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{steamId}/mosaic")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int rows = 5, [FromQuery] int columns = 5)
+        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int columns = 5, [FromQuery] int rows = 5)
         {
             if (String.IsNullOrEmpty(steamId))
             {
                 return NotFound();
             }
 
-            rows = Math.Max(1, rows);
-            columns = Math.Max(1, columns);
-            var maxItems = (rows * columns);
-            var inventoryItemDescriptions = _db.SteamInventoryItems
-                .Where(x => x.Owner.SteamId == steamId || x.Owner.ProfileId == steamId)
+            var inventoryItemIcons = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
                 .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
-                .Select(x => x.Description)
+                .Select(x => x.Description.IconUrl)
                 .ToList();
 
-            var items = new Queue<SteamAssetDescription>();
-            foreach (var inventoryItemDescription in inventoryItemDescriptions)
+            var images = new List<ImageSource>();
+            foreach (var inventoryItemIcon in inventoryItemIcons)
             {
-                if (!items.Contains(inventoryItemDescription))
+                if (!images.Any(x => x.Url == inventoryItemIcon))
                 {
-                    items.Enqueue(inventoryItemDescription);
-                }
-            }
-
-            const int tileSize = 128;
-            var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
-            using (var graphics = Graphics.FromImage(mosaic))
-            {
-                const int badgeSize = 32;
-                const int badgePadding = 8;
-                var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
-                var solidBlack = new SolidBrush(Color.FromArgb(255, 0, 0, 0));
-                var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
-                for (int r = 0; r < rows; r++)
-                {
-                    for (int c = 0; c < columns; c++)
+                    images.Add(new ImageSource()
                     {
-                        var item = (items.Any() ? items.Dequeue() : null);
-                        if (item == null)
-                        {
-                            continue;
-                        }
-
-                        var imageRaw = await _steam.GetImage(item.IconUrl);
-                        if (imageRaw == null)
-                        {
-                            continue;
-                        }
-
-                        var image = Image.FromStream(new MemoryStream(imageRaw));
-                        graphics.DrawImage(image, c * tileSize, r * tileSize, tileSize, tileSize);
-
-                        var count = Math.Min(99, inventoryItemDescriptions.Count(x => x.SteamId == item.SteamId));
-                        if (count > 1)
-                        {
-                            var fontSize = 24;
-                            var fontOffset = 2;
-                            if (count >= 10)
-                            {
-                                fontSize = 20;
-                                fontOffset = 5;
-                            }
-                            var font = new Font(sansSerif, fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-                            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                            graphics.FillEllipse(solidBlue, new Rectangle((c * tileSize) + tileSize - badgeSize, (r * tileSize), badgeSize, badgeSize));
-                            graphics.DrawString($"{count}", font, solidBlack, new PointF((c * tileSize) + tileSize - (badgeSize - badgePadding + fontOffset), (float)((r * tileSize) + (badgePadding / 4) + (fontOffset / 4))));
-                        }
-                    }
+                        Url = inventoryItemIcon,
+                        BadgeCount = inventoryItemIcons.Count(x => x == inventoryItemIcon)
+                    });
                 }
             }
 
-            using (var mosaicStream = new MemoryStream())
-            {
-                mosaic.Save(mosaicStream, ImageFormat.Png);
-                var mosaicRaw = mosaicStream.ToArray();
-                return File(mosaicRaw, "image/png");
-            }
+            var mosaic = await _images.GetImageMosaic(
+                images, 
+                tileSize: 128, 
+                columns: columns, 
+                rows: rows
+            );
+
+            return File(mosaic, "image/png");
         }
 
-        [Authorize]
-        [HttpPut("item/{inventoryItemId}")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [AllowAnonymous]
+        [HttpGet("{steamId}/trade/mosaic")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult SetInventoryItemBuyPrice([FromRoute] Guid inventoryItemId, [FromBody] UpdateInventoryItemPriceCommand command)
+        public async Task<IActionResult> GetInventoryTradeMosaic([FromRoute] string steamId)
         {
-            if (command == null || command.CurrencyId == Guid.Empty)
-            {
-                return BadRequest();
-            }
-            if (inventoryItemId == Guid.Empty)
+            if (String.IsNullOrEmpty(steamId))
             {
                 return NotFound();
             }
 
-            var inventoryItem = _db.SteamInventoryItems.FirstOrDefault(x => x.Id == inventoryItemId);
-            if (inventoryItem == null)
+            var inventoryItemIcons = _db.SteamProfileInventoryItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => x.Description != null && x.Description.MarketItem != null)
+                .Where(x => x.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) || x.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
+                .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
+                .Select(x => x.Description.IconUrl)
+                .ToList();
+
+            var inventoryItemImages = new List<ImageSource>();
+            foreach (var inventoryItemIcon in inventoryItemIcons)
             {
-                _logger.LogError($"Inventory item with id '{inventoryItemId}' was not found");
-                return NotFound();
-            }
-            if (!User.Is(inventoryItem.OwnerId))
-            {
-                _logger.LogError($"Inventory item with id '{inventoryItemId}' does not belong to you");
-                return NotFound();
+                if (!inventoryItemImages.Any(x => x.Url == inventoryItemIcon))
+                {
+                    inventoryItemImages.Add(new ImageSource()
+                    {
+                        Url = inventoryItemIcon,
+                        BadgeCount = inventoryItemIcons.Count(x => x == inventoryItemIcon)
+                    });
+                }
             }
 
-            inventoryItem.CurrencyId = command.CurrencyId;
-            inventoryItem.BuyPrice = SteamEconomyHelper.GetPriceValueAsInt(command.Price);
-            _db.SaveChanges();
-            return Ok();
+            var marketItemIcons = _db.SteamProfileMarketItems
+                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => x.Description != null && x.Description.MarketItem != null)
+                .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
+                .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
+                .Select(x => x.Description.IconUrl)
+                .ToList();
+
+            var marketItemImages = new List<ImageSource>();
+            foreach (var marketItemIcon in marketItemIcons)
+            {
+                if (!marketItemImages.Any(x => x.Url == marketItemIcon))
+                {
+                    marketItemImages.Add(new ImageSource()
+                    {
+                        Url = marketItemIcon,
+                        BadgeCount = marketItemIcons.Count(x => x == marketItemIcon)
+                    });
+                }
+            }
+
+            var mosaic = await _images.GetTradeImageMosaic(inventoryItemImages, marketItemImages);
+            return File(mosaic, "image/png");
         }
     }
 }

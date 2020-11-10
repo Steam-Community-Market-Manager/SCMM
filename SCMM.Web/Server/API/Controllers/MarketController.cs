@@ -22,10 +22,10 @@ namespace SCMM.Web.Server.API.Controllers
     public class MarketController : ControllerBase
     {
         private readonly ILogger<MarketController> _logger;
-        private readonly SteamDbContext _db;
+        private readonly ScmmDbContext _db;
         private readonly IMapper _mapper;
 
-        public MarketController(ILogger<MarketController> logger, SteamDbContext db, IMapper mapper)
+        public MarketController(ILogger<MarketController> logger, ScmmDbContext db, IMapper mapper)
         {
             _logger = logger;
             _db = db;
@@ -34,22 +34,23 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<MarketItemListDTO> Get(
+        public MarketItemListPaginatedDTO Get(
             [FromQuery] string filter = null,
             [FromQuery] string sort = null,
             [FromQuery] bool sortDesc = false,
             [FromQuery] int page = 0,
-            [FromQuery] int pageSize = 25)
+            [FromQuery] int pageSize = 30)
         {
             filter = Uri.EscapeDataString(filter?.Trim() ?? String.Empty);
             page = Math.Max(0, page);
-            pageSize = Math.Max(0, Math.Min(1000, pageSize));
+            pageSize = Math.Max(0, pageSize);
 
             var query = _db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
+                .Include(x => x.Description.StoreItem)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.Tags.Serialised.Contains(filter));
 
             Expression<Func<SteamMarketItem, dynamic>> orderByExpression = (x) => x.Description.Name;
@@ -58,18 +59,25 @@ namespace SCMM.Web.Server.API.Controllers
                 switch (sort)
                 {
                     case nameof(MarketItemListDTO.Name): orderByExpression = (x) => x.Description.Name; break;
-                    case nameof(MarketItemListDTO.MarketAge): orderByExpression = (x) => x.MarketAge; break;
-                    case nameof(MarketItemListDTO.Subscriptions): orderByExpression = (x) => x.Description.WorkshopFile.Subscriptions; break;
                     case nameof(MarketItemListDTO.Supply): orderByExpression = (x) => x.Supply; break;
                     case nameof(MarketItemListDTO.Demand): orderByExpression = (x) => x.Demand; break;
+                    case nameof(MarketItemListDTO.StorePrice): orderByExpression = (x) => (x.Description.StoreItem == null ? x.Description.StoreItem.Price : 0); break;
+                    case nameof(MarketItemListDTO.BuyAskingPrice): orderByExpression = (x) => x.BuyAskingPrice; break;
+                    case nameof(MarketItemListDTO.BuyNowPrice): orderByExpression = (x) => x.BuyNowPrice; break;
+                    case nameof(MarketItemListDTO.ResellPrice): orderByExpression = (x) => x.ResellPrice; break;
+                    case nameof(MarketItemListDTO.ResellTax): orderByExpression = (x) => x.ResellTax; break;
+                    case nameof(MarketItemListDTO.ResellProfit): orderByExpression = (x) => x.ResellProfit; break;
                     case nameof(MarketItemListDTO.Last1hrSales): orderByExpression = (x) => x.Last1hrSales; break;
                     case nameof(MarketItemListDTO.Last1hrValue): orderByExpression = (x) => x.Last1hrValue; break;
-                    case nameof(MarketItemListDTO.Last24hrValue): orderByExpression = (x) => (x.Last1hrValue - x.Last24hrValue); break;
-                    case nameof(MarketItemListDTO.Last120hrValue): orderByExpression = (x) => (x.Last1hrValue - x.Last120hrValue); break;
-                    case nameof(MarketItemListDTO.BuyNowPrice): orderByExpression = (x) => x.BuyNowPrice; break;
-                    case nameof(MarketItemListDTO.BuyAskingPrice): orderByExpression = (x) => x.BuyAskingPrice; break;
-                    case nameof(MarketItemListDTO.First24hrValue): orderByExpression = (x) => x.First24hrValue; break;
-                    case "Appreciation": orderByExpression = (x) => (x.Last1hrValue - x.First24hrValue); break;
+                    case nameof(MarketItemListDTO.Last24hrSales): orderByExpression = (x) => x.Last24hrSales; break;
+                    case nameof(MarketItemListDTO.Last24hrValue): orderByExpression = (x) => x.Last24hrValue; break;
+                    case nameof(MarketItemListDTO.Last48hrSales): orderByExpression = (x) => x.Last48hrSales; break;
+                    case nameof(MarketItemListDTO.Last48hrValue): orderByExpression = (x) => x.Last48hrValue; break;
+                    case nameof(MarketItemListDTO.MovementLast48hrValue): orderByExpression = (x) => x.Last1hrValue - x.Last48hrValue; break;
+                    case nameof(MarketItemListDTO.MovementLast120hrValue): orderByExpression = (x) => x.Last1hrValue - x.Last120hrValue; break;
+                    case nameof(MarketItemListDTO.MovementLast336hrValue): orderByExpression = (x) => x.Last1hrValue - x.Last336hrValue; break;
+                    case nameof(MarketItemListDTO.MarketAge): orderByExpression = (x) => x.FirstSeenOn; break;
+                    case nameof(MarketItemListDTO.Subscriptions): orderByExpression = (x) => (x.Description.WorkshopFile != null ? x.Description.WorkshopFile.Subscriptions : 0); break;
                 }
             }
             if (sortDesc)
@@ -81,12 +89,44 @@ namespace SCMM.Web.Server.API.Controllers
                 query = query.OrderBy(orderByExpression);
             }
 
-            return query
+            var total = query.Count();
+            var items = query
                 .Skip((page * pageSize))
                 .Take(pageSize)
                 .ToList()
                 .Select(x => _mapper.Map<SteamMarketItem, MarketItemListDTO>(x, this))
                 .ToList();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var profileId = User.Id();
+                var assetDescriptionIds = items.Select(x => x.SteamDescriptionId).ToList();
+                var profileMarketItems = _db.SteamProfileMarketItems
+                    .Where(x => x.ProfileId == profileId)
+                    .Where(x => assetDescriptionIds.Contains(x.Description.SteamId))
+                    .Select(x => new
+                    {
+                        SteamDescriptionId = x.Description.SteamId,
+                        Flags = x.Flags
+                    })
+                    .ToList();
+                foreach (var profileMarketItem in profileMarketItems)
+                {
+                    var item = items.FirstOrDefault(x => x.SteamDescriptionId == profileMarketItem.SteamDescriptionId);
+                    if (item != null)
+                    {
+                        item.ProfileFlags = profileMarketItem.Flags;
+                    }
+                }
+            }
+
+            return new MarketItemListPaginatedDTO()
+            {
+                Page = page,
+                PageSize = pageSize,
+                Total = total,
+                Items = items.ToArray()
+            };
         }
 
         [AllowAnonymous]
