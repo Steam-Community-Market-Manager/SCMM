@@ -1,6 +1,8 @@
+@using Skclusive.Material.Theme
+
 <MaterialScripts />
 <MaterialStyles />
-<ThemeProvider Theme="@Theme.Dark" />
+<ThemeProvider Light="@DefaultTheme" Dark="@DefaultTheme" />
 
 <ChartJsScript />
 <ChartJsInteropScript />
@@ -10,3 +12,33 @@
 
 <AppScripts />
 <AppStyles />
+
+@code
+{
+
+    public static ThemeValue DefaultTheme = ThemeFactory.CreateTheme(new ThemeConfig
+    {
+        Palette = new PaletteConfig
+        {
+            Type = PaletteType.Dark,
+            Primary = new PaletteColorConfig
+            {
+                Main = PaletteColors.Blue.X200
+            },
+            Secondary = new PaletteColorConfig
+            {
+                Main = PaletteColors.Pink.X200
+            },
+            Background = new PaletteBackground
+            {
+                Default = "#121212",
+                Custom = new Dictionary<string, string>
+                {
+                    { "appbar-color", "#fff" },
+                    { "appbar-background-color", "#333" },
+                },
+            }
+        }
+    });
+
+}

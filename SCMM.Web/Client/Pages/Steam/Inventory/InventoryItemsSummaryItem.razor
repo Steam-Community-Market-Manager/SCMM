@@ -11,10 +11,10 @@
     <ChildContent>
         <div class="Item-Summary-Body" style="@GetItemStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
             <Badge Class="Item-Summary-Badge Item-Summary-Badge-Flags Item-Summary-Badge-Top"
-                    Invisible="@(!Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) && !Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))"
-                    Color="@Color.Custom"
-                    Horizontal="@Horizontal.Left"
-                    Vertical="@Vertical.Top">
+                   Invisible="@(!Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) && !Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))"
+                   Color="@Color.Custom"
+                   Horizontal="@Horizontal.Left"
+                   Vertical="@Vertical.Top">
                 <BadgeContent>
                     @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
                     {
@@ -28,7 +28,7 @@
                 <ChildContent>
                     <Badge Class="Item-Summary-Badge Item-Summary-Quantity-Badge"
                             Invisible="@(Item.Quantity <= 1)"
-                            Badge="@Item.Quantity.ToString()"
+                            BadgeText="@Item.Quantity.ToString()"
                             Max="99"
                             Color="@Color.Primary"
                             Horizontal="@Horizontal.Right"

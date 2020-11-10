@@ -2,7 +2,7 @@
 using Skclusive.Core.Component;
 using Skclusive.Material.Core;
 using Skclusive.Material.Drawer;
-using Skclusive.Material.Script;
+using Skclusive.Script.DomHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,7 +138,7 @@ namespace SCMM.Web.Client.Shared.Component.Layout
 
             TimeoutDisposal = ExecutionPlan.Delay(1000, () =>
             {
-                _ = MediaQueryMatcher.RegisterAsync("(min-width:1280px)");
+                _ = MediaQueryMatcher.InitAsync("(min-width:1280px)");
             });
 
             return Task.CompletedTask;
@@ -159,7 +159,7 @@ namespace SCMM.Web.Client.Shared.Component.Layout
 
             MediaQueryMatcher.OnChange -= OnMediaQueryChanged;
 
-            _ = MediaQueryMatcher.UnRegisterAsync();
+            _ = MediaQueryMatcher.DisposeAsync();
         }
     }
 }

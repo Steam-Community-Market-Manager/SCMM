@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Client.Shared.Component.ContextMenu
 {
-    public class ContextMenuItemComponent : MenuItemComponent
+    public class ContextMenuItemComponent : MenuItem
     {
         [CascadingParameter]
         public ContextContainerComponent ContextContainer { get; set; }

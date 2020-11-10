@@ -12,10 +12,10 @@
     <ChildContent>
         <div class="Item-Summary-Body" style="@GetBorderStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
             <Badge Class="Item-Summary-Badge Item-Summary-Badge-Flags Item-Summary-Badge-Top"
-                    Invisible="@(!Item.ProfileFlags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))"
-                    Color="@Color.Custom"
-                    Horizontal="@Horizontal.Left"
-                    Vertical="@Vertical.Top">
+                   Invisible="@(!Item.ProfileFlags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))"
+                   Color="@Color.Custom"
+                   Horizontal="@Horizontal.Left"
+                   Vertical="@Vertical.Top">
                 <BadgeContent>
                     @if (Item.ProfileFlags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
                     {
