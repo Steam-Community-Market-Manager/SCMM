@@ -185,7 +185,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel) ?? $"announcement|store|skin|{app.Name}",
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertsChannel) ?? $"announcement|store|skin|{app.Name}",
                     message: null,
                     title: $"{app.Name} Store - {store.Name}",
                     description: $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",

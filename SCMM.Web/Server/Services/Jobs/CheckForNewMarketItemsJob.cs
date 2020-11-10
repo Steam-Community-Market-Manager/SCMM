@@ -176,7 +176,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel) ?? $"announcement|market|skin|{marketItem.App.Name}",
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertsChannel) ?? $"announcement|market|skin|{marketItem.App.Name}",
                     message: null,
                     title: $"{marketItem.Description.Name} is now available in the marketplace",
                     description: $"This item just appeared in the marketplace for the first time, or has reappeared after previously not having any listings.",

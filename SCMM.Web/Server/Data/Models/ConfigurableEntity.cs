@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using SCMM.Web.Server.Data.Types;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace SCMM.Web.Server.Data.Models
 {
-    public class ConfigurableEntity<T> : Entity where T : Configuration
+    public class ConfigurableEntity<T> : Entity where T : Configuration, new()
     {
         public ConfigurableEntity()
         {
@@ -13,50 +15,104 @@ namespace SCMM.Web.Server.Data.Models
 
         public ICollection<T> Configurations { get; set; }
 
-        public string Get(string config)
+        public string Get(string name)
         {
-            return Configurations.FirstOrDefault(x => x.Name == config)?.Value;
+            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            return (config?.Value ?? config?.List?.FirstOrDefault());
         }
 
-        public void Set(string config, string value)
+        public T Set(string name, string value)
         {
-            var configToUpdate = Configurations.FirstOrDefault(x => x.Name == config);
-            if (configToUpdate != null)
+            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            if (config != null)
             {
-                configToUpdate.Value = value;
+                if (!String.IsNullOrEmpty(value))
+                {
+                    config.Value = value;
+                }
+                else
+                {
+                    config.Value = null;
+                    Configurations.Remove(config);
+                }
             }
-        }
-
-        public void Add(string config, string value)
-        {
-            var list = Configurations.FirstOrDefault(x => x.Name == config)?.List;
-            if (list != null)
+            else if (!String.IsNullOrEmpty(value))
             {
-                list.Add(value);
+                Configurations.Add(config = new T()
+                {
+                    Name = name,
+                    Value = value
+                });
             }
+
+            return config;
         }
 
-        public void Remove(string config, string value)
+        public T Add(string name, string[] values)
         {
-            var list = Configurations.FirstOrDefault(x => x.Name == config)?.List;
-            if (list != null)
+            if (values == null)
             {
-                list.Remove(value);
+                return null;
             }
-        }
-
-        public IEnumerable<string> List(string config)
-        {
-            return Configurations.FirstOrDefault(x => x.Name == config)?.List;
-        }
-
-        public void Clear(string config)
-        {
-            var configsToRemove = Configurations.Where(x => x.Name == config).ToArray();
-            foreach (var x in configsToRemove)
+            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            if (config != null)
             {
-                Configurations.Remove(x);
+                foreach (var value in values)
+                {
+                    if (!String.IsNullOrEmpty(value))
+                    {
+                        config.List.Add(value);
+                    }
+                }
             }
+            else
+            {
+                Configurations.Add(config = new T()
+                {
+                    Name = name,
+                    List = new PersistableStringCollection(values)
+                });
+            }
+
+            return config;
+        }
+
+        public T Remove(string name, string[] values)
+        {
+            if (values == null)
+            {
+                return null;
+            }
+            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            if (config != null)
+            {
+                foreach (var value in values)
+                {
+                    config.List.Remove(value);
+                    if (!config.List.Any())
+                    {
+                        Configurations.Remove(config);
+                    }
+                }
+            }
+
+            return config;
+        }
+
+        public IEnumerable<string> List(string name)
+        {
+            return Configurations.FirstOrDefault(x => x.Name == name)?.List;
+        }
+
+        public T Clear(string name)
+        {
+            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            if (config != null)
+            {
+                Configurations.Remove(config);
+            }
+
+            return config;
         }
     }
 }

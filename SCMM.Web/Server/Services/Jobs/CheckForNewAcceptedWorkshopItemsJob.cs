@@ -132,7 +132,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel) ?? $"announcement|workshop|skin|{app.Name}",
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertsChannel) ?? $"announcement|workshop|skin|{app.Name}",
                     message: null,
                     title: $"{app.Name} Workshop - New items accepted!",
                     description: $"{newWorkshopFiles.Count()} new item(s) have been accepted for {app.Name} and should appear on the store page shortly.",

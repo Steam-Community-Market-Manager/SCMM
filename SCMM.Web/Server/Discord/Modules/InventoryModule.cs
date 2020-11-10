@@ -30,10 +30,35 @@ namespace SCMM.Web.Server.Discord.Modules
         }
 
         /// <summary>
+        /// !inventory help
+        /// </summary>
+        /// <returns></returns>
+        [Command("help")]
+        [Summary("Echo module help")]
+        public async Task GetModuleHelpAsync()
+        {
+            var fields = new List<EmbedFieldBuilder>();
+            fields.Add(new EmbedFieldBuilder()
+                .WithName("`>inventory value [steamId] [currencyName]`")
+                .WithValue("...")
+            );
+
+            var embed = new EmbedBuilder()
+                .WithTitle("Help - Inventory")
+                .WithDescription($"...")
+                .WithFields(fields)
+                .Build();
+
+            await ReplyAsync(
+                embed: embed
+            );
+        }
+
+        /// <summary>
         /// !inventory [steamId] [currencyName]
         /// </summary>
         /// <returns></returns>
-        [Command()]
+        [Command]
         [Alias("value")]
         [Summary("Echoes profile inventory value")]
         public async Task SayProfileInventoryValueAsync(
@@ -57,7 +82,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var currency = _currencies.GetByNameOrDefault(currencyName ?? guild.Get(Data.Models.Discord.DiscordConfiguration.CurrencyDefault));
+            var currency = _currencies.GetByNameOrDefault(currencyName ?? guild.Get(Data.Models.Discord.DiscordConfiguration.Currency));
             if (currency == null)
             {
                 await ReplyAsync($"Beep boop! I don't support that currency.");

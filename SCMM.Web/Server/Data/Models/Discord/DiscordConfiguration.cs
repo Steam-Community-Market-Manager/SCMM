@@ -2,9 +2,8 @@
 {
     public class DiscordConfiguration : Configuration
     {
-        public const string CurrencyDefault = "Currency.Default";
-        public const string CurrencyList = "Currency.List";
-        public const string AlertChannel = "Alert.Channel";
-        public const string Alert = "Alert.{0}";
+        public const string Currency = "Currency";
+        public const string Alerts = "Alerts";
+        public const string AlertsChannel = "Alerts.Channel";
     }
 }
