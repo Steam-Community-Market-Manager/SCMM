@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
@@ -121,6 +120,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var profileInventoryItems = _db.SteamProfileInventoryItems
+                .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.SteamId != null)
                 .Include(x => x.Description)
@@ -183,6 +183,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var profileInventoryItems = _db.SteamProfileInventoryItems
+                .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Include(x => x.App)
                 .Include(x => x.Currency)
@@ -217,6 +218,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var profileMarketItems = _db.SteamProfileMarketItems
+                .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
                 .Include(x => x.App)
@@ -251,6 +253,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var currency = this.Currency();
             var profileInventoryItems = _db.SteamProfileInventoryItems
+                .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
@@ -359,6 +362,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var inventoryItemIcons = _db.SteamProfileInventoryItems
+                .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
                 .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
@@ -400,6 +404,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var inventoryItemIcons = _db.SteamProfileInventoryItems
+                .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
                 .Where(x => x.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) || x.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
@@ -421,6 +426,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var marketItemIcons = _db.SteamProfileMarketItems
+                .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
                 .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))

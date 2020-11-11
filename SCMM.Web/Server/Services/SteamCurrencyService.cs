@@ -27,6 +27,7 @@ namespace SCMM.Web.Server.Services
         public async Task RepopulateCache()
         {
             var currencies = await _db.SteamCurrencies
+                .AsNoTracking()
                 .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
                 .ToListAsync();
 
@@ -42,6 +43,7 @@ namespace SCMM.Web.Server.Services
         public IEnumerable<CurrencyDetailedDTO> GetAll()
         {
             return _db.SteamCurrencies
+                .AsNoTracking()
                 .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
                 .ToList();
         }
@@ -49,6 +51,7 @@ namespace SCMM.Web.Server.Services
         public CurrencyDetailedDTO GetByNameOrDefault(string name)
         {
             return _db.SteamCurrencies
+                .AsNoTracking()
                 .Where(x => String.IsNullOrEmpty(name) ? x.IsDefault : (x.Name == name))
                 .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
                 .FirstOrDefault();

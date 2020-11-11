@@ -46,6 +46,7 @@ namespace SCMM.Web.Server.API.Controllers
             pageSize = Math.Max(0, pageSize);
 
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
@@ -102,6 +103,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var profileId = User.Id();
                 var assetDescriptionIds = items.Select(x => x.SteamDescriptionId).ToList();
                 var profileMarketItems = _db.SteamProfileMarketItems
+                    .AsNoTracking()
                     .Where(x => x.ProfileId == profileId)
                     .Where(x => assetDescriptionIds.Contains(x.Description.SteamId))
                     .Select(x => new
@@ -136,6 +138,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IActionResult Get([FromRoute] Guid id)
         {
             var item = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
@@ -166,6 +169,7 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(idOrName, out id);
 
             var item = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
@@ -189,6 +193,7 @@ namespace SCMM.Web.Server.API.Controllers
             var from = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(2));
             var to = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItemSale
+                .AsNoTracking()
                 .Where(x => x.Timestamp.Date >= from && x.Timestamp.Date <= to.Date)
                 .GroupBy(x => x.Timestamp.Date)
                 .OrderByDescending(x => x.Key.Date)
@@ -203,6 +208,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItemSale
+                .AsNoTracking()
                 .Where(x => x.Timestamp.Date <= yesterday.Date)
                 .GroupBy(x => x.Timestamp.Date)
                 .OrderByDescending(x => x.Key.Date)
@@ -230,6 +236,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardHotRightNow()
         {
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
                 .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
@@ -245,6 +252,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var now = DateTimeOffset.UtcNow;
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
@@ -266,6 +274,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var now = DateTimeOffset.UtcNow;
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
@@ -287,6 +296,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
@@ -307,6 +317,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
@@ -327,6 +338,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var now = DateTimeOffset.UtcNow;
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
@@ -348,6 +360,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardMostRecent()
         {
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
                 .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
@@ -362,6 +375,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardMostProfitable()
         {
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
@@ -377,6 +391,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardMostSaturated()
         {
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
                 .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
@@ -392,6 +407,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardMostStarved()
         {
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
                 .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
@@ -407,6 +423,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardMostCommon()
         {
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
@@ -423,6 +440,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<MarketItemListDTO> GetDashboardMostRare()
         {
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
@@ -440,6 +458,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var now = DateTimeOffset.UtcNow;
             var query = _db.SteamMarketItems
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)

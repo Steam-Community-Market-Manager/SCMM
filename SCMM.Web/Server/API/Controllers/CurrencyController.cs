@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
@@ -29,6 +30,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<CurrencyListDTO> Get()
         {
             return _db.SteamCurrencies
+                .AsNoTracking()
                 .OrderBy(x => x.Name)
                 .Select(x => _mapper.Map<CurrencyListDTO>(x))
                 .ToList();
@@ -39,6 +41,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<CurrencyDetailedDTO> GetWithDetails()
         {
             return _db.SteamCurrencies
+                .AsNoTracking()
                 .OrderBy(x => x.Name)
                 .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
                 .ToList();

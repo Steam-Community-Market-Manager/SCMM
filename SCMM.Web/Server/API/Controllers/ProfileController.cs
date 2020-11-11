@@ -37,6 +37,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IEnumerable<ProfileDTO> GetDonators()
         {
             return _db.SteamProfiles
+                .AsNoTracking()
                 .Where(x => x.DonatorLevel > 0)
                 .OrderByDescending(x => x.DonatorLevel)
                 .Select(x => _mapper.Map<ProfileDTO>(x))
@@ -59,6 +60,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var profileId = User.Id();
                 var profile = _db.SteamProfiles
+                    .AsNoTracking()
                     .Include(x => x.Language)
                     .Include(x => x.Currency)
                     .FirstOrDefault(x => x.Id == profileId);

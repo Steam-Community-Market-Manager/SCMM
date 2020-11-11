@@ -44,6 +44,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var appId = this.App();
             var itemStores = _db.SteamItemStores
+                .AsNoTracking()
                 .Where(x => x.App.SteamId == appId)
                 .OrderBy(x => x.Start)
                 .ToList();
@@ -65,6 +66,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var appId = this.App();
             var latestItemStoreId = _db.SteamItemStores
+                .AsNoTracking()
                 .Where(x => x.App.SteamId == appId)
                 .Where(x => x.End == null)
                 .OrderByDescending(x => x.Start)
@@ -86,6 +88,7 @@ namespace SCMM.Web.Server.API.Controllers
         public IActionResult GetStore([FromRoute] Guid storeId)
         {
             var itemStore = _db.SteamItemStores
+                .AsNoTracking()
                 .Where(x => x.Id == storeId)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.App)
@@ -149,6 +152,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStoreMosaic([FromRoute] Guid storeId)
         {
             var storeItemDescriptions = _db.SteamItemStores
+                .AsNoTracking()
                 .Where(x => x.Id == storeId)
                 .SelectMany(x => x.Items.Select(x => x.Item.Description))
                 .OrderBy(x => x.Name)

@@ -54,6 +54,7 @@ namespace SCMM.Web.Server.Services
         public DateTimeOffset? GetStoreNextUpdateExpectedOn()
         {
             var lastItemAcceptedOn = _db.SteamAssetWorkshopFiles
+                .AsNoTracking()
                 .Where(x => x.AcceptedOn != null)
                 .GroupBy(x => 1)
                 .Select(x => x.Max(y => y.AcceptedOn))
@@ -86,6 +87,7 @@ namespace SCMM.Web.Server.Services
 
             // Load the profile
             var inventory = _db.SteamProfiles
+                .AsNoTracking()
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
                 .Select(x => new
                 {

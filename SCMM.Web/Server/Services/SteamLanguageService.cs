@@ -26,6 +26,7 @@ namespace SCMM.Web.Server.Services
         public async Task RepopulateCache()
         {
             var languages = await _db.SteamLanguages
+                .AsNoTracking()
                 .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
                 .ToListAsync();
 
@@ -41,6 +42,7 @@ namespace SCMM.Web.Server.Services
         public IEnumerable<LanguageDetailedDTO> GetLanguages()
         {
             return _db.SteamLanguages
+                .AsNoTracking()
                 .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
                 .ToList();
         }
@@ -48,6 +50,7 @@ namespace SCMM.Web.Server.Services
         public LanguageDetailedDTO GetByNameOrDefault(string name)
         {
             return _db.SteamLanguages
+                .AsNoTracking()
                 .Where(x => String.IsNullOrEmpty(name) ? x.IsDefault : String.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
                 .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
                 .FirstOrDefault();
