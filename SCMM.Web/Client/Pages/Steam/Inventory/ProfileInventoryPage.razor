@@ -9,7 +9,7 @@
 @inject IJSRuntime JSRuntime
 @inject AppState State
 
-<DocumentTitle Title="Inventory" />
+<Title Value="Inventory" />
 
 <Grid Container Spacing="@Spacing.Two">
     <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
@@ -41,7 +41,7 @@
 <Grid Container Spacing="@Spacing.Two">
     @if (Profile == null)
     {
-        <DocumentTitle Title="@($"Inventory - {SteamId}")" />
+        <Title Value="@($"Inventory - {SteamId}")" />
         <Grid ExtraSmall="@GridSize.Twelve">
             @if (ProfileLoadError != null)
             {
@@ -55,7 +55,7 @@
     }
     else
     {
-        <DocumentTitle Title="@($"Inventory - {Profile.Name}")" />
+        <Title Value="@($"Inventory - {Profile.Name}")" />
         <InventoryHeader Profile="@Profile" InventoryTotal="@InventoryTotal" SynchroniseInventory="@SynchroniseInventory" />
         <Grid Item ExtraSmall="@GridSize.Twelve">
             <Tabs Value="@SelectedInventoryPanel"
