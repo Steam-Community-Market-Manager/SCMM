@@ -33,12 +33,19 @@ namespace SCMM.Discord.Client
             _commands.CommandExecuted += OnCommandExecutedAsync;
             _commands.Log += OnCommandLogAsync;
 
-            using (var scope = _services.CreateScope())
+            try
             {
-                await _commands.AddModulesAsync(
-                    assembly: Assembly.GetEntryAssembly(),
-                    services: scope.ServiceProvider
-                );
+                using (var scope = _services.CreateScope())
+                {
+                    await _commands.AddModulesAsync(
+                        assembly: Assembly.GetEntryAssembly(),
+                        services: scope.ServiceProvider
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialise command handlers");
             }
         }
 

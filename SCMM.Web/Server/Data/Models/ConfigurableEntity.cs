@@ -6,23 +6,71 @@ using System.Linq;
 
 namespace SCMM.Web.Server.Data.Models
 {
-    public class ConfigurableEntity<T> : Entity where T : Configuration, new()
+    public abstract class ConfigurableEntity<T> : Entity where T : Configuration, new()
     {
         public ConfigurableEntity()
         {
             Configurations = new Collection<T>();
         }
 
+        protected abstract IEnumerable<ConfigurationDefinition> ConfigurationDefinitions { get; }
+
         public ICollection<T> Configurations { get; set; }
 
-        public string Get(string name)
+        private string AssertValidConfigurationName(string name)
         {
+            var definition = ConfigurationDefinitions.FirstOrDefault(x => String.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            if (String.IsNullOrEmpty(definition.Name))
+            {
+                throw new ArgumentException($"'{name}' is not a valid configuration name");
+            }
+
+            return definition.Name;
+        }
+
+        private string[] AssertValidConfigurationValue(string name, params string[] values)
+        {
+            var definition = ConfigurationDefinitions.FirstOrDefault(x => String.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            if (definition.AllowedValues?.Length > 0 && values != null)
+            {
+                for (int i = 0; i < values.Length; i++)
+                {
+                    var value = definition.AllowedValues.FirstOrDefault(x => String.Equals(x, values[i], StringComparison.InvariantCultureIgnoreCase));
+                    if (String.IsNullOrEmpty(value))
+                    {
+                        throw new ArgumentException($"'{values[i]}' is not a valid option for '{name}'");
+                    }
+                    else
+                    {
+                        values[i] = value;
+                    }
+                }
+                values = values.Where(x => !String.IsNullOrEmpty(x)).ToArray();
+            }
+
+            return values;
+        }
+
+        public KeyValuePair<T, string> Get(string name, string defaultValue = null)
+        {
+            name = AssertValidConfigurationName(name);
             var config = Configurations.FirstOrDefault(x => x.Name == name);
-            return (config?.Value ?? config?.List?.FirstOrDefault());
+            return new KeyValuePair<T, string>(
+                config, 
+                config?.Value ?? config?.List?.FirstOrDefault() ?? defaultValue
+            );
+        }
+
+        public bool IsSet(string name)
+        {
+            return !String.IsNullOrEmpty(Get(name).Value);
         }
 
         public T Set(string name, string value)
         {
+            name = AssertValidConfigurationName(name);
+            value = AssertValidConfigurationValue(name, value).FirstOrDefault();
+
             var config = Configurations.FirstOrDefault(x => x.Name == name);
             if (config != null)
             {
@@ -33,7 +81,8 @@ namespace SCMM.Web.Server.Data.Models
                 else
                 {
                     config.Value = null;
-                    Configurations.Remove(config);
+                    // TODO: This create orphans, need to fix the cascade delete
+                    //Configurations.Remove(config);
                 }
             }
             else if (!String.IsNullOrEmpty(value))
@@ -48,12 +97,15 @@ namespace SCMM.Web.Server.Data.Models
             return config;
         }
 
-        public T Add(string name, string[] values)
+        public T Add(string name, params string[] values)
         {
+            name = AssertValidConfigurationName(name);
+            values = AssertValidConfigurationValue(name, values);
             if (values == null)
             {
                 return null;
             }
+
             var config = Configurations.FirstOrDefault(x => x.Name == name);
             if (config != null)
             {
@@ -61,7 +113,10 @@ namespace SCMM.Web.Server.Data.Models
                 {
                     if (!String.IsNullOrEmpty(value))
                     {
-                        config.List.Add(value);
+                        if (!config.List.Contains(value))
+                        {
+                            config.List.Add(value);
+                        }
                     }
                 }
             }
@@ -77,12 +132,15 @@ namespace SCMM.Web.Server.Data.Models
             return config;
         }
 
-        public T Remove(string name, string[] values)
+        public T Remove(string name, params string[] values)
         {
+            name = AssertValidConfigurationName(name);
+            values = AssertValidConfigurationValue(name, values);
             if (values == null)
             {
                 return null;
             }
+
             var config = Configurations.FirstOrDefault(x => x.Name == name);
             if (config != null)
             {
@@ -91,7 +149,8 @@ namespace SCMM.Web.Server.Data.Models
                     config.List.Remove(value);
                     if (!config.List.Any())
                     {
-                        Configurations.Remove(config);
+                        // TODO: This create orphans, need to fix the cascade delete
+                        //Configurations.Remove(config);
                     }
                 }
             }
@@ -99,17 +158,24 @@ namespace SCMM.Web.Server.Data.Models
             return config;
         }
 
-        public IEnumerable<string> List(string name)
+        public KeyValuePair<T, IEnumerable<string>> List(string name)
         {
-            return Configurations.FirstOrDefault(x => x.Name == name)?.List;
+            name = AssertValidConfigurationName(name);
+            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            return new KeyValuePair<T, IEnumerable<string>>(
+                config,
+                config?.List
+            );
         }
 
         public T Clear(string name)
         {
+            name = AssertValidConfigurationName(name);
             var config = Configurations.FirstOrDefault(x => x.Name == name);
             if (config != null)
             {
-                Configurations.Remove(config);
+                // TODO: This create orphans, need to fix the cascade delete
+                //Configurations.Remove(config);
             }
 
             return config;

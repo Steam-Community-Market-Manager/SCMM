@@ -53,7 +53,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var currencies = await db.SteamCurrencies.Where(x => x.IsCommon).ToListAsync();
+                var currencies = await db.SteamCurrencies.ToListAsync();
                 if (currencies == null)
                 {
                     return;
@@ -147,6 +147,18 @@ namespace SCMM.Web.Server.Services.Jobs
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
+                if (guild.IsSet(Data.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Data.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Data.Models.Discord.DiscordConfiguration.AlertsMarket))
+                {
+                    continue;
+                }
+
+                var filteredCurrencies = currencies;
+                var guildCurrencies = guild.List(Data.Models.Discord.DiscordConfiguration.Currency).Value;
+                if (guildCurrencies?.Any() == true)
+                {
+                    filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
+                }
+
                 var fields = new Dictionary<string, string>();
                 if (storeItem != null)
                 {
@@ -167,16 +179,16 @@ namespace SCMM.Web.Server.Services.Jobs
                     {
                         fields.Add("Estimated Sales", estimatedSales);
                     }
-                    fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, currencies));
+                    fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, filteredCurrencies));
                 }
                 if (marketItem != null)
                 {
-                    fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, currencies));
+                    fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, filteredCurrencies));
                 }
 
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertsChannel) ?? $"announcement|market|skin|{marketItem.App.Name}",
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{marketItem.App.Name}").Value,
                     message: null,
                     title: $"{marketItem.Description.Name} is now available in the marketplace",
                     description: $"This item just appeared in the marketplace for the first time, or has reappeared after previously not having any listings.",

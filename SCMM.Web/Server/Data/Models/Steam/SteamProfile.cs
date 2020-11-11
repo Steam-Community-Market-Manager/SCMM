@@ -61,5 +61,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
         public ICollection<SteamProfileMarketItem> MarketItems { get; set; }
 
         public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }
+
+        protected override IEnumerable<ConfigurationDefinition> ConfigurationDefinitions
+            => SteamProfileConfiguration.Definitions;
     }
 }

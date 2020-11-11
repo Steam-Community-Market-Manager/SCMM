@@ -82,7 +82,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var currency = _currencies.GetByNameOrDefault(currencyName ?? guild.Get(Data.Models.Discord.DiscordConfiguration.Currency));
+            var currency = _currencies.GetByNameOrDefault(currencyName ?? guild.Get(Data.Models.Discord.DiscordConfiguration.Currency).Value);
             if (currency == null)
             {
                 await ReplyAsync($"Beep boop! I don't support that currency.");

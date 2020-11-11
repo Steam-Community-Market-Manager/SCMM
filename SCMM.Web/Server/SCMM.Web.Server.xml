@@ -62,63 +62,51 @@
             Used to track the historic sales positions in the store
             </summary>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.GetModuleHelpAsync">
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigurationModule.GetModuleHelpAsync">
             <summary>
             !config help
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.GetConfigNamesAsync">
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigurationModule.GetConfigNamesAsync">
             <summary>
             !config names
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.GetConfigValueAsync(System.String)">
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigurationModule.GetConfigValueAsync(System.String)">
             <summary>
             !config get [name]
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.SetConfigValueAsync(System.String,System.String)">
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigurationModule.SetConfigValueAsync(System.String,System.String)">
             <summary>
             !config set [name] [value]
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.AddConfigValueAsync(System.String,System.String)">
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigurationModule.AddConfigValueAsync(System.String,System.String[])">
             <summary>
             !config add [name] [value]
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.RemoveConfigValueAsync(System.String,System.String)">
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigurationModule.RemoveConfigValueAsync(System.String,System.String[])">
             <summary>
             !config add [name] [value]
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.ClearConfigValueAsync(System.String)">
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigurationModule.ClearConfigValueAsync(System.String)">
             <summary>
             !config clear [name]
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigModule.ListConfigValueAsync(System.String)">
+        <member name="M:SCMM.Web.Server.Discord.Modules.ConfigurationModule.ListConfigValueAsync(System.String)">
             <summary>
             !config get [name]
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.HelpModule.GetModuleHelpAsync">
-            <summary>
-            !help
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.InventoryModule.GetModuleHelpAsync">
-            <summary>
-            !inventory help
             </summary>
             <returns></returns>
         </member>
@@ -128,21 +116,9 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.StoreModule.GetModuleHelpAsync">
-            <summary>
-            !inventory help
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:SCMM.Web.Server.Discord.Modules.StoreModule.SayStoreNextUpdateExpectedOnAsync">
             <summary>
             !store remaining
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:SCMM.Web.Server.Discord.Modules.TradeModule.GetModuleHelpAsync">
-            <summary>
-            !trade help
             </summary>
             <returns></returns>
         </member>

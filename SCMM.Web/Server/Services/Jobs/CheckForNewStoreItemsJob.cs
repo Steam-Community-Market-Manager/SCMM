@@ -55,7 +55,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var currencies = await db.SteamCurrencies.Where(x => x.IsCommon).ToListAsync();
+                var currencies = await db.SteamCurrencies.ToListAsync();
                 if (currencies == null)
                 {
                     return;
@@ -183,15 +183,27 @@ namespace SCMM.Web.Server.Services.Jobs
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
+                if (guild.IsSet(Data.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Data.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Data.Models.Discord.DiscordConfiguration.AlertsStore))
+                {
+                    continue;
+                }
+
+                var filteredCurrencies = currencies;
+                var guildCurrencies = guild.List(Data.Models.Discord.DiscordConfiguration.Currency).Value;
+                if (guildCurrencies?.Any() == true)
+                {
+                    filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
+                }
+
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertsChannel) ?? $"announcement|store|skin|{app.Name}",
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
                     message: null,
                     title: $"{app.Name} Store - {store.Name}",
                     description: $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
                     fields: newStoreItems.OrderBy(x => x.Description.Name).ToDictionary(
                         x => x.Description?.Name,
-                        x => GenerateStoreItemPriceList(x, currencies)
+                        x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
                     url: new SteamItemStorePageRequest()
                     {
