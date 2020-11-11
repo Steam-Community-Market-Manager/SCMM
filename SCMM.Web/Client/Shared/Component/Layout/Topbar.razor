@@ -28,15 +28,14 @@
         @ActionsContent
         @if (OnSidebarToggle != null)
         {
-            <Hidden
-                LargeUp
-                Context="HiddenContext">
-                <IconButton
-                    Class="@HiddenContext.Class"
-                    Color="@Color.Inherit"
-                    OnClick="@OnSidebarToggle">
-                    <MenuIcon />
-                </IconButton>
+            <Hidden LargeUp Context="HiddenContext">
+                <div class="@HiddenContext.Class">
+                    <IconButton
+                        Color="@Color.Inherit"
+                        OnClick="@OnSidebarToggle">
+                        <MenuIcon />
+                    </IconButton>
+                </div>
             </Hidden>
         }
     </Toolbar>
