@@ -190,16 +190,6 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description.MarketItem.Currency)
                 .Include(x => x.Description.StoreItem)
                 .Include(x => x.Description.StoreItem.Currency)
-                .Select(x => new
-                {
-                    Item = x,
-                    // TODO: Allow both MarketItem and StoreItem here
-                    ReturnOnInvestment = (x.BuyPrice > 0 && x.Description.MarketItem != null && (x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) > 0
-                        ? ((decimal)(x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) / x.BuyPrice)
-                        : 0
-                    )
-                })
-                .OrderByDescending(x => x.ReturnOnInvestment)
                 .ToList();
 
             var profileInventoryItemSummaries = new List<InventoryItemListDTO>();
@@ -207,7 +197,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 profileInventoryItemSummaries.Add(
                     _mapper.Map<SteamProfileInventoryItem, InventoryItemListDTO>(
-                        profileInventoryItem.Item, this
+                        profileInventoryItem, this
                     )
                 );
             }
