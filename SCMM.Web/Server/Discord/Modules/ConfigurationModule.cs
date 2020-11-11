@@ -7,17 +7,20 @@ using SCMM.Web.Server.Data.Models.Discord;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Discord.Modules
 {
     [Group("config")]
-    public class ConfigModule : ModuleBase<SocketCommandContext>
+    public class ConfigurationModule : ModuleBase<SocketCommandContext>
     {
         private readonly IConfiguration _configuration;
         private readonly ScmmDbContext _db;
 
-        public ConfigModule(IConfiguration configuration, ScmmDbContext db)
+        private static char[] ValueSeparators = new [] { ' ', ',', '+', '&', '|', ';' };
+
+        public ConfigurationModule(IConfiguration configuration, ScmmDbContext db)
         {
             _configuration = configuration;
             _db = db;
@@ -35,37 +38,36 @@ namespace SCMM.Web.Server.Discord.Modules
         {
             var fields = new List<EmbedFieldBuilder>();
             fields.Add(new EmbedFieldBuilder()
-                .WithName("`>config names`")
-                .WithValue("...")
+                .WithName("`config names`")
+                .WithValue("Show information about all the supported configurations")
             );
             fields.Add(new EmbedFieldBuilder()
-                .WithName("`>config get [name]`")
-                .WithValue("...")
+                .WithName("`config get [name]`")
+                .WithValue("Get a configuration value")
             );
             fields.Add(new EmbedFieldBuilder()
-                .WithName("`>config set [name] [value]`")
-                .WithValue("...")
+                .WithName("`config set [name] [value]`")
+                .WithValue("Set a configuration value")
             );
             fields.Add(new EmbedFieldBuilder()
-                .WithName("`>config add [name] [value]`")
-                .WithValue("...")
+                .WithName("`config add [name] [values...]`")
+                .WithValue("Add a value to a configuration list")
             );
             fields.Add(new EmbedFieldBuilder()
-                .WithName("`>config remove [name] [value]`")
-                .WithValue("...")
+                .WithName("`config remove [name] [values...]`")
+                .WithValue("Remove a value from a configuration list")
             );
             fields.Add(new EmbedFieldBuilder()
-                .WithName("`>config clear [name]`")
-                .WithValue("...")
+                .WithName("`config clear [name]`")
+                .WithValue("Clear a configuration list")
             );
             fields.Add(new EmbedFieldBuilder()
-                .WithName("`>config list [name]`")
-                .WithValue("...")
+                .WithName("`config list [name]`")
+                .WithValue("List all the values of a configuration")
             );
 
             var embed = new EmbedBuilder()
                 .WithTitle("Help - Configuration")
-                .WithDescription($"...")
                 .WithFields(fields)
                 .Build();
 
@@ -84,22 +86,28 @@ namespace SCMM.Web.Server.Discord.Modules
         public async Task GetConfigNamesAsync()
         {
             var fields = new List<EmbedFieldBuilder>();
-            fields.Add(new EmbedFieldBuilder()
-                .WithName($"{DiscordConfiguration.Currency}")
-                .WithValue("...")
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName($"{DiscordConfiguration.Alerts}")
-                .WithValue("...")
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName($"{DiscordConfiguration.AlertsChannel}")
-                .WithValue("...")
-            );
+            var configurationDefinitions = DiscordConfiguration.Definitions;
+            foreach (var definition in configurationDefinitions)
+            {
+                var description = new StringBuilder();
+                description.Append(definition.Description);
+                if (definition.AllowedValues?.Length > 0)
+                {
+                    description.Append($" Allowed options are:");
+                    description.AppendLine();
+                    description.Append(
+                        String.Join(',', definition.AllowedValues.Select(x => $"`{x}`"))
+                    );
+                }
+
+                fields.Add(new EmbedFieldBuilder()
+                    .WithName(definition.Name)
+                    .WithValue(description.ToString())
+                );
+            }
 
             var embed = new EmbedBuilder()
                 .WithTitle("Configuration Names")
-                .WithDescription($"...")
                 .WithFields(fields)
                 .Build();
 
@@ -128,14 +136,21 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var value = guild.Get(name);
-            if (!String.IsNullOrEmpty(value))
+            try
             {
-                await Context.Channel.SendMessageAsync($"'{name}' is '{value}'");
+                var config = guild.Get(name);
+                if (!String.IsNullOrEmpty(config.Value))
+                {
+                    await Context.Channel.SendMessageAsync($"'{config.Key?.Name ?? name}' is '{config.Value}'");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"'{config.Key?.Name ?? name}' is not set");
+                }
             }
-            else
+            catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync($"'{name}' is not set");
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
 
@@ -160,16 +175,23 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var config = guild.Set(name, value);
-            _db.SaveChanges();
+            try
+            {
+                var config = guild.Set(name, value);
+                _db.SaveChanges();
 
-            if (config != null && !String.IsNullOrEmpty(config.Value))
-            {
-                await Context.Channel.SendMessageAsync($"Ok. '{name}' is now '{config.Value}'");
+                if (config != null && !String.IsNullOrEmpty(config.Value))
+                {
+                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is now '{config.Value}'");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is no longer set");
+                }
             }
-            else
+            catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync($"Ok. '{name}' is no longer set");
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
 
@@ -182,7 +204,7 @@ namespace SCMM.Web.Server.Discord.Modules
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddConfigValueAsync(
             [Summary("The config name")] string name,
-            [Summary("The config value")] string value
+            [Summary("The config values")] params string[] values
         )
         {
             var guild = _db.DiscordGuilds
@@ -194,13 +216,19 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var values = value?.Split(new[] { ' ', ',', '+', '&', '|', ';' }, StringSplitOptions.RemoveEmptyEntries);
-            var config = guild.Add(name, values);
-            _db.SaveChanges();
-
-            if (config != null && config.List?.Any() == true)
+            try
             {
-                await Context.Channel.SendMessageAsync($"Ok. '{name}' is now '{String.Join(", ", config.List)}'");
+                var config = guild.Add(name, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
+                _db.SaveChanges();
+
+                if (config != null && config.List?.Any() == true)
+                {
+                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is now '{String.Join(", ", config.List)}'");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
 
@@ -213,7 +241,7 @@ namespace SCMM.Web.Server.Discord.Modules
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveConfigValueAsync(
             [Summary("The config name")] string name,
-            [Summary("The config value")] string value
+            [Summary("The config values")] params string[] values
         )
         {
             var guild = _db.DiscordGuilds
@@ -225,17 +253,23 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var values = value?.Split(new[] { ' ', ',', '+', '&', '|', ';' }, StringSplitOptions.RemoveEmptyEntries);
-            var config = guild.Remove(name, values);
-            _db.SaveChanges();
+            try
+            {
+                var config = guild.Remove(name, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
+                _db.SaveChanges();
 
-            if (config != null && config.List?.Any() == true)
-            {
-                await Context.Channel.SendMessageAsync($"Ok. '{name}' is now '{String.Join(", ", config.List)}'");
+                if (config != null && config.List?.Any() == true)
+                {
+                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is now '{String.Join(", ", config.List)}'");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is no longer set");
+                }
             }
-            else
+            catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync($"Ok. '{name}' is no longer set");
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
 
@@ -259,12 +293,19 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var config = guild.Clear(name);
-            _db.SaveChanges();
-
-            if (config != null)
+            try
             {
-                await Context.Channel.SendMessageAsync($"Ok. '{name}' is no longer set");
+                var config = guild.Clear(name);
+                _db.SaveChanges();
+
+                if (config != null)
+                {
+                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is no longer set");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
 
@@ -288,14 +329,21 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var values = guild.List(name);
-            if (values?.Any() == true)
+            try
             {
-                await Context.Channel.SendMessageAsync($"'{name}' is '{String.Join(", ", values)}'");
+                var config = guild.List(name);
+                if (config.Value?.Any() == true)
+                {
+                    await Context.Channel.SendMessageAsync($"'{config.Key?.Name ?? name}' is '{String.Join(", ", config.Value)}'");
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync($"'{config.Key?.Name ?? name}' is not set");
+                }
             }
-            else
+            catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync($"'{name}' is not set");
+                await Context.Channel.SendMessageAsync(ex.Message);
             }
         }
     }

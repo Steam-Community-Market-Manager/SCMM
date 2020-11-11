@@ -33,12 +33,19 @@ namespace SCMM.Discord.Client
             _commands.CommandExecuted += OnCommandExecutedAsync;
             _commands.Log += OnCommandLogAsync;
 
-            using (var scope = _services.CreateScope())
+            try
             {
-                await _commands.AddModulesAsync(
-                    assembly: Assembly.GetEntryAssembly(),
-                    services: scope.ServiceProvider
-                );
+                using (var scope = _services.CreateScope())
+                {
+                    await _commands.AddModulesAsync(
+                        assembly: Assembly.GetEntryAssembly(),
+                        services: scope.ServiceProvider
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialise command handlers");
             }
         }
 
@@ -78,13 +85,20 @@ namespace SCMM.Discord.Client
             if (result.IsSuccess)
             {
                 _logger.LogInformation(
-                    $"Discord command '{commandName}' executed successfully (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username})"
+                    $"Discord command '{commandName}' success (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username})"
                 );
+            }
+            else if (result.Error == CommandError.Exception)
+            {
+                _logger.LogError(
+                    $"Discord command '{commandName}' exeception occurred (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
+                );
+                return context.Channel.SendMessageAsync($"Something went horribly wrong 😕");
             }
             else if (result.Error != CommandError.UnknownCommand)
             {
-                _logger.LogError(
-                    $"Discord command '{commandName}' execution failed (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
+                _logger.LogWarning(
+                    $"Discord command '{commandName}' failed (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
                 );
             }
 

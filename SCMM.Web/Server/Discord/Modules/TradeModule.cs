@@ -6,7 +6,6 @@ using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Shared.Data.Models.Steam;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,31 +24,6 @@ namespace SCMM.Web.Server.Discord.Modules
             _configuration = configuration;
             _db = db;
             _steam = steam;
-        }
-
-        /// <summary>
-        /// !trade help
-        /// </summary>
-        /// <returns></returns>
-        [Command("help")]
-        [Summary("Echo module help")]
-        public async Task GetModuleHelpAsync()
-        {
-            var fields = new List<EmbedFieldBuilder>();
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`>trade request [steamId]`")
-                .WithValue("...")
-            );
-
-            var embed = new EmbedBuilder()
-                .WithTitle("Help - Trade")
-                .WithDescription($"...")
-                .WithFields(fields)
-                .Build();
-
-            await ReplyAsync(
-                embed: embed
-            );
         }
 
         /// <summary>

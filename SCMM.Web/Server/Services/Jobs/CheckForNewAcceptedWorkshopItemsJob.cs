@@ -130,9 +130,14 @@ namespace SCMM.Web.Server.Services.Jobs
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
+                if (guild.IsSet(Data.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Data.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Data.Models.Discord.DiscordConfiguration.AlertsWorkshop))
+                {
+                    continue;
+                }
+
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertsChannel) ?? $"announcement|workshop|skin|{app.Name}",
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|workshop|skin|{app.Name}").Value,
                     message: null,
                     title: $"{app.Name} Workshop - New items accepted!",
                     description: $"{newWorkshopFiles.Count()} new item(s) have been accepted for {app.Name} and should appear on the store page shortly.",
