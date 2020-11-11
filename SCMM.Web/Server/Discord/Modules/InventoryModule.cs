@@ -30,31 +30,6 @@ namespace SCMM.Web.Server.Discord.Modules
         }
 
         /// <summary>
-        /// !inventory help
-        /// </summary>
-        /// <returns></returns>
-        [Command("help")]
-        [Summary("Echo module help")]
-        public async Task GetModuleHelpAsync()
-        {
-            var fields = new List<EmbedFieldBuilder>();
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`>inventory value [steamId] [currencyName]`")
-                .WithValue("...")
-            );
-
-            var embed = new EmbedBuilder()
-                .WithTitle("Help - Inventory")
-                .WithDescription($"...")
-                .WithFields(fields)
-                .Build();
-
-            await ReplyAsync(
-                embed: embed
-            );
-        }
-
-        /// <summary>
         /// !inventory [steamId] [currencyName]
         /// </summary>
         /// <returns></returns>
