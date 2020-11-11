@@ -85,13 +85,20 @@ namespace SCMM.Discord.Client
             if (result.IsSuccess)
             {
                 _logger.LogInformation(
-                    $"Discord command '{commandName}' executed successfully (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username})"
+                    $"Discord command '{commandName}' success (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username})"
                 );
+            }
+            else if (result.Error == CommandError.Exception)
+            {
+                _logger.LogError(
+                    $"Discord command '{commandName}' exeception occurred (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
+                );
+                return context.Channel.SendMessageAsync($"Something went horribly wrong 😕");
             }
             else if (result.Error != CommandError.UnknownCommand)
             {
-                _logger.LogError(
-                    $"Discord command '{commandName}' execution failed (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
+                _logger.LogWarning(
+                    $"Discord command '{commandName}' failed (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
                 );
             }
 
