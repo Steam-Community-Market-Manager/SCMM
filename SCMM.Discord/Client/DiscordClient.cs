@@ -123,7 +123,7 @@ namespace SCMM.Discord.Client
                 // If the channel is null, we'll broadcast to the first channel that we have permission to
                 var channels = guild.TextChannels
                     .OrderBy(x => x.Name)
-                    .Where(x => String.IsNullOrEmpty(channelPattern) || Regex.IsMatch(x.Name, channelPattern))
+                    .Where(x => String.IsNullOrEmpty(channelPattern) || String.Equals($"<#{x.Id}>", channelPattern, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, channelPattern))
                     .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
                     .ToList();
                 if (!channels.Any() && !String.IsNullOrEmpty(channelPattern))
