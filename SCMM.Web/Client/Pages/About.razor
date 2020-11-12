@@ -1,4 +1,4 @@
-@page "/about"
+﻿@page "/about"
 @using SCMM.Web.Shared.Domain.DTOs.Profiles;
 @inject ILogger<About> Logger
 @inject HttpClient Http
@@ -180,6 +180,14 @@
             <Grid Item ExtraSmall="@GridSize.Twelve">
                 <Typography Variant="@TypographyVariant.H5" Color="@Color.Primary" GutterBottom>
                     <i class="fas fa-fw fa-list-alt"></i>  Change History
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1">
+                    <span>vNext</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <ul>
+                        <li>Upgraded to .NET 5.0 🥳</li>
+                    </ul>
                 </Typography>
                 <Typography Variant="@TypographyVariant.Body1">
                     <span>v0.7 (11/11/2020)</span>
