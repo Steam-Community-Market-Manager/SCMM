@@ -1,6 +1,6 @@
 ﻿using Skclusive.Core.Component;
 
-namespace SCMM.Web.Client.Shared.Component
+namespace SCMM.Web.Client.Shared.Script
 {
     public class WindowInteropScript : ScriptComponentBase
     {
