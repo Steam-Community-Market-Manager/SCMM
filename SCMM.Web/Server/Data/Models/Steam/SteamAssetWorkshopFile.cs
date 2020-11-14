@@ -20,10 +20,13 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public SteamApp App { get; set; }
 
-        [Required]
         public string Name { get; set; }
 
         public string Description { get; set; }
+
+        public Guid? ImageId { get; set; }
+
+        public ImageData Image { get; set; }
 
         public string ImageUrl { get; set; }
 

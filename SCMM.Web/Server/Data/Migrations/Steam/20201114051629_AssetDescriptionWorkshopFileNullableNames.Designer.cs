@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(ScmmDbContext))]
-    partial class ScmmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201114051629_AssetDescriptionWorkshopFileNullableNames")]
+    partial class AssetDescriptionWorkshopFileNullableNames
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,26 +63,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("DiscordGuilds");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.ImageData", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("MineType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("Value")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<byte[]>("ValueLarge")
-                        .HasColumnType("varbinary(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ImageData");
-                });
-
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamApp", b =>
                 {
                     b.Property<Guid>("Id")
@@ -89,9 +71,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.Property<string>("BackgroundColor")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("IconId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("IconLargeUrl")
                         .HasColumnType("nvarchar(max)");
@@ -114,8 +93,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IconId");
 
                     b.ToTable("SteamApps");
                 });
@@ -141,9 +118,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<string>("ForegroundColour")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("IconId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("IconLargeUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -166,8 +140,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasKey("Id");
 
                     b.HasIndex("AppId");
-
-                    b.HasIndex("IconId");
 
                     b.HasIndex("WorkshopFileId");
 
@@ -201,9 +173,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<byte>("Flags")
                         .HasColumnType("tinyint");
 
-                    b.Property<Guid?>("ImageId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -231,8 +200,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasIndex("AppId");
 
                     b.HasIndex("CreatorId");
-
-                    b.HasIndex("ImageId");
 
                     b.ToTable("SteamAssetWorkshopFiles");
                 });
@@ -569,9 +536,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AvatarId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("AvatarLargeUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -624,8 +588,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AvatarId");
 
                     b.HasIndex("CurrencyId");
 
@@ -823,10 +785,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamApp", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Data.Models.Steam.ImageData", "Icon")
-                        .WithMany()
-                        .HasForeignKey("IconId");
-
                     b.OwnsMany("SCMM.Web.Server.Data.Models.Steam.SteamAssetFilter", "Filters", b1 =>
                         {
                             b1.Property<Guid>("Id")
@@ -873,8 +831,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         });
 
                     b.Navigation("Filters");
-
-                    b.Navigation("Icon");
                 });
 
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamAssetDescription", b =>
@@ -884,10 +840,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .HasForeignKey("AppId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("SCMM.Web.Server.Data.Models.Steam.ImageData", "Icon")
-                        .WithMany()
-                        .HasForeignKey("IconId");
 
                     b.HasOne("SCMM.Web.Server.Data.Models.Steam.SteamAssetWorkshopFile", "WorkshopFile")
                         .WithMany()
@@ -911,8 +863,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.Navigation("App");
 
-                    b.Navigation("Icon");
-
                     b.Navigation("Tags");
 
                     b.Navigation("WorkshopFile");
@@ -929,10 +879,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasOne("SCMM.Web.Server.Data.Models.Steam.SteamProfile", "Creator")
                         .WithMany("WorkshopFiles")
                         .HasForeignKey("CreatorId");
-
-                    b.HasOne("SCMM.Web.Server.Data.Models.Steam.ImageData", "Image")
-                        .WithMany()
-                        .HasForeignKey("ImageId");
 
                     b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableDailyGraphDataSet", "SubscriptionsGraph", b1 =>
                         {
@@ -953,8 +899,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Navigation("App");
 
                     b.Navigation("Creator");
-
-                    b.Navigation("Image");
 
                     b.Navigation("SubscriptionsGraph");
                 });
@@ -1057,10 +1001,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamProfile", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Data.Models.Steam.ImageData", "Avatar")
-                        .WithMany()
-                        .HasForeignKey("AvatarId");
-
                     b.HasOne("SCMM.Web.Server.Data.Models.Steam.SteamCurrency", "Currency")
                         .WithMany()
                         .HasForeignKey("CurrencyId");
@@ -1084,8 +1024,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                             b1.WithOwner()
                                 .HasForeignKey("SteamProfileId");
                         });
-
-                    b.Navigation("Avatar");
 
                     b.Navigation("Currency");
 

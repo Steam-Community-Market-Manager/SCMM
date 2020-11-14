@@ -48,6 +48,8 @@ namespace SCMM.Web.Server.Data
                 .OwnsOne(x => x.List);
 
             builder.Entity<SteamApp>()
+                .HasOne(x => x.Icon);
+            builder.Entity<SteamApp>()
                 .OwnsMany(x => x.Filters)
                 .OwnsOne(x => x.Options);
             builder.Entity<SteamApp>()
@@ -116,6 +118,8 @@ namespace SCMM.Web.Server.Data
                 .HasOne(x => x.Currency);
 
             builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.Icon);
+            builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.WorkshopFile);
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.StoreItem)
@@ -129,8 +133,12 @@ namespace SCMM.Web.Server.Data
                 .OwnsOne(x => x.Tags);
 
             builder.Entity<SteamAssetWorkshopFile>()
+                .HasOne(x => x.Image);
+            builder.Entity<SteamAssetWorkshopFile>()
                 .OwnsOne(x => x.SubscriptionsGraph);
 
+            builder.Entity<SteamProfile>()
+                .HasOne(x => x.Avatar);
             builder.Entity<SteamProfile>()
                 .HasOne(x => x.Language);
             builder.Entity<SteamProfile>()

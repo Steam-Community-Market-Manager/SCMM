@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -21,6 +22,10 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         [Required]
         public string Name { get; set; }
+
+        public Guid? IconId { get; set; }
+
+        public ImageData Icon { get; set; }
 
         public string IconUrl { get; set; }
 

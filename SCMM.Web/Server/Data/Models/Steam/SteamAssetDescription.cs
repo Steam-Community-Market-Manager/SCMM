@@ -20,7 +20,6 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public SteamApp App { get; set; }
 
-        [Required]
         public string Name { get; set; }
 
         public string Description { get; set; }
@@ -28,6 +27,10 @@ namespace SCMM.Web.Server.Data.Models.Steam
         public string BackgroundColour { get; set; }
 
         public string ForegroundColour { get; set; }
+
+        public Guid? IconId { get; set; }
+
+        public ImageData Icon { get; set; }
 
         public string IconUrl { get; set; }
 
