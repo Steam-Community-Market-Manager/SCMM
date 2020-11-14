@@ -20,7 +20,7 @@ namespace SCMM.Web.Server
                     logging.AddDebug();
                     logging.AddConsole();
                     logging.AddApplicationInsights();
-                    logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Warning);
+                    logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Information);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
