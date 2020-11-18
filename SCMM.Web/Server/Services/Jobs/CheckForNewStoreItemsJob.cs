@@ -194,6 +194,10 @@ namespace SCMM.Web.Server.Services.Jobs
                 {
                     filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
                 }
+                else
+                {
+                    filteredCurrencies = currencies.Where(x => x.IsCommon).ToList();
+                }
 
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,

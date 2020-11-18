@@ -158,6 +158,10 @@ namespace SCMM.Web.Server.Services.Jobs
                 {
                     filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
                 }
+                else
+                {
+                    filteredCurrencies = currencies.Where(x => x.IsCommon).ToList();
+                }
 
                 var fields = new Dictionary<string, string>();
                 if (storeItem != null)
