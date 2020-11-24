@@ -21,7 +21,7 @@ namespace SCMM.Web.Server
                     logging.AddDebug();
                     logging.AddConsole();
                     logging.AddApplicationInsights();
-                    logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Information);
+                    logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Warning);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
