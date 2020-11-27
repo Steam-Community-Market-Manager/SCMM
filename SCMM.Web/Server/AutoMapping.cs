@@ -140,8 +140,8 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Item.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Item.Description.IconUrl))
                 .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Item.Description.Tags.GetItemType(p.Item.Description.Name)))
-                .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? p.Item.Description.WorkshopFile.Creator.Name : p.Item.App.Name))
-                .ForMember(x => x.AuthorAvatarUrl, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? p.Item.Description.WorkshopFile.Creator.AvatarUrl : p.Item.App.IconUrl))
+                .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null && p.Item.Description.WorkshopFile.Creator != null ? p.Item.Description.WorkshopFile.Creator.Name : p.Item.App.Name))
+                .ForMember(x => x.AuthorAvatarUrl, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null && p.Item.Description.WorkshopFile.Creator != null ? p.Item.Description.WorkshopFile.Creator.AvatarUrl : p.Item.App.IconUrl))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.IsStillAvailableInStore, o => o.MapFrom(p => (p.Store != null && p.Store.End == null)))
                 .ForMember(x => x.StorePrice, o => o.MapFrom(
