@@ -207,9 +207,18 @@ else
                                     }
                                     @if (!item.IsStillAvailableInStore)
                                     {
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
-                                            <span>This item is no longer available, grab it from the marketplace instead.</span>
-                                        </Typography>
+                                        @if (item.HasMarketListing)
+                                        {
+                                            <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                                <span>This item is no longmeter available.</span>
+                                            </Typography>
+                                        }
+                                        else 
+                                        {
+                                            <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                                <span>This item is no longer available, grab it from the marketplace instead.</span>
+                                            </Typography>
+                                        }
                                     }
                                     else if (item.HasMarketListing)
                                     {
