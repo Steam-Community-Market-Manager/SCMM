@@ -110,6 +110,14 @@ namespace SCMM.Discord.Client
             return BroadcastMessageAsync(null, channelPattern, message, title: title, description: description, url: url, fields: fields, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
         }
 
+        public Task SetStatus(string status)
+        {
+            EnsureClientIsReady();
+            return _client.SetGameAsync(
+                status, null, ActivityType.Watching
+            );
+        }
+
         public async Task BroadcastMessageAsync(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             EnsureClientIsReady();

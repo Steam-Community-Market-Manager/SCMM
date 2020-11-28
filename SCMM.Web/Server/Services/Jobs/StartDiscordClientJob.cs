@@ -5,6 +5,7 @@ using SCMM.Discord.Client;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Services.Jobs.CronJob;
+using SCMM.Web.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace SCMM.Web.Server.Services.Jobs
         private readonly ILogger<StartDiscordClientJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly DiscordClient _discordClient;
+        private readonly Timer _statusUpdateTimer;
 
         public StartDiscordClientJob(IConfiguration configuration, ILogger<StartDiscordClientJob> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
             : base(logger, configuration.GetJobConfiguration<RepopulateCacheJob>())
@@ -28,6 +30,7 @@ namespace SCMM.Web.Server.Services.Jobs
             _discordClient.Ready += OnReady;
             _discordClient.GuildJoined += OnGuildJoined;
             _discordClient.GuildLeft += OnGuildLeft;
+            _statusUpdateTimer = new Timer(OnStatusUpdate);
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
@@ -51,6 +54,9 @@ namespace SCMM.Web.Server.Services.Jobs
                     var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
                     var discordGuilds = db.DiscordGuilds.ToList();
 
+                    // Start the status update timer
+                    _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(15));
+                    
                     // Add any guilds that we've joined
                     var joinedGuilds = guilds.Where(x => !discordGuilds.Any(y => y.DiscordId == x.Key.ToString())).ToList();
                     if (joinedGuilds.Any())
@@ -140,6 +146,38 @@ namespace SCMM.Web.Server.Services.Jobs
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {id}, name: {name})");
+                }
+            }
+        }
+
+        private void OnStatusUpdate(object state)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                try
+                {
+                    var steam = scope.ServiceProvider.GetRequiredService<SteamService>();
+                    var nextUpdateExpectedOn = steam.GetStoreNextUpdateExpectedOn();
+                    var remainingTime = (nextUpdateExpectedOn.Value - DateTimeOffset.Now).ToDurationString(
+                        showMinutes: false,
+                        showSeconds: false
+                    );
+                    if (!String.IsNullOrEmpty(remainingTime))
+                    {
+                        _discordClient.SetStatus(
+                            $"the store, {remainingTime} remaining"
+                        );
+                    }
+                    else
+                    {
+                        _discordClient.SetStatus(
+                            $"the store, due any moment now"
+                        );
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to update discord client status");
                 }
             }
         }
