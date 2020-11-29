@@ -207,10 +207,10 @@ else
                                     }
                                     @if (!item.IsStillAvailableInStore)
                                     {
-                                        @if (item.HasMarketListing)
+                                        @if (!item.HasMarketListing)
                                         {
                                             <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
-                                                <span>This item is no longmeter available.</span>
+                                                <span>This item is no longer available.</span>
                                             </Typography>
                                         }
                                         else 
