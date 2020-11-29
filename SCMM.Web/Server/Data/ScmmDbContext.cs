@@ -43,10 +43,17 @@ namespace SCMM.Web.Server.Data
             base.OnModelCreating(builder);
 
             builder.Entity<DiscordGuild>()
+                .HasIndex(x => x.DiscordId)
+                .IsUnique(true);
+            builder.Entity<DiscordGuild>()
                 .HasMany(x => x.Configurations);
+
             builder.Entity<DiscordConfiguration>()
                 .OwnsOne(x => x.List);
 
+            builder.Entity<SteamApp>()
+                .HasIndex(x => x.SteamId)
+                .IsUnique(true);
             builder.Entity<SteamApp>()
                 .HasOne(x => x.Icon);
             builder.Entity<SteamApp>()
@@ -68,33 +75,49 @@ namespace SCMM.Web.Server.Data
                 .HasMany(x => x.ItemStores)
                 .WithOne(x => x.App);
 
-            builder.Entity<SteamStoreItem>()
-                .HasOne(x => x.Description);
-            builder.Entity<SteamStoreItem>()
-                .HasOne(x => x.Currency);
-            builder.Entity<SteamStoreItem>()
-                .OwnsOne(x => x.Prices);
-            builder.Entity<SteamStoreItem>()
-                .OwnsOne(x => x.TotalSalesGraph);
+            builder.Entity<SteamAssetDescription>()
+                .HasIndex(x => x.SteamId)
+                .IsUnique(true);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.Icon);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.WorkshopFile);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.StoreItem)
+                .WithOne(x => x.Description)
+                .HasForeignKey<SteamStoreItem>(x => x.DescriptionId);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.MarketItem)
+                .WithOne(x => x.Description)
+                .HasForeignKey<SteamMarketItem>(x => x.DescriptionId);
+            builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.Tags);
 
+            builder.Entity<SteamAssetWorkshopFile>()
+                .HasIndex(x => x.SteamId)
+                .IsUnique(true);
+            builder.Entity<SteamAssetWorkshopFile>()
+                .HasOne(x => x.Image);
+            builder.Entity<SteamAssetWorkshopFile>()
+                .OwnsOne(x => x.SubscriptionsGraph);
+
+            builder.Entity<SteamCurrency>()
+                .HasIndex(x => x.SteamId)
+                .IsUnique(true);
+
+            builder.Entity<SteamItemStore>()
+                .HasIndex(x => new { x.AppId, x.Start, x.End })
+                .IsUnique(true);
             builder.Entity<SteamItemStore>()
                 .OwnsOne(x => x.Media);
 
-            builder.Entity<SteamStoreItemItemStore>()
-                .HasKey(bc => new { bc.ItemId, bc.StoreId });
-            builder.Entity<SteamStoreItemItemStore>()
-                .HasOne(bc => bc.Item)
-                .WithMany(b => b.Stores)
-                .HasForeignKey(bc => bc.ItemId)
-                .OnDelete(DeleteBehavior.Restrict);
-            builder.Entity<SteamStoreItemItemStore>()
-                .HasOne(bc => bc.Store)
-                .WithMany(b => b.Items)
-                .HasForeignKey(bc => bc.StoreId)
-                .OnDelete(DeleteBehavior.Restrict);
-            builder.Entity<SteamStoreItemItemStore>()
-                .OwnsOne(x => x.IndexGraph);
+            builder.Entity<SteamLanguage>()
+                .HasIndex(x => x.SteamId)
+                .IsUnique(true);
 
+            builder.Entity<SteamMarketItem>()
+                .HasIndex(x => new { x.SteamId, x.DescriptionId })
+                .IsUnique(true);
             builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Description);
             builder.Entity<SteamMarketItem>()
@@ -112,31 +135,12 @@ namespace SCMM.Web.Server.Data
                 .HasMany(x => x.Activity)
                 .WithOne(x => x.Item);
 
-            builder.Entity<SteamProfileInventoryItem>()
-                .HasOne(x => x.Description);
-            builder.Entity<SteamProfileInventoryItem>()
-                .HasOne(x => x.Currency);
-
-            builder.Entity<SteamAssetDescription>()
-                .HasOne(x => x.Icon);
-            builder.Entity<SteamAssetDescription>()
-                .HasOne(x => x.WorkshopFile);
-            builder.Entity<SteamAssetDescription>()
-                .HasOne(x => x.StoreItem)
-                .WithOne(x => x.Description)
-                .HasForeignKey<SteamStoreItem>(x => x.DescriptionId);
-            builder.Entity<SteamAssetDescription>()
-                .HasOne(x => x.MarketItem)
-                .WithOne(x => x.Description)
-                .HasForeignKey<SteamMarketItem>(x => x.DescriptionId);
-            builder.Entity<SteamAssetDescription>()
-                .OwnsOne(x => x.Tags);
-
-            builder.Entity<SteamAssetWorkshopFile>()
-                .HasOne(x => x.Image);
-            builder.Entity<SteamAssetWorkshopFile>()
-                .OwnsOne(x => x.SubscriptionsGraph);
-
+            builder.Entity<SteamProfile>()
+                .HasIndex(x => x.SteamId)
+                .IsUnique(true);
+            builder.Entity<SteamProfile>()
+                .HasIndex(x => x.DiscordId)
+                .IsUnique(true);
             builder.Entity<SteamProfile>()
                 .HasOne(x => x.Avatar);
             builder.Entity<SteamProfile>()
@@ -156,8 +160,48 @@ namespace SCMM.Web.Server.Data
                 .WithOne(x => x.Creator);
             builder.Entity<SteamProfile>()
                  .HasMany(x => x.Configurations);
+
             builder.Entity<SteamProfileConfiguration>()
                 .OwnsOne(x => x.List);
+
+            builder.Entity<SteamProfileInventoryItem>()
+                .HasIndex(x => new { x.SteamId, x.DescriptionId, x.ProfileId })
+                .IsUnique(true);
+            builder.Entity<SteamProfileInventoryItem>()
+                .HasOne(x => x.Description);
+            builder.Entity<SteamProfileInventoryItem>()
+                .HasOne(x => x.Currency);
+
+            builder.Entity<SteamProfileMarketItem>()
+                .HasIndex(x => new { x.SteamId, x.DescriptionId, x.ProfileId })
+                .IsUnique(true);
+
+            builder.Entity<SteamStoreItem>()
+                .HasIndex(x => new { x.SteamId, x.DescriptionId })
+                .IsUnique(true);
+            builder.Entity<SteamStoreItem>()
+                .HasOne(x => x.Description);
+            builder.Entity<SteamStoreItem>()
+                .HasOne(x => x.Currency);
+            builder.Entity<SteamStoreItem>()
+                .OwnsOne(x => x.Prices);
+            builder.Entity<SteamStoreItem>()
+                .OwnsOne(x => x.TotalSalesGraph);
+
+            builder.Entity<SteamStoreItemItemStore>()
+                .HasKey(bc => new { bc.ItemId, bc.StoreId });
+            builder.Entity<SteamStoreItemItemStore>()
+                .HasOne(bc => bc.Item)
+                .WithMany(b => b.Stores)
+                .HasForeignKey(bc => bc.ItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SteamStoreItemItemStore>()
+                .HasOne(bc => bc.Store)
+                .WithMany(b => b.Items)
+                .HasForeignKey(bc => bc.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SteamStoreItemItemStore>()
+                .OwnsOne(x => x.IndexGraph);
         }
     }
 }
