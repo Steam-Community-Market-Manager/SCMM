@@ -78,6 +78,24 @@
         width: 100%;
     }
 
+    .Tabs-Container {
+        /*margin: 0px -40px;*/
+    }
+    
+    .Tabs-Container .TabScrollButton-Root {
+        display: none;
+        position: sticky;
+        z-index: 100000;
+    }
+    
+    .Tabs-Container .TabScrollButton-Root:first {
+        left: 0px;
+    }
+    
+    .Tabs-Container .TabScrollButton-Root:last {
+        right: 0px;
+    }
+
 </style>
 
 <Title Value="Item Store" />
@@ -110,10 +128,12 @@ else
                         <div />
                     </IndicatorContent>
                     <ChildContent>
+                        <TabScrollButton Side="Side.Left" />
                         @foreach (var store in Stores.OrderByDescending(x => x.Start))
                         {
                             <Tab Class="Store" Id="@store.Id.ToString()" Value="@store" Label="@store.Name" />
                         }
+                        <TabScrollButton Side="Side.Right" />
                     </ChildContent>
                 </Tabs>
             </Grid>
