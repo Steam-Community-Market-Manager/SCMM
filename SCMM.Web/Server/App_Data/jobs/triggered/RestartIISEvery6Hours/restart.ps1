@@ -1,4 +1,3 @@
-$ProgressPreference= "SilentlyContinue"
 $password = 'ca5A0---_Gq2DO6Wyo5s_D2uz9kCFrV0.v'
 $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
 $credentials = New-Object System.Management.Automation.PSCredential ("30f85688-93d1-43b2-9567-bd1a34be3f68", $securePassword)
