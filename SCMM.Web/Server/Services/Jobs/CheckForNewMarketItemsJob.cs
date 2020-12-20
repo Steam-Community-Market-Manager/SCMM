@@ -53,12 +53,6 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var currencies = await db.SteamCurrencies.ToListAsync();
-                if (currencies == null)
-                {
-                    return;
-                }
-
                 var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
                 if (currency == null)
                 {
@@ -136,13 +130,13 @@ namespace SCMM.Web.Server.Services.Jobs
                     foreach (var marketItem in newMarketItems)
                     {
                         var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
-                        await BroadcastNewMarketItemNotification(discord, db, marketItem, storeItem, currencies);
+                        await BroadcastNewMarketItemNotification(discord, db, marketItem, storeItem);
                     }
                 }
             }
         }
 
-        private async Task BroadcastNewMarketItemNotification(DiscordClient discord, ScmmDbContext db, SteamMarketItem marketItem, SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
+        private async Task BroadcastNewMarketItemNotification(DiscordClient discord, ScmmDbContext db, SteamMarketItem marketItem, SteamStoreItem storeItem)
         {
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
@@ -150,17 +144,6 @@ namespace SCMM.Web.Server.Services.Jobs
                 if (guild.IsSet(Data.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Data.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Data.Models.Discord.DiscordConfiguration.AlertsMarket))
                 {
                     continue;
-                }
-
-                var filteredCurrencies = currencies;
-                var guildCurrencies = guild.List(Data.Models.Discord.DiscordConfiguration.Currency).Value;
-                if (guildCurrencies?.Any() == true)
-                {
-                    filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
-                }
-                else
-                {
-                    filteredCurrencies = currencies.Where(x => x.IsCommon).ToList();
                 }
 
                 var fields = new Dictionary<string, string>();
@@ -183,11 +166,6 @@ namespace SCMM.Web.Server.Services.Jobs
                     {
                         fields.Add("Estimated Sales", estimatedSales);
                     }
-                    fields.Add("Store Price", GenerateStoreItemPriceList(storeItem, filteredCurrencies));
-                }
-                if (marketItem != null)
-                {
-                    fields.Add("Market Price", GenerateMarketItemPriceList(marketItem, filteredCurrencies));
                 }
 
                 await discord.BroadcastMessageAsync(
@@ -207,40 +185,6 @@ namespace SCMM.Web.Server.Services.Jobs
                     color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
                 );
             }
-        }
-
-        private string GenerateStoreItemPriceList(SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
-        {
-            var prices = new List<String>();
-            foreach (var currency in currencies.OrderBy(x => x.Name))
-            {
-                var price = storeItem.Prices.FirstOrDefault(x => x.Key == currency.Name);
-                if (price.Value > 0)
-                {
-                    var priceString = currency.ToPriceString(price.Value)?.Trim();
-                    if (!String.IsNullOrEmpty(priceString))
-                    {
-                        prices.Add($"{currency.Name} {priceString}");
-                    }
-                }
-            }
-
-            return String.Join("  •  ", prices).Trim(' ', '•');
-        }
-
-        private string GenerateMarketItemPriceList(SteamMarketItem marketItem, IEnumerable<SteamCurrency> currencies)
-        {
-            var prices = new List<String>();
-            foreach (var currency in currencies.OrderBy(x => x.Name))
-            {
-                var priceString = currency.ToPriceString(currency.CalculateExchange(marketItem.BuyNowPrice, marketItem.Currency))?.Trim();
-                if (!String.IsNullOrEmpty(priceString))
-                {
-                    prices.Add($"{currency.Name} {priceString}");
-                }
-            }
-
-            return String.Join("  •  ", prices).Trim(' ', '•');
         }
     }
 }
