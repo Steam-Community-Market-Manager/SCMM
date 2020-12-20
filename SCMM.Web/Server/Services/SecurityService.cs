@@ -70,6 +70,7 @@ namespace SCMM.Web.Server.Services
             if (profileQuery?.IsDonator == true)
             {
                 dynamicRoles.Add(Roles.Donator);
+                dynamicRoles.Add(Roles.VIP);
             }
             if (dynamicRoles.Any())
             {
