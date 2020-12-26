@@ -350,4 +350,4 @@ MigrationBackup/
 .ionide/
 
 # User rules
-*.Development.json
+**/*.Development.json
