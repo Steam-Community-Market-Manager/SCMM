@@ -95,6 +95,14 @@
     .Tabs-Container .TabScrollButton-Root:last {
         right: 0px;
     }
+    
+    .Chart-Radar {
+        padding-bottom: 16px;
+    }
+
+    .Chart-Footnote {
+        padding: 0px 16px 16px;
+    }
 
 </style>
 
@@ -249,7 +257,7 @@ else
                                 </Grid>
                                 <Grid Item Class="Action-Root" ExtraSmall="@GridSize.Six">
                                     <Typography Class="Theme-Success">
-                                        <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary" Disabled="@(!item.IsStillAvailableInStore)">
+                                        <Button OnClick="@(() => BuyItemStore(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary" Disabled="@(!item.IsStillAvailableInStore)">
                                             <i class="fas fa-fw fa-shopping-cart"></i>
                                             <strong>@item.Currency.ToPriceString(item.StorePrice)</strong>
                                         </Button>
@@ -259,7 +267,7 @@ else
                                     @if (item.HasMarketListing)
                                     {
                                         <Typography>
-                                            <Button OnClick="@(() => BuyItem(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">
+                                            <Button OnClick="@(() => BuyItemMarket(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">
                                                 <i class="fas fa-fw fa-balance-scale-left"></i>
                                                 <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
                                             </Button>
@@ -280,92 +288,92 @@ else
                     </Card>
                 </Grid>   
             }
-            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-                <Paper>
-                    <Tabs Value="@SelectedItemChartPanel"
-                          OnChange="@OnSelectedItemChartChanged"
-                          IndicatorColor="@Color.Primary"
-                          TextColor="@Color.Primary"
-                          Variant="@TabsVariant.FullWidth">
-                        <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Sales" Wrapped />
-                        <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Subscribers" Wrapped />
-                        <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Subscriber Timeline" Wrapped />
-                        @if (Store.Items.Any(x => x.HasMarketListing))
-                        {
-                            <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace Performance" Wrapped />
-                        }
-                    </Tabs>
-                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
-                        @if ((int)SelectedItemChartPanel == 0)
-                        {
-                            @if (ItemSalesChart != null)
-                            {
-                                <Alert Info Title="Sales revenue calculation disclaimer" Rounded="false">
-                                    <Icon>
-                                        <i class="fas fa-fw fa-exclamation-circle"></i>
-                                    </Icon>
-                                    <MessageContent>
-                                        <span><strong>TL;DR;</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
-                                    </MessageContent>
-                                </Alert>
-                                <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
-                            }
-                            else
-                            {
-                                <Error Title="Unavailable" SubTitle="No data yet" />
-                            }
-                        }
-                    </TabPanel>
-                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
-                        @if ((int)SelectedItemChartPanel == 1)
-                        {
-                            @if (ItemSubscribersChart != null)
-                            {
-                                <ChartJsBarChart @ref="ItemSubscribersChartJs" Config="@ItemSubscribersChart" />
-                            }
-                            else
-                            {
-                                <Error Title="Unavailable" SubTitle="No data yet" />
-                            }
-                        }
-                    </TabPanel>
-                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
-                        @if ((int)SelectedItemChartPanel == 2)
-                        {
-                            @if (ItemSubscribersHistoryChart != null)
-                            {
-                                <ChartJsLineChart @ref="ItemSubscribersHistoryChartJs" Config="@ItemSubscribersHistoryChart" />
-                            }
-                            else
-                            {
-                                <Error Title="Unavailable" SubTitle="No data yet" />
-                            }
-                        }
-                    </TabPanel>
-                    <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="3">
-                        @if ((int)SelectedItemChartPanel == 3)
-                        {
-                            @if (ItemMarketplacePerformanceChart != null)
-                            {
-                                <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
-                            }
-                            else
-                            {
-                                <Error Title="Unavailable" SubTitle="No data yet" />
-                            }
-                        }
-                    </TabPanel>
-                </Paper>
-            </Grid>
-            
-            <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+            <Grid Item ExtraSmall="@GridSize.Twelve" >
                 <Grid Container Spacing="@Spacing.Two">
-                    @foreach (var media in Store.Media)
-                    {
-                        <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
-                            <YouTubeVideo VideoId="@media" />
+                    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                        <Paper>
+                            <Tabs Value="@SelectedItemChartPanel"
+                                  OnChange="@OnSelectedItemChartChanged"
+                                  IndicatorColor="@Color.Primary"
+                                  TextColor="@Color.Primary"
+                                  Variant="@TabsVariant.FullWidth">
+                                <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Sales" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Subscribers" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Subscriber Timeline" Wrapped />
+                                @if (Store.Items.Any(x => x.HasMarketListing))
+                                {
+                                    <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace Performance" Wrapped />
+                                }
+                            </Tabs>
+                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
+                                @if ((int)SelectedItemChartPanel == 0)
+                                {
+                                    @if (ItemSalesChart != null)
+                                    {
+                                        <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Class="Chart-Footnote">
+                                            <span><strong>NOTE:</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
+                                        </Typography>
+                                    }
+                                    else
+                                    {
+                                        <Error Title="Unavailable" SubTitle="No data yet" />
+                                    }
+                                }
+                            </TabPanel>
+                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
+                                @if ((int)SelectedItemChartPanel == 1)
+                                {
+                                    @if (ItemSubscribersChart != null)
+                                    {
+                                        <ChartJsBarChart @ref="ItemSubscribersChartJs" Config="@ItemSubscribersChart" />
+                                    }
+                                    else
+                                    {
+                                        <Error Title="Unavailable" SubTitle="No data yet" />
+                                    }
+                                }
+                            </TabPanel>
+                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
+                                @if ((int)SelectedItemChartPanel == 2)
+                                {
+                                    @if (ItemSubscribersHistoryChart != null)
+                                    {
+                                        <ChartJsLineChart @ref="ItemSubscribersHistoryChartJs" Config="@ItemSubscribersHistoryChart" />
+                                    }
+                                    else
+                                    {
+                                        <Error Title="Unavailable" SubTitle="No data yet" />
+                                    }
+                                }
+                            </TabPanel>
+                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="3">
+                                @if ((int)SelectedItemChartPanel == 3)
+                                {
+                                    @if (ItemMarketplacePerformanceChart != null)
+                                    {
+                                        <div class="Chart-Radar">
+                                            <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <Error Title="Unavailable" SubTitle="No data yet" />
+                                    }
+                                }
+                            </TabPanel>
+                        </Paper>
+                    </Grid>
+                    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
+                        <Grid Container Spacing="@Spacing.Two">
+                            @foreach (var media in Store.Media)
+                            {
+                                <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
+                                    <YouTubeVideo VideoId="@media" />
+                                </Grid>
+                            }
                         </Grid>
-                    }
+                    </Grid>
                 </Grid>
             </Grid>
         }
@@ -373,7 +381,6 @@ else
 }
 
 @code {
-
     private ItemStoreListDTO[] Stores { get; set; }
 
     private ItemStoreListDTO SelectedStore { get; set; }
@@ -405,11 +412,15 @@ else
         await RefreshStores();
     }
     
-    private void BuyItem(StoreItemDetailDTO item)
+    private void BuyItemStore(StoreItemDetailDTO item)
     {
-        string url = (item.IsStillAvailableInStore)
-            ? $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/"
-            : $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        string url = $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/";
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+    }
+    
+    private void BuyItemMarket(StoreItemDetailDTO item)
+    {
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
     }
 
@@ -885,14 +896,14 @@ else
     IEnumerable<DateTime> GetSkinWeekDates(DateTime startOfWeek)
     {
         return new[] {
+            startOfWeek.Date.AddDays(-1),
             startOfWeek.Date.AddDays(0),
             startOfWeek.Date.AddDays(1),
             startOfWeek.Date.AddDays(2),
             startOfWeek.Date.AddDays(3),
             startOfWeek.Date.AddDays(4),
             startOfWeek.Date.AddDays(5),
-            startOfWeek.Date.AddDays(6),
-            startOfWeek.Date.AddDays(7)
+            startOfWeek.Date.AddDays(6)
         };
     }
 
