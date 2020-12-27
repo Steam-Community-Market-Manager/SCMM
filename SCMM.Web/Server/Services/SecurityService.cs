@@ -41,7 +41,7 @@ namespace SCMM.Web.Server.Services
             }
 
             // Obtain the actual SteamID (claim format is: https://steamcommunity.com/openid/id/<steamid>)
-            steamId = Regex.Match(steamId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value;
+            steamId = Regex.Match(steamId, SteamConstants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value;
             if (string.IsNullOrEmpty(steamId))
             {
                 throw new ArgumentException(nameof(steamId), $"Unable to parse SteamID from '{steamId}'");
@@ -91,11 +91,11 @@ namespace SCMM.Web.Server.Services
                     var profileId = response.Data.ProfileUrl;
                     if (!String.IsNullOrEmpty(profileId))
                     {
-                        profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
+                        profileId = (Regex.Match(profileId, SteamConstants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
                     }
                     if (String.IsNullOrEmpty(profileId))
                     {
-                        profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
+                        profileId = (Regex.Match(profileId, SteamConstants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
                     }
 
                     profile = profile ?? new SteamProfile()

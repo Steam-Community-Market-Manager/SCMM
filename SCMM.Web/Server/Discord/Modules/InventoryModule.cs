@@ -1,10 +1,12 @@
-﻿using Discord;
+﻿using CommandQuery;
+using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
+using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
 using SCMM.Web.Shared;
 using System;
 using System.Collections.Generic;
@@ -20,13 +22,15 @@ namespace SCMM.Web.Server.Discord.Modules
         private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
         private readonly SteamCurrencyService _currencies;
+        private readonly ICommandProcessor _commandProcessor;
 
-        public InventoryModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, SteamCurrencyService currencies)
+        public InventoryModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, SteamCurrencyService currencies, ICommandProcessor commandProcessor)
         {
             _configuration = configuration;
             _db = db;
             _steam = steam;
             _currencies = currencies;
+            _commandProcessor = commandProcessor;
         }
 
         /// <summary>
@@ -37,7 +41,7 @@ namespace SCMM.Web.Server.Discord.Modules
         [Alias("value")]
         [Summary("Echoes profile inventory value")]
         public async Task SayProfileInventoryValueAsync(
-            [Summary("The SteamID of the profile to check")] string steamId,
+            [Summary("The SteamID of the profile to check")] string id,
             [Summary("The currency name prices should be displayed as")] string currencyName = null
         )
         {
@@ -50,7 +54,12 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var profile = await _steam.AddOrUpdateSteamProfile(steamId, fetchLatest: true);
+            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+            {
+                Id = id
+            });
+
+            var profile = fetchAndCreateProfile?.Profile;
             if (profile == null)
             {
                 await ReplyAsync($"Beep boop! I'm unable to find that Steam profile (it might be private).\nIf you're using a custom profile name, you can also use your full profile page URL instead");
@@ -64,7 +73,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, currency.Name);
+            var inventoryTotal = await _steam.GetProfileInventoryTotal(profile.SteamId, currency.Name);
             if (inventoryTotal == null)
             {
                 await ReplyAsync($"Beep boop! I'm unable to value that profiles inventory. It's either private, or doesn't contain any items that I monitor.");

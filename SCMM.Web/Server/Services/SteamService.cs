@@ -4,7 +4,6 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Community.Models;
 using SCMM.Steam.Shared.Community.Requests.Blob;
-using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Steam.Shared.Community.Responses.Json;
 using SCMM.Web.Server.Data;
@@ -24,6 +23,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CommandQuery;
+using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
 
 namespace SCMM.Web.Server.Services
 {
@@ -36,14 +37,19 @@ namespace SCMM.Web.Server.Services
         private readonly SteamCommunityClient _communityClient;
         private readonly SteamCurrencyService _currencyService;
         private readonly SteamLanguageService _languageService;
+        private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
 
-        public SteamService(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService)
+
+        public SteamService(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _communityClient = communityClient;
             _currencyService = currencyService;
             _languageService = languageService;
+            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
         }
 
         public async Task<byte[]> GetImage(string url)
@@ -96,15 +102,6 @@ namespace SCMM.Web.Server.Services
                     LastUpdatedOn = x.LastUpdatedInventoryOn
                 })
                 .FirstOrDefault();
-
-            // If the profile inventory hasn't been loaded before or it is older than the cache period, fetch it now
-            var profile = inventory?.Profile;
-            if (profile == null || inventory?.TotalItems == 0 || inventory?.LastUpdatedOn < DateTime.Now.Subtract(DefaultCachePeriod))
-            {
-                // Load the profile and force an inventory sync
-                profile = await AddOrUpdateSteamProfile(steamId, fetchLatest: true);
-                profile = await FetchProfileInventory(steamId);
-            }
 
             // Load the profile inventory
             var profileInventoryItems = _db.SteamProfileInventoryItems
@@ -164,95 +161,6 @@ namespace SCMM.Web.Server.Services
             };
         }
 
-        public async Task<SteamProfile> AddOrUpdateSteamProfile(string steamId, bool fetchLatest = false)
-        {
-            if (string.IsNullOrEmpty(steamId))
-            {
-                return null;
-            }
-
-            var profile = await _db.SteamProfiles.FirstOrDefaultAsync(
-                x => x.SteamId == steamId || x.ProfileId == steamId
-            );
-            if (profile != null && !fetchLatest)
-            {
-                // Nothing to update
-                return profile;
-            }
-
-            // Is this a int64 steam id?
-            if (Int64.TryParse(steamId, out _))
-            {
-                var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
-                var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
-                var response = await steamUser.GetPlayerSummaryAsync(UInt64.Parse(steamId));
-                if (response?.Data == null)
-                {
-                    return null;
-                }
-
-                var profileId = response.Data.ProfileUrl;
-                if (!String.IsNullOrEmpty(profileId))
-                {
-                    profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
-                }
-                if (String.IsNullOrEmpty(profileId))
-                {
-                    profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
-                }
-
-                profile = profile ?? new SteamProfile()
-                {
-                    SteamId = steamId,
-                    ProfileId = profileId
-                };
-
-                profile.Name = response.Data.Nickname?.Trim();
-                profile.AvatarUrl = response.Data.AvatarMediumUrl;
-                profile.AvatarLargeUrl = response.Data.AvatarFullUrl;
-                profile.Country = response.Data.CountryCode;
-            }
-
-            // Else, it is probably a custom named profile or profile page url...
-            else
-            {
-                var profileId = steamId;
-                if (Regex.IsMatch(steamId, SteamConstants.SteamProfileIdRegex))
-                {
-                    profileId = (Regex.Match(profileId, SteamConstants.SteamProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId);
-                }
-
-                var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
-                {
-                    ProfileId = profileId,
-                    Xml = true
-                });
-                if (response == null)
-                {
-                    return null;
-                }
-
-                profile = profile ?? new SteamProfile()
-                {
-                    SteamId = response.SteamID64.ToString(),
-                    ProfileId = profileId
-                };
-
-                profile.Name = response.SteamID?.Trim();
-                profile.AvatarUrl = response.AvatarMedium;
-                profile.AvatarLargeUrl = response.AvatarFull;
-                profile.Country = response.Location;
-            }
-
-            if (profile.Id == Guid.Empty)
-            {
-                _db.SteamProfiles.Add(profile);
-            }
-
-            _db.SaveChanges();
-            return profile;
-        }
-
         public async Task<SteamProfile> FetchProfileInventory(string steamId)
         {
             var profile = await _db.SteamProfiles
@@ -262,11 +170,7 @@ namespace SCMM.Web.Server.Services
                 .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
             if (profile == null)
             {
-                profile = await AddOrUpdateSteamProfile(steamId);
-                if (profile == null)
-                {
-                    return null;
-                }
+                return null;
             }
 
             var language = _db.SteamLanguages
@@ -463,12 +367,17 @@ namespace SCMM.Web.Server.Services
 
                 if (workshopFile.CreatorId == null)
                 {
-                    workshopFile.Creator = await AddOrUpdateSteamProfile(publishedFile.Creator.ToString());
-                    if (workshopFile.Creator != null)
+                    var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+                    {
+                        Id = publishedFile.Creator.ToString()
+                    });
+
+                    workshopFile.CreatorId = fetchAndCreateProfile?.Profile?.Id;
+                    if (workshopFile.CreatorId != null && fetchAndCreateProfile?.Profile != null)
                     {
                         if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagCreator))
                         {
-                            assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = workshopFile.Creator.Name;
+                            assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = fetchAndCreateProfile.Profile.Name;
                         }
                     }
                 }

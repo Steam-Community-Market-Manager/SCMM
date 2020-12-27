@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
+using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Data.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
@@ -27,14 +29,16 @@ namespace SCMM.Web.Server.API.Controllers
         private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
         private readonly ImageService _images;
+        private readonly ICommandProcessor _commandProcessor;
         private readonly IMapper _mapper;
 
-        public InventoryController(ILogger<InventoryController> logger, ScmmDbContext db, SteamService steam, ImageService images, IMapper mapper)
+        public InventoryController(ILogger<InventoryController> logger, ScmmDbContext db, SteamService steam, ImageService images, ICommandProcessor commandProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
             _steam = steam;
             _images = images;
+            _commandProcessor = commandProcessor;
             _mapper = mapper;
         }
 
@@ -64,8 +68,13 @@ namespace SCMM.Web.Server.API.Controllers
             var profile = inventory?.Profile;
             if (profile == null || inventory?.TotalItems == 0 || inventory?.LastUpdatedOn < DateTime.Now.Subtract(TimeSpan.FromHours(6)) || sync)
             {
+                var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+                {
+                    Id = steamId
+                });
+
                 // Load the profile and force an inventory sync
-                profile = await _steam.AddOrUpdateSteamProfile(steamId, fetchLatest: true);
+                steamId = (fetchAndCreateProfile?.Profile?.SteamId ?? steamId);
                 profile = await _steam.FetchProfileInventory(steamId);
             }
 

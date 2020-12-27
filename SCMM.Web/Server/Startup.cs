@@ -1,6 +1,8 @@
 using AspNet.Security.OpenId;
 using AspNet.Security.OpenId.Steam;
 using AutoMapper;
+using CommandQuery.AspNetCore;
+using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,6 +35,8 @@ namespace SCMM.Web.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Logging
+            services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddApplicationInsightsTelemetry(options =>
             {
                 options.InstrumentationKey = Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
@@ -45,17 +49,7 @@ namespace SCMM.Web.Server
                 options.RequestCollectionOptions.TrackExceptions = true;
             });
 
-            services.AddDatabaseDeveloperPageExceptionFilter();
-
-            services.AddSingleton<DiscordConfiguration>((s) => Configuration.GetDiscoardConfiguration());
-            services.AddSingleton<DiscordClient>();
-
-            services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());
-            services.AddSingleton<GoogleClient>();
-
-            services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
-            services.AddSingleton<SteamSession>((s) => new SteamSession(s));
-
+            // Authentication
             var authConfiguration = services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -89,6 +83,7 @@ namespace SCMM.Web.Server
                 };
             });
 
+            // Database
             services.AddDbContext<ScmmDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"));
@@ -96,14 +91,30 @@ namespace SCMM.Web.Server
                 options.EnableDetailedErrors();
             });
 
+            // 3rd party clients
+            services.AddSingleton<DiscordConfiguration>((s) => Configuration.GetDiscoardConfiguration());
+            services.AddSingleton<DiscordClient>();
+
+            services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());
+            services.AddSingleton<GoogleClient>();
+
+            services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
+            services.AddSingleton<SteamSession>((s) => new SteamSession(s));
+
             services.AddScoped<SteamCommunityClient>();
 
+            // Command/query handlers
+            services.AddCommands(typeof(Startup).Assembly);
+            services.AddQueries(typeof(Startup).Assembly);
+
+            // Services
             services.AddScoped<ImageService>();
             services.AddScoped<SecurityService>();
             services.AddScoped<SteamService>();
             services.AddScoped<SteamLanguageService>();
             services.AddScoped<SteamCurrencyService>();
 
+            // Jobs
             services.AddHostedService<StartDiscordClientJob>();
             services.AddHostedService<RepopulateCacheJob>();
             services.AddHostedService<RefreshSteamSessionJob>();
@@ -120,11 +131,24 @@ namespace SCMM.Web.Server
             services.AddHostedService<UpdateStoreSalesStatisticsJob>();
             services.AddHostedService<RecalculateMarketItemSnapshotsJob>();
 
-            services.AddAutoMapper(typeof(Startup));
+            // Controllers
+            services.AddControllersWithViews(options =>
+                {
+                    options.Conventions.Add(new CommandQueryControllerModelConvention());
+                })
+                .ConfigureApplicationPartManager(manager =>
+                {
+                    manager.FeatureProviders.Add(new CommandControllerFeatureProvider(typeof(Startup).Assembly));
+                    manager.FeatureProviders.Add(new QueryControllerFeatureProvider(typeof(Startup).Assembly));
+                });
 
-            services.AddControllersWithViews();
+            // Views
             services.AddRazorPages();
 
+            // Auto-mapper
+            services.AddAutoMapper(typeof(Startup));
+
+            // Auto-documentation
             services.AddSwaggerGen(config =>
             {
                 try
