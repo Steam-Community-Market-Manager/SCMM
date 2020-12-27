@@ -90,6 +90,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 );
                 if (inventoryTotal.TotalInvested > 0)
                 {
+                    /*
                     var profitLoss = String.Empty;
                     var profitLossPrefix = String.Empty;
                     if (inventoryTotal.TotalResellProfit >= 0)
@@ -112,6 +113,7 @@ namespace SCMM.Web.Server.Discord.Modules
                         .WithName(profitLoss)
                         .WithValue($"{profitLossPrefix} {currency.ToPriceString(inventoryTotal.TotalResellProfit)} {currency.Name}")
                     );
+                    */
                 }
 
                 var embed = new EmbedBuilder()
