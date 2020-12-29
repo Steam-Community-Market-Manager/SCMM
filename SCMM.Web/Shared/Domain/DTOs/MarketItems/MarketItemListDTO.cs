@@ -1,7 +1,6 @@
 ﻿using SCMM.Web.Shared.Data.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
-using System.Collections.Generic;
 
 namespace SCMM.Web.Shared.Domain.DTOs.MarketItems
 {

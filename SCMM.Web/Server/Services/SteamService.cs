@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
@@ -10,8 +11,9 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Data.Types;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
 using SCMM.Web.Shared;
+using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
@@ -23,8 +25,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CommandQuery;
-using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
 
 namespace SCMM.Web.Server.Services
 {

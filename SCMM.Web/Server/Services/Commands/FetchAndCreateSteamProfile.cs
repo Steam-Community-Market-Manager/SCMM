@@ -8,6 +8,7 @@ using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
+using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
@@ -18,7 +19,17 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
 {
-    public class FetchAndCreateSteamProfileHandler : ICommandHandler<FetchAndCreateSteamProfileRequest, FetchAndCreateSteamProfileResponse>
+    public class FetchAndCreateSteamProfileRequest : ICommand<FetchAndCreateSteamProfileResponse>
+    {
+        public string Id { get; set; }
+    }
+
+    public class FetchAndCreateSteamProfileResponse
+    {
+        public ProfileDTO Profile { get; set; }
+    }
+
+    public class FetchAndCreateSteamProfile : ICommandHandler<FetchAndCreateSteamProfileRequest, FetchAndCreateSteamProfileResponse>
     {
         private readonly ScmmDbContext _db;
         private readonly SteamConfiguration _cfg;
@@ -26,7 +37,7 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public FetchAndCreateSteamProfileHandler(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor, IMapper mapper)
+        public FetchAndCreateSteamProfile(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();

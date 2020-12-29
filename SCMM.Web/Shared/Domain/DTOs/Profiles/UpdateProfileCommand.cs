@@ -1,6 +1,4 @@
-﻿using SCMM.Web.Shared.Data.Models.Steam;
-
-namespace SCMM.Web.Shared.Domain.DTOs.Profiles
+﻿namespace SCMM.Web.Shared.Domain.DTOs.Profiles
 {
     public class UpdateProfileCommand
     {

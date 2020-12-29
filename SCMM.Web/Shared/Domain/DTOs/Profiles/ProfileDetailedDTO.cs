@@ -1,7 +1,6 @@
 ﻿using SCMM.Web.Shared.Data.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
-using System;
 
 namespace SCMM.Web.Shared.Domain.DTOs.Profiles
 {

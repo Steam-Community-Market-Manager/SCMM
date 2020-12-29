@@ -15,6 +15,7 @@
         public const string SteamAssetTagAcceptedYear = "accepted.year";
         public const string SteamAssetTagAcceptedWeek = "accepted.week";
 
+        public const string SteamLoginClaimSteamIdRegex = @"\/openid\/id\/([^\/]*)";
         public const string SteamProfileUrlProfileIdRegex = @"\/id\/([^\/]*)";
         public const string SteamProfileUrlSteamIdRegex = @"\/profiles\/([^\/]*)";
 

@@ -7,13 +7,29 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
+namespace SCMM.Web.Server.Services.Queries
 {
-    public class ResolveSteamIdHandler : IQueryHandler<ResolveSteamIdRequest, ResolveSteamIdResponse>
+    public class ResolveSteamIdRequest : IQuery<ResolveSteamIdResponse>
+    {
+        public string Id { get; set; }
+    }
+
+    public class ResolveSteamIdResponse
+    {
+        public Guid? Id { get; set; }
+
+        public string SteamId { get; set; }
+
+        public string ProfileId { get; set; }
+
+        public bool Exists => (Id != null && Id != Guid.Empty);
+    }
+
+    public class ResolveSteamId : IQueryHandler<ResolveSteamIdRequest, ResolveSteamIdResponse>
     {
         private readonly ScmmDbContext _db;
 
-        public ResolveSteamIdHandler(ScmmDbContext db)
+        public ResolveSteamId(ScmmDbContext db)
         {
             _db = db;
         }
@@ -76,7 +92,7 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
             return new ResolveSteamIdResponse
             {
                 Id = id,
-                SteamId = (steamId > 0 ? steamId.ToString() : null),
+                SteamId = steamId > 0 ? steamId.ToString() : null,
                 ProfileId = profileId
             };
         }

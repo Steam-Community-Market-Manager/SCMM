@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Server.Services
+﻿namespace SCMM.Web.Server.Services
 {
     public class ImageSource
     {

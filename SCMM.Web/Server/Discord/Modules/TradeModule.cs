@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
-using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
+using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared.Data.Models.Steam;
 using System;
 using System.Linq;

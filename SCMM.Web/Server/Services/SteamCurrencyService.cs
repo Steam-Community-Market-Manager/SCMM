@@ -1,11 +1,9 @@
-﻿using AngleSharp.Common;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,14 +36,6 @@ namespace SCMM.Web.Server.Services
             {
                 Cache.Set(currency.Name, currency, cacheOptions);
             }
-        }
-
-        public IEnumerable<CurrencyDetailedDTO> GetAll()
-        {
-            return _db.SteamCurrencies
-                .AsNoTracking()
-                .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
-                .ToList();
         }
 
         public CurrencyDetailedDTO GetByNameOrDefault(string name)

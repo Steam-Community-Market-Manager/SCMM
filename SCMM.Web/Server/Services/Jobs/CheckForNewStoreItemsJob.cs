@@ -6,7 +6,6 @@ using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;

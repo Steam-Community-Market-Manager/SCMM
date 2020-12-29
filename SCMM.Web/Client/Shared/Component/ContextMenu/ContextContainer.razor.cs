@@ -1,8 +1,8 @@
-﻿using System;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Skclusive.Material.Core;
 using Skclusive.Material.Menu;
+using System;
 
 namespace SCMM.Web.Client.Shared.Component.ContextMenu
 {

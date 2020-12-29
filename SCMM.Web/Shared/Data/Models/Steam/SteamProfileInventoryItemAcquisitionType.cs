@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Shared.Data.Models.Steam
+﻿namespace SCMM.Web.Shared.Data.Models.Steam
 {
     public enum SteamProfileInventoryItemAcquisitionType : byte
     {

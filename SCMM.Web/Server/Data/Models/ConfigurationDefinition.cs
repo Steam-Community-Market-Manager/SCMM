@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Server.Data.Models
+﻿namespace SCMM.Web.Server.Data.Models
 {
     public struct ConfigurationDefinition
     {

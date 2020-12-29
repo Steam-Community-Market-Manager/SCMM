@@ -1,6 +1,7 @@
 using AspNet.Security.OpenId;
 using AspNet.Security.OpenId.Steam;
 using AutoMapper;
+using CommandQuery;
 using CommandQuery.AspNetCore;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -18,6 +19,7 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Middleware;
 using SCMM.Web.Server.Services;
+using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
 using SCMM.Web.Server.Services.Jobs;
 using System;
 using System.Security.Claims;
@@ -73,12 +75,13 @@ namespace SCMM.Web.Server
                 {
                     OnTicketReceived = async (ctx) =>
                     {
-                        var securityService = ctx.HttpContext.RequestServices.GetRequiredService<SecurityService>();
-                        ctx.Principal.AddIdentity(
-                            await securityService.LoginSteamProfileAsync(
-                                ctx.Principal.FindFirstValue(ClaimTypes.NameIdentifier)
-                            )
-                        );
+                        var commandProcessor = ctx.HttpContext.RequestServices.GetRequiredService<ICommandProcessor>();
+                        var loggedInProfile = await commandProcessor.ProcessWithResultAsync(new LoginSteamProfileRequest()
+                        {
+                            Claim = ctx.Principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                        });
+
+                        ctx.Principal.AddIdentity(loggedInProfile.Identity);
                     }
                 };
             });
@@ -109,7 +112,6 @@ namespace SCMM.Web.Server
 
             // Services
             services.AddScoped<ImageService>();
-            services.AddScoped<SecurityService>();
             services.AddScoped<SteamService>();
             services.AddScoped<SteamLanguageService>();
             services.AddScoped<SteamCurrencyService>();
