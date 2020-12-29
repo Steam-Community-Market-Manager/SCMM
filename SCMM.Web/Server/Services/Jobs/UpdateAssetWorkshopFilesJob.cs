@@ -45,7 +45,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var workshopFileIds = assetDescriptions.Select(x => UInt64.Parse(x.WorkshopFile.SteamId)).ToList();
                 foreach (var batch in workshopFileIds.Batch(100)) // Batch to 100 per request to avoid server ban
                 {
-                    _logger.LogInformation($"Updating asset workshop statistics (ids: {batch.Count()})");
+                    _logger.LogInformation($"Updating asset workshop information (ids: {batch.Count()})");
                     var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                     var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
                     var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(batch.ToList());

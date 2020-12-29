@@ -7,6 +7,6 @@ namespace SCMM.Web.Shared.Data.Models.Steam
     {
         None = 0x00,
         Watching = 0x01,
-        WantToBuy = 0x02
+        WantToBuy = 0x10
     }
 }

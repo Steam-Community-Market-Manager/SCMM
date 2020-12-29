@@ -1,4 +1,5 @@
 ﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
@@ -76,11 +77,11 @@ namespace SCMM.Web.Server.Services.Queries
             // Look up the profiles true info if it exists in the database already
             if (steamId > 0)
             {
-                profile = _db.SteamProfiles.FirstOrDefault(x => x.SteamId == steamId.ToString());
+                profile = _db.SteamProfiles.AsNoTracking().FirstOrDefault(x => x.SteamId == steamId.ToString());
             }
             else if (!string.IsNullOrEmpty(profileId))
             {
-                profile = _db.SteamProfiles.FirstOrDefault(x => x.ProfileId == profileId);
+                profile = _db.SteamProfiles.AsNoTracking().FirstOrDefault(x => x.ProfileId == profileId);
             }
             if (profile != null)
             {

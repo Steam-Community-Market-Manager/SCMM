@@ -1,4 +1,5 @@
 ﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Services.Commands;
@@ -252,7 +253,7 @@ namespace SCMM.Web.Server.Services
 
             // Check the second-level cache (database) for missing image data
             var missingImageUrls = missingImages.Select(x => x.ImageUrl).ToList();
-            var missingImageData = _db.ImageData.Where(x => missingImageUrls.Contains(x.Source)).ToList();
+            var missingImageData = _db.ImageData.AsNoTracking().Where(x => missingImageUrls.Contains(x.Source)).ToList();
             if (missingImageData.Any())
             {
                 foreach (var imageSource in missingImages.ToList())
@@ -279,7 +280,7 @@ namespace SCMM.Web.Server.Services
                     Url = imageSource.ImageUrl,
                     UseExisting = false // we've already checked, it doesn't exist
                 });
-                if (fetchedImage != null)
+                if (fetchedImage != null && fetchedImage.Data != null)
                 {
                     Cache.Set(imageSource.ImageUrl, fetchedImage.Data);
                     imageSource.ImageData = fetchedImage.Data;

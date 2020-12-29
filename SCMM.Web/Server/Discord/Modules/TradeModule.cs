@@ -1,10 +1,10 @@
 ﻿using CommandQuery;
 using Discord;
 using Discord.Commands;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared.Data.Models.Steam;
 using System;
@@ -19,14 +19,12 @@ namespace SCMM.Web.Server.Discord.Modules
     {
         private readonly IConfiguration _configuration;
         private readonly ScmmDbContext _db;
-        private readonly SteamService _steam;
         private readonly IQueryProcessor _queryProcessor;
 
-        public TradeModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, IQueryProcessor queryProcessor)
+        public TradeModule(IConfiguration configuration, ScmmDbContext db, IQueryProcessor queryProcessor)
         {
             _configuration = configuration;
             _db = db;
-            _steam = steam;
             _queryProcessor = queryProcessor;
         }
 
@@ -46,7 +44,9 @@ namespace SCMM.Web.Server.Discord.Modules
                 Id = id
             });
 
-            var profile = _db.SteamProfiles.FirstOrDefault(x => x.Id == resolvedId.Id);
+            var profile = _db.SteamProfiles
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == resolvedId.Id);
             if (profile == null)
             {
                 await ReplyAsync($"Beep boop! I'm unable to find that Steam profile (it might be private).\nIf you're using a custom profile name, you can also use your full profile page URL instead");
@@ -60,6 +60,7 @@ namespace SCMM.Web.Server.Discord.Modules
             }
 
             var tradeItems = _db.SteamProfiles
+                .AsNoTracking()
                 .Where(x => x.Id == profile.Id)
                 .Select(x => new
                 {

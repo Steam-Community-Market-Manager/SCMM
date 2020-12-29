@@ -155,7 +155,7 @@ namespace SCMM.Web.Server.Services
             };
         }
 
-        public async Task<SteamProfile> FetchProfileInventory(string steamId)
+        public async Task FetchProfileInventory(string steamId)
         {
             var profile = await _db.SteamProfiles
                 .Include(x => x.InventoryItems).ThenInclude(x => x.App)
@@ -164,20 +164,20 @@ namespace SCMM.Web.Server.Services
                 .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
             if (profile == null)
             {
-                return null;
+                return;
             }
 
             var language = _db.SteamLanguages
                 .FirstOrDefault(x => x.IsDefault);
             if (language == null)
             {
-                return null;
+                return;
             }
 
             var apps = _db.SteamApps.ToList();
             if (!apps.Any())
             {
-                return profile;
+                return;
             }
 
             foreach (var app in apps)
@@ -250,8 +250,6 @@ namespace SCMM.Web.Server.Services
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
                 _db.SaveChanges();
             }
-
-            return profile;
         }
 
         public Data.Models.Steam.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
@@ -280,7 +278,7 @@ namespace SCMM.Web.Server.Services
             return newFilter;
         }
 
-        public Data.Models.Steam.SteamAssetDescription UpdateAssetDescription(Data.Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
+        public async Task<Data.Models.Steam.SteamAssetDescription> UpdateAssetDescription(Data.Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
         {
             // Update tags
             if (assetClass.Tags != null)
@@ -294,6 +292,74 @@ namespace SCMM.Web.Server.Services
                 }
             }
 
+            // Update name and description
+            if (String.IsNullOrEmpty(assetDescription.Name) && !String.IsNullOrEmpty(assetClass.Name))
+            {
+                assetDescription.Name = assetClass.Name;
+            }
+
+            //if (String.IsNullOrEmpty(assetDescription.Description) && assetClass.Descriptions?.Count > 0)
+            //{
+            //    assetDescription.Description = assetClass.Descriptions.FirstOrDefault()?.Value;
+            //}
+
+            // Update icons
+            if (String.IsNullOrEmpty(assetDescription.IconUrl) && !String.IsNullOrEmpty(assetClass.IconUrl?.ToString()))
+            {
+                assetDescription.IconUrl = assetClass.IconUrl.ToString();
+            }
+            if (assetDescription.IconId == null && !String.IsNullOrEmpty(assetDescription.IconUrl))
+            {
+                var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                {
+                    Url = assetDescription.IconUrl,
+                    UseExisting = true
+                });
+                if (fetchAndCreateImageData != null && fetchAndCreateImageData.Id != Guid.Empty)
+                {
+                    assetDescription.IconId = fetchAndCreateImageData.Id;
+                }
+            }
+            if (String.IsNullOrEmpty(assetDescription.IconLargeUrl) && !String.IsNullOrEmpty(assetClass.IconUrlLarge?.ToString()))
+            {
+                assetDescription.IconLargeUrl = assetClass.IconUrlLarge.ToString();
+            }
+            if (assetDescription.IconLargeId == null && !String.IsNullOrEmpty(assetDescription.IconLargeUrl))
+            {
+                var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                {
+                    Url = assetDescription.IconLargeUrl,
+                    UseExisting = true
+                });
+                if (fetchAndCreateImageData != null && fetchAndCreateImageData.Id != Guid.Empty)
+                {
+                    assetDescription.IconLargeId = fetchAndCreateImageData.Id;
+                }
+            }
+
+            //switch (assetClass.Type)
+            //{
+            //    case "Workshop Item": break;
+            //}
+
+            switch (assetClass.Tradable)
+            {
+                case "1": assetDescription.Flags |= Shared.Data.Models.Steam.SteamAssetDescriptionFlags.Tradable; break;
+                case "0": assetDescription.Flags &= ~Shared.Data.Models.Steam.SteamAssetDescriptionFlags.Tradable; break;
+            }
+            switch (assetClass.Marketable)
+            {
+                case "1": assetDescription.Flags |= Shared.Data.Models.Steam.SteamAssetDescriptionFlags.Marketable; break;
+                case "0": assetDescription.Flags &= ~Shared.Data.Models.Steam.SteamAssetDescriptionFlags.Marketable; break;
+            }
+            switch (assetClass.Commodity)
+            {
+                case "1": assetDescription.Flags |= Shared.Data.Models.Steam.SteamAssetDescriptionFlags.Commodity; break;
+                case "0": assetDescription.Flags &= ~Shared.Data.Models.Steam.SteamAssetDescriptionFlags.Commodity; break;
+            }
+
+            // Update last checked on
+            assetDescription.LastCheckedOn = DateTimeOffset.Now;
             return assetDescription;
         }
 
@@ -317,6 +383,7 @@ namespace SCMM.Web.Server.Services
             var workshopFile = assetDescription?.WorkshopFile;
             if (workshopFile != null)
             {
+                // Update images
                 if (String.IsNullOrEmpty(workshopFile.ImageUrl) && !String.IsNullOrEmpty(publishedFile.PreviewUrl?.ToString()))
                 {
                     workshopFile.ImageUrl = publishedFile.PreviewUrl.ToString();
@@ -328,12 +395,13 @@ namespace SCMM.Web.Server.Services
                         Url = workshopFile.ImageUrl,
                         UseExisting = true
                     });
-                    if (fetchAndCreateImageData?.Id != Guid.Empty)
+                    if (fetchAndCreateImageData != null && fetchAndCreateImageData.Id != Guid.Empty)
                     {
                         workshopFile.ImageId = fetchAndCreateImageData.Id;
                     }
                 }
 
+                // Update creator
                 if (workshopFile.CreatorId == null && publishedFile.Creator > 0)
                 {
                     var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
@@ -353,6 +421,7 @@ namespace SCMM.Web.Server.Services
                     }
                 }
 
+                // Update timestamps
                 if (publishedFile.TimeCreated > DateTime.MinValue)
                 {
                     workshopFile.CreatedOn = publishedFile.TimeCreated;
@@ -376,7 +445,10 @@ namespace SCMM.Web.Server.Services
                     }
                 }
 
+                // Update subscriptions, favourites, views
                 workshopFile.Subscriptions = (int)Math.Max(publishedFile.LifetimeSubscriptions, publishedFile.Subscriptions);
+                workshopFile.Favourited = (int)Math.Max(publishedFile.LifetimeFavorited, publishedFile.Favorited);
+                workshopFile.Views = (int)publishedFile.Views;
                 if (updateSubscriptionGraph)
                 {
                     var utcDate = DateTime.UtcNow.Date;
@@ -391,13 +463,10 @@ namespace SCMM.Web.Server.Services
                     );
                 }
 
-                workshopFile.Favourited = (int)Math.Max(publishedFile.LifetimeFavorited, publishedFile.Favorited);
-                workshopFile.Views = (int)publishedFile.Views;
-                workshopFile.LastCheckedOn = DateTimeOffset.Now;
-
+                // Update flags
                 if (!workshopFile.Flags.HasFlag(Shared.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned) && publishedFile.Banned)
                 {
-                    workshopFile.Flags &= Shared.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned;
+                    workshopFile.Flags |= Shared.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned;
                     workshopFile.BanReason = publishedFile.BanReason;
                 }
                 if (workshopFile.Flags.HasFlag(Shared.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned) && !publishedFile.Banned)
@@ -407,6 +476,8 @@ namespace SCMM.Web.Server.Services
                 }
             }
 
+            // Update last checked on
+            workshopFile.LastCheckedOn = DateTimeOffset.Now;
             return assetDescription;
         }
 

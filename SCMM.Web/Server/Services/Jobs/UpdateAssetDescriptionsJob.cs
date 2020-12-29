@@ -17,14 +17,14 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class CheckForMissingAssetTagsJob : CronJobService
+    public class UpdateAssetDescriptionsJob : CronJobService
     {
-        private readonly ILogger<CheckForMissingAssetTagsJob> _logger;
+        private readonly ILogger<UpdateAssetDescriptionsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly SteamConfiguration _steamConfiguration;
 
-        public CheckForMissingAssetTagsJob(IConfiguration configuration, ILogger<CheckForMissingAssetTagsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(logger, configuration.GetJobConfiguration<CheckForMissingAssetTagsJob>())
+        public UpdateAssetDescriptionsJob(IConfiguration configuration, ILogger<UpdateAssetDescriptionsJob> logger, IServiceScopeFactory scopeFactory)
+            : base(logger, configuration.GetJobConfiguration<UpdateAssetDescriptionsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -39,12 +39,11 @@ namespace SCMM.Web.Server.Services.Jobs
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
-                var assetDescriptionsWithMissingTags = db.SteamAssetDescriptions
-                    .Where(x => !x.Tags.Serialised.Contains(SteamConstants.SteamAssetTagCategory))
+                var assetDescriptions = db.SteamAssetDescriptions
                     .Include(x => x.App)
                     .ToList();
 
-                if (!assetDescriptionsWithMissingTags.Any())
+                if (!assetDescriptions.Any())
                 {
                     return;
                 }
@@ -55,13 +54,13 @@ namespace SCMM.Web.Server.Services.Jobs
                     return;
                 }
 
-                var groupedAssetDescriptions = assetDescriptionsWithMissingTags.GroupBy(x => x.App);
+                var groupedAssetDescriptions = assetDescriptions.GroupBy(x => x.App);
                 foreach (var group in groupedAssetDescriptions)
                 {
                     var assetClassIds = group.Select(x => UInt64.Parse(x.SteamId)).ToList();
                     foreach (var batch in assetClassIds.Batch(100)) // Batch to 100 per request to avoid server ban
                     {
-                        _logger.LogInformation($"Checking for missing asset tags (ids: {batch.Count()})");
+                        _logger.LogInformation($"Updating asset description information (ids: {batch.Count()})");
                         var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                         var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
                         var response = await steamEconomy.GetAssetClassInfoAsync(UInt32.Parse(group.Key.SteamId), batch.ToList(), language.SteamId);

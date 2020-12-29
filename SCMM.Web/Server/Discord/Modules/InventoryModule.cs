@@ -2,7 +2,6 @@
 using Discord;
 using Discord.Commands;
 using Microsoft.Extensions.Configuration;
-using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands;
@@ -18,18 +17,14 @@ namespace SCMM.Web.Server.Discord.Modules
     public class InventoryModule : ModuleBase<SocketCommandContext>
     {
         private readonly IConfiguration _configuration;
-        private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
-        private readonly SteamCurrencyService _currencies;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public InventoryModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, SteamCurrencyService currencies, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public InventoryModule(IConfiguration configuration, SteamService steam, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _configuration = configuration;
-            _db = db;
             _steam = steam;
-            _currencies = currencies;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }

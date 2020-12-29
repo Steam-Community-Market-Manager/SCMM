@@ -122,7 +122,7 @@ namespace SCMM.Web.Server
             services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
             services.AddHostedService<CheckForMissingAppFiltersJob>();
-            services.AddHostedService<CheckForMissingAssetTagsJob>();
+            services.AddHostedService<UpdateAssetDescriptionsJob>();
             services.AddHostedService<CheckForMissingMarketItemIdsJob>();
             services.AddHostedService<CheckForNewMarketItemsJob>();
             services.AddHostedService<CheckForNewAcceptedWorkshopItemsJob>();

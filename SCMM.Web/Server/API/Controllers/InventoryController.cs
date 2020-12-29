@@ -73,9 +73,15 @@ namespace SCMM.Web.Server.API.Controllers
                     Id = steamId
                 });
 
-                // Load the profile and force an inventory sync
+                // The profile should now exist (if we didn't have it already)
                 steamId = (fetchAndCreateProfile?.Profile?.SteamId ?? steamId);
-                profile = await _steam.FetchProfileInventory(steamId);
+                if (profile == null)
+                {
+                    profile = _db.SteamProfiles.FirstOrDefault(x => x.SteamId == steamId);
+                }
+
+                // Load the profile and force an inventory sync
+                await _steam.FetchProfileInventory(steamId);
             }
 
             if (profile == null)

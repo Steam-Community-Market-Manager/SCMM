@@ -15,14 +15,12 @@ namespace SCMM.Web.Server.Discord.Modules
     [Group("config")]
     public class ConfigurationModule : ModuleBase<SocketCommandContext>
     {
-        private readonly IConfiguration _configuration;
         private readonly ScmmDbContext _db;
 
         private static char[] ValueSeparators = new [] { ' ', ',', '+', '&', '|', ';' };
 
-        public ConfigurationModule(IConfiguration configuration, ScmmDbContext db)
+        public ConfigurationModule(ScmmDbContext db)
         {
-            _configuration = configuration;
             _db = db;
         }
 
@@ -128,6 +126,7 @@ namespace SCMM.Web.Server.Discord.Modules
         )
         {
             var guild = _db.DiscordGuilds
+                .AsNoTracking()
                 .Include(x => x.Configurations)
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
@@ -167,6 +166,7 @@ namespace SCMM.Web.Server.Discord.Modules
         )
         {
             var guild = _db.DiscordGuilds
+                .AsNoTracking()
                 .Include(x => x.Configurations)
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
@@ -208,6 +208,7 @@ namespace SCMM.Web.Server.Discord.Modules
         )
         {
             var guild = _db.DiscordGuilds
+                .AsNoTracking()
                 .Include(x => x.Configurations)
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
@@ -245,6 +246,7 @@ namespace SCMM.Web.Server.Discord.Modules
         )
         {
             var guild = _db.DiscordGuilds
+                .AsNoTracking()
                 .Include(x => x.Configurations)
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
@@ -285,6 +287,7 @@ namespace SCMM.Web.Server.Discord.Modules
         )
         {
             var guild = _db.DiscordGuilds
+                .AsNoTracking()
                 .Include(x => x.Configurations)
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
@@ -321,6 +324,7 @@ namespace SCMM.Web.Server.Discord.Modules
         )
         {
             var guild = _db.DiscordGuilds
+                .AsNoTracking()
                 .Include(x => x.Configurations)
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)

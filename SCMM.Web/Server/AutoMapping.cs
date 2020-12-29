@@ -30,7 +30,8 @@ namespace SCMM.Web.Server
 
             CreateMap<SteamAssetDescription, ProfileInventoryItemSummaryDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
-                .ForMember(x => x.Currency, o => o.MapFromCurrency());
+                .ForMember(x => x.Currency, o => o.MapFromCurrency())
+                .ForMember(x => x.Flags, o => o.Ignore());
 
             CreateMap<SteamProfileInventoryItem, InventoryItemListDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
