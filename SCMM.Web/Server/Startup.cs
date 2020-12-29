@@ -19,7 +19,7 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Middleware;
 using SCMM.Web.Server.Services;
-using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
+using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Server.Services.Jobs;
 using System;
 using System.Security.Claims;
@@ -127,7 +127,7 @@ namespace SCMM.Web.Server
             services.AddHostedService<CheckForNewMarketItemsJob>();
             services.AddHostedService<CheckForNewAcceptedWorkshopItemsJob>();
             services.AddHostedService<CheckForNewStoreItemsJob>();
-            services.AddHostedService<UpdateAssetWorkshopStatisticsJob>();
+            services.AddHostedService<UpdateAssetWorkshopFilesJob>();
             services.AddHostedService<UpdateMarketItemOrdersJob>();
             services.AddHostedService<UpdateMarketItemSalesJob>();
             services.AddHostedService<UpdateStoreSalesStatisticsJob>();

@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
+namespace SCMM.Web.Server.Services.Commands
 {
     public class FetchAndCreateSteamProfileRequest : ICommand<FetchAndCreateSteamProfileResponse>
     {
@@ -63,7 +63,8 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
                 var response = await steamUser.GetPlayerSummaryAsync(UInt64.Parse(resolvedId.SteamId));
                 if (response?.Data == null)
                 {
-                    throw new Exception("No response received from server");
+                    // Profile is probably private or deleted
+                    return null;
                 }
 
                 var profileId = response.Data.ProfileUrl;
@@ -104,7 +105,8 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
                 });
                 if (response == null)
                 {
-                    throw new Exception("No response received from server");
+                    // Profile is probably private or deleted
+                    return null;
                 }
 
                 profile = await _db.SteamProfiles.FirstOrDefaultAsync(

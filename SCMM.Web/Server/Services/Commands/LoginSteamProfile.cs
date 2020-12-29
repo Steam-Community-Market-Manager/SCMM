@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ClaimTypes = SCMM.Web.Shared.Data.Models.ClaimTypes;
 
-namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
+namespace SCMM.Web.Server.Services.Commands
 {
     public class LoginSteamProfileRequest : ICommand<LoginSteamProfileResponse>
     {
@@ -53,7 +53,7 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
             });
             if (fetchedProfile?.Profile == null)
             {
-                throw new ArgumentException(nameof(request), $"Unable to fetch Steam profile for '{steamId}'");
+                throw new ArgumentException(nameof(request), $"Unable to fetch Steam profile for '{steamId}', it might be private");
             }
 
             // Load the profile from our database

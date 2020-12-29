@@ -50,6 +50,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public SteamAssetWorkshopFileFlags Flags { get; set; }
 
+        public string BanReason { get; set; }
+
         public DateTimeOffset? LastCheckedOn { get; set; }
     }
 }

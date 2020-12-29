@@ -128,6 +128,11 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="P:SCMM.Web.Server.Services.Commands.FetchAndCreateImageDataRequest.UseExisting">
+            <summary>
+            If true, we'll recycle existing image data the same source url exists in the database already
+            </summary>
+        </member>
         <member name="M:SCMM.Web.Server.Services.SteamService.AddOrUpdateAssetWorkshopFile(SCMM.Web.Server.Data.Models.Steam.SteamApp,System.String)">
             
              UPDATE BELOW...

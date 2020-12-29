@@ -1,8 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.Extensions.Caching.Memory;
-using SCMM.Steam.Client;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Services.Commands.FetchAndCreateImageData;
+using SCMM.Web.Server.Services.Commands;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -277,7 +276,8 @@ namespace SCMM.Web.Server.Services
             {
                 var fetchedImage = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
                 {
-                    Url = imageSource.ImageUrl
+                    Url = imageSource.ImageUrl,
+                    UseExisting = false // we've already checked, it doesn't exist
                 });
                 if (fetchedImage != null)
                 {

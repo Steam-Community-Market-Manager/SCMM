@@ -10,7 +10,7 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
-using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
+using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Data.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;

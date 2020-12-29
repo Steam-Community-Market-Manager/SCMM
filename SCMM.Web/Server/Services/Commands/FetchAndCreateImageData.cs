@@ -1,19 +1,22 @@
-﻿using AutoMapper;
-using CommandQuery;
-using Microsoft.Extensions.Configuration;
+﻿using CommandQuery;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
-using SCMM.Web.Server.Extensions;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Services.Commands.FetchAndCreateImageData
+namespace SCMM.Web.Server.Services.Commands
 {
     public class FetchAndCreateImageDataRequest : ICommand<FetchAndCreateImageDataResponse>
     {
         public string Url { get; set; }
+
+        /// <summary>
+        /// If true, we'll recycle existing image data the same source url exists in the database already
+        /// </summary>
+        public bool UseExisting { get; set; } = true;
     }
 
     public class FetchAndCreateImageDataResponse
@@ -28,28 +31,39 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateImageData
     public class FetchAndCreateImageData : ICommandHandler<FetchAndCreateImageDataRequest, FetchAndCreateImageDataResponse>
     {
         private readonly ScmmDbContext _db;
-        private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
-        private readonly IQueryProcessor _queryProcessor;
-        private readonly IMapper _mapper;
 
-        public FetchAndCreateImageData(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor, IMapper mapper)
+        public FetchAndCreateImageData(ScmmDbContext db, SteamCommunityClient communityClient)
         {
             _db = db;
-            _cfg = cfg?.GetSteamConfiguration();
             _communityClient = communityClient;
-            _queryProcessor = queryProcessor;
-            _mapper = mapper;
         }
 
         public async Task<FetchAndCreateImageDataResponse> HandleAsync(FetchAndCreateImageDataRequest request)
         {
+            // If we have already fetched this image source before, return the existing copy
+            if (request.UseExisting)
+            {
+                var existingImageData = _db.ImageData.FirstOrDefault(x => x.Source == request.Url);
+                if (existingImageData != null)
+                {
+                    return new FetchAndCreateImageDataResponse
+                    {
+                        Id = existingImageData.Id,
+                        MimeType = existingImageData.MimeType,
+                        Data = existingImageData.Data
+                    };
+                }
+            }
+
+            // Fetch the image from its source
             var imageResponse = await _communityClient.GetImage(new SteamBlobRequest(request.Url));
             if (imageResponse == null)
             {
                 return null;
             }
 
+            // Save the image to the database
             var imageData = new ImageData()
             {
                 Source = request.Url,

@@ -11,7 +11,7 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Data.Types;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
+using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
@@ -299,8 +299,8 @@ namespace SCMM.Web.Server.Services
 
         public async Task<Data.Models.Steam.SteamAssetDescription> UpdateAssetDescription(Data.Models.Steam.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile, bool updateSubscriptionGraph = false)
         {
-            // Update workshop tags
-            if (publishedFile.Tags != null)
+            // Update asset description tags
+            if (assetDescription != null && publishedFile.Tags != null)
             {
                 foreach (var tag in publishedFile.Tags.Where(x => !SteamConstants.SteamIgnoredWorkshopTags.Any(y => x == y)))
                 {
@@ -313,10 +313,46 @@ namespace SCMM.Web.Server.Services
                 }
             }
 
-            // Update workshop statistics
-            var workshopFile = assetDescription.WorkshopFile;
+            // Update workshop infomation
+            var workshopFile = assetDescription?.WorkshopFile;
             if (workshopFile != null)
             {
+                if (String.IsNullOrEmpty(workshopFile.ImageUrl) && !String.IsNullOrEmpty(publishedFile.PreviewUrl?.ToString()))
+                {
+                    workshopFile.ImageUrl = publishedFile.PreviewUrl.ToString();
+                }
+                if (workshopFile.ImageId == null && !String.IsNullOrEmpty(workshopFile.ImageUrl))
+                {
+                    var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                    {
+                        Url = workshopFile.ImageUrl,
+                        UseExisting = true
+                    });
+                    if (fetchAndCreateImageData?.Id != Guid.Empty)
+                    {
+                        workshopFile.ImageId = fetchAndCreateImageData.Id;
+                    }
+                }
+
+                if (workshopFile.CreatorId == null && publishedFile.Creator > 0)
+                {
+                    var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+                    {
+                        Id = publishedFile.Creator.ToString()
+                    });
+                    if (fetchAndCreateProfile?.Profile != null && fetchAndCreateProfile.Profile.Id != Guid.Empty)
+                    {
+                        workshopFile.CreatorId = fetchAndCreateProfile.Profile.Id;
+                        if (workshopFile.CreatorId != null && fetchAndCreateProfile?.Profile != null)
+                        {
+                            if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagCreator))
+                            {
+                                assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = fetchAndCreateProfile.Profile.Name;
+                            }
+                        }
+                    }
+                }
+
                 if (publishedFile.TimeCreated > DateTime.MinValue)
                 {
                     workshopFile.CreatedOn = publishedFile.TimeCreated;
@@ -359,21 +395,15 @@ namespace SCMM.Web.Server.Services
                 workshopFile.Views = (int)publishedFile.Views;
                 workshopFile.LastCheckedOn = DateTimeOffset.Now;
 
-                if (workshopFile.CreatorId == null)
+                if (!workshopFile.Flags.HasFlag(Shared.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned) && publishedFile.Banned)
                 {
-                    var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
-                    {
-                        Id = publishedFile.Creator.ToString()
-                    });
-
-                    workshopFile.CreatorId = fetchAndCreateProfile?.Profile.Id;
-                    if (workshopFile.CreatorId != null && fetchAndCreateProfile?.Profile != null)
-                    {
-                        if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagCreator))
-                        {
-                            assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = fetchAndCreateProfile.Profile.Name;
-                        }
-                    }
+                    workshopFile.Flags &= Shared.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned;
+                    workshopFile.BanReason = publishedFile.BanReason;
+                }
+                if (workshopFile.Flags.HasFlag(Shared.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned) && !publishedFile.Banned)
+                {
+                    workshopFile.Flags &= ~Shared.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned;
+                    workshopFile.BanReason = null;
                 }
             }
 

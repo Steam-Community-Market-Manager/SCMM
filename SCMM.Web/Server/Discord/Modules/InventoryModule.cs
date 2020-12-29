@@ -1,19 +1,15 @@
-﻿using AutoMapper;
-using CommandQuery;
+﻿using CommandQuery;
 using Discord;
 using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
-using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
+using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared;
-using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Discord.Modules

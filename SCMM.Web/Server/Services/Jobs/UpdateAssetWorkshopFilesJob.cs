@@ -16,14 +16,14 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class UpdateAssetWorkshopStatisticsJob : CronJobService
+    public class UpdateAssetWorkshopFilesJob : CronJobService
     {
-        private readonly ILogger<UpdateAssetWorkshopStatisticsJob> _logger;
+        private readonly ILogger<UpdateAssetWorkshopFilesJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly SteamConfiguration _steamConfiguration;
 
-        public UpdateAssetWorkshopStatisticsJob(IConfiguration configuration, ILogger<UpdateAssetWorkshopStatisticsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(logger, configuration.GetJobConfiguration<UpdateAssetWorkshopStatisticsJob>())
+        public UpdateAssetWorkshopFilesJob(IConfiguration configuration, ILogger<UpdateAssetWorkshopFilesJob> logger, IServiceScopeFactory scopeFactory)
+            : base(logger, configuration.GetJobConfiguration<UpdateAssetWorkshopFilesJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
