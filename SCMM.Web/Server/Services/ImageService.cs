@@ -1,7 +1,6 @@
 ﻿using CommandQuery;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Steam.Client;
-using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Services.Commands.FetchAndCreateImageData;
 using System;
@@ -21,17 +20,15 @@ namespace SCMM.Web.Server.Services
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         private readonly ScmmDbContext _db;
-        private readonly SteamCommunityClient _client;
         private readonly ICommandProcessor _commandProcessor;
 
-        public ImageService(ScmmDbContext db, SteamCommunityClient client, ICommandProcessor commandProcessor)
+        public ImageService(ScmmDbContext db, ICommandProcessor commandProcessor)
         {
             _db = db;
-            _client = client;
             _commandProcessor = commandProcessor;
         }
 
-        public async Task<byte[]> GetImageMosaic(IEnumerable<ImageSource> imageSources, int tileSize = 128, int columns = 5, int rows = 5)
+        public async Task<byte[]> GenerateImageMosaic(IEnumerable<ImageSource> imageSources, int tileSize = 128, int columns = 5, int rows = 5)
         {
             var tileCount = imageSources.Count();
             if (tileCount < 1)
@@ -117,7 +114,7 @@ namespace SCMM.Web.Server.Services
             }
         }
 
-        public async Task<byte[]> GetTradeImageMosaic(IEnumerable<ImageSource> haveImageSources, IEnumerable<ImageSource> wantImageSources, int fontSize = 48, int tileSize = 128)
+        public async Task<byte[]> GenerateTradeImageMosaic(IEnumerable<ImageSource> haveImageSources, IEnumerable<ImageSource> wantImageSources, int fontSize = 48, int tileSize = 128)
         {
             var haveTileCount = haveImageSources.Count();
             var wantTileCount = wantImageSources.Count();

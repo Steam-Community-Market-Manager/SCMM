@@ -165,7 +165,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var mosaic = await _images.GetImageMosaic(
+            var mosaic = await _images.GenerateImageMosaic(
                 storeItemDescriptions.Select(x => 
                     new ImageSource()
                     {

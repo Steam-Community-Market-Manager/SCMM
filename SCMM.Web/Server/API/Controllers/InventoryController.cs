@@ -108,7 +108,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, this.Currency().Name);
+            var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, this.Currency());
             if (inventoryTotal == null)
             {
                 return BadRequest();
@@ -391,7 +391,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
-            var mosaic = await _images.GetImageMosaic(
+            var mosaic = await _images.GenerateImageMosaic(
                 images, 
                 tileSize: 128, 
                 columns: columns, 
@@ -456,7 +456,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
-            var mosaic = await _images.GetTradeImageMosaic(inventoryItemImages, marketItemImages);
+            var mosaic = await _images.GenerateTradeImageMosaic(inventoryItemImages, marketItemImages);
             return File(mosaic, "image/png");
         }
     }

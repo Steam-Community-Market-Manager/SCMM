@@ -38,15 +38,6 @@ namespace SCMM.Web.Server.Services
             }
         }
 
-        public LanguageDetailedDTO GetByNameOrDefault(string name)
-        {
-            return _db.SteamLanguages
-                .AsNoTracking()
-                .Where(x => String.IsNullOrEmpty(name) ? x.IsDefault : String.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
-                .FirstOrDefault();
-        }
-
         public static LanguageDetailedDTO GetByNameCached(string name)
         {
             if (String.IsNullOrEmpty(name))

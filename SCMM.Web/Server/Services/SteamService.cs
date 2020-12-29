@@ -13,6 +13,7 @@ using SCMM.Web.Server.Data.Types;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
 using SCMM.Web.Shared;
+using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
@@ -82,10 +83,8 @@ namespace SCMM.Web.Server.Services
             return new DateTimeOffset(nextStoreUpdateUtc, TimeZoneInfo.Utc.BaseUtcOffset);
         }
 
-        public async Task<ProfileInventoryTotalsDTO> GetProfileInventoryTotal(string steamId, string currencyName)
+        public async Task<ProfileInventoryTotalsDTO> GetProfileInventoryTotal(string steamId, CurrencyDetailedDTO currency)
         {
-            var currency = _currencyService.GetByNameOrDefault(currencyName);
-
             // Load the profile
             var inventory = _db.SteamProfiles
                 .AsNoTracking()

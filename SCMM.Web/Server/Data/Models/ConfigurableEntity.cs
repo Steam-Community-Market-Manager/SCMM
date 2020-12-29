@@ -1,4 +1,5 @@
 ﻿using SCMM.Web.Server.Data.Types;
+using SCMM.Web.Server.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,7 +20,7 @@ namespace SCMM.Web.Server.Data.Models
 
         private string AssertValidConfigurationName(string name)
         {
-            var definition = ConfigurationDefinitions.FirstOrDefault(x => String.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            var definition = ConfigurationDefinitions.Closest(x => x.Name, name, maxDistance: 3);
             if (String.IsNullOrEmpty(definition.Name))
             {
                 throw new ArgumentException($"'{name}' is not a valid configuration name");
@@ -30,12 +31,12 @@ namespace SCMM.Web.Server.Data.Models
 
         private string[] AssertValidConfigurationValue(string name, params string[] values)
         {
-            var definition = ConfigurationDefinitions.FirstOrDefault(x => String.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            var definition = ConfigurationDefinitions.Closest(x => x.Name, name, maxDistance: 3);
             if (definition.AllowedValues?.Length > 0 && values != null)
             {
                 for (int i = 0; i < values.Length; i++)
                 {
-                    var value = definition.AllowedValues.FirstOrDefault(x => String.Equals(x, values[i], StringComparison.InvariantCultureIgnoreCase));
+                    var value = definition.AllowedValues.Closest(x => x, values[i]);
                     if (String.IsNullOrEmpty(value))
                     {
                         throw new ArgumentException($"'{values[i]}' is not a valid option for '{name}'");
@@ -54,7 +55,7 @@ namespace SCMM.Web.Server.Data.Models
         public KeyValuePair<T, string> Get(string name, string defaultValue = null)
         {
             name = AssertValidConfigurationName(name);
-            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
             return new KeyValuePair<T, string>(
                 config, 
                 config?.Value ?? config?.List?.FirstOrDefault() ?? defaultValue
@@ -71,7 +72,7 @@ namespace SCMM.Web.Server.Data.Models
             name = AssertValidConfigurationName(name);
             value = AssertValidConfigurationValue(name, value).FirstOrDefault();
 
-            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
             if (config != null)
             {
                 if (!String.IsNullOrEmpty(value))
@@ -106,7 +107,7 @@ namespace SCMM.Web.Server.Data.Models
                 return null;
             }
 
-            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
             if (config != null)
             {
                 foreach (var value in values)
@@ -141,7 +142,7 @@ namespace SCMM.Web.Server.Data.Models
                 return null;
             }
 
-            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
             if (config != null)
             {
                 foreach (var value in values)
@@ -161,7 +162,7 @@ namespace SCMM.Web.Server.Data.Models
         public KeyValuePair<T, IEnumerable<string>> List(string name)
         {
             name = AssertValidConfigurationName(name);
-            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
             return new KeyValuePair<T, IEnumerable<string>>(
                 config,
                 config?.List
@@ -171,7 +172,7 @@ namespace SCMM.Web.Server.Data.Models
         public T Clear(string name)
         {
             name = AssertValidConfigurationName(name);
-            var config = Configurations.FirstOrDefault(x => x.Name == name);
+            var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
             if (config != null)
             {
                 // TODO: This create orphans, need to fix the cascade delete

@@ -38,15 +38,6 @@ namespace SCMM.Web.Server.Services
             }
         }
 
-        public CurrencyDetailedDTO GetByNameOrDefault(string name)
-        {
-            return _db.SteamCurrencies
-                .AsNoTracking()
-                .Where(x => String.IsNullOrEmpty(name) ? x.IsDefault : (x.Name == name))
-                .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
-                .FirstOrDefault();
-        }
-
         public static CurrencyDetailedDTO GetByNameCached(string name)
         {
             if (String.IsNullOrEmpty(name))

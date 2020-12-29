@@ -1,4 +1,5 @@
-﻿using CommandQuery;
+﻿using AutoMapper;
+using CommandQuery;
 using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,9 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile;
+using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared;
+using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,14 +26,16 @@ namespace SCMM.Web.Server.Discord.Modules
         private readonly SteamService _steam;
         private readonly SteamCurrencyService _currencies;
         private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
 
-        public InventoryModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, SteamCurrencyService currencies, ICommandProcessor commandProcessor)
+        public InventoryModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, SteamCurrencyService currencies, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _configuration = configuration;
             _db = db;
             _steam = steam;
             _currencies = currencies;
             _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
         }
 
         /// <summary>
@@ -45,15 +50,6 @@ namespace SCMM.Web.Server.Discord.Modules
             [Summary("The currency name prices should be displayed as")] string currencyName = null
         )
         {
-            var guild = _db.DiscordGuilds
-                .Include(x => x.Configurations)
-                .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
-            if (guild == null)
-            {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild");
-                return;
-            }
-
             var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
                 Id = id
@@ -66,14 +62,19 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var currency = _currencies.GetByNameOrDefault(currencyName ?? guild.Get(Data.Models.Discord.DiscordConfiguration.Currency).Value);
+            var getCurrencyByName = await _queryProcessor.ProcessAsync(new GetCurrencyByNameRequest()
+            {
+                Name = currencyName
+            });
+
+            var currency = getCurrencyByName.Currency;
             if (currency == null)
             {
                 await ReplyAsync($"Beep boop! I don't support that currency.");
                 return;
             }
 
-            var inventoryTotal = await _steam.GetProfileInventoryTotal(profile.SteamId, currency.Name);
+            var inventoryTotal = await _steam.GetProfileInventoryTotal(profile.SteamId, currency);
             if (inventoryTotal == null)
             {
                 await ReplyAsync($"Beep boop! I'm unable to value that profiles inventory. It's either private, or doesn't contain any items that I monitor.");
