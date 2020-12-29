@@ -2,10 +2,10 @@
 {
     public class ImageData : Entity
     {
-        public string MineType { get; set; }
+        public string Source { get; set; }
 
-        public byte[] Value { get; set; }
+        public string MimeType { get; set; }
 
-        public byte[] ValueLarge { get; set; }
+        public byte[] Data { get; set; }
     }
 }

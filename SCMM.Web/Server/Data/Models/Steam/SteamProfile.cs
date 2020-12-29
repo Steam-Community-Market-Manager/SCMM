@@ -24,13 +24,17 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public string Name { get; set; }
 
+        public string AvatarUrl { get; set; }
+
         public Guid? AvatarId { get; set; }
 
         public ImageData Avatar { get; set; }
 
-        public string AvatarUrl { get; set; }
-
         public string AvatarLargeUrl { get; set; }
+
+        public Guid? AvatarLargeId { get; set; }
+
+        public ImageData AvatarLarge { get; set; }
 
         public string TradeUrl { get; set; }
 

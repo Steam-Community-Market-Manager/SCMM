@@ -28,6 +28,8 @@ namespace SCMM.Web.Server.Data
         public DbSet<SteamProfileInventoryItem> SteamProfileInventoryItems { get; set; }
         public DbSet<SteamProfileMarketItem> SteamProfileMarketItems { get; set; }
 
+        public DbSet<ImageData> ImageData { get; set; }
+
         public ScmmDbContext(DbContextOptions<ScmmDbContext> options)
             : base(options)
         {

@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using SCMM.Steam.Shared;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -42,7 +43,7 @@ namespace SCMM.Steam.Client
             };
         }
 
-        protected async Task<byte[]> GetBinary<TRequest>(TRequest request)
+        protected async Task<Tuple<byte[], string>> GetBinary<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             try
@@ -55,7 +56,9 @@ namespace SCMM.Steam.Client
                         throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
                     }
 
-                    return await response.Content.ReadAsByteArrayAsync();
+                    return new Tuple<byte[], string>(
+                        await response.Content.ReadAsByteArrayAsync(), response.Content.Headers?.ContentType?.MediaType
+                    );
                 }
             }
             catch (Exception ex)

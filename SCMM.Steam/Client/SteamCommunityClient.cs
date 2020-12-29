@@ -109,11 +109,12 @@ namespace SCMM.Steam.Client
             return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request);
         }
 
-        public async Task<byte[]> GetEconomyImage(SteamEconomyImageBlobRequest request)
+        public async Task<Tuple<byte[], string>> GetEconomyImage(SteamEconomyImageBlobRequest request)
         {
             return await GetBinary<SteamEconomyImageBlobRequest>(request);
         }
-        public async Task<byte[]> GetImage(SteamBlobRequest request)
+
+        public async Task<Tuple<byte[], string>> GetImage(SteamBlobRequest request)
         {
             return await GetBinary<SteamBlobRequest>(request);
         }

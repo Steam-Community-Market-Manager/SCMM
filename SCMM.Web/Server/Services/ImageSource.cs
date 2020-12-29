@@ -2,7 +2,9 @@
 {
     public class ImageSource
     {
-        public string Url { get; set; }
+        public string ImageUrl { get; set; }
+
+        public byte[] ImageData { get; set; }
 
         public int BadgeCount { get; set; }
     }

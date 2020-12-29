@@ -169,7 +169,7 @@ namespace SCMM.Web.Server.API.Controllers
                 storeItemDescriptions.Select(x => 
                     new ImageSource()
                     {
-                        Url = x
+                        ImageUrl = x
                     }
                 ),
                 tileSize: 152, 

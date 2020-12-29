@@ -24,11 +24,11 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public string Description { get; set; }
 
+        public string ImageUrl { get; set; }
+
         public Guid? ImageId { get; set; }
 
         public ImageData Image { get; set; }
-
-        public string ImageUrl { get; set; }
 
         public Guid? CreatorId { get; set; }
 

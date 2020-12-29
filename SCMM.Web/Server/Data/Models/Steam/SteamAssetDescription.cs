@@ -28,13 +28,17 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public string ForegroundColour { get; set; }
 
+        public string IconUrl { get; set; }
+
         public Guid? IconId { get; set; }
 
         public ImageData Icon { get; set; }
 
-        public string IconUrl { get; set; }
-
         public string IconLargeUrl { get; set; }
+
+        public Guid? IconLargeId { get; set; }
+
+        public ImageData IconLarge { get; set; }
 
         public PersistableStringDictionary Tags { get; set; }
 

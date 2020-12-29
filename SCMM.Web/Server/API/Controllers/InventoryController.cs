@@ -381,11 +381,11 @@ namespace SCMM.Web.Server.API.Controllers
             var images = new List<ImageSource>();
             foreach (var inventoryItemIcon in inventoryItemIcons)
             {
-                if (!images.Any(x => x.Url == inventoryItemIcon))
+                if (!images.Any(x => x.ImageUrl == inventoryItemIcon))
                 {
                     images.Add(new ImageSource()
                     {
-                        Url = inventoryItemIcon,
+                        ImageUrl = inventoryItemIcon,
                         BadgeCount = inventoryItemIcons.Count(x => x == inventoryItemIcon)
                     });
                 }
@@ -424,11 +424,11 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryItemImages = new List<ImageSource>();
             foreach (var inventoryItemIcon in inventoryItemIcons)
             {
-                if (!inventoryItemImages.Any(x => x.Url == inventoryItemIcon))
+                if (!inventoryItemImages.Any(x => x.ImageUrl == inventoryItemIcon))
                 {
                     inventoryItemImages.Add(new ImageSource()
                     {
-                        Url = inventoryItemIcon,
+                        ImageUrl = inventoryItemIcon,
                         BadgeCount = inventoryItemIcons.Count(x => x == inventoryItemIcon)
                     });
                 }
@@ -446,11 +446,11 @@ namespace SCMM.Web.Server.API.Controllers
             var marketItemImages = new List<ImageSource>();
             foreach (var marketItemIcon in marketItemIcons)
             {
-                if (!marketItemImages.Any(x => x.Url == marketItemIcon))
+                if (!marketItemImages.Any(x => x.ImageUrl == marketItemIcon))
                 {
                     marketItemImages.Add(new ImageSource()
                     {
-                        Url = marketItemIcon,
+                        ImageUrl = marketItemIcon,
                         BadgeCount = marketItemIcons.Count(x => x == marketItemIcon)
                     });
                 }

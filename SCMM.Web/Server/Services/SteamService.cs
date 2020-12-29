@@ -52,11 +52,6 @@ namespace SCMM.Web.Server.Services
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<byte[]> GetImage(string url)
-        {
-            return await _communityClient.GetImage(new SteamBlobRequest(url));
-        }
-
         public DateTimeOffset? GetStoreNextUpdateExpectedOn()
         {
             var lastItemAcceptedOn = _db.SteamAssetWorkshopFiles

@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using CommandQuery;
+using Microsoft.Extensions.Caching.Memory;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Blob;
+using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Services.Commands.FetchAndCreateImageData;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -17,29 +20,15 @@ namespace SCMM.Web.Server.Services
     {
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
+        private readonly ScmmDbContext _db;
         private readonly SteamCommunityClient _client;
+        private readonly ICommandProcessor _commandProcessor;
 
-        public ImageService(SteamCommunityClient client)
+        public ImageService(ScmmDbContext db, SteamCommunityClient client, ICommandProcessor commandProcessor)
         {
+            _db = db;
             _client = client;
-        }
-
-        public async Task<byte[]> GetImageCached(string url)
-        {
-            byte[] image;
-            if (Cache.TryGetValue(url, out image))
-            {
-                return image;
-            }
-
-            image = await _client.GetImage(new SteamBlobRequest(url));
-            if (image == null)
-            {
-                return null;
-            }
-
-            Cache.Set(url, image);
-            return image;
+            _commandProcessor = commandProcessor;
         }
 
         public async Task<byte[]> GetImageMosaic(IEnumerable<ImageSource> imageSources, int tileSize = 128, int columns = 5, int rows = 5)
@@ -58,6 +47,11 @@ namespace SCMM.Web.Server.Services
             var minimumRowsToRenderTiles = (int)Math.Ceiling((float)tileCount / columns);
             rows = Math.Min(minimumRowsToRenderTiles, rows);
 
+            // Hydrate the image sources (but only as many as we need to render)
+            var maxTiles = Math.Min(tileCount, (columns * rows));
+            imageSources = imageSources.Take(maxTiles).ToList();
+            await HydrateImageData(imageSources);
+
             var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
             using (var graphics = Graphics.FromImage(mosaic))
             {
@@ -74,18 +68,12 @@ namespace SCMM.Web.Server.Services
                     for (int c = 0; c < columns; c++)
                     {
                         var imageSource = (imageQueue.Any() ? imageQueue.Dequeue() : null);
-                        if (imageSource == null)
+                        if (imageSource?.ImageData == null)
                         {
                             continue;
                         }
 
-                        var imageRaw = await GetImageCached(imageSource.Url);
-                        if (imageRaw == null)
-                        {
-                            continue;
-                        }
-
-                        var image = Image.FromStream(new MemoryStream(imageRaw));
+                        var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
                         graphics.DrawImage(image, c * tileSize, r * tileSize, tileSize, tileSize);
 
                         var count = Math.Min(99, imageSource.BadgeCount);
@@ -144,6 +132,14 @@ namespace SCMM.Web.Server.Services
             var textPadding = (int) Math.Ceiling(fontSize * 0.5);
             tileSize = Math.Max(8, tileSize);
 
+            // Hydrate the image sources (but only as many as we need to render)
+            var maxHaveTiles = Math.Min(haveTileCount, (columns * rows));
+            var maxWantTiles = Math.Min(wantTileCount, (columns * rows));
+            haveImageSources = haveImageSources.Take(maxHaveTiles).ToList();
+            wantImageSources = wantImageSources.Take(maxWantTiles).ToList();
+            await HydrateImageData(haveImageSources);
+            await HydrateImageData(wantImageSources);
+
             var mosaic = new Bitmap((columns + 1 + columns) * tileSize, (rows * tileSize) + fontSize + (textPadding * 2));
             using (var graphics = Graphics.FromImage(mosaic))
             {
@@ -177,18 +173,12 @@ namespace SCMM.Web.Server.Services
                         for (int c = 0; c < columns; c++)
                         {
                             var imageSource = (haveImageQueue.Any() ? haveImageQueue.Dequeue() : null);
-                            if (imageSource == null)
+                            if (imageSource?.ImageData == null)
                             {
                                 continue;
                             }
 
-                            var imageRaw = await GetImageCached(imageSource.Url);
-                            if (imageRaw == null)
-                            {
-                                continue;
-                            }
-
-                            var image = Image.FromStream(new MemoryStream(imageRaw));
+                            var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
                             graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
                         }
                     }
@@ -215,18 +205,12 @@ namespace SCMM.Web.Server.Services
                         for (int c = 0; c < columns; c++)
                         {
                             var imageSource = (wantImageQueue.Any() ? wantImageQueue.Dequeue() : null);
-                            if (imageSource == null)
+                            if (imageSource?.ImageData == null)
                             {
                                 continue;
                             }
 
-                            var imageRaw = await GetImageCached(imageSource.Url);
-                            if (imageRaw == null)
-                            {
-                                continue;
-                            }
-
-                            var image = Image.FromStream(new MemoryStream(imageRaw));
+                            var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
                             graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
                         }
                     }
@@ -240,6 +224,69 @@ namespace SCMM.Web.Server.Services
                 mosaic.Save(mosaicStream, ImageFormat.Png);
                 var mosaicRaw = mosaicStream.ToArray();
                 return mosaicRaw;
+            }
+        }
+
+        private async Task HydrateImageData(IEnumerable<ImageSource> imageSources)
+        {
+            // Check only images that are missing image data
+            var missingImages = imageSources
+                .Where(x => !String.IsNullOrEmpty(x.ImageUrl))
+                .Where(x => x.ImageData == null)
+                .ToList();
+            if (!missingImages.Any())
+            {
+                return;
+            }
+
+            // Check the first-level cache (memory) for missing image data
+            foreach (var imageSource in missingImages.ToList())
+            {
+                byte[] imageSourceData;
+                if (Cache.TryGetValue(imageSource.ImageUrl, out imageSourceData))
+                {
+                    imageSource.ImageData = imageSourceData;
+                    missingImages.Remove(imageSource);
+                }
+            }
+            if (!missingImages.Any())
+            {
+                return;
+            }
+
+            // Check the second-level cache (database) for missing image data
+            var missingImageUrls = missingImages.Select(x => x.ImageUrl).ToList();
+            var missingImageData = _db.ImageData.Where(x => missingImageUrls.Contains(x.Source)).ToList();
+            if (missingImageData.Any())
+            {
+                foreach (var imageSource in missingImages.ToList())
+                {
+                    var imageData = missingImageData.FirstOrDefault(x => x.Source == imageSource.ImageUrl);
+                    if (imageData != null)
+                    {
+                        Cache.Set(imageData.Source, imageData.Data);
+                        imageSource.ImageData = imageData.Data;
+                        missingImages.Remove(imageSource);
+                    }
+                }
+            }
+            if (!missingImages.Any())
+            {
+                return;
+            }
+
+            // Fetch all remaining images directly from their source
+            foreach (var imageSource in missingImages)
+            {
+                var fetchedImage = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                {
+                    Url = imageSource.ImageUrl
+                });
+                if (fetchedImage != null)
+                {
+                    Cache.Set(imageSource.ImageUrl, fetchedImage.Data);
+                    imageSource.ImageData = fetchedImage.Data;
+                }
             }
         }
     }
