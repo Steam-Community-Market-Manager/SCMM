@@ -20,14 +20,14 @@ namespace SCMM.Web.Server.Discord.Modules
         private readonly IConfiguration _configuration;
         private readonly ScmmDbContext _db;
         private readonly SteamService _steam;
-        private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
 
-        public TradeModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, ICommandProcessor commandProcessor)
+        public TradeModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, IQueryProcessor queryProcessor)
         {
             _configuration = configuration;
             _db = db;
             _steam = steam;
-            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
         }
 
         /// <summary>
@@ -41,17 +41,18 @@ namespace SCMM.Web.Server.Discord.Modules
             [Summary("The SteamID of the profile to request trade for")] string id
         )
         {
-            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
                 Id = id
             });
 
-            var profile = fetchAndCreateProfile?.Profile;
+            var profile = _db.SteamProfiles.FirstOrDefault(x => x.Id == resolvedId.Id);
             if (profile == null)
             {
                 await ReplyAsync($"Beep boop! I'm unable to find that Steam profile (it might be private).\nIf you're using a custom profile name, you can also use your full profile page URL instead");
                 return;
             }
+
             if (String.IsNullOrEmpty(profile.TradeUrl))
             {
                 await ReplyAsync($"Beep boop! You haven't set your Steam trade URL yet, configure it here: {_configuration.GetBaseUrl()}/settings.");

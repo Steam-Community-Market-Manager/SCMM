@@ -372,7 +372,7 @@ namespace SCMM.Web.Server.Services
                         Id = publishedFile.Creator.ToString()
                     });
 
-                    workshopFile.CreatorId = fetchAndCreateProfile?.Profile?.Id;
+                    workshopFile.CreatorId = fetchAndCreateProfile?.Profile.Id;
                     if (workshopFile.CreatorId != null && fetchAndCreateProfile?.Profile != null)
                     {
                         if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagCreator))

@@ -23,84 +23,57 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
         private readonly ScmmDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
+        private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public FetchAndCreateSteamProfileHandler(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IMapper mapper)
+        public FetchAndCreateSteamProfileHandler(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _communityClient = communityClient;
+            _queryProcessor = queryProcessor;
             _mapper = mapper;
         }
 
         public async Task<FetchAndCreateSteamProfileResponse> HandleAsync(FetchAndCreateSteamProfileRequest request)
         {
-            var id = request.Id;
-            var profile = (SteamProfile)null;
-            var steamId = (ulong)0;
-            var profileId = (string)null;
-            if (string.IsNullOrEmpty(id))
+            // Resolve the id
+            var profile = (SteamProfile) null;
+            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
-                return null;
-            }
-
-            // Is this a int64 steam id?
-            // e.g. 76561198082101518
-            if (long.TryParse(id, out _))
-            {
-                ulong.TryParse(id, out steamId);
-            }
-
-            // Else, is this a profile page url containing a string steam id?
-            // e.g. https://steamcommunity.com/profiles/76561198082101518/
-            else if (Regex.IsMatch(id, SteamConstants.SteamProfileUrlSteamIdRegex))
-            {
-                ulong.TryParse(Regex.Match(id, SteamConstants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? id, out steamId);
-            }
-
-            // Else, is this a profile page url containing a custom string profile id...
-            // e.g. https://steamcommunity.com/id/bipolar_penguin/
-            else if (Regex.IsMatch(id, SteamConstants.SteamProfileUrlProfileIdRegex))
-            {
-                profileId = Regex.Match(id, SteamConstants.SteamProfileUrlProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? id;
-            }
-
-            // Else, assume this is a custom string profile id...
-            // e.g. bipolar_penguin
-            else
-            {
-                profileId = id;
-            }
+                Id = request.Id
+            });
 
             // If we know the exact steam id, fetch using the Steam API
-            if (steamId > 0)
+            if (!String.IsNullOrEmpty(resolvedId.SteamId))
             {
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
                 var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
-                var response = await steamUser.GetPlayerSummaryAsync(steamId);
+                var response = await steamUser.GetPlayerSummaryAsync(UInt64.Parse(resolvedId.SteamId));
                 if (response?.Data == null)
                 {
                     throw new Exception("No response received from server");
                 }
 
-                if (!string.IsNullOrEmpty(response.Data.ProfileUrl))
+                var profileId = response.Data.ProfileUrl;
+                if (!string.IsNullOrEmpty(profileId))
                 {
-                    if (Regex.IsMatch(id, SteamConstants.SteamProfileUrlSteamIdRegex))
+                    if (Regex.IsMatch(profileId, SteamConstants.SteamProfileUrlSteamIdRegex))
                     {
-                        profileId = Regex.Match(response.Data.ProfileUrl, SteamConstants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
+                        profileId = Regex.Match(profileId, SteamConstants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
                     }
-                    else if (Regex.IsMatch(id, SteamConstants.SteamProfileUrlProfileIdRegex))
+                    else if (Regex.IsMatch(profileId, SteamConstants.SteamProfileUrlProfileIdRegex))
                     {
-                        profileId = Regex.Match(response.Data.ProfileUrl, SteamConstants.SteamProfileUrlProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
+                        profileId = Regex.Match(profileId, SteamConstants.SteamProfileUrlProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
                     }
                 }
 
                 profile = await _db.SteamProfiles.FirstOrDefaultAsync(
-                    x => x.SteamId == steamId.ToString()
+                    x => x.SteamId == resolvedId.SteamId
                 );
                 profile = profile ?? new SteamProfile()
                 {
-                    SteamId = steamId.ToString()
+                    SteamId = resolvedId.SteamId
                 };
 
                 profile.ProfileId = profileId;
@@ -111,11 +84,11 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
             }
 
             // Else, if we know the custom profile id, fetch using the legacy XML API
-            else if (!string.IsNullOrEmpty(profileId))
+            else if (!String.IsNullOrEmpty(resolvedId.ProfileId))
             {
                 var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
                 {
-                    ProfileId = profileId,
+                    ProfileId = resolvedId.ProfileId,
                     Xml = true
                 });
                 if (response == null)
@@ -124,11 +97,11 @@ namespace SCMM.Web.Server.Services.Commands.FetchAndCreateSteamProfile
                 }
 
                 profile = await _db.SteamProfiles.FirstOrDefaultAsync(
-                    x => x.ProfileId == profileId
+                    x => x.ProfileId == resolvedId.ProfileId
                 );
                 profile = profile ?? new SteamProfile()
                 {
-                    ProfileId = profileId
+                    ProfileId = resolvedId.ProfileId
                 };
 
                 profile.SteamId = response.SteamID64.ToString();

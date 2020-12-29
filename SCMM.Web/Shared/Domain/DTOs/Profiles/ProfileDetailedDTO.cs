@@ -7,8 +7,6 @@ namespace SCMM.Web.Shared.Domain.DTOs.Profiles
 {
     public class ProfileDetailedDTO : ProfileDTO
     {
-        public Guid Id { get; set; }
-
         public string DiscordId { get; set; }
 
         public string AvatarLargeUrl { get; set; }
