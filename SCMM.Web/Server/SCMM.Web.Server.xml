@@ -133,6 +133,11 @@
             If true, we'll recycle existing image data the same source url exists in the database already
             </summary>
         </member>
+        <member name="P:SCMM.Web.Server.Services.Commands.FetchSteamProfileInventoryRequest.Force">
+            <summary>
+            If true, inventory will always be fetched. If false, inventory is cached for 3 hours.
+            </summary>
+        </member>
         <member name="M:SCMM.Web.Server.Services.SteamService.AddOrUpdateAssetWorkshopFile(SCMM.Web.Server.Data.Models.Steam.SteamApp,System.String)">
             
              UPDATE BELOW...

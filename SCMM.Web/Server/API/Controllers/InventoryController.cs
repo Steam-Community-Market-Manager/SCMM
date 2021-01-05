@@ -54,43 +54,25 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Load the profile
-            var inventory = _db.SteamProfiles
-                .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                .Select(x => new
-                {
-                    Profile = x,
-                    TotalItems = x.InventoryItems.Count,
-                    LastUpdatedOn = x.LastUpdatedInventoryOn
-                })
-                .FirstOrDefault();
-
-            // If the profile inventory hasn't been loaded before or it is older than the cache period, fetch it now
-            var profile = inventory?.Profile;
-            if (profile == null || inventory?.TotalItems == 0 || inventory?.LastUpdatedOn < DateTime.Now.Subtract(TimeSpan.FromHours(6)) || sync)
+            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
-                // Reload the profile
-                var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
-                {
-                    Id = steamId
-                });
+                Id = steamId
+            });
 
-                // Reload the profile's inventory
-                profile = fetchAndCreateProfile?.Profile;
-                if (profile != null)
-                {
-                    //await _steam.FetchProfileInventory(steamId);
-                    await _commandProcessor.ProcessAsync(new FetchSteamProfileInventory()
-                    {
-                        Profile = profile
-                    });
-                }
-            }
-
+            var profile = fetchAndCreateProfile?.Profile;
             if (profile == null)
             {
                 NotFound($"Profile with SteamID '{steamId}' was not found");
             }
 
+            // Reload the profile's inventory
+            await _commandProcessor.ProcessAsync(new FetchSteamProfileInventoryRequest()
+            {
+                Id = profile.Id,
+                Force = sync
+            });
+
+            // Update the profile's inventory last viewed time
             if (User.Is(profile))
             {
                 profile.LastViewedInventoryOn = DateTimeOffset.Now;

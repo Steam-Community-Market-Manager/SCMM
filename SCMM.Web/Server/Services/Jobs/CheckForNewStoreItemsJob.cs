@@ -145,7 +145,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     {
                         activeStoreItems.Add(
                             await steamService.AddOrUpdateAppStoreItem(
-                                app, currency, language, asset, DateTimeOffset.Now
+                                app, currency, language.SteamId, asset, DateTimeOffset.Now
                             )
                         );
                     }

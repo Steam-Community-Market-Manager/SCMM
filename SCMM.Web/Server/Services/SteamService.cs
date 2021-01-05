@@ -155,103 +155,6 @@ namespace SCMM.Web.Server.Services
             };
         }
 
-        public async Task FetchProfileInventory(string steamId)
-        {
-            var profile = await _db.SteamProfiles
-                .Include(x => x.InventoryItems).ThenInclude(x => x.App)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
-                .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
-                .FirstOrDefaultAsync(x => x.SteamId == steamId || x.ProfileId == steamId);
-            if (profile == null)
-            {
-                return;
-            }
-
-            var language = _db.SteamLanguages
-                .FirstOrDefault(x => x.IsDefault);
-            if (language == null)
-            {
-                return;
-            }
-
-            var apps = _db.SteamApps.ToList();
-            if (!apps.Any())
-            {
-                return;
-            }
-
-            foreach (var app in apps)
-            {
-                // Fetch assets
-                var inventory = await _communityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
-                {
-                    AppId = app.SteamId,
-                    SteamId = profile.SteamId,
-                    Start = 1,
-                    Count = SteamInventoryPaginatedJsonRequest.MaxPageSize,
-                    NoRender = true
-                });
-                if (inventory?.Success != true)
-                {
-                    // Inventory is probably private
-                    continue;
-                }
-                if (inventory?.Assets?.Any() != true)
-                {
-                    // Inventory doesn't have any items for this app
-                    continue;
-                }
-
-                // Add assets
-                var missingAssets = inventory.Assets
-                    .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId))
-                    .ToList();
-                foreach (var asset in missingAssets)
-                {
-                    var assetDescription = await AddOrUpdateAssetDescription(app, language, UInt64.Parse(asset.ClassId));
-                    if (assetDescription == null)
-                    {
-                        continue;
-                    }
-                    var inventoryItem = new SteamProfileInventoryItem()
-                    {
-                        SteamId = asset.AssetId,
-                        Profile = profile,
-                        ProfileId = profile.Id,
-                        App = app,
-                        AppId = app.Id,
-                        Description = assetDescription,
-                        DescriptionId = assetDescription.Id,
-                        Quantity = asset.Amount
-                    };
-
-                    profile.InventoryItems.Add(inventoryItem);
-                }
-
-                // Update assets
-                foreach (var asset in inventory.Assets)
-                {
-                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.SteamId == asset.AssetId);
-                    if (existingAsset != null)
-                    {
-                        existingAsset.Quantity = asset.Amount;
-                    }
-                }
-
-                // Remove assets
-                var removedAssets = profile.InventoryItems
-                    .Where(x => !inventory.Assets.Any(y => y.AssetId == x.SteamId))
-                    .ToList();
-                foreach (var asset in removedAssets)
-                {
-                    profile.InventoryItems.Remove(asset);
-                }
-
-                profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
-                _db.SaveChanges();
-            }
-        }
-
         public Data.Models.Steam.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
         {
             var existingFilter = app.Filters.FirstOrDefault(x => x.SteamId == filter.Name);
@@ -516,7 +419,7 @@ namespace SCMM.Web.Server.Services
             return dbWorkshopFile;
         }
 
-        public async Task<Data.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, SteamLanguage language, ulong classId)
+        public async Task<Data.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, string languageId, ulong classId)
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
                 .Where(x => x.SteamId == classId.ToString())
@@ -531,7 +434,7 @@ namespace SCMM.Web.Server.Services
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
             var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
             var response = await steamEconomy.GetAssetClassInfoAsync(
-                UInt32.Parse(app.SteamId), new List<ulong>() { classId }, language.SteamId
+                UInt32.Parse(app.SteamId), new List<ulong>() { classId }, languageId
             );
             if (response?.Data?.Success != true)
             {
@@ -614,7 +517,7 @@ namespace SCMM.Web.Server.Services
             return dbAssetDescription;
         }
 
-        public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, SteamLanguage language, AssetModel asset, DateTimeOffset timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, string languageId, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Description)
@@ -633,7 +536,7 @@ namespace SCMM.Web.Server.Services
                 return dbItem;
             }
 
-            var assetDescription = await AddOrUpdateAssetDescription(app, language, asset.ClassId);
+            var assetDescription = await AddOrUpdateAssetDescription(app, languageId, asset.ClassId);
             if (assetDescription == null)
             {
                 return null;

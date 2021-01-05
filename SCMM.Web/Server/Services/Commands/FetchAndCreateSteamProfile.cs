@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CommandQuery;
+﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Steam.Client;
@@ -9,7 +8,6 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Queries;
-using SCMM.Web.Shared.Domain.DTOs.Profiles;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System;

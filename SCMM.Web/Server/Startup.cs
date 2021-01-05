@@ -93,7 +93,7 @@ namespace SCMM.Web.Server
             {
                 options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"), sql =>
                 {
-                    sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     sql.EnableRetryOnFailure();
                 });
                 options.EnableSensitiveDataLogging();

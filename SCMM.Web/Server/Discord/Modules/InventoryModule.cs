@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using Microsoft.Extensions.Configuration;
+using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands;
@@ -17,14 +18,16 @@ namespace SCMM.Web.Server.Discord.Modules
     public class InventoryModule : ModuleBase<SocketCommandContext>
     {
         private readonly IConfiguration _configuration;
-        private readonly SteamService _steam;
+        private readonly ScmmDbContext _db;
+        private readonly SteamService _steamService;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public InventoryModule(IConfiguration configuration, SteamService steam, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public InventoryModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _configuration = configuration;
-            _steam = steam;
+            _db = db;
+            _steamService = steam;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }
@@ -41,6 +44,7 @@ namespace SCMM.Web.Server.Discord.Modules
             [Summary("The currency name prices should be displayed as")] string currencyName = null
         )
         {
+            // Load the profile
             var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
                 Id = id
@@ -53,6 +57,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
+            // Load the currency
             var getCurrencyByName = await _queryProcessor.ProcessAsync(new GetCurrencyByNameRequest()
             {
                 Name = currencyName
@@ -65,7 +70,16 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
-            var inventoryTotal = await _steam.GetProfileInventoryTotal(profile, currency);
+            // Reload the profiles inventory
+            await _commandProcessor.ProcessAsync(new FetchSteamProfileInventoryRequest()
+            {
+                Id = profile.Id
+            });
+
+            _db.SaveChanges();
+
+            // Calculate the profiles inventory totals
+            var inventoryTotal = await _steamService.GetProfileInventoryTotal(profile.SteamId, currency);
             if (inventoryTotal == null)
             {
                 await ReplyAsync($"Beep boop! I'm unable to value that profiles inventory. It's either private, or doesn't contain any items that I monitor.");

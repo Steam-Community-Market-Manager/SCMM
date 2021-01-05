@@ -9,11 +9,11 @@ namespace SCMM.Web.Server.Discord.Modules
     [Group("store")]
     public class StoreModule : ModuleBase<SocketCommandContext>
     {
-        private readonly SteamService _steam;
+        private readonly SteamService _steamService;
 
         public StoreModule(SteamService steam)
         {
-            _steam = steam;
+            _steamService = steam;
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace SCMM.Web.Server.Discord.Modules
         [Summary("Echoes time remaining until the next expected store update")]
         public async Task SayStoreNextUpdateExpectedOnAsync()
         {
-            var nextUpdateExpectedOn = _steam.GetStoreNextUpdateExpectedOn();
+            var nextUpdateExpectedOn = _steamService.GetStoreNextUpdateExpectedOn();
             if (nextUpdateExpectedOn == null)
             {
                 await ReplyAsync(
