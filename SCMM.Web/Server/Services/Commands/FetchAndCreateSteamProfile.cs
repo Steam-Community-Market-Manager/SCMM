@@ -26,7 +26,7 @@ namespace SCMM.Web.Server.Services.Commands
 
     public class FetchAndCreateSteamProfileResponse
     {
-        public ProfileDTO Profile { get; set; }
+        public SteamProfile Profile { get; set; }
     }
 
     public class FetchAndCreateSteamProfile : ICommandHandler<FetchAndCreateSteamProfileRequest, FetchAndCreateSteamProfileResponse>
@@ -35,15 +35,13 @@ namespace SCMM.Web.Server.Services.Commands
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
-        private readonly IMapper _mapper;
 
-        public FetchAndCreateSteamProfile(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor, IMapper mapper)
+        public FetchAndCreateSteamProfile(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _communityClient = communityClient;
             _queryProcessor = queryProcessor;
-            _mapper = mapper;
         }
 
         public async Task<FetchAndCreateSteamProfileResponse> HandleAsync(FetchAndCreateSteamProfileRequest request)
@@ -124,18 +122,15 @@ namespace SCMM.Web.Server.Services.Commands
                 profile.Country = response.Location;
             }
 
-            if (profile != null)
+            // Save the new profile to the datbase
+            if (profile != null && profile.Id == Guid.Empty)
             {
-                if (profile.Id == Guid.Empty)
-                {
-                    _db.SteamProfiles.Add(profile);
-                }
-                _db.SaveChanges();
+                _db.SteamProfiles.Add(profile);
             }
 
             return new FetchAndCreateSteamProfileResponse
             {
-                Profile = _mapper.Map<ProfileDetailedDTO>(profile)
+                Profile = profile
             };
         }
     }

@@ -280,10 +280,10 @@ namespace SCMM.Web.Server.Services
                     Url = imageSource.ImageUrl,
                     UseExisting = false // we've already checked, it doesn't exist
                 });
-                if (fetchedImage != null && fetchedImage.Data != null)
+                if (fetchedImage?.Image?.Data != null)
                 {
-                    Cache.Set(imageSource.ImageUrl, fetchedImage.Data);
-                    imageSource.ImageData = fetchedImage.Data;
+                    Cache.Set(imageSource.ImageUrl, fetchedImage.Image.Data);
+                    imageSource.ImageData = fetchedImage.Image.Data;
                 }
             }
         }

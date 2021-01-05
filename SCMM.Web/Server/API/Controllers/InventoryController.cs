@@ -68,20 +68,22 @@ namespace SCMM.Web.Server.API.Controllers
             var profile = inventory?.Profile;
             if (profile == null || inventory?.TotalItems == 0 || inventory?.LastUpdatedOn < DateTime.Now.Subtract(TimeSpan.FromHours(6)) || sync)
             {
+                // Reload the profile
                 var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
                 {
                     Id = steamId
                 });
 
-                // The profile should now exist (if we didn't have it already)
-                steamId = (fetchAndCreateProfile?.Profile?.SteamId ?? steamId);
-                if (profile == null)
+                // Reload the profile's inventory
+                profile = fetchAndCreateProfile?.Profile;
+                if (profile != null)
                 {
-                    profile = _db.SteamProfiles.FirstOrDefault(x => x.SteamId == steamId);
+                    //await _steam.FetchProfileInventory(steamId);
+                    await _commandProcessor.ProcessAsync(new FetchSteamProfileInventory()
+                    {
+                        Profile = profile
+                    });
                 }
-
-                // Load the profile and force an inventory sync
-                await _steam.FetchProfileInventory(steamId);
             }
 
             if (profile == null)
@@ -92,8 +94,9 @@ namespace SCMM.Web.Server.API.Controllers
             if (User.Is(profile))
             {
                 profile.LastViewedInventoryOn = DateTimeOffset.Now;
-                _db.SaveChanges();
             }
+
+            _db.SaveChanges();
 
             return Ok(
                 _mapper.Map<SteamProfile, ProfileInventoryDetailsDTO>(

@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs
 {
-    public class CheckForMissingAppFiltersJob : CronJobService
+    public class RepairMissingAppFiltersJob : CronJobService
     {
-        private readonly ILogger<CheckForMissingAppFiltersJob> _logger;
+        private readonly ILogger<RepairMissingAppFiltersJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public CheckForMissingAppFiltersJob(IConfiguration configuration, ILogger<CheckForMissingAppFiltersJob> logger, IServiceScopeFactory scopeFactory)
-            : base(logger, configuration.GetJobConfiguration<CheckForMissingAppFiltersJob>())
+        public RepairMissingAppFiltersJob(IConfiguration configuration, ILogger<RepairMissingAppFiltersJob> logger, IServiceScopeFactory scopeFactory)
+            : base(logger, configuration.GetJobConfiguration<RepairMissingAppFiltersJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;

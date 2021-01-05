@@ -51,47 +51,52 @@ namespace SCMM.Web.Server.Services.Commands
             {
                 Id = steamId
             });
-            if (fetchedProfile?.Profile == null)
+
+            var profile = fetchedProfile?.Profile;
+            if (profile == null)
             {
                 throw new ArgumentException(nameof(request), $"Unable to fetch Steam profile for '{steamId}', it might be private");
             }
 
-            // Load the profile from our database
-            var profileQuery = _db.SteamProfiles
-                .Include(x => x.Language)
-                .Include(x => x.Currency)
-                .Where(x => x.Id == fetchedProfile.Profile.Id)
-                .Select(x => new
+            // If this is an already existing profile
+            if (!profile.IsTransient)
+            {
+                // Load more extended profile information from our database
+                var profileInfoQuery = _db.SteamProfiles
+                    .Include(x => x.Language)
+                    .Include(x => x.Currency)
+                    .Where(x => x.Id == fetchedProfile.Profile.Id)
+                    .Select(x => new
+                    {
+                        Profile = x,
+                        IsCreator = x.WorkshopFiles.Any(x => x.AcceptedOn != null),
+                        IsDonator = x.DonatorLevel > 0
+                    })
+                    .FirstOrDefault();
+
+                // Assign dynamic roles to the profile (if missing)
+                var dynamicRoles = new List<string>();
+                if (profileInfoQuery?.IsCreator == true)
                 {
-                    Profile = x,
-                    IsCreator = x.WorkshopFiles.Any(x => x.AcceptedOn != null),
-                    IsDonator = x.DonatorLevel > 0
-                })
-                .FirstOrDefault();
-            var profile = profileQuery?.Profile;
+                    dynamicRoles.Add(Roles.Creator);
+                }
+                if (profileInfoQuery?.IsDonator == true)
+                {
+                    dynamicRoles.Add(Roles.Donator);
+                    dynamicRoles.Add(Roles.VIP);
+                }
 
-            // Update any dynamic roles that are missing
-            var dynamicRoles = new List<string>();
-            if (profileQuery?.IsCreator == true)
-            {
-                dynamicRoles.Add(Roles.Creator);
+                profile = profileInfoQuery?.Profile;
+                if (dynamicRoles.Any())
+                {
+                    profile.Roles = new Data.Types.PersistableStringCollection(
+                        profile.Roles.Union(dynamicRoles)
+                    );
+                }
             }
-            if (profileQuery?.IsDonator == true)
-            {
-                dynamicRoles.Add(Roles.Donator);
-                dynamicRoles.Add(Roles.VIP);
-            }
-            if (dynamicRoles.Any())
-            {
-                profile.Roles = new Data.Types.PersistableStringCollection(
-                    profile.Roles.Union(dynamicRoles)
-                );
-            }
-
+            
             // Update the last signin timestamp
             profile.LastSignedInOn = DateTimeOffset.Now;
-
-            _db.SaveChanges();
 
             // Build a identity for the profile
             var identity = new ClaimsIdentity(

@@ -315,9 +315,9 @@ namespace SCMM.Web.Server.Services
                     Url = assetDescription.IconUrl,
                     UseExisting = true
                 });
-                if (fetchAndCreateImageData != null && fetchAndCreateImageData.Id != Guid.Empty)
+                if (fetchAndCreateImageData?.Image != null)
                 {
-                    assetDescription.IconId = fetchAndCreateImageData.Id;
+                    assetDescription.Icon = fetchAndCreateImageData.Image;
                 }
             }
             if (String.IsNullOrEmpty(assetDescription.IconLargeUrl) && !String.IsNullOrEmpty(assetClass.IconUrlLarge?.ToString()))
@@ -331,9 +331,9 @@ namespace SCMM.Web.Server.Services
                     Url = assetDescription.IconLargeUrl,
                     UseExisting = true
                 });
-                if (fetchAndCreateImageData != null && fetchAndCreateImageData.Id != Guid.Empty)
+                if (fetchAndCreateImageData?.Image != null)
                 {
-                    assetDescription.IconLargeId = fetchAndCreateImageData.Id;
+                    assetDescription.IconLarge = fetchAndCreateImageData.Image;
                 }
             }
 
@@ -395,9 +395,9 @@ namespace SCMM.Web.Server.Services
                         Url = workshopFile.ImageUrl,
                         UseExisting = true
                     });
-                    if (fetchAndCreateImageData != null && fetchAndCreateImageData.Id != Guid.Empty)
+                    if (fetchAndCreateImageData?.Image != null)
                     {
-                        workshopFile.ImageId = fetchAndCreateImageData.Id;
+                        workshopFile.Image = fetchAndCreateImageData.Image;
                     }
                 }
 
@@ -408,15 +408,12 @@ namespace SCMM.Web.Server.Services
                     {
                         Id = publishedFile.Creator.ToString()
                     });
-                    if (fetchAndCreateProfile?.Profile != null && fetchAndCreateProfile.Profile.Id != Guid.Empty)
+                    if (fetchAndCreateProfile?.Profile != null)
                     {
-                        workshopFile.CreatorId = fetchAndCreateProfile.Profile.Id;
-                        if (workshopFile.CreatorId != null && fetchAndCreateProfile?.Profile != null)
+                        workshopFile.Creator = fetchAndCreateProfile.Profile;
+                        if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagCreator))
                         {
-                            if (!assetDescription.Tags.ContainsKey(SteamConstants.SteamAssetTagCreator))
-                            {
-                                assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = fetchAndCreateProfile.Profile.Name;
-                            }
+                            assetDescription.Tags[SteamConstants.SteamAssetTagCreator] = fetchAndCreateProfile.Profile.Name;
                         }
                     }
                 }

@@ -3,7 +3,6 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,11 +20,7 @@ namespace SCMM.Web.Server.Services.Commands
 
     public class FetchAndCreateImageDataResponse
     {
-        public Guid Id { get; set; }
-
-        public string MimeType { get; set; }
-
-        public byte[] Data { get; set; }
+        public ImageData Image { get; set; }
     }
 
     public class FetchAndCreateImageData : ICommandHandler<FetchAndCreateImageDataRequest, FetchAndCreateImageDataResponse>
@@ -49,9 +44,7 @@ namespace SCMM.Web.Server.Services.Commands
                 {
                     return new FetchAndCreateImageDataResponse
                     {
-                        Id = existingImageData.Id,
-                        MimeType = existingImageData.MimeType,
-                        Data = existingImageData.Data
+                        Image = existingImageData
                     };
                 }
             }
@@ -63,7 +56,6 @@ namespace SCMM.Web.Server.Services.Commands
                 return null;
             }
 
-            // Save the image to the database
             var imageData = new ImageData()
             {
                 Source = request.Url,
@@ -71,14 +63,12 @@ namespace SCMM.Web.Server.Services.Commands
                 Data = imageResponse.Item1
             };
 
+            // Save the new image data to the database
             _db.ImageData.Add(imageData);
-            _db.SaveChanges();
 
             return new FetchAndCreateImageDataResponse
             {
-                Id = imageData.Id,
-                MimeType = imageData.MimeType,
-                Data = imageData.Data
+                Image = imageData
             };
         }
     }

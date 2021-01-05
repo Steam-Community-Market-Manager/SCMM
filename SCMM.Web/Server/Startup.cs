@@ -75,6 +75,7 @@ namespace SCMM.Web.Server
                 {
                     OnTicketReceived = async (ctx) =>
                     {
+                        var db = ctx.HttpContext.RequestServices.GetRequiredService<ScmmDbContext>();
                         var commandProcessor = ctx.HttpContext.RequestServices.GetRequiredService<ICommandProcessor>();
                         var loggedInProfile = await commandProcessor.ProcessWithResultAsync(new LoginSteamProfileRequest()
                         {
@@ -82,6 +83,7 @@ namespace SCMM.Web.Server
                         });
 
                         ctx.Principal.AddIdentity(loggedInProfile.Identity);
+                        await db.SaveChangesAsync();
                     }
                 };
             });
@@ -89,7 +91,11 @@ namespace SCMM.Web.Server
             // Database
             services.AddDbContext<ScmmDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"));
+                options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"), sql =>
+                {
+                    sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    sql.EnableRetryOnFailure();
+                });
                 options.EnableSensitiveDataLogging();
                 options.EnableDetailedErrors();
             });
@@ -121,7 +127,7 @@ namespace SCMM.Web.Server
             services.AddHostedService<RepopulateCacheJob>();
             services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
-            services.AddHostedService<CheckForMissingAppFiltersJob>();
+            services.AddHostedService<RepairMissingAppFiltersJob>();
             services.AddHostedService<UpdateAssetDescriptionsJob>();
             services.AddHostedService<CheckForMissingMarketItemIdsJob>();
             services.AddHostedService<CheckForNewMarketItemsJob>();
