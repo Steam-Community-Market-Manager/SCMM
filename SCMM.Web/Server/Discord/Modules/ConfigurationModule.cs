@@ -43,7 +43,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 }
 
                 fields.Add(new EmbedFieldBuilder()
-                    .WithName($"definition.Name: `{definition.Name.ToLower()}`")
+                    .WithName($"{definition.Name}: `{definition.Name.ToLower()}`")
                     .WithValue(description.ToString())
                 );
             }
