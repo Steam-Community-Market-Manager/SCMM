@@ -1,6 +1,7 @@
 ﻿using CommandQuery;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Web.Server.Data;
@@ -28,20 +29,55 @@ namespace SCMM.Web.Server.Discord.Modules
             _queryProcessor = queryProcessor;
         }
 
-        /// <summary>
-        /// !trade [steamId]
-        /// </summary>
-        /// <returns></returns>
-        [Command()]
+        [Command]
+        [Priority(1)]
+        [Name("request")]
         [Alias("request")]
-        [Summary("Echoes profile trade request")]
+        [Summary("Show trading information for a Discord user. This only works if the user has a profile on the SCMM website and has linked their Discord account and if the profile has set their Steam trade URL on their profile and has flagged some 'wanted' and 'trading' items on their inventory")]
         public async Task SayProfileTradeRequestAsync(
-            [Summary("The SteamID of the profile to request trade for")] string id
+            [Name("discord_user")][Summary("Valid Discord user name or user mention")] SocketUser user = null
         )
         {
+            user = (user ?? Context.User);
+
+            // Load the profile using the discord id
+            var message = await ReplyAsync("Finding Steam profile...");
+            var discordId = $"{user.Username}#{user.Discriminator}";
+            var profile = _db.SteamProfiles
+                .AsNoTracking()
+                .Include(x => x.Currency)
+                .FirstOrDefault(x => x.DiscordId == discordId);
+            /*
+            if (profile == null)
+            {
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! I'm unable to find that Discord user. {user.Username} has not linked their Discord and Steam accounts yet, configure it here: {_configuration.GetBaseUrl()}/settings."
+                );
+                return;
+            }
+            */
+
+            await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user.Username);
+        }
+
+        [Command]
+        [Priority(0)]
+        [Name("request")]
+        [Alias("request")]
+        [Summary("Show trading information for a Steam profile. Only works if the profile has set their Steam trade URL on their profile and has flagged some 'wanted' and 'trading' items on their inventory")]
+        public async Task SayProfileTradeRequestAsync(
+            [Name("steam_id")][Summary("Valid SteamID or Steam profile URL")] string steamId
+        )
+        {
+            await SayProfileTradeRequestInternalAsync(null, steamId);
+        }
+
+        private async Task SayProfileTradeRequestInternalAsync(IUserMessage message, string steamId)
+        {
+            message = (message ?? await ReplyAsync("Finding Steam profile..."));
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
-                Id = id
+                Id = steamId
             });
 
             var profile = _db.SteamProfiles
@@ -49,16 +85,23 @@ namespace SCMM.Web.Server.Discord.Modules
                 .FirstOrDefault(x => x.Id == resolvedId.Id);
             if (profile == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find that Steam profile (it might be private).\nIf you're using a custom profile name, you can also use your full profile page URL instead");
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! I'm unable to find that Steam profile (it might be private).\nIf you're using a custom profile name, you can also use your full profile page URL instead."
+                );
                 return;
             }
 
             if (String.IsNullOrEmpty(profile.TradeUrl))
             {
-                await ReplyAsync($"Beep boop! You haven't set your Steam trade URL yet, configure it here: {_configuration.GetBaseUrl()}/settings.");
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! You haven't set your Steam trade URL yet, configure it here: {_configuration.GetBaseUrl()}/settings."
+                );
                 return;
             }
 
+            await message.ModifyAsync(x =>
+                x.Content = "Calculating items for trade..."
+            );
             var tradeItems = _db.SteamProfiles
                 .AsNoTracking()
                 .Where(x => x.Id == profile.Id)
@@ -71,7 +114,16 @@ namespace SCMM.Web.Server.Discord.Modules
 
             if (tradeItems.HaveCount <= 0)
             {
-                await ReplyAsync($"Beep boop! You haven't set any of your inventory items as tradable yet, manage your inventory here: {_configuration.GetBaseUrl()}/steam/inventory/me.");
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! You haven't marked any of your inventory items as tradable yet, manage your inventory here: {_configuration.GetBaseUrl()}/steam/inventory/me."
+                );
+                return;
+            }
+            if (tradeItems.WantCount <= 0)
+            {
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! You haven't added any items to your wishlist yet, manage your wishlist here: {_configuration.GetBaseUrl()}/steam/inventory/me."
+                );
                 return;
             }
 
@@ -86,28 +138,26 @@ namespace SCMM.Web.Server.Discord.Modules
             }
             if (description.Length > 0)
             {
-                description.AppendLine(String.Empty);
+                description.AppendLine();
             }
             description.AppendLine($"**[Make a trade offer]({profile.TradeUrl})**");
 
-            await Task.Run(async () =>
-            {
-                var color = Color.Blue;
-                var embed = new EmbedBuilder()
-                    .WithTitle($"{profile.Name} is looking for trades")
-                    .WithDescription(description.ToString())
-                    .WithUrl(!String.IsNullOrEmpty(profile.TradeUrl) ? profile.TradeUrl : $"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
-                    .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/trade/mosaic?timestamp={DateTime.UtcNow.Ticks}")
-                    .WithThumbnailUrl(profile.AvatarUrl)
-                    .WithColor(color)
-                    .WithFooter(x => x.Text = _configuration.GetBaseUrl())
-                    .WithCurrentTimestamp()
-                    .Build();
+            var color = Color.Blue;
+            var embed = new EmbedBuilder()
+                .WithTitle($"{profile.Name} is looking for trades")
+                .WithDescription(description.ToString())
+                .WithUrl(!String.IsNullOrEmpty(profile.TradeUrl) ? profile.TradeUrl : $"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
+                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/trade/mosaic?timestamp={DateTime.UtcNow.Ticks}")
+                .WithThumbnailUrl(profile.AvatarUrl)
+                .WithColor(color)
+                .WithFooter(x => x.Text = _configuration.GetBaseUrl())
+                .WithCurrentTimestamp()
+                .Build();
 
-                await ReplyAsync(
-                    embed: embed
-                );
-            });
+            await message.DeleteAsync();
+            await ReplyAsync(
+                embed: embed
+            );
         }
     }
 }

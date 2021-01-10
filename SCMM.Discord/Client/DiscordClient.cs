@@ -30,6 +30,7 @@ namespace SCMM.Discord.Client
             _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client, configuration);
             _client.Log += OnClientLogAsync;
             _client.Ready += OnClientReadyAsync;
+            _client.JoinedGuild += OnJoinedGuildSayHello;
             _client.JoinedGuild += (x) => Task.Run(() => GuildJoined?.Invoke(x.Id, x.Name));
             _client.LeftGuild += (x) => Task.Run(() => GuildLeft?.Invoke(x.Id, x.Name));
             _clientIsReady = new ManualResetEvent(false);
@@ -61,6 +62,15 @@ namespace SCMM.Discord.Client
             _clientIsReady.Set();
             Ready?.Invoke(Guilds);
             return Task.CompletedTask;
+        }
+
+        private Task OnJoinedGuildSayHello(SocketGuild guild)
+        {
+            return BroadcastMessageAsync(
+                guildPattern: guild.Id.ToString(),
+                channelPattern: null,
+                message: $"Hello! Thanks for adding me. To learn more about my commands, type `{_configuration.CommandPrefix}help`."
+            );
         }
 
         private void EnsureClientIsReady()

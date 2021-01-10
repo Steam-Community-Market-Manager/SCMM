@@ -16,20 +16,15 @@ namespace SCMM.Web.Server.Discord.Modules
             _steamService = steam;
         }
 
-        /// <summary>
-        /// !store remaining
-        /// </summary>
-        /// <returns></returns>
-        [Command("remaining")]
-        [Alias("next", "update", "expected")]
-        [Summary("Echoes time remaining until the next expected store update")]
+        [Command("next")]
+        [Summary("Show time remaining until the next store update")]
         public async Task SayStoreNextUpdateExpectedOnAsync()
         {
             var nextUpdateExpectedOn = _steamService.GetStoreNextUpdateExpectedOn();
             if (nextUpdateExpectedOn == null)
             {
                 await ReplyAsync(
-                    $"I have no idea, something went wrong trying to figure it out"
+                    $"I have no idea, something went wrong trying to figure it out."
                 );
             }
 
@@ -40,13 +35,13 @@ namespace SCMM.Web.Server.Discord.Modules
             if (!String.IsNullOrEmpty(remainingTime))
             {
                 await ReplyAsync(
-                    $"Next store update is expected in about **{remainingTime}** from now"
+                    $"Next store update is expected in about **{remainingTime}** from now."
                 );
             }
             else
             {
                 await ReplyAsync(
-                    $"Next store update is expected **any moment** now"
+                    $"Next store update is expected **any moment** now."
                 );
             }
         }

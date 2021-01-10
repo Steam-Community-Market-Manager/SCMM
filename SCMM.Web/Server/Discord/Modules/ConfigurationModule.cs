@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Discord;
 using System;
@@ -24,63 +23,8 @@ namespace SCMM.Web.Server.Discord.Modules
             _db = db;
         }
 
-        /// <summary>
-        /// !config help
-        /// </summary>
-        /// <returns></returns>
-        [Command]
-        [Alias("help")]
-        [Summary("Echo config module help")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task GetModuleHelpAsync()
-        {
-            var fields = new List<EmbedFieldBuilder>();
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`config names`")
-                .WithValue("Show information about all the supported configurations")
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`config get [name]`")
-                .WithValue("Get a configuration value")
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`config set [name] [value]`")
-                .WithValue("Set a configuration value")
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`config add [name] [values...]`")
-                .WithValue("Add a value to a configuration list")
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`config remove [name] [values...]`")
-                .WithValue("Remove a value from a configuration list")
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`config clear [name]`")
-                .WithValue("Clear a configuration list")
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("`config list [name]`")
-                .WithValue("List all the values of a configuration")
-            );
-
-            var embed = new EmbedBuilder()
-                .WithTitle("Help - Configuration")
-                .WithFields(fields)
-                .Build();
-
-            await ReplyAsync(
-                embed: embed
-            );
-        }
-
-        /// <summary>
-        /// !config names
-        /// </summary>
-        /// <returns></returns>
-        [Command("names")]
-        [Summary("Echo configuration names")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [Command("options")]
+        [Summary("Show a list of all supported configuration options you can personalise for this server")]
         public async Task GetConfigNamesAsync()
         {
             var fields = new List<EmbedFieldBuilder>();
@@ -91,7 +35,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 description.Append(definition.Description);
                 if (definition.AllowedValues?.Length > 0)
                 {
-                    description.Append($" Allowed options are:");
+                    description.Append($" Accepted values are:");
                     description.AppendLine();
                     description.Append(
                         String.Join(',', definition.AllowedValues.Select(x => $"`{x}`"))
@@ -99,13 +43,14 @@ namespace SCMM.Web.Server.Discord.Modules
                 }
 
                 fields.Add(new EmbedFieldBuilder()
-                    .WithName(definition.Name)
+                    .WithName($"definition.Name: `{definition.Name.ToLower()}`")
                     .WithValue(description.ToString())
                 );
             }
 
             var embed = new EmbedBuilder()
-                .WithTitle("Configuration Names")
+                .WithTitle("Configuration Options")
+                .WithDescription("The following configuration names can be used with the `config x` commands. Use the `help` command for more information.")
                 .WithFields(fields)
                 .Build();
 
@@ -114,15 +59,12 @@ namespace SCMM.Web.Server.Discord.Modules
             );
         }
 
-        /// <summary>
-        /// !config get [name]
-        /// </summary>
-        /// <returns></returns>
         [Command("get")]
-        [Summary("Get guild configuration")]
+        [Summary("Get the value of a configuration for this server")]
+        [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task GetConfigValueAsync(
-            [Summary("The config name")] string name
+            [Name("option")][Summary("Supported config option name")] string option
         )
         {
             var guild = _db.DiscordGuilds
@@ -131,38 +73,35 @@ namespace SCMM.Web.Server.Discord.Modules
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild");
+                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
                 return;
             }
 
             try
             {
-                var config = guild.Get(name);
+                var config = guild.Get(option);
                 if (!String.IsNullOrEmpty(config.Value))
                 {
-                    await Context.Channel.SendMessageAsync($"'{config.Key?.Name ?? name}' is '{config.Value}'");
+                    await ReplyAsync($"'{config.Key?.Name ?? option}' is '{config.Value}'");
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"'{config.Key?.Name ?? name}' is not set");
+                    await ReplyAsync($"'{config.Key?.Name ?? option}' is not set");
                 }
             }
             catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
             }
         }
 
-        /// <summary>
-        /// !config set [name] [value]
-        /// </summary>
-        /// <returns></returns>
         [Command("set")]
-        [Summary("Set guild configuration")]
+        [Summary("Set the value of a configuration for this server")]
+        [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetConfigValueAsync(
-            [Summary("The config name")] string name,
-            [Summary("The config value")] string value
+            [Name("option")][Summary("Supported config option name")] string option,
+            [Name("value")][Summary("New value to set as the config")][Remainder] string value
         )
         {
             var guild = _db.DiscordGuilds
@@ -171,40 +110,37 @@ namespace SCMM.Web.Server.Discord.Modules
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild");
+                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
                 return;
             }
 
             try
             {
-                var config = guild.Set(name, value);
+                var config = guild.Set(option, value);
                 _db.SaveChanges();
 
                 if (config != null && !String.IsNullOrEmpty(config.Value))
                 {
-                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is now '{config.Value}'");
+                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is now '{config.Value}'.");
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is no longer set");
+                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is no longer set.");
                 }
             }
             catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
             }
         }
 
-        /// <summary>
-        /// !config add [name] [value]
-        /// </summary>
-        /// <returns></returns>
         [Command("add")]
-        [Summary("Add guild configuration")]
+        [Summary("Add the specified value to a configuration for this server")]
+        [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddConfigValueAsync(
-            [Summary("The config name")] string name,
-            [Summary("The config values")] params string[] values
+            [Name("option")][Summary("Supported config option name")] string option,
+            [Name("values")][Summary("New value to add to the config")][Remainder] params string[] values
         )
         {
             var guild = _db.DiscordGuilds
@@ -213,36 +149,33 @@ namespace SCMM.Web.Server.Discord.Modules
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild");
+                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
                 return;
             }
 
             try
             {
-                var config = guild.Add(name, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
+                var config = guild.Add(option, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
                 _db.SaveChanges();
 
                 if (config != null && config.List?.Any() == true)
                 {
-                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is now '{String.Join(", ", config.List)}'");
+                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is now '{String.Join(", ", config.List)}'.");
                 }
             }
             catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
             }
         }
 
-        /// <summary>
-        /// !config add [name] [value]
-        /// </summary>
-        /// <returns></returns>
         [Command("remove")]
-        [Summary("Remove guild configuration")]
+        [Summary("Remove the specified value from a configuration for this server")]
+        [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveConfigValueAsync(
-            [Summary("The config name")] string name,
-            [Summary("The config values")] params string[] values
+            [Name("option")][Summary("Supported config option name")] string option,
+            [Name("values")][Summary("Value to remove from the config")][Remainder] params string[] values
         )
         {
             var guild = _db.DiscordGuilds
@@ -251,39 +184,36 @@ namespace SCMM.Web.Server.Discord.Modules
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild");
+                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
                 return;
             }
 
             try
             {
-                var config = guild.Remove(name, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
+                var config = guild.Remove(option, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
                 _db.SaveChanges();
 
                 if (config != null && config.List?.Any() == true)
                 {
-                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is now '{String.Join(", ", config.List)}'");
+                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is now '{String.Join(", ", config.List)}'.");
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is no longer set");
+                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is no longer set.");
                 }
             }
             catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
             }
         }
 
-        /// <summary>
-        /// !config clear [name]
-        /// </summary>
-        /// <returns></returns>
         [Command("clear")]
-        [Summary("Clear guild configuration")]
+        [Summary("Clear all values from a configuration for this server")]
+        [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClearConfigValueAsync(
-            [Summary("The config name")] string name
+            [Name("option")][Summary("Supported config option name")] string option
         )
         {
             var guild = _db.DiscordGuilds
@@ -292,35 +222,32 @@ namespace SCMM.Web.Server.Discord.Modules
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild");
+                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
                 return;
             }
 
             try
             {
-                var config = guild.Clear(name);
+                var config = guild.Clear(option);
                 _db.SaveChanges();
 
                 if (config != null)
                 {
-                    await Context.Channel.SendMessageAsync($"Ok. '{config?.Name ?? name}' is no longer set");
+                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is no longer set.");
                 }
             }
             catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
             }
         }
 
-        /// <summary>
-        /// !config get [name]
-        /// </summary>
-        /// <returns></returns>
         [Command("list")]
-        [Summary("List guild configuration")]
+        [Summary("List the set values for a configuration for this server")]
+        [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ListConfigValueAsync(
-            [Summary("The config name")] string name
+            [Name("option")][Summary("Supported config option name")] string option
         )
         {
             var guild = _db.DiscordGuilds
@@ -329,25 +256,25 @@ namespace SCMM.Web.Server.Discord.Modules
                 .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild");
+                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
                 return;
             }
 
             try
             {
-                var config = guild.List(name);
+                var config = guild.List(option);
                 if (config.Value?.Any() == true)
                 {
-                    await Context.Channel.SendMessageAsync($"'{config.Key?.Name ?? name}' is '{String.Join(", ", config.Value)}'");
+                    await ReplyAsync($"'{config.Key?.Name ?? option}' is '{String.Join(", ", config.Value)}'.");
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync($"'{config.Key?.Name ?? name}' is not set");
+                    await ReplyAsync($"'{config.Key?.Name ?? option}' is not set.");
                 }
             }
             catch (ArgumentException ex)
             {
-                await Context.Channel.SendMessageAsync(ex.Message);
+                await ReplyAsync(ex.Message);
             }
         }
     }

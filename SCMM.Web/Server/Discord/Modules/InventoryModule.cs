@@ -1,6 +1,8 @@
 ﻿using CommandQuery;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
@@ -10,6 +12,7 @@ using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Discord.Modules
@@ -31,46 +34,89 @@ namespace SCMM.Web.Server.Discord.Modules
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }
-
-        /// <summary>
-        /// !inventory [steamId] [currencyName]
-        /// </summary>
-        /// <returns></returns>
+        
         [Command]
+        [Priority(1)]
+        [Name("value")]
         [Alias("value")]
-        [Summary("Echoes profile inventory value")]
+        [Summary("Show the current inventory market value for a Discord user. This only works if the user has a profile on the SCMM website and has linked their Discord account.")]
         public async Task SayProfileInventoryValueAsync(
-            [Summary("The SteamID of the profile to check")] string id,
-            [Summary("The currency name prices should be displayed as")] string currencyName = null
+            [Name("discord_user")][Summary("Valid Discord user name or user mention")] SocketUser user = null,
+            [Name("currency_id")][Summary("Supported three-letter currency code (e.g. USD, EUR, AUD)")] string currencyId = null
         )
         {
+            user = (user ?? Context.User);
+
+            // Load the profile using the discord id
+            var message = await ReplyAsync("Finding Steam profile...");
+            var discordId = $"{user.Username}#{user.Discriminator}";
+            var profile = _db.SteamProfiles
+                .AsNoTracking()
+                .Include(x => x.Currency)
+                .FirstOrDefault(x => x.DiscordId == discordId);
+            /*
+            if (profile == null)
+            {
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! I'm unable to find that Discord user. {user.Username} has not linked their Discord and Steam accounts yet, configure it here: {_configuration.GetBaseUrl()}/settings."
+                );
+                return;
+            }
+            */
+
+            await SayProfileInventoryValueInternalAsync(message, profile?.SteamId ?? user.Username, currencyId ?? profile.Currency?.Name);
+        }
+        
+        [Command]
+        [Priority(0)]
+        [Name("value")]
+        [Alias("value")]
+        [Summary("Show the current inventory market value for a Steam profile. This only works if the profile and the inventory privacy is set as public.")]
+        public async Task SayProfileInventoryValueAsync(
+            [Name("steam_id")][Summary("Valid SteamID or Steam profile URL")] string steamId,
+            [Name("currency_id")][Summary("Supported three-letter currency code (e.g. USD, EUR, AUD)")] string currencyId = null
+        )
+        {
+            await SayProfileInventoryValueInternalAsync(null, steamId, currencyId);
+        }
+
+        private async Task SayProfileInventoryValueInternalAsync(IUserMessage message, string steamId, string currencyId)
+        {
             // Load the profile
+            message = (message ?? await ReplyAsync("Finding Steam profile..."));
             var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
-                Id = id
+                Id = steamId
             });
 
             var profile = fetchAndCreateProfile?.Profile;
             if (profile == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find that Steam profile (it might be private).\nIf you're using a custom profile name, you can also use your full profile page URL instead");
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! I'm unable to find that Steam profile (it might be private).\nIf you're using a custom profile name, you can also use your full profile page URL instead."
+                );
                 return;
             }
 
             // Load the currency
             var getCurrencyByName = await _queryProcessor.ProcessAsync(new GetCurrencyByNameRequest()
             {
-                Name = currencyName
+                Name = currencyId
             });
 
             var currency = getCurrencyByName.Currency;
             if (currency == null)
             {
-                await ReplyAsync($"Beep boop! I don't support that currency.");
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! I don't support that currency."
+                );
                 return;
             }
 
             // Reload the profiles inventory
+            await message.ModifyAsync(x =>
+                x.Content = "Fetching inventory details from Steam..."
+            );
             await _commandProcessor.ProcessAsync(new FetchSteamProfileInventoryRequest()
             {
                 Id = profile.Id
@@ -79,65 +125,68 @@ namespace SCMM.Web.Server.Discord.Modules
             _db.SaveChanges();
 
             // Calculate the profiles inventory totals
+            await message.ModifyAsync(x => 
+                x.Content = "Calculating inventory value..."
+            );
             var inventoryTotal = await _steamService.GetProfileInventoryTotal(profile.SteamId, currency);
             if (inventoryTotal == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to value that profiles inventory. It's either private, or doesn't contain any items that I monitor.");
+                await message.ModifyAsync(x =>
+                    x.Content = $"Beep boop! I'm unable to value that profiles inventory. It's either private, or doesn't contain any items that I monitor."
+                );
                 return;
             }
 
-            await Task.Run(async () =>
+            var color = Color.Blue;
+            var fields = new List<EmbedFieldBuilder>();
+            fields.Add(new EmbedFieldBuilder()
+                .WithName("Market Value")
+                .WithValue($"{currency.ToPriceString(inventoryTotal.TotalMarketValue)} {currency.Name}")
+            );
+            if (inventoryTotal.TotalInvested > 0)
             {
-                var color = Color.Blue;
-                var fields = new List<EmbedFieldBuilder>();
-                fields.Add(new EmbedFieldBuilder()
-                    .WithName("Market Value")
-                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalMarketValue)} {currency.Name}")
-                );
-                if (inventoryTotal.TotalInvested > 0)
+                /*
+                var profitLoss = String.Empty;
+                var profitLossPrefix = String.Empty;
+                if (inventoryTotal.TotalResellProfit >= 0)
                 {
-                    /*
-                    var profitLoss = String.Empty;
-                    var profitLossPrefix = String.Empty;
-                    if (inventoryTotal.TotalResellProfit >= 0)
-                    {
-                        profitLoss = "Profit";
-                        profitLossPrefix = "🡱";
-                        color = Color.Green;
-                    }
-                    else
-                    {
-                        profitLoss = "Loss";
-                        profitLossPrefix = "🡳";
-                        color = Color.Red;
-                    }
-                    fields.Add(new EmbedFieldBuilder()
-                        .WithName("Invested")
-                        .WithValue($"{currency.ToPriceString(inventoryTotal.TotalInvested)} {currency.Name}")
-                    );
-                    fields.Add(new EmbedFieldBuilder()
-                        .WithName(profitLoss)
-                        .WithValue($"{profitLossPrefix} {currency.ToPriceString(inventoryTotal.TotalResellProfit)} {currency.Name}")
-                    );
-                    */
+                    profitLoss = "Profit";
+                    profitLossPrefix = "🡱";
+                    color = Color.Green;
                 }
-
-                var embed = new EmbedBuilder()
-                    .WithTitle(profile.Name)
-                    .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
-                    .WithFields(fields)
-                    .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
-                    .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=3&columns=5&timestamp={DateTime.UtcNow.Ticks}")
-                    .WithThumbnailUrl(profile.AvatarUrl)
-                    .WithColor(color)
-                    .WithFooter(x => x.Text = _configuration.GetBaseUrl())
-                    .WithCurrentTimestamp()
-                    .Build();
-
-                await ReplyAsync(
-                    embed: embed
+                else
+                {
+                    profitLoss = "Loss";
+                    profitLossPrefix = "🡳";
+                    color = Color.Red;
+                }
+                fields.Add(new EmbedFieldBuilder()
+                    .WithName("Invested")
+                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalInvested)} {currency.Name}")
                 );
-            });
+                fields.Add(new EmbedFieldBuilder()
+                    .WithName(profitLoss)
+                    .WithValue($"{profitLossPrefix} {currency.ToPriceString(inventoryTotal.TotalResellProfit)} {currency.Name}")
+                );
+                */
+            }
+
+            var embed = new EmbedBuilder()
+                .WithTitle(profile.Name)
+                .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
+                .WithFields(fields)
+                .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
+                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=3&columns=5&timestamp={DateTime.UtcNow.Ticks}")
+                .WithThumbnailUrl(profile.AvatarUrl)
+                .WithColor(color)
+                .WithFooter(x => x.Text = _configuration.GetBaseUrl())
+                .WithCurrentTimestamp()
+                .Build();
+
+            await message.DeleteAsync();
+            await ReplyAsync(
+                embed: embed
+            );
         }
     }
 }
