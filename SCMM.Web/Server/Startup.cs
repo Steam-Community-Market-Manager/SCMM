@@ -2,7 +2,6 @@ using AspNet.Security.OpenId;
 using AspNet.Security.OpenId.Steam;
 using AutoMapper;
 using CommandQuery;
-using CommandQuery.AspNetCore;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -140,15 +139,7 @@ namespace SCMM.Web.Server
             services.AddHostedService<RecalculateMarketItemSnapshotsJob>();
 
             // Controllers
-            services.AddControllersWithViews(options =>
-                {
-                    options.Conventions.Add(new CommandQueryControllerModelConvention());
-                })
-                .ConfigureApplicationPartManager(manager =>
-                {
-                    manager.FeatureProviders.Add(new CommandControllerFeatureProvider(typeof(Startup).Assembly));
-                    manager.FeatureProviders.Add(new QueryControllerFeatureProvider(typeof(Startup).Assembly));
-                });
+            services.AddControllersWithViews();
 
             // Views
             services.AddRazorPages();
