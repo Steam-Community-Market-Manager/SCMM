@@ -3,6 +3,7 @@ using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
+using SCMM.Web.Shared.Domain.DTOs.Dashboard;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
@@ -169,6 +170,10 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Views, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? (int?) p.Item.Description.WorkshopFile.Views : null))
                 .ForMember(x => x.AcceptedOn, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? p.Item.Description.WorkshopFile.AcceptedOn : null))
                 .ForMember(x => x.Tags, o => o.MapFrom(p => p.Item.Description.Tags.WithoutWorkshopTags()));
+
+            CreateMap<SteamAssetDescription, DashboardAssetDescriptionDTO>()
+                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App != null ? p.App.SteamId : null))
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.WorkshopFile != null ? p.WorkshopFile.Subscriptions : 0));
         }
     }
 }

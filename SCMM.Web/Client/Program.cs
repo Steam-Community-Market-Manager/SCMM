@@ -2,6 +2,8 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Skclusive.Core.Component;
+using Skclusive.Material.Alert;
+using Skclusive.Material.Chip;
 using Skclusive.Material.Component;
 using Skclusive.Material.Core;
 using System;
@@ -33,13 +35,16 @@ namespace SCMM.Web.Client
                 sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("default")
             );
 
-            builder.Services.AddBlazoredLocalStorage();
-            builder.Services.TryAddMaterialServices(new MaterialConfigBuilder()
+            var materialConfig = new MaterialConfigBuilder()
                 .WithIsPreRendering(false)
                 .WithIsServer(false)
                 .WithTheme(Theme.Dark)
-                .Build()
-            );
+                .Build();
+
+            builder.Services.AddBlazoredLocalStorage();
+            builder.Services.TryAddAlertServices(materialConfig);
+            builder.Services.TryAddChipServices(materialConfig);
+            builder.Services.TryAddMaterialServices(materialConfig);
 
             await builder.Build().RunAsync();
         }

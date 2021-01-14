@@ -2,22 +2,50 @@
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
 @using SCMM.Steam.Shared
+@using Web.Shared.Domain.DTOs.Dashboard
+@using Web.Shared.Domain.DTOs.InventoryItems
 @inject ILogger<MarketStatisticsPage> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject AppState State
 
+<style>
+
+    .Dashboard-Card {
+        height:100%;
+    }
+
+</style>
+
 <Title Value="Market Statistics" />
 <Grid Container Spacing="@Spacing.Two">
 
+    <Grid Item ExtraSmall="@GridSize.Twelve">
+        <Alert Severity="@Severity.Info" Variant="@AlertVariant.Outlined">
+            <IconContent>
+                <DiscordBotIcon />
+            </IconContent>
+            <ChildContent>
+                <AlertTitle>SCMM Discord Bot</AlertTitle>
+                <span>Beep Boop! Did you know I can join your Discord community to provide tools and alerts for the Steam community marketplace? Click the <a @onclick="InviteDiscordBot">invite button</a> to get started.</span>
+            </ChildContent>
+            <ActionContent>
+                <Button Color="@Color.Inherit" Size="@Size.Large"
+                        OnClick="@(() => InviteDiscordBot())">
+                    INVITE
+                </Button>
+        </ActionContent>
+        </Alert>
+    </Grid>
+
     <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">    
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
                     <Grid Container>
                         <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Three">
-                            <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                            <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                                 Market Sales
                             </Typography>
                             <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -44,7 +72,7 @@
                             {
                                 <Divider Orientation="@Orientation.Vertical" />
                                 <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
-                                    <strong>@SalesToday.ToQuantityString() today</strong>
+                                    <strong>@SalesToday.ToQuantityString() sales today</strong>
                                 </Typography>
                             }
                         </Grid>
@@ -65,14 +93,14 @@
     </Grid>
     
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Hot Right Now
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Highest number of sales in the last 24hrs.
+                        Items with the highest number of sales in the past 24hrs.
                     </Typography>
                 </TitleContent>
             </CardHeader>
@@ -85,19 +113,26 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in HotRightNow)
+                            @if (!HotRightNow.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Last24hrSales.ToSalesActivityString()</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in HotRightNow)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Last24hrSales.ToSalesActivityString()</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -107,10 +142,10 @@
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Most Recent
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -127,19 +162,26 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in MostRecent)
+                            @if (!MostRecent.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.MarketAge</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in MostRecent)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.MarketAge</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -149,10 +191,10 @@
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         📈 Good Time to Sell
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -169,19 +211,26 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in GoodTimeToSell)
+                            @if (!GoodTimeToSell.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor(((decimal)item.Last1hrValue / item.Last48hrValue) * 100)%)</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in GoodTimeToSell)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor(((decimal)item.Last1hrValue / item.Last48hrValue) * 100)%)</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -191,10 +240,10 @@
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         📉 Good Time to Buy
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -211,19 +260,26 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in GoodTimeToBuy)
+                            @if (!GoodTimeToBuy.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor(((decimal)item.Last48hrValue / item.Last1hrValue) * 100)%)</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in GoodTimeToBuy)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Currency.ToPriceString(item.BuyNowPrice) (@Math.Floor(((decimal)item.Last48hrValue / item.Last1hrValue) * 100)%)</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -233,10 +289,10 @@
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         <img src="/images/stonks-guy.png" style="width:24px; margin-right: -10px;" />
                         📈 Stonking
                     </Typography>
@@ -254,19 +310,26 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in AllTimeHigh)
+                            @if (!AllTimeHigh.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in AllTimeHigh)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -276,10 +339,10 @@
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         <img src="/images/stonks-guy.png" style="width:24px; margin-right: -10px;" />
                         📉 Crashing
                     </Typography>
@@ -297,19 +360,26 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in AllTimeLow)
+                            @if (!AllTimeLow.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in AllTimeLow)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -319,10 +389,10 @@
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Most Saturated
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -346,22 +416,29 @@
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            @foreach (var item in MostSaturated)
+                            @if (!MostSaturated.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <strong class="Text-NoWrap">@item.Supply.ToQuantityString()</strong>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Demand.ToQuantityString()</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in MostSaturated)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <strong class="Text-NoWrap">@item.Supply.ToQuantityString()</strong>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Demand.ToQuantityString()</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -371,10 +448,10 @@
     </Grid>
     
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Most Starved
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -398,22 +475,29 @@
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            @foreach (var item in MostStarved)
+                            @if (!MostStarved.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <strong class="Text-NoWrap">@item.Demand.ToQuantityString()</strong>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Supply.ToQuantityString()</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in MostStarved)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <strong class="Text-NoWrap">@item.Demand.ToQuantityString()</strong>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Supply.ToQuantityString()</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -423,10 +507,10 @@
     </Grid>
     
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Most Common
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -443,22 +527,29 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in MostCommon.Where(x => x.Subscriptions != null))
+                            @if (!MostCommon.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">
-                                            <i class="fas fa-fw fa-user"></i>
-                                            @item.Subscriptions.Value.ToQuantityString()
-                                        </span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in MostCommon.Where(x => x.Subscriptions != null))
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">
+                                                <i class="fas fa-fw fa-user"></i>
+                                                @item.Subscriptions.ToQuantityString()
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -468,10 +559,10 @@
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Most Rare
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -488,22 +579,29 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in MostRare.Where(x => x.Subscriptions != null))
+                            @if (!MostRare.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">
-                                            <i class="fas fa-fw fa-user"></i>
-                                            @item.Subscriptions.Value.ToQuantityString()
-                                        </span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in MostRare.Where(x => x.Subscriptions != null))
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">
+                                                <i class="fas fa-fw fa-user"></i>
+                                                @item.Subscriptions.Value.ToQuantityString()
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -513,10 +611,10 @@
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Most Profitable
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -533,19 +631,26 @@
                 {
                     <Table Size="@Size.Small">
                         <TableBody>
-                            @foreach (var item in MostProfitable)
+                            @if (!MostProfitable.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in MostProfitable)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -555,10 +660,10 @@
     </Grid>
     
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Profitable Flips
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -582,22 +687,29 @@
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            @foreach (var item in ProfitableFlips)
+                            @if (!ProfitableFlips.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap Text-Success">@item.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * SteamEconomyHelper.SteamFeeMultiplier, 1))))</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in ProfitableFlips)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap Text-Success">@item.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * SteamEconomyHelper.SteamFeeMultiplier, 1))))</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -607,10 +719,10 @@
     </Grid>
     
     <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card>
+        <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.Primary">
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Worst Crashes
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -634,22 +746,29 @@
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            @foreach (var item in BiggestCrashes)
+                            @if (!BiggestCrashes.Any())
                             {
-                                <TableRow Hover OnClick="@((_) => ViewItem(item))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-Error Text-NoWrap">🡳 @item.Currency.ToPriceString(Math.Abs(item.Last1hrValue - item.AllTimeHighestValue))</span>
-                                    </TableCell>
-                                </TableRow>
+                                <Error Title="" SubTitle="There's nothing here." />
+                            }
+                            else 
+                            {
+                                @foreach (var item in BiggestCrashes)
+                                {
+                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                        <TableCell>
+                                            <div style="display:flex; align-content:center; align-items:center">
+                                                <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                                                <strong style="margin:8px"><span style="@GetItemStyles(item)">@item.Name</span></strong>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span class="Text-Error Text-NoWrap">🡳 @item.Currency.ToPriceString(Math.Abs(item.Last1hrValue - item.AllTimeHighestValue))</span>
+                                        </TableCell>
+                                    </TableRow>
+                                }
                             }
                         </TableBody>
                     </Table>
@@ -663,7 +782,7 @@
 @code {
 
     private int SalesToday { get; set; }
-    private IDictionary<string, int> SalesPerDay { get; set; }
+    private IDictionary<string, DashboardSalesDataDTO> SalesPerDay { get; set; }
     private ChartJsLineChart SalesPerDayChartJs;
     private LineConfig SalesPerDayChart;
 
@@ -678,7 +797,7 @@
     private MarketItemListDTO[] MostSaturated { get; set; }
     private MarketItemListDTO[] MostStarved { get; set; }
     private MarketItemListDTO[] MostRecent { get; set; }
-    private MarketItemListDTO[] MostCommon { get; set; }
+    private DashboardAssetDescriptionDTO[] MostCommon { get; set; }
     private MarketItemListDTO[] MostRare { get; set; }
     private MarketItemListDTO[] BiggestCrashes { get; set; }
 
@@ -700,11 +819,21 @@
         await RefreshBiggestCrashes();
     }
 
-    private void ViewItem(MarketItemListDTO item)
+    private void InviteDiscordBot()
+    {
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", "https://discord.com/api/oauth2/authorize?client_id=761034518424715264&permissions=2048&scope=bot");
+    }
+
+    private void ViewItem(ISteamMarketListing item)
     {
         //Navigation.NavigateTo($"steam/marketplace/{item.Id}");
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+    }
+    
+    private string GetItemStyles(ISteamAssetStyles item)
+    {
+        return $"color: {item.ForegroundColour}";
     }
 
     private async Task RefreshSalesPerDay(int? maxDays = null)
@@ -716,7 +845,7 @@
             SalesPerDayChart = null;
             StateHasChanged();
             SalesToday = await Http.GetFromJsonAsync<int>($"api/market/dashboard/salesToday");
-            SalesPerDay = await Http.GetFromJsonAsync<IDictionary<string, int>>($"api/market/dashboard/salesPerDay?maxDays={maxDays}");
+            SalesPerDay = await Http.GetFromJsonAsync<IDictionary<string, DashboardSalesDataDTO>>($"api/market/dashboard/salesPerDay?maxDays={maxDays}");
             RedrawSalesPerDayChart();
             StateHasChanged();
         }
@@ -824,7 +953,7 @@
             salesDataSet.PointRadius = 4;
         }
         salesDataSet.AddRange(
-            SalesPerDay.Select(x => (DoubleWrapper)x.Value).ToList()
+            SalesPerDay.Select(x => (DoubleWrapper)x.Value.Sales).ToList()
         );
 
         SalesPerDayChart.Data.Datasets.Add(salesDataSet);
@@ -964,7 +1093,7 @@
     {
         try
         {
-            MostCommon = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/mostCommon");
+            MostCommon = await Http.GetFromJsonAsync<DashboardAssetDescriptionDTO[]>($"api/market/dashboard/mostCommon");
             StateHasChanged();
         }
         catch (Exception ex)

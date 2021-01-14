@@ -17,5 +17,6 @@
 }
 
 .SignIn-Dialog-Button img {
+    cursor: pointer;
     padding: 8px;
 }

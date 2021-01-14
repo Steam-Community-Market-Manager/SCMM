@@ -9,6 +9,7 @@ using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
+using SCMM.Web.Shared.Domain.DTOs.Dashboard;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using System;
 using System.Collections.Generic;
@@ -204,7 +205,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/salesPerDay")]
-        public IDictionary<string, int> GetSalesPerDay([FromQuery] int? maxDays = null)
+        public IDictionary<string, DashboardSalesDataDTO> GetSalesPerDay([FromQuery] int? maxDays = null)
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItemSale
@@ -215,7 +216,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => new
                 {
                     Date = x.Key,
-                    Sales = x.Sum(y => y.Quantity)
+                    Sales = x.Sum(y => y.Quantity),
+                    Revenue = x.Sum(y => y.Quantity * y.Price)
                 });
 
             if (maxDays > 0)
@@ -227,7 +229,11 @@ namespace SCMM.Web.Server.API.Controllers
             salesPerDay.Reverse(); // newest at bottom
             return salesPerDay.ToDictionary(
                 x => x.Date.ToString("dd MMM yyyy"),
-                x => x.Sales
+                x => new DashboardSalesDataDTO 
+                {
+                    Sales = x.Sales,
+                    Revenue = x.Revenue
+                }
             );
         }
 
@@ -420,19 +426,18 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/mostCommon")]
-        public IEnumerable<MarketItemListDTO> GetDashboardMostCommon()
+        public IEnumerable<DashboardAssetDescriptionDTO> GetDashboardMostCommon()
         {
-            var query = _db.SteamMarketItems
+            var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
-                .Include(x => x.Description)
-                .Include(x => x.Description.WorkshopFile)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
-                .OrderByDescending(x => x.Description.WorkshopFile.Subscriptions)
+                .Include(x => x.WorkshopFile)
+                .Where(x => x.WorkshopFile != null) // Exclude "free" items
+                .Where(x => x.WorkshopFile.Subscriptions > 0)
+                .OrderByDescending(x => x.WorkshopFile.Subscriptions)
                 .Take(10);
 
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            return _mapper.Map<SteamAssetDescription, DashboardAssetDescriptionDTO>(query, this);
         }
 
         [AllowAnonymous]

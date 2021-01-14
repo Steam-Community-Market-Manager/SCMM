@@ -134,6 +134,7 @@ else
                     SubTitle = inventoryValue,
                     Prefix = true
                 },
+                /*
                 new NavigationItem
                 {
                     Icon = @<CardExchangeIcon />,
@@ -142,6 +143,7 @@ else
                     Prefix =  true,
                     Disabled = true
                 }
+                */
             });
         }
         else
@@ -165,18 +167,19 @@ else
         {
             new NavigationItem
             {
-                Icon = @<ChartIcon />,
-                Title = "Marketplace",
-                Path = "steam/marketplace",
-                Prefix = true
-            },
-            new NavigationItem
-            {
                 Icon = @<PodiumIcon />,
                 Title = "Market Statistics",
                 Path = "steam/marketstatistics",
                 Prefix = true
             },
+            new NavigationItem
+            {
+                Icon = @<ChartIcon />,
+                Title = "Market Listings",
+                Path = "steam/marketlistings",
+                Prefix = true
+            },
+            /*
             new NavigationItem
             {
                 Icon = @<ArtificialIntelligenceIcon />,
@@ -185,6 +188,7 @@ else
                 Prefix =  true,
                 Disabled = true
             },
+            */
             null,
             new NavigationItem
             {
@@ -194,6 +198,7 @@ else
                 Path =  "steam/store",
                 Prefix =  true
             },
+            /*
             new NavigationItem
             {
                 Icon = @<PencilRulerIcon />,
@@ -210,6 +215,7 @@ else
                 Prefix =  true,
                 Disabled = true
             }
+            */
         });
         if (items.Any())
         {
