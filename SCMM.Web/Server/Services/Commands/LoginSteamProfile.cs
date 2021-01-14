@@ -52,20 +52,15 @@ namespace SCMM.Web.Server.Services.Commands
                 Id = steamId
             });
 
-            var profile = fetchedProfile?.Profile;
-            if (profile == null)
-            {
-                throw new ArgumentException(nameof(request), $"Unable to fetch Steam profile for '{steamId}', it might be private");
-            }
-
             // If this is an already existing profile
-            if (!profile.IsTransient)
+            var profile = fetchedProfile?.Profile;
+            if (profile != null && !profile.IsTransient)
             {
                 // Load more extended profile information from our database
                 var profileInfoQuery = _db.SteamProfiles
                     .Include(x => x.Language)
                     .Include(x => x.Currency)
-                    .Where(x => x.Id == fetchedProfile.Profile.Id)
+                    .Where(x => x.Id == profile.Id)
                     .Select(x => new
                     {
                         Profile = x,
@@ -86,15 +81,20 @@ namespace SCMM.Web.Server.Services.Commands
                     dynamicRoles.Add(Roles.VIP);
                 }
 
-                profile = profileInfoQuery?.Profile;
+                profile = (profileInfoQuery?.Profile ?? profile);
                 if (dynamicRoles.Any())
                 {
                     profile.Roles = new Data.Types.PersistableStringCollection(
-                        profile.Roles.Union(dynamicRoles)
+                        profile.Roles?.Union(dynamicRoles)
                     );
                 }
             }
-            
+
+            if (profile == null)
+            {
+                throw new ArgumentException(nameof(request), $"Unable to fetch Steam profile for '{steamId}', it might be private");
+            }
+
             // Update the last signin timestamp
             profile.LastSignedInOn = DateTimeOffset.Now;
 
