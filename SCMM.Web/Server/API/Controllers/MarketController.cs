@@ -9,7 +9,7 @@ using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Shared.Domain.DTOs.Dashboard;
+using SCMM.Web.Shared.Data.Models.UI.MarketStatistics;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using System;
 using System.Collections.Generic;
@@ -239,17 +239,18 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/hotRightNow")]
-        public IEnumerable<MarketItemListDTO> GetDashboardHotRightNow()
+        public IEnumerable<DashboardAssetSalesDTO> GetDashboardHotRightNow()
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
                 .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
+                .Where(x => x.Last24hrSales > 0)
                 .OrderByDescending(x => x.Last24hrSales)
                 .Take(10);
 
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            return _mapper.Map<SteamMarketItem, DashboardAssetSalesDTO>(query, this);
         }
 
         [AllowAnonymous]
@@ -426,7 +427,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/mostCommon")]
-        public IEnumerable<DashboardAssetDescriptionDTO> GetDashboardMostCommon()
+        public IEnumerable<DashboardAssetSubscriptionsDTO> GetDashboardMostCommon()
         {
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
@@ -437,7 +438,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.WorkshopFile.Subscriptions)
                 .Take(10);
 
-            return _mapper.Map<SteamAssetDescription, DashboardAssetDescriptionDTO>(query, this);
+            return _mapper.Map<SteamAssetDescription, DashboardAssetSubscriptionsDTO>(query, this);
         }
 
         [AllowAnonymous]

@@ -177,7 +177,14 @@ namespace SCMM.Web.Server.API.Controllers
                 rows: (int) Math.Ceiling((float) storeItemDescriptions.Count / 4)
             );
 
-            return File(mosaic, "image/png");
+            if (mosaic != null && mosaic.Length > 0)
+            {
+                return File(mosaic, "image/png");
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         [AllowAnonymous]

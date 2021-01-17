@@ -354,7 +354,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{steamId}/mosaic")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int columns = 5, [FromQuery] int rows = 5)
+        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int columns = 4, [FromQuery] int rows = 7)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -364,9 +364,14 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryItemIcons = _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
-                .Where(x => x.Description != null && x.Description.MarketItem != null)
-                .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
-                .Select(x => x.Description.IconUrl)
+                .Where(x => x.Description != null)
+                .Select(x => new
+                {
+                    IconUrl = x.Description.IconUrl,
+                    Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0))
+                })
+                .OrderByDescending(x => x.Value)
+                .Select(x => x.IconUrl)
                 .ToList();
 
             var images = new List<ImageSource>();
@@ -382,6 +387,11 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
+            if (images?.Any() != true)
+            {
+                return NotFound();
+            }
+
             var mosaic = await _images.GenerateImageMosaic(
                 images, 
                 tileSize: 128, 
@@ -389,7 +399,14 @@ namespace SCMM.Web.Server.API.Controllers
                 rows: rows
             );
 
-            return File(mosaic, "image/png");
+            if (mosaic != null && mosaic.Length > 0)
+            {
+                return File(mosaic, "image/png");
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         [AllowAnonymous]
@@ -406,10 +423,15 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryItemIcons = _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
-                .Where(x => x.Description != null && x.Description.MarketItem != null)
+                .Where(x => x.Description != null)
                 .Where(x => x.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) || x.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
-                .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
-                .Select(x => x.Description.IconUrl)
+                .Select(x => new
+                {
+                    IconUrl = x.Description.IconUrl,
+                    Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0))
+                })
+                .OrderByDescending(x => x.Value)
+                .Select(x => x.IconUrl)
                 .ToList();
 
             var inventoryItemImages = new List<ImageSource>();
@@ -428,10 +450,15 @@ namespace SCMM.Web.Server.API.Controllers
             var marketItemIcons = _db.SteamProfileMarketItems
                 .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
-                .Where(x => x.Description != null && x.Description.MarketItem != null)
+                .Where(x => x.Description != null)
                 .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
-                .OrderByDescending(x => x.Description.MarketItem.Last1hrValue)
-                .Select(x => x.Description.IconUrl)
+                .Select(x => new
+                {
+                    IconUrl = x.Description.IconUrl,
+                    Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0))
+                })
+                .OrderByDescending(x => x.Value)
+                .Select(x => x.IconUrl)
                 .ToList();
 
             var marketItemImages = new List<ImageSource>();
@@ -447,8 +474,20 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
+            if (inventoryItemImages?.Any() != true || marketItemImages?.Any() != true)
+            {
+                return NotFound();
+            }
+
             var mosaic = await _images.GenerateTradeImageMosaic(inventoryItemImages, marketItemImages);
-            return File(mosaic, "image/png");
+            if (mosaic != null && mosaic.Length > 0)
+            {
+                return File(mosaic, "image/png");
+            }
+            else
+            {
+                return NotFound();
+            }
         }
     }
 }
