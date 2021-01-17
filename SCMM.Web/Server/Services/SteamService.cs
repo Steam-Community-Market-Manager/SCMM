@@ -100,18 +100,17 @@ namespace SCMM.Web.Server.Services
             // Load the profile inventory
             var profileInventoryItems = _db.SteamProfileInventoryItems
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
-                // TODO: Use MarketItem or StoreItem for value calculation
-                .Where(x => x.Description.MarketItem != null)
+                .Where(x => x.Description != null)
                 .Select(x => new
                 {
                     Quantity = x.Quantity,
                     BuyPrice = x.BuyPrice,
                     ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
-                    MarketItemLast1hrValue = x.Description.MarketItem.Last1hrValue,
-                    MarketItemLast24hrValue = x.Description.MarketItem.Last24hrValue,
-                    MarketItemResellPrice = x.Description.MarketItem.ResellPrice,
-                    MarketItemResellTax = x.Description.MarketItem.ResellTax,
-                    MarketItemExchangeRateMultiplier = (x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : 0)
+                    ItemLast1hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
+                    ItemLast24hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Last24hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
+                    ItemResellPrice = (x.Description.MarketItem != null ? x.Description.MarketItem.ResellPrice : 0),
+                    ItemResellTax = (x.Description.MarketItem != null ? x.Description.MarketItem.ResellTax : 0),
+                    ItemExchangeRateMultiplier = (x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : (x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0))
                 })
                 .ToList();
 
@@ -127,26 +126,26 @@ namespace SCMM.Web.Server.Services
                 TotalInvested = profileInventoryItems
                     .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
                     .Sum(x => (x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
-                TotalMarketValueLast1hr = profileInventoryItems
-                    .Where(x => x.MarketItemLast1hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast1hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                TotalMarketValueLast24hr = profileInventoryItems
-                    .Where(x => x.MarketItemLast24hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast24hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                TotalValueLast1hr = profileInventoryItems
+                    .Where(x => x.ItemLast1hrValue != 0 && x.ItemExchangeRateMultiplier != 0)
+                    .Sum(x => (x.ItemLast1hrValue / x.ItemExchangeRateMultiplier) * x.Quantity),
+                TotalValueLast24hr = profileInventoryItems
+                    .Where(x => x.ItemLast24hrValue != 0 && x.ItemExchangeRateMultiplier != 0)
+                    .Sum(x => (x.ItemLast24hrValue / x.ItemExchangeRateMultiplier) * x.Quantity),
                 TotalResellValue = profileInventoryItems
-                    .Where(x => x.MarketItemResellPrice != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemResellPrice / x.MarketItemExchangeRateMultiplier) * x.Quantity),
+                    .Where(x => x.ItemResellPrice != 0 && x.ItemExchangeRateMultiplier != 0)
+                    .Sum(x => (x.ItemResellPrice / x.ItemExchangeRateMultiplier) * x.Quantity),
                 TotalResellTax = profileInventoryItems
-                    .Where(x => x.MarketItemResellTax != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemResellTax / x.MarketItemExchangeRateMultiplier) * x.Quantity)
+                    .Where(x => x.ItemResellTax != 0 && x.ItemExchangeRateMultiplier != 0)
+                    .Sum(x => (x.ItemResellTax / x.ItemExchangeRateMultiplier) * x.Quantity)
             };
 
             return new ProfileInventoryTotalsDTO()
             {
                 TotalItems = profileInventory.TotalItems,
                 TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
-                TotalMarketValue = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr),
-                TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalMarketValueLast1hr - profileInventory.TotalMarketValueLast24hr),
+                TotalMarketValue = currency.CalculateExchange(profileInventory.TotalValueLast1hr),
+                TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalValueLast1hr - profileInventory.TotalValueLast24hr),
                 TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
                 TotalResellTax = currency.CalculateExchange(profileInventory.TotalResellTax),
                 TotalResellProfit = (
