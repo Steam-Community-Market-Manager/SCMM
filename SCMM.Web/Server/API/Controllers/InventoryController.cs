@@ -102,7 +102,7 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, this.Currency());
             if (inventoryTotal == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             return Ok(inventoryTotal);
@@ -126,6 +126,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
                 .Include(x => x.Description.StoreItem)
+                .Include(x => x.Description.StoreItem.Prices)
                 .Include(x => x.Description.MarketItem)
                 .Include(x => x.Description.MarketItem.Currency)
                 .ToList();
@@ -140,13 +141,13 @@ namespace SCMM.Web.Server.API.Controllers
                     );
 
                     // Calculate the item's value
-                    if (item.Description.MarketItem != null && item.Description.MarketItem.Currency != null)
+                    if (item.Description.MarketItem?.Last1hrValue > 0 && item.Description.MarketItem.Currency != null)
                     {
                         itemSummary.Value = this.Currency().CalculateExchange(
                             item.Description.MarketItem.Last1hrValue, item.Description.MarketItem.Currency
                         );
                     }
-                    else if (item.Description.StoreItem != null)
+                    else if (item.Description.StoreItem?.Prices != null)
                     {
                         itemSummary.Value = item.Description.StoreItem.Prices.FirstOrDefault(x => x.Key == this.Currency().Name).Value;
                     }
