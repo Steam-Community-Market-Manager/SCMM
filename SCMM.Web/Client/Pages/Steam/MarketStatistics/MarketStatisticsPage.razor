@@ -2,8 +2,8 @@
 @using SCMM.Web.Shared.Domain.DTOs.MarketItems
 @using SCMM.Web.Shared
 @using SCMM.Steam.Shared
-@using Web.Shared.Domain.DTOs.Dashboard
-@using Web.Shared.Domain.DTOs.InventoryItems
+@using Web.Shared.Data.Models.Steam
+@using Web.Shared.Data.Models.UI.MarketStatistics
 @inject ILogger<MarketStatisticsPage> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
@@ -785,7 +785,9 @@
     private IDictionary<string, DashboardSalesDataDTO> SalesPerDay { get; set; }
     private ChartJsLineChart SalesPerDayChartJs;
     private LineConfig SalesPerDayChart;
-
+    
+    private DashboardAssetSalesDTO[] HotRightNow { get; set; }
+    private DashboardAssetSubscriptionsDTO[] MostCommon { get; set; }
 
     private MarketItemListDTO[] GoodTimeToBuy { get; set; }
     private MarketItemListDTO[] GoodTimeToSell { get; set; }
@@ -793,28 +795,27 @@
     private MarketItemListDTO[] AllTimeHigh { get; set; }
     private MarketItemListDTO[] MostProfitable { get; set; }
     private MarketItemListDTO[] ProfitableFlips { get; set; }
-    private MarketItemListDTO[] HotRightNow { get; set; }
     private MarketItemListDTO[] MostSaturated { get; set; }
     private MarketItemListDTO[] MostStarved { get; set; }
     private MarketItemListDTO[] MostRecent { get; set; }
-    private DashboardAssetDescriptionDTO[] MostCommon { get; set; }
     private MarketItemListDTO[] MostRare { get; set; }
     private MarketItemListDTO[] BiggestCrashes { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await RefreshSalesPerDay(30);
+        await RefreshHotRightNow();
+        await RefreshMostCommon();
+
         await RefreshGoodTimeToBuy();
         await RefreshGoodTimeToSell();
         await RefreshAllTimeLow();
         await RefreshAllTimeHigh();
         await RefreshMostProfitable();
         await RefreshProfitableFlips();
-        await RefreshHotRightNow();
         await RefreshMostSaturated();
         await RefreshMostStarved();
         await RefreshMostRecent();
-        await RefreshMostCommon();
         await RefreshMostRare();
         await RefreshBiggestCrashes();
     }
@@ -958,6 +959,32 @@
 
         SalesPerDayChart.Data.Datasets.Add(salesDataSet);
     }
+    
+    private async Task RefreshHotRightNow()
+    {
+        try
+        {
+            HotRightNow = await Http.GetFromJsonAsync<DashboardAssetSalesDTO[]>($"api/market/dashboard/hotRightNow");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'hot right now' market dashboard");
+        }
+    }
+    
+    private async Task RefreshMostCommon()
+    {
+        try
+        {
+            MostCommon = await Http.GetFromJsonAsync<DashboardAssetSubscriptionsDTO[]>($"api/market/dashboard/mostCommon");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'most common' market dashboard");
+        }
+    }
 
     private async Task RefreshProfitableFlips()
     {
@@ -969,19 +996,6 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'profitable flips' market dashboard");
-        }
-    }
-
-    private async Task RefreshHotRightNow()
-    {
-        try
-        {
-            HotRightNow = await Http.GetFromJsonAsync<MarketItemListDTO[]>($"api/market/dashboard/hotRightNow");
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'hot right now' market dashboard");
         }
     }
 
@@ -1086,19 +1100,6 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'most recent' market dashboard");
-        }
-    }
-
-    private async Task RefreshMostCommon()
-    {
-        try
-        {
-            MostCommon = await Http.GetFromJsonAsync<DashboardAssetDescriptionDTO[]>($"api/market/dashboard/mostCommon");
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'most common' market dashboard");
         }
     }
 

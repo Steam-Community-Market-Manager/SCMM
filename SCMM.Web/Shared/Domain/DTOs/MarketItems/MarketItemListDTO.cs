@@ -1,6 +1,5 @@
 ﻿using SCMM.Web.Shared.Data.Models.Steam;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
-using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using System;
 
 namespace SCMM.Web.Shared.Domain.DTOs.MarketItems

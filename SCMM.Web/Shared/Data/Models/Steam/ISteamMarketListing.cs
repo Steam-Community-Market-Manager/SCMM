@@ -1,4 +1,4 @@
-﻿namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
+﻿namespace SCMM.Web.Shared.Data.Models.Steam
 {
     public interface ISteamMarketListing
     {

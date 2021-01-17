@@ -1,9 +1,9 @@
-﻿using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+﻿using SCMM.Web.Shared.Data.Models.Steam;
 using System;
 
-namespace SCMM.Web.Shared.Domain.DTOs.Dashboard
+namespace SCMM.Web.Shared.Data.Models.UI.MarketStatistics
 {
-    public class DashboardAssetDescriptionDTO : ISteamMarketListing, ISteamAssetStyles
+    public class DashboardAssetSubscriptionsDTO : ISteamMarketListing, ISteamAssetStyles
     {
         public string SteamId { get; set; }
 
