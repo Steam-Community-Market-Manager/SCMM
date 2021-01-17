@@ -355,7 +355,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{steamId}/mosaic")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int columns = 4, [FromQuery] int rows = 7)
+        public async Task<IActionResult> GetInventoryMosaic([FromRoute] string steamId, [FromQuery] int columns = 5, [FromQuery] int rows = 5)
         {
             if (String.IsNullOrEmpty(steamId))
             {

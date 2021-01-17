@@ -176,7 +176,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
                 .WithFields(fields)
                 .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
-                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=3&columns=5&timestamp={DateTime.UtcNow.Ticks}")
+                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=4&columns=4&timestamp={DateTime.UtcNow.Ticks}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
                 .WithFooter(x => x.Text = _configuration.GetBaseUrl())
