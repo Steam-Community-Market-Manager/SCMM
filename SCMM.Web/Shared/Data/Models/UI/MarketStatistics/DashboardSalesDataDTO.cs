@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Shared.Data.Models.UI.MarketStatistics
+﻿namespace SCMM.Web.Shared.Data.Models.UI.MarketStatistics
 {
     public class DashboardSalesDataDTO
     {

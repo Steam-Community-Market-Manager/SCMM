@@ -9,6 +9,8 @@ using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
+using SCMM.Web.Shared;
+using SCMM.Web.Shared.Data.Models.UI;
 using SCMM.Web.Shared.Data.Models.UI.MarketStatistics;
 using SCMM.Web.Shared.Domain.DTOs.MarketItems;
 using System;
@@ -239,88 +241,53 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/hotRightNow")]
-        public IEnumerable<DashboardAssetSalesDTO> GetDashboardHotRightNow()
+        public PaginatedResult<DashboardAssetSalesDTO> GetDashboardHotRightNow(int start = 0, int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                 .Where(x => x.Last24hrSales > 0)
                 .OrderByDescending(x => x.Last24hrSales)
-                .Take(10);
+                .Select(x => new DashboardAssetSalesDTO()
+                {
+                    SteamId = x.Description.SteamId,
+                    SteamAppId = x.App.SteamId,
+                    Name = x.Description.Name,
+                    BackgroundColour = x.Description.BackgroundColour,
+                    ForegroundColour = x.Description.ForegroundColour,
+                    IconUrl = x.Description.IconUrl,
+                    Last24hrSales = x.Last24hrSales
+                });
 
-            return _mapper.Map<SteamMarketItem, DashboardAssetSalesDTO>(query, this);
+            return query.Paginate(start, count);
         }
 
         [AllowAnonymous]
-        [HttpGet("dashboard/goodTimeToBuy")]
-        public IEnumerable<MarketItemListDTO> GetDashboardGoodTimeToBuy()
+        [HttpGet("dashboard/mostRecent")]
+        public PaginatedResult<DashboardAssetAgeDTO> GetDashboardMostRecent(int start = 0, int count = 10)
         {
-            var now = DateTimeOffset.UtcNow;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
-                .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.BuyNowPrice < x.Last48hrValue)
-                .Where(x => x.Last1hrValue < x.AllTimeAverageValue)
-                .Where(x => x.Last1hrValue < x.Last24hrValue)
-                .Where(x => x.Last24hrValue < x.Last48hrValue)
-                .Where(x => x.Last1hrValue > 0 && x.Last48hrValue > 0)
-                .OrderByDescending(x => ((decimal)x.Last48hrValue / x.Last1hrValue) * 100)
-                .Take(10);
+                .OrderByDescending(x => x.FirstSeenOn);
 
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("dashboard/goodTimeToSell")]
-        public IEnumerable<MarketItemListDTO> GetDashboardGoodTimeToSell()
-        {
-            var now = DateTimeOffset.UtcNow;
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.BuyNowPrice > x.Last48hrValue)
-                .Where(x => x.Last1hrValue > x.AllTimeAverageValue)
-                .Where(x => x.Last1hrValue > x.Last24hrValue)
-                .Where(x => x.Last24hrValue > x.Last48hrValue)
-                .Where(x => x.Last1hrValue > 0 && x.Last48hrValue > 0)
-                .OrderByDescending(x => ((decimal)x.Last1hrValue / x.Last48hrValue) * 100)
-                .Take(10);
-
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("dashboard/allTimeLow")]
-        public IEnumerable<MarketItemListDTO> GetDashboardAllTimeLow()
-        {
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.Last1hrValue > 50 /* cents */)
-                .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
-                .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
-                .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
-                .ThenBy(x => x.Last1hrValue - x.Last24hrValue)
-                .Take(10);
-
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            return query.Paginate(start, count, x => new DashboardAssetAgeDTO()
+            {
+                SteamId = x.Description.SteamId,
+                SteamAppId = x.App.SteamId,
+                Name = x.Description.Name,
+                BackgroundColour = x.Description.BackgroundColour,
+                ForegroundColour = x.Description.ForegroundColour,
+                IconUrl = x.Description.IconUrl,
+                MarketAge = x.MarketAge.ToMarketAgeString()
+            });
         }
 
         [AllowAnonymous]
         [HttpGet("dashboard/allTimeHigh")]
-        public IEnumerable<MarketItemListDTO> GetDashboardAllTimeHigh()
+        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardAllTimeHigh(int start = 0, int count = 10)
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItems
@@ -328,20 +295,58 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                 .Where(x => x.Last1hrValue > 50 /* cents */)
                 .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= 0)
                 .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
                 .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
-                .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue)
-                .Take(10);
+                .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue);
 
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            return query.Paginate(start, count, x => new DashboardAssetMarketValueDTO()
+            {
+                SteamId = x.Description.SteamId,
+                SteamAppId = x.App.SteamId,
+                Name = x.Description.Name,
+                BackgroundColour = x.Description.BackgroundColour,
+                ForegroundColour = x.Description.ForegroundColour,
+                IconUrl = x.Description.IconUrl,
+                Currency = this.Currency(),
+                Last1hrValue = this.Currency().CalculateExchange(x.Last1hrValue, x.Currency)
+            });
         }
 
         [AllowAnonymous]
+        [HttpGet("dashboard/allTimeLow")]
+        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardAllTimeLow(int start = 0, int count = 10)
+        {
+            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var query = _db.SteamMarketItems
+                .AsNoTracking()
+                .Include(x => x.App)
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .Where(x => x.Last1hrValue > 50 /* cents */)
+                .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
+                .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
+                .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
+                .ThenBy(x => x.Last1hrValue - x.Last24hrValue);
+
+            return query.Paginate(start, count, x => new DashboardAssetMarketValueDTO()
+            {
+                SteamId = x.Description.SteamId,
+                SteamAppId = x.App.SteamId,
+                Name = x.Description.Name,
+                BackgroundColour = x.Description.BackgroundColour,
+                ForegroundColour = x.Description.ForegroundColour,
+                IconUrl = x.Description.IconUrl,
+                Currency = this.Currency(),
+                Last1hrValue = this.Currency().CalculateExchange(x.Last1hrValue, x.Currency)
+            });
+        }
+
+
+        [AllowAnonymous]
         [HttpGet("dashboard/profitableFlips")]
-        public IEnumerable<MarketItemListDTO> GetDashboardProfitableFlips()
+        public PaginatedResult<DashboardAssetBuyOrderValueDTO> GetDashboardProfitableFlips(int start = 0, int count = 10)
         {
             var now = DateTimeOffset.UtcNow;
             var query = _db.SteamMarketItems
@@ -349,132 +354,99 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
                 .Where(x => x.Last24hrValue > x.Last168hrValue)
                 .Where(x => x.BuyAskingPrice < x.Last24hrValue)
                 .Where(x => x.BuyAskingPrice > x.AllTimeLowestValue)
                 .Where(x => x.BuyNowPrice > x.Last24hrValue)
                 .Where(x => x.BuyNowPrice < x.AllTimeHighestValue)
                 .Where(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * SteamEconomyHelper.SteamFeeMultiplier)) > 0)
-                .OrderByDescending(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * SteamEconomyHelper.SteamFeeMultiplier)))
-                .Take(10);
+                .OrderByDescending(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * SteamEconomyHelper.SteamFeeMultiplier)));
 
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("dashboard/mostRecent")]
-        public IEnumerable<MarketItemListDTO> GetDashboardMostRecent()
-        {
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .OrderByDescending(x => x.FirstSeenOn)
-                .Take(10);
-
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            return query.Paginate(start, count, x => new DashboardAssetBuyOrderValueDTO()
+            {
+                SteamId = x.Description.SteamId,
+                SteamAppId = x.App.SteamId,
+                Name = x.Description.Name,
+                BackgroundColour = x.Description.BackgroundColour,
+                ForegroundColour = x.Description.ForegroundColour,
+                IconUrl = x.Description.IconUrl,
+                Currency = this.Currency(),
+                BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
+                BuyAskingPrice = this.Currency().CalculateExchange(x.BuyAskingPrice, x.Currency)
+            });
         }
 
         [AllowAnonymous]
         [HttpGet("dashboard/mostProfitable")]
-        public IEnumerable<MarketItemListDTO> GetDashboardMostProfitable()
+        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardMostProfitable(int start = 0, int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .OrderByDescending(x => x.Last1hrValue - x.First24hrValue)
-                .Take(10);
+                .OrderByDescending(x => x.Last1hrValue);
 
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            return query.Paginate(start, count, x => new DashboardAssetMarketValueDTO()
+            {
+                SteamId = x.Description.SteamId,
+                SteamAppId = x.App.SteamId,
+                Name = x.Description.Name,
+                BackgroundColour = x.Description.BackgroundColour,
+                ForegroundColour = x.Description.ForegroundColour,
+                IconUrl = x.Description.IconUrl,
+                Currency = this.Currency(),
+                Last1hrValue = this.Currency().CalculateExchange(x.Last1hrValue, x.Currency)
+            });
         }
 
         [AllowAnonymous]
-        [HttpGet("dashboard/mostSaturated")]
-        public IEnumerable<MarketItemListDTO> GetDashboardMostSaturated()
-        {
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.Supply > 0 && x.Demand > 0) // This doesn't work for some reason?!
-                .OrderByDescending(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal)x.Supply / x.Demand) : 0)
-                .Take(10);
-
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("dashboard/mostStarved")]
-        public IEnumerable<MarketItemListDTO> GetDashboardMostStarved()
-        {
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.Supply > 0 && x.Demand > 0) // This doesn't work for some reason?!
-                .OrderBy(x => (x.Supply > 0 && x.Demand > 0) ? ((decimal)x.Supply / x.Demand) : 0)
-                .Take(10);
-
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("dashboard/mostCommon")]
-        public IEnumerable<DashboardAssetSubscriptionsDTO> GetDashboardMostCommon()
+        [HttpGet("dashboard/mostPopular")]
+        public PaginatedResult<DashboardAssetSubscriptionsDTO> GetDashboardMostPopular(int start = 0, int count = 10)
         {
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.WorkshopFile)
-                .Where(x => x.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.WorkshopFile.Subscriptions > 0)
+                .Where(x => x.WorkshopFile != null && x.WorkshopFile.Subscriptions > 0)
                 .OrderByDescending(x => x.WorkshopFile.Subscriptions)
-                .Take(10);
+                .Select(x => new DashboardAssetSubscriptionsDTO()
+                {
+                    SteamId = x.SteamId,
+                    SteamAppId = x.App.SteamId,
+                    Name = x.Name,
+                    BackgroundColour = x.BackgroundColour,
+                    ForegroundColour = x.ForegroundColour,
+                    IconUrl = x.IconUrl,
+                    Subscriptions = x.WorkshopFile.Subscriptions
+                });
 
-            return _mapper.Map<SteamAssetDescription, DashboardAssetSubscriptionsDTO>(query, this);
+            return query.Paginate(start, count);
         }
 
         [AllowAnonymous]
-        [HttpGet("dashboard/mostRare")]
-        public IEnumerable<MarketItemListDTO> GetDashboardMostRare()
+        [HttpGet("dashboard/mostSaturated")]
+        public PaginatedResult<DashboardAssetSupplyDemandDTO> GetDashboardMostSaturated(int start = 0, int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .Include(x => x.Description.WorkshopFile)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.Description.WorkshopFile.Subscriptions > 0)
-                .OrderBy(x => x.Description.WorkshopFile.Subscriptions)
-                .Take(10);
+                .Where(x => x.Supply > 0)
+                .OrderByDescending(x => x.Supply)
+                .Select(x => new DashboardAssetSupplyDemandDTO()
+                {
+                    SteamId = x.Description.SteamId,
+                    SteamAppId = x.App.SteamId,
+                    Name = x.Description.Name,
+                    BackgroundColour = x.Description.BackgroundColour,
+                    ForegroundColour = x.Description.ForegroundColour,
+                    IconUrl = x.Description.IconUrl,
+                    Supply = x.Supply,
+                    Demand = (int) x.Last24hrSales
+                });
 
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("dashboard/biggestCrashes")]
-        public IEnumerable<MarketItemListDTO> GetDashboardBiggestCrashes()
-        {
-            var now = DateTimeOffset.UtcNow;
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Where(x => x.Description.WorkshopFile != null) // Exclude "free" items
-                .Where(x => x.AllTimeLowestValueOn > x.AllTimeHighestValueOn)
-                .Where(x => x.Last1hrValue < x.AllTimeHighestValue)
-                .OrderBy(x => x.Last1hrValue - x.AllTimeHighestValue)
-                .Take(10);
-
-            return _mapper.Map<SteamMarketItem, MarketItemListDTO>(query, this);
+            return query.Paginate(start, count);
         }
     }
 }

@@ -170,18 +170,6 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Views, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? (int?) p.Item.Description.WorkshopFile.Views : null))
                 .ForMember(x => x.AcceptedOn, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null ? p.Item.Description.WorkshopFile.AcceptedOn : null))
                 .ForMember(x => x.Tags, o => o.MapFrom(p => p.Item.Description.Tags.WithoutWorkshopTags()));
-
-            CreateMap<SteamAssetDescription, DashboardAssetSubscriptionsDTO>()
-                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App != null ? p.App.SteamId : null))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.WorkshopFile != null ? p.WorkshopFile.Subscriptions : 0));
-
-            CreateMap<SteamMarketItem, DashboardAssetSalesDTO>()
-                .ForMember(x => x.SteamId, o => o.MapFrom(p => p.Description.SteamId))
-                .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
-                .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
-                .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
-                .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
-                .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconLargeUrl));
         }
     }
 }

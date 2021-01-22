@@ -7,7 +7,7 @@ namespace SCMM.Web.Server.Extensions
 {
     public static class AutoMapperExtensions
     {
-        public static IList<T2> Map<T1, T2>(this IMapper mapper, IQueryable<T1> query, ControllerBase controller)
+        public static IList<T2> Map<T1, T2>(this IMapper mapper, IEnumerable<T1> query, ControllerBase controller)
         {
             return query.ToList()
                 .Select(x => mapper.Map<T1, T2>(x, opt => opt.AddContext(controller)))
