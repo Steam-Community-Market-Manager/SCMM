@@ -271,6 +271,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
+                .Where(x => x.FirstSeenOn != null)
                 .OrderByDescending(x => x.FirstSeenOn);
 
             return query.Paginate(start, count, x => new DashboardAssetAgeDTO()
@@ -295,7 +296,6 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Last1hrValue > 50 /* cents */)
                 .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= 0)
                 .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
                 .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
@@ -324,7 +324,6 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Last1hrValue > 50 /* cents */)
                 .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
                 .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
                 .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
@@ -385,6 +384,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.Last1hrValue > 0)
                 .OrderByDescending(x => x.Last1hrValue);
 
             return query.Paginate(start, count, x => new DashboardAssetMarketValueDTO()
@@ -444,6 +444,25 @@ namespace SCMM.Web.Server.API.Controllers
                     IconUrl = x.Description.IconUrl,
                     Supply = x.Supply,
                     Demand = (int) x.Last24hrSales
+                });
+
+            return query.Paginate(start, count);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("dashboard/acceptedSkinAuthors")]
+        public PaginatedResult<DashboardProfileWorkshopValueDTO> GetDashboardAcceptedSkinAuthors(int start = 0, int count = 10)
+        {
+            var query = _db.SteamProfiles
+                .AsNoTracking()
+                .Where(x => x.WorkshopFiles.Count > 0)
+                .OrderByDescending(x => x.WorkshopFiles.Count)
+                .Select(x => new DashboardProfileWorkshopValueDTO()
+                {
+                    SteamId = x.SteamId,
+                    Name = x.Name,
+                    AvatarUrl = x.AvatarLargeUrl,
+                    Items = x.WorkshopFiles.Count,
                 });
 
             return query.Paginate(start, count);
