@@ -13,10 +13,17 @@
 <style>
 
     .Dashboard-Card, .Dashboard-Chart-Card {
-        height:100%;
+        display: flex;
+        flex-flow: column;
+        height: 100%;
     }
     
+    .Dashboard-Card .CardHeader-Root {
+        flex: 0 1 auto;
+    }
+
     .Dashboard-Card .CardContent-Root {
+        flex: 1 1 auto;
         height: 500px;
         overflow: auto;
         padding: 0px;
@@ -127,6 +134,14 @@
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
+                            <Placeholder>
+                                <TableRow>
+                                    <TableCell>
+                                        <p style="padding: 8px">Loading...</p>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </Placeholder>
                         </Virtualize>
                     </TableBody>
                 </Table>
@@ -163,6 +178,14 @@
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
+                            <Placeholder>
+                                <TableRow>
+                                    <TableCell>
+                                        <p style="padding: 8px">Loading...</p>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </Placeholder>
                         </Virtualize>
                     </TableBody>
                 </Table>
@@ -200,6 +223,14 @@
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
+                            <Placeholder>
+                                <TableRow>
+                                    <TableCell>
+                                        <p style="padding: 8px">Loading...</p>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </Placeholder>
                         </Virtualize>
                     </TableBody>
                 </Table>
@@ -237,6 +268,14 @@
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
+                            <Placeholder>
+                                <TableRow>
+                                    <TableCell>
+                                        <p style="padding: 8px">Loading...</p>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </Placeholder>
                         </Virtualize>
                     </TableBody>
                 </Table>
@@ -283,6 +322,15 @@
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
+                            <Placeholder>
+                                <TableRow>
+                                    <TableCell>
+                                        <p style="padding: 8px">Loading...</p>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </Placeholder>
                         </Virtualize>
                     </TableBody>
                 </Table>
@@ -319,6 +367,14 @@
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
+                            <Placeholder>
+                                <TableRow>
+                                    <TableCell>
+                                        <p style="padding: 8px">Loading...</p>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </Placeholder>
                         </Virtualize>
                     </TableBody>
                 </Table>
@@ -358,6 +414,14 @@
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
+                            <Placeholder>
+                                <TableRow>
+                                    <TableCell>
+                                        <p style="padding: 8px">Loading...</p>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </Placeholder>
                         </Virtualize>
                     </TableBody>
                 </Table>
@@ -404,9 +468,54 @@
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
+                            <Placeholder>
+                                <TableRow>
+                                    <TableCell>
+                                        <p style="padding: 8px">Loading...</p>
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </Placeholder>
                         </Virtualize>
                     </TableBody>
                 </Table>
+            </CardContent>
+        </Card>
+    </Grid>
+    
+    <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+        <Card Class="Dashboard-Card">
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                        High-Rollers
+                    </Typography>
+                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                        Highest inventory market value <em>(for Steam profiles that have used SCMM before)</em>
+                    </Typography>
+                </TitleContent>
+            </CardHeader>
+            <CardContent>
+                <p>...</p>
+            </CardContent>
+        </Card>
+    </Grid>
+    
+    <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
+        <Card Class="Dashboard-Card">
+            <CardHeader>
+                <TitleContent>
+                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                        Skin Authors
+                    </Typography>
+                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                        Most successful skin authors.
+                    </Typography>
+                </TitleContent>
+            </CardHeader>
+            <CardContent>
+                <p>...</p>
             </CardContent>
         </Card>
     </Grid>
