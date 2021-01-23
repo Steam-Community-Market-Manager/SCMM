@@ -26,6 +26,7 @@ namespace SCMM.Web.Server.Data
         public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
         public DbSet<SteamProfile> SteamProfiles { get; set; }
         public DbSet<SteamProfileInventoryItem> SteamProfileInventoryItems { get; set; }
+        public DbSet<SteamProfileInventorySnapshot> SteamProfileInventorySnapshots { get; set; }
         public DbSet<SteamProfileMarketItem> SteamProfileMarketItems { get; set; }
 
         public DbSet<ImageData> ImageData { get; set; }
@@ -155,6 +156,9 @@ namespace SCMM.Web.Server.Data
                 .HasMany(x => x.InventoryItems)
                 .WithOne(x => x.Profile);
             builder.Entity<SteamProfile>()
+                .HasMany(x => x.InventorySnapshots)
+                .WithOne(x => x.Profile);
+            builder.Entity<SteamProfile>()
                 .HasMany(x => x.MarketItems)
                 .WithOne(x => x.Profile);
             builder.Entity<SteamProfile>()
@@ -172,6 +176,12 @@ namespace SCMM.Web.Server.Data
             builder.Entity<SteamProfileInventoryItem>()
                 .HasOne(x => x.Description);
             builder.Entity<SteamProfileInventoryItem>()
+                .HasOne(x => x.Currency);
+
+            builder.Entity<SteamProfileInventorySnapshot>()
+                .HasIndex(x => new { x.ProfileId, x.Timestamp })
+                .IsUnique(true);
+            builder.Entity<SteamProfileInventorySnapshot>()
                 .HasOne(x => x.Currency);
 
             builder.Entity<SteamProfileMarketItem>()

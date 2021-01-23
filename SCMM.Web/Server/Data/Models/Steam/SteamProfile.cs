@@ -12,6 +12,7 @@ namespace SCMM.Web.Server.Data.Models.Steam
         {
             Roles = new PersistableStringCollection();
             InventoryItems = new Collection<SteamProfileInventoryItem>();
+            InventorySnapshots = new Collection<SteamProfileInventorySnapshot>();
             MarketItems = new Collection<SteamProfileMarketItem>();
             WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
         }
@@ -65,6 +66,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
         public PersistableStringCollection Roles { get; set; }
 
         public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
+
+        public ICollection<SteamProfileInventorySnapshot> InventorySnapshots { get; set; }
 
         public ICollection<SteamProfileMarketItem> MarketItems { get; set; }
 
