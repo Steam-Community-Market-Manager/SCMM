@@ -13,6 +13,7 @@ using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Data.Models.Steam;
+using SCMM.Web.Shared.Data.Models.UI;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 using System;
 using System.Collections.Generic;
@@ -176,35 +177,30 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{steamId}/returnOnInvestment")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IList<InventoryItemListDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetInventoryInvestment([FromRoute] string steamId)
+        public IActionResult GetInventoryInvestment([FromRoute] string steamId, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             if (String.IsNullOrEmpty(steamId))
             {
                 return NotFound();
             }
 
-            var profileInventoryItems = _db.SteamProfileInventoryItems
+            var query = _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.ToLower().Contains(filter.ToLower()))
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description.MarketItem)
                 .Include(x => x.Description.MarketItem.Currency)
                 .Include(x => x.Description.StoreItem)
                 .Include(x => x.Description.StoreItem.Currency)
-                .ToList();
+                .OrderBy(x => x.Description.Name);
 
-            var profileInventoryItemSummaries = new List<InventoryItemListDTO>();
-            foreach (var profileInventoryItem in profileInventoryItems)
-            {
-                profileInventoryItemSummaries.Add(
-                    _mapper.Map<SteamProfileInventoryItem, InventoryItemListDTO>(
-                        profileInventoryItem, this
-                    )
-                );
-            }
+            var results = query.Paginate(start, count,
+                x => _mapper.Map<SteamProfileInventoryItem, InventoryItemListDTO>(x, this)
+            );
 
-            return Ok(profileInventoryItemSummaries);
+            return Ok(results);
         }
 
         [AllowAnonymous]

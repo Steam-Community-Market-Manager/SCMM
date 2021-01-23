@@ -1,7 +1,10 @@
 ﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using Web.Shared.Data.Models.UI
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
 @inherits ComponentBase
 @inject ILocalStorageService LocalStorage
+@inject ILogger<InventoryItemsInvestment> Logger
+@inject HttpClient Http
 
 <Table StickyHeader Size="@Size.Small">
     <TableHead>
@@ -14,9 +17,6 @@
             </TableCell>
             <TableCell>
                 @CreateSortableColumn("marketValue", "Current Market Value")
-            </TableCell>
-            <TableCell>
-                @CreateSortableColumn("supplyDemand", "Supply : Demand")
             </TableCell>
             <TableCell>
                 @CreateSortableColumn("resellPrice", "Resell Price")
@@ -33,18 +33,36 @@
         </TableRow>
     </TableHead>
     <TableBody>
-        @foreach (var item in Items)
-        { 
-            <InventoryItemsInvestmentTableRow Item="@item" ReadOnly="@ReadOnly" />
-        }
+        <Virtualize ItemsProvider="LoadItems" Context="item">
+            <ItemContent>
+                <InventoryItemsInvestmentTableRow Item="@item" ReadOnly="@ReadOnly" />
+            </ItemContent>
+            <Placeholder>
+                <TableRow>
+                    <TableCell>
+                        <p style="padding: 8px">Loading...</p>
+                    </TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                </TableRow>
+            </Placeholder>
+        </Virtualize>
     </TableBody>
 </Table>
 
 @code {
 
     [Parameter]
-    public IEnumerable<InventoryItemListDTO> Items { get; set; }
+    public string SteamId { get; set; }
     
+    [Parameter]
+    public string Filter { get; set; }
+
     [Parameter]
     public bool ReadOnly { get; set; }
 
@@ -76,53 +94,6 @@
         });
     }
 
-    private IEnumerable<InventoryItemListDTO> GetSortedRows()
-    {
-        if (Direction == Sort.Ascending)
-        {
-            if (OrderBy == "name")
-                return Items.OrderBy(row => row.Name);
-            else if (OrderBy == "buyPrice")
-                return Items.OrderBy(row => row.BuyPrice);
-            else if (OrderBy == "marketValue")
-                return Items.OrderBy(row => row.Last1hrValue);
-            else if (OrderBy == "resellPrice")
-                return Items.OrderBy(row => row.ResellPrice);
-            else if (OrderBy == "resellFees")
-                return Items.OrderBy(row => row.ResellTax);
-            else if (OrderBy == "resellProfit")
-                return Items
-                    .Where(x => x.BuyPrice > 0)
-                    .OrderBy(row => row.ResellProfit - row.BuyPrice);
-            else if (OrderBy == "resellROI")
-                return Items
-                    .Where(x => x.BuyPrice > 0)
-                    .OrderBy(row => (decimal)(row.ResellPrice - row.ResellTax) / row.BuyPrice.Value);
-        }
-        else
-        {
-            if (OrderBy == "name")
-                return Items.OrderByDescending(row => row.Name);
-            else if (OrderBy == "buyPrice")
-                return Items.OrderByDescending(row => row.BuyPrice);
-            else if (OrderBy == "marketValue")
-                return Items.OrderByDescending(row => row.Last1hrValue);
-            else if (OrderBy == "resellPrice")
-                return Items.OrderByDescending(row => row.ResellPrice);
-            else if (OrderBy == "resellFees")
-                return Items.OrderByDescending(row => row.ResellTax);
-            else if (OrderBy == "resellProfit")
-                return Items
-                    .Where(x => x.BuyPrice > 0)
-                    .OrderByDescending(row => row.ResellProfit - row.BuyPrice);
-            else if (OrderBy == "resellROI")
-                return Items
-                    .Where(x => x.BuyPrice > 0)
-                    .OrderByDescending(row => (decimal)(row.ResellPrice - row.ResellTax) / row.BuyPrice.Value);
-        }
-        return Items;
-    }
-
     private async Task HandleSortClick(string name)
     {
         if (OrderBy == name)
@@ -138,5 +109,19 @@
         await LocalStorage.SetItemAsync<Sort>("Inventory.SortDirection", Direction);
         StateHasChanged();
     }
-
+    
+    protected async ValueTask<ItemsProviderResult<InventoryItemListDTO>> LoadItems(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<InventoryItemListDTO>>($"api/inventory/{SteamId}/returnOnInvestment?filter={Filter}&start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<InventoryItemListDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing inventory items");
+            throw;
+        }
+    }
+    
 }

@@ -241,7 +241,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/hotRightNow")]
-        public PaginatedResult<DashboardAssetSalesDTO> GetDashboardHotRightNow(int start = 0, int count = 10)
+        public PaginatedResult<DashboardAssetSalesDTO> GetDashboardHotRightNow([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -265,7 +265,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/mostRecent")]
-        public PaginatedResult<DashboardAssetAgeDTO> GetDashboardMostRecent(int start = 0, int count = 10)
+        public PaginatedResult<DashboardAssetAgeDTO> GetDashboardMostRecent([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -288,7 +288,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/allTimeHigh")]
-        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardAllTimeHigh(int start = 0, int count = 10)
+        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardAllTimeHigh([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItems
@@ -316,7 +316,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/allTimeLow")]
-        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardAllTimeLow(int start = 0, int count = 10)
+        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardAllTimeLow([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItems
@@ -345,7 +345,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/profitableFlips")]
-        public PaginatedResult<DashboardAssetBuyOrderValueDTO> GetDashboardProfitableFlips(int start = 0, int count = 10)
+        public PaginatedResult<DashboardAssetBuyOrderValueDTO> GetDashboardProfitableFlips([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var now = DateTimeOffset.UtcNow;
             var query = _db.SteamMarketItems
@@ -377,7 +377,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/mostProfitable")]
-        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardMostProfitable(int start = 0, int count = 10)
+        public PaginatedResult<DashboardAssetMarketValueDTO> GetDashboardMostProfitable([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -402,7 +402,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/mostPopular")]
-        public PaginatedResult<DashboardAssetSubscriptionsDTO> GetDashboardMostPopular(int start = 0, int count = 10)
+        public PaginatedResult<DashboardAssetSubscriptionsDTO> GetDashboardMostPopular([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
@@ -426,7 +426,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/mostSaturated")]
-        public PaginatedResult<DashboardAssetSupplyDemandDTO> GetDashboardMostSaturated(int start = 0, int count = 10)
+        public PaginatedResult<DashboardAssetSupplyDemandDTO> GetDashboardMostSaturated([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -451,7 +451,7 @@ namespace SCMM.Web.Server.API.Controllers
 
         [AllowAnonymous]
         [HttpGet("dashboard/acceptedSkinAuthors")]
-        public PaginatedResult<DashboardProfileWorkshopValueDTO> GetDashboardAcceptedSkinAuthors(int start = 0, int count = 10)
+        public PaginatedResult<DashboardProfileWorkshopValueDTO> GetDashboardAcceptedSkinAuthors([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamProfiles
                 .AsNoTracking()

@@ -61,24 +61,6 @@
         }
     </TableCell>
     <TableCell Class="@GetItemClass()">
-        @if (Item.Supply != null && Item.Demand != null)
-        {
-            <span>@Item.Supply.Value.ToGCDRatioString(Item.Demand.Value)</span>
-            @if (Item.Supply.Value.IsSaturated(Item.Demand.Value))
-            {
-                <span class="Text-Error">  (Saturated)</span>
-            }
-            @if (Item.Supply.Value.IsStarved(Item.Demand.Value))
-            {
-                <span class="Text-Success">  (Starved)</span>
-            }
-        }
-        else
-        {
-            <span>—</span>
-        }
-    </TableCell>
-    <TableCell Class="@GetItemClass()">
         @if (Item.ResellPrice != null)
         {
             @Item.Currency.ToPriceString(Item.ResellPrice.Value) 

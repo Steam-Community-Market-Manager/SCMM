@@ -99,17 +99,10 @@
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="2">
                 @if ((int)SelectedInventoryPanel == 2)
                 {
-                    @if (InventoryItemsInvestment == null)
-                    {
-                        <Loading />
-                    }
-                    else
-                    {
-                        <Paper>
-                            <InventoryItemsInvestment Items="@FilterItems(InventoryItemsInvestment)" 
-                                                      ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
-                        </Paper>
-                    }
+                    <Paper>
+                        <InventoryItemsInvestment SteamId="@SteamId" Filter="@Filter"
+                                                  ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
+                    </Paper>
                 }
             </TabPanel>
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
@@ -150,8 +143,6 @@
 
     private IList<ProfileInventoryItemWishDTO> InventoryItemsWishlist { get; set; }
 
-    private IList<InventoryItemListDTO> InventoryItemsInvestment { get; set; }
-
     private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
     
     protected override async Task OnInitializedAsync()
@@ -169,7 +160,6 @@
             ProfileLoadError = null;
             InventoryItemsSummary = null;
             InventoryItemsWishlist = null;
-            InventoryItemsInvestment = null;
             InventoryTotal = null;
             InventoryPerformance = null;
             await LoadProfile(forceReload);
@@ -191,7 +181,7 @@
         {
             case 0: await LoadInventorySummary(forceReload); break;
             case 1: await LoadInventoryWishlist(forceReload); break;
-            case 2: await LoadInventoryInvestment(forceReload); break;
+            case 2: break;
             case 3: await LoadInventoryPerformance(forceReload); break;
         }
         StateHasChanged();
@@ -292,25 +282,6 @@
         {
             Logger.LogError(ex, $"Error fetching inventory wishlist for '{SteamId}'");
             InventoryItemsWishlist = null;
-        }
-    }
-    
-    private async Task LoadInventoryInvestment(bool forceReload = false)
-    {
-        try
-        {
-            if (InventoryItemsInvestment == null || forceReload)
-            {
-                Logger.LogInformation("Fetching inventory investment...");
-                InventoryItemsInvestment = await Http.GetFromJsonAsync<IList<InventoryItemListDTO>>(
-                    $"api/inventory/{SteamId}/returnOnInvestment"
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error fetching inventory investment for '{SteamId}'");
-            InventoryItemsInvestment = null;
         }
     }
     
