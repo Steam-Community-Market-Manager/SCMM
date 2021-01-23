@@ -100,11 +100,13 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound();
             }
 
-            var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, this.Currency());
+            var inventoryTotal = await _steam.GetProfileInventoryTotal(steamId, this.Currency().SteamId);
             if (inventoryTotal == null)
             {
                 return NotFound();
             }
+
+            _db.SaveChanges();
 
             return Ok(inventoryTotal);
         }

@@ -83,22 +83,30 @@ namespace SCMM.Web.Server.Services
             return new DateTimeOffset(nextStoreUpdateUtc, TimeZoneInfo.Utc.BaseUtcOffset);
         }
 
-        public async Task<ProfileInventoryTotalsDTO> GetProfileInventoryTotal(string steamId, CurrencyDetailedDTO currency)
+        public async Task<ProfileInventoryTotalsDTO> GetProfileInventoryTotal(string steamId, string currencyId)
         {
             // Load the profile
-            var inventory = _db.SteamProfiles
-                .AsNoTracking()
+            var profile = _db.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                .Select(x => new
-                {
-                    Profile = x,
-                    TotalItems = x.InventoryItems.Count,
-                    LastUpdatedOn = x.LastUpdatedInventoryOn
-                })
                 .FirstOrDefault();
+
+            if (profile == null)
+            {
+                return null;
+            }
+
+            // Load the currency
+            var currency = _db.SteamCurrencies
+                .FirstOrDefault(x => x.SteamId == currencyId);
+
+            if (currency == null)
+            {
+                return null;
+            }
 
             // Load the profile inventory
             var profileInventoryItems = _db.SteamProfileInventoryItems
+                .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
                 .Where(x => x.Description != null)
                 .Select(x => new

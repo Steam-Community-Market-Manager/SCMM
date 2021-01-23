@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands;
@@ -98,10 +99,19 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
+            var guild = _db.DiscordGuilds
+                .AsNoTracking()
+                .Include(x => x.Configurations)
+                .FirstOrDefault(x => x.DiscordId == this.Context.Guild.Id.ToString());
+            if (guild != null && String.IsNullOrEmpty(currencyId))
+            {
+                currencyId = guild.Get(DiscordConfiguration.Currency).Value;
+            }
+
             // Load the currency
             var getCurrencyByName = await _queryProcessor.ProcessAsync(new GetCurrencyByNameRequest()
             {
-                Name = currencyId
+                Name = currencyId 
             });
 
             var currency = getCurrencyByName.Currency;
@@ -128,7 +138,7 @@ namespace SCMM.Web.Server.Discord.Modules
             await message.ModifyAsync(x => 
                 x.Content = "Calculating inventory value..."
             );
-            var inventoryTotal = await _steamService.GetProfileInventoryTotal(profile.SteamId, currency);
+            var inventoryTotal = await _steamService.GetProfileInventoryTotal(profile.SteamId, currency.SteamId);
             if (inventoryTotal == null)
             {
                 await message.ModifyAsync(x =>
@@ -136,6 +146,8 @@ namespace SCMM.Web.Server.Discord.Modules
                 );
                 return;
             }
+
+            _db.SaveChanges();
 
             var color = Color.Blue;
             var fields = new List<EmbedFieldBuilder>();
