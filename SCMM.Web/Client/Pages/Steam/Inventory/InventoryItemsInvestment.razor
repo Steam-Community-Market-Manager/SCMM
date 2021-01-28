@@ -1,10 +1,12 @@
 ﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
 @using Web.Shared.Data.Models.UI
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+@using SCMM.Web.Shared
 @inherits ComponentBase
 @inject ILocalStorageService LocalStorage
 @inject ILogger<InventoryItemsInvestment> Logger
 @inject HttpClient Http
+@inject AppState State
 
 <Table StickyHeader Size="@Size.Small">
     <TableHead>
@@ -33,9 +35,103 @@
         </TableRow>
     </TableHead>
     <TableBody>
-        <Virtualize ItemsProvider="LoadItems" Context="item">
+        <Virtualize @ref="ItemTable" ItemsProvider="LoadItems" Context="item">
             <ItemContent>
-                <InventoryItemsInvestmentTableRow Item="@item" ReadOnly="@ReadOnly" />
+                <TableRow @key="@item.Id" Hover>
+                    <TableCell Component="th" Scope="row" Class="@GetItemClass(item)">
+                        <div style="display:flex; align-content:center; align-items:center">
+                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                            <strong style="margin:8px">@item.Name</strong>
+                            @if (item.Quantity > 1)
+                            { 
+                                <div class="Chip-Root">
+                                    <span class="Chip-Label">
+                                        @item.Quantity.ToQuantityString()
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (ReadOnly)
+                        {
+                            @if (item.BuyPrice != null)
+                            {
+                                @item.Currency?.ToPriceString(item.BuyPrice.Value, dense: true)
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        }
+                        else
+                        {
+                            <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@item.Currency?.ToPriceString(item.BuyPrice.Value, dense: true)"
+                                       OnChange="@((e) => UpdateItemPrice(item, e.Value.ToString()))">
+                                <StartAdornment>
+                                    @if (item.Currency != null)
+                                    {
+                                        <span style="padding-right:5px;">@item.Currency.PrefixText</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="padding-right:5px;">@State.Currency.PrefixText</span>
+                                    }
+                                </StartAdornment>
+                            </InputBase>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.Last1hrValue != null)
+                        {
+                            @item.Currency.ToPriceString(item.Last1hrValue.Value)
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.ResellPrice != null)
+                        {
+                            @item.Currency.ToPriceString(item.ResellPrice.Value) 
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.ResellTax != null)
+                        {
+                            @item.Currency.ToPriceString(item.ResellTax.Value) 
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
+                        {
+                            @item.Currency.ToPriceString(item.ResellPrice.Value - item.ResellTax.Value - item.BuyPrice.Value) 
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
+                        {
+                            @(((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
+                        }
+                        else
+                        {
+                            <span>∞</span>
+                        }
+                    </TableCell>
+                </TableRow>
             </ItemContent>
             <Placeholder>
                 <TableRow>
@@ -65,7 +161,9 @@
 
     [Parameter]
     public bool ReadOnly { get; set; }
-
+    
+    private Virtualize<InventoryItemListDTO> ItemTable { get; set; }
+    
     private string OrderBy { set; get; } = "marketValue";
 
     private Sort Direction { set; get; } = Sort.Ascending;
@@ -110,6 +208,53 @@
         StateHasChanged();
     }
     
+    public async Task HandleFilterChange(string filter)
+    {
+        Filter = (string) filter;
+        await ItemTable.RefreshDataAsync();
+        StateHasChanged();
+    }
+    
+    private string GetItemClass(InventoryItemListDTO item)
+    {
+        if (item.BuyPrice == 0 || item.BuyPrice == null || item.ResellPrice == null || item.ResellTax == null)
+        {
+            return null;
+        }
+        var roi = ((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPrice.Value) * 100, 0));
+        if (roi >= 100)
+        {
+            return "Background-Success";
+        }
+        if (roi < 100)
+        {
+            return "Background-Error";
+        }
+        return null;
+    }
+
+    private async Task UpdateItemPrice(InventoryItemListDTO item, string value)
+    {
+        var buyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
+        if (buyPrice != item.BuyPrice)
+        {
+            item.Currency = State.Currency;
+            item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
+            try 
+            {
+                await Http.PutAsJsonAsync($"api/profile/inventory/item/{item.Id}/buyPrice", new UpdateInventoryItemPriceCommand()
+                {
+                    CurrencyId = State.Currency.Id,
+                    Price = value
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error updating item buy price for '{item.Id}' (value: '{value}')");
+            }
+        }
+    }
+
     protected async ValueTask<ItemsProviderResult<InventoryItemListDTO>> LoadItems(ItemsProviderRequest request)
     {
         try

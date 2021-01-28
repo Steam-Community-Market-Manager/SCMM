@@ -100,7 +100,7 @@
                 @if ((int)SelectedInventoryPanel == 2)
                 {
                     <Paper>
-                        <InventoryItemsInvestment SteamId="@SteamId" Filter="@Filter"
+                        <InventoryItemsInvestment @ref="InventoryInvestmentPanel" SteamId="@SteamId" Filter="@Filter"
                                                   ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
                     </Paper>
                 }
@@ -123,11 +123,12 @@
 </Grid>
 
 @code {
-
     [Parameter]
     public string SteamId { get; set; }
 
     private string Filter { get; set; }
+
+    private InventoryItemsInvestment InventoryInvestmentPanel {get; set; }
 
     private ProfileInventoryDetailsDTO Profile { get; set; }
 
@@ -196,6 +197,7 @@
     private void OnFilterChanged(string filter)
     {
         Filter = (string) filter;
+        InventoryInvestmentPanel.HandleFilterChange(filter);
         StateHasChanged();
     }
     
