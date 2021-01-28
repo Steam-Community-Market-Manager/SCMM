@@ -49,7 +49,9 @@ namespace SCMM.Web.Server.Data
                 .HasIndex(x => x.DiscordId)
                 .IsUnique(true);
             builder.Entity<DiscordGuild>()
-                .HasMany(x => x.Configurations);
+                .HasMany(x => x.Configurations)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<DiscordConfiguration>()
                 .OwnsOne(x => x.List);
@@ -60,23 +62,32 @@ namespace SCMM.Web.Server.Data
             builder.Entity<SteamApp>()
                 .HasOne(x => x.Icon);
             builder.Entity<SteamApp>()
-                .OwnsMany(x => x.Filters)
-                .OwnsOne(x => x.Options);
+                .HasMany(x => x.Filters)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.WorkshopFiles)
-                .WithOne(x => x.App);
+                .WithOne(x => x.App)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.Assets)
-                .WithOne(x => x.App);
+                .WithOne(x => x.App)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.MarketItems)
-                .WithOne(x => x.App);
+                .WithOne(x => x.App)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.StoreItems)
-                .WithOne(x => x.App);
+                .WithOne(x => x.App)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.ItemStores)
-                .WithOne(x => x.App);
+                .WithOne(x => x.App)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<SteamAssetFilter>()
+                .OwnsOne(x => x.Options);
 
             builder.Entity<SteamAssetDescription>()
                 .HasIndex(x => x.SteamId)
@@ -127,16 +138,20 @@ namespace SCMM.Web.Server.Data
                 .HasOne(x => x.Currency);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.BuyOrders)
-                .WithOne(x => x.Item);
+                .WithOne(x => x.Item)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.SellOrders)
-                .WithOne(x => x.Item);
+                .WithOne(x => x.Item)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.SalesHistory)
-                .WithOne(x => x.Item);
+                .WithOne(x => x.Item)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.Activity)
-                .WithOne(x => x.Item);
+                .WithOne(x => x.Item)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<SteamProfile>()
                 .HasIndex(x => x.SteamId)
@@ -154,18 +169,24 @@ namespace SCMM.Web.Server.Data
                 .OwnsOne(x => x.Roles);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.InventoryItems)
-                .WithOne(x => x.Profile);
+                .WithOne(x => x.Profile)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.InventorySnapshots)
-                .WithOne(x => x.Profile);
+                .WithOne(x => x.Profile)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.MarketItems)
-                .WithOne(x => x.Profile);
+                .WithOne(x => x.Profile)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.WorkshopFiles)
-                .WithOne(x => x.Creator);
+                .WithOne(x => x.Creator)
+                .OnDelete(DeleteBehavior.SetNull);
             builder.Entity<SteamProfile>()
-                 .HasMany(x => x.Configurations);
+                .HasMany(x => x.Configurations)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<SteamProfileConfiguration>()
                 .OwnsOne(x => x.List);

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(ScmmDbContext))]
-    partial class ScmmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210128075214_CascadeDeleteConfigurations")]
+    partial class CascadeDeleteConfigurations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -194,30 +196,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.HasIndex("WorkshopFileId");
 
                     b.ToTable("SteamAssetDescriptions");
-                });
-
-            modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamAssetFilter", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("SteamAppId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SteamId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SteamAppId");
-
-                    b.ToTable("SteamAssetFilter");
                 });
 
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamAssetWorkshopFile", b =>
@@ -955,6 +933,53 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .WithMany()
                         .HasForeignKey("IconLargeId");
 
+                    b.OwnsMany("SCMM.Web.Server.Data.Models.Steam.SteamAssetFilter", "Filters", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<Guid>("SteamAppId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("SteamId")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("SteamAppId");
+
+                            b1.ToTable("SteamAssetFilter");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamAppId");
+
+                            b1.OwnsOne("SCMM.Web.Server.Data.Types.PersistableStringDictionary", "Options", b2 =>
+                                {
+                                    b2.Property<Guid>("SteamAssetFilterId")
+                                        .HasColumnType("uniqueidentifier");
+
+                                    b2.Property<string>("Serialised")
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.HasKey("SteamAssetFilterId");
+
+                                    b2.ToTable("SteamAssetFilter");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("SteamAssetFilterId");
+                                });
+
+                            b1.Navigation("Options");
+                        });
+
+                    b.Navigation("Filters");
+
                     b.Navigation("Icon");
 
                     b.Navigation("IconLarge");
@@ -1007,32 +1032,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Navigation("WorkshopFile");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamAssetFilter", b =>
-                {
-                    b.HasOne("SCMM.Web.Server.Data.Models.Steam.SteamApp", null)
-                        .WithMany("Filters")
-                        .HasForeignKey("SteamAppId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableStringDictionary", "Options", b1 =>
-                        {
-                            b1.Property<Guid>("SteamAssetFilterId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Serialised")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("SteamAssetFilterId");
-
-                            b1.ToTable("SteamAssetFilter");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SteamAssetFilterId");
-                        });
-
-                    b.Navigation("Options");
-                });
-
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamAssetWorkshopFile", b =>
                 {
                     b.HasOne("SCMM.Web.Server.Data.Models.Steam.SteamApp", "App")
@@ -1043,8 +1042,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.HasOne("SCMM.Web.Server.Data.Models.Steam.SteamProfile", "Creator")
                         .WithMany("WorkshopFiles")
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("CreatorId");
 
                     b.HasOne("SCMM.Web.Server.Data.Models.Steam.ImageData", "Image")
                         .WithMany()
@@ -1422,8 +1420,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Steam.SteamApp", b =>
                 {
                     b.Navigation("Assets");
-
-                    b.Navigation("Filters");
 
                     b.Navigation("ItemStores");
 
