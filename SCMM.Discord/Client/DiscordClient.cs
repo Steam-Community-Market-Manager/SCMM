@@ -180,7 +180,6 @@ namespace SCMM.Discord.Client
                                 .WithThumbnailUrl(thumbnailUrl)
                                 .WithColor((color != null ? (Color)color.Value : Color.Default))
                                 .WithFooter(x => x.Text = "https://scmm.app")
-                                .WithCurrentTimestamp()
                                 .Build();
                         }
 
@@ -201,6 +200,20 @@ namespace SCMM.Discord.Client
                     }
                 }
             }
+        }
+
+        public async Task<IEnumerable<string>> GetUsersWithRoleAsync(ulong serverId, string roleName)
+        {
+            var guild = _client.Guilds.FirstOrDefault(x => x.Id == serverId);
+            if (guild != null)
+            {
+                await guild.DownloadUsersAsync();
+                return guild.Users
+                    .Where(x => x.Roles.Any(y => y.Name.Contains(roleName, StringComparison.InvariantCultureIgnoreCase)))
+                    .Select(x => $"{x.Username}#{x.Discriminator}");
+            }
+
+            return null;
         }
 
         public IDictionary<ulong, string> Guilds

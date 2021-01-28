@@ -11,6 +11,7 @@ using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared;
+using SCMM.Web.Shared.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -150,6 +151,16 @@ namespace SCMM.Web.Server.Discord.Modules
             _db.SaveChanges();
 
             var color = Color.Blue;
+            if (profile.Roles.Contains(Roles.VIP))
+            {
+                color = Color.Gold;
+            }
+
+            var author = new EmbedAuthorBuilder()
+                .WithName(profile.Name)
+                .WithIconUrl(profile.AvatarUrl)
+                .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}");
+
             var fields = new List<EmbedFieldBuilder>();
             fields.Add(new EmbedFieldBuilder()
                 .WithName("Market Value")
@@ -184,15 +195,13 @@ namespace SCMM.Web.Server.Discord.Modules
             }
 
             var embed = new EmbedBuilder()
-                .WithTitle(profile.Name)
+                .WithAuthor(author)
                 .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
                 .WithFields(fields)
-                .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
                 .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=4&columns=4&timestamp={DateTime.UtcNow.Ticks}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
                 .WithFooter(x => x.Text = _configuration.GetBaseUrl())
-                .WithCurrentTimestamp()
                 .Build();
 
             await message.DeleteAsync();

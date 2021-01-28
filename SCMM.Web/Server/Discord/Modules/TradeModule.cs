@@ -8,6 +8,7 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared.Data.Models.Steam;
+using SCMM.Web.Shared.Domain;
 using System;
 using System.Linq;
 using System.Text;
@@ -143,15 +144,23 @@ namespace SCMM.Web.Server.Discord.Modules
             description.AppendLine($"**[Make a trade offer]({profile.TradeUrl})**");
 
             var color = Color.Blue;
+            if (profile.Roles.Contains(Roles.VIP))
+            {
+                color = Color.Gold;
+            }
+
+            var author = new EmbedAuthorBuilder()
+                .WithName($"{profile.Name} is looking for trades")
+                .WithIconUrl(profile.AvatarUrl)
+                .WithUrl(!String.IsNullOrEmpty(profile.TradeUrl) ? profile.TradeUrl : $"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}");
+
             var embed = new EmbedBuilder()
-                .WithTitle($"{profile.Name} is looking for trades")
+                .WithAuthor(author)
                 .WithDescription(description.ToString())
-                .WithUrl(!String.IsNullOrEmpty(profile.TradeUrl) ? profile.TradeUrl : $"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}")
                 .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/trade/mosaic?timestamp={DateTime.UtcNow.Ticks}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
                 .WithFooter(x => x.Text = _configuration.GetBaseUrl())
-                .WithCurrentTimestamp()
                 .Build();
 
             await message.DeleteAsync();
