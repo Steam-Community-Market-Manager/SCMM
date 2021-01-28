@@ -44,7 +44,7 @@ namespace SCMM.Web.Server.API.Controllers
             [FromQuery] int page = 0,
             [FromQuery] int pageSize = 30)
         {
-            filter = Uri.EscapeDataString(filter?.Trim() ?? String.Empty);
+            filter = Uri.UnescapeDataString(filter?.Trim() ?? String.Empty);
             page = Math.Max(0, page);
             pageSize = Math.Max(0, pageSize);
 
