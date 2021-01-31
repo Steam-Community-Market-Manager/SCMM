@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SCMM.Web.Shared.Data.Models.UI;
+using System;
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {

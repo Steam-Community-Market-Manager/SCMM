@@ -1,6 +1,7 @@
 ﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
-@using Web.Shared.Data.Models.UI
-@using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+@using SCMM.Web.Shared.Data.Models.UI
+@using SCMM.Web.Shared.Data.Models.UI.ProfileInventory
+@using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @inherits ComponentBase
 @inject ILocalStorageService LocalStorage
@@ -8,29 +9,29 @@
 @inject HttpClient Http
 @inject AppState State
 
-<Table StickyHeader Size="@Size.Small">
+<Table Size="@Size.Small" StickyHeader>
     <TableHead>
         <TableRow>
             <TableCell>
-                @CreateSortableColumn("name", "Name")
+                @CreateSortableColumn("Description.Name", "Name")
             </TableCell>
             <TableCell>
-                @CreateSortableColumn("buyPrice", "Buy Price")
+                @CreateSortableColumn("BuyPrice", "Buy Price")
             </TableCell>
             <TableCell>
-                @CreateSortableColumn("marketValue", "Current Market Value")
+                @CreateSortableColumn("Description.MarketItem.Last1hrValue", "Current Market Value")
             </TableCell>
             <TableCell>
-                @CreateSortableColumn("resellPrice", "Resell Price")
+                @CreateSortableColumn("Description.MarketItem.ResellPrice", "Resell Price")
             </TableCell>
             <TableCell>
-                @CreateSortableColumn("resellFees", "Resell Fees")
+                @CreateSortableColumn("Description.MarketItem.ResellTax", "Resell Fees")
             </TableCell>
             <TableCell>
-                @CreateSortableColumn("resellProfit", "Resell Profit")
+                @CreateSortableColumn("Description.MarketItem.ResellProfit", "Resell Profit")
             </TableCell>
-            <TableCell>
-                @CreateSortableColumn("resellROI", "Resell ROI%")
+            <TableCell style="border-bottom: none">
+                Resell ROI%
             </TableCell>
         </TableRow>
     </TableHead>
@@ -55,9 +56,9 @@
                     <TableCell Class="@GetItemClass(item)">
                         @if (ReadOnly)
                         {
-                            @if (item.BuyPrice != null)
+                            @if (item.Currency != null && item.BuyPrice != null)
                             {
-                                @item.Currency?.ToPriceString(item.BuyPrice.Value, dense: true)
+                                @item.Currency.ToPriceString(item.BuyPrice.Value)
                             }
                             else
                             {
@@ -66,8 +67,7 @@
                         }
                         else
                         {
-                            <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" Value="@item.Currency?.ToPriceString(item.BuyPrice.Value, dense: true)"
-                                       OnChange="@((e) => UpdateItemPrice(item, e.Value.ToString()))">
+                            <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.BuyPriceLocal))">
                                 <StartAdornment>
                                     @if (item.Currency != null)
                                     {
@@ -112,7 +112,7 @@
                         }
                     </TableCell>
                     <TableCell Class="@GetItemClass(item)">
-                        @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
+                        @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
                         {
                             @item.Currency.ToPriceString(item.ResellPrice.Value - item.ResellTax.Value - item.BuyPrice.Value) 
                         }
@@ -122,7 +122,7 @@
                         }
                     </TableCell>
                     <TableCell Class="@GetItemClass(item)">
-                        @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
+                        @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
                         {
                             @(((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
                         }
@@ -136,15 +136,17 @@
             <Placeholder>
                 <TableRow>
                     <TableCell>
-                        <p style="padding: 8px">Loading...</p>
+                        <div style="display:flex; align-content:center; align-items:center">
+                            <img src="/images/loading.gif" style="width:32px; height:32px; margin:-4px 0px;" />
+                            <strong style="margin:8px">Loading...</strong>
+                        </div>
                     </TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
                 </TableRow>
             </Placeholder>
         </Virtualize>
@@ -162,23 +164,23 @@
     [Parameter]
     public bool ReadOnly { get; set; }
     
-    private Virtualize<InventoryItemListDTO> ItemTable { get; set; }
+    private Virtualize<InventoryInvestmentItemDTO> ItemTable { get; set; }
     
-    private string OrderBy { set; get; } = "marketValue";
+    private string SortBy { set; get; } = "marketValue";
 
-    private Sort Direction { set; get; } = Sort.Ascending;
+    private Sort SortDirection { set; get; } = Sort.Ascending;
 
     protected override async Task OnInitializedAsync()
     {
-        OrderBy = await LocalStorage.GetItemAsync<string>("Inventory.SortBy");
-        Direction = await LocalStorage.GetItemAsync<Sort>("Inventory.SortDirection");
+        SortBy = await LocalStorage.GetItemAsync<string>("Inventory.SortBy");
+        SortDirection = await LocalStorage.GetItemAsync<Sort>("Inventory.SortDirection");
     }
 
     private RenderFragment CreateSortableColumn(string name, string label)
     {
         return @<TableSortLabel
-                    Active="@(OrderBy == name)"
-                    Direction="@Direction"
+                    Active="@(SortBy == name)"
+                    Direction="@SortDirection"
                     OnClick="@CreateOnSortClick(name)">
                     @label
                 </TableSortLabel>;
@@ -194,17 +196,19 @@
 
     private async Task HandleSortClick(string name)
     {
-        if (OrderBy == name)
+        if (SortBy == name)
         {
-            Direction = Direction == Sort.Ascending ? Sort.Descending : Sort.Ascending;
+            SortDirection = (SortDirection == Sort.Ascending ? Sort.Descending : Sort.Ascending);
         }
         else
         {
-            Direction = Sort.Ascending;
+            SortDirection = Sort.Ascending;
         }
-        OrderBy = name;
-        await LocalStorage.SetItemAsync<string>("Inventory.SortBy", OrderBy);
-        await LocalStorage.SetItemAsync<Sort>("Inventory.SortDirection", Direction);
+
+        SortBy = name;
+        await LocalStorage.SetItemAsync<string>("Inventory.SortBy", SortBy);
+        await LocalStorage.SetItemAsync<Sort>("Inventory.SortDirection", SortDirection);
+        await ItemTable.RefreshDataAsync();
         StateHasChanged();
     }
     
@@ -215,9 +219,9 @@
         StateHasChanged();
     }
     
-    private string GetItemClass(InventoryItemListDTO item)
+    private string GetItemClass(InventoryInvestmentItemDTO item)
     {
-        if (item.BuyPrice == 0 || item.BuyPrice == null || item.ResellPrice == null || item.ResellTax == null)
+        if (item.BuyPrice == null || item.BuyPrice <= 0 || item.ResellPrice == null || item.ResellTax == null)
         {
             return null;
         }
@@ -233,11 +237,12 @@
         return null;
     }
 
-    private async Task UpdateItemPrice(InventoryItemListDTO item, string value)
+    private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, string value)
     {
         var buyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
         if (buyPrice != item.BuyPrice)
         {
+            Logger.LogInformation($"Updating buy price for '{item.Id}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}')");
             item.Currency = State.Currency;
             item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
             try 
@@ -255,12 +260,12 @@
         }
     }
 
-    protected async ValueTask<ItemsProviderResult<InventoryItemListDTO>> LoadItems(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<InventoryInvestmentItemDTO>> LoadItems(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<InventoryItemListDTO>>($"api/inventory/{SteamId}/returnOnInvestment?filter={Filter}&start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<InventoryItemListDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<InventoryInvestmentItemDTO>>($"api/inventory/{SteamId}/returnOnInvestment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}&sortBy={SortBy}&sortDirection={SortDirection}");
+            return new ItemsProviderResult<InventoryInvestmentItemDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {

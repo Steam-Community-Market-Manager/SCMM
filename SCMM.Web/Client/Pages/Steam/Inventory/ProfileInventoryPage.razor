@@ -1,4 +1,6 @@
 ﻿@page "/steam/inventory/{SteamId}"
+@using SCMM.Web.Shared.Data.Models.UI;
+@using SCMM.Web.Shared.Data.Models.UI.ProfileInventory;
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems
 @using SCMM.Web.Shared
 @namespace SCMM.Web.Client.Pages.Steam.Inventory
@@ -324,7 +326,7 @@
         Navigation.NavigateTo($"steam/inventory/{SteamId}", forceLoad: true);
     }
 
-    private void ViewItem(InventoryItemListDTO item)
+    private void ViewItem(InventoryInvestmentItemDTO item)
     {
         string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);

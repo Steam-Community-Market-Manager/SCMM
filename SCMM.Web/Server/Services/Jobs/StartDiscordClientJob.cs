@@ -98,7 +98,6 @@ namespace SCMM.Web.Server.Services.Jobs
                         {
                             foreach (var left in leftGuilds)
                             {
-                                // TODO: Delete config from db
                                 left.Configurations.Clear();
                                 db.DiscordGuilds.Remove(left);
                             }

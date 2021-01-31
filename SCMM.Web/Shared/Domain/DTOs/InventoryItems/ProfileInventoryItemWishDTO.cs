@@ -1,4 +1,5 @@
 ﻿using SCMM.Web.Shared.Data.Models.Steam;
+using SCMM.Web.Shared.Data.Models.UI;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
@@ -23,11 +24,11 @@ namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 
         public int Demand { get; set; }
 
-        public long BuyAskingPrice { get; set; }
+        public long? BuyAskingPrice { get; set; }
 
-        public long BuyNowPrice { get; set; }
+        public long? BuyNowPrice { get; set; }
 
-        public long Last24hrSales { get; set; }
+        public long? Last24hrSales { get; set; }
 
         public SteamProfileMarketItemFlags Flags { get; set; }
     }

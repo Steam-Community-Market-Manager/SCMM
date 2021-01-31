@@ -1,9 +1,9 @@
 ﻿using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System;
 
-namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
+namespace SCMM.Web.Shared.Data.Models.UI.ProfileInventory
 {
-    public class InventoryItemListDTO : IFilterableItem
+    public class InventoryInvestmentItemDTO : IFilterableItem
     {
         public Guid Id { get; set; }
 
@@ -23,22 +23,16 @@ namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 
         public long? BuyPrice { get; set; }
 
+        public string BuyPriceLocal { get; set; }
+
         public int Quantity { get; set; }
 
-        public int? Supply { get; set; }
-
-        public int? Demand { get; set; }
-
-        public long? BuyAskingPrice { get; set; }
-
-        public long? BuyNowPrice { get; set; }
+        public long? Last1hrValue { get; set; }
 
         public long? ResellPrice { get; set; }
 
         public long? ResellTax { get; set; }
 
         public long? ResellProfit { get; set; }
-
-        public long? Last1hrValue { get; set; }
     }
 }

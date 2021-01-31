@@ -10,7 +10,7 @@ namespace SCMM.Web.Server.Extensions
         public static PaginatedResult<T> Paginate<T>(this IQueryable<T> query, int start, int count)
         {
             start = Math.Max(0, start);
-            count = Math.Max(0, count);
+            count = Math.Max(1, count);
             var data = query.Skip(start).Take(count).ToArray();
             var total = query.Count();
             return new PaginatedResult<T>()
@@ -25,7 +25,7 @@ namespace SCMM.Web.Server.Extensions
         public static PaginatedResult<T2> Paginate<T1, T2>(this IQueryable<T1> query, int start, int count, Func<T1, T2> mapper)
         {
             start = Math.Max(0, start);
-            count = Math.Max(0, count);
+            count = Math.Max(1, count);
             var data = query.Skip(start).Take(count).ToArray();
             var total = query.Count();
             return new PaginatedResult<T2>()
@@ -39,7 +39,7 @@ namespace SCMM.Web.Server.Extensions
         public static PaginatedResult<T2> Paginate<T1, T2>(this IQueryable<T1> query, int start, int count, Func<IEnumerable<T1>, IEnumerable<T2>> mapper)
         {
             start = Math.Max(0, start);
-            count = Math.Max(0, count);
+            count = Math.Max(1, count);
             var data = query.Skip(start).Take(count).ToArray();
             var total = query.Count();
             return new PaginatedResult<T2>()

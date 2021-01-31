@@ -14,7 +14,9 @@ using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Shared;
 using SCMM.Web.Shared.Data.Models.Steam;
 using SCMM.Web.Shared.Data.Models.UI;
+using SCMM.Web.Shared.Data.Models.UI.ProfileInventory;
 using SCMM.Web.Shared.Domain.DTOs.InventoryItems;
+using Skclusive.Core.Component;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -178,14 +180,15 @@ namespace SCMM.Web.Server.API.Controllers
         [AllowAnonymous]
         [HttpGet("{steamId}/returnOnInvestment")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(IList<InventoryItemListDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetInventoryInvestment([FromRoute] string steamId, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        [ProducesResponseType(typeof(PaginatedResult<InventoryInvestmentItemDTO>), StatusCodes.Status200OK)]
+        public IActionResult GetInventoryInvestment([FromRoute] string steamId, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] Sort sortDirection = Sort.Ascending)
         {
             if (String.IsNullOrEmpty(steamId))
             {
-                return NotFound();
+                return BadRequest();
             }
 
+            filter = Uri.UnescapeDataString(filter?.Trim() ?? String.Empty);
             var query = _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
@@ -196,15 +199,15 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description.MarketItem.Currency)
                 .Include(x => x.Description.StoreItem)
                 .Include(x => x.Description.StoreItem.Currency)
-                .OrderBy(x => x.Description.Name);
+                .OrderBy(sortBy, sortDirection);
 
             var results = query.Paginate(start, count,
-                x => _mapper.Map<SteamProfileInventoryItem, InventoryItemListDTO>(x, this)
+                x => _mapper.Map<SteamProfileInventoryItem, InventoryInvestmentItemDTO>(x, this)
             );
 
             return Ok(results);
         }
-
+        
         [AllowAnonymous]
         [HttpGet("{steamId}/wishlist")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

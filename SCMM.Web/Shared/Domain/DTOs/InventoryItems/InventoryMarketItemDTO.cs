@@ -1,4 +1,5 @@
-﻿using SCMM.Web.Shared.Domain.DTOs.Currencies;
+﻿using SCMM.Web.Shared.Data.Models.UI;
+using SCMM.Web.Shared.Domain.DTOs.Currencies;
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {

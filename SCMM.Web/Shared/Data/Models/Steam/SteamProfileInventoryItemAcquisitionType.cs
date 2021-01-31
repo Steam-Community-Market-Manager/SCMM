@@ -4,6 +4,7 @@
     {
         Unknown = 0,
         Store,
+        Drop,
         Gift,
         Trade,
         Gambling
