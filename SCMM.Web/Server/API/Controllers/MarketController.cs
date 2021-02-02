@@ -49,7 +49,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description)
                 .Include(x => x.Description.WorkshopFile)
                 .Include(x => x.Description.StoreItem)
-                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.Tags.Serialised.Contains(filter));
+                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.Tags.Serialised.Contains(filter))
+                .OrderByDescending(x => x.Last24hrSales);
 
             if (User.Identity.IsAuthenticated)
             {
