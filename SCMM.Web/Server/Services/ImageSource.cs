@@ -6,6 +6,6 @@
 
         public byte[] ImageData { get; set; }
 
-        public int BadgeCount { get; set; }
+        public int Badge { get; set; }
     }
 }

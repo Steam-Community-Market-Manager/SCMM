@@ -6,7 +6,7 @@
 
         public int TotalItems { get; set; }
 
-        public long TotalInvested { get; set; }
+        public long? TotalInvested { get; set; }
 
         public long TotalMarketValue { get; set; }
 

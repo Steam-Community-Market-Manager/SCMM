@@ -121,7 +121,7 @@
             };
 
             inventoryValueBreakdownDataSet.Data.AddRange(new double[] {
-                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalInvested / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)Math.Round((double)(InventoryTotal.TotalInvested ?? 0) / localScaleDivisor, State.Currency.Scale),
                 (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellTax / localScaleDivisor, State.Currency.Scale),
                 (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellProfit / localScaleDivisor, State.Currency.Scale),
                 (DoubleWrapper)0

@@ -130,6 +130,8 @@ namespace SCMM.Web.Server.Services
 
             var profileInventory = new
             {
+                ItemCount = profileInventoryItems.Count,
+                ItemCountWithBuyPrices = profileInventoryItems.Count(x => x.BuyPrice != null),
                 TotalItems = profileInventoryItems
                     .Sum(x => x.Quantity),
                 TotalInvested = profileInventoryItems
@@ -149,17 +151,19 @@ namespace SCMM.Web.Server.Services
                     .Sum(x => (x.ItemResellTax / x.ItemExchangeRateMultiplier) * x.Quantity)
             };
 
+
+            var hasSetupInvestment = ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 90); // if more than 90% have buy prices set
             return new ProfileInventoryTotalsDTO()
             {
                 TotalItems = profileInventory.TotalItems,
-                TotalInvested = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
+                TotalInvested = (hasSetupInvestment ? currency.CalculateExchange(profileInventory.TotalInvested ?? 0) : null),
                 TotalMarketValue = currency.CalculateExchange(profileInventory.TotalValueLast1hr),
                 TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalValueLast1hr - profileInventory.TotalValueLast24hr),
                 TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
                 TotalResellTax = currency.CalculateExchange(profileInventory.TotalResellTax),
                 TotalResellProfit = (
                     currency.CalculateExchange(profileInventory.TotalResellValue - profileInventory.TotalResellTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
-                )
+                ),
             };
         }
 

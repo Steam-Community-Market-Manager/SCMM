@@ -22,7 +22,7 @@
             </Total>
         </InventoryHeaderTotal>
     </Grid>
-    @if (InventoryTotal.TotalInvested > 0)
+    @if (InventoryTotal.TotalInvested != null && InventoryTotal.TotalInvested > 0)
     {
         <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two">
             <InventoryHeaderTotal Title="Total Investment" IconClass="Background-Error">
@@ -30,7 +30,7 @@
                     <i class="fas fa-fw fa-dollar-sign"></i>
                 </Icon>
                 <Total>
-                    @State.Currency.ToPriceString(InventoryTotal.TotalInvested)
+                    @State.Currency.ToPriceString(InventoryTotal.TotalInvested.Value)
                 </Total>
             </InventoryHeaderTotal>
         </Grid>

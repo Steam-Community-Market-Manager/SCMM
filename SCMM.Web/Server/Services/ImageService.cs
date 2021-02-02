@@ -73,7 +73,7 @@ namespace SCMM.Web.Server.Services
                         var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
                         graphics.DrawImage(image, c * tileSize, r * tileSize, tileSize, tileSize);
 
-                        var count = Math.Min(99, imageSource.BadgeCount);
+                        var count = Math.Min(99, imageSource.Badge);
                         if (count > 1)
                         {
                             var fontSize = 24;

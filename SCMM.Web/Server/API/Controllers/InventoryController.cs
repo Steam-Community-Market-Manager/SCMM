@@ -384,7 +384,7 @@ namespace SCMM.Web.Server.API.Controllers
                     images.Add(new ImageSource()
                     {
                         ImageUrl = inventoryItemIcon,
-                        BadgeCount = inventoryItemIcons.Count(x => x == inventoryItemIcon)
+                        Badge = inventoryItemIcons.Count(x => x == inventoryItemIcon)
                     });
                 }
             }
@@ -444,7 +444,7 @@ namespace SCMM.Web.Server.API.Controllers
                     inventoryItemImages.Add(new ImageSource()
                     {
                         ImageUrl = inventoryItemIcon,
-                        BadgeCount = inventoryItemIcons.Count(x => x == inventoryItemIcon)
+                        Badge = inventoryItemIcons.Count(x => x == inventoryItemIcon)
                     });
                 }
             }
@@ -471,7 +471,7 @@ namespace SCMM.Web.Server.API.Controllers
                     marketItemImages.Add(new ImageSource()
                     {
                         ImageUrl = marketItemIcon,
-                        BadgeCount = marketItemIcons.Count(x => x == marketItemIcon)
+                        Badge = marketItemIcons.Count(x => x == marketItemIcon)
                     });
                 }
             }
