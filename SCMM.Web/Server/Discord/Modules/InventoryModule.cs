@@ -163,42 +163,29 @@ namespace SCMM.Web.Server.Discord.Modules
 
             var fields = new List<EmbedFieldBuilder>();
             fields.Add(new EmbedFieldBuilder()
-                .WithName("Market Value")
+                .WithName("📈 Current Market Value")
                 .WithValue($"{currency.ToPriceString(inventoryTotal.TotalMarketValue)} {currency.Name}")
+                .WithIsInline(false)
             );
-            if (inventoryTotal.TotalInvested > 0)
+            if (inventoryTotal.TotalInvested != null && inventoryTotal.TotalInvested > 0)
             {
-                /*
-                var profitLoss = String.Empty;
-                var profitLossPrefix = String.Empty;
-                if (inventoryTotal.TotalResellProfit >= 0)
-                {
-                    profitLoss = "Profit";
-                    profitLossPrefix = "🡱";
-                    color = Color.Green;
-                }
-                else
-                {
-                    profitLoss = "Loss";
-                    profitLossPrefix = "🡳";
-                    color = Color.Red;
-                }
                 fields.Add(new EmbedFieldBuilder()
-                    .WithName("Invested")
-                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalInvested)} {currency.Name}")
+                    .WithName("💰 Invested")
+                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalInvested.Value)} {currency.Name}")
+                    .WithIsInline(true)
                 );
                 fields.Add(new EmbedFieldBuilder()
-                    .WithName(profitLoss)
-                    .WithValue($"{profitLossPrefix} {currency.ToPriceString(inventoryTotal.TotalResellProfit)} {currency.Name}")
+                    .WithName((inventoryTotal.TotalResellProfit >= 0) ? "⬆️ Profit" : "⬇️ Loss")
+                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalResellProfit)} {currency.Name}")
+                    .WithIsInline(true)
                 );
-                */
             }
 
             var embed = new EmbedBuilder()
                 .WithAuthor(author)
                 .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
                 .WithFields(fields)
-                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=4&columns=4&timestamp={DateTime.UtcNow.Ticks}")
+                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=5&columns=5&timestamp={DateTime.UtcNow.Ticks}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
                 .WithFooter(x => x.Text = _configuration.GetBaseUrl())
