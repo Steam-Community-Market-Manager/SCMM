@@ -107,18 +107,26 @@ namespace SCMM.Web.Server.Services.Jobs
                         var vipServers = discordGuilds.Where(x => x.Flags.HasFlag(Shared.Data.Models.Discord.DiscordGuildFlags.VIP)).ToList();
                         foreach (var vipServer in vipServers)
                         {
-                            var vipUsers = await _discordClient.GetUsersWithRoleAsync(ulong.Parse(vipServer.DiscordId), "donator");
-                            if (vipUsers != null)
+                            try
                             {
-                                var newVipUsers = db.SteamProfiles
-                                    .Where(x => !x.Roles.Serialised.Contains(Roles.VIP))
-                                    .Where(x => vipUsers.Contains(x.DiscordId))
-                                    .ToList();
-
-                                foreach (var user in newVipUsers)
+                                var vipUsers = await _discordClient.GetUsersWithRoleAsync(ulong.Parse(vipServer.DiscordId), "donator");
+                                if (vipUsers != null)
                                 {
-                                    user.Roles.Add(Roles.VIP);
+                                    var newVipUsers = db.SteamProfiles
+                                        .Where(x => !x.Roles.Serialised.Contains(Roles.VIP))
+                                        .Where(x => vipUsers.Contains(x.DiscordId))
+                                        .ToList();
+
+                                    foreach (var user in newVipUsers)
+                                    {
+                                        user.Roles.Add(Roles.VIP);
+                                    }
                                 }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, $"Failed to check guild for new VIP members  (id: {vipServer.DiscordId}, name: {vipServer.Name})");
+                                continue;
                             }
                         }
 
