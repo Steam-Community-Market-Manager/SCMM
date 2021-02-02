@@ -106,7 +106,7 @@ namespace SCMM.Web.Server.Services.Commands
                 }
 
                 profile = await _db.SteamProfiles.FirstOrDefaultAsync(
-                    x => x.ProfileId == resolvedId.ProfileId
+                    x => x.SteamId == response.SteamID64.ToString()
                 );
                 profile = profile ?? new SteamProfile()
                 {
@@ -114,6 +114,7 @@ namespace SCMM.Web.Server.Services.Commands
                 };
 
                 profile.SteamId = response.SteamID64.ToString();
+                profile.ProfileId = resolvedId.ProfileId;
                 profile.Name = response.SteamID?.Trim();
                 profile.AvatarUrl = response.AvatarMedium;
                 profile.AvatarLargeUrl = response.AvatarFull;
