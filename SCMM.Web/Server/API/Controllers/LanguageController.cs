@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +17,16 @@ namespace SCMM.Web.Server.API.Controllers
     {
         private readonly ILogger<LanguageController> _logger;
         private readonly ScmmDbContext _db;
+        private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public LanguageController(ILogger<LanguageController> logger, ScmmDbContext db, IMapper mapper)
+        public LanguageController(ILogger<LanguageController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
+            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
             _mapper = mapper;
         }
 

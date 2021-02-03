@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 namespace SCMM.Web.Server.Discord.Modules
 {
     [Group("inventory")]
+    [Alias("inv")]
     public class InventoryModule : ModuleBase<SocketCommandContext>
     {
         private readonly IConfiguration _configuration;

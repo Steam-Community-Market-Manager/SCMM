@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using CommandQuery;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,14 +17,21 @@ namespace SCMM.Web.Server.API.Controllers
     [Route("api/[controller]")]
     public class DiscordController : ControllerBase
     {
-        private readonly ILogger<ProfileController> _logger;
+        private readonly ILogger<DiscordController> _logger;
         private readonly ScmmDbContext _db;
+        private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
+        private readonly IMapper _mapper;
+
         private readonly ImageService _images;
 
-        public DiscordController(ILogger<ProfileController> logger, ScmmDbContext db, ImageService images)
+        public DiscordController(ILogger<DiscordController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, ImageService images)
         {
             _logger = logger;
             _db = db;
+            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
+            _mapper = mapper;
             _images = images;
         }
 

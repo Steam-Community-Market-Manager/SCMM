@@ -93,7 +93,7 @@ namespace SCMM.Web.Server.Discord.Modules
             try
             {
                 var badgeDefinition = guild.BadgeDefinitions.FirstOrDefault(x => x.Name == name);
-                if (badgeDefinition != null)
+                if (badgeDefinition == null)
                 {
                     await ReplyAsync($"Beep boop! I'm unable to find a badge named '{name}' for this guild.");
                     return;

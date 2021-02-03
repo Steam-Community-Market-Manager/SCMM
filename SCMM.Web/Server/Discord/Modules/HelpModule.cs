@@ -21,6 +21,7 @@ namespace SCMM.Web.Server.Discord.Modules
         }
 
         [Command("help")]
+        [Alias("?")]
         [Summary("Show this command help text")]
         public async Task SayHelpAsync()
         {

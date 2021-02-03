@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,12 +28,16 @@ namespace SCMM.Web.Server.API.Controllers
     {
         private readonly ILogger<MarketController> _logger;
         private readonly ScmmDbContext _db;
+        private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public MarketController(ILogger<MarketController> logger, ScmmDbContext db, IMapper mapper)
+        public MarketController(ILogger<MarketController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
+            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
             _mapper = mapper;
         }
 

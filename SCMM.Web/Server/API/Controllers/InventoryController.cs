@@ -30,19 +30,22 @@ namespace SCMM.Web.Server.API.Controllers
     {
         private readonly ILogger<InventoryController> _logger;
         private readonly ScmmDbContext _db;
-        private readonly SteamService _steam;
-        private readonly ImageService _images;
         private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public InventoryController(ILogger<InventoryController> logger, ScmmDbContext db, SteamService steam, ImageService images, ICommandProcessor commandProcessor, IMapper mapper)
+        private readonly SteamService _steam;
+        private readonly ImageService _images;
+
+        public InventoryController(ILogger<InventoryController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, SteamService steam, ImageService images)
         {
             _logger = logger;
             _db = db;
+            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
+            _mapper = mapper;
             _steam = steam;
             _images = images;
-            _commandProcessor = commandProcessor;
-            _mapper = mapper;
         }
 
         [AllowAnonymous]

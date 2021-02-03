@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Discord.Modules
 {
-    [Group("config")]
+    [Group("configuration")]
+    [Alias("config", "cfg")]
     public class ConfigurationModule : ModuleBase<SocketCommandContext>
     {
         private readonly ScmmDbContext _db;
