@@ -3,44 +3,23 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(ScmmDbContext))]
-    partial class ScmmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210202092630_AddDiscordBadgeDefinitions")]
+    partial class AddDiscordBadgeDefinitions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.2");
-
-            modelBuilder.Entity("SCMM.Web.Server.Data.Models.Discord.DiscordBadge", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BadgeDefinitionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DiscordUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BadgeDefinitionId");
-
-                    b.HasIndex("DiscordUserId", "BadgeDefinitionId")
-                        .IsUnique();
-
-                    b.ToTable("DiscordBadges");
-                });
 
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Discord.DiscordConfiguration", b =>
                 {
@@ -96,7 +75,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("GuildId")
+                    b.Property<Guid?>("DiscordGuildId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("IconId")
@@ -108,7 +87,7 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GuildId");
+                    b.HasIndex("DiscordGuildId");
 
                     b.HasIndex("IconId");
 
@@ -967,17 +946,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.ToTable("SteamStoreItemItemStore");
                 });
 
-            modelBuilder.Entity("SCMM.Web.Server.Data.Models.Discord.DiscordBadge", b =>
-                {
-                    b.HasOne("SCMM.Web.Server.Data.Models.DiscordBadgeDefinition", "BadgeDefinition")
-                        .WithMany()
-                        .HasForeignKey("BadgeDefinitionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BadgeDefinition");
-                });
-
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.Discord.DiscordConfiguration", b =>
                 {
                     b.HasOne("SCMM.Web.Server.Data.Models.Discord.DiscordGuild", null)
@@ -1006,19 +974,16 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
 
             modelBuilder.Entity("SCMM.Web.Server.Data.Models.DiscordBadgeDefinition", b =>
                 {
-                    b.HasOne("SCMM.Web.Server.Data.Models.Discord.DiscordGuild", "Guild")
+                    b.HasOne("SCMM.Web.Server.Data.Models.Discord.DiscordGuild", null)
                         .WithMany("BadgeDefinitions")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DiscordGuildId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("SCMM.Web.Server.Data.Models.ImageData", "Icon")
                         .WithMany()
                         .HasForeignKey("IconId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Guild");
 
                     b.Navigation("Icon");
                 });

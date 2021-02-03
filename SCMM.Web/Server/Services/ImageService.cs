@@ -40,6 +40,26 @@ namespace SCMM.Web.Server.Services
             rows = Math.Max(1, rows);
             tileSize = Math.Max(8, tileSize);
 
+            var x = 0;
+            var y = 0;
+            var padding = (int)Math.Ceiling(tileSize * 0.0625f);
+            var badgeSize = (int)Math.Ceiling(tileSize * 0.25f);
+            var fontSize = 24;
+            var fontLineHeight = (fontSize + (padding * 3));
+            var fontFamily = new FontFamily(GenericFontFamilies.SansSerif);
+            var font = new Font(fontFamily, fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+            var solidWhite = new SolidBrush(Color.FromArgb(255, 255, 255, 255));
+            var solidBlack = new SolidBrush(Color.FromArgb(255, 0, 0, 0));
+            var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
+            var imageQueue = new Queue<ImageSource>(imageSources);
+            var imageSize = tileSize;
+
+            var renderTitles = imageSources.Any(x => !String.IsNullOrEmpty(x.Title));
+            if (renderTitles)
+            {
+                tileSize += fontLineHeight;
+            }
+
             // If there are rows than we have images for, reduces the row count to the minimum required to render the images
             var minimumRowsToRenderTiles = (int)Math.Ceiling((float)tileCount / columns);
             rows = Math.Min(minimumRowsToRenderTiles, rows);
@@ -54,14 +74,10 @@ namespace SCMM.Web.Server.Services
             {
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-                var badgeSize = (int) Math.Ceiling(tileSize * 0.25f);
-                var badgePadding = (int) Math.Ceiling(tileSize * 0.0625f);
-                var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
-                var solidBlack = new SolidBrush(Color.FromArgb(255, 0, 0, 0));
-                var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
-                var imageQueue = new Queue<ImageSource>(imageSources);
+                y = 0;
                 for (int r = 0; r < rows; r++)
                 {
+                    x = 0;
                     for (int c = 0; c < columns; c++)
                     {
                         var imageSource = (imageQueue.Any() ? imageQueue.Dequeue() : null);
@@ -71,38 +87,68 @@ namespace SCMM.Web.Server.Services
                         }
 
                         var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
-                        graphics.DrawImage(image, c * tileSize, r * tileSize, tileSize, tileSize);
+                        graphics.DrawImage(
+                            image, 
+                            x + ((Math.Max(2, tileSize - imageSize) / 2) - 1), 
+                            y, 
+                            imageSize, 
+                            imageSize
+                        );
 
                         var count = Math.Min(99, imageSource.Badge);
                         if (count > 1)
                         {
-                            var fontSize = 24;
-                            var fontOffset = 2;
+                            var badgeFontOffset = 2;
                             if (count >= 10)
                             {
                                 fontSize = 20;
-                                fontOffset = 5;
+                                badgeFontOffset = 5;
                             }
                             graphics.FillEllipse(
                                 solidBlue, 
                                 new Rectangle(
-                                    (c * tileSize) + tileSize - badgeSize, 
-                                    (r * tileSize), 
+                                    x + tileSize - badgeSize, 
+                                    y, 
                                     badgeSize, 
                                     badgeSize
                                 )
                             );
                             graphics.DrawString(
                                 $"{count}",
-                                new Font(sansSerif, fontSize, FontStyle.Regular, GraphicsUnit.Pixel), 
+                                font, 
                                 solidBlack, 
                                 new PointF(
-                                    (c * tileSize) + tileSize - (badgeSize - badgePadding + fontOffset), 
-                                    ((r * tileSize) + (badgePadding / 4) + (fontOffset / 4))
+                                    (x + tileSize - (badgeSize - padding + badgeFontOffset)), 
+                                    (y + (padding / 4) + (badgeFontOffset / 4))
                                 )
                             );
                         }
+
+                        var title = imageSource.Title;
+                        if (!string.IsNullOrEmpty(title))
+                        {
+                            var titleWidth = graphics.MeasureString(title, font).Width;
+                            while (titleWidth >= imageSize && title.Length > 0)
+                            {
+                                title = title.Substring(0, title.Length - 1);
+                                titleWidth = graphics.MeasureString(title, font).Width;
+                            }
+                            if (!string.IsNullOrEmpty(title) && titleWidth > 0)
+                            {
+                                graphics.DrawString(
+                                    title,
+                                    font,
+                                    solidWhite,
+                                    new PointF(
+                                        x + ((Math.Max(2, tileSize - titleWidth) / 2) - 1),
+                                        y + imageSize + padding
+                                    )
+                                );
+                            }
+                        }
+                        x += tileSize;
                     }
+                    y += tileSize;
                 }
             }
 

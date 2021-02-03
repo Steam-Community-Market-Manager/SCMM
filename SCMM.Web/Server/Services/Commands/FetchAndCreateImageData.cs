@@ -2,7 +2,7 @@
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Web.Server.Data.Models;
 using System.Linq;
 using System.Threading.Tasks;
 

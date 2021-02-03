@@ -1,4 +1,4 @@
-﻿namespace SCMM.Web.Server.Data.Models.Steam
+﻿namespace SCMM.Web.Server.Data.Models
 {
     public class ImageData : Entity
     {
