@@ -1,6 +1,6 @@
-﻿using Discord.Commands;
-using SCMM.Web.Server.Services;
-using SCMM.Web.Shared;
+﻿using CommandQuery;
+using Discord.Commands;
+using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Threading.Tasks;
 
@@ -9,41 +9,29 @@ namespace SCMM.Web.Server.Discord.Modules
     [Group("store")]
     public class StoreModule : ModuleBase<SocketCommandContext>
     {
-        private readonly SteamService _steamService;
+        private readonly IQueryProcessor _queryProcessor;
 
-        public StoreModule(SteamService steam)
+        public StoreModule(IQueryProcessor queryProcessor)
         {
-            _steamService = steam;
+            _queryProcessor = queryProcessor;
         }
 
         [Command("next")]
+        [Alias("update", "remaining", "time")]
         [Summary("Show time remaining until the next store update")]
         public async Task SayStoreNextUpdateExpectedOnAsync()
         {
-            var nextUpdateExpectedOn = _steamService.GetStoreNextUpdateExpectedOn();
-            if (nextUpdateExpectedOn == null)
+            var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+            if (nextUpdateTime == null || String.IsNullOrEmpty(nextUpdateTime.TimeDescription))
             {
                 await ReplyAsync(
                     $"I have no idea, something went wrong trying to figure it out."
                 );
             }
 
-            var remainingTime = (nextUpdateExpectedOn.Value - DateTimeOffset.Now).ToDurationString(
-                showMinutes: false,
-                showSeconds: false
+            await ReplyAsync(
+                $"Next store update is {nextUpdateTime.TimeDescription}."
             );
-            if (!String.IsNullOrEmpty(remainingTime))
-            {
-                await ReplyAsync(
-                    $"Next store update is expected in about **{remainingTime}** from now."
-                );
-            }
-            else
-            {
-                await ReplyAsync(
-                    $"Next store update is expected **any moment** now."
-                );
-            }
         }
     }
 }

@@ -54,7 +54,7 @@ else
 
     private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
 
-    private DateTimeOffset? StoreUpdatesOn { get; set; }
+    private DateTimeOffset? StoreNextUpdateTime { get; set; }
 
     private bool DonateDialogOpened { get; set; }
 
@@ -95,8 +95,8 @@ else
     {
         try
         {
-            StoreUpdatesOn = await Http.GetFromJsonAsync<DateTimeOffset>(
-                $"api/store/nextStoreExpectedOn"
+            StoreNextUpdateTime = await Http.GetFromJsonAsync<DateTimeOffset>(
+                $"api/store/nextUpdateTime"
             );
         }
         catch (Exception ex)
@@ -114,10 +114,11 @@ else
         }
 
         var storeUpdateTimeRemaining = String.Empty;
-        if (StoreUpdatesOn != null)
+        if (StoreNextUpdateTime != null)
         {
-            storeUpdateTimeRemaining = (StoreUpdatesOn.Value - DateTimeOffset.Now).ToDurationString(
-                showMinutes: false, showSeconds: false, suffix: "remaining", zero: "due any moment now"
+            var nextStoreIsOverdue = (StoreNextUpdateTime.Value <= DateTimeOffset.Now);
+            storeUpdateTimeRemaining = (StoreNextUpdateTime.Value - DateTimeOffset.Now).ToDurationString(
+                suffix: (nextStoreIsOverdue ? "overdue" : "remaining"), zero: "due now", showSeconds: false, maxGranularity: 2
             );
         }
 

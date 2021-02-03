@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -6,7 +7,7 @@ using SCMM.Discord.Client;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Services.Jobs.CronJob;
-using SCMM.Web.Shared;
+using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared.Domain;
 using System;
 using System.Collections.Generic;
@@ -47,97 +48,98 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        private void OnReady(IDictionary<ulong, string> guilds)
+        private async void OnReady(IDictionary<ulong, string> guilds)
         {
-            Task.Run(async () =>
+            using (var scope = _scopeFactory.CreateScope())
             {
-                using (var scope = _scopeFactory.CreateScope())
+                try
                 {
-                    try
+                    var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                    var discordGuilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
+
+                    // Start the status update timer
+                    _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
+
+                    // Add any guilds that we've joined
+                    var joinedGuilds = guilds.Where(x => !discordGuilds.Any(y => y.DiscordId == x.Key.ToString())).ToList();
+                    if (joinedGuilds.Any())
                     {
-                        var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
-                        var discordGuilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
-
-                        // Start the status update timer
-                        _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(15));
-
-                        // Add any guilds that we've joined
-                        var joinedGuilds = guilds.Where(x => !discordGuilds.Any(y => y.DiscordId == x.Key.ToString())).ToList();
-                        if (joinedGuilds.Any())
+                        foreach (var joined in joinedGuilds)
                         {
-                            foreach (var joined in joinedGuilds)
+                            db.DiscordGuilds.Add(new DiscordGuild()
                             {
-                                db.DiscordGuilds.Add(new DiscordGuild()
-                                {
-                                    DiscordId = joined.Key.ToString(),
-                                    Name = joined.Value
-                                });
-                            }
+                                DiscordId = joined.Key.ToString(),
+                                Name = joined.Value
+                            });
                         }
+                    }
 
-                        // Update any guilds that we're still a member of
-                        var memberGuilds = discordGuilds.Join(guilds,
+                    // Update any guilds that we're still a member of
+                    var memberGuilds = discordGuilds.Join(guilds,
                             x => x.DiscordId,
                             y => y.Key.ToString(),
                             (x, y) => new
                             {
                                 Guild = x,
                                 Name = y.Value
-                            });
-                        if (memberGuilds.Any())
-                        {
-                            foreach (var member in memberGuilds)
-                            {
-                                member.Guild.Name = member.Name;
                             }
-                        }
-
-                        // Remove any guilds that we've left
-                        var leftGuilds = discordGuilds.Where(x => !guilds.ContainsKey(UInt64.Parse(x.DiscordId))).ToList();
-                        if (leftGuilds.Any())
+                        )
+                        .Where(x => String.IsNullOrEmpty(x.Name))
+                        .ToList();
+                    if (memberGuilds.Any())
+                    {
+                        foreach (var member in memberGuilds)
                         {
-                            foreach (var left in leftGuilds)
-                            {
-                                left.Configurations.Clear();
-                                db.DiscordGuilds.Remove(left);
-                            }
+                            member.Guild.Name = member.Name;
                         }
+                    }
 
-                        // Synchronise VIP roles for users belonging to VIP servers
-                        var vipServers = discordGuilds.Where(x => x.Flags.HasFlag(Shared.Data.Models.Discord.DiscordGuildFlags.VIP)).ToList();
-                        foreach (var vipServer in vipServers)
+                    // Remove any guilds that we've left
+                    var leftGuilds = discordGuilds.Where(x => !guilds.ContainsKey(UInt64.Parse(x.DiscordId))).ToList();
+                    if (leftGuilds.Any())
+                    {
+                        foreach (var left in leftGuilds)
                         {
-                            try
+                            left.Configurations.Clear();
+                            left.BadgeDefinitions.Clear();
+                            db.DiscordGuilds.Remove(left);
+                        }
+                    }
+
+                    // Synchronise VIP roles for users belonging to VIP servers
+                    var vipServers = discordGuilds.Where(x => x.Flags.HasFlag(Shared.Data.Models.Discord.DiscordGuildFlags.VIP)).ToList();
+                    foreach (var vipServer in vipServers)
+                    {
+                        try
+                        {
+                            var vipUsers = await _discordClient.GetUsersWithRoleAsync(ulong.Parse(vipServer.DiscordId), "donator");
+                            if (vipUsers != null)
                             {
-                                var vipUsers = await _discordClient.GetUsersWithRoleAsync(ulong.Parse(vipServer.DiscordId), "donator");
-                                if (vipUsers != null)
+                                var newVipUsers = db.SteamProfiles
+                                    .Where(x => !x.Roles.Serialised.Contains(Roles.VIP))
+                                    .Where(x => vipUsers.Contains(x.DiscordId))
+                                    .ToList();
+
+                                foreach (var user in newVipUsers)
                                 {
-                                    var newVipUsers = db.SteamProfiles
-                                        .Where(x => !x.Roles.Serialised.Contains(Roles.VIP))
-                                        .Where(x => vipUsers.Contains(x.DiscordId))
-                                        .ToList();
-
-                                    foreach (var user in newVipUsers)
-                                    {
-                                        user.Roles.Add(Roles.VIP);
-                                    }
+                                    user.Roles.Add(Roles.VIP);
                                 }
                             }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, $"Failed to check guild for new VIP members  (id: {vipServer.DiscordId}, name: {vipServer.Name})");
-                                continue;
-                            }
                         }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Failed to check guild for new VIP members  (id: {vipServer.DiscordId}, name: {vipServer.Name})");
+                            continue;
+                        }
+                    }
 
-                        db.SaveChanges();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to synchronoise list of Discord guilds");
-                    }
+                    db.SaveChanges();
                 }
-            });
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to synchronoise list of Discord guilds");
+                }
+            }
         }
 
         private void OnGuildJoined(ulong id, string name)
@@ -186,30 +188,17 @@ namespace SCMM.Web.Server.Services.Jobs
             }
         }
 
-        private void OnStatusUpdate(object state)
+        private async void OnStatusUpdate(object state)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 try
                 {
-                    var steam = scope.ServiceProvider.GetRequiredService<SteamService>();
-                    var nextUpdateExpectedOn = steam.GetStoreNextUpdateExpectedOn();
-                    var remainingTime = (nextUpdateExpectedOn.Value - DateTimeOffset.Now).ToDurationString(
-                        showMinutes: false,
-                        showSeconds: false
+                    var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+                    var storeNextUpdateTime= await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+                    await _discordClient.SetStatus(
+                        $"the store, {storeNextUpdateTime.TimeDescription}"
                     );
-                    if (!String.IsNullOrEmpty(remainingTime))
-                    {
-                        _discordClient.SetStatus(
-                            $"the store, {remainingTime} remaining"
-                        );
-                    }
-                    else
-                    {
-                        _discordClient.SetStatus(
-                            $"the store, due any moment now"
-                        );
-                    }
                 }
                 catch (Exception ex)
                 {

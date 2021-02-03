@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
+using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared.Domain.DTOs.StoreItems;
 using System;
 using System.Collections.Generic;
@@ -23,17 +25,22 @@ namespace SCMM.Web.Server.API.Controllers
     {
         private readonly ILogger<StoreController> _logger;
         private readonly ScmmDbContext _db;
-        private readonly SteamService _steam;
-        private readonly ImageService _images;
+        private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public StoreController(ILogger<StoreController> logger, ScmmDbContext db, SteamService steam, ImageService images, IMapper mapper)
+        private readonly SteamService _steam;
+        private readonly ImageService _images;
+
+        public StoreController(ILogger<StoreController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, SteamService steam, ImageService images)
         {
             _logger = logger;
             _db = db;
+            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
+            _mapper = mapper;
             _steam = steam;
             _images = images;
-            _mapper = mapper;
         }
 
         [AllowAnonymous]
@@ -188,10 +195,11 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("nextStoreExpectedOn")]
-        public DateTimeOffset? GetNextStoreExpectedOn()
+        [HttpGet("nextUpdateTime")]
+        public async Task<DateTimeOffset?> GetStoreNextUpdateTime()
         {
-            return _steam.GetStoreNextUpdateExpectedOn();
+            var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+            return nextUpdateTime?.Timestamp;
         }
     }
 }

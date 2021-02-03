@@ -53,36 +53,6 @@ namespace SCMM.Web.Server.Services
             _queryProcessor = queryProcessor;
         }
 
-        public DateTimeOffset? GetStoreNextUpdateExpectedOn()
-        {
-            var lastItemAcceptedOn = _db.SteamAssetWorkshopFiles
-                .AsNoTracking()
-                .Where(x => x.AcceptedOn != null)
-                .GroupBy(x => 1)
-                .Select(x => x.Max(y => y.AcceptedOn))
-                .FirstOrDefault()?.UtcDateTime;
-            if (lastItemAcceptedOn == null)
-            {
-                return null;
-            }
-
-            // Store normally updates every thursday or friday around 9pm (UTC time)
-            var nextStoreUpdateUtc = (lastItemAcceptedOn.Value.Date + new TimeSpan(21, 0, 0));
-            do
-            {
-                nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
-            } while (nextStoreUpdateUtc.DayOfWeek != DayOfWeek.Thursday);
-
-            // If the expected store date is still in the past, assume it is a day late
-            // NOTE: Has a tolerance of 3hrs from the expected time
-            while ((nextStoreUpdateUtc + TimeSpan.FromHours(3)) <= DateTime.UtcNow)
-            {
-                nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
-            }
-
-            return new DateTimeOffset(nextStoreUpdateUtc, TimeZoneInfo.Utc.BaseUtcOffset);
-        }
-
         public async Task<ProfileInventoryTotalsDTO> GetProfileInventoryTotal(string steamId, string currencyId)
         {
             // Load the profile

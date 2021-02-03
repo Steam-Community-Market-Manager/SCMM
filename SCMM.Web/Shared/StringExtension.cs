@@ -1,4 +1,5 @@
-﻿namespace SCMM.Web.Shared
+﻿
+namespace SCMM.Web.Shared
 {
     public static class StringExtension
     {
