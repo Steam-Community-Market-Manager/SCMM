@@ -90,7 +90,9 @@ namespace SCMM.Web.Server.Services.Jobs
                     }
 
                     db.SaveChanges();
-                    Thread.Sleep(3000); // Delay between requests to avoid server ban
+
+                    // TODO: Remove this. Delay between requests to avoid server ban
+                    Thread.Sleep(3000);
                 }
 
                 await currencyService.RepopulateCache();

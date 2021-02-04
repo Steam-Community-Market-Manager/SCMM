@@ -175,10 +175,6 @@ namespace SCMM.Web.Server.Services.Jobs
 
         private async Task BroadcastNewStoreItemsNotification(DiscordClient discord, ScmmDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
         {
-            // NOTE: Delay for a bit to allow the database to flush before we generate the notification.
-            //       This helps ensure that the mosaic image will generate correctly the first time.
-            Thread.Sleep(10000);
-
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
@@ -208,12 +204,13 @@ namespace SCMM.Web.Server.Services.Jobs
                         x => x.Description?.Name,
                         x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
+                    fieldsInline: true,
                     url: new SteamItemStorePageRequest()
                     {
                         AppId = app.SteamId
                     },
                     thumbnailUrl: app.IconUrl,
-                    imageUrl: $"{_configuration.GetBaseUrl()}/api/store/mosaic?timestamp={DateTime.UtcNow.Ticks}",
+                    imageUrl: $"{_configuration.GetBaseUrl()}/api/store/{store.Id}/mosaic",
                     color: ColorTranslator.FromHtml(app.PrimaryColor)
                 );
             }

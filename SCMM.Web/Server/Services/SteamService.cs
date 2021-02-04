@@ -404,8 +404,8 @@ namespace SCMM.Web.Server.Services
         public async Task<Data.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, string languageId, ulong classId)
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
-                .Where(x => x.SteamId == classId.ToString())
                 .Include(x => x.WorkshopFile)
+                .Where(x => x.SteamId == classId.ToString())
                 .FirstOrDefaultAsync();
 
             if (dbAssetDescription != null)
@@ -452,6 +452,31 @@ namespace SCMM.Web.Server.Services
                 WorkshopFile = workshopFile,
                 Tags = new Data.Types.PersistableStringDictionary(tags)
             };
+
+            if (dbAssetDescription.IconId == null && !String.IsNullOrEmpty(dbAssetDescription.IconUrl))
+            {
+                var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                {
+                    Url = dbAssetDescription.IconUrl,
+                    UseExisting = true
+                });
+                if (fetchAndCreateImageData?.Image != null)
+                {
+                    dbAssetDescription.Icon = fetchAndCreateImageData.Image;
+                }
+            }
+            if (dbAssetDescription.IconLargeId == null && !String.IsNullOrEmpty(dbAssetDescription.IconLargeUrl))
+            {
+                var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                {
+                    Url = dbAssetDescription.IconLargeUrl,
+                    UseExisting = true
+                });
+                if (fetchAndCreateImageData?.Image != null)
+                {
+                    dbAssetDescription.IconLarge = fetchAndCreateImageData.Image;
+                }
+            }
 
             _db.SteamAssetDescriptions.Add(dbAssetDescription);
             _db.SaveChanges();

@@ -156,32 +156,32 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{storeId}/mosaic")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetStoreMosaic([FromRoute] Guid storeId)
+        public async Task<IActionResult> GetStoreMosaic([FromRoute] Guid storeId, [FromQuery] int imageSize = 256, [FromQuery] int columns = 3)
         {
-            var storeItemDescriptions = _db.SteamItemStores
+            var storeImageSources = _db.SteamItemStores
                 .AsNoTracking()
                 .Where(x => x.Id == storeId)
                 .SelectMany(x => x.Items.Select(x => x.Item.Description))
                 .OrderBy(x => x.Name)
-                .Select(x => x.IconUrl)
+                .Select(x => new ImageSource()
+                {
+                    ImageUrl = x.IconUrl,
+                    ImageData = (x.Icon != null ? x.Icon.Data : null),
+                    Title = x.Name
+                })
                 .Take(SteamConstants.SteamStoreItemsMax)
                 .ToList();
 
-            if (!storeItemDescriptions.Any())
+            if (!storeImageSources.Any())
             {
                 return NotFound();
             }
 
             var mosaic = await _images.GenerateImageMosaic(
-                storeItemDescriptions.Select(x => 
-                    new ImageSource()
-                    {
-                        ImageUrl = x
-                    }
-                ),
-                tileSize: 152, 
-                columns: 4,
-                rows: (int) Math.Ceiling((float) storeItemDescriptions.Count / 4)
+                storeImageSources,
+                tileSize: imageSize, 
+                columns: columns,
+                rows: Int32.MaxValue
             );
 
             if (mosaic != null && mosaic.Length > 0)
