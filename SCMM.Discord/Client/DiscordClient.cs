@@ -110,6 +110,29 @@ namespace SCMM.Discord.Client
             await _client.StopAsync();
         }
 
+        public Task SetStatus(string status)
+        {
+            EnsureClientIsReady();
+            return _client.SetGameAsync(
+                status, null, ActivityType.Watching
+            );
+        }
+
+        public async Task<IEnumerable<string>> GetUsersWithRoleAsync(ulong serverId, string roleName)
+        {
+            EnsureClientIsReady();
+            var guild = _client.Guilds.FirstOrDefault(x => x.Id == serverId);
+            if (guild != null)
+            {
+                await guild.DownloadUsersAsync();
+                return guild.Users
+                    .Where(x => x.Roles.Any(y => y.Name.Contains(roleName, StringComparison.InvariantCultureIgnoreCase)))
+                    .Select(x => $"{x.Username}#{x.Discriminator}");
+            }
+
+            return null;
+        }
+
         public Task BroadcastMessageAsync(string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             return BroadcastMessageAsync(null, null, message, title: title, description: description, fields: fields, url: url, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
@@ -120,15 +143,7 @@ namespace SCMM.Discord.Client
             return BroadcastMessageAsync(null, channelPattern, message, title: title, description: description, url: url, fields: fields, thumbnailUrl: thumbnailUrl, imageUrl: imageUrl, color: color);
         }
 
-        public Task SetStatus(string status)
-        {
-            EnsureClientIsReady();
-            return _client.SetGameAsync(
-                status, null, ActivityType.Watching
-            );
-        }
-
-        public async Task BroadcastMessageAsync(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public async Task BroadcastMessageAsync(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             EnsureClientIsReady();
 
@@ -147,7 +162,7 @@ namespace SCMM.Discord.Client
                 if (!channels.Any() && !String.IsNullOrEmpty(channelPattern))
                 {
                     // If the channel pattern didn't match anything, broadcast to the first channel that we havve permission to
-                    var firstChannel = guild.TextChannels.FirstOrDefault(x => guild.CurrentUser.GetPermissions(x).SendMessages);
+                    var firstChannel = guild.TextChannels.OrderBy(x => x.Name).FirstOrDefault(x => guild.CurrentUser.GetPermissions(x).SendMessages);
                     if (firstChannel != null)
                     {
                         channels.Add(firstChannel);
@@ -168,6 +183,7 @@ namespace SCMM.Discord.Client
                                 fieldBuilders = fields.Select(x => new EmbedFieldBuilder()
                                     .WithName(x.Key)
                                     .WithValue(x.Value)
+                                    .WithIsInline(fieldsInline)
                                 ).ToList();
                             }
 
@@ -184,7 +200,8 @@ namespace SCMM.Discord.Client
                         }
 
                         // Send the message
-                        await channel.SendMessageAsync(
+                        // NOTE: Do no await, we want to broadcast messages in parallel
+                        _ = channel.SendMessageAsync(
                             text: message,
                             embed: embed
                         );
@@ -200,20 +217,6 @@ namespace SCMM.Discord.Client
                     }
                 }
             }
-        }
-
-        public async Task<IEnumerable<string>> GetUsersWithRoleAsync(ulong serverId, string roleName)
-        {
-            var guild = _client.Guilds.FirstOrDefault(x => x.Id == serverId);
-            if (guild != null)
-            {
-                await guild.DownloadUsersAsync();
-                return guild.Users
-                    .Where(x => x.Roles.Any(y => y.Name.Contains(roleName, StringComparison.InvariantCultureIgnoreCase)))
-                    .Select(x => $"{x.Username}#{x.Discriminator}");
-            }
-
-            return null;
         }
 
         public IDictionary<ulong, string> Guilds
