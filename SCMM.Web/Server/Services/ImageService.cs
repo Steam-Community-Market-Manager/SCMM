@@ -51,7 +51,6 @@ namespace SCMM.Web.Server.Services
             var solidWhite = new SolidBrush(Color.FromArgb(255, 255, 255, 255));
             var solidBlack = new SolidBrush(Color.FromArgb(255, 0, 0, 0));
             var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
-            var imageQueue = new Queue<ImageSource>(imageSources);
             var imageSize = tileSize;
 
             var renderTitles = imageSources.Any(x => !String.IsNullOrEmpty(x.Title));
@@ -70,6 +69,7 @@ namespace SCMM.Web.Server.Services
             await HydrateImageData(imageSources);
 
             var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
+            var imageSourceQueue = new Queue<ImageSource>(imageSources);
             using (var graphics = Graphics.FromImage(mosaic))
             {
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -80,7 +80,7 @@ namespace SCMM.Web.Server.Services
                     x = 0;
                     for (int c = 0; c < columns; c++)
                     {
-                        var imageSource = (imageQueue.Any() ? imageQueue.Dequeue() : null);
+                        var imageSource = (imageSourceQueue.Any() ? imageSourceQueue.Dequeue() : null);
                         if (imageSource?.ImageData == null)
                         {
                             continue;
@@ -132,6 +132,10 @@ namespace SCMM.Web.Server.Services
                             {
                                 title = title.Substring(0, title.Length - 1);
                                 titleWidth = graphics.MeasureString(title, font).Width;
+                            }
+                            if (title.Length != imageSource.Title.Length)
+                            {
+                                title += "…";
                             }
                             if (!string.IsNullOrEmpty(title) && titleWidth > 0)
                             {

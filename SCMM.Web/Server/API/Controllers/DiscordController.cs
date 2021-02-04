@@ -39,7 +39,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("{discordGuildId}/badgeMosaic")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetBadgeMosaic([FromRoute] string discordGuildId, [FromQuery] Guid[] badgeIds = null, [FromQuery] int columns = 5)
+        public async Task<IActionResult> GetBadgeMosaic([FromRoute] string discordGuildId, [FromQuery] Guid[] badgeIds = null, [FromQuery] int badgeSize = 128, [FromQuery] int columns = 5, [FromQuery] int? rows = null)
         {
             if (String.IsNullOrEmpty(discordGuildId))
             {
@@ -66,9 +66,9 @@ namespace SCMM.Web.Server.API.Controllers
 
             var mosaic = await _images.GenerateImageMosaic(
                 images,
-                tileSize: 128,
+                tileSize: badgeSize,
                 columns: columns,
-                rows: Int32.MaxValue
+                rows: (rows ?? Int32.MaxValue)
             );
 
             if (mosaic != null && mosaic.Length > 0)
