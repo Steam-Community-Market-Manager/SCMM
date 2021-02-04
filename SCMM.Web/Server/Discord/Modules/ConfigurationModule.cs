@@ -140,7 +140,7 @@ namespace SCMM.Web.Server.Discord.Modules
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddConfigValueAsync(
             [Name("option")][Summary("Supported config option name")] string option,
-            [Name("values")][Summary("New value to add to the config")][Remainder] params string[] values
+            [Name("values")][Summary("New value to add to the config")] params string[] values
         )
         {
             var guild = _db.DiscordGuilds
@@ -174,7 +174,7 @@ namespace SCMM.Web.Server.Discord.Modules
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveConfigValueAsync(
             [Name("option")][Summary("Supported config option name")] string option,
-            [Name("values")][Summary("Value to remove from the config")][Remainder] params string[] values
+            [Name("values")][Summary("Value to remove from the config")] params string[] values
         )
         {
             var guild = _db.DiscordGuilds

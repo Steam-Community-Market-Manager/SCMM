@@ -82,8 +82,7 @@ namespace SCMM.Web.Server.Data.Models
                 else
                 {
                     config.Value = null;
-                    // TODO: This create orphans, need to fix the cascade delete
-                    //Configurations.Remove(config);
+                    Configurations.Remove(config);
                 }
             }
             else if (!String.IsNullOrEmpty(value))
@@ -150,8 +149,7 @@ namespace SCMM.Web.Server.Data.Models
                     config.List.Remove(value);
                     if (!config.List.Any())
                     {
-                        // TODO: This create orphans, need to fix the cascade delete
-                        //Configurations.Remove(config);
+                        Configurations.Remove(config);
                     }
                 }
             }
@@ -175,8 +173,7 @@ namespace SCMM.Web.Server.Data.Models
             var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
             if (config != null)
             {
-                // TODO: This create orphans, need to fix the cascade delete
-                //Configurations.Remove(config);
+                Configurations.Remove(config);
             }
 
             return config;

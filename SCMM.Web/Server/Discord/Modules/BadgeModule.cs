@@ -36,7 +36,7 @@ namespace SCMM.Web.Server.Discord.Modules
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddBadgeDefinitionAsync(
             [Name("name")][Summary("Name of the badge")] string name,
-            [Name("iconUrl")][Summary("An image that represents the badge")][Remainder] string iconUrl
+            [Name("iconUrl")][Summary("An image that represents the badge")] string iconUrl
         )
         {
             var guild = _db.DiscordGuilds
