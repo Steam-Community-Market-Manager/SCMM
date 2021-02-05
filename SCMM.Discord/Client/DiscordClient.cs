@@ -200,8 +200,7 @@ namespace SCMM.Discord.Client
                         }
 
                         // Send the message
-                        // NOTE: Do no await, we want to broadcast messages in parallel
-                        _ = channel.SendMessageAsync(
+                        await channel.SendMessageAsync(
                             text: message,
                             embed: embed
                         );
