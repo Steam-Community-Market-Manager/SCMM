@@ -120,7 +120,21 @@ namespace SCMM.Web.Server.Services
                     .Where(x => x.ItemResellTax != 0 && x.ItemExchangeRateMultiplier != 0)
                     .Sum(x => (x.ItemResellTax / x.ItemExchangeRateMultiplier) * x.Quantity)
             };
-
+            
+            // Snapshot the inventory value if it has been more than an hour since the last snapshot
+            if (profile.LastSnapshotInventoryOn <= DateTime.Now.Subtract(TimeSpan.FromHours(1)))
+            {
+                profile.LastSnapshotInventoryOn = DateTimeOffset.Now;
+                profile.InventorySnapshots.Add(new SteamProfileInventorySnapshot()
+                {
+                    Profile = profile,
+                    Timestamp = DateTimeOffset.UtcNow,
+                    Currency = currency,
+                    InvestedValue = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
+                    MarketValue = currency.CalculateExchange(profileInventory.TotalValueLast1hr),
+                    TotalItems = profileInventory.TotalItems
+                });
+            }
 
             var hasSetupInvestment = ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 90); // if more than 90% have buy prices set
             return new ProfileInventoryTotalsDTO()

@@ -53,6 +53,8 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
 
+        public DateTimeOffset? LastSnapshotInventoryOn { get; set; }
+
         public DateTimeOffset? LastSignedInOn { get; set; }
 
         public int DonatorLevel { get; set; }
