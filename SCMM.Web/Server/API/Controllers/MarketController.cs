@@ -417,9 +417,9 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var query = _db.SteamProfiles
                 .AsNoTracking()
-                //.Where(x => x.InventorySnapshots.Count > 0)
                 .SelectMany(x => x.InventorySnapshots.OrderBy(y => y.Timestamp).Take(1))
-                .OrderBy(x => x.MarketValue * x.Currency.ExchangeRateMultiplier)
+                .Where(x => x.MarketValue > 0 && x.Currency.ExchangeRateMultiplier > 0)
+                .OrderBy(x => x.MarketValue / x.Currency.ExchangeRateMultiplier)
                 .Select(x => new
                 {
                     SteamId = x.Profile.SteamId,
