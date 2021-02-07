@@ -412,8 +412,38 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("dashboard/acceptedSkinAuthors")]
-        public PaginatedResult<DashboardProfileWorkshopValueDTO> GetDashboardAcceptedSkinAuthors([FromQuery] int start = 0, [FromQuery] int count = 10)
+        [HttpGet("dashboard/highRollers")]
+        public PaginatedResult<DashboardProfileInventoryValueDTO> GetDashboardHighRollers([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var query = _db.SteamProfiles
+                .AsNoTracking()
+                //.Where(x => x.InventorySnapshots.Count > 0)
+                .SelectMany(x => x.InventorySnapshots.OrderBy(y => y.Timestamp).Take(1))
+                .OrderBy(x => x.MarketValue * x.Currency.ExchangeRateMultiplier)
+                .Select(x => new
+                {
+                    SteamId = x.Profile.SteamId,
+                    Name = x.Profile.Name,
+                    AvatarUrl = x.Profile.AvatarUrl,
+                    Currency = x.Currency,
+                    TotalItems = x.TotalItems,
+                    MarketValue = x.MarketValue
+                });
+
+            return query.Paginate(start, count, x => new DashboardProfileInventoryValueDTO()
+            {
+                SteamId = x.SteamId,
+                Name = x.Name,
+                AvatarUrl = x.AvatarUrl,
+                Currency = this.Currency(),
+                TotalItems = x.TotalItems,
+                MarketValue = this.Currency().CalculateExchange(x.MarketValue, x.Currency)
+            });
+        }
+
+        [AllowAnonymous]
+        [HttpGet("dashboard/acceptedCreators")]
+        public PaginatedResult<DashboardProfileWorkshopValueDTO> GetDashboardAcceptedCreators([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamProfiles
                 .AsNoTracking()
@@ -423,7 +453,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     SteamId = x.SteamId,
                     Name = x.Name,
-                    AvatarUrl = x.AvatarLargeUrl,
+                    AvatarUrl = x.AvatarUrl,
                     Items = x.WorkshopFiles.Count,
                 });
 
