@@ -89,11 +89,11 @@ namespace SCMM.Web.Server.Services.Jobs
                         currency.ExchangeRateMultiplier = ((decimal)localPrice / systemCurrencyPrice);
                     }
 
-                    db.SaveChanges();
-
-                    // TODO: Remove this. Delay between requests to avoid server ban
+                    // TODO: Find a better way to bypass rate limiting.
                     Thread.Sleep(3000);
                 }
+
+                db.SaveChanges();
 
                 await currencyService.RepopulateCache();
             }

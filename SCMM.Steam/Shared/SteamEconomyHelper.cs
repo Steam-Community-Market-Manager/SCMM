@@ -70,7 +70,7 @@ namespace SCMM.Steam.Shared
 
             // strip the currency symbol, set .-- to .00
             strAmount = strAmount.Replace(".--", ".00");
-            strAmount = new string(strAmount.Where(c => char.IsDigit(c) || c == '.').ToArray());
+            strAmount = new string(strAmount.Where(c => char.IsDigit(c) || c == '.').ToArray()).Trim('.');
 
             // strip spaces
             strAmount = strAmount.Replace(" ", String.Empty);
