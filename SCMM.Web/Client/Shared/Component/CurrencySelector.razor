@@ -1,6 +1,7 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
 @using SCMM.Web.Shared.Domain.DTOs.Currencies;
 @inject ILogger<CurrencySelector> Logger
+@inject NavigationManager Navigation
 @inject ILocalStorageService LocalStorage
 @inject AppState State
 @inject HttpClient Http
@@ -67,6 +68,7 @@
         StateHasChanged();
 
         await State.WriteToStorageAsync(LocalStorage);
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     }
 
     private void HandleClose(MenuCloseReason reason)
