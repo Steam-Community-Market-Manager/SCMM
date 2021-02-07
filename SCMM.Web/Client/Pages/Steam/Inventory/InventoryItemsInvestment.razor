@@ -67,7 +67,7 @@
                         }
                         else
                         {
-                            <InputBase Margin="@Margin.None" Style="width:70px" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.BuyPriceLocal))">
+                            <InputBase Margin="@Margin.None" Style="min-width:100px" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.BuyPriceLocal))">
                                 <StartAdornment>
                                     @if (item.Currency != null)
                                     {
@@ -78,6 +78,16 @@
                                         <span style="padding-right:5px;">@State.Currency.PrefixText</span>
                                     }
                                 </StartAdornment>
+                                <EndAdornment>
+                                    @if (item.Currency != null)
+                                    {
+                                        <span style="padding-left:5px;">@item.Currency.SuffixText</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="padding-left:5px;">@State.Currency.SuffixText</span>
+                                    }
+                                </EndAdornment>
                             </InputBase>
                         }
                     </TableCell>

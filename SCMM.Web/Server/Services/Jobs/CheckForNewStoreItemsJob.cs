@@ -227,7 +227,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     var priceString = currency.ToPriceString(price.Value)?.Trim();
                     if (!String.IsNullOrEmpty(priceString))
                     {
-                        prices.Add($"{currency.Name} {priceString}");
+                        prices.Add(priceString);
                     }
                 }
             }

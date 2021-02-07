@@ -19,7 +19,7 @@
 @if (State.Currency != null && Currencies != null)
 {
     <Typography class="Currency-Selector" Variant="@TypographyVariant.H6">
-        <span>@State.Currency.PrefixText @State.Currency.Name</span>
+        <span>@State.Currency.Name</span>
         <IconButton OnClick="@OnOpen" RootRef="@ButtonRef">
             <ArrowDropDownIcon />
         </IconButton>
@@ -32,7 +32,6 @@
                 <MenuItem @key="@currency.SteamId"
                           Selected="@(currency.SteamId == State.Currency.SteamId)"
                           OnClick="@(() => HandleCurrencyChange(currency))">
-                    <span style="min-width:30%">@currency.PrefixText</span> 
                     <span>@currency.Name</span>
                 </MenuItem>
             }

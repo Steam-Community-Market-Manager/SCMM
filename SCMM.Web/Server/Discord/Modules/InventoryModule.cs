@@ -165,19 +165,19 @@ namespace SCMM.Web.Server.Discord.Modules
             var fields = new List<EmbedFieldBuilder>();
             fields.Add(new EmbedFieldBuilder()
                 .WithName("📈 Current Market Value")
-                .WithValue($"{currency.ToPriceString(inventoryTotal.TotalMarketValue)} {currency.Name}")
+                .WithValue(currency.ToPriceString(inventoryTotal.TotalMarketValue))
                 .WithIsInline(false)
             );
             if (inventoryTotal.TotalInvested != null && inventoryTotal.TotalInvested > 0)
             {
                 fields.Add(new EmbedFieldBuilder()
                     .WithName("💰 Invested")
-                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalInvested.Value)} {currency.Name}")
+                    .WithValue(currency.ToPriceString(inventoryTotal.TotalInvested.Value))
                     .WithIsInline(true)
                 );
                 fields.Add(new EmbedFieldBuilder()
                     .WithName((inventoryTotal.TotalResellProfit >= 0) ? "⬆️ Profit" : "⬇️ Loss")
-                    .WithValue($"{currency.ToPriceString(inventoryTotal.TotalResellProfit)} {currency.Name}")
+                    .WithValue(currency.ToPriceString(inventoryTotal.TotalResellProfit))
                     .WithIsInline(true)
                 );
             }
