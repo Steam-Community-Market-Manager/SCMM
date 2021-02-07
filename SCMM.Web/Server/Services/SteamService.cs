@@ -122,7 +122,7 @@ namespace SCMM.Web.Server.Services
             };
             
             // Snapshot the inventory value if it has been more than an hour since the last snapshot
-            if (profile.LastSnapshotInventoryOn <= DateTime.Now.Subtract(TimeSpan.FromHours(1)))
+            if (profile.LastSnapshotInventoryOn == null || profile.LastSnapshotInventoryOn <= DateTime.Now.Subtract(TimeSpan.FromHours(1)))
             {
                 profile.LastSnapshotInventoryOn = DateTimeOffset.Now;
                 profile.InventorySnapshots.Add(new SteamProfileInventorySnapshot()
