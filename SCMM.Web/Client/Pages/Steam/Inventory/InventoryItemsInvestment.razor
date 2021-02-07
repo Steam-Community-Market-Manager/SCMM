@@ -67,7 +67,7 @@
                         }
                         else
                         {
-                            <InputBase Margin="@Margin.None" Style="min-width:100px" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.BuyPriceLocal))">
+                            <InputBase Margin="@Margin.None" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.BuyPriceLocal))">
                                 <StartAdornment>
                                     @if (item.Currency != null)
                                     {
@@ -94,7 +94,7 @@
                     <TableCell Class="@GetItemClass(item)">
                         @if (item.Last1hrValue != null)
                         {
-                            @item.Currency.ToPriceString(item.Last1hrValue.Value)
+                            @State.Currency.ToPriceString(item.Last1hrValue.Value)
                         }
                         else
                         {
@@ -104,7 +104,7 @@
                     <TableCell Class="@GetItemClass(item)">
                         @if (item.ResellPrice != null)
                         {
-                            @item.Currency.ToPriceString(item.ResellPrice.Value) 
+                            @State.Currency.ToPriceString(item.ResellPrice.Value) 
                         }
                         else
                         {
@@ -114,7 +114,7 @@
                     <TableCell Class="@GetItemClass(item)">
                         @if (item.ResellTax != null)
                         {
-                            @item.Currency.ToPriceString(item.ResellTax.Value) 
+                            @State.Currency.ToPriceString(item.ResellTax.Value) 
                         }
                         else
                         {
@@ -124,7 +124,7 @@
                     <TableCell Class="@GetItemClass(item)">
                         @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
                         {
-                            @item.Currency.ToPriceString(item.ResellPrice.Value - item.ResellTax.Value - item.BuyPrice.Value) 
+                            @State.Currency.ToPriceString(item.ResellPrice.Value - item.ResellTax.Value - item.BuyPrice.Value) 
                         }
                         else
                         {
