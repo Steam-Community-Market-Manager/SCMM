@@ -2,6 +2,7 @@
 @using SCMM.Web.Shared.Data.Models.UI
 @using SCMM.Web.Shared.Data.Models.UI.ProfileInventory
 @using SCMM.Web.Shared.Domain.DTOs.InventoryItems
+@using SCMM.Web.Shared.Domain.DTOs.Currencies
 @using SCMM.Web.Shared
 @inherits ComponentBase
 @inject ILocalStorageService LocalStorage
@@ -67,26 +68,12 @@
                         }
                         else
                         {
-                            <InputBase Margin="@Margin.None" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.BuyPriceLocal))">
+                            <InputBase Margin="@Margin.None" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.Currency ?? State.Currency, item.BuyPriceLocal))">
                                 <StartAdornment>
-                                    @if (item.Currency != null)
-                                    {
-                                        <span style="padding-right:5px;">@item.Currency.PrefixText</span>
-                                    }
-                                    else
-                                    {
-                                        <span style="padding-right:5px;">@State.Currency.PrefixText</span>
-                                    }
+                                    <span style="padding-right:5px;">@((item.Currency ?? State.Currency).PrefixText)</span>
                                 </StartAdornment>
                                 <EndAdornment>
-                                    @if (item.Currency != null)
-                                    {
-                                        <span style="padding-left:5px;">@item.Currency.SuffixText</span>
-                                    }
-                                    else
-                                    {
-                                        <span style="padding-left:5px;">@State.Currency.SuffixText</span>
-                                    }
+                                    <span style="padding-left:5px;">@((item.Currency ?? State.Currency).SuffixText)</span>
                                 </EndAdornment>
                             </InputBase>
                         }
@@ -247,20 +234,20 @@
         return null;
     }
 
-    private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, string value)
+    private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, CurrencyDTO currency, string value)
     {
         var buyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
         if (buyPrice != item.BuyPrice)
         {
             Logger.LogInformation($"Updating buy price for '{item.Id}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}')");
             item.Currency = State.Currency;
-            item.BuyPrice = SCMM.Steam.Shared.SteamEconomyHelper.GetPriceValueAsInt(value, useDecimalShortCircuit: false);
+            item.BuyPrice = buyPrice;
             try 
             {
                 await Http.PutAsJsonAsync($"api/profile/inventory/item/{item.Id}/buyPrice", new UpdateInventoryItemPriceCommand()
                 {
                     CurrencyId = State.Currency.Id,
-                    Price = value
+                    BuyPrice = buyPrice
                 });
             }
             catch (Exception ex)

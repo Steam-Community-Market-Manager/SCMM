@@ -155,7 +155,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             inventoryItem.CurrencyId = command.CurrencyId;
-            inventoryItem.BuyPrice = SteamEconomyHelper.GetPriceValueAsInt(command.Price);
+            inventoryItem.BuyPrice = command.BuyPrice;
             _db.SaveChanges();
             return Ok();
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 
 namespace SCMM.Steam.Shared
@@ -31,7 +32,7 @@ namespace SCMM.Steam.Shared
         /// C# port of the Steam economy common logic
         /// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
         /// </summary>
-        public static int GetQuantityValueAsInt(string strAmount)
+        public static int GetQuantityValueAsInt(string strAmount, CultureInfo culture = null)
         {
             if (String.IsNullOrEmpty(strAmount))
             {
@@ -39,14 +40,14 @@ namespace SCMM.Steam.Shared
             }
 
             strAmount = new string(strAmount.Where(c => char.IsDigit(c)).ToArray());
-            return int.Parse(strAmount);
+            return int.Parse(strAmount, culture?.NumberFormat);
         }
 
         /// <summary>
         /// C# port of the Steam economy common logic
         /// https://steamcommunity-a.akamaihd.net/public/javascript/economy_common.js?v=tsXdRVB0yEaR&l=english
         /// </summary>
-        public static long GetPriceValueAsInt(string strAmount, bool useDecimalShortCircuit = true)
+        public static long GetPriceValueAsInt(string strAmount, CultureInfo culture = null, bool useDecimalShortCircuit = true)
         {
             long nAmount = 0;
             if (String.IsNullOrEmpty(strAmount))
@@ -58,7 +59,7 @@ namespace SCMM.Steam.Shared
             if (useDecimalShortCircuit)
             {
                 var decAmount = 0m;
-                if (decimal.TryParse(strAmount, out decAmount))
+                if (decimal.TryParse(strAmount, NumberStyles.Any, culture?.NumberFormat, out decAmount))
                 {
                     decAmount = Math.Round(decAmount, 2);
                     strAmount = decAmount.ToString();
@@ -81,7 +82,7 @@ namespace SCMM.Steam.Shared
                 var splitAmount = strAmount.Split('.');
                 var strLastSegment = splitAmount.Length > 0 ? splitAmount[splitAmount.Length - 1] : null;
 
-                if (!String.IsNullOrEmpty(strLastSegment) && strLastSegment.Length == 3 && Int64.Parse(splitAmount[splitAmount.Length - 2]) != 0)
+                if (!String.IsNullOrEmpty(strLastSegment) && strLastSegment.Length == 3 && Int64.Parse(splitAmount[splitAmount.Length - 2], culture?.NumberFormat) != 0)
                 {
                     // Looks like the user only entered thousands separators. Remove all commas and periods.
                     // Ensures an entry like "1,147" is not treated as "1.147"
@@ -99,7 +100,7 @@ namespace SCMM.Steam.Shared
                 }
             }
 
-            var flAmount = decimal.Parse(strAmount) * 100;
+            var flAmount = decimal.Parse(strAmount, culture?.NumberFormat) * 100;
             nAmount = (long)Math.Floor(flAmount + 0.000001m); // round down
 
             nAmount = Math.Max(nAmount, 0);
