@@ -91,13 +91,11 @@ namespace SCMM.Web.Server.Services.Jobs
                     var ourStoreItemIds = db.SteamItemStores
                         .Where(x => x.End == null)
                         .OrderByDescending(x => x.Start)
-                        .Select(x => x.Items.Select(i => i.Item.SteamId))
-                        .FirstOrDefault()
-                        ?.OrderBy(x => x)
-                        ?.ToList();
+                        .SelectMany(x => x.Items.Select(i => i.Item.SteamId))
+                        .ToList();
 
                     // If both stores contain the same items, then there is no need to update anything
-                    var storesAreTheSame = (ourStoreItemIds != null && theirStoreItemIds.SequenceEqual(ourStoreItemIds));
+                    var storesAreTheSame = (ourStoreItemIds != null && theirStoreItemIds.All(x => ourStoreItemIds.Contains(x)));
                     if (storesAreTheSame)
                     {
                         continue;
