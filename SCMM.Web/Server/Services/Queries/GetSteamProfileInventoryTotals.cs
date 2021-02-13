@@ -17,6 +17,8 @@ namespace SCMM.Web.Server.Services.Queries
 
     public class GetSteamProfileInventoryTotalsResponse
     {
+        public bool IsPrivate { get; set; }
+
         public int TotalItems { get; set; }
 
         public long? TotalInvested { get; set; }
@@ -115,6 +117,7 @@ namespace SCMM.Web.Server.Services.Queries
             var hasSetupInvestment = ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 90); // if more than 90% have buy prices set
             return new GetSteamProfileInventoryTotalsResponse()
             {
+                IsPrivate = (profile.Privacy != Shared.Data.Models.Steam.SteamVisibilityType.Public),
                 TotalItems = profileInventory.TotalItems,
                 TotalInvested = (hasSetupInvestment ? currency.CalculateExchange(profileInventory.TotalInvested ?? 0) : null),
                 TotalMarketValue = currency.CalculateExchange(profileInventory.TotalValueLast1hr),

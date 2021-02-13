@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SCMM.Discord.Client.Extensions;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Extensions;
@@ -50,13 +51,16 @@ namespace SCMM.Web.Server.Discord.Modules
         {
             user = (user ?? Context.User);
 
+            var message = await ReplyAsync("Loading...");
+            await message.LoadingAsync("🔍 Finding Steam profile...");
+
             // Load the profile using the discord id
-            var message = await ReplyAsync("Finding Steam profile...");
             var discordId = $"{user.Username}#{user.Discriminator}";
             var profile = _db.SteamProfiles
                 .AsNoTracking()
                 .Include(x => x.Currency)
                 .FirstOrDefault(x => x.DiscordId == discordId);
+
             /*
             if (profile == null)
             {
@@ -85,8 +89,10 @@ namespace SCMM.Web.Server.Discord.Modules
 
         private async Task SayProfileInventoryValueInternalAsync(IUserMessage message, string steamId, string currencyId)
         {
+            message = (message ?? await ReplyAsync("Loading..."));
+
             // Load the profile
-            message = (message ?? await ReplyAsync("Finding Steam profile..."));
+            await message.LoadingAsync("🔍 Finding Steam profile...");
             var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
                 Id = steamId
@@ -126,9 +132,7 @@ namespace SCMM.Web.Server.Discord.Modules
             }
 
             // Reload the profiles inventory
-            await message.ModifyAsync(x =>
-                x.Content = "Fetching inventory details from Steam..."
-            );
+            await message.LoadingAsync("🔄 Fetching inventory details from Steam...");
             await _commandProcessor.ProcessAsync(new FetchSteamProfileInventoryRequest()
             {
                 Id = profile.Id
@@ -137,9 +141,7 @@ namespace SCMM.Web.Server.Discord.Modules
             _db.SaveChanges();
 
             // Calculate the profiles inventory totals
-            await message.ModifyAsync(x => 
-                x.Content = "Calculating inventory value..."
-            );
+            await message.LoadingAsync("💱 Calculating inventory value...");
             var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
             {
                 SteamId = profile.SteamId,
@@ -156,9 +158,7 @@ namespace SCMM.Web.Server.Discord.Modules
             // Snapshot the profiles inventory totals
             if (profile.LastSnapshotInventoryOn == null || profile.LastSnapshotInventoryOn <= DateTime.Now.Subtract(TimeSpan.FromHours(1)))
             {
-                await message.ModifyAsync(x =>
-                    x.Content = "Snapshotting inventory value..."
-                );
+                await message.LoadingAsync("💾 Snapshotting inventory value...");
                 await _commandProcessor.ProcessAsync(new SnapshotSteamProfileInventoryValueRequest()
                 {
                     SteamId = profile.SteamId,
@@ -170,9 +170,7 @@ namespace SCMM.Web.Server.Discord.Modules
             }
 
             // Generate the profiles inventory thumbnail
-            await message.ModifyAsync(x =>
-                x.Content = "Generating inventory thumbnail..."
-            );
+            await message.LoadingAsync("🎨 Generating inventory thumbnail...");
             var inventoryThumbnail = await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
             {
                 SteamId = profile.SteamId,

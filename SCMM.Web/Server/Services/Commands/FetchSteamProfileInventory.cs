@@ -93,12 +93,13 @@ namespace SCMM.Web.Server.Services.Commands
                     Count = SteamInventoryPaginatedJsonRequest.MaxPageSize,
                     NoRender = true
                 });
-                if (inventory?.Success != true)
+                if (inventory == null)
                 {
                     // Inventory is probably private
+                    profile.Privacy = Shared.Data.Models.Steam.SteamVisibilityType.Private;
                     continue;
                 }
-                if (inventory?.Assets?.Any() != true)
+                if (inventory.Assets?.Any() != true)
                 {
                     // Inventory doesn't have any items for this app
                     continue;
@@ -149,8 +150,9 @@ namespace SCMM.Web.Server.Services.Commands
                     profile.InventoryItems.Remove(asset);
                 }
 
-                // Update last inventory update timestamp
+                // Update last inventory update timestamp and privacy state
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
+                profile.Privacy = Shared.Data.Models.Steam.SteamVisibilityType.Public;
             }
         }
     }

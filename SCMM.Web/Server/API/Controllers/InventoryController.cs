@@ -67,7 +67,7 @@ namespace SCMM.Web.Server.API.Controllers
             var profile = fetchAndCreateProfile?.Profile;
             if (profile == null)
             {
-                return NotFound($"Profile with SteamID '{steamId}' was not found");
+                return NotFound($"Profile with SteamID '{steamId}' was not found (or is private)");
             }
 
             // Reload the profile's inventory

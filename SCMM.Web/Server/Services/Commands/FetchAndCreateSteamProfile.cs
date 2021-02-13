@@ -1,6 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared;
 using SCMM.Steam.Shared.Community.Requests.Html;
@@ -29,13 +30,15 @@ namespace SCMM.Web.Server.Services.Commands
 
     public class FetchAndCreateSteamProfile : ICommandHandler<FetchAndCreateSteamProfileRequest, FetchAndCreateSteamProfileResponse>
     {
+        private readonly ILogger<FetchAndCreateSteamProfile> _logger;
         private readonly ScmmDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
 
-        public FetchAndCreateSteamProfile(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor)
+        public FetchAndCreateSteamProfile(ILogger<FetchAndCreateSteamProfile> logger, ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor)
         {
+            _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _communityClient = communityClient;
@@ -45,92 +48,101 @@ namespace SCMM.Web.Server.Services.Commands
         public async Task<FetchAndCreateSteamProfileResponse> HandleAsync(FetchAndCreateSteamProfileRequest request)
         {
             // Resolve the id
+            
             var profile = (SteamProfile) null;
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
                 Id = request.Id
             });
 
-            // If we know the exact steam id, fetch using the Steam API
-            if (!String.IsNullOrEmpty(resolvedId.SteamId))
+            try
             {
-                var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
-                var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
-                var response = await steamUser.GetPlayerSummaryAsync(UInt64.Parse(resolvedId.SteamId));
-                if (response?.Data == null)
+                // If we know the exact steam id, fetch using the Steam API
+                if (!String.IsNullOrEmpty(resolvedId.SteamId))
                 {
-                    // Profile is probably private or deleted
-                    return null;
-                }
-
-                var profileId = response.Data.ProfileUrl;
-                if (!string.IsNullOrEmpty(profileId))
-                {
-                    if (Regex.IsMatch(profileId, SteamConstants.SteamProfileUrlSteamIdRegex))
+                    var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
+                    var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
+                    var response = await steamUser.GetPlayerSummaryAsync(UInt64.Parse(resolvedId.SteamId));
+                    if (response?.Data == null)
                     {
-                        profileId = Regex.Match(profileId, SteamConstants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
+                        // Profile is probably private or deleted
+                        throw new Exception("No response received from server");
                     }
-                    else if (Regex.IsMatch(profileId, SteamConstants.SteamProfileUrlProfileIdRegex))
+
+                    var profileId = response.Data.ProfileUrl;
+                    if (!string.IsNullOrEmpty(profileId))
                     {
-                        profileId = Regex.Match(profileId, SteamConstants.SteamProfileUrlProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
+                        if (Regex.IsMatch(profileId, SteamConstants.SteamProfileUrlSteamIdRegex))
+                        {
+                            profileId = Regex.Match(profileId, SteamConstants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
+                        }
+                        else if (Regex.IsMatch(profileId, SteamConstants.SteamProfileUrlProfileIdRegex))
+                        {
+                            profileId = Regex.Match(profileId, SteamConstants.SteamProfileUrlProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
+                        }
                     }
+
+                    profile = await _db.SteamProfiles.FirstOrDefaultAsync(
+                        x => x.SteamId == resolvedId.SteamId
+                    );
+                    profile = profile ?? new SteamProfile()
+                    {
+                        SteamId = resolvedId.SteamId
+                    };
+
+                    profile.ProfileId = profileId;
+                    profile.Name = response.Data.Nickname?.Trim();
+                    profile.AvatarUrl = response.Data.AvatarMediumUrl;
+                    profile.AvatarLargeUrl = response.Data.AvatarFullUrl;
+                    profile.Country = response.Data.CountryCode;
                 }
 
-                profile = await _db.SteamProfiles.FirstOrDefaultAsync(
-                    x => x.SteamId == resolvedId.SteamId
-                );
-                profile = profile ?? new SteamProfile()
+                // Else, if we know the custom profile id, fetch using the legacy XML API
+                else if (!String.IsNullOrEmpty(resolvedId.ProfileId))
                 {
-                    SteamId = resolvedId.SteamId
-                };
+                    var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
+                    {
+                        ProfileId = resolvedId.ProfileId,
+                        Xml = true
+                    });
+                    if (response == null)
+                    {
+                        // Profile is probably private or deleted
+                        throw new Exception("No response received from server");
+                    }
 
-                profile.ProfileId = profileId;
-                profile.Name = response.Data.Nickname?.Trim();
-                profile.AvatarUrl = response.Data.AvatarMediumUrl;
-                profile.AvatarLargeUrl = response.Data.AvatarFullUrl;
-                profile.Country = response.Data.CountryCode;
-            }
+                    profile = await _db.SteamProfiles.FirstOrDefaultAsync(
+                        x => x.SteamId == response.SteamID64.ToString()
+                    );
+                    profile = profile ?? new SteamProfile()
+                    {
+                        ProfileId = resolvedId.ProfileId
+                    };
 
-            // Else, if we know the custom profile id, fetch using the legacy XML API
-            else if (!String.IsNullOrEmpty(resolvedId.ProfileId))
-            {
-                var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
-                {
-                    ProfileId = resolvedId.ProfileId,
-                    Xml = true
-                });
-                if (response == null)
-                {
-                    // Profile is probably private or deleted
-                    return null;
+                    profile.SteamId = response.SteamID64.ToString();
+                    profile.ProfileId = resolvedId.ProfileId;
+                    profile.Name = response.SteamID?.Trim();
+                    profile.AvatarUrl = response.AvatarMedium;
+                    profile.AvatarLargeUrl = response.AvatarFull;
+                    profile.Country = response.Location;
                 }
 
-                profile = await _db.SteamProfiles.FirstOrDefaultAsync(
-                    x => x.SteamId == response.SteamID64.ToString()
-                );
-                profile = profile ?? new SteamProfile()
+                // Save the new profile to the datbase
+                if (profile != null && profile.Id == Guid.Empty)
                 {
-                    ProfileId = resolvedId.ProfileId
+                    _db.SteamProfiles.Add(profile);
+                }
+
+                return new FetchAndCreateSteamProfileResponse
+                {
+                    Profile = profile
                 };
-
-                profile.SteamId = response.SteamID64.ToString();
-                profile.ProfileId = resolvedId.ProfileId;
-                profile.Name = response.SteamID?.Trim();
-                profile.AvatarUrl = response.AvatarMedium;
-                profile.AvatarLargeUrl = response.AvatarFull;
-                profile.Country = response.Location;
             }
-
-            // Save the new profile to the datbase
-            if (profile != null && profile.Id == Guid.Empty)
+            catch (Exception ex)
             {
-                _db.SteamProfiles.Add(profile);
+                _logger.LogError(ex, "Failed to get profile from Steam");
+                return null;
             }
-
-            return new FetchAndCreateSteamProfileResponse
-            {
-                Profile = profile
-            };
         }
     }
 }
