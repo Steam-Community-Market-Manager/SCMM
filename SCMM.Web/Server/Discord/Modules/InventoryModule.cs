@@ -67,7 +67,7 @@ namespace SCMM.Web.Server.Discord.Modules
             }
             */
 
-            await SayProfileInventoryValueInternalAsync(message, profile?.SteamId ?? user.Username, currencyId ?? profile.Currency?.Name);
+            await SayProfileInventoryValueInternalAsync(message, profile?.SteamId ?? user?.Username, currencyId ?? profile?.Currency?.Name);
         }
         
         [Command]
