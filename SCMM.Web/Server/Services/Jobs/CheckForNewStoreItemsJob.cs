@@ -113,7 +113,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         .Include(x => x.Items).ThenInclude(x => x.Item.Description)
                         .ToList();
 
-                    // End any stores that have items no longer available
+                    // End any stores that have items which are no longer available
                     foreach (var itemStore in activeItemStores.ToList())
                     {
                         var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
@@ -125,16 +125,16 @@ namespace SCMM.Web.Server.Services.Jobs
                         }
                     }
 
-                    // Ensure that there is at least one active store (create a new one if needed)
-                    var activeItemStore = activeItemStores.FirstOrDefault();
-                    if (activeItemStore == null)
+                    // If there are no active item stores or they are older than 24hrs, create a new store
+                    var newItemStore = activeItemStores.FirstOrDefault();
+                    if (newItemStore == null || (DateTimeOffset.UtcNow - newItemStore.Start) > TimeSpan.FromDays(1))
                     {
                         var culture = CultureInfo.InvariantCulture;
                         var storeDate = DateTimeOffset.UtcNow.Date;
                         int storeDateWeek = culture.Calendar.GetWeekOfYear(storeDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
                         var storeTitle = $"Week {storeDateWeek}";
                         db.SteamItemStores.Add(
-                            activeItemStore = new SteamItemStore()
+                            newItemStore = new SteamItemStore()
                             {
                                 App = app,
                                 AppId = app.Id,
@@ -144,7 +144,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         );
                     }
 
-                    // Ensure that the store items are available in the database (create them if missing)
+                    // Ensure that all store items are available in the database (create them if missing)
                     var activeStoreItems = new List<SteamStoreItem>();
                     foreach (var asset in response.Data.Assets)
                     {
@@ -159,31 +159,31 @@ namespace SCMM.Web.Server.Services.Jobs
                     var newStoreItems = new List<SteamStoreItem>();
                     foreach (var item in activeStoreItems)
                     {
-                        if (!activeItemStore.Items.Any(x => x.Item.SteamId == item.SteamId))
+                        if (!item.Stores.Any(x => activeItemStores.Select(x => x.Id).Contains(x.StoreId)))
                         {
                             newStoreItems.Add(item);
-                            activeItemStore.Items.Add(new SteamStoreItemItemStore()
+                            newItemStore.Items.Add(new SteamStoreItemItemStore()
                             {
-                                Store = activeItemStore,
+                                Store = newItemStore,
                                 Item = item
                             });
                         }
                     }
 
                     // Regenerate the store items thumbnail
-                    if (activeItemStore.ItemsThumbnail == null)
+                    if (newItemStore.ItemsThumbnail == null)
                     {
-                        var thumbnail = await GenerateStoreItemsThumbnail(queryProcessor, activeItemStore.Items.Select(x => x.Item));
+                        var thumbnail = await GenerateStoreItemsThumbnail(queryProcessor, newItemStore.Items.Select(x => x.Item));
                         if (thumbnail != null)
                         {
-                            activeItemStore.ItemsThumbnail = thumbnail;
+                            newItemStore.ItemsThumbnail = thumbnail;
                         }
                     }
 
                     db.SaveChanges();
 
                     // Send out a broadcast about any "new" items that weren't already in our store
-                    await BroadcastNewStoreItemsNotification(discord, db, app, activeItemStore, newStoreItems, currencies);
+                    await BroadcastNewStoreItemsNotification(discord, db, app, newItemStore, newStoreItems, currencies);
                 }
             }
         }

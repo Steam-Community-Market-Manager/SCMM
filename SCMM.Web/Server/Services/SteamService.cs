@@ -443,6 +443,7 @@ namespace SCMM.Web.Server.Services
         public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, string languageId, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
+                .Include(x => x.Stores)
                 .Include(x => x.Description)
                 .Where(x => x.AppId == app.Id)
                 .FirstOrDefaultAsync(x => x.SteamId == asset.Name);
