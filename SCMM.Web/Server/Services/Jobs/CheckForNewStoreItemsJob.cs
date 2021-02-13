@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -6,9 +7,11 @@ using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Data.Models;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
+using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
@@ -44,6 +47,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
                 var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
+                var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
                 var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
@@ -102,6 +106,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     // If we got here, then then item store has changed (either added or removed items)
                     // Load all of our active stores and their items
                     var activeItemStores = db.SteamItemStores
+                        .Include(x => x.ItemsThumbnail)
                         .Where(x => x.End == null)
                         .OrderByDescending(x => x.Start)
                         .Include(x => x.Items).ThenInclude(x => x.Item)
@@ -165,16 +170,60 @@ namespace SCMM.Web.Server.Services.Jobs
                         }
                     }
 
+                    // Regenerate the store items thumbnail
+                    if (activeItemStore.ItemsThumbnail == null)
+                    {
+                        var thumbnail = await GenerateStoreItemsThumbnail(queryProcessor, activeItemStore.Items.Select(x => x.Item));
+                        if (thumbnail != null)
+                        {
+                            activeItemStore.ItemsThumbnail = thumbnail;
+                        }
+                    }
+
                     db.SaveChanges();
-                    
+
                     // Send out a broadcast about any "new" items that weren't already in our store
                     await BroadcastNewStoreItemsNotification(discord, db, app, activeItemStore, newStoreItems, currencies);
                 }
             }
         }
 
+        private async Task<ImageData> GenerateStoreItemsThumbnail(IQueryProcessor queryProcessor, IEnumerable<SteamStoreItem> storeItems)
+        {
+            // Generate store thumbnail
+            var items = storeItems.OrderBy(x => x.Description?.Name);
+            var itemImageSources = items
+                .Where(x => x.Description != null)
+                .Select(x => new ImageSource()
+                {
+                    Title = x.Description.Name,
+                    ImageUrl = x.Description.IconUrl,
+                    ImageData = x.Description.Icon?.Data,
+                })
+                .ToList();
+
+            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+            {
+                ImageSources = itemImageSources,
+                TileSize = 256,
+                Columns = 3
+            });
+
+            if (thumbnail == null)
+            {
+                return null;
+            }
+
+            return new ImageData()
+            {
+                Data = thumbnail.Data,
+                MimeType = thumbnail.MimeType
+            };
+        }
+
         private async Task BroadcastNewStoreItemsNotification(DiscordClient discord, ScmmDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
         {
+            newStoreItems = newStoreItems?.OrderBy(x => x.Description.Name);
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
@@ -200,17 +249,14 @@ namespace SCMM.Web.Server.Services.Jobs
                     message: null,
                     title: $"{app.Name} Store - {store.Name}",
                     description: $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
-                    fields: newStoreItems.OrderBy(x => x.Description.Name).ToDictionary(
+                    fields: newStoreItems.ToDictionary(
                         x => x.Description?.Name,
                         x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
                     fieldsInline: true,
-                    url: new SteamItemStorePageRequest()
-                    {
-                        AppId = app.SteamId
-                    },
+                    url: $"{_configuration.GetBaseUrl()}/steam/store",
                     thumbnailUrl: app.IconUrl,
-                    imageUrl: $"{_configuration.GetBaseUrl()}/api/store/{store.Id}/mosaic",
+                    imageUrl: $"{_configuration.GetBaseUrl()}/api/image/{store.ItemsThumbnailId}",
                     color: ColorTranslator.FromHtml(app.PrimaryColor)
                 );
             }

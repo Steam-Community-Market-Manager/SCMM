@@ -3,6 +3,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Shared.Community.Requests.Blob;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,6 +12,8 @@ namespace SCMM.Web.Server.Services.Commands
     public class FetchAndCreateImageDataRequest : ICommand<FetchAndCreateImageDataResponse>
     {
         public string Url { get; set; }
+
+        public DateTimeOffset? ExpiresOn { get; set; } = null;
 
         /// <summary>
         /// If true, we'll recycle existing image data the same source url exists in the database already
@@ -60,7 +63,8 @@ namespace SCMM.Web.Server.Services.Commands
             {
                 Source = request.Url,
                 MimeType = imageResponse.Item2,
-                Data = imageResponse.Item1
+                Data = imageResponse.Item1,
+                ExpiresOn = request.ExpiresOn
             };
 
             // Save the new image data to the database

@@ -1,4 +1,5 @@
-﻿using CommandQuery;
+﻿using AutoMapper;
+using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Web.Server.Data;
@@ -13,32 +14,66 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Services
+namespace SCMM.Web.Server.Services.Queries
 {
-    public class ImageService
+    public class GetImageMosaicRequest : IQuery<GetImageMosaicResponse>
+    {
+        public IEnumerable<ImageSource> ImageSources { get; set; }
+
+        public int TileSize { get; set; } = 256;
+
+        public int Columns { get; set; } = 3;
+
+        public int? Rows { get; set; } = null;
+    }
+
+    public class GetTradeImageMosaicRequest : IQuery<GetImageMosaicResponse>
+    {
+        public IEnumerable<ImageSource> HaveImageSources { get; set; }
+
+        public IEnumerable<ImageSource> WantImageSources { get; set; }
+
+        public int TileSize { get; set; } = 256;
+
+        public int Columns { get; set; } = 3;
+    }
+
+    public class GetImageMosaicResponse
+    {
+        public byte[] Data { get; set; }
+
+        public string MimeType { get; set; }
+    }
+
+    public class GetImageMosaic : 
+        IQueryHandler<GetImageMosaicRequest, GetImageMosaicResponse>,
+        IQueryHandler<GetTradeImageMosaicRequest, GetImageMosaicResponse>
     {
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         private readonly ScmmDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
+        private readonly IMapper _mapper;
 
-        public ImageService(ScmmDbContext db, ICommandProcessor commandProcessor)
+        public GetImageMosaic(ScmmDbContext db, ICommandProcessor commandProcessor, IMapper mapper)
         {
             _db = db;
             _commandProcessor = commandProcessor;
+            _mapper = mapper;
         }
 
-        public async Task<byte[]> GenerateImageMosaic(IEnumerable<ImageSource> imageSources, int tileSize = 128, int columns = 5, int rows = 5)
+        public async Task<GetImageMosaicResponse> HandleAsync(GetImageMosaicRequest request)
         {
-            var tileCount = imageSources.Count();
+            var imageSources = request.ImageSources.ToList();
+            var tileCount = imageSources.Count;
             if (tileCount < 1)
             {
                 return null;
             }
 
-            columns = Math.Max(1, columns);
-            rows = Math.Max(1, rows);
-            tileSize = Math.Max(8, tileSize);
+            var columns = Math.Max(1, request.Columns);
+            var rows = Math.Max(1, request.Rows ?? Int32.MaxValue);
+            var tileSize = Math.Max(8, request.TileSize);
 
             var x = 0;
             var y = 0;
@@ -88,10 +123,10 @@ namespace SCMM.Web.Server.Services
 
                         var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
                         graphics.DrawImage(
-                            image, 
-                            x + ((Math.Max(2, tileSize - imageSize) / 2) - 1), 
-                            y, 
-                            imageSize, 
+                            image,
+                            x + ((Math.Max(2, tileSize - imageSize) / 2) - 1),
+                            y,
+                            imageSize,
                             imageSize
                         );
 
@@ -105,20 +140,20 @@ namespace SCMM.Web.Server.Services
                                 badgeFontOffset = 5;
                             }
                             graphics.FillEllipse(
-                                solidBlue, 
+                                solidBlue,
                                 new Rectangle(
-                                    x + tileSize - badgeSize, 
-                                    y, 
-                                    badgeSize, 
+                                    x + tileSize - badgeSize,
+                                    y,
+                                    badgeSize,
                                     badgeSize
                                 )
                             );
                             graphics.DrawString(
                                 $"{count}",
-                                font, 
-                                solidBlack, 
+                                font,
+                                solidBlack,
                                 new PointF(
-                                    (x + tileSize - (badgeSize - padding + badgeFontOffset)), 
+                                    (x + tileSize - (badgeSize - padding + badgeFontOffset)),
                                     (y + (padding / 4) + (badgeFontOffset / 4))
                                 )
                             );
@@ -160,24 +195,31 @@ namespace SCMM.Web.Server.Services
             {
                 mosaic.Save(mosaicStream, ImageFormat.Png);
                 var mosaicRaw = mosaicStream.ToArray();
-                return mosaicRaw;
+                return new GetImageMosaicResponse
+                {
+                    Data = mosaicRaw,
+                    MimeType = "image/png"
+                };
             }
         }
 
-        public async Task<byte[]> GenerateTradeImageMosaic(IEnumerable<ImageSource> haveImageSources, IEnumerable<ImageSource> wantImageSources, int fontSize = 48, int tileSize = 128)
+        public async Task<GetImageMosaicResponse> HandleAsync(GetTradeImageMosaicRequest request)
         {
+            var haveImageSources = request.HaveImageSources.ToList();
             var haveTileCount = haveImageSources.Count();
+
+            var wantImageSources = request.WantImageSources.ToList();
             var wantTileCount = wantImageSources.Count();
             if (wantTileCount < 1)
             {
                 return null;
             }
 
-            var columns = 5;
-            var rows = (int) Math.Ceiling((float)Math.Max(haveTileCount, wantTileCount) / columns);
-            fontSize = Math.Max(24, fontSize);
-            var textPadding = (int) Math.Ceiling(fontSize * 0.5);
-            tileSize = Math.Max(8, tileSize);
+            var columns = Math.Max(1, request.Columns);
+            var rows = (int)Math.Ceiling((float)Math.Max(haveTileCount, wantTileCount) / columns);
+            var fontSize = 24;
+            var textPadding = (int)Math.Ceiling(fontSize * 0.5);
+            var tileSize = Math.Max(8, request.TileSize);
 
             // Hydrate the image sources (but only as many as we need to render)
             var maxHaveTiles = Math.Min(haveTileCount, (columns * rows));
@@ -209,7 +251,7 @@ namespace SCMM.Web.Server.Services
                     );
                     graphics.DrawPath(bluePen, path);
                     graphics.FillPath(
-                        new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical), 
+                        new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical),
                         path
                     );
 
@@ -270,7 +312,11 @@ namespace SCMM.Web.Server.Services
             {
                 mosaic.Save(mosaicStream, ImageFormat.Png);
                 var mosaicRaw = mosaicStream.ToArray();
-                return mosaicRaw;
+                return new GetImageMosaicResponse
+                {
+                    Data = mosaicRaw,
+                    MimeType = "image/png"
+                };
             }
         }
 
@@ -328,7 +374,8 @@ namespace SCMM.Web.Server.Services
                 var fetchedImage = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
                 {
                     Url = imageSource.ImageUrl,
-                    UseExisting = false // we've already checked, it doesn't exist
+                    UseExisting = false, // we've already checked, it doesn't exist
+                    ExpiresOn = DateTimeOffset.Now.AddDays(7) // cache for 7 days, then delete
                 });
                 if (fetchedImage?.Image?.Data != null)
                 {

@@ -116,7 +116,6 @@ namespace SCMM.Web.Server
             services.AddQueries(typeof(Startup).Assembly);
 
             // Services
-            services.AddScoped<ImageService>();
             services.AddScoped<SteamService>();
             services.AddScoped<SteamLanguageService>();
             services.AddScoped<SteamCurrencyService>();

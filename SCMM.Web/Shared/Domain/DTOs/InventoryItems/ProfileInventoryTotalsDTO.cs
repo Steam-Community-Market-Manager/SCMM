@@ -1,8 +1,10 @@
-﻿namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
+﻿using SCMM.Web.Shared.Domain.DTOs.Currencies;
+
+namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
     public class ProfileInventoryTotalsDTO
     {
-        public string SteamId { get; set; }
+        public CurrencyDTO Currency { get; set; }
 
         public int TotalItems { get; set; }
 

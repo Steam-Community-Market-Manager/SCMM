@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Web.Server.Data;
 
 namespace SCMM.Web.Server.Data.Migrations.Steam
 {
     [DbContext(typeof(ScmmDbContext))]
-    partial class ScmmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210212210109_AddImageDataExpiresOn")]
+    partial class AddImageDataExpiresOn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -395,9 +397,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                     b.Property<DateTimeOffset?>("End")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid?>("ItemsThumbnailId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -405,8 +404,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ItemsThumbnailId");
 
                     b.HasIndex("AppId", "Start", "End")
                         .IsUnique()
@@ -1172,10 +1169,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SCMM.Web.Server.Data.Models.ImageData", "ItemsThumbnail")
-                        .WithMany()
-                        .HasForeignKey("ItemsThumbnailId");
-
                     b.OwnsOne("SCMM.Web.Server.Data.Types.PersistableStringCollection", "Media", b1 =>
                         {
                             b1.Property<Guid>("SteamItemStoreId")
@@ -1193,8 +1186,6 @@ namespace SCMM.Web.Server.Data.Migrations.Steam
                         });
 
                     b.Navigation("App");
-
-                    b.Navigation("ItemsThumbnail");
 
                     b.Navigation("Media");
                 });

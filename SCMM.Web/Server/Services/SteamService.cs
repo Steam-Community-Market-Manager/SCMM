@@ -53,104 +53,6 @@ namespace SCMM.Web.Server.Services
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<ProfileInventoryTotalsDTO> GetProfileInventoryTotal(string steamId, string currencyId)
-        {
-            // Load the profile
-            var profile = _db.SteamProfiles
-                .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                .FirstOrDefault();
-
-            if (profile == null)
-            {
-                return null;
-            }
-
-            // Load the currency
-            var currency = _db.SteamCurrencies
-                .FirstOrDefault(x => x.SteamId == currencyId);
-
-            if (currency == null)
-            {
-                return null;
-            }
-
-            // Load the profile inventory
-            var profileInventoryItems = _db.SteamProfileInventoryItems
-                .AsNoTracking()
-                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
-                .Where(x => x.Description != null)
-                .Select(x => new
-                {
-                    Quantity = x.Quantity,
-                    BuyPrice = x.BuyPrice,
-                    ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
-                    // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
-                    ItemLast1hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
-                    ItemLast24hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Last24hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
-                    ItemResellPrice = (x.Description.MarketItem != null ? x.Description.MarketItem.ResellPrice : 0),
-                    ItemResellTax = (x.Description.MarketItem != null ? x.Description.MarketItem.ResellTax : 0),
-                    ItemExchangeRateMultiplier = (x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : (x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0))
-                })
-                .ToList();
-
-            if (!profileInventoryItems.Any())
-            {
-                return null;
-            }
-
-            var profileInventory = new
-            {
-                ItemCount = profileInventoryItems.Count,
-                ItemCountWithBuyPrices = profileInventoryItems.Count(x => x.BuyPrice != null),
-                TotalItems = profileInventoryItems
-                    .Sum(x => x.Quantity),
-                TotalInvested = profileInventoryItems
-                    .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
-                    .Sum(x => (x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
-                TotalValueLast1hr = profileInventoryItems
-                    .Where(x => x.ItemLast1hrValue != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.ItemLast1hrValue / x.ItemExchangeRateMultiplier) * x.Quantity),
-                TotalValueLast24hr = profileInventoryItems
-                    .Where(x => x.ItemLast24hrValue != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.ItemLast24hrValue / x.ItemExchangeRateMultiplier) * x.Quantity),
-                TotalResellValue = profileInventoryItems
-                    .Where(x => x.ItemResellPrice != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.ItemResellPrice / x.ItemExchangeRateMultiplier) * x.Quantity),
-                TotalResellTax = profileInventoryItems
-                    .Where(x => x.ItemResellTax != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.ItemResellTax / x.ItemExchangeRateMultiplier) * x.Quantity)
-            };
-            
-            // Snapshot the inventory value if it has been more than an hour since the last snapshot
-            if (profile.LastSnapshotInventoryOn == null || profile.LastSnapshotInventoryOn <= DateTime.Now.Subtract(TimeSpan.FromHours(1)))
-            {
-                profile.LastSnapshotInventoryOn = DateTimeOffset.Now;
-                profile.InventorySnapshots.Add(new SteamProfileInventorySnapshot()
-                {
-                    Profile = profile,
-                    Timestamp = DateTimeOffset.UtcNow,
-                    Currency = currency,
-                    InvestedValue = currency.CalculateExchange(profileInventory.TotalInvested ?? 0),
-                    MarketValue = currency.CalculateExchange(profileInventory.TotalValueLast1hr),
-                    TotalItems = profileInventory.TotalItems
-                });
-            }
-
-            var hasSetupInvestment = ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 90); // if more than 90% have buy prices set
-            return new ProfileInventoryTotalsDTO()
-            {
-                TotalItems = profileInventory.TotalItems,
-                TotalInvested = (hasSetupInvestment ? currency.CalculateExchange(profileInventory.TotalInvested ?? 0) : null),
-                TotalMarketValue = currency.CalculateExchange(profileInventory.TotalValueLast1hr),
-                TotalMarket24hrMovement = currency.CalculateExchange(profileInventory.TotalValueLast1hr - profileInventory.TotalValueLast24hr),
-                TotalResellValue = currency.CalculateExchange(profileInventory.TotalResellValue),
-                TotalResellTax = currency.CalculateExchange(profileInventory.TotalResellTax),
-                TotalResellProfit = (
-                    currency.CalculateExchange(profileInventory.TotalResellValue - profileInventory.TotalResellTax) - currency.CalculateExchange(profileInventory.TotalInvested ?? 0)
-                ),
-            };
-        }
-
         public Data.Models.Steam.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, Steam.Shared.Community.Models.SteamAssetFilter filter)
         {
             var existingFilter = app.Filters.FirstOrDefault(x => x.SteamId == filter.Name);
@@ -726,6 +628,7 @@ namespace SCMM.Web.Server.Services
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Include(x => x.Description.Icon)
                 .FirstOrDefault(x => x.Description != null && x.Description.SteamId == item.AssetDescription.ClassId);
 
             if (dbItem != null)

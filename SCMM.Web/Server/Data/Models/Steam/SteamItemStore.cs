@@ -27,6 +27,10 @@ namespace SCMM.Web.Server.Data.Models.Steam
 
         public ICollection<SteamStoreItemItemStore> Items { get; set; }
 
+        public Guid? ItemsThumbnailId { get; set; }
+
+        public ImageData ItemsThumbnail { get; set; }
+
         public PersistableStringCollection Media { get; set; }
     }
 }

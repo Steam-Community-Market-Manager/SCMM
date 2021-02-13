@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Steam.Shared;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
@@ -30,9 +29,8 @@ namespace SCMM.Web.Server.API.Controllers
         private readonly IMapper _mapper;
 
         private readonly SteamService _steam;
-        private readonly ImageService _images;
 
-        public StoreController(ILogger<StoreController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, SteamService steam, ImageService images)
+        public StoreController(ILogger<StoreController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, SteamService steam)
         {
             _logger = logger;
             _db = db;
@@ -40,7 +38,6 @@ namespace SCMM.Web.Server.API.Controllers
             _queryProcessor = queryProcessor;
             _mapper = mapper;
             _steam = steam;
-            _images = images;
         }
 
         [AllowAnonymous]
@@ -150,48 +147,6 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             return Ok(itemStoreDetail);
-        }
-
-        [AllowAnonymous]
-        [HttpGet("{storeId}/mosaic")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetStoreMosaic([FromRoute] Guid storeId, [FromQuery] int imageSize = 256, [FromQuery] int columns = 3)
-        {
-            var storeImageSources = _db.SteamItemStores
-                .AsNoTracking()
-                .Where(x => x.Id == storeId)
-                .SelectMany(x => x.Items.Select(x => x.Item.Description))
-                .OrderBy(x => x.Name)
-                .Select(x => new ImageSource()
-                {
-                    ImageUrl = x.IconUrl,
-                    ImageData = (x.Icon != null ? x.Icon.Data : null),
-                    Title = x.Name
-                })
-                .Take(SteamConstants.SteamStoreItemsMax)
-                .ToList();
-
-            if (!storeImageSources.Any())
-            {
-                return NotFound();
-            }
-
-            var mosaic = await _images.GenerateImageMosaic(
-                storeImageSources,
-                tileSize: imageSize, 
-                columns: columns,
-                rows: Int32.MaxValue
-            );
-
-            if (mosaic != null && mosaic.Length > 0)
-            {
-                return File(mosaic, "image/png");
-            }
-            else
-            {
-                return NotFound();
-            }
         }
 
         [AllowAnonymous]

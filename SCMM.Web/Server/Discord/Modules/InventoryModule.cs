@@ -140,14 +140,44 @@ namespace SCMM.Web.Server.Discord.Modules
             await message.ModifyAsync(x => 
                 x.Content = "Calculating inventory value..."
             );
-            var inventoryTotal = await _steamService.GetProfileInventoryTotal(profile.SteamId, currency.SteamId);
-            if (inventoryTotal == null)
+            var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
+            {
+                SteamId = profile.SteamId,
+                CurrencyId = currency.SteamId,
+            });
+            if (inventoryTotals == null)
             {
                 await message.ModifyAsync(x =>
                     x.Content = $"Beep boop! I'm unable to value that profiles inventory. It's either private, or doesn't contain any items that I monitor."
                 );
                 return;
             }
+
+            // Snapshot the profiles inventory totals
+            if (profile.LastSnapshotInventoryOn == null || profile.LastSnapshotInventoryOn <= DateTime.Now.Subtract(TimeSpan.FromHours(1)))
+            {
+                await message.ModifyAsync(x =>
+                    x.Content = "Snapshotting inventory value..."
+                );
+                await _commandProcessor.ProcessAsync(new SnapshotSteamProfileInventoryValueRequest()
+                {
+                    SteamId = profile.SteamId,
+                    CurrencyId = currency.SteamId,
+                    InventoryTotals = inventoryTotals
+                });
+
+                _db.SaveChanges();
+            }
+
+            // Generate the profiles inventory thumbnail
+            await message.ModifyAsync(x =>
+                x.Content = "Generating inventory thumbnail..."
+            );
+            var inventoryThumbnail = await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
+            {
+                SteamId = profile.SteamId,
+                ExpiresOn = DateTimeOffset.Now.AddDays(7)
+            });
 
             _db.SaveChanges();
 
@@ -165,28 +195,28 @@ namespace SCMM.Web.Server.Discord.Modules
             var fields = new List<EmbedFieldBuilder>();
             fields.Add(new EmbedFieldBuilder()
                 .WithName("📈 Current Market Value")
-                .WithValue(currency.ToPriceString(inventoryTotal.TotalMarketValue))
+                .WithValue(currency.ToPriceString(inventoryTotals.TotalMarketValue))
                 .WithIsInline(false)
             );
-            if (inventoryTotal.TotalInvested != null && inventoryTotal.TotalInvested > 0)
+            if (inventoryTotals.TotalInvested != null && inventoryTotals.TotalInvested > 0)
             {
                 fields.Add(new EmbedFieldBuilder()
                     .WithName("💰 Invested")
-                    .WithValue(currency.ToPriceString(inventoryTotal.TotalInvested.Value))
+                    .WithValue(currency.ToPriceString(inventoryTotals.TotalInvested.Value))
                     .WithIsInline(true)
                 );
                 fields.Add(new EmbedFieldBuilder()
-                    .WithName((inventoryTotal.TotalResellProfit >= 0) ? "⬆️ Profit" : "⬇️ Loss")
-                    .WithValue(currency.ToPriceString(inventoryTotal.TotalResellProfit))
+                    .WithName((inventoryTotals.TotalResellProfit >= 0) ? "⬆️ Profit" : "⬇️ Loss")
+                    .WithValue(currency.ToPriceString(inventoryTotals.TotalResellProfit))
                     .WithIsInline(true)
                 );
             }
 
             var embed = new EmbedBuilder()
                 .WithAuthor(author)
-                .WithDescription($"Inventory of {inventoryTotal.TotalItems.ToQuantityString()} item(s).")
+                .WithDescription($"Inventory of {inventoryTotals.TotalItems.ToQuantityString()} item(s).")
                 .WithFields(fields)
-                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/mosaic?rows=5&columns=5&timestamp={DateTime.UtcNow.Ticks}")
+                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/image/{inventoryThumbnail?.Image?.Id}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
                 .WithFooter(x => x.Text = _configuration.GetBaseUrl())

@@ -1,14 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
-using SCMM.Steam.Shared.Community.Requests.Html;
 using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Web.Server.Data;
+using SCMM.Web.Server.Data.Models;
 using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
+using SCMM.Web.Server.Services.Queries;
 using SCMM.Web.Shared;
 using System;
 using System.Collections.Generic;
@@ -23,12 +26,14 @@ namespace SCMM.Web.Server.Services.Jobs
     public class CheckForNewMarketItemsJob : CronJobService
     {
         private readonly ILogger<CheckForNewMarketItemsJob> _logger;
+        private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _scopeFactory;
 
         public CheckForNewMarketItemsJob(IConfiguration configuration, ILogger<CheckForNewMarketItemsJob> logger, IServiceScopeFactory scopeFactory)
             : base(logger, configuration.GetJobConfiguration<CheckForNewMarketItemsJob>())
         {
             _logger = logger;
+            _configuration = configuration;
             _scopeFactory = scopeFactory;
         }
 
@@ -37,7 +42,8 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
-                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
+                var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+                var steamCommnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
 
@@ -73,7 +79,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     };
 
                     _logger.LogInformation($"Checking for new market items (appId: {app.SteamId})");
-                    var appPageCountResponse = await commnityClient.GetMarketSearchPaginated(appPageCountRequest);
+                    var appPageCountResponse = await steamCommnityClient.GetMarketSearchPaginated(appPageCountRequest);
                     if (appPageCountResponse?.Success != true || appPageCountResponse?.TotalCount <= 0)
                     {
                         continue;
@@ -101,43 +107,80 @@ namespace SCMM.Web.Server.Services.Jobs
                     {
                         pageRequests.AddRange(appPageRequests);
                     }
-                }
 
-                // Add a 10 second delay between requests to avoid "Too Many Requests" error
-                var newMarketItems = await Observable.Interval(TimeSpan.FromSeconds(10))
-                    .Zip(pageRequests, (x, y) => y)
-                    .Select(x => Observable.FromAsync(() =>
-                    {
-                        _logger.LogInformation($"Checking for new market items (appId: {x.AppId}, start: {x.Start}, end: {x.Start + x.Count})");
-                        return commnityClient.GetMarketSearchPaginated(x);
-                    }))
-                    .Merge()
-                    .Where(x => x?.Success == true && x?.Results?.Count > 0)
-                    .SelectMany(x =>
-                    {
-                        var tasks = steamService.FindOrAddSteamMarketItems(x.Results, currency);
-                        Task.WaitAll(tasks);
-                        return tasks.Result;
-                    })
-                    .Where(x => x?.IsTransient == true)
-                    .Where(x => x?.App != null && x?.Description != null)
-                    .ToList();
+                    // Add a 10 second delay between requests to avoid "Too Many Requests" error
+                    var newMarketItems = await Observable.Interval(TimeSpan.FromSeconds(10))
+                        .Zip(pageRequests, (x, y) => y)
+                        .Select(x => Observable.FromAsync(() =>
+                        {
+                            _logger.LogInformation($"Checking for new market items (appId: {x.AppId}, start: {x.Start}, end: {x.Start + x.Count})");
+                            return steamCommnityClient.GetMarketSearchPaginated(x);
+                        }))
+                        .Merge()
+                        .Where(x => x?.Success == true && x?.Results?.Count > 0)
+                        .SelectMany(x =>
+                        {
+                            var tasks = steamService.FindOrAddSteamMarketItems(x.Results, currency);
+                            Task.WaitAll(tasks);
+                            return tasks.Result;
+                        })
+                        .Where(x => x?.IsTransient == true)
+                        .Where(x => x?.App != null && x?.Description != null)
+                        .ToList();
 
-                if (newMarketItems.Any())
-                {
-                    db.SaveChanges();
-
-                    foreach (var marketItem in newMarketItems)
+                    if (newMarketItems.Any())
                     {
-                        var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
-                        await BroadcastNewMarketItemNotification(discord, db, marketItem, storeItem);
+                        var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
+                        var thumbnail = await GenerateMarketItemsThumbnail(queryProcessor, newMarketItems, thumbnailExpiry);
+                        if (thumbnail != null)
+                        {
+                            db.ImageData.Add(thumbnail);
+                        }
+
+                        db.SaveChanges();
+
+                        await BroadcastNewMarketItemsNotification(discord, db, app, newMarketItems, thumbnail);
                     }
                 }
             }
         }
 
-        private async Task BroadcastNewMarketItemNotification(DiscordClient discord, ScmmDbContext db, SteamMarketItem marketItem, SteamStoreItem storeItem)
+        private async Task<ImageData> GenerateMarketItemsThumbnail(IQueryProcessor queryProcessor, IEnumerable<SteamMarketItem> marketItems, DateTimeOffset expiresOn)
         {
+            var items = marketItems.OrderBy(x => x.Description?.Name);
+            var itemImageSources = items
+                .Where(x => x.Description != null)
+                .Select(x => new ImageSource()
+                {
+                    Title = x.Description.Name,
+                    ImageUrl = x.Description.IconUrl,
+                    ImageData = x.Description.Icon?.Data,
+                })
+                .ToList();
+
+            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+            {
+                ImageSources = itemImageSources,
+                TileSize = 256,
+                Columns = 3
+            });
+
+            if (thumbnail == null)
+            {
+                return null;
+            }
+
+            return new ImageData()
+            {
+                Data = thumbnail.Data,
+                MimeType = thumbnail.MimeType,
+                ExpiresOn = expiresOn
+            };
+        }
+
+        private async Task BroadcastNewMarketItemsNotification(DiscordClient discord, ScmmDbContext db, SteamApp app, IEnumerable<SteamMarketItem> newMarketItems, ImageData thumbnail)
+        {
+            newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name);
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
@@ -147,42 +190,49 @@ namespace SCMM.Web.Server.Services.Jobs
                 }
 
                 var fields = new Dictionary<string, string>();
-                if (storeItem != null)
+                foreach (var marketItem in newMarketItems)
                 {
-                    var estimatedSales = String.Empty;
-                    if (storeItem.TotalSalesMax == null)
+                    var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
+                    var description = marketItem.Description?.Tags?.GetItemType(marketItem.Description?.Name) ?? marketItem.Description?.Description ?? marketItem.SteamId;
+                    if (storeItem != null)
                     {
-                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} or more";
+                        var estimateSales = String.Empty;
+                        if (storeItem.TotalSalesMax == null)
+                        {
+                            estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()} or more";
+                        }
+                        else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax)
+                        {
+                            estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()}";
+                        }
+                        else
+                        {
+                            estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
+                        }
+                        if (!String.IsNullOrEmpty(estimateSales))
+                        {
+                            description = $"{estimateSales} estimated sales";
+                        }
                     }
-                    else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax)
-                    {
-                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()}";
-                    }
-                    else
-                    {
-                        estimatedSales = $"{storeItem.TotalSalesMin.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
-                    }
-                    if (!String.IsNullOrEmpty(estimatedSales))
-                    {
-                        fields.Add("Estimated Sales", estimatedSales);
-                    }
+                    fields.Add(marketItem.Description.Name, description);
                 }
+
+                var itemImageIds = newMarketItems
+                    .Where(x => x.Description?.IconId != null)
+                    .Select(x => x.Description.IconId);
 
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{marketItem.App.Name}").Value,
+                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{app.Name}").Value,
                     message: null,
-                    title: $"{marketItem.Description.Name} is now available in the marketplace",
-                    description: $"This item just appeared in the marketplace for the first time, or has reappeared after previously not having any listings.",
+                    title: $"{app.Name} Market - New Listings",
+                    description: $"{newMarketItems.Count()} new item(s) have just appeared in the {app.Name} marketplace.",
                     fields: fields,
-                    url: new SteamMarketListingPageRequest()
-                    {
-                        AppId = marketItem.App.SteamId,
-                        MarketHashName = marketItem.Description.Name
-                    },
-                    thumbnailUrl: marketItem.App.IconUrl,
-                    imageUrl: marketItem.Description.IconUrl,
-                    color: ColorTranslator.FromHtml(marketItem.App.PrimaryColor)
+                    fieldsInline: true,
+                    url: $"{_configuration.GetBaseUrl()}/steam/marketlistings",
+                    thumbnailUrl: app.IconUrl,
+                    imageUrl: $"{_configuration.GetBaseUrl()}/api/image/{thumbnail?.Id}",
+                    color: ColorTranslator.FromHtml(app.PrimaryColor)
                 );
             }
         }
