@@ -58,7 +58,7 @@ namespace SCMM.Web.Server.Discord.Modules
             }
             */
 
-            await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user.Username);
+            await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username, currencyId ?? profile?.Currency?.Name);
         }
 
         [Command]
