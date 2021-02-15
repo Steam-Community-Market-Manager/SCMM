@@ -124,6 +124,7 @@ namespace SCMM.Web.Server
             services.AddHostedService<StartDiscordClientJob>();
             services.AddHostedService<RepopulateCacheJob>();
             services.AddHostedService<RefreshSteamSessionJob>();
+            services.AddHostedService<DeleteExpiredImageDataJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
             services.AddHostedService<RepairMissingAppFiltersJob>();
             services.AddHostedService<UpdateAssetDescriptionsJob>();
