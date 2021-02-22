@@ -12,7 +12,13 @@ namespace SCMM.Web.Server.Services.Commands
 {
     public class GenerateSteamProfileInventoryThumbnailRequest : ICommand<GenerateSteamProfileInventoryThumbnailResponse>
     {
-        public string SteamId { get; set; }
+        public string ProfileId { get; set; }
+
+        public int TileSize { get; set; } = 128;
+
+        public int Columns { get; set; } = 5;
+
+        public int? Rows { get; set; } = 5;
 
         public DateTimeOffset? ExpiresOn { get; set; } = null;
     }
@@ -35,15 +41,15 @@ namespace SCMM.Web.Server.Services.Commands
 
         public async Task<GenerateSteamProfileInventoryThumbnailResponse> HandleAsync(GenerateSteamProfileInventoryThumbnailRequest request)
         {
-            var steamId = request.SteamId;
-            if (String.IsNullOrEmpty(steamId))
+            // Resolve the id
+            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
-                return null;
-            }
+                Id = request.ProfileId
+            });
 
             var inventoryItemIcons = _db.SteamProfileInventoryItems
                 .AsNoTracking()
-                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => x.ProfileId == resolvedId.Id)
                 .Where(x => x.Description != null)
                 .Select(x => new
                 {
@@ -70,9 +76,9 @@ namespace SCMM.Web.Server.Services.Commands
             var inventoryImageMosaic = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = inventoryImageSources,
-                TileSize = 128,
-                Columns = 5,
-                Rows = 5
+                TileSize = request.TileSize,
+                Columns = request.Columns,
+                Rows = request.Rows
             });
 
             var imageData = new ImageData()

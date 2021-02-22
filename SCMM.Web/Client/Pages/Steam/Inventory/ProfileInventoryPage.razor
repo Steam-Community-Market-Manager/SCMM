@@ -41,24 +41,24 @@
     </Grid>
 </Grid>
 <Grid Container Spacing="@Spacing.Two">
-    @if (Profile == null)
+    @if (Profile == null || InventoryTotal == null)
     {
         <Title Value="@($"Inventory - {SteamId}")" />
         <Grid ExtraSmall="@GridSize.Twelve">
-            @if (ProfileLoadError != null)
+            @if (LoadingError != null)
             {
-                <NotFound />
+                <Error Title="Invalid Profile" SubTitle="That profile either does not exist or is private" />
             }
             else
             {
-                <Loading />
+                <Loading Message="@LoadingMessage" />
             }
         </Grid>
     }
     else
     {
         <Title Value="@($"Inventory - {Profile.Name}")" />
-        <InventoryHeader Profile="@Profile" InventoryTotal="@InventoryTotal" SynchroniseInventory="@SynchroniseInventory" />
+        <InventoryHeader Profile="@Profile" InventoryTotal="@InventoryTotal" SynchroniseInventory="@OnSynchroniseInventory" />
         <Grid Item ExtraSmall="@GridSize.Twelve">
             <Tabs Value="@SelectedInventoryPanel"
                     OnChange="@(x => OnSelectedInventoryPanelChanged(x))"
@@ -73,13 +73,13 @@
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
                 @if ((int)SelectedInventoryPanel == 0)
                 {
-                    @if (InventoryItemsSummary == null)
+                    @if (InventoryItems == null)
                     {
-                        <Loading />
+                        <Loading Message="Loading inventory items..." />
                     }
                     else
                     {
-                        <InventoryItemsSummary Items="@FilterItems(InventoryItemsSummary)" ProfileName="@Profile.Name" ProfileIsMe="@ProfileIsMe"
+                        <InventoryItemsSummary SteamId="@SteamId" Items="@FilterItems(InventoryItems)" ProfileName="@Profile.Name" ProfileIsMe="@ProfileIsMe"
                                                ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
                     }
                 }
@@ -87,13 +87,13 @@
             <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="1">
                 @if ((int)SelectedInventoryPanel == 1)
                 {
-                    @if (InventoryItemsWishlist == null)
+                    @if (InventoryWishlist == null)
                     {
-                        <Loading />
+                        <Loading Message="Loading inventory wishlist..." />
                     }
                     else
                     {
-                        <InventoryItemsWishlist Items="@FilterItems(InventoryItemsWishlist)"
+                        <InventoryItemsWishlist SteamId="@SteamId" Items="@FilterItems(InventoryWishlist)" 
                                                 ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
                     }
                 }
@@ -112,7 +112,7 @@
                 {
                     @if (InventoryPerformance == null || InventoryTotal == null)
                     {
-                        <Loading />
+                        <Loading Message="Loading inventory performance..." />
                     }
                     else
                     {
@@ -132,9 +132,7 @@
 
     private InventoryItemsInvestment InventoryInvestmentPanel {get; set; }
 
-    private ProfileInventoryDetailsDTO Profile { get; set; }
-
-    private Exception ProfileLoadError { get; set; }
+    private ProfileSummaryDTO Profile { get; set; }
     
     private bool ProfileIsMe => (Profile != null && State.IsAuthenticated && State.Profile?.SteamId == Profile?.SteamId);
 
@@ -142,50 +140,73 @@
 
     private ProfileInventoryTotalsDTO InventoryTotal { get; set; }
 
-    private IList<ProfileInventoryItemSummaryDTO> InventoryItemsSummary { get; set; }
+    private IList<ProfileInventoryItemSummaryDTO> InventoryItems { get; set; }
 
-    private IList<ProfileInventoryItemWishDTO> InventoryItemsWishlist { get; set; }
+    private IList<ProfileInventoryItemWishDTO> InventoryWishlist { get; set; }
 
     private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
+
+    private string LoadingMessage { get; set; }
+
+    private Exception LoadingError { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
         SelectedInventoryPanel = await LocalStorage.GetItemAsync<int>("Inventory.SelectedTab");
-        await RefreshInventory();
+        await LoadProfileAndInventory();
     }
 
-    private async Task RefreshInventory(bool forceReload = false)
+    private async Task LoadProfileAndInventory(bool force = false)
     {
         try
         {
             Logger.LogInformation($"Refreshing inventory for '{SteamId}'...");
+
             Profile = null;
-            ProfileLoadError = null;
-            InventoryItemsSummary = null;
-            InventoryItemsWishlist = null;
+            InventoryItems = null;
+            InventoryWishlist = null;
             InventoryTotal = null;
             InventoryPerformance = null;
-            await LoadProfile(forceReload);
-            await LoadInventoryTotals(forceReload);
-            await OnSelectedInventoryPanelChanged(SelectedInventoryPanel, forceReload);
+
+            LoadingError = null;
+            LoadingMessage = "Finding profile...";
+            StateHasChanged();
+            await LoadProfile();
+
+            LoadingMessage = "Synchronising inventory items...";
+            StateHasChanged();
+            await SynchroniseInventory(force);
+
+            LoadingMessage = "Calculating inventory totals...";
+            StateHasChanged();
+            await LoadInventoryTotals();
+            
+            LoadingMessage = "Loading inventory...";
+            StateHasChanged();
+            await OnSelectedInventoryPanelChanged(SelectedInventoryPanel);
+
+            LoadingMessage = null;
+            StateHasChanged();
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error refreshing inventory for '{SteamId}'");
-            ProfileLoadError = ex;
+            LoadingMessage = null;
+            LoadingError = ex;
+            StateHasChanged();
         }
     }
 
-    private async Task OnSelectedInventoryPanelChanged(object value, bool forceReload = false)
+    private async Task OnSelectedInventoryPanelChanged(object value)
     {
         SelectedInventoryPanel = value;
         await LocalStorage.SetItemAsync<int>("Inventory.SelectedTab", (int) value);
         switch (SelectedInventoryPanel)
         {
-            case 0: await LoadInventorySummary(forceReload); break;
-            case 1: await LoadInventoryWishlist(forceReload); break;
+            case 0: await LoadInventoryItems(); break;
+            case 1: await LoadInventoryWishlist(); break;
             case 2: break;
-            case 3: await LoadInventoryPerformance(forceReload); break;
+            case 3: await LoadInventoryPerformance(); break;
         }
         StateHasChanged();
     }
@@ -203,108 +224,112 @@
         StateHasChanged();
     }
     
-    private async Task SynchroniseInventory()
+    private async Task OnSynchroniseInventory()
     {
         Profile = null;
         StateHasChanged();
-        await RefreshInventory(forceReload: true);
+        await LoadProfileAndInventory(force: true);
         StateHasChanged();
     }
     
-    private async Task LoadProfile(bool forceReload = false)
+    private async Task LoadProfile()
     {
         try
         {
-            if (Profile == null || forceReload)
-            {
-                Logger.LogInformation("Fetching inventory profile...");
-                ProfileLoadError = null;
-                Profile = await Http.GetFromJsonAsync<ProfileInventoryDetailsDTO>(
-                    $"api/inventory/{SteamId}?sync={forceReload}"
-                );
-            }
+            Logger.LogInformation("Fetching inventory profile...");
+            Profile = await Http.GetFromJsonAsync<ProfileSummaryDTO>(
+                $"api/profile/{SteamId}/summary"
+            );
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error fetching inventory profile for '{SteamId}'");
             Profile = null;
-            ProfileLoadError = ex;
+            throw;
         }
     }
-
-    private async Task LoadInventoryTotals(bool forceReload = false)
+    
+    private async Task SynchroniseInventory(bool force = false)
     {
         try
         {
-            if (InventoryTotal == null || forceReload)
-            {
-                Logger.LogInformation("Fetching inventory totals...");
-                InventoryTotal = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
-                    $"api/inventory/{SteamId}/total"
-                );
-            }
+            Logger.LogInformation("Synchronising inventory items...");
+            await Http.PostAsync(
+                $"api/profile/{SteamId}/inventory/sync?force={force}", null
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error synchronising inventory items for '{SteamId}'");
+            throw;
+        }
+    }
+
+    private async Task LoadInventoryTotals()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory totals...");
+            InventoryTotal = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
+                $"api/profile/{SteamId}/inventory/total"
+            );
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error fetching inventory totals for '{SteamId}'");
             InventoryTotal = null;
+            throw;
         }
     }
 
-    private async Task LoadInventorySummary(bool forceReload = false)
+    private async Task LoadInventoryItems()
     {
         try
         {
-            if (InventoryItemsSummary == null || forceReload)
-            {
-                Logger.LogInformation("Fetching inventory summary...");
-                InventoryItemsSummary = await Http.GetFromJsonAsync<IList<ProfileInventoryItemSummaryDTO>>(
-                    $"api/inventory/{SteamId}/summary"
-                );
-            }
+            Logger.LogInformation("Fetching inventory summary...");
+            InventoryItems = await Http.GetFromJsonAsync<IList<ProfileInventoryItemSummaryDTO>>(
+                $"api/profile/{SteamId}/inventory/items"
+            );
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error fetching inventory summary for '{SteamId}'");
-            InventoryItemsSummary = null;
+            InventoryItems = null;
+            throw;
         }
     }
     
-    private async Task LoadInventoryWishlist(bool forceReload = false)
+    private async Task LoadInventoryWishlist()
     {
         try
         {
-            if (InventoryItemsWishlist == null || forceReload)
-            {
-                Logger.LogInformation("Fetching inventory wishlist...");
-                InventoryItemsWishlist = await Http.GetFromJsonAsync<IList<ProfileInventoryItemWishDTO>>(
-                    $"api/inventory/{SteamId}/wishlist"
-                );
-            }
+            Logger.LogInformation("Fetching inventory wishlist...");
+            InventoryWishlist = await Http.GetFromJsonAsync<IList<ProfileInventoryItemWishDTO>>(
+                $"api/profile/{SteamId}/inventory/wishlist"
+            );
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error fetching inventory wishlist for '{SteamId}'");
-            InventoryItemsWishlist = null;
+            InventoryWishlist = null;
+            throw;
         }
     }
     
-    private async Task LoadInventoryPerformance(bool forceReload = false)
+    private async Task LoadInventoryPerformance()
     {
         try
         {
-            if (InventoryPerformance == null || forceReload)
-            {
-                Logger.LogInformation("Fetching inventory performance...");
-                InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>(
-                    $"api/inventory/{SteamId}/performance"
-                );
-            }
+            Logger.LogInformation("Fetching inventory performance...");
+            InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>(
+                $"api/profile/{SteamId}/inventory/performance"
+            );
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error fetching inventory performance for '{SteamId}'");
             InventoryPerformance = null;
+            throw;
         }
     }
 

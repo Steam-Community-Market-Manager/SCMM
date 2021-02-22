@@ -134,7 +134,7 @@
     {
         try 
         {
-            await Http.PutAsJsonAsync($"api/profile/me", Update);
+            await Http.PutAsJsonAsync($"api/profile", Update);
             UpdateMessage = "Updated!";
         }
         catch (Exception ex)

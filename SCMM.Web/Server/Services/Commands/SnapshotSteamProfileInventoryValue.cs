@@ -12,7 +12,7 @@ namespace SCMM.Web.Server.Services.Commands
 {
     public class SnapshotSteamProfileInventoryValueRequest : ICommand
     {
-        public string SteamId { get; set; }
+        public string ProfileId { get; set; }
 
         public string CurrencyId { get; set; }
 
@@ -22,10 +22,12 @@ namespace SCMM.Web.Server.Services.Commands
     public class SnapshotSteamProfileInventoryValue : ICommandHandler<SnapshotSteamProfileInventoryValueRequest>
     {
         private readonly ScmmDbContext _db;
+        private readonly IQueryProcessor _queryProcessor;
 
-        public SnapshotSteamProfileInventoryValue(ScmmDbContext db)
+        public SnapshotSteamProfileInventoryValue(ScmmDbContext db, IQueryProcessor queryProcessor)
         {
             _db = db;
+            _queryProcessor = queryProcessor;
         }
 
         public async Task HandleAsync(SnapshotSteamProfileInventoryValueRequest request)
@@ -35,13 +37,14 @@ namespace SCMM.Web.Server.Services.Commands
                 return;
             }
 
-            // Load the profile
-            var steamId = request.SteamId;
-            var profile = _db.SteamProfiles
-                .AsNoTracking()
-                .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                .FirstOrDefault();
+            // Resolve the id
+            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
+            {
+                Id = request.ProfileId
+            });
 
+            // Load the profile
+            var profile = _db.SteamProfiles.Find(resolvedId.Id);
             if (profile == null)
             {
                 return;

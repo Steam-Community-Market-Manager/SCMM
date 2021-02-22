@@ -21,7 +21,7 @@
 <MarketListingsSearch OnSearch="@(async (x) => await RefreshItems(x))" />
 @if (Items == null)
 {
-    <Loading />
+    <Loading Message="Finding market items..." />
 }
 else 
 {

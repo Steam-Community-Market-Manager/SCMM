@@ -5,43 +5,68 @@ using SCMM.Steam.Shared.Community.Requests.Json;
 using SCMM.Web.Server.Data;
 using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
+using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Commands
 {
-    public class FetchSteamProfileInventoryRequest : ICommand
+    public class FetchSteamProfileInventoryRequest : ICommand<FetchSteamProfileInventoryResponse>
     {
-        public Guid Id { get; set; }
+        public string ProfileId { get; set; }
 
         /// <summary>
-        /// If true, inventory will always be fetched. If false, inventory is cached for 3 hours.
+        /// If true, inventory will always be fetched. If false, inventory is cached for 1 hour.
         /// </summary>
         public bool Force { get; set; } = false;
     }
 
-    public class FetchSteamProfileInventory : ICommandHandler<FetchSteamProfileInventoryRequest>
+    public class FetchSteamProfileInventoryResponse
+    {
+        public SteamProfile Profile { get; set; }
+    }
+
+    public class FetchSteamProfileInventory : ICommandHandler<FetchSteamProfileInventoryRequest, FetchSteamProfileInventoryResponse>
     {
         private readonly ScmmDbContext _db;
         private readonly SteamCommunityClient _communityClient;
         private readonly SteamService _steamService;
+        private readonly ICommandProcessor _commandProcessor;
+        private readonly IQueryProcessor _queryProcessor;
 
-        public FetchSteamProfileInventory(ScmmDbContext db, SteamCommunityClient communityClient, SteamService steamService)
+        public FetchSteamProfileInventory(ScmmDbContext db, SteamCommunityClient communityClient, SteamService steamService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _communityClient = communityClient;
             _steamService = steamService;
+            _commandProcessor = commandProcessor;
+            _queryProcessor = queryProcessor;
         }
 
-        public async Task HandleAsync(FetchSteamProfileInventoryRequest request)
+        public async Task<FetchSteamProfileInventoryResponse> HandleAsync(FetchSteamProfileInventoryRequest request)
         {
+            // Resolve the id
+            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
+            {
+                Id = request.ProfileId
+            });
+
+            // If the profile id does not yet exist, fetch it now
+            if (!resolvedId.Exists)
+            {
+                _ = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+                {
+                    ProfileId = request.ProfileId
+                });
+            }
+
             // Load the profile
             var profileInventory = _db.SteamProfiles
                 .Include(x => x.InventoryItems).ThenInclude(x => x.App)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
-                .Where(x => x.Id == request.Id)
+                .Where(x => x.Id == resolvedId.Id)
                 .Select(x => new
                 {
                     Profile = x,
@@ -50,20 +75,23 @@ namespace SCMM.Web.Server.Services.Commands
                 })
                 .FirstOrDefault();
 
-            // If the profile inventory is less than 3 hours old and we aren't forcing an update, just return the current inventory
+            // If the profile inventory is less than 1 hour old and we aren't forcing an update, just return the current inventory
             var profile = profileInventory?.Profile;
-            if (profile != null && profileInventory.TotalItems > 0 && DateTime.Now.Subtract(TimeSpan.FromHours(3)) < profileInventory.LastUpdatedOn && request.Force == false)
+            if (profile != null && profileInventory.TotalItems > 0 && DateTime.Now.Subtract(TimeSpan.FromHours(1)) < profileInventory.LastUpdatedOn && request.Force == false)
             {
-                return;
+                return new FetchSteamProfileInventoryResponse()
+                {
+                    Profile = profile
+                };
             }
 
             // If the profile is null, double check that it isnt transient (newly created)
             if (profile == null)
             {
-                profile = _db.SteamProfiles.Local.FirstOrDefault(x => x.Id == request.Id);
+                profile = _db.SteamProfiles.Local.FirstOrDefault(x => x.SteamId == resolvedId.SteamId || x.ProfileId == resolvedId.ProfileId);
                 if (profile == null)
                 {
-                    return;
+                    return null;
                 }
             }
 
@@ -71,14 +99,14 @@ namespace SCMM.Web.Server.Services.Commands
             var language = _db.SteamLanguages.AsNoTracking().FirstOrDefault(x => x.IsDefault);
             if (language == null)
             {
-                return;
+                return null;
             }
 
             // Load the apps
             var apps = _db.SteamApps.ToList();
             if (!apps.Any())
             {
-                return;
+                return null;
             }
 
             // Fetch the profiles inventory for each of the apps we monitor
@@ -154,6 +182,11 @@ namespace SCMM.Web.Server.Services.Commands
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
                 profile.Privacy = Shared.Data.Models.Steam.SteamVisibilityType.Public;
             }
+
+            return new FetchSteamProfileInventoryResponse()
+            {
+                Profile = profile
+            };
         }
     }
 }

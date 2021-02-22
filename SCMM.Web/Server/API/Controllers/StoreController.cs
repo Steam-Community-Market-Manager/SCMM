@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 namespace SCMM.Web.Server.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/store")]
     public class StoreController : ControllerBase
     {
         private readonly ILogger<StoreController> _logger;
@@ -40,58 +40,82 @@ namespace SCMM.Web.Server.API.Controllers
             _steam = steam;
         }
 
+        /// <summary>
+        /// List all known item store identifiers
+        /// </summary>
+        /// <returns>List of stores</returns>
+        /// <response code="200">List of known item stores. Use <see cref="GetStore(Guid)"/> <code>/store/{storeId}</code> to get the detailed contents of an item store.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<ItemStoreListDTO>), StatusCodes.Status200OK)]
-        public IActionResult GetStores()
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStores()
         {
             var appId = this.App();
-            var itemStores = _db.SteamItemStores
+            var itemStores = await _db.SteamItemStores
                 .AsNoTracking()
                 .Where(x => x.App.SteamId == appId)
                 .OrderBy(x => x.Start)
-                .ToList();
+                .ToListAsync();
 
-            var itemStoresList = itemStores.Select(x => _mapper.Map<SteamItemStore, ItemStoreListDTO>(x, this));
-            if (!itemStoresList.Any())
-            {
-                return NotFound();
-            }
-
-            return Ok(itemStoresList);
+            return Ok(
+                itemStores.Select(x => _mapper.Map<SteamItemStore, ItemStoreListDTO>(x, this)).ToList()
+            );
         }
 
+        /// <summary>
+        /// Get the most recent item store details
+        /// </summary>
+        /// <remarks>
+        /// There may be multiple active item stores, only the most recent is returned.
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <returns>The most recent item store</returns>
+        /// <response code="200">The most recent item store.</response>
+        /// <response code="404">If there are no currently active item stores.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("current")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
-        public IActionResult GetCurrentStore()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetCurrentStore()
         {
             var appId = this.App();
-            var latestItemStoreId = _db.SteamItemStores
+            var latestItemStoreId = await _db.SteamItemStores
                 .AsNoTracking()
                 .Where(x => x.App.SteamId == appId)
                 .Where(x => x.End == null)
                 .OrderByDescending(x => x.Start)
                 .Select(x => x.Id)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (latestItemStoreId == Guid.Empty)
             {
                 return NotFound();
             }
 
-            return GetStore(latestItemStoreId);
+            return await GetStore(latestItemStoreId);
         }
 
+        /// <summary>
+        /// Get an item store details
+        /// </summary>
+        /// <param name="storeId">Id of a known item store</param>
+        /// <returns>The item store details</returns>
+        /// <remarks>The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').</remarks>
+        /// <response code="200">The store details.</response>
+        /// <response code="404">If the store cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{storeId}")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
-        public IActionResult GetStore([FromRoute] Guid storeId)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStore([FromRoute] Guid storeId)
         {
-            var itemStore = _db.SteamItemStores
+            var itemStore = await _db.SteamItemStores
                 .AsNoTracking()
                 .Where(x => x.Id == storeId)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
@@ -101,7 +125,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile.Creator)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem.Currency)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             var itemStoreDetail = _mapper.Map<SteamItemStore, ItemStoreDetailedDTO>(itemStore, this);
             if (itemStoreDetail == null)
@@ -125,7 +149,7 @@ namespace SCMM.Web.Server.API.Controllers
                     continue;
                 }
 
-                var marketRank = _db.SteamApps
+                var marketRank = await _db.SteamApps
                     .Where(x => x.SteamId == item.SteamAppId)
                     .Select(app => new
                     {
@@ -137,7 +161,7 @@ namespace SCMM.Web.Server.API.Controllers
                             .Where(x => x.Description.Tags.Serialised.Contains(itemType))
                             .Count() + 1,
                     })
-                    .SingleOrDefault();
+                    .SingleOrDefaultAsync();
 
                 if (marketRank.Total > 1)
                 {
@@ -149,12 +173,21 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(itemStoreDetail);
         }
 
+        /// <summary>
+        /// Get the next item store release date/time (estimate only)
+        /// </summary>
+        /// <remarks>This is an estimate only and the exact time varies from week to week. Sometimes the store can even be late by a day or two.</remarks>
+        /// <returns>The expected store release date/time</returns>
+        /// <response code="200">The expected date/time of the next item store release.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("nextUpdateTime")]
-        public async Task<DateTimeOffset?> GetStoreNextUpdateTime()
+        [ProducesResponseType(typeof(DateTimeOffset?), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStoreNextUpdateTime()
         {
             var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
-            return nextUpdateTime?.Timestamp;
+            return Ok(nextUpdateTime?.Timestamp);
         }
     }
 }

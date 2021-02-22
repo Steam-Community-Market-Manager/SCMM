@@ -36,6 +36,9 @@
     public ProfileInventoryItemWishDTO Item { get; set; }
     
     [Parameter]
+    public string SteamId { get; set; }
+
+    [Parameter]
     public bool ReadOnly { get; set; }
 
     private string GetItemStyles(ProfileInventoryItemWishDTO item)
@@ -64,7 +67,7 @@
             }
             StateHasChanged();
 
-            await Http.PutAsJsonAsync($"api/profile/market/item/{item.SteamId}/{flag}", value);
+            await Http.PutAsJsonAsync($"api/profile/{SteamId}/market/item/{item.SteamId}/{flag}", value);
         }
         catch (Exception ex)
         {

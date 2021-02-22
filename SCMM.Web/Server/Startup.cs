@@ -161,8 +161,16 @@ namespace SCMM.Web.Server
                     new OpenApiInfo
                     {
                         Title = "SCMM",
-                        Description = "Steam Community Market Manager API",
-                        Version = "v1"
+                        Version = "v1",
+                        Description = (
+                            "Steam Community Market Manager API.<br/>" + 
+                            "These APIs are provided unrestricted, unthrottled, and free of charge in the hopes that they are useful to somebody. If I find they are being abused, don't be surprised if they disappear."
+                        ),
+                        Contact = new OpenApiContact() { 
+                            Name = "More about this project",
+                            Url = new Uri($"{Configuration.GetBaseUrl()}/about")
+                        },
+                        TermsOfService = new Uri("https://steamcommunity.com/dev/apiterms")
                     }
                 );
             });
@@ -195,6 +203,7 @@ namespace SCMM.Web.Server
             {
                 config.RoutePrefix = "docs";
                 config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM v1");
+                config.InjectStylesheet("/css/swagger-dark-theme.css");
                 config.OAuth2RedirectUrl("/signin");
             });
 

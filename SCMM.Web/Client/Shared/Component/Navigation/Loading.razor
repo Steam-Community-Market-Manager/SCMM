@@ -1,10 +1,8 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component.Navigation
-<Typography class="Loading-Root">
-    <CircularProgress /> <span>Loading...</span>
-</Typography>
+@inherits LoadingComponent
 
-@code {
-
-    protected override bool ShouldRender() => false;
-
-}
+<Component RootRef="@RootRef" Tag="@Component" Class="@_Class" Style="@_Style" @attributes="Attributes">
+    <Typography class="Loading-Root">
+        <CircularProgress /> <span>@Message</span>
+    </Typography>
+</Component>

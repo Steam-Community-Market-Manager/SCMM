@@ -27,7 +27,7 @@
         <Menu Open="@Open"
               AnchorRef="@ButtonRef"
               OnClose="@HandleClose"
-              PaperStyle="width: 200px; max-height: 400px;">
+              PaperStyle="width: 100px; max-height: 400px;">
             @foreach (var currency in Currencies)
             {
                 <MenuItem @key="@currency.SteamId"
@@ -52,7 +52,7 @@
     {
         try
         {
-            Currencies = await Http.GetFromJsonAsync<CurrencyDetailedDTO[]>($"api/currency/withDetails");
+            Currencies = await Http.GetFromJsonAsync<CurrencyDetailedDTO[]>($"api/currency?detailed=true");
         }
         catch (Exception ex)
         {

@@ -49,7 +49,7 @@ namespace SCMM.Web.Server.Services.Commands
             // Fetch the profile from steam
             var fetchedProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
-                Id = steamId
+                ProfileId = steamId
             });
 
             // If this is an already existing profile

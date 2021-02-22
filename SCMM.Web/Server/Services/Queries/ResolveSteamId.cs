@@ -37,7 +37,7 @@ namespace SCMM.Web.Server.Services.Queries
 
         public async Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request)
         {
-            Guid? id = null;
+            Guid id = Guid.Empty;
             ulong steamId = 0;
             string profileId = null;
             SteamProfile profile = null;
@@ -46,9 +46,14 @@ namespace SCMM.Web.Server.Services.Queries
                 return null;
             }
 
+            // Is this a guid id?
+            if (Guid.TryParse(request.Id, out id))
+            {
+            }
+
             // Is this a int64 steam id?
             // e.g. 76561198082101518
-            if (long.TryParse(request.Id, out _))
+            else if (long.TryParse(request.Id, out _))
             {
                 ulong.TryParse(request.Id, out steamId);
             }
@@ -75,7 +80,11 @@ namespace SCMM.Web.Server.Services.Queries
             }
 
             // Look up the profiles true info if it exists in the database already
-            if (steamId > 0)
+            if (id != Guid.Empty)
+            {
+                profile = _db.SteamProfiles.AsNoTracking().FirstOrDefault(x => x.Id == id);
+            }
+            else if (steamId > 0)
             {
                 profile = _db.SteamProfiles.AsNoTracking().FirstOrDefault(x => x.SteamId == steamId.ToString());
             }
@@ -83,6 +92,7 @@ namespace SCMM.Web.Server.Services.Queries
             {
                 profile = _db.SteamProfiles.AsNoTracking().FirstOrDefault(x => x.ProfileId == profileId);
             }
+
             if (profile != null)
             {
                 id = profile.Id;
@@ -92,7 +102,7 @@ namespace SCMM.Web.Server.Services.Queries
 
             return new ResolveSteamIdResponse
             {
-                Id = id,
+                Id = id != Guid.Empty ? id : null,
                 SteamId = steamId > 0 ? steamId.ToString() : null,
                 ProfileId = profileId
             };

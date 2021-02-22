@@ -58,7 +58,7 @@ namespace SCMM.Web.Server.Discord.Modules
             }
             */
 
-            await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username, currencyId ?? profile?.Currency?.Name);
+            await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username);
         }
 
         [Command]
@@ -116,14 +116,14 @@ namespace SCMM.Web.Server.Discord.Modules
             if (tradeItems.HaveCount <= 0)
             {
                 await message.ModifyAsync(x =>
-                    x.Content = $"Beep boop! You haven't marked any of your inventory items as tradable yet, manage your inventory here: {_configuration.GetBaseUrl()}/steam/inventory/me."
+                    x.Content = $"Beep boop! You haven't marked any of your inventory items as tradable yet, manage your inventory here: {_configuration.GetBaseUrl()}/steam/inventory/{steamId}."
                 );
                 return;
             }
             if (tradeItems.WantCount <= 0)
             {
                 await message.ModifyAsync(x =>
-                    x.Content = $"Beep boop! You haven't added any items to your wishlist yet, manage your wishlist here: {_configuration.GetBaseUrl()}/steam/inventory/me."
+                    x.Content = $"Beep boop! You haven't added any items to your wishlist yet, manage your wishlist here: {_configuration.GetBaseUrl()}/steam/inventory/{steamId}."
                 );
                 return;
             }
@@ -157,7 +157,7 @@ namespace SCMM.Web.Server.Discord.Modules
             var embed = new EmbedBuilder()
                 .WithAuthor(author)
                 .WithDescription(description.ToString())
-                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/inventory/{profile.SteamId}/trade/mosaic?timestamp={DateTime.UtcNow.Ticks}")
+                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/profile/{profile.SteamId}/trade/mosaic?timestamp={DateTime.UtcNow.Ticks}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
                 .WithFooter(x => x.Text = _configuration.GetBaseUrl())

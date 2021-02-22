@@ -142,7 +142,7 @@ namespace SCMM.Web.Client
             {
                 AddHeadersTo(http);
                 Profile = await http.GetFromJsonAsync<ProfileDetailedDTO>(
-                    $"api/profile/me"
+                    $"api/profile"
                 );
             }
             catch (Exception ex)

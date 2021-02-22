@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,11 +9,12 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Currencies;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/currency")]
     public class CurrencyController : ControllerBase
     {
         private readonly ILogger<CurrencyController> _logger;
@@ -30,26 +32,28 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// List all supported currencies
+        /// </summary>
+        /// <returns>List of supported currencies</returns>
+        /// <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="CurrencyDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="CurrencyListDTO"/>.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<CurrencyListDTO> Get()
+        [ProducesResponseType(typeof(IEnumerable<CurrencyListDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<CurrencyDetailedDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Get([FromQuery] bool detailed = false)
         {
-            return _db.SteamCurrencies
+            var currencies = await _db.SteamCurrencies
                 .AsNoTracking()
                 .OrderBy(x => x.Name)
-                .Select(x => _mapper.Map<CurrencyListDTO>(x))
-                .ToList();
-        }
+                .ToListAsync();
 
-        [AllowAnonymous]
-        [HttpGet("withDetails")]
-        public IEnumerable<CurrencyDetailedDTO> GetWithDetails()
-        {
-            return _db.SteamCurrencies
-                .AsNoTracking()
-                .OrderBy(x => x.Name)
-                .Select(x => _mapper.Map<CurrencyDetailedDTO>(x))
-                .ToList();
+            return Ok(!detailed
+                ? currencies.Select(x => _mapper.Map<CurrencyListDTO>(x)).ToList()
+                : currencies.Select(x => _mapper.Map<CurrencyDetailedDTO>(x)).ToList()
+            );
         }
     }
 }

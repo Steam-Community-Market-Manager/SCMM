@@ -20,7 +20,7 @@ namespace SCMM.Web.Server.Services.Commands
 {
     public class FetchAndCreateSteamProfileRequest : ICommand<FetchAndCreateSteamProfileResponse>
     {
-        public string Id { get; set; }
+        public string ProfileId { get; set; }
     }
 
     public class FetchAndCreateSteamProfileResponse
@@ -48,11 +48,10 @@ namespace SCMM.Web.Server.Services.Commands
         public async Task<FetchAndCreateSteamProfileResponse> HandleAsync(FetchAndCreateSteamProfileRequest request)
         {
             // Resolve the id
-            
             var profile = (SteamProfile) null;
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
-                Id = request.Id
+                Id = request.ProfileId
             });
 
             try

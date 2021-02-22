@@ -8,7 +8,7 @@
 
 @if (NavigationItems == null)
 {
-    <Loading />
+    <Loading Message="" />
 }
 else
 {
@@ -82,7 +82,7 @@ else
         try
         {
             InventoryTotals = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
-                $"api/inventory/{State.Profile?.SteamId}/total"
+                $"api/profile/{State.Profile?.SteamId}/inventory/total"
             );
         }
         catch (Exception ex)

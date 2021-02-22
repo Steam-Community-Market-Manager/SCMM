@@ -95,7 +95,7 @@ namespace SCMM.Web.Server.Discord.Modules
             await message.LoadingAsync("🔍 Finding Steam profile...");
             var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
-                Id = steamId
+                ProfileId = steamId
             });
 
             var profile = fetchAndCreateProfile?.Profile;
@@ -133,9 +133,9 @@ namespace SCMM.Web.Server.Discord.Modules
 
             // Reload the profiles inventory
             await message.LoadingAsync("🔄 Fetching inventory details from Steam...");
-            await _commandProcessor.ProcessAsync(new FetchSteamProfileInventoryRequest()
+            _ = await _commandProcessor.ProcessWithResultAsync(new FetchSteamProfileInventoryRequest()
             {
-                Id = profile.Id
+                ProfileId = profile.Id.ToString()
             });
 
             _db.SaveChanges();
@@ -144,7 +144,7 @@ namespace SCMM.Web.Server.Discord.Modules
             await message.LoadingAsync("💱 Calculating inventory value...");
             var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
             {
-                SteamId = profile.SteamId,
+                ProfileId = profile.SteamId,
                 CurrencyId = currency.SteamId,
             });
             if (inventoryTotals == null)
@@ -161,7 +161,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 await message.LoadingAsync("💾 Snapshotting inventory value...");
                 await _commandProcessor.ProcessAsync(new SnapshotSteamProfileInventoryValueRequest()
                 {
-                    SteamId = profile.SteamId,
+                    ProfileId = profile.SteamId,
                     CurrencyId = currency.SteamId,
                     InventoryTotals = inventoryTotals
                 });
@@ -173,7 +173,7 @@ namespace SCMM.Web.Server.Discord.Modules
             await message.LoadingAsync("🎨 Generating inventory thumbnail...");
             var inventoryThumbnail = await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
             {
-                SteamId = profile.SteamId,
+                ProfileId = profile.SteamId,
                 ExpiresOn = DateTimeOffset.Now.AddDays(7)
             });
 

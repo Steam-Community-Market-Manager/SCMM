@@ -81,11 +81,11 @@
                             <Button OnClick="@(() => RefreshSalesPerDay(30))" Color="@Color.TextSecondary">
                                 1m
                             </Button>
-                            @if (SalesToday > 0)
+                            @if (SalesYesterday > 0)
                             {
                                 <Divider Orientation="@Orientation.Vertical" />
                                 <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
-                                    <strong>@SalesToday.ToQuantityString() sales today</strong>
+                                    <strong>@SalesYesterday.ToQuantityString() sales yesterday</strong>
                                 </Typography>
                             }
                         </Grid>
@@ -95,7 +95,7 @@
             <CardContent>
                 @if (SalesPerDayChart == null)
                 {
-                    <Loading />
+                    <Loading Message="Loading sales chart..." />
                 }
                 else
                 {
@@ -520,64 +520,6 @@
             <CardHeader>
                 <TitleContent>
                     <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
-                        Skin High Rollers
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
-                        Users with the highest inventory value. (based on known SCMM users only)
-                    </Typography>
-                </TitleContent>
-            </CardHeader>
-            <CardContent>
-                <Table Size="@Size.Small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell></TableCell>
-                            <TableCell>Items</TableCell>
-                            <TableCell>Market Value</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        <Virtualize ItemsProvider="LoadHighRollers" Context="item">
-                            <ItemContent>
-                                <TableRow Hover OnClick="@((_) => ViewProfile(item.SteamId))">
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="@item.AvatarUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">@item.Name</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.TotalItems.ToQuantityString()</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.MarketValue)</span>
-                                    </TableCell>
-                                </TableRow>
-                            </ItemContent>
-                            <Placeholder>
-                                <TableRow>
-                                    <TableCell>
-                                        <div style="display:flex; align-content:center; align-items:center">
-                                            <img src="/images/loading.gif" style="width:32px; height:32px; margin:-4px 0px;" />
-                                            <strong style="margin:8px">Loading...</strong>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>—</TableCell>
-                                    <TableCell>—</TableCell>
-                                </TableRow>
-                            </Placeholder>
-                        </Virtualize>
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-    </Grid>
-    
-    <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six" ExtraLarge="@GridSize.Three">
-        <Card Class="Dashboard-Card">
-            <CardHeader>
-                <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
                         Skin Creators
                     </Typography>
                     <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
@@ -630,7 +572,7 @@
 
 @code {
 
-    private int SalesToday { get; set; }
+    private int SalesYesterday { get; set; }
     private IDictionary<string, DashboardSalesDataDTO> SalesPerDay { get; set; }
     private ChartJsLineChart SalesPerDayChartJs;
     private LineConfig SalesPerDayChart;
@@ -666,12 +608,12 @@
     {
         try
         {
-            SalesToday = 0;
+            SalesYesterday = 0;
             SalesPerDay = null;
             SalesPerDayChart = null;
             StateHasChanged();
-            SalesToday = await Http.GetFromJsonAsync<int>($"api/market/dashboard/salesToday");
-            SalesPerDay = await Http.GetFromJsonAsync<IDictionary<string, DashboardSalesDataDTO>>($"api/market/dashboard/salesPerDay?maxDays={maxDays}");
+            SalesYesterday = await Http.GetFromJsonAsync<int>($"api/market/stat/salesCountYesterday");
+            SalesPerDay = await Http.GetFromJsonAsync<IDictionary<string, DashboardSalesDataDTO>>($"api/market/stat/salesPerDay?maxDays={maxDays}");
             RedrawSalesPerDayChart();
             StateHasChanged();
         }
@@ -789,7 +731,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSalesDTO>>($"api/market/dashboard/hotRightNow?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSalesDTO>>($"api/market/stat/hotRightNow?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetSalesDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -803,7 +745,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetAgeDTO>>($"api/market/dashboard/mostRecent?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetAgeDTO>>($"api/market/stat/mostRecent?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetAgeDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -817,7 +759,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/dashboard/allTimeHigh?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/stat/allTimeHigh?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetMarketValueDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -831,7 +773,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/dashboard/allTimeLow?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/stat/allTimeLow?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetMarketValueDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -845,7 +787,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetBuyOrderValueDTO>>($"api/market/dashboard/profitableFlips?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetBuyOrderValueDTO>>($"api/market/stat/profitableFlips?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetBuyOrderValueDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -859,7 +801,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/dashboard/mostProfitable?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/stat/mostProfitable?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetMarketValueDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -873,7 +815,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSubscriptionsDTO>>($"api/market/dashboard/mostPopular?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSubscriptionsDTO>>($"api/market/stat/mostPopular?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetSubscriptionsDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -887,7 +829,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSupplyDemandDTO>>($"api/market/dashboard/mostSaturated?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSupplyDemandDTO>>($"api/market/stat/mostSaturated?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetSupplyDemandDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -897,25 +839,11 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardProfileInventoryValueDTO>> LoadHighRollers(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardProfileInventoryValueDTO>>($"api/market/dashboard/highRollers?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardProfileInventoryValueDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'high rollers' market dashboard");
-            throw;
-        }
-    }
-
     protected async ValueTask<ItemsProviderResult<DashboardProfileWorkshopValueDTO>> LoadAcceptedCreators(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardProfileWorkshopValueDTO>>($"api/market/dashboard/acceptedCreators?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardProfileWorkshopValueDTO>>($"api/market/stat/acceptedCreators?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardProfileWorkshopValueDTO>(response.Items, response.Total);
         }
         catch (Exception ex)

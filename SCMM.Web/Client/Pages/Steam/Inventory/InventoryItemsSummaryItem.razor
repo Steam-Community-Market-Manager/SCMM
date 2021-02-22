@@ -78,6 +78,9 @@
 </ContextContainer>
 
 @code {
+    
+    [Parameter]
+    public string SteamId { get; set; }
 
     [Parameter]
     public ProfileInventoryItemSummaryDTO Item { get; set; }
@@ -117,7 +120,7 @@
             }
             StateHasChanged();
 
-            await Http.PutAsJsonAsync($"api/profile/inventory/item/{item.SteamId}/{flag}", value);
+            await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.SteamId}/{flag}", value);
         }
         catch (Exception ex)
         {

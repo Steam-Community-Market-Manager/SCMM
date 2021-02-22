@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -8,11 +9,12 @@ using SCMM.Web.Server.Data;
 using SCMM.Web.Shared.Domain.DTOs.Languages;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/language")]
     public class LanguageController : ControllerBase
     {
         private readonly ILogger<LanguageController> _logger;
@@ -30,26 +32,28 @@ namespace SCMM.Web.Server.API.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// List all supported languages
+        /// </summary>
+        /// <returns>List of supported languages</returns>
+        /// <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="LanguageDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="LanguageListDTO"/>.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<LanguageListDTO> Get()
+        [ProducesResponseType(typeof(IEnumerable<LanguageListDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<LanguageDetailedDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Get([FromQuery] bool detailed = false)
         {
-            return _db.SteamLanguages
+            var languages = await _db.SteamLanguages
                 .AsNoTracking()
                 .OrderBy(x => x.Name)
-                .Select(x => _mapper.Map<LanguageListDTO>(x))
-                .ToList();
-        }
+                .ToListAsync();
 
-        [AllowAnonymous]
-        [HttpGet("withDetails")]
-        public IEnumerable<LanguageDetailedDTO> GetWithDetails()
-        {
-            return _db.SteamLanguages
-                .AsNoTracking()
-                .OrderBy(x => x.Name)
-                .Select(x => _mapper.Map<LanguageDetailedDTO>(x))
-                .ToList();
+            return Ok(!detailed
+                ? languages.Select(x => _mapper.Map<LanguageListDTO>(x)).ToList()
+                : languages.Select(x => _mapper.Map<LanguageDetailedDTO>(x)).ToList()
+            );
         }
     }
 }

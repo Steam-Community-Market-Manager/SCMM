@@ -8,7 +8,7 @@
     <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
         @if(InventoryPerformanceValueHistoryChart == null)
         {
-            <Loading />
+            <Loading Message="Loading value history..." />
         }
         else
         {
@@ -18,7 +18,7 @@
     <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
         @if(InventoryPerformanceValueChart == null)
         {
-            <Loading />
+            <Loading Message="Loading value pie..." />
         }
         else
         {

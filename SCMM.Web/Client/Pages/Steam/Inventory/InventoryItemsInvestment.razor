@@ -244,7 +244,7 @@
             item.BuyPrice = buyPrice;
             try 
             {
-                await Http.PutAsJsonAsync($"api/profile/inventory/item/{item.Id}/buyPrice", new UpdateInventoryItemPriceCommand()
+                await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
                 {
                     CurrencyId = State.Currency.Id,
                     BuyPrice = buyPrice
@@ -261,7 +261,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<InventoryInvestmentItemDTO>>($"api/inventory/{SteamId}/returnOnInvestment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}&sortBy={SortBy}&sortDirection={SortDirection}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<InventoryInvestmentItemDTO>>($"api/profile/{SteamId}/inventory/investment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}&sortBy={SortBy}&sortDirection={SortDirection}");
             return new ItemsProviderResult<InventoryInvestmentItemDTO>(response.Items, response.Total);
         }
         catch (Exception ex)

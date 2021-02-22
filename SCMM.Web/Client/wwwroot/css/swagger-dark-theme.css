@@ -1,0 +1,103 @@
+﻿
+body {
+    background: #101010 !important;
+}
+select {
+    border: none !important;
+}
+select:active, select:hover {
+    outline-color: none;
+}
+select option:hover {
+    box-shadow: 0 0 10px 10px #e1358f inset;
+}
+
+.swagger-ui .topbar-wrapper img {
+    display:none;
+}
+.swagger-ui .topbar {
+    background-color: #424242;
+}
+.swagger-ui .info .title {
+    color: #fff;
+}
+.swagger-ui .info li, .swagger-ui .info p, .swagger-ui .info table {
+    color: rgba(255, 255, 255, 0.7);
+}
+.swagger-ui .opblock-tag {
+    color: #fff;
+}
+.swagger-ui .opblock .opblock-summary-operation-id, .swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-path__deprecated {
+    color: #fff;
+}
+.swagger-ui .opblock .opblock-summary-description {
+    color: rgba(255, 255, 255, 0.7);
+}
+.swagger-ui .opblock .opblock-section-header {
+    background: #424242;
+}
+.swagger-ui .opblock .opblock-section-header h4 {
+    color: #fff;
+}
+.swagger-ui .btn {
+    border: 2px solid rgb(166, 212, 250);
+    color: #90caf9;
+}
+.swagger-ui table thead tr td, .swagger-ui table thead tr th {
+    color: #fff;
+}
+.swagger-ui .opblock .opblock-section-header {
+    background: rgba(97,175,254,.1);
+}
+.swagger-ui {
+    color: rgba(255, 255, 255, 0.7);
+}
+.swagger-ui .parameter__name {
+    color: #fff;
+}
+.swagger-ui .parameter__type {
+    color: rgba(255, 255, 255, 0.5);
+}
+.swagger-ui .parameter__extension, .swagger-ui .parameter__in {
+    color: rgba(255, 255, 255, 0.5);
+}
+.swagger-ui .response-col_status {
+    color: #fff;
+}
+.swagger-ui .markdown p, .swagger-ui .markdown pre, .swagger-ui .renderedMarkdown p, .swagger-ui .renderedMarkdown pre {
+    margin-top: 0px;
+}
+.swagger-ui .responses-inner h4, .swagger-ui .responses-inner h5 {
+    color: rgba(255, 255, 255, 0.7);
+}
+.swagger-ui .response-col_status .response-undocumented {
+    color: #fff;
+}
+.swagger-ui .response-col_links {
+    color: rgba(255, 255, 255, 0.3);
+}
+.swagger-ui .tab li {
+    color: rgba(255, 255, 255, 0.7);
+}
+.swagger-ui .opblock-description-wrapper p, .swagger-ui .opblock-external-docs-wrapper p, .swagger-ui .opblock-title_normal p {
+    color: rgba(255, 255, 255, 0.7);
+}
+.swagger-ui section.models h4 {
+    color: #fff;
+}
+.swagger-ui .model-title {
+    color: rgba(255, 255, 255, 0.7);
+}
+.swagger-ui section.models .model-container {
+    background: rgba(0,0,0,.10);
+    border: 1px solid #424242;
+}
+.swagger-ui section.models {
+    border: 1px solid #fff;
+}
+.swagger-ui section.models.is-open h4 {
+    border-bottom: 1px solid #fff;
+}
+.swagger-ui .model {
+    color: rgba(255, 255, 255, 0.7);
+}

@@ -10,15 +10,13 @@ namespace SCMM.Web.Server.Services.Queries
 {
     public class GetSteamProfileInventoryTotalsRequest : IQuery<GetSteamProfileInventoryTotalsResponse>
     {
-        public string SteamId { get; set; }
+        public string ProfileId { get; set; }
 
         public string CurrencyId { get; set; }
     }
 
     public class GetSteamProfileInventoryTotalsResponse
     {
-        public bool IsPrivate { get; set; }
-
         public int TotalItems { get; set; }
 
         public long? TotalInvested { get; set; }
@@ -37,25 +35,21 @@ namespace SCMM.Web.Server.Services.Queries
     public class GetSteamProfileInventoryTotals : IQueryHandler<GetSteamProfileInventoryTotalsRequest, GetSteamProfileInventoryTotalsResponse>
     {
         private readonly ScmmDbContext _db;
+        private readonly IQueryProcessor _queryProcessor;
 
-        public GetSteamProfileInventoryTotals(ScmmDbContext db)
+        public GetSteamProfileInventoryTotals(ScmmDbContext db, IQueryProcessor queryProcessor)
         {
             _db = db;
+            _queryProcessor = queryProcessor;
         }
 
         public async Task<GetSteamProfileInventoryTotalsResponse> HandleAsync(GetSteamProfileInventoryTotalsRequest request)
         {
-            // Load the profile
-            var steamId = request.SteamId;
-            var profile = _db.SteamProfiles
-                .AsNoTracking()
-                .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
-                .FirstOrDefault();
-
-            if (profile == null)
+            // Resolve the id
+            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
-                return null;
-            }
+                Id = request.ProfileId
+            });
 
             // Load the currency
             var currency = _db.SteamCurrencies
@@ -70,7 +64,7 @@ namespace SCMM.Web.Server.Services.Queries
             // Load the profile inventory
             var profileInventoryItems = _db.SteamProfileInventoryItems
                 .AsNoTracking()
-                .Where(x => x.Profile.SteamId == steamId || x.Profile.ProfileId == steamId)
+                .Where(x => x.ProfileId == resolvedId.Id)
                 .Where(x => x.Description != null)
                 .Select(x => new
                 {
@@ -117,7 +111,6 @@ namespace SCMM.Web.Server.Services.Queries
             var hasSetupInvestment = ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 90); // if more than 90% have buy prices set
             return new GetSteamProfileInventoryTotalsResponse()
             {
-                IsPrivate = (profile.Privacy != Shared.Data.Models.Steam.SteamVisibilityType.Public),
                 TotalItems = profileInventory.TotalItems,
                 TotalInvested = (hasSetupInvestment ? currency.CalculateExchange(profileInventory.TotalInvested ?? 0) : null),
                 TotalMarketValue = currency.CalculateExchange(profileInventory.TotalValueLast1hr),

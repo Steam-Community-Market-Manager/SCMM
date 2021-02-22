@@ -18,7 +18,7 @@
                 <SwapBagIcon />
             </Icon>
             <Total>
-                @InventoryTotal.TotalItems
+                @InventoryTotal.TotalItems.ToQuantityString()
             </Total>
         </InventoryHeaderTotal>
     </Grid>
@@ -106,7 +106,7 @@
 @code {
 
     [Parameter]
-    public ProfileInventoryDetailsDTO Profile { get; set; }
+    public ProfileSummaryDTO Profile { get; set; }
     
     [Parameter]
     public ProfileInventoryTotalsDTO InventoryTotal { get; set; }

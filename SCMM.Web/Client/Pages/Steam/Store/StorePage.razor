@@ -112,7 +112,7 @@
 {
     @if(StoreException == null)
     {
-        <Loading />
+        <Loading Message="Loading item stores..." />
     }
     else
     {
@@ -152,7 +152,7 @@ else
             <Grid Item ExtraSmall="@GridSize.Twelve">
                 @if(StoreException == null)
                 {
-                    <Loading />
+                    <Loading Message="Loading item store..." />
                 }
                 else
                 {

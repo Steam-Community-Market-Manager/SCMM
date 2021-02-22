@@ -40,11 +40,14 @@
 <div style="padding:8px">
     @foreach (var item in Items)
     {
-        <InventoryItemsWishlistItem Item="@item" ReadOnly="@ReadOnly" />
+        <InventoryItemsWishlistItem SteamId="@SteamId" Item="@item" ReadOnly="@ReadOnly" />
     }
 </div>
 
 @code {
+    
+    [Parameter]
+    public string SteamId { get; set; }
 
     [Parameter]
     public IEnumerable<ProfileInventoryItemWishDTO> Items { get; set; }

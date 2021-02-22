@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Shared.Domain.DTOs.InventoryItems
 {
-    public class UpdateInventoryItemPriceCommand
+    public class UpdateInventoryItemCommand
     {
         public Guid CurrencyId { get; set; }
 

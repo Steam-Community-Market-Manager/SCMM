@@ -23,13 +23,12 @@ namespace SCMM.Web.Server
             CreateMap<SteamLanguage, LanguageDetailedDTO>();
 
             CreateMap<SteamCurrency, CurrencyDTO>();
-            CreateMap<SteamCurrency, CurrencyListDTO>()
-                .ForMember(x => x.Symbol, o => o.MapFrom(p => p.PrefixText));
+            CreateMap<SteamCurrency, CurrencyListDTO>();
             CreateMap<SteamCurrency, CurrencyDetailedDTO>();
 
             CreateMap<SteamProfile, ProfileDTO>();
             CreateMap<SteamProfile, ProfileDetailedDTO>();
-            CreateMap<SteamProfile, ProfileInventoryDetailsDTO>();
+            CreateMap<SteamProfile, ProfileSummaryDTO>();
 
             CreateMap<SteamAssetDescription, ProfileInventoryItemSummaryDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))

@@ -207,7 +207,7 @@ namespace SCMM.Web.Server.Services
                 {
                     var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
                     {
-                        Id = publishedFile.Creator.ToString()
+                        ProfileId = publishedFile.Creator.ToString()
                     });
                     if (fetchAndCreateProfile?.Profile != null)
                     {
