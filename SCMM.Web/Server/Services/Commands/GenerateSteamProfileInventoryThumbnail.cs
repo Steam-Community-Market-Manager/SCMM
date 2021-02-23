@@ -56,7 +56,8 @@ namespace SCMM.Web.Server.Services.Commands
                     IconUrl = x.Description.IconUrl,
                     Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
                     ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue > 0 : false),
-                    ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue < 0 : false)
+                    ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue < 0 : false),
+                    Banned = x.Description.Flags.HasFlag(Shared.Data.Models.Steam.SteamAssetDescriptionFlags.Banned)
                 })
                 .OrderByDescending(x => x.Value)
                 .ToList();
@@ -66,12 +67,24 @@ namespace SCMM.Web.Server.Services.Commands
             {
                 if (!inventoryImageSources.Any(x => x.ImageUrl == inventoryItemIcon.IconUrl))
                 {
+                    var symbol = ImageSymbol.None;
+                    if (inventoryItemIcon.Banned)
+                    {
+                        symbol = ImageSymbol.Cross;
+                    }
+                    else if (inventoryItemIcon.ValueUp)
+                    {
+                        symbol = ImageSymbol.ChevronUp;
+                    }
+                    else if(inventoryItemIcon.ValueDown)
+                    {
+                        symbol = ImageSymbol.ChevronDown;
+                    }
                     inventoryImageSources.Add(new ImageSource()
                     {
                         ImageUrl = inventoryItemIcon.IconUrl,
                         Badge = inventoryItemIcons.Count(x => x.IconUrl == inventoryItemIcon.IconUrl),
-                        ChevronUp = inventoryItemIcon.ValueUp,
-                        ChevronDown = inventoryItemIcon.ValueDown
+                        Symbol = symbol
                     });
                 }
             }

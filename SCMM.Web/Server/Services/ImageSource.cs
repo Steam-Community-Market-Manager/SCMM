@@ -2,6 +2,14 @@
 
 namespace SCMM.Web.Server.Services
 {
+    public enum ImageSymbol
+    {
+        None = 0,
+        ChevronUp,
+        ChevronDown,
+        Cross
+    }
+
     public class ImageSource
     {
         public string ImageUrl { get; set; }
@@ -12,8 +20,6 @@ namespace SCMM.Web.Server.Services
 
         public int Badge { get; set; }
 
-        public bool ChevronUp { get; set; }
-
-        public bool ChevronDown { get; set; }
+        public ImageSymbol Symbol { get; set; }
     }
 }
