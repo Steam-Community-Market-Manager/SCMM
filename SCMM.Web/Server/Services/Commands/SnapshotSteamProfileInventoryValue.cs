@@ -51,10 +51,7 @@ namespace SCMM.Web.Server.Services.Commands
             }
 
             // Load the currency
-            var currency = _db.SteamCurrencies
-                .AsNoTracking()
-                .FirstOrDefault(x => x.SteamId == request.CurrencyId);
-
+            var currency = _db.SteamCurrencies.FirstOrDefault(x => x.SteamId == request.CurrencyId);
             if (currency == null)
             {
                 return;

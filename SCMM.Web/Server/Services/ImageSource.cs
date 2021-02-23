@@ -11,5 +11,9 @@ namespace SCMM.Web.Server.Services
         public string Title { get; set; }
 
         public int Badge { get; set; }
+
+        public bool ChevronUp { get; set; }
+
+        public bool ChevronDown { get; set; }
     }
 }

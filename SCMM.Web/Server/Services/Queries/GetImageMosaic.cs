@@ -83,8 +83,11 @@ namespace SCMM.Web.Server.Services.Queries
             var fontLineHeight = (fontSize + (padding * 3));
             var fontFamily = new FontFamily(GenericFontFamilies.SansSerif);
             var font = new Font(fontFamily, fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-            var solidWhite = new SolidBrush(Color.FromArgb(255, 255, 255, 255));
+            var solidBlackOutlinePen = new Pen(new SolidBrush(Color.FromArgb(128, 0, 0, 0)), 3);
             var solidBlack = new SolidBrush(Color.FromArgb(255, 0, 0, 0));
+            var solidWhite = new SolidBrush(Color.FromArgb(255, 255, 255, 255));
+            var solidRed = new SolidBrush(Color.FromArgb(255, 244, 67, 54));
+            var solidGreen = new SolidBrush(Color.FromArgb(255, 76, 175, 80));
             var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
             var imageSize = tileSize;
 
@@ -130,11 +133,11 @@ namespace SCMM.Web.Server.Services.Queries
                             imageSize
                         );
 
-                        var count = Math.Min(99, imageSource.Badge);
-                        if (count > 1)
+                        var badge = Math.Min(99, imageSource.Badge);
+                        if (badge > 1)
                         {
                             var badgeFontOffset = 2;
-                            if (count >= 10)
+                            if (badge >= 10)
                             {
                                 fontSize = 20;
                                 badgeFontOffset = 5;
@@ -149,13 +152,54 @@ namespace SCMM.Web.Server.Services.Queries
                                 )
                             );
                             graphics.DrawString(
-                                $"{count}",
+                                $"{badge}",
                                 font,
                                 solidBlack,
                                 new PointF(
                                     (x + tileSize - (badgeSize - padding + badgeFontOffset)),
                                     (y + (padding / 4) + (badgeFontOffset / 4))
                                 )
+                            );
+                        }
+
+                        var chevronX = (x + tileSize - badgeSize);
+                        var chevronY = (y + tileSize - badgeSize);
+                        if (imageSource.ChevronUp)
+                        {
+                            graphics.FillPolygon(
+                                solidGreen,
+                                GetChevronUpPoints(chevronX, chevronY - (badgeSize / 4), badgeSize)
+                            );
+                            graphics.DrawPolygon(
+                                solidBlackOutlinePen,
+                                GetChevronUpPoints(chevronX, chevronY - (badgeSize / 4), badgeSize)
+                            );
+                            graphics.FillPolygon(
+                                solidGreen,
+                                GetChevronUpPoints(chevronX, chevronY, badgeSize)
+                            );
+                            graphics.DrawPolygon(
+                                solidBlackOutlinePen,
+                                GetChevronUpPoints(chevronX, chevronY, badgeSize)
+                            );
+                        }
+                        else if (imageSource.ChevronDown)
+                        {
+                            graphics.FillPolygon(
+                                solidRed,
+                                GetChevronDownPoints(chevronX, chevronY, badgeSize)
+                            );
+                            graphics.DrawPolygon(
+                                solidBlackOutlinePen,
+                                GetChevronDownPoints(chevronX, chevronY, badgeSize)
+                            );
+                            graphics.FillPolygon(
+                                solidRed,
+                                GetChevronDownPoints(chevronX, chevronY - (badgeSize / 4), badgeSize)
+                            );
+                            graphics.DrawPolygon(
+                                solidBlackOutlinePen,
+                                GetChevronDownPoints(chevronX, chevronY - (badgeSize / 4), badgeSize)
                             );
                         }
 
@@ -383,6 +427,26 @@ namespace SCMM.Web.Server.Services.Queries
                     imageSource.ImageData = fetchedImage.Image.Data;
                 }
             }
+        }
+
+        private PointF[] GetChevronUpPoints(float x, float y, int size)
+        {
+            return new PointF[]
+            {
+                new PointF(x + (size / 2), y + (size / 2)),
+                new PointF(x, y + size),
+                new PointF(x + size, y + size)
+            };
+        }
+
+        private PointF[] GetChevronDownPoints(float x, float y, int size)
+        {
+            return new PointF[]
+            {
+                new PointF(x, y + (size / 2)),
+                new PointF(x + size, y  + (size / 2)),
+                new PointF(x + (size / 2), y + size)
+            };
         }
     }
 }
