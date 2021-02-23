@@ -55,8 +55,8 @@ namespace SCMM.Web.Server.Services.Commands
                 {
                     IconUrl = x.Description.IconUrl,
                     Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
-                    ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.Last24hrValue - x.Description.MarketItem.Last1hrValue > 0 : false),
-                    ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.Last24hrValue - x.Description.MarketItem.Last1hrValue < 0 : false)
+                    ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue > 0 : false),
+                    ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue < 0 : false)
                 })
                 .OrderByDescending(x => x.Value)
                 .ToList();
@@ -69,7 +69,7 @@ namespace SCMM.Web.Server.Services.Commands
                     inventoryImageSources.Add(new ImageSource()
                     {
                         ImageUrl = inventoryItemIcon.IconUrl,
-                        Badge = inventoryItemIcons.Count(x => x == inventoryItemIcon),
+                        Badge = inventoryItemIcons.Count(x => x.IconUrl == inventoryItemIcon.IconUrl),
                         ChevronUp = inventoryItemIcon.ValueUp,
                         ChevronDown = inventoryItemIcon.ValueDown
                     });

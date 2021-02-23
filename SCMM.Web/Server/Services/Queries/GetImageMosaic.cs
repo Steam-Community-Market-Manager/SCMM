@@ -133,37 +133,43 @@ namespace SCMM.Web.Server.Services.Queries
                             imageSize
                         );
 
-                        var badge = Math.Min(99, imageSource.Badge);
-                        if (badge > 1)
+                        if (imageSource.Badge > 1)
                         {
-                            var badgeFontOffset = 2;
-                            if (badge >= 10)
-                            {
-                                fontSize = 20;
-                                badgeFontOffset = 5;
-                            }
-                            graphics.FillEllipse(
-                                solidBlue,
-                                new Rectangle(
-                                    x + tileSize - badgeSize,
-                                    y,
-                                    badgeSize,
-                                    badgeSize
-                                )
+                            var badge = $"{imageSource.Badge}";
+                            var badgeWidth = (int) Math.Max(badgeSize, graphics.MeasureString(badge, font).Width + padding);
+                            var badgeHeight = badgeSize;
+                            var badgeRect = new Rectangle(
+                                x + tileSize - badgeWidth - padding,
+                                y + padding,
+                                badgeWidth,
+                                badgeHeight
                             );
+
+                            using (var badgePath = GetRoundedRect(badgeRect, badgeHeight / 2))
+                            {
+                                graphics.FillPath(
+                                    solidBlue,
+                                    badgePath
+                                );
+                                graphics.DrawPath(
+                                    solidBlackOutlinePen,
+                                    badgePath
+                                );
+                            }
+
                             graphics.DrawString(
-                                $"{badge}",
+                                badge,
                                 font,
                                 solidBlack,
                                 new PointF(
-                                    (x + tileSize - (badgeSize - padding + badgeFontOffset)),
-                                    (y + (padding / 4) + (badgeFontOffset / 4))
+                                    badgeRect.Left + (padding / 1.5f),
+                                    badgeRect.Top + (padding / 3)
                                 )
                             );
                         }
 
-                        var chevronX = (x + tileSize - badgeSize);
-                        var chevronY = (y + tileSize - badgeSize);
+                        var chevronX = (x + tileSize - badgeSize - padding);
+                        var chevronY = (y + tileSize - badgeSize - padding);
                         if (imageSource.ChevronUp)
                         {
                             graphics.FillPolygon(
@@ -203,9 +209,9 @@ namespace SCMM.Web.Server.Services.Queries
                             );
                         }
 
-                        var title = imageSource.Title;
-                        if (!string.IsNullOrEmpty(title))
+                        if (!string.IsNullOrEmpty(imageSource.Title))
                         {
+                            var title = imageSource.Title;
                             var titleWidth = graphics.MeasureString(title, font).Width;
                             while (titleWidth >= imageSize && title.Length > 0)
                             {
@@ -427,6 +433,38 @@ namespace SCMM.Web.Server.Services.Queries
                     imageSource.ImageData = fetchedImage.Image.Data;
                 }
             }
+        }
+
+        public static GraphicsPath GetRoundedRect(Rectangle bounds, int radius)
+        {
+            var diameter = radius * 2;
+            var size = new Size(diameter, diameter);
+            var arc = new Rectangle(bounds.Location, size);
+            var path = new GraphicsPath();
+
+            if (radius == 0)
+            {
+                path.AddRectangle(bounds);
+                return path;
+            }
+
+            // top left arc  
+            path.AddArc(arc, 180, 90);
+
+            // top right arc  
+            arc.X = bounds.Right - diameter;
+            path.AddArc(arc, 270, 90);
+
+            // bottom right arc  
+            arc.Y = bounds.Bottom - diameter;
+            path.AddArc(arc, 0, 90);
+
+            // bottom left arc 
+            arc.X = bounds.Left;
+            path.AddArc(arc, 90, 90);
+
+            path.CloseFigure();
+            return path;
         }
 
         private PointF[] GetChevronUpPoints(float x, float y, int size)
