@@ -242,8 +242,12 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get Steam profile inventory and calculate the market vvalue
+        /// Get Steam profile inventory and calculate the market value
         /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// Inventory mosaic images automatically expire after 7 days; After which, the URL will return a 404 response.
+        /// </remarks>
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
         /// <param name="generateInventoryMosaic">If true, a mosaic image of the highest valued items will be generated in the response. If false, the mosaic will be <code>null</code>.</param>
         /// <param name="mosaicTileSize">The size (in pixel) to render each item within the mosaic image (if enabled)</param>
@@ -350,6 +354,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get profile inventory item totals
         /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
         /// <response code="200">Profile inventory item totals.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
@@ -386,6 +393,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get profile inventory item information
         /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
         /// <response code="200">Profile inventory item information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
@@ -467,6 +477,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get profile inventory investment information
         /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
         /// <param name="filter">Optional search filter. Matches against item name or description</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
@@ -520,6 +533,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get profile inventory wishlist information
         /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
         /// <response code="200">Profile inventory wishlist information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
@@ -571,6 +587,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get profile inventory performance information
         /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
         /// <response code="200">Profile inventory performance information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
