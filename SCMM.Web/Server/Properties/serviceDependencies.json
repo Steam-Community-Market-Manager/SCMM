@@ -7,6 +7,10 @@
     "mssql2": {
       "type": "mssql",
       "connectionId": "SteamDbConnection"
+    },
+    "secrets1": {
+      "type": "secrets",
+      "connectionId": "VaultUri"
     }
   }
 }

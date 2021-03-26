@@ -15,6 +15,6 @@ namespace SCMM.Google.Client
 
         public Uri Thumbnail { get; set; }
 
-        public DateTime PublishedAt { get; set; }
+        public DateTime? PublishedAt { get; set; }
     }
 }
