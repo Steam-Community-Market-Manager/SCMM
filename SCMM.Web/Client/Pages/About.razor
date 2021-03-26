@@ -182,7 +182,44 @@
                     <i class="fas fa-fw fa-list-alt"></i>  Change History
                 </Typography>
                 <Typography Variant="@TypographyVariant.Body1">
-                    <span>vNext</span>
+                    <span>v0.9 (28/02/2021)</span>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
+                    <ul>
+                        <li>Added Discord command <code>>help</code></li>
+                        <li>Discord bot status message shows remaining item store time</li>
+                        <li>Discord bot posts a welcome message when joining new server</li>
+                        <li>Discord bot resolves DiscordId's to SteamId's (if the user has registered their account)</li>
+                        <li>Discord commands show their progress with a series of edited messages (reduces perceived command lag)</li>
+                        <li>Discord commands have short-hand alias' (e.g. "inventory" => "inv")</li>
+                        <li>Discord server config commands will use the closest value if spelt incorrectly</li>
+                        <li>Discord servers can be tagged as VIP servers</li>
+                        <li>Added more detailed Web API documentation</li>
+                        <li>Added dark theme to Web API documentation viewer</li>
+                        <li>Added new market statistics dashboard showing accepted skin creators</li>
+                        <li>Removed some old market statistic dashboards that were not reliable</li>
+                        <li>Market listing page now sorts by highest 24hr sales volume by default</li>
+                        <li>Item store remaining time countdown is now more granular (shows minutes)</li>
+                        <li>Item store remaining time countdown will show exactly how long the store is overdue by rather than "due anytime now"</li>
+                        <li>Internal refactoring for command/query processors</li>
+                        <li>Internal refactoring to support partial item store updates (e.g. Valentines 2021 update)</li>
+                        <li>Fixed bug where inventory updates may incorrectly duplicate user or inventory data</li>
+                        <li>Fixed bug where Discord server data may not be deleted when the bot is removed from the server</li>
+                        <li>Fixed bug where you couldn't search for market items containing spaces</li>
+                        <li>Fixed bug where profile inventory would not load for some countries/currencies</li>
+                        <li>Fixed bug where profile inventory investment table prices would not show in the user local currency</li>
+                        <li>Fixed bug where profile inventory investment purchase prices were being parsed incorrectly</li>
+                        <li>Fixed bug where Discord "new store" and "new market listing" notification moasic images would not generate</li>
+                        <li>Fixed bug where Discord commands wouldn't accept Steam profile URLs if the user had a custom profle URL in Steam</li>
+                        <li>Fixed bug where Discord server config was not being persisted in some cases</li>
+                        <li>Fixed bug where profile inventory mosaic images would not generate</li>
+                        <li>Fixed bug where prices shown in UI won't update immediately after changing currencies</li>
+                        <li>Fixed bug with ARS currency parsing</li>
+                        <li>Fixed bug with RUB currency parsing</li>
+                    </ul>
+                </Typography>
+                <Typography Variant="@TypographyVariant.Body1">
+                    <span>v0.8 (24/11/2020)</span>
                 </Typography>
                 <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Style="padding-left:24px" GutterBottom>
                     <ul>
