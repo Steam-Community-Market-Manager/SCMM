@@ -98,6 +98,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Update your profile information
         /// </summary>
+        /// <remarks>This API requires authentication</remarks>
         /// <param name="command">
         /// Information to be updated to your profile. 
         /// Any fields that are <code>null</code> are ignored (not updated).
@@ -719,6 +720,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Update profile inventory item information
         /// </summary>
+        /// <remarks>This API requires authentication</remarks>
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
         /// <param name="itemId">
         /// Inventory item identifier to be updated. 
@@ -776,6 +778,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Update the flag value of a profile inventory item
         /// </summary>
+        /// <remarks>This API requires authentication</remarks>
         /// <param name="itemOrAssetId">
         /// Either a profile inventory item identifier, or asset description identifier. 
         /// If an asset description identifier is specified, all inventory items for that asset description will be updated (bulk update). 
@@ -842,6 +845,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Update the flag value of a profile market item
         /// </summary>
+        /// <remarks>This API requires authentication</remarks>
         /// <param name="itemOrAssetId">
         /// Either a profile market item identifier, or asset description identifier. 
         /// If an asset description identifier is specified, all market items for that asset description will be updated (bulk update). 
