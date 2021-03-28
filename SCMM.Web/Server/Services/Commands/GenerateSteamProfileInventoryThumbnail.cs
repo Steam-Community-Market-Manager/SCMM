@@ -54,6 +54,7 @@ namespace SCMM.Web.Server.Services.Commands
                 .Select(x => new
                 {
                     IconUrl = x.Description.IconUrl,
+                    Quantity = x.Quantity,
                     Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
                     ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue > 0 : false),
                     ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue < 0 : false),
@@ -83,7 +84,7 @@ namespace SCMM.Web.Server.Services.Commands
                     inventoryImageSources.Add(new ImageSource()
                     {
                         ImageUrl = inventoryItemIcon.IconUrl,
-                        Badge = inventoryItemIcons.Count(x => x.IconUrl == inventoryItemIcon.IconUrl),
+                        Badge = inventoryItemIcons.Where(x => x.IconUrl == inventoryItemIcon.IconUrl).Sum(x => x.Quantity),
                         Symbol = symbol
                     });
                 }
