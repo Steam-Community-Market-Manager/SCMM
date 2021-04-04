@@ -7,20 +7,29 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Services.Jobs.CronJob
 {
-    public abstract class CronJobService : IHostedService, IDisposable
+    public abstract class CronJobService : CronJobService<CronJobConfiguration>
     {
-        private readonly ILogger<CronJobService> _logger;
+        protected CronJobService(ILogger<CronJobService> logger, CronJobConfiguration configuration)
+            : base(logger, configuration) { }
+    }
+
+    public abstract class CronJobService<T> : IHostedService, IDisposable
+        where T : CronJobConfiguration
+    {
+        private readonly ILogger<CronJobService<T>> _logger;
+        private readonly T _configuration;
         private readonly bool _startImmediately;
         private readonly CronExpression _expression;
         private System.Timers.Timer _timer;
         private readonly object _timerLock = new object();
 
-        protected CronJobService(ILogger<CronJobService> logger, CronJobConfiguration configuration)
+        protected CronJobService(ILogger<CronJobService<T>> logger, T configuration)
         {
             _logger = logger;
-            _startImmediately = (configuration?.StartImmediately ?? false);
-            _expression = !String.IsNullOrEmpty(configuration?.CronExpression)
-                ? CronExpression.Parse(configuration?.CronExpression)
+            _configuration = configuration;
+            _startImmediately = (_configuration?.StartImmediately ?? false);
+            _expression = !String.IsNullOrEmpty(_configuration?.CronExpression)
+                ? CronExpression.Parse(_configuration?.CronExpression)
                 : null;
         }
 
@@ -83,5 +92,7 @@ namespace SCMM.Web.Server.Services.Jobs.CronJob
         {
             _timer?.Dispose();
         }
+
+        protected T Configuration => _configuration;
     }
 }
