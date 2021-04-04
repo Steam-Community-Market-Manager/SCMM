@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Discord.Modules
 {
+    /* TODO: Finish this...
     [Group("trade")]
     public class TradeModule : ModuleBase<SocketCommandContext>
     {
@@ -48,17 +49,16 @@ namespace SCMM.Web.Server.Discord.Modules
                 .AsNoTracking()
                 .Include(x => x.Currency)
                 .FirstOrDefault(x => x.DiscordId == discordId);
-            /*
-            if (profile == null)
-            {
-                await message.ModifyAsync(x =>
-                    x.Content = $"Beep boop! I'm unable to find that Discord user. {user.Username} has not linked their Discord and Steam accounts yet, configure it here: {_configuration.GetBaseUrl()}/settings."
-                );
-                return;
-            }
-            */
+            
+            //if (profile == null)
+            //{
+            //    await message.ModifyAsync(x =>
+            //        x.Content = $"Beep boop! I'm unable to find that Discord user. {user.Username} has not linked their Discord and Steam accounts yet, configure it here: {_configuration.GetBaseUrl()}/settings."
+            //    );
+            //    return;
+            //}
 
-            await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username);
+    await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username);
         }
 
         [Command]
@@ -169,4 +169,5 @@ namespace SCMM.Web.Server.Discord.Modules
             );
         }
     }
+    */
 }

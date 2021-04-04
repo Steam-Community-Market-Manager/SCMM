@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Discord.Modules
 {
+    /* TODO: Finish this...
     [Group("badge")]
     [Alias("badges")]
     public class BadgeModule : ModuleBase<SocketCommandContext>
@@ -141,4 +142,5 @@ namespace SCMM.Web.Server.Discord.Modules
             }
         }
     }
+    */
 }
