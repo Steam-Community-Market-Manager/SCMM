@@ -120,12 +120,17 @@ namespace SCMM.Web.Server.Discord.Modules
             // Promote donators from VIP servers to VIP role
             if (guild.Flags.HasFlag(Shared.Data.Models.Discord.DiscordGuildFlags.VIP))
             {
-                var roles = Context.Guild.GetUser(Context.User.Id).Roles;
-                if (roles.Any(x => x.Name.Contains(Roles.Donator)))
+                var user = Context.User;
+                var roles = Context.Guild.GetUser(user.Id).Roles;
+                if (roles.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    if (!profile.Roles.Any(x => x == Roles.VIP))
+                    var discordId = $"{user.Username}#{user.Discriminator}";
+                    if (String.Equals(profile.DiscordId, discordId, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        profile.Roles.Add(Roles.VIP);
+                        if (!profile.Roles.Any(x => x == Roles.VIP))
+                        {
+                            profile.Roles.Add(Roles.VIP);
+                        }
                     }
                 }
             }
