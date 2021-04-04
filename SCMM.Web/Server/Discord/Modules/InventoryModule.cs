@@ -107,6 +107,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 return;
             }
 
+            // Load the guild
             var guild = _db.DiscordGuilds
                 .AsNoTracking()
                 .Include(x => x.Configurations)
@@ -114,6 +115,19 @@ namespace SCMM.Web.Server.Discord.Modules
             if (guild != null && String.IsNullOrEmpty(currencyId))
             {
                 currencyId = guild.Get(DiscordConfiguration.Currency).Value;
+            }
+
+            // Promote donators from VIP servers to VIP role
+            if (guild.Flags.HasFlag(Shared.Data.Models.Discord.DiscordGuildFlags.VIP))
+            {
+                var roles = Context.Guild.GetUser(Context.User.Id).Roles;
+                if (roles.Any(x => x.Name.Contains(Roles.Donator)))
+                {
+                    if (!profile.Roles.Any(x => x == Roles.VIP))
+                    {
+                        profile.Roles.Add(Roles.VIP);
+                    }
+                }
             }
 
             // Load the currency

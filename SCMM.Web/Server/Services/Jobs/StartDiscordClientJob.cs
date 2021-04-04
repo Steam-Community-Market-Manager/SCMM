@@ -112,7 +112,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     {
                         try
                         {
-                            var vipUsers = await _discordClient.GetUsersWithRoleAsync(ulong.Parse(vipServer.DiscordId), "donator");
+                            var vipUsers = await _discordClient.GetUsersWithRoleAsync(ulong.Parse(vipServer.DiscordId), Roles.Donator);
                             if (vipUsers != null)
                             {
                                 var newVipUsers = db.SteamProfiles
