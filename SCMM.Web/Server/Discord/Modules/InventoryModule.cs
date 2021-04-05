@@ -84,7 +84,16 @@ namespace SCMM.Web.Server.Discord.Modules
             [Name("currency_id")][Summary("Supported three-letter currency code (e.g. USD, EUR, AUD)")] string currencyId = null
         )
         {
-            await SayProfileInventoryValueInternalAsync(null, steamId, currencyId);
+            // HACK: ">inventory nzd" will trigger this with steamid as nzd rather than currencyId as nzd.
+            //       If the steamid is three characters or less, flip them
+            if (steamId.Length <= 3)
+            {
+                await SayProfileInventoryValueAsync(user: null, currencyId: steamId);
+            }
+            else
+            {
+                await SayProfileInventoryValueInternalAsync(null, steamId, currencyId);
+            }
         }
 
         private async Task SayProfileInventoryValueInternalAsync(IUserMessage message, string steamId, string currencyId)
