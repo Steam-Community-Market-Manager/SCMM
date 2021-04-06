@@ -3,7 +3,6 @@ using Google.Apis.YouTube.v3;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -45,15 +44,17 @@ namespace SCMM.Google.Client
             GC.SuppressFinalize(this);
         }
 
-        public async Task<IEnumerable<YouTubeVideo>> SearchVideos(string query, string channelId = null, int maxResults = 30)
+        public async Task<IEnumerable<YouTubeVideo>> SearchVideos(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int maxResults = 30)
         {
             var videos = new List<YouTubeVideo>();
             var request = _service.Search.List("snippet");
             request.Q = query;
             request.ChannelId = channelId;
-            request.Order = SearchResource.ListRequest.OrderEnum.Date;
+            request.PublishedBefore = publishedBefore;
+            request.PublishedAfter = publishedAfter;
+            request.Order = SearchResource.ListRequest.OrderEnum.Relevance;
             request.MaxResults = Math.Max(1, maxResults);
-            
+         
             var response = await request.ExecuteAsync();
             foreach (var item in response.Items)
             {

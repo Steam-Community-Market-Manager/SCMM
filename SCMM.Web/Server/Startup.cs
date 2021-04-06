@@ -131,6 +131,7 @@ namespace SCMM.Web.Server
             services.AddHostedService<CheckForMissingMarketItemIdsJob>();
             services.AddHostedService<CheckForNewMarketItemsJob>();
             services.AddHostedService<CheckForNewStoreItemsJob>();
+            services.AddHostedService<CheckYouTubeForNewStoreVideosJobs>();
             services.AddHostedService<UpdateAssetWorkshopFilesJob>();
             services.AddHostedService<UpdateMarketItemOrdersJob>();
             services.AddHostedService<UpdateMarketItemSalesJob>();
