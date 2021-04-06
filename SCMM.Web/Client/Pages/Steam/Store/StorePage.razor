@@ -143,9 +143,25 @@ else
                             <Tab Class="Store" Id="@store.Id.ToString()" Value="@store" Label="@store.Name" />
                         }
                         <TabScrollButton Side="Side.Right" />
+                        <Button OnClick="@HandleStoreSelectorDialogOpen" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary" Style="position:sticky; right:16px; margin:8px; background-color:var(--theme-palette-background-paper)">
+                            <i class="fas fa-history"></i>
+                        </Button>
                     </ChildContent>
                 </Tabs>
             </Grid>
+            <Dialog OnClose="@HandleStoreSelectorDialogClose" Open="@StoreSelectorDialogOpen">
+                <DialogTitle>
+                    Select an item store
+                </DialogTitle>
+                <List Dense="true">
+                    @foreach (var store in Stores.OrderByDescending(x => x.Start))
+                    {
+                        <ListItem Button OnClick="@((arg) => OnSelectedStoreChanged(store))" Selected="@(store == SelectedStore)">
+                            <ListItemText Primary="@($"{store.Start.Year} {store.Name}")" />
+                        </ListItem>
+                    }
+                </List>
+            </Dialog>
         }
         @if (Store == null)
         {
@@ -232,6 +248,12 @@ else
                                             {
                                                 <span style="padding:8px">@item.Views.Value.ToQuantityString()</span>
                                             }
+                                        </Typography>
+                                    }
+                                    else
+                                    {
+                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                            <span>This item is not from the workshop, detailed statistics are unavailable.</span>
                                         </Typography>
                                     }
                                     @if (!item.IsStillAvailableInStore)
@@ -408,6 +430,8 @@ else
 
     private RadarConfig ItemMarketplacePerformanceChart { get; set; }
 
+    private bool StoreSelectorDialogOpen { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await RefreshStores();
@@ -429,6 +453,18 @@ else
     {
         string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.SteamWorkshopId}";
         JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+    }
+
+    private void HandleStoreSelectorDialogOpen()
+    {
+        StoreSelectorDialogOpen = true;
+        StateHasChanged();
+    }
+
+    private void HandleStoreSelectorDialogClose()
+    {
+        StoreSelectorDialogOpen = false;
+        StateHasChanged();
     }
 
     private async Task RefreshStores()
@@ -473,6 +509,7 @@ else
 
     private void OnSelectedStoreChanged(object value)
     {
+        StoreSelectorDialogOpen = false;
         SelectedStore = (ItemStoreListDTO) value;
         if (SelectedStore != null)
         {
