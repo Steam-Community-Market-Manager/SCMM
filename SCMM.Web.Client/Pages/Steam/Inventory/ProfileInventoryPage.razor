@@ -1,0 +1,359 @@
+﻿@page "/steam/inventory/{SteamId}"
+@using SCMM.Web.Data.Models.UI;
+@using SCMM.Web.Data.Models.UI.ProfileInventory;
+@using SCMM.Web.Data.Models.Domain.DTOs.InventoryItems
+@using SCMM.Web.Data.Models
+@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@inject ILogger<ProfileInventoryPage> Logger
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject AppState State
+
+<Title Value="Inventory" />
+
+<Grid Container Spacing="@Spacing.Two">
+    <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
+        <ResponsiveTextField Label="Steam ID" Placeholder="steam id" Value="@SteamId" OnChange="@(x => OnSteamIdChanged(x))">
+            <StartAdornment>
+                <Hidden SmallDown>
+                    <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+                        <span>https://steamcommunity.com/id/</span>
+                    </Typography>
+                </Hidden>
+            </StartAdornment>
+            <EndAdornment>
+                <IconButton OnClick="@ViewProfileInventory" Style="padding:5px;" title="View Profile Inventory">
+                    <SearchIcon />
+                </IconButton>
+            </EndAdornment>
+        </ResponsiveTextField>
+    </Grid>
+    <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
+        <ResponsiveTextField Label="Filter" Placeholder="type an item name or tag..." OnChange="@(x => OnFilterChanged(x))">
+            <StartAdornment>
+                <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+                    <i class="fas fa-fw fa-filter"></i>
+                </Typography>
+            </StartAdornment>
+        </ResponsiveTextField>
+    </Grid>
+</Grid>
+<Grid Container Spacing="@Spacing.Two">
+    @if (Profile == null || InventoryTotal == null)
+    {
+        <Title Value="@($"Inventory - {SteamId}")" />
+        <Grid ExtraSmall="@GridSize.Twelve">
+            @if (LoadingError != null)
+            {
+                <Error Title="Invalid Profile" SubTitle="That profile either does not exist or is private" />
+            }
+            else
+            {
+                <Loading Message="@LoadingMessage" />
+            }
+        </Grid>
+    }
+    else
+    {
+        <Title Value="@($"Inventory - {Profile.Name}")" />
+        <InventoryHeader Profile="@Profile" InventoryTotal="@InventoryTotal" SynchroniseInventory="@OnSynchroniseInventory" />
+        <Grid Item ExtraSmall="@GridSize.Twelve">
+            <Tabs Value="@SelectedInventoryPanel"
+                    OnChange="@(x => OnSelectedInventoryPanelChanged(x))"
+                    IndicatorColor="@Color.Primary"
+                    TextColor="@Color.Primary"
+                    Variant="@TabsVariant.FullWidth">
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Inventory" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Wishlist" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="2" Label="Investment" Wrapped />
+                <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="3" Label="Performance" Wrapped />
+            </Tabs>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="0">
+                @if ((int)SelectedInventoryPanel == 0)
+                {
+                    @if (InventoryItems == null)
+                    {
+                        <Loading Message="Loading inventory items..." />
+                    }
+                    else
+                    {
+                        <InventoryItemsSummary SteamId="@SteamId" Items="@FilterItems(InventoryItems)" ProfileName="@Profile.Name" ProfileIsMe="@ProfileIsMe"
+                                               ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
+                    }
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="1">
+                @if ((int)SelectedInventoryPanel == 1)
+                {
+                    @if (InventoryWishlist == null)
+                    {
+                        <Loading Message="Loading inventory wishlist..." />
+                    }
+                    else
+                    {
+                        <InventoryItemsWishlist SteamId="@SteamId" Items="@FilterItems(InventoryWishlist)" 
+                                                ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
+                    }
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab" Value="@SelectedInventoryPanel" Index="2">
+                @if ((int)SelectedInventoryPanel == 2)
+                {
+                    <Paper>
+                        <InventoryItemsInvestment @ref="InventoryInvestmentPanel" SteamId="@SteamId" Filter="@Filter"
+                                                  ReadOnly="@(Profile == null || !State.IsAuthenticated || State.Profile?.SteamId != Profile?.SteamId)" />
+                    </Paper>
+                }
+            </TabPanel>
+            <TabPanel Id="inventory-tab-panel" Label="inventory-tab"  Value="@SelectedInventoryPanel" Index="3">
+                @if ((int)SelectedInventoryPanel == 3)
+                {
+                    @if (InventoryPerformance == null || InventoryTotal == null)
+                    {
+                        <Loading Message="Loading inventory performance..." />
+                    }
+                    else
+                    {
+                        <InventoryItemsPerformance InventoryPerformance="@InventoryPerformance" InventoryTotal="@InventoryTotal" />
+                    }
+                }
+            </TabPanel>
+        </Grid>
+    }
+</Grid>
+
+@code {
+    [Parameter]
+    public string SteamId { get; set; }
+
+    private string Filter { get; set; }
+
+    private InventoryItemsInvestment InventoryInvestmentPanel {get; set; }
+
+    private ProfileSummaryDTO Profile { get; set; }
+    
+    private bool ProfileIsMe => (Profile != null && State.IsAuthenticated && State.Profile?.SteamId == Profile?.SteamId);
+
+    private object SelectedInventoryPanel { get; set; } = 0;
+
+    private ProfileInventoryTotalsDTO InventoryTotal { get; set; }
+
+    private IList<ProfileInventoryItemSummaryDTO> InventoryItems { get; set; }
+
+    private IList<ProfileInventoryItemWishDTO> InventoryWishlist { get; set; }
+
+    private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
+
+    private string LoadingMessage { get; set; }
+
+    private Exception LoadingError { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        SelectedInventoryPanel = await LocalStorage.GetItemAsync<int>("Inventory.SelectedTab");
+        await LoadProfileAndInventory();
+    }
+
+    private async Task LoadProfileAndInventory(bool force = false)
+    {
+        try
+        {
+            Logger.LogInformation($"Refreshing inventory for '{SteamId}'...");
+
+            Profile = null;
+            InventoryItems = null;
+            InventoryWishlist = null;
+            InventoryTotal = null;
+            InventoryPerformance = null;
+
+            LoadingError = null;
+            LoadingMessage = "Finding profile...";
+            StateHasChanged();
+            await LoadProfile();
+
+            LoadingMessage = "Synchronising inventory items...";
+            StateHasChanged();
+            await SynchroniseInventory(force);
+
+            LoadingMessage = "Calculating inventory totals...";
+            StateHasChanged();
+            await LoadInventoryTotals();
+            
+            LoadingMessage = "Loading inventory...";
+            StateHasChanged();
+            await OnSelectedInventoryPanelChanged(SelectedInventoryPanel);
+
+            LoadingMessage = null;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error refreshing inventory for '{SteamId}'");
+            LoadingMessage = null;
+            LoadingError = ex;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnSelectedInventoryPanelChanged(object value)
+    {
+        SelectedInventoryPanel = value;
+        await LocalStorage.SetItemAsync<int>("Inventory.SelectedTab", (int) value);
+        switch (SelectedInventoryPanel)
+        {
+            case 0: await LoadInventoryItems(); break;
+            case 1: await LoadInventoryWishlist(); break;
+            case 2: break;
+            case 3: await LoadInventoryPerformance(); break;
+        }
+        StateHasChanged();
+    }
+    
+    private void OnSteamIdChanged(string steamId)
+    {
+        SteamId = steamId;
+        StateHasChanged();
+    }
+    
+    private void OnFilterChanged(string filter)
+    {
+        Filter = (string) filter;
+        InventoryInvestmentPanel.HandleFilterChange(filter);
+        StateHasChanged();
+    }
+    
+    private async Task OnSynchroniseInventory()
+    {
+        Profile = null;
+        StateHasChanged();
+        await LoadProfileAndInventory(force: true);
+        StateHasChanged();
+    }
+    
+    private async Task LoadProfile()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory profile...");
+            Profile = await Http.GetFromJsonAsync<ProfileSummaryDTO>(
+                $"api/profile/{SteamId}/summary"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory profile for '{SteamId}'");
+            Profile = null;
+            throw;
+        }
+    }
+    
+    private async Task SynchroniseInventory(bool force = false)
+    {
+        try
+        {
+            Logger.LogInformation("Synchronising inventory items...");
+            await Http.PostAsync(
+                $"api/profile/{SteamId}/inventory/sync?force={force}", null
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error synchronising inventory items for '{SteamId}'");
+            throw;
+        }
+    }
+
+    private async Task LoadInventoryTotals()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory totals...");
+            InventoryTotal = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
+                $"api/profile/{SteamId}/inventory/total"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory totals for '{SteamId}'");
+            InventoryTotal = null;
+            throw;
+        }
+    }
+
+    private async Task LoadInventoryItems()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory summary...");
+            InventoryItems = await Http.GetFromJsonAsync<IList<ProfileInventoryItemSummaryDTO>>(
+                $"api/profile/{SteamId}/inventory/items"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory summary for '{SteamId}'");
+            InventoryItems = null;
+            throw;
+        }
+    }
+    
+    private async Task LoadInventoryWishlist()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory wishlist...");
+            InventoryWishlist = await Http.GetFromJsonAsync<IList<ProfileInventoryItemWishDTO>>(
+                $"api/profile/{SteamId}/inventory/wishlist"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory wishlist for '{SteamId}'");
+            InventoryWishlist = null;
+            throw;
+        }
+    }
+    
+    private async Task LoadInventoryPerformance()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory performance...");
+            InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>(
+                $"api/profile/{SteamId}/inventory/performance"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory performance for '{SteamId}'");
+            InventoryPerformance = null;
+            throw;
+        }
+    }
+
+    private IEnumerable<T> FilterItems<T>(IEnumerable<T> items)
+        where T : IFilterableItem
+    {
+        if (String.IsNullOrEmpty(Filter))
+        {
+            return items;
+        }
+
+        return items.Where(x => 
+            x.Name.Contains(Filter, StringComparison.CurrentCultureIgnoreCase)
+        );
+    }
+    
+    private void ViewProfileInventory()
+    {
+        Navigation.NavigateTo($"steam/inventory/{SteamId}", forceLoad: true);
+    }
+
+    private void ViewItem(InventoryInvestmentItemDTO item)
+    {
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+    }
+}

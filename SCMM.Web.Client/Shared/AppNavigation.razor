@@ -1,0 +1,309 @@
+﻿@using SCMM.Web.Data.Models.Domain.DTOs.InventoryItems
+@using SCMM.Web.Data.Models
+@inject ILogger<AppNavigation> Logger
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject AppState State
+
+@if (NavigationItems == null)
+{
+    <Loading Message="" />
+}
+else
+{
+    @if (!State.IsAuthenticated)
+    {
+        <a class="SignIn-Button" @onclick="@SignInWarningOpen">
+            <img src="/images/sits_01.png" alt="Sign-in through Steam" title="Sign-in through Steam" />
+        </a>
+    }
+    <Navigation Items="@NavigationItems">
+    </Navigation>
+}
+
+<Dialog Open="@SignInDialogOpened" OnClose="@SignInWarningClose">
+    <DialogTitle>
+        <i class="fas fa-fw fa-lock"></i>
+        <span>Keep your account safe</span>
+    </DialogTitle>
+    <DialogContent>
+        <DialogContentText>
+            <ul class="SignIn-Dialog-Tips">
+                <li>
+                    <p>Only enter your password on offical Steam websites.</p>
+                    <img src="/images/steam_secure_login.png" />
+                </li>
+                <li>Regularly check your <a href="https://steamcommunity.com/dev/apikey" target="_blank">API key</a>, remove it unless you actually use it.</li>
+                <li>Enable <a href="https://support.steampowered.com/kb_article.php?ref=4440-rtui-9218" target="_blank">Steam Guard</a> for improved account security.</li>
+            </ul>
+        </DialogContentText>
+    </DialogContent>
+    <DialogActions>
+        <a class="SignIn-Dialog-Button" @onclick="@SignIn">
+            <img src="/images/sits_01.png" alt="Continue to sign-in through Steam" title="Continue to sign-in through Steam" />
+        </a>
+    </DialogActions>
+</Dialog>
+
+<DonateDialog @bind-Open="@DonateDialogOpened" />
+
+@code {
+
+    private List<NavigationItem> NavigationItems { get; set; }
+
+    private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
+
+    private DateTimeOffset? StoreNextUpdateTime { get; set; }
+
+    private bool DonateDialogOpened { get; set; }
+
+    private bool SignInDialogOpened { get; set; }
+
+    protected override void OnInitialized()
+    {
+        NavigationItems = RebuildNaviationItems();
+        Task.Run(async () =>
+        {
+        /// Do in background...
+        await RefreshInventoryTotals();
+            await RefreshStoreTimeRemaining();
+            NavigationItems = RebuildNaviationItems();
+            StateHasChanged();
+        });
+    }
+
+    private async Task RefreshInventoryTotals()
+    {
+        if (!State.IsAuthenticated)
+        {
+            return;
+        }
+        try
+        {
+            InventoryTotals = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
+                $"api/profile/{State.Profile?.SteamId}/inventory/total"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error refreshing inventory totals for '{State.Profile?.SteamId}'");
+        }
+    }
+
+    private async Task RefreshStoreTimeRemaining()
+    {
+        try
+        {
+            StoreNextUpdateTime = await Http.GetFromJsonAsync<DateTimeOffset>(
+                $"api/store/nextUpdateTime"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error refreshing remaining store time");
+        }
+    }
+
+    private List<NavigationItem> RebuildNaviationItems()
+    {
+        var inventoryValue = String.Empty;
+        if (InventoryTotals?.TotalMarketValue > 0)
+        {
+            inventoryValue = State.Currency.ToPriceString(InventoryTotals.TotalMarketValue);
+        }
+
+        var storeUpdateTimeRemaining = String.Empty;
+        if (StoreNextUpdateTime != null)
+        {
+            var nextStoreIsOverdue = (StoreNextUpdateTime.Value <= DateTimeOffset.Now);
+            storeUpdateTimeRemaining = (StoreNextUpdateTime.Value - DateTimeOffset.Now).ToDurationString(
+                suffix: (nextStoreIsOverdue ? "overdue" : "remaining"), zero: "due now", showSeconds: false, maxGranularity: 2
+            );
+        }
+
+        var items = new List<NavigationItem>();
+        if (State.IsAuthenticated)
+        {
+            items.AddRange(new List<NavigationItem>
+            {
+                new NavigationItem
+                {
+                    Icon = @<CashIcon />,
+                    Title = "Inventory",
+                    Path = $"steam/inventory/{State.Profile?.SteamId}",
+                    SubTitle = inventoryValue,
+                    Prefix = true
+                },
+                /*
+                new NavigationItem
+                {
+                    Icon = @<CardExchangeIcon />,
+                    Title = "Trade History",
+                    Path =  "steam/history",
+                    Prefix =  true,
+                    Disabled = true
+                }
+                */
+            });
+        }
+        else
+        {
+            items.AddRange(new List<NavigationItem>
+            {
+                new NavigationItem
+                {
+                    Icon = @<CashIcon />,
+                    Title = "Inventory Value",
+                    Path = $"steam/inventory",
+                    Prefix = true
+                }
+            });
+        }
+        if (items.Any())
+        {
+            items.Add(null);
+        }
+        items.AddRange(new List<NavigationItem>
+        {
+            new NavigationItem
+            {
+                Icon = @<PodiumIcon />,
+                Title = "Market Statistics",
+                Path = "steam/marketstatistics",
+                Prefix = true
+            },
+            new NavigationItem
+            {
+                Icon = @<ChartIcon />,
+                Title = "Market Listings",
+                Path = "steam/marketlistings",
+                Prefix = true
+            },
+            /*
+            new NavigationItem
+            {
+                Icon = @<ArtificialIntelligenceIcon />,
+                Title = "Market Insights",
+                Path =  "steam/marketinsights",
+                Prefix =  true,
+                Disabled = true
+            },
+            */
+            null,
+            new NavigationItem
+            {
+                Icon = @<ShopIcon />,
+                Title = "Item Store",
+                SubTitle = storeUpdateTimeRemaining,
+                Path =  "steam/store",
+                Prefix =  true
+            },
+            /*
+            new NavigationItem
+            {
+                Icon = @<PencilRulerIcon />,
+                Title = "Item Workshop",
+                Path =  "steam/workshop",
+                Prefix =  true,
+                Disabled = true
+            },
+            new NavigationItem
+            {
+                Icon = @<PaletteIcon />,
+                Title = "Item Skins",
+                Path =  "skins",
+                Prefix =  true,
+                Disabled = true
+            }
+            */
+        });
+        if (items.Any())
+        {
+            items.Add(null);
+        }
+        items.AddRange(new List<NavigationItem>
+        {
+            new NavigationItem
+            {
+                Icon = @<DiscussionIcon />,
+                Title = "Community",
+                SubTitle = "Join the Discord",
+                Path =  "https://discord.gg/CRMf95Z",
+                Prefix =  false
+            },
+            new NavigationItem
+            {
+                Icon = @<InformationIcon />,
+                Title = "About",
+                SubTitle = "FAQ and changes",
+                Path =  "about",
+                Prefix =  true
+            },
+            new NavigationItem
+            {
+                Icon = @<ReceiveMoneyIcon />,
+                Title = "Donate",
+                SubTitle = "Show your support",
+                OnClick = DonationOpen
+            }
+        });
+        if (State.IsAuthenticated)
+        {
+            if (items.Any())
+            {
+                items.Add(null);
+            }
+            items.AddRange(new List<NavigationItem>
+            {
+                new NavigationItem
+                {
+                    Icon = @<CogIcon />,
+                    Title = "Settings",
+                    SubTitle = "Manage your account",
+                    Path = "settings",
+                    Prefix = true
+                },
+                new NavigationItem
+                {
+                    Icon = @<ExitDoorIcon />,
+                    Title = "Sign out",
+                    OnClick = SignOut
+                }
+            });
+        }
+
+        return items;
+    }
+
+    private void DonationOpen()
+    {
+        DonateDialogOpened = true;
+        StateHasChanged();
+    }
+
+    private void SignInWarningOpen()
+    {
+        SignInDialogOpened = true;
+        StateHasChanged();
+    }
+
+    private void SignInWarningClose()
+    {
+        SignInDialogOpened = false;
+        StateHasChanged();
+    }
+
+    private void SignIn()
+    {
+        var url = $"signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}";
+        JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
+    }
+
+    private void SignOut()
+    {
+        var url = $"signout?returnUrl={Uri.EscapeDataString(Navigation.Uri)}";
+        JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
+    }
+
+}

@@ -1,0 +1,273 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
+@using SCMM.Web.Data.Models.UI
+@using SCMM.Web.Data.Models.UI.ProfileInventory
+@using SCMM.Web.Data.Models.Domain.DTOs.InventoryItems
+@using SCMM.Web.Data.Models.Domain.DTOs.Currencies
+@inherits ComponentBase
+@inject ILocalStorageService LocalStorage
+@inject ILogger<InventoryItemsInvestment> Logger
+@inject HttpClient Http
+@inject AppState State
+
+<Table Size="@Size.Small" StickyHeader>
+    <TableHead>
+        <TableRow>
+            <TableCell>
+                @CreateSortableColumn("Description.Name", "Name")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("BuyPrice", "Buy Price")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("Description.MarketItem.Last1hrValue", "Current Market Value")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("Description.MarketItem.ResellPrice", "Resell Price")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("Description.MarketItem.ResellTax", "Resell Fees")
+            </TableCell>
+            <TableCell>
+                @CreateSortableColumn("Description.MarketItem.ResellProfit", "Resell Profit")
+            </TableCell>
+            <TableCell style="border-bottom: none">
+                Resell ROI%
+            </TableCell>
+        </TableRow>
+    </TableHead>
+    <TableBody>
+        <Virtualize @ref="ItemTable" ItemsProvider="LoadItems" Context="item">
+            <ItemContent>
+                <TableRow @key="@item.Id" Hover>
+                    <TableCell Component="th" Scope="row" Class="@GetItemClass(item)">
+                        <div style="display:flex; align-content:center; align-items:center">
+                            <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
+                            <strong style="margin:8px">@item.Name</strong>
+                            @if (item.Quantity > 1)
+                            { 
+                                <div class="Chip-Root">
+                                    <span class="Chip-Label">
+                                        @item.Quantity.ToQuantityString()
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (ReadOnly)
+                        {
+                            @if (item.Currency != null && item.BuyPrice != null)
+                            {
+                                @item.Currency.ToPriceString(item.BuyPrice.Value)
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        }
+                        else
+                        {
+                            <InputBase Margin="@Margin.None" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.Currency ?? State.Currency, item.BuyPriceLocal))">
+                                <StartAdornment>
+                                    <span style="padding-right:5px;">@((item.Currency ?? State.Currency).PrefixText)</span>
+                                </StartAdornment>
+                                <EndAdornment>
+                                    <span style="padding-left:5px;">@((item.Currency ?? State.Currency).SuffixText)</span>
+                                </EndAdornment>
+                            </InputBase>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.Last1hrValue != null)
+                        {
+                            @State.Currency.ToPriceString(item.Last1hrValue.Value)
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.ResellPrice != null)
+                        {
+                            @State.Currency.ToPriceString(item.ResellPrice.Value) 
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.ResellTax != null)
+                        {
+                            @State.Currency.ToPriceString(item.ResellTax.Value) 
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
+                        {
+                            @State.Currency.ToPriceString(item.ResellPrice.Value - item.ResellTax.Value - item.BuyPrice.Value) 
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </TableCell>
+                    <TableCell Class="@GetItemClass(item)">
+                        @if (item.ResellPrice != null && item.ResellTax != null && item.BuyPrice != null && item.BuyPrice > 0 && (item.ResellPrice - item.ResellTax) > 0)
+                        {
+                            @(((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
+                        }
+                        else
+                        {
+                            <span>∞</span>
+                        }
+                    </TableCell>
+                </TableRow>
+            </ItemContent>
+            <Placeholder>
+                <TableRow>
+                    <TableCell>
+                        <div style="display:flex; align-content:center; align-items:center">
+                            <img src="/images/loading.gif" style="width:32px; height:32px; margin:-4px 0px;" />
+                            <strong style="margin:8px">Loading...</strong>
+                        </div>
+                    </TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                    <TableCell>—</TableCell>
+                </TableRow>
+            </Placeholder>
+        </Virtualize>
+    </TableBody>
+</Table>
+
+@code {
+
+    [Parameter]
+    public string SteamId { get; set; }
+    
+    [Parameter]
+    public string Filter { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+    
+    private Virtualize<InventoryInvestmentItemDTO> ItemTable { get; set; }
+    
+    private string SortBy { set; get; } = "marketValue";
+
+    private Sort SortDirection { set; get; } = Sort.Ascending;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SortBy = await LocalStorage.GetItemAsync<string>("Inventory.SortBy");
+        SortDirection = await LocalStorage.GetItemAsync<Sort>("Inventory.SortDirection");
+    }
+
+    private RenderFragment CreateSortableColumn(string name, string label)
+    {
+        return @<TableSortLabel
+                    Active="@(SortBy == name)"
+                    Direction="@SortDirection"
+                    OnClick="@CreateOnSortClick(name)">
+                    @label
+                </TableSortLabel>;
+    }
+
+    private EventCallback<EventArgs> CreateOnSortClick(string name)
+    {
+        return EventCallback.Factory.Create<System.EventArgs>(this, async (_) =>
+        {
+            await HandleSortClick(name);
+        });
+    }
+
+    private async Task HandleSortClick(string name)
+    {
+        if (SortBy == name)
+        {
+            SortDirection = (SortDirection == Sort.Ascending ? Sort.Descending : Sort.Ascending);
+        }
+        else
+        {
+            SortDirection = Sort.Ascending;
+        }
+
+        SortBy = name;
+        await LocalStorage.SetItemAsync<string>("Inventory.SortBy", SortBy);
+        await LocalStorage.SetItemAsync<Sort>("Inventory.SortDirection", SortDirection);
+        await ItemTable.RefreshDataAsync();
+        StateHasChanged();
+    }
+    
+    public async Task HandleFilterChange(string filter)
+    {
+        Filter = (string) filter;
+        await ItemTable.RefreshDataAsync();
+        StateHasChanged();
+    }
+    
+    private string GetItemClass(InventoryInvestmentItemDTO item)
+    {
+        if (item.BuyPrice == null || item.BuyPrice <= 0 || item.ResellPrice == null || item.ResellTax == null)
+        {
+            return null;
+        }
+        var roi = ((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPrice.Value) * 100, 0));
+        if (roi >= 100)
+        {
+            return "Background-Success";
+        }
+        if (roi < 100)
+        {
+            return "Background-Error";
+        }
+        return null;
+    }
+
+    private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, CurrencyDTO currency, string value)
+    {
+        var buyPrice = SCMM.Steam.Data.Models.EconomyExtensions.SteamPriceAsInt(value, useDecimalShortCircuit: false);
+        if (buyPrice != item.BuyPrice)
+        {
+            Logger.LogInformation($"Updating buy price for '{item.Id}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}')");
+            item.Currency = State.Currency;
+            item.BuyPrice = buyPrice;
+            try 
+            {
+                await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
+                {
+                    CurrencyId = State.Currency.Id,
+                    BuyPrice = buyPrice
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error updating item buy price for '{item.Id}' (value: '{value}')");
+            }
+        }
+    }
+
+    protected async ValueTask<ItemsProviderResult<InventoryInvestmentItemDTO>> LoadItems(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<InventoryInvestmentItemDTO>>($"api/profile/{SteamId}/inventory/investment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}&sortBy={SortBy}&sortDirection={SortDirection}");
+            return new ItemsProviderResult<InventoryInvestmentItemDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing inventory items");
+            throw;
+        }
+    }
+    
+}

@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <UserSecretsId>SCMM.Web.Server-CEF763B9-8A28-4DFF-9A7A-1E4D1E7320D9</UserSecretsId>
+    <ApplicationInsightsResourceId>/subscriptions/c42f13b2-3f25-4a32-a1c1-9bbc323dfa76/resourceGroups/SCMM/providers/microsoft.insights/components/scmm-app-insights</ApplicationInsightsResourceId>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>0.10-alpha</Version>
+    <AssemblyVersion>0.10.0.0</AssemblyVersion>
+    <FileVersion>0.10.0.0</FileVersion>
+    <Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>C:\Development\SCMM\SCMM.Web.Server\SCMM.Web.Server.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>C:\Development\SCMM\SCMM.Web.Server\SCMM.Web.Server.xml</DocumentationFile>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OpenId.Steam" Version="5.0.0" />
+    <PackageReference Include="CommandQuery" Version="1.0.0" />
+    <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0-preview.2.21154.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.0-preview.2.21154.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-preview.2.21154.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0-preview.2.21154.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Cronos" Version="0.7.0" />
+    <PackageReference Include="SteamWebAPI2" Version="4.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.1" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.2.21154.6" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SCMM.Data.Shared\SCMM.Data.Shared.csproj" />
+    <ProjectReference Include="..\SCMM.Discord.Client\SCMM.Discord.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Google.Client\SCMM.Google.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Web.Client\SCMM.Web.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Web.Data.Models\SCMM.Web.Data.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App_Data\jobs\triggered\RestartIISEvery6Hours\restart.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="App_Data\jobs\triggered\RestartIISEvery6Hours\settings.job">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
