@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Data.Ingestion\SCMM.Data.Ingestion.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />
   </ItemGroup>

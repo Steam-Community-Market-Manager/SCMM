@@ -13,11 +13,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.27" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.0.0-beta.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0-preview.3.21201.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Data.Ingestion\SCMM.Data.Ingestion.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />
   </ItemGroup>
 
 </Project>

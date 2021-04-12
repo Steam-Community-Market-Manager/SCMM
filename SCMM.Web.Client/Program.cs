@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SCMM.Web.Client
 {
-    public class Program
+    class Program
     {
         public static async Task Main(string[] args)
         {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging.ApplicationInsights;
 using System;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server
+namespace SCMM.Discord.Bot.App
 {
     class Program
     {
@@ -28,9 +28,10 @@ namespace SCMM.Web.Server
                     logging.AddApplicationInsights();
                     logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Warning);
                 })
-                .ConfigureWebHostDefaults(webBuilder =>
+                .ConfigureWebJobs(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder.AddAzureStorageBlobs();
+                    webBuilder.AddAzureStorageQueues();
                 });
     }
 }
