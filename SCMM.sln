@@ -43,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Discord.Data.Models", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Steam.Data.FunctionApp", "SCMM.Steam.Data.FunctionApp\SCMM.Steam.Data.FunctionApp.csproj", "{DA926D10-50F3-4D7E-B189-F4FC4B6407C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCMM.Data.Shared.Store", "SCMM.Data.Shared.Store\SCMM.Data.Shared.Store.csproj", "{4DD57893-011D-47DF-B31E-9F22B8D4DAB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Data.Shared.Store", "SCMM.Data.Shared.Store\SCMM.Data.Shared.Store.csproj", "{4DD57893-011D-47DF-B31E-9F22B8D4DAB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
