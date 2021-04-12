@@ -15,7 +15,5 @@ namespace SCMM.Web.Data.Models.UI.MarketStatistics
         public string ForegroundColour { get; set; }
 
         public string IconUrl { get; set; }
-
-        public long Last24hrSales { get; set; }
     }
 }

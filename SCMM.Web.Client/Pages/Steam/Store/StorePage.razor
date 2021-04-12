@@ -474,7 +474,7 @@ else
             Stores = await Http.GetFromJsonAsync<ItemStoreListDTO[]>($"api/store");
             if (Stores.Any())
             {
-                OnSelectedStoreChanged(Stores.Last());
+                await OnSelectedStoreChanged(Stores.Last());
             }
         }
         catch (Exception ex)
@@ -507,13 +507,13 @@ else
         StateHasChanged();
     }
 
-    private void OnSelectedStoreChanged(object value)
+    private async Task OnSelectedStoreChanged(object value)
     {
         StoreSelectorDialogOpen = false;
         SelectedStore = (ItemStoreListDTO) value;
         if (SelectedStore != null)
         {
-            RefreshStore(SelectedStore.Id);
+            await RefreshStore(SelectedStore.Id);
         }
     }
 

@@ -16,7 +16,7 @@ namespace SCMM.Steam.Data.Models.Community.Requests.Json
         public string SearchText { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{Constants.SteamStoreUrl}/itemstore/{Uri.EscapeUriString(AppId)}/ajaxgetitemdefs?start={Start}&count={Count}&norender={(NoRender ? "1" : "0")}&filter={Uri.EscapeUriString(Filter)}&searchtext={Uri.EscapeUriString(SearchText)}"
+            $"{Constants.SteamStoreUrl}/itemstore/{Uri.EscapeDataString(AppId)}/ajaxgetitemdefs?start={Start}&count={Count}&norender={(NoRender ? "1" : "0")}&filter={Uri.EscapeDataString(Filter)}&searchtext={Uri.EscapeDataString(SearchText)}"
         );
     }
 }

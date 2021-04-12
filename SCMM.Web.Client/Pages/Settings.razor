@@ -96,10 +96,10 @@
                 </Typography>
             </CardContent>
             <CardActions style="padding: 16px">
-                <Button OnClick="@OnDownloadYourData" Color="@Color.Primary" style="margin-right: 8px" Disabled="true">
+                <Button Color="@Color.Primary" style="margin-right: 8px" Disabled="true">
                     Download Your Data
                 </Button>
-                <Button OnClick="@OnDeleteYourData" Variant="@ButtonVariant.Outlined" Color="@Color.Secondary" Disabled="true">
+                <Button Variant="@ButtonVariant.Outlined" Color="@Color.Secondary" Disabled="true">
                     Delete Your Data
                 </Button>
             </CardActions>
@@ -118,7 +118,7 @@
         if (!State.IsAuthenticated)
         {
             var url = $"signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}";
-            JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
+            await JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
         }
         else 
         {
@@ -145,13 +145,4 @@
         StateHasChanged();
     }
 
-    public async Task OnDownloadYourData(EventArgs args)
-    {
-
-    }
-    
-    public async Task OnDeleteYourData(EventArgs args)
-    {
-
-    }
 }

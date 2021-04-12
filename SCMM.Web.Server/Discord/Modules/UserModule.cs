@@ -17,11 +17,10 @@ namespace SCMM.Web.Server.Discord.Modules
     {
         private readonly IConfiguration _configuration;
         private readonly ScmmDbContext _db;
-        private readonly SteamService _steamService;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public UserModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public UserModule(IConfiguration configuration, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _configuration = configuration;
             _db = db;

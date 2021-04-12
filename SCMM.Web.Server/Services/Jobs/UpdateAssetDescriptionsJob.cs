@@ -79,12 +79,15 @@ namespace SCMM.Web.Server.Services.Jobs
                             }
                         );
 
-                        foreach (var item in assetDescriptionsJoined)
-                        {
-                            steamService.UpdateAssetDescription(
-                                item.AssetDescription, item.AssetClass
-                            );
-                        }
+                        await Task.WhenAll(
+                            assetDescriptionsJoined
+                                .Select(x =>
+                                    steamService.UpdateAssetDescription(
+                                        x.AssetDescription, x.AssetClass
+                                    )
+                                )
+                                .ToArray()
+                        );
 
                         db.SaveChanges();
                     }

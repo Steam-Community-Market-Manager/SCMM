@@ -37,12 +37,14 @@ namespace SCMM.Web.Server.Services.Queries
 
         public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request)
         {
-            var lastItemAcceptedOn = _db.SteamAssetWorkshopFiles
+            var lastItemAcceptedOnQuery = await _db.SteamAssetWorkshopFiles
                 .AsNoTracking()
                 .Where(x => x.AcceptedOn != null)
                 .GroupBy(x => 1)
                 .Select(x => x.Max(y => y.AcceptedOn))
-                .FirstOrDefault()?.UtcDateTime;
+                .FirstOrDefaultAsync();
+
+            var lastItemAcceptedOn = lastItemAcceptedOnQuery?.UtcDateTime;
             if (lastItemAcceptedOn == null)
             {
                 return null;

@@ -31,7 +31,7 @@
         </ResponsiveTextField>
     </Grid>
     <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
-        <ResponsiveTextField Label="Filter" Placeholder="type an item name or tag..." OnChange="@(x => OnFilterChanged(x))">
+        <ResponsiveTextField Label="Filter" Placeholder="type an item name or tag..." OnChange="@(async x => await OnFilterChanged(x))">
             <StartAdornment>
                 <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
                     <i class="fas fa-fw fa-filter"></i>
@@ -217,10 +217,10 @@
         StateHasChanged();
     }
     
-    private void OnFilterChanged(string filter)
+    private async Task OnFilterChanged(string filter)
     {
         Filter = (string) filter;
-        InventoryInvestmentPanel.HandleFilterChange(filter);
+        await InventoryInvestmentPanel.HandleFilterChange(filter);
         StateHasChanged();
     }
     
