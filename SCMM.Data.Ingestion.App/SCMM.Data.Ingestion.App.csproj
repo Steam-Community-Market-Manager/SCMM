@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,5 +11,9 @@
     <FileVersion>0.10.0.0</FileVersion>
     <Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SCMM.Data.Ingestion\SCMM.Data.Ingestion.csproj" />
+  </ItemGroup>
 
 </Project>

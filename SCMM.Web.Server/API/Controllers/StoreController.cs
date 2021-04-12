@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models.Domain.DTOs.StoreItems;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Queries;
@@ -23,14 +23,14 @@ namespace SCMM.Web.Server.API.Controllers
     public class StoreController : ControllerBase
     {
         private readonly ILogger<StoreController> _logger;
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
         private readonly SteamService _steam;
 
-        public StoreController(ILogger<StoreController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, SteamService steam)
+        public StoreController(ILogger<StoreController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, SteamService steam)
         {
             _logger = logger;
             _db = db;

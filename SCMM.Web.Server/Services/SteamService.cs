@@ -1,15 +1,16 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SCMM.Data.Shared.Store.Types;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
-using SCMM.Web.Server.Data.Types;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
+using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Commands;
 using Steam.Models;
@@ -30,7 +31,7 @@ namespace SCMM.Web.Server.Services
     {
         private readonly TimeSpan DefaultCachePeriod = TimeSpan.FromHours(6);
 
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
         private readonly SteamCurrencyService _currencyService;
@@ -39,7 +40,7 @@ namespace SCMM.Web.Server.Services
         private readonly IQueryProcessor _queryProcessor;
 
 
-        public SteamService(ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public SteamService(SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
@@ -50,7 +51,7 @@ namespace SCMM.Web.Server.Services
             _queryProcessor = queryProcessor;
         }
 
-        public Data.Models.Steam.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAssetFilter filter)
+        public Steam.Data.Store.Models.Steam.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAssetFilter filter)
         {
             var existingFilter = app.Filters.FirstOrDefault(x => x.SteamId == filter.Name);
             if (existingFilter != null)
@@ -59,11 +60,11 @@ namespace SCMM.Web.Server.Services
                 return existingFilter;
             }
 
-            var newFilter = new Data.Models.Steam.SteamAssetFilter()
+            var newFilter = new Steam.Data.Store.Models.Steam.SteamAssetFilter()
             {
                 SteamId = filter.Name,
                 Name = filter.Localized_Name,
-                Options = new Data.Types.PersistableStringDictionary(
+                Options = new PersistableStringDictionary(
                     filter.Tags.ToDictionary(
                         x => x.Key,
                         x => x.Value.Localized_Name
@@ -76,7 +77,7 @@ namespace SCMM.Web.Server.Services
             return newFilter;
         }
 
-        public async Task<Data.Models.Steam.SteamAssetDescription> UpdateAssetDescription(Data.Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
+        public async Task<Steam.Data.Store.Models.Steam.SteamAssetDescription> UpdateAssetDescription(Steam.Data.Store.Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
         {
             // Update tags
             if (assetClass.Tags != null)
@@ -142,18 +143,18 @@ namespace SCMM.Web.Server.Services
 
             switch (assetClass.Tradable)
             {
-                case "1": assetDescription.Flags |= SCMM.Web.Data.Models.Steam.SteamAssetDescriptionFlags.Tradable; break;
-                case "0": assetDescription.Flags &= ~SCMM.Web.Data.Models.Steam.SteamAssetDescriptionFlags.Tradable; break;
+                case "1": assetDescription.Flags |= SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Tradable; break;
+                case "0": assetDescription.Flags &= ~SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Tradable; break;
             }
             switch (assetClass.Marketable)
             {
-                case "1": assetDescription.Flags |= SCMM.Web.Data.Models.Steam.SteamAssetDescriptionFlags.Marketable; break;
-                case "0": assetDescription.Flags &= ~SCMM.Web.Data.Models.Steam.SteamAssetDescriptionFlags.Marketable; break;
+                case "1": assetDescription.Flags |= SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Marketable; break;
+                case "0": assetDescription.Flags &= ~SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Marketable; break;
             }
             switch (assetClass.Commodity)
             {
-                case "1": assetDescription.Flags |= SCMM.Web.Data.Models.Steam.SteamAssetDescriptionFlags.Commodity; break;
-                case "0": assetDescription.Flags &= ~SCMM.Web.Data.Models.Steam.SteamAssetDescriptionFlags.Commodity; break;
+                case "1": assetDescription.Flags |= SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Commodity; break;
+                case "0": assetDescription.Flags &= ~SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Commodity; break;
             }
 
             // Update last checked on
@@ -161,7 +162,7 @@ namespace SCMM.Web.Server.Services
             return assetDescription;
         }
 
-        public async Task<Data.Models.Steam.SteamAssetDescription> UpdateAssetDescription(Data.Models.Steam.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile, bool updateSubscriptionGraph = false)
+        public async Task<Steam.Data.Store.Models.Steam.SteamAssetDescription> UpdateAssetDescription(Steam.Data.Store.Models.Steam.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile, bool updateSubscriptionGraph = false)
         {
             // Update asset description tags
             if (assetDescription != null && publishedFile.Tags != null)
@@ -253,20 +254,20 @@ namespace SCMM.Web.Server.Services
                         maxSubscriptions = (int)Math.Max(maxSubscriptions, workshopFile.SubscriptionsGraph[utcDate]);
                     }
                     workshopFile.SubscriptionsGraph[utcDate] = maxSubscriptions;
-                    workshopFile.SubscriptionsGraph = new Data.Types.PersistableDailyGraphDataSet(
+                    workshopFile.SubscriptionsGraph = new PersistableDailyGraphDataSet(
                         workshopFile.SubscriptionsGraph
                     );
                 }
 
                 // Update flags
-                if (!workshopFile.Flags.HasFlag(SCMM.Web.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned) && publishedFile.Banned)
+                if (!workshopFile.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.SteamAssetWorkshopFileFlags.Banned) && publishedFile.Banned)
                 {
-                    workshopFile.Flags |= SCMM.Web.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned;
+                    workshopFile.Flags |= SCMM.Steam.Data.Models.Enums.SteamAssetWorkshopFileFlags.Banned;
                     workshopFile.BanReason = publishedFile.BanReason;
                 }
-                if (workshopFile.Flags.HasFlag(SCMM.Web.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned) && !publishedFile.Banned)
+                if (workshopFile.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.SteamAssetWorkshopFileFlags.Banned) && !publishedFile.Banned)
                 {
-                    workshopFile.Flags &= ~SCMM.Web.Data.Models.Steam.SteamAssetWorkshopFileFlags.Banned;
+                    workshopFile.Flags &= ~SCMM.Steam.Data.Models.Enums.SteamAssetWorkshopFileFlags.Banned;
                     workshopFile.BanReason = null;
                 }
             }
@@ -281,7 +282,7 @@ namespace SCMM.Web.Server.Services
             var utcDateTime = (DateTime.UtcNow.Date + TimeSpan.FromHours(DateTime.UtcNow.TimeOfDay.Hours));
             storeItem.Index = storeIndex;
             storeItem.IndexGraph[utcDateTime] = storeIndex;
-            storeItem.IndexGraph = new Data.Types.PersistableHourlyGraphDataSet(
+            storeItem.IndexGraph = new PersistableHourlyGraphDataSet(
                 storeItem.IndexGraph
             );
 
@@ -314,7 +315,7 @@ namespace SCMM.Web.Server.Services
             return dbWorkshopFile;
         }
 
-        public async Task<Data.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, string languageId, ulong classId)
+        public async Task<Steam.Data.Store.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, string languageId, ulong classId)
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
                 .Include(x => x.WorkshopFile)
@@ -353,7 +354,7 @@ namespace SCMM.Web.Server.Services
                 workshopFile = await AddOrUpdateAssetWorkshopFile(app, workshopFileId);
             }
 
-            dbAssetDescription = new Data.Models.Steam.SteamAssetDescription()
+            dbAssetDescription = new Steam.Data.Store.Models.Steam.SteamAssetDescription()
             {
                 SteamId = assetDescription.ClassId.ToString(),
                 AppId = app.Id,
@@ -363,7 +364,7 @@ namespace SCMM.Web.Server.Services
                 IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl),
                 IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl),
                 WorkshopFile = workshopFile,
-                Tags = new Data.Types.PersistableStringDictionary(tags)
+                Tags = new PersistableStringDictionary(tags)
             };
 
             if (dbAssetDescription.IconId == null && !String.IsNullOrEmpty(dbAssetDescription.IconUrl))
@@ -396,7 +397,7 @@ namespace SCMM.Web.Server.Services
             return dbAssetDescription;
         }
 
-        public async Task<Data.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAssetDescription assetDescription)
+        public async Task<Steam.Data.Store.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAssetDescription assetDescription)
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
                 .Where(x => x.SteamId == assetDescription.ClassId)
@@ -419,7 +420,7 @@ namespace SCMM.Web.Server.Services
                 workshopFile = await AddOrUpdateAssetWorkshopFile(app, workshopFileId);
             }
 
-            dbAssetDescription = new Data.Models.Steam.SteamAssetDescription()
+            dbAssetDescription = new Steam.Data.Store.Models.Steam.SteamAssetDescription()
             {
                 SteamId = assetDescription.ClassId.ToString(),
                 AppId = app.Id,
@@ -429,7 +430,7 @@ namespace SCMM.Web.Server.Services
                 IconUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrl),
                 IconLargeUrl = new SteamEconomyImageBlobRequest(assetDescription.IconUrlLarge ?? assetDescription.IconUrl),
                 WorkshopFile = workshopFile,
-                Tags = new Data.Types.PersistableStringDictionary(tags)
+                Tags = new PersistableStringDictionary(tags)
             };
 
             _db.SteamAssetDescriptions.Add(dbAssetDescription);
@@ -511,9 +512,9 @@ namespace SCMM.Web.Server.Services
             item.CurrencyId = currencyId;
             item.RecalculateOrders(
                 ParseSteamMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
-                EconomyExtensions.SteamQuantityValueAsInt(histogram.BuyOrderCount),
+                histogram.BuyOrderCount.SteamQuantityValueAsInt(),
                 ParseSteamMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(histogram.SellOrderGraph),
-                EconomyExtensions.SteamQuantityValueAsInt(histogram.SellOrderCount)
+                histogram.SellOrderCount.SteamQuantityValueAsInt()
             );
 
             return item;
@@ -545,7 +546,7 @@ namespace SCMM.Web.Server.Services
         }
 
         private T[] ParseSteamMarketItemOrdersFromGraph<T>(string[][] orderGraph)
-            where T : Data.Models.Steam.SteamMarketItemOrder, new()
+            where T : Steam.Data.Store.Models.Steam.SteamMarketItemOrder, new()
         {
             var orders = new List<T>();
             if (orderGraph == null)
@@ -556,8 +557,8 @@ namespace SCMM.Web.Server.Services
             var totalQuantity = 0;
             for (int i = 0; i < orderGraph.Length; i++)
             {
-                var price = EconomyExtensions.SteamPriceAsInt(orderGraph[i][0]);
-                var quantity = (EconomyExtensions.SteamQuantityValueAsInt(orderGraph[i][1]) - totalQuantity);
+                var price = orderGraph[i][0].SteamPriceAsInt();
+                var quantity = (orderGraph[i][1].SteamQuantityValueAsInt() - totalQuantity);
                 orders.Add(new T()
                 {
                     Price = price,
@@ -581,8 +582,8 @@ namespace SCMM.Web.Server.Services
             for (int i = 0; i < salesGraph.Length; i++)
             {
                 var timeStamp = DateTime.ParseExact(salesGraph[i][0], "MMM dd yyyy HH: z", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-                var price = EconomyExtensions.SteamPriceAsInt(salesGraph[i][1]);
-                var quantity = EconomyExtensions.SteamQuantityValueAsInt(salesGraph[i][2]);
+                var price = salesGraph[i][1].SteamPriceAsInt();
+                var quantity = salesGraph[i][2].SteamQuantityValueAsInt();
                 sales.Add(new SteamMarketItemSale()
                 {
                     Timestamp = timeStamp,

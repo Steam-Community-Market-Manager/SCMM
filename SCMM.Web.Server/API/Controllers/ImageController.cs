@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using System;
 using System.Threading.Tasks;
 
@@ -17,12 +17,12 @@ namespace SCMM.Web.Server.API.Controllers
     public class ImageController : ControllerBase
     {
         private readonly ILogger<ImageController> _logger;
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public ImageController(ILogger<ImageController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
+        public ImageController(ILogger<ImageController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;

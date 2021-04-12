@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Discord;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Discord;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +15,11 @@ namespace SCMM.Web.Server.Discord.Modules
     [Alias("config", "cfg")]
     public class ConfigurationModule : ModuleBase<SocketCommandContext>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
 
         private static char[] ValueSeparators = new[] { ' ', ',', '+', '&', '|', ';' };
 
-        public ConfigurationModule(ScmmDbContext db)
+        public ConfigurationModule(SteamDbContext db)
         {
             _db = db;
         }

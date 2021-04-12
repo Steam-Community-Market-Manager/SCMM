@@ -1,4 +1,4 @@
-﻿using SCMM.Web.Server.Data.Models.Steam;
+﻿using SCMM.Steam.Data.Store.Models.Steam;
 using System;
 using System.Security.Claims;
 

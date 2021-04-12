@@ -2,7 +2,7 @@
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Services.Commands;
 using System;
 using System.Collections.Generic;
@@ -51,11 +51,11 @@ namespace SCMM.Web.Server.Services.Queries
     {
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IMapper _mapper;
 
-        public GetImageMosaic(ScmmDbContext db, ICommandProcessor commandProcessor, IMapper mapper)
+        public GetImageMosaic(SteamDbContext db, ICommandProcessor commandProcessor, IMapper mapper)
         {
             _db = db;
             _commandProcessor = commandProcessor;

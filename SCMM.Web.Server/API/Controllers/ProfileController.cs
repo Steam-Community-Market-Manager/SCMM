@@ -6,15 +6,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Data.Shared;
 using SCMM.Data.Shared.Extensions;
-using SCMM.Steam.Data.Models;
+using SCMM.Data.Shared.Store.Extensions;
+using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models.Domain.DTOs.InventoryItems;
 using SCMM.Web.Data.Models.Domain.DTOs.Profiles;
-using SCMM.Web.Data.Models.Steam;
-using SCMM.Web.Data.Models.UI;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Server.Services.Queries;
@@ -32,12 +33,12 @@ namespace SCMM.Web.Server.API.Controllers
     {
         private readonly ILogger<ProfileController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public ProfileController(ILogger<ProfileController> logger, IConfiguration configuration, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
+        public ProfileController(ILogger<ProfileController> logger, IConfiguration configuration, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _configuration = configuration;
@@ -692,14 +693,14 @@ namespace SCMM.Web.Server.API.Controllers
             valueHistory[today.Subtract(TimeSpan.FromDays(0))] = last1hrValue;
 
             var profitHistory = new Dictionary<DateTimeOffset, long>();
-            profitHistory[today.Subtract(TimeSpan.FromDays(7))] = last168hrValue - EconomyExtensions.SteamFeeAsInt(last168hrValue) - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(6))] = last144hrValue - EconomyExtensions.SteamFeeAsInt(last144hrValue) - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(5))] = last120hrValue - EconomyExtensions.SteamFeeAsInt(last120hrValue) - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(4))] = last96hrValue - EconomyExtensions.SteamFeeAsInt(last96hrValue) - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(3))] = last72hrValue - EconomyExtensions.SteamFeeAsInt(last72hrValue) - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(2))] = last48hrValue - EconomyExtensions.SteamFeeAsInt(last48hrValue) - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(1))] = last24hrValue - EconomyExtensions.SteamFeeAsInt(last24hrValue) - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(0))] = last1hrValue - EconomyExtensions.SteamFeeAsInt(last1hrValue) - totalInvested;
+            profitHistory[today.Subtract(TimeSpan.FromDays(7))] = last168hrValue - last168hrValue.SteamFeeAsInt() - totalInvested;
+            profitHistory[today.Subtract(TimeSpan.FromDays(6))] = last144hrValue - last144hrValue.SteamFeeAsInt() - totalInvested;
+            profitHistory[today.Subtract(TimeSpan.FromDays(5))] = last120hrValue - last120hrValue.SteamFeeAsInt() - totalInvested;
+            profitHistory[today.Subtract(TimeSpan.FromDays(4))] = last96hrValue - last96hrValue.SteamFeeAsInt() - totalInvested;
+            profitHistory[today.Subtract(TimeSpan.FromDays(3))] = last72hrValue - last72hrValue.SteamFeeAsInt() - totalInvested;
+            profitHistory[today.Subtract(TimeSpan.FromDays(2))] = last48hrValue - last48hrValue.SteamFeeAsInt() - totalInvested;
+            profitHistory[today.Subtract(TimeSpan.FromDays(1))] = last24hrValue - last24hrValue.SteamFeeAsInt() - totalInvested;
+            profitHistory[today.Subtract(TimeSpan.FromDays(0))] = last1hrValue - last1hrValue.SteamFeeAsInt() - totalInvested;
 
             return Ok(
                 new ProfileInventoryPerformanceDTO()

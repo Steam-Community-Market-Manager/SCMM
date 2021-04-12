@@ -235,7 +235,7 @@
 
     private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, CurrencyDTO currency, string value)
     {
-        var buyPrice = SCMM.Steam.Data.Models.EconomyExtensions.SteamPriceAsInt(value, useDecimalShortCircuit: false);
+        var buyPrice = value.SteamPriceAsInt(useDecimalShortCircuit: false);
         if (buyPrice != item.BuyPrice)
         {
             Logger.LogInformation($"Updating buy price for '{item.Id}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}')");

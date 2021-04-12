@@ -1,7 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Data.Shared.Extensions;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,10 +34,10 @@ namespace SCMM.Web.Server.Services.Queries
 
     public class GetSteamProfileInventoryTotals : IQueryHandler<GetSteamProfileInventoryTotalsRequest, GetSteamProfileInventoryTotalsResponse>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly IQueryProcessor _queryProcessor;
 
-        public GetSteamProfileInventoryTotals(ScmmDbContext db, IQueryProcessor queryProcessor)
+        public GetSteamProfileInventoryTotals(SteamDbContext db, IQueryProcessor queryProcessor)
         {
             _db = db;
             _queryProcessor = queryProcessor;

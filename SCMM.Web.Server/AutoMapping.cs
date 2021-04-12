@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using SCMM.Data.Shared.Extensions;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
 using SCMM.Web.Data.Models.Domain.DTOs.InventoryItems;
 using SCMM.Web.Data.Models.Domain.DTOs.Languages;
@@ -8,7 +9,6 @@ using SCMM.Web.Data.Models.Domain.DTOs.Profiles;
 using SCMM.Web.Data.Models.Domain.DTOs.StoreItems;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
-using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Queries;
 

@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Data.Shared.Store.Types;
 using SCMM.Google.Client;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Types;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var googleClient = scope.ServiceProvider.GetService<GoogleClient>();
-                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var steamApps = await db.SteamApps.ToListAsync();
                 if (!steamApps.Any())

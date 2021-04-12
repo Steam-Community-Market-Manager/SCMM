@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Queries;
 using System;
@@ -29,13 +29,13 @@ namespace SCMM.Web.Server.Services.Commands
 
     public class FetchSteamProfileInventory : ICommandHandler<FetchSteamProfileInventoryRequest, FetchSteamProfileInventoryResponse>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly SteamCommunityClient _communityClient;
         private readonly SteamService _steamService;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public FetchSteamProfileInventory(ScmmDbContext db, SteamCommunityClient communityClient, SteamService steamService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public FetchSteamProfileInventory(SteamDbContext db, SteamCommunityClient communityClient, SteamService steamService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _communityClient = communityClient;
@@ -124,7 +124,7 @@ namespace SCMM.Web.Server.Services.Commands
                 if (inventory == null)
                 {
                     // Inventory is probably private
-                    profile.Privacy = SCMM.Web.Data.Models.Steam.SteamVisibilityType.Private;
+                    profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Private;
                     continue;
                 }
                 if (inventory.Assets?.Any() != true)
@@ -180,7 +180,7 @@ namespace SCMM.Web.Server.Services.Commands
 
                 // Update last inventory update timestamp and privacy state
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
-                profile.Privacy = SCMM.Web.Data.Models.Steam.SteamVisibilityType.Public;
+                profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Public;
             }
 
             return new FetchSteamProfileInventoryResponse()

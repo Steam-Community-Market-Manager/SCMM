@@ -3,9 +3,8 @@ using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands;
 using System;
 using System.Linq;
@@ -16,11 +15,11 @@ namespace SCMM.Web.Server.Discord.Modules
     public class UserModule : ModuleBase<SocketCommandContext>
     {
         private readonly IConfiguration _configuration;
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public UserModule(IConfiguration configuration, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public UserModule(IConfiguration configuration, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _configuration = configuration;
             _db = db;
@@ -63,7 +62,7 @@ namespace SCMM.Web.Server.Discord.Modules
                 .FirstOrDefault(x => x.DiscordId == this.Context.Guild.Id.ToString());
 
             // Promote donators from VIP servers to VIP role
-            if (guild?.Flags.HasFlag(SCMM.Web.Data.Models.Discord.DiscordGuildFlags.VIP) == true)
+            if (guild?.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.DiscordGuildFlags.VIP) == true)
             {
                 var roles = Context.Guild.GetUser(user.Id).Roles;
                 if (roles.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)))

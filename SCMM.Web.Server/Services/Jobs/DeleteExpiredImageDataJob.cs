@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var now = DateTimeOffset.Now;
                 var expiredImageData = db.ImageData

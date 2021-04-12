@@ -14,7 +14,7 @@ using Microsoft.OpenApi.Models;
 using SCMM.Discord.Client;
 using SCMM.Google.Client;
 using SCMM.Steam.Client;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Middleware;
 using SCMM.Web.Server.Services;
@@ -74,7 +74,7 @@ namespace SCMM.Web.Server
                 {
                     OnTicketReceived = async (ctx) =>
                     {
-                        var db = ctx.HttpContext.RequestServices.GetRequiredService<ScmmDbContext>();
+                        var db = ctx.HttpContext.RequestServices.GetRequiredService<SteamDbContext>();
                         var commandProcessor = ctx.HttpContext.RequestServices.GetRequiredService<ICommandProcessor>();
                         var loggedInProfile = await commandProcessor.ProcessWithResultAsync(new LoginSteamProfileRequest()
                         {
@@ -88,7 +88,7 @@ namespace SCMM.Web.Server
             });
 
             // Database
-            services.AddDbContext<ScmmDbContext>(options =>
+            services.AddDbContext<SteamDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"), sql =>
                 {

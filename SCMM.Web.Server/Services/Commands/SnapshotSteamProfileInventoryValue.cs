@@ -1,7 +1,7 @@
 ﻿using CommandQuery;
 using SCMM.Data.Shared.Extensions;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Linq;
@@ -20,10 +20,10 @@ namespace SCMM.Web.Server.Services.Commands
 
     public class SnapshotSteamProfileInventoryValue : ICommandHandler<SnapshotSteamProfileInventoryValueRequest>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly IQueryProcessor _queryProcessor;
 
-        public SnapshotSteamProfileInventoryValue(ScmmDbContext db, IQueryProcessor queryProcessor)
+        public SnapshotSteamProfileInventoryValue(SteamDbContext db, IQueryProcessor queryProcessor)
         {
             _db = db;
             _queryProcessor = queryProcessor;

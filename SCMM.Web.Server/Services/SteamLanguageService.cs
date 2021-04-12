@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.Domain.DTOs.Languages;
-using SCMM.Web.Server.Data;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,10 +13,10 @@ namespace SCMM.Web.Server.Services
     {
         private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly IMapper _mapper;
 
-        public SteamLanguageService(ScmmDbContext db, IMapper mapper)
+        public SteamLanguageService(SteamDbContext db, IMapper mapper)
         {
             _db = db;
             _mapper = mapper;

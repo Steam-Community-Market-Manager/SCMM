@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System.Linq;
 using System.Threading;
@@ -27,7 +27,7 @@ namespace SCMM.Web.Server.Services.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var itemIds = await db.SteamMarketItems
                     .Select(x => x.Id)

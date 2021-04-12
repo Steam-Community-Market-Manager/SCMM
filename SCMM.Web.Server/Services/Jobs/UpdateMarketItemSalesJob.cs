@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
@@ -34,7 +34,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var items = db.SteamMarketItems
                     .Include(x => x.App)

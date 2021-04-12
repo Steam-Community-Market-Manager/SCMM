@@ -1,7 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models;
 using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Collections.Generic;
@@ -30,10 +30,10 @@ namespace SCMM.Web.Server.Services.Commands
 
     public class GenerateSteamProfileInventoryThumbnail : ICommandHandler<GenerateSteamProfileInventoryThumbnailRequest, GenerateSteamProfileInventoryThumbnailResponse>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly IQueryProcessor _queryProcessor;
 
-        public GenerateSteamProfileInventoryThumbnail(ScmmDbContext db, IQueryProcessor queryProcessor)
+        public GenerateSteamProfileInventoryThumbnail(SteamDbContext db, IQueryProcessor queryProcessor)
         {
             _db = db;
             _queryProcessor = queryProcessor;
@@ -58,7 +58,7 @@ namespace SCMM.Web.Server.Services.Commands
                     Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
                     ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue > 0 : false),
                     ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue < 0 : false),
-                    Banned = x.Description.Flags.HasFlag(SCMM.Web.Data.Models.Steam.SteamAssetDescriptionFlags.Banned)
+                    Banned = x.Description.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Banned)
                 })
                 .OrderByDescending(x => x.Value)
                 .ToList();

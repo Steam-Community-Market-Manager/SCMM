@@ -13,6 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Data.Shared\SCMM.Data.Shared.csproj" />
+    <ProjectReference Include="..\SCMM.Discord.Data.Models\SCMM.Discord.Data.Models.csproj" />
+    <ProjectReference Include="..\SCMM.Google.Data.Models\SCMM.Google.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
   </ItemGroup>
 

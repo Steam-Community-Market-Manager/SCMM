@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using SCMM.Steam.Data.Models.Extensions;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
@@ -16,7 +17,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
             set
             {
                 _priceText = value;
-                Price = EconomyExtensions.SteamPriceAsInt(value);
+                Price = value.SteamPriceAsInt();
             }
         }
 
@@ -29,7 +30,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
             set
             {
                 _quantityText = value;
-                Quantity = EconomyExtensions.SteamQuantityValueAsInt(value);
+                Quantity = value.SteamQuantityValueAsInt();
             }
         }
     }

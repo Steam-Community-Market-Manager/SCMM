@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Linq;
@@ -32,7 +32,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var itemsWithMissingIds = db.SteamMarketItems
                     .Where(x => String.IsNullOrEmpty(x.SteamId))

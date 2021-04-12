@@ -11,4 +11,18 @@
     <Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-preview.3.21201.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0-preview.3.21201.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SCMM.Data.Shared.Store\SCMM.Data.Shared.Store.csproj" />
+    <ProjectReference Include="..\SCMM.Data.Shared\SCMM.Data.Shared.csproj" />
+    <ProjectReference Include="..\SCMM.Discord.Data.Models\SCMM.Discord.Data.Models.csproj" />
+  </ItemGroup>
+
 </Project>

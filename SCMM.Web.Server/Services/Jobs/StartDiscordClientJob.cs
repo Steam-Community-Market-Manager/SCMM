@@ -4,9 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Discord;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SCMM.Web.Server.Services.Queries;
 using System;
@@ -54,7 +54,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 try
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                     var discordGuilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
 
                     // Start the status update timer
@@ -107,7 +107,7 @@ namespace SCMM.Web.Server.Services.Jobs
                     }
 
                     // Synchronise VIP roles for users belonging to VIP servers
-                    var vipServers = discordGuilds.Where(x => x.Flags.HasFlag(SCMM.Web.Data.Models.Discord.DiscordGuildFlags.VIP)).ToList();
+                    var vipServers = discordGuilds.Where(x => x.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.DiscordGuildFlags.VIP)).ToList();
                     foreach (var vipServer in vipServers)
                     {
                         try
@@ -148,7 +148,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 try
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                     var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == id.ToString());
                     if (discordGuild == null)
                     {
@@ -173,7 +173,7 @@ namespace SCMM.Web.Server.Services.Jobs
             {
                 try
                 {
-                    var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                     var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == id.ToString());
                     if (discordGuild != null)
                     {

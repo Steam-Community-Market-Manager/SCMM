@@ -3,9 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using System.Linq;
 using System.Threading;
@@ -32,7 +32,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var currencyService = scope.ServiceProvider.GetRequiredService<SteamCurrencyService>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var mostExpensiveItem = db.SteamMarketItems
                     .Include(x => x.App)
@@ -79,7 +79,7 @@ namespace SCMM.Web.Server.Services.Jobs
                         continue;
                     }
 
-                    var localPrice = EconomyExtensions.SteamPriceAsInt(response.LowestPrice);
+                    var localPrice = response.LowestPrice.SteamPriceAsInt();
                     if (currency == systemCurrency)
                     {
                         systemCurrencyPrice = localPrice;

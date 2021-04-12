@@ -341,7 +341,7 @@
             The item must belong to your (currently authenticated) profile
             </param>
             <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-            <param name="flag">Name of a supported item flag. See <see cref="T:SCMM.Web.Data.Models.Steam.SteamProfileInventoryItemFlags"/></param>
+            <param name="flag">Name of a supported item flag. See <see cref="T:SCMM.Steam.Data.Models.Enums.SteamProfileInventoryItemFlags"/></param>
             <param name="value">New value of the item flag</param>
             <response code="200">If the item flag was updated successfully.</response>
             <response code="400">If the request data is malformed/invalid.</response>
@@ -360,7 +360,7 @@
             The item must belong to your (currently authenticated) profile
             </param>
             <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-            <param name="flag">Name of a supported item flag. See <see cref="T:SCMM.Web.Data.Models.Steam.SteamProfileMarketItemFlags"/></param>
+            <param name="flag">Name of a supported item flag. See <see cref="T:SCMM.Steam.Data.Models.Enums.SteamProfileMarketItemFlags"/></param>
             <param name="value">New value of the item flag</param>
             <response code="200">If the item flag was updated successfully.</response>
             <response code="400">If the request data is malformed/invalid.</response>
@@ -441,57 +441,6 @@
             <param name="returnUrl">Where to redirect the client after signing out</param>
             <returns>A redirection to <paramref name="returnUrl"/></returns>
         </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamCurrency.PrefixText">
-            <summary>
-            Text to appear at start of price when formatted
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamCurrency.SuffixText">
-            <summary>
-            Text to appear at end of price when formatted
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamCurrency.CultureName">
-            <summary>
-            Culture used to format prices
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamCurrency.Scale">
-            <summary>
-            Number of decimal places when formatted
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamCurrency.ExchangeRateMultiplier">
-            <summary>
-            Used to convert system currency to local currency
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamCurrency.IsDefault">
-            <summary>
-            If true, this is the system currency that all others are converted from
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamCurrency.IsCommon">
-            <summary>
-            If true, this is a "cool" price which is highlighted when presenting "common" currencies
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItem.Prices">
-            <summary>
-            Store prices are generally fixed and don't fluxuate with currency exhange rates.
-            Because of this, we need to keep a list of all the fixed store prices in each currency.
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItemItemStore.Index">
-            <summary>
-            Used to track the current sales position in the store
-            </summary>
-        </member>
-        <member name="P:SCMM.Web.Server.Data.Models.Steam.SteamStoreItemItemStore.IndexGraph">
-            <summary>
-            Used to track the historic sales positions in the store
-            </summary>
-        </member>
         <member name="P:SCMM.Web.Server.Services.Commands.FetchAndCreateImageDataRequest.UseExisting">
             <summary>
             If true, we'll recycle existing image data the same source url exists in the database already
@@ -502,12 +451,12 @@
             If true, inventory will always be fetched. If false, inventory is cached for 1 hour.
             </summary>
         </member>
-        <member name="M:SCMM.Web.Server.Services.SteamService.AddOrUpdateAssetWorkshopFile(SCMM.Web.Server.Data.Models.Steam.SteamApp,System.String)">
+        <member name="M:SCMM.Web.Server.Services.SteamService.AddOrUpdateAssetWorkshopFile(SCMM.Steam.Data.Store.Models.Steam.SteamApp,System.String)">
             
              UPDATE BELOW...
             
         </member>
-        <member name="M:SCMM.Web.Server.Services.SteamService.FindOrAddSteamMarketItems(System.Collections.Generic.IEnumerable{SCMM.Steam.Data.Models.Community.Models.SteamMarketSearchItem},SCMM.Web.Server.Data.Models.Steam.SteamCurrency)">
+        <member name="M:SCMM.Web.Server.Services.SteamService.FindOrAddSteamMarketItems(System.Collections.Generic.IEnumerable{SCMM.Steam.Data.Models.Community.Models.SteamMarketSearchItem},SCMM.Steam.Data.Store.Models.Steam.SteamCurrency)">
             
              UPDATE BELOW...
             

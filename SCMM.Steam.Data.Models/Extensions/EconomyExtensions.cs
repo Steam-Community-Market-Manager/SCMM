@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 
-namespace SCMM.Steam.Data.Models
+namespace SCMM.Steam.Data.Models.Extensions
 {
     public static class EconomyExtensions
     {
@@ -25,7 +25,7 @@ namespace SCMM.Steam.Data.Models
         public static long SteamFeeAsInt(this long value)
         {
             // Add both fees together, minimum combined fee is 0.02 units
-            return (SteamFeePlatformComponentAsInt(value) + SteamFeePublisherComponentAsInt(value));
+            return value.SteamFeePlatformComponentAsInt() + value.SteamFeePublisherComponentAsInt();
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace SCMM.Steam.Data.Models
         /// </summary>
         public static int SteamQuantityValueAsInt(this string strAmount, CultureInfo culture = null)
         {
-            if (String.IsNullOrEmpty(strAmount))
+            if (string.IsNullOrEmpty(strAmount))
             {
                 return 0;
             }
@@ -50,7 +50,7 @@ namespace SCMM.Steam.Data.Models
         public static long SteamPriceAsInt(this string strAmount, CultureInfo culture = null, bool useDecimalShortCircuit = true)
         {
             long nAmount = 0;
-            if (String.IsNullOrEmpty(strAmount))
+            if (string.IsNullOrEmpty(strAmount))
             {
                 return 0;
             }
@@ -74,7 +74,7 @@ namespace SCMM.Steam.Data.Models
             strAmount = new string(strAmount.Where(c => char.IsDigit(c) || c == '.').ToArray()).Trim('.');
 
             // strip spaces
-            strAmount = strAmount.Replace(" ", String.Empty);
+            strAmount = strAmount.Replace(" ", string.Empty);
 
             // Remove all but the last period so that entries like "1,147.6" work
             if (strAmount.IndexOf('.') != -1)
@@ -82,7 +82,7 @@ namespace SCMM.Steam.Data.Models
                 var splitAmount = strAmount.Split('.');
                 var strLastSegment = splitAmount.Length > 0 ? splitAmount[splitAmount.Length - 1] : null;
 
-                if (!String.IsNullOrEmpty(strLastSegment) && strLastSegment.Length == 3 && Int64.Parse(splitAmount[splitAmount.Length - 2], culture?.NumberFormat) != 0)
+                if (!string.IsNullOrEmpty(strLastSegment) && strLastSegment.Length == 3 && long.Parse(splitAmount[splitAmount.Length - 2], culture?.NumberFormat) != 0)
                 {
                     // Looks like the user only entered thousands separators. Remove all commas and periods.
                     // Ensures an entry like "1,147" is not treated as "1.147"
@@ -92,11 +92,11 @@ namespace SCMM.Steam.Data.Models
                     // hundredths. If it was an error, the user should notice in the next step of the dialog and can go back and
                     // correct it. If they happen to not notice, it is better that we list the item at a higher price than
                     // intended instead of lower than intended (which we would have done if we accepted the 1.147 value as is).
-                    strAmount = String.Join(String.Empty, splitAmount);
+                    strAmount = string.Join(string.Empty, splitAmount);
                 }
                 else
                 {
-                    strAmount = String.Join(String.Empty, splitAmount.Take(splitAmount.Length - 1)) + '.' + strLastSegment;
+                    strAmount = string.Join(string.Empty, splitAmount.Take(splitAmount.Length - 1)) + '.' + strLastSegment;
                 }
             }
 

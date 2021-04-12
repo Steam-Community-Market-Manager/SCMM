@@ -6,14 +6,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Data.Shared;
 using SCMM.Data.Shared.Extensions;
-using SCMM.Steam.Data.Models;
+using SCMM.Data.Shared.Store.Extensions;
+using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models.Domain.DTOs.MarketItems;
 using SCMM.Web.Data.Models.Extensions;
-using SCMM.Web.Data.Models.UI;
 using SCMM.Web.Data.Models.UI.MarketStatistics;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using Skclusive.Core.Component;
 using System;
@@ -28,12 +29,12 @@ namespace SCMM.Web.Server.API.Controllers
     public class MarketController : ControllerBase
     {
         private readonly ILogger<MarketController> _logger;
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public MarketController(ILogger<MarketController> logger, ScmmDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
+        public MarketController(ILogger<MarketController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;

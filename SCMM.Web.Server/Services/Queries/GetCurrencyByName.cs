@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Data.Shared.Extensions;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
-using SCMM.Web.Server.Extensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,10 +23,10 @@ namespace SCMM.Web.Server.Services.Queries
 
     public class GetCurrencyByName : IQueryHandler<GetCurrencyByNameRequest, GetCurrencyByNameResponse>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly IMapper _mapper;
 
-        public GetCurrencyByName(ScmmDbContext db, IMapper mapper)
+        public GetCurrencyByName(SteamDbContext db, IMapper mapper)
         {
             _db = db;
             _mapper = mapper;

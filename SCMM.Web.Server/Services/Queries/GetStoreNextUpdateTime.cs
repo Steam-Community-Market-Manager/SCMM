@@ -2,7 +2,7 @@
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Data.Shared.Extensions;
-using SCMM.Web.Server.Data;
+using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,10 +26,10 @@ namespace SCMM.Web.Server.Services.Queries
 
     public class GetStoreNextUpdateTime : IQueryHandler<GetStoreNextUpdateTimeRequest, GetStoreNextUpdateTimeResponse>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly IMapper _mapper;
 
-        public GetStoreNextUpdateTime(ScmmDbContext db, IMapper mapper)
+        public GetStoreNextUpdateTime(SteamDbContext db, IMapper mapper)
         {
             _db = db;
             _mapper = mapper;

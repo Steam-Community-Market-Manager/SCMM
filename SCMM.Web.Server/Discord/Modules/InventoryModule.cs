@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Data.Shared.Extensions;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Discord;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Discord;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands;
@@ -25,12 +25,12 @@ namespace SCMM.Web.Server.Discord.Modules
     public class InventoryModule : ModuleBase<SocketCommandContext>
     {
         private readonly IConfiguration _configuration;
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly SteamService _steamService;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public InventoryModule(IConfiguration configuration, ScmmDbContext db, SteamService steam, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public InventoryModule(IConfiguration configuration, SteamDbContext db, SteamService steam, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _configuration = configuration;
             _db = db;
@@ -127,7 +127,7 @@ namespace SCMM.Web.Server.Discord.Modules
             }
 
             // Promote donators from VIP servers to VIP role
-            if (guild.Flags.HasFlag(SCMM.Web.Data.Models.Discord.DiscordGuildFlags.VIP))
+            if (guild.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.DiscordGuildFlags.VIP))
             {
                 var user = Context.User;
                 var roles = Context.Guild.GetUser(user.Id).Roles;

@@ -1,8 +1,8 @@
 ﻿using CommandQuery;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,10 +28,10 @@ namespace SCMM.Web.Server.Services.Commands
 
     public class FetchAndCreateImageData : ICommandHandler<FetchAndCreateImageDataRequest, FetchAndCreateImageDataResponse>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly SteamCommunityClient _communityClient;
 
-        public FetchAndCreateImageData(ScmmDbContext db, SteamCommunityClient communityClient)
+        public FetchAndCreateImageData(SteamDbContext db, SteamCommunityClient communityClient)
         {
             _db = db;
             _communityClient = communityClient;

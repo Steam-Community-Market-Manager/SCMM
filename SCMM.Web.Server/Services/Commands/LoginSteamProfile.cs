@@ -1,10 +1,11 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Data.Shared.Extensions;
+using SCMM.Data.Shared.Store.Types;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,10 +28,10 @@ namespace SCMM.Web.Server.Services.Commands
 
     public class LoginSteamProfile : ICommandHandler<LoginSteamProfileRequest, LoginSteamProfileResponse>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
 
-        public LoginSteamProfile(ScmmDbContext db, ICommandProcessor commandProcessor)
+        public LoginSteamProfile(SteamDbContext db, ICommandProcessor commandProcessor)
         {
             _db = db;
             _commandProcessor = commandProcessor;
@@ -84,7 +85,7 @@ namespace SCMM.Web.Server.Services.Commands
                 profile = (profileInfoQuery?.Profile ?? profile);
                 if (dynamicRoles.Any())
                 {
-                    profile.Roles = new Data.Types.PersistableStringCollection(
+                    profile.Roles = new PersistableStringCollection(
                         profile.Roles?.Union(dynamicRoles)
                     );
                 }

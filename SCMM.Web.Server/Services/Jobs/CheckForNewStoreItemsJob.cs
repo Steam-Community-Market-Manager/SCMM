@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 using SCMM.Data.Shared.Extensions;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models;
-using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SCMM.Web.Server.Services.Queries;
@@ -44,7 +44,7 @@ namespace SCMM.Web.Server.Services.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
                 var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
                 var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
@@ -218,19 +218,19 @@ namespace SCMM.Web.Server.Services.Jobs
             };
         }
 
-        private async Task BroadcastNewStoreItemsNotification(DiscordClient discord, ScmmDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
+        private async Task BroadcastNewStoreItemsNotification(DiscordClient discord, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
         {
             newStoreItems = newStoreItems?.OrderBy(x => x.Description.Name);
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
-                if (guild.IsSet(Data.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Data.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Data.Models.Discord.DiscordConfiguration.AlertsStore))
+                if (guild.IsSet(Steam.Data.Store.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Steam.Data.Store.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Steam.Data.Store.Models.Discord.DiscordConfiguration.AlertsStore))
                 {
                     continue;
                 }
 
                 var filteredCurrencies = currencies;
-                var guildCurrencies = guild.List(Data.Models.Discord.DiscordConfiguration.Currency).Value;
+                var guildCurrencies = guild.List(Steam.Data.Store.Models.Discord.DiscordConfiguration.Currency).Value;
                 if (guildCurrencies?.Any() == true)
                 {
                     filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
@@ -242,7 +242,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
+                    channelPattern: guild.Get(Steam.Data.Store.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
                     message: null,
                     title: $"{app.Name} Store - {store.Name}",
                     description: $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",

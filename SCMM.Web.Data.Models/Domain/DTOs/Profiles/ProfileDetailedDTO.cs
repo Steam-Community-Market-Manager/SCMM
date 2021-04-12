@@ -1,6 +1,6 @@
-﻿using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
+﻿using SCMM.Steam.Data.Models.Enums;
+using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
 using SCMM.Web.Data.Models.Domain.DTOs.Languages;
-using SCMM.Web.Data.Models.Steam;
 
 namespace SCMM.Web.Data.Models.Domain.DTOs.Profiles
 {

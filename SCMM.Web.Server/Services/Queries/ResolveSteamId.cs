@@ -1,8 +1,8 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Data.Models;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -28,16 +28,16 @@ namespace SCMM.Web.Server.Services.Queries
 
     public class ResolveSteamId : IQueryHandler<ResolveSteamIdRequest, ResolveSteamIdResponse>
     {
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
 
-        public ResolveSteamId(ScmmDbContext db)
+        public ResolveSteamId(SteamDbContext db)
         {
             _db = db;
         }
 
         public Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request)
         {
-            return Task.Run(() => 
+            return Task.Run(() =>
             {
                 Guid id = Guid.Empty;
                 ulong steamId = 0;

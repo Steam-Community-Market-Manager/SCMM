@@ -7,10 +7,10 @@ using SCMM.Data.Shared.Extensions;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models.Extensions;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models;
-using SCMM.Web.Server.Data.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SCMM.Web.Server.Services.Queries;
@@ -46,7 +46,7 @@ namespace SCMM.Web.Server.Services.Jobs
                 var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
                 var steamCommnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<ScmmDbContext>();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
                 var steamApps = db.SteamApps.ToList();
                 if (!steamApps.Any())
@@ -179,13 +179,13 @@ namespace SCMM.Web.Server.Services.Jobs
             };
         }
 
-        private async Task BroadcastNewMarketItemsNotification(DiscordClient discord, ScmmDbContext db, SteamApp app, IEnumerable<SteamMarketItem> newMarketItems, ImageData thumbnail)
+        private async Task BroadcastNewMarketItemsNotification(DiscordClient discord, SteamDbContext db, SteamApp app, IEnumerable<SteamMarketItem> newMarketItems, ImageData thumbnail)
         {
             newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name);
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
-                if (guild.IsSet(Data.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Data.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Data.Models.Discord.DiscordConfiguration.AlertsMarket))
+                if (guild.IsSet(Steam.Data.Store.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Steam.Data.Store.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Steam.Data.Store.Models.Discord.DiscordConfiguration.AlertsMarket))
                 {
                     continue;
                 }
@@ -224,7 +224,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Data.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{app.Name}").Value,
+                    channelPattern: guild.Get(Steam.Data.Store.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{app.Name}").Value,
                     message: null,
                     title: $"{app.Name} Market - New Listings",
                     description: $"{newMarketItems.Count()} new item(s) have just appeared in the {app.Name} marketplace.",

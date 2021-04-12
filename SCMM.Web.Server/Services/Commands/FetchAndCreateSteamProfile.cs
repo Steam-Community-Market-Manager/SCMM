@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
-using SCMM.Web.Server.Data;
-using SCMM.Web.Server.Data.Models.Steam;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Queries;
 using SteamWebAPI2.Interfaces;
@@ -31,12 +31,12 @@ namespace SCMM.Web.Server.Services.Commands
     public class FetchAndCreateSteamProfile : ICommandHandler<FetchAndCreateSteamProfileRequest, FetchAndCreateSteamProfileResponse>
     {
         private readonly ILogger<FetchAndCreateSteamProfile> _logger;
-        private readonly ScmmDbContext _db;
+        private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
 
-        public FetchAndCreateSteamProfile(ILogger<FetchAndCreateSteamProfile> logger, ScmmDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor)
+        public FetchAndCreateSteamProfile(ILogger<FetchAndCreateSteamProfile> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
