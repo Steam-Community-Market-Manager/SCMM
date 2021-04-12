@@ -80,7 +80,10 @@ namespace SCMM.Web.Server.Services.Jobs
                         {
                             foreach (var video in videos.Where(x => x.PublishedAt != null))
                             {
-                                media[video.PublishedAt.Value] = video.Id;
+                                if (video.Title.Contains(channel.Query.Trim('\"'), StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    media[video.PublishedAt.Value] = video.Id;
+                                }
                             }
                         }
                     }
