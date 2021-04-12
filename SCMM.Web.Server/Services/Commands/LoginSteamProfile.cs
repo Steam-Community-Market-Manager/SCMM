@@ -4,7 +4,6 @@ using SCMM.Data.Shared.Extensions;
 using SCMM.Data.Shared.Store.Types;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models;
 using System;
 using System.Collections.Generic;

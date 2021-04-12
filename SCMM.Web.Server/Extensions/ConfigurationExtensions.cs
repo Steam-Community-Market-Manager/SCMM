@@ -7,7 +7,7 @@ namespace SCMM.Web.Server.Extensions
 {
     public static class ConfigurationExtensions
     {
-        public static DiscordConfiguration GetDiscoardConfiguration(this IConfiguration configuration)
+        public static DiscordConfiguration GetDiscordConfiguration(this IConfiguration configuration)
         {
             return configuration
                 .GetSection("Discord")

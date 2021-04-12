@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SCMM.Steam.Data.Store.Models;
-using SCMM.Steam.Data.Store.Models.Discord;
-using SCMM.Steam.Data.Store.Models.Steam;
+using SCMM.Data.Shared.Store;
 
 namespace SCMM.Steam.Data.Store
 {

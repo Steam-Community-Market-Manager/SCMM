@@ -11,7 +11,6 @@ using SCMM.Data.Shared.Extensions;
 using SCMM.Data.Shared.Store.Extensions;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models.Domain.DTOs.MarketItems;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.MarketStatistics;

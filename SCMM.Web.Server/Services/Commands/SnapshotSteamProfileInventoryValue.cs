@@ -1,7 +1,6 @@
 ﻿using CommandQuery;
 using SCMM.Data.Shared.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Linq;

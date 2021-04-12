@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Steam;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;

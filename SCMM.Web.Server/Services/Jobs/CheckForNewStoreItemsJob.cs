@@ -4,11 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Data.Shared.Extensions;
+using SCMM.Data.Shared.Store;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models;
-using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SCMM.Web.Server.Services.Queries;
@@ -224,13 +223,13 @@ namespace SCMM.Web.Server.Services.Jobs
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
-                if (guild.IsSet(Steam.Data.Store.Models.Discord.DiscordConfiguration.Alerts) && !guild.Get(Steam.Data.Store.Models.Discord.DiscordConfiguration.Alerts).Value.Contains(Steam.Data.Store.Models.Discord.DiscordConfiguration.AlertsStore))
+                if (guild.IsSet(Steam.Data.Store.DiscordConfiguration.Alerts) && !guild.Get(Steam.Data.Store.DiscordConfiguration.Alerts).Value.Contains(Steam.Data.Store.DiscordConfiguration.AlertsStore))
                 {
                     continue;
                 }
 
                 var filteredCurrencies = currencies;
-                var guildCurrencies = guild.List(Steam.Data.Store.Models.Discord.DiscordConfiguration.Currency).Value;
+                var guildCurrencies = guild.List(Steam.Data.Store.DiscordConfiguration.Currency).Value;
                 if (guildCurrencies?.Any() == true)
                 {
                     filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
@@ -242,7 +241,7 @@ namespace SCMM.Web.Server.Services.Jobs
 
                 await discord.BroadcastMessageAsync(
                     guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Steam.Data.Store.Models.Discord.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
+                    channelPattern: guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
                     message: null,
                     title: $"{app.Name} Store - {store.Name}",
                     description: $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",

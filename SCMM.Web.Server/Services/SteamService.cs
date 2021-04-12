@@ -9,7 +9,6 @@ using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Commands;
@@ -51,7 +50,7 @@ namespace SCMM.Web.Server.Services
             _queryProcessor = queryProcessor;
         }
 
-        public Steam.Data.Store.Models.Steam.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAssetFilter filter)
+        public Steam.Data.Store.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAssetFilter filter)
         {
             var existingFilter = app.Filters.FirstOrDefault(x => x.SteamId == filter.Name);
             if (existingFilter != null)
@@ -60,7 +59,7 @@ namespace SCMM.Web.Server.Services
                 return existingFilter;
             }
 
-            var newFilter = new Steam.Data.Store.Models.Steam.SteamAssetFilter()
+            var newFilter = new Steam.Data.Store.SteamAssetFilter()
             {
                 SteamId = filter.Name,
                 Name = filter.Localized_Name,
@@ -77,7 +76,7 @@ namespace SCMM.Web.Server.Services
             return newFilter;
         }
 
-        public async Task<Steam.Data.Store.Models.Steam.SteamAssetDescription> UpdateAssetDescription(Steam.Data.Store.Models.Steam.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
+        public async Task<Steam.Data.Store.SteamAssetDescription> UpdateAssetDescription(Steam.Data.Store.SteamAssetDescription assetDescription, AssetClassInfoModel assetClass)
         {
             // Update tags
             if (assetClass.Tags != null)
@@ -162,7 +161,7 @@ namespace SCMM.Web.Server.Services
             return assetDescription;
         }
 
-        public async Task<Steam.Data.Store.Models.Steam.SteamAssetDescription> UpdateAssetDescription(Steam.Data.Store.Models.Steam.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile, bool updateSubscriptionGraph = false)
+        public async Task<Steam.Data.Store.SteamAssetDescription> UpdateAssetDescription(Steam.Data.Store.SteamAssetDescription assetDescription, PublishedFileDetailsModel publishedFile, bool updateSubscriptionGraph = false)
         {
             // Update asset description tags
             if (assetDescription != null && publishedFile.Tags != null)
@@ -315,7 +314,7 @@ namespace SCMM.Web.Server.Services
             return dbWorkshopFile;
         }
 
-        public async Task<Steam.Data.Store.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, string languageId, ulong classId)
+        public async Task<Steam.Data.Store.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, string languageId, ulong classId)
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
                 .Include(x => x.WorkshopFile)
@@ -354,7 +353,7 @@ namespace SCMM.Web.Server.Services
                 workshopFile = await AddOrUpdateAssetWorkshopFile(app, workshopFileId);
             }
 
-            dbAssetDescription = new Steam.Data.Store.Models.Steam.SteamAssetDescription()
+            dbAssetDescription = new Steam.Data.Store.SteamAssetDescription()
             {
                 SteamId = assetDescription.ClassId.ToString(),
                 AppId = app.Id,
@@ -397,7 +396,7 @@ namespace SCMM.Web.Server.Services
             return dbAssetDescription;
         }
 
-        public async Task<Steam.Data.Store.Models.Steam.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAssetDescription assetDescription)
+        public async Task<Steam.Data.Store.SteamAssetDescription> AddOrUpdateAssetDescription(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAssetDescription assetDescription)
         {
             var dbAssetDescription = await _db.SteamAssetDescriptions
                 .Where(x => x.SteamId == assetDescription.ClassId)
@@ -420,7 +419,7 @@ namespace SCMM.Web.Server.Services
                 workshopFile = await AddOrUpdateAssetWorkshopFile(app, workshopFileId);
             }
 
-            dbAssetDescription = new Steam.Data.Store.Models.Steam.SteamAssetDescription()
+            dbAssetDescription = new Steam.Data.Store.SteamAssetDescription()
             {
                 SteamId = assetDescription.ClassId.ToString(),
                 AppId = app.Id,
@@ -546,7 +545,7 @@ namespace SCMM.Web.Server.Services
         }
 
         private T[] ParseSteamMarketItemOrdersFromGraph<T>(string[][] orderGraph)
-            where T : Steam.Data.Store.Models.Steam.SteamMarketItemOrder, new()
+            where T : Steam.Data.Store.SteamMarketItemOrder, new()
         {
             var orders = new List<T>();
             if (orderGraph == null)

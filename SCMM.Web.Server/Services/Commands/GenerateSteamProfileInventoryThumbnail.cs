@@ -1,7 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Data.Shared.Store;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models;
 using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Collections.Generic;

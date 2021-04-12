@@ -100,7 +100,7 @@ namespace SCMM.Web.Server
             });
 
             // 3rd party clients
-            services.AddSingleton<DiscordConfiguration>((s) => Configuration.GetDiscoardConfiguration());
+            services.AddSingleton<SCMM.Discord.Client.DiscordConfiguration>((s) => Configuration.GetDiscordConfiguration());
             services.AddSingleton<DiscordClient>();
 
             services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());

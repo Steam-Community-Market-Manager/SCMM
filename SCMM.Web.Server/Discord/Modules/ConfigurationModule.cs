@@ -2,7 +2,6 @@
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Discord;
 using System;
 using System.Collections.Generic;
 using System.Linq;

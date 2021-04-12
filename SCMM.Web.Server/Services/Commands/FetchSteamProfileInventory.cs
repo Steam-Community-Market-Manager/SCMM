@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Queries;
 using System;

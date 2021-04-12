@@ -451,12 +451,12 @@
             If true, inventory will always be fetched. If false, inventory is cached for 1 hour.
             </summary>
         </member>
-        <member name="M:SCMM.Web.Server.Services.SteamService.AddOrUpdateAssetWorkshopFile(SCMM.Steam.Data.Store.Models.Steam.SteamApp,System.String)">
+        <member name="M:SCMM.Web.Server.Services.SteamService.AddOrUpdateAssetWorkshopFile(SCMM.Steam.Data.Store.SteamApp,System.String)">
             
              UPDATE BELOW...
             
         </member>
-        <member name="M:SCMM.Web.Server.Services.SteamService.FindOrAddSteamMarketItems(System.Collections.Generic.IEnumerable{SCMM.Steam.Data.Models.Community.Models.SteamMarketSearchItem},SCMM.Steam.Data.Store.Models.Steam.SteamCurrency)">
+        <member name="M:SCMM.Web.Server.Services.SteamService.FindOrAddSteamMarketItems(System.Collections.Generic.IEnumerable{SCMM.Steam.Data.Models.Community.Models.SteamMarketSearchItem},SCMM.Steam.Data.Store.SteamCurrency)">
             
              UPDATE BELOW...
             

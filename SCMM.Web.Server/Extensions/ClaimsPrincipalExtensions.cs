@@ -1,4 +1,4 @@
-﻿using SCMM.Steam.Data.Store.Models.Steam;
+﻿using SCMM.Steam.Data.Store;
 using System;
 using System.Security.Claims;
 

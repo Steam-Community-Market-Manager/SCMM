@@ -6,7 +6,6 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SteamWebAPI2.Interfaces;

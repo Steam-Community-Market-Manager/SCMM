@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using SCMM.Data.Shared.Extensions;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Discord;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Steam;
 using SCMM.Web.Data.Models.Domain.DTOs.StoreItems;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;

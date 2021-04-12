@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models.Discord;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Server.Services.Jobs.CronJob;
 using SCMM.Web.Server.Services.Queries;

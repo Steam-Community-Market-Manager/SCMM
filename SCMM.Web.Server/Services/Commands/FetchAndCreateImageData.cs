@@ -1,8 +1,8 @@
 ﻿using CommandQuery;
+using SCMM.Data.Shared.Store;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
