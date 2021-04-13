@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SCMM.Discord.Bot.App
 {
@@ -28,10 +28,16 @@ namespace SCMM.Discord.Bot.App
                     logging.AddApplicationInsights();
                     logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Warning);
                 })
-                .ConfigureWebJobs(webBuilder =>
+                .ConfigureServices(services =>
                 {
-                    webBuilder.AddAzureStorageBlobs();
-                    webBuilder.AddAzureStorageQueues();
+                    services.AddApplicationInsightsTelemetryWorkerService(options =>
+                    {
+                        //options.InstrumentationKey = services.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+                    });
+                })
+                .ConfigureWebJobs(builder =>
+                {
+                    builder.AddAzureStorage();
                 });
     }
 }

@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "SCMM.Web": {
+    "SCMM.Web.Client": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

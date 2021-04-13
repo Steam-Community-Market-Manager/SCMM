@@ -28,9 +28,9 @@ namespace SCMM.Web.Server
                     logging.AddApplicationInsights();
                     logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Warning);
                 })
-                .ConfigureWebHostDefaults(webBuilder =>
+                .ConfigureWebHostDefaults(builder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    builder.UseStartup<Startup>();
                 });
     }
 }

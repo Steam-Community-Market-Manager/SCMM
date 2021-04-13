@@ -41,13 +41,6 @@ namespace SCMM.Web.Server
             services.AddApplicationInsightsTelemetry(options =>
             {
                 options.InstrumentationKey = Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
-                options.EnableAppServicesHeartbeatTelemetryModule = false;
-                options.EnableAzureInstanceMetadataTelemetryModule = true;
-                options.EnableDependencyTrackingTelemetryModule = false;
-                options.EnableEventCounterCollectionModule = false;
-                options.EnablePerformanceCounterCollectionModule = false;
-                options.EnableRequestTrackingTelemetryModule = true;
-                options.RequestCollectionOptions.TrackExceptions = true;
             });
 
             // Authentication
