@@ -13,8 +13,6 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "false",
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "https://scmm-key-vault.vault.azure.net/"
       },
       "hotReloadProfile": "aspnetcore",
       "sqlDebugging": false,
@@ -25,8 +23,6 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "true",
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "https://scmm-key-vault.vault.azure.net/"
       },
       "hotReloadProfile": "aspnetcore",
       "dotnetRunMessages": "true",
