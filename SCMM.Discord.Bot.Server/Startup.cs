@@ -1,13 +1,17 @@
+using AutoMapper;
+using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using SCMM.Discord.Bot.Server.Middleware;
+using SCMM.Discord.Client;
+using SCMM.Discord.Client.Extensions;
+using SCMM.Steam.Client;
+using SCMM.Steam.Client.Extensions;
+using SCMM.Steam.Data.Store;
 
 namespace SCMM.Discord.Bot.Server
 {
@@ -20,9 +24,46 @@ namespace SCMM.Discord.Bot.Server
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Logging
+            services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.InstrumentationKey = Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+            });
+
+            // Authentication
+            //...
+
+            // Database
+            services.AddDbContext<SteamDbContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"), sql =>
+                {
+                    //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    sql.EnableRetryOnFailure();
+                });
+                options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors();
+            });
+
+            // 3rd party clients
+            services.AddSingleton<SCMM.Discord.Client.DiscordConfiguration>((s) => Configuration.GetDiscordConfiguration());
+            services.AddSingleton<DiscordClient>();
+
+            services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
+            services.AddSingleton<SteamSession>((s) => new SteamSession(s));
+
+            services.AddScoped<SteamCommunityClient>();
+
+            // Auto-mapper
+            services.AddAutoMapper(typeof(Startup));
+
+            // Command/query handlers
+            services.AddCommands(typeof(Startup).Assembly);
+            services.AddQueries(typeof(Startup).Assembly);
+
+            // Views
             services.AddRazorPages();
         }
 
@@ -31,12 +72,12 @@ namespace SCMM.Discord.Bot.Server
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                app.UseDevelopmentExceptionHandler();
             }
             else
             {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseProductionExceptionHandler();
+                // Force HTTPS using HSTS
                 app.UseHsts();
             }
 
@@ -45,6 +86,7 @@ namespace SCMM.Discord.Bot.Server
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
