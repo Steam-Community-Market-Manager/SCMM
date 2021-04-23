@@ -7,6 +7,7 @@ using SCMM.Data.Shared.Extensions;
 using SCMM.Data.Shared.Store;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
+using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Jobs.CronJob;
@@ -250,9 +251,9 @@ namespace SCMM.Web.Server.Services.Jobs
                         x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
                     fieldsInline: true,
-                    url: $"{_configuration.GetBaseUrl()}/steam/store",
+                    url: $"{_configuration.GetWebsiteUrl()}/steam/store",
                     thumbnailUrl: app.IconUrl,
-                    imageUrl: $"{_configuration.GetBaseUrl()}/api/image/{store.ItemsThumbnailId}",
+                    imageUrl: $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}",
                     color: ColorTranslator.FromHtml(app.PrimaryColor)
                 );
             }

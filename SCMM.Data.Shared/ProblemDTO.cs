@@ -1,6 +1,6 @@
-﻿namespace SCMM.Web.Data.Models.Domain.DTOs
+﻿namespace SCMM.Data.Shared
 {
-    public class ProblemDTO
+    public class WebError
     {
         public int Status { get; set; }
 

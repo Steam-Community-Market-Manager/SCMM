@@ -12,8 +12,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using SCMM.Discord.Client;
+using SCMM.Discord.Client.Extensions;
 using SCMM.Google.Client;
+using SCMM.Google.Client.Extensions;
 using SCMM.Steam.Client;
+using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Middleware;
@@ -104,6 +107,9 @@ namespace SCMM.Web.Server
 
             services.AddScoped<SteamCommunityClient>();
 
+            // Auto-mapper
+            services.AddAutoMapper(typeof(Startup));
+
             // Command/query handlers
             services.AddCommands(typeof(Startup).Assembly);
             services.AddQueries(typeof(Startup).Assembly);
@@ -137,9 +143,6 @@ namespace SCMM.Web.Server
             // Views
             services.AddRazorPages();
 
-            // Auto-mapper
-            services.AddAutoMapper(typeof(Startup));
-
             // Auto-documentation
             services.AddSwaggerGen(config =>
             {
@@ -163,7 +166,7 @@ namespace SCMM.Web.Server
                         Contact = new OpenApiContact()
                         {
                             Name = "More about this project",
-                            Url = new Uri($"{Configuration.GetBaseUrl()}/about")
+                            Url = new Uri($"{Configuration.GetWebsiteUrl()}/about")
                         },
                         TermsOfService = new Uri("https://steamcommunity.com/dev/apiterms")
                     }

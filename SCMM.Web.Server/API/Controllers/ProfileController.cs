@@ -338,7 +338,7 @@ namespace SCMM.Web.Server.API.Controllers
                     SteamId = profile.SteamId,
                     Name = profile.Name,
                     AvatarUrl = profile.AvatarUrl,
-                    InventoryMosaicUrl = inventoryThumbnail != null ? $"{_configuration.GetBaseUrl()}/api/image/{inventoryThumbnail.Image?.Id}" : null,
+                    InventoryMosaicUrl = inventoryThumbnail != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image?.Id}" : null,
                     Items = inventoryTotals.TotalItems,
                     Invested = inventoryTotals.TotalInvested,
                     MarketValue = inventoryTotals.TotalMarketValue,

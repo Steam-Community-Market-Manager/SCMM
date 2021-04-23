@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using SCMM.Web.Data.Models.Domain.DTOs;
+using SCMM.Data.Shared;
 using System;
 using System.Diagnostics;
 using System.Text.Json;
@@ -42,7 +42,7 @@ namespace SCMM.Web.Server.Middleware
             var status = httpContext.Response.StatusCode;
             var title = includeDetails ? $"An error occured: {ex.Message}" : "An error occured";
             var details = includeDetails ? ex.ToString() : null;
-            var problem = new ProblemDTO
+            var error = new WebError
             {
                 Status = status,
                 Message = title,
@@ -53,11 +53,11 @@ namespace SCMM.Web.Server.Middleware
             var traceId = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
             if (traceId != null)
             {
-                problem.TraceId = traceId;
+                error.TraceId = traceId;
             }
 
             httpContext.Response.ContentType = "application/json";
-            await JsonSerializer.SerializeAsync(httpContext.Response.Body, problem);
+            await JsonSerializer.SerializeAsync(httpContext.Response.Body, error);
         }
     }
 }

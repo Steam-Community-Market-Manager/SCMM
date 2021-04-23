@@ -229,9 +229,9 @@ namespace SCMM.Web.Server.Services.Jobs
                     description: $"{newMarketItems.Count()} new item(s) have just appeared in the {app.Name} marketplace.",
                     fields: fields,
                     fieldsInline: true,
-                    url: $"{_configuration.GetBaseUrl()}/steam/marketlistings",
+                    url: $"{_configuration.GetWebsiteUrl()}/steam/marketlistings",
                     thumbnailUrl: app.IconUrl,
-                    imageUrl: $"{_configuration.GetBaseUrl()}/api/image/{thumbnail?.Id}",
+                    imageUrl: $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnail?.Id}",
                     color: ColorTranslator.FromHtml(app.PrimaryColor)
                 );
             }

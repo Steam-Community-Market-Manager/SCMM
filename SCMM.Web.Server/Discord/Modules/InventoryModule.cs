@@ -215,7 +215,7 @@ namespace SCMM.Web.Server.Discord.Modules
             var author = new EmbedAuthorBuilder()
                 .WithName(profile.Name)
                 .WithIconUrl(profile.AvatarUrl)
-                .WithUrl($"{_configuration.GetBaseUrl()}/steam/inventory/{profile.SteamId}");
+                .WithUrl($"{_configuration.GetWebsiteUrl()}/steam/inventory/{profile.SteamId}");
 
             var fields = new List<EmbedFieldBuilder>();
             fields.Add(new EmbedFieldBuilder()
@@ -241,10 +241,10 @@ namespace SCMM.Web.Server.Discord.Modules
                 .WithAuthor(author)
                 .WithDescription($"Inventory of {inventoryTotals.TotalItems.ToQuantityString()} item(s).")
                 .WithFields(fields)
-                .WithImageUrl($"{_configuration.GetBaseUrl()}/api/image/{inventoryThumbnail?.Image?.Id}")
+                .WithImageUrl($"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail?.Image?.Id}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
-                .WithFooter(x => x.Text = _configuration.GetBaseUrl())
+                .WithFooter(x => x.Text = _configuration.GetWebsiteUrl())
                 .Build();
 
             await message.DeleteAsync();
