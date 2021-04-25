@@ -1,6 +1,6 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
-using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
 using SCMM.Web.Data.Models.UI;
+using SCMM.Steam.Data.Models.Domain.Currencies;
 
 namespace SCMM.Web.Data.Models.Domain.DTOs.InventoryItems
 {

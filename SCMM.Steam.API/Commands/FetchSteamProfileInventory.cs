@@ -3,12 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 
-namespace SCMM.Web.Server.Services.Commands
+namespace SCMM.Steam.API.Commands
 {
     public class FetchSteamProfileInventoryRequest : ICommand<FetchSteamProfileInventoryResponse>
     {

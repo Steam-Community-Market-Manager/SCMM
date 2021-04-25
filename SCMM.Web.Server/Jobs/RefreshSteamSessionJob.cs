@@ -2,11 +2,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
-using SCMM.Web.Server.Services.Jobs.CronJob;
 using System.Threading;
 using System.Threading.Tasks;
+using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Web.Server.Jobs;
 
-namespace SCMM.Web.Server.Services.Jobs
+namespace SCMM.Web.Server.Jobs
 {
     public class RefreshSteamSessionJob : CronJobService
     {

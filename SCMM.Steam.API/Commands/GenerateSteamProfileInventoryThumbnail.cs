@@ -3,13 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Data.Shared;
 using SCMM.Data.Shared.Store;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 
-namespace SCMM.Web.Server.Services.Commands
+namespace SCMM.Steam.API.Commands
 {
     public class GenerateSteamProfileInventoryThumbnailRequest : ICommand<GenerateSteamProfileInventoryThumbnailResponse>
     {

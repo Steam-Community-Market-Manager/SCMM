@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using SCMM.Data.Shared.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
 using System;
 using System.Linq.Expressions;
+using SCMM.Steam.Data.Models.Domain.Currencies;
 
 namespace SCMM.Web.Server.Extensions
 {

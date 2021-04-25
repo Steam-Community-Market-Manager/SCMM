@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Data.Shared;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services.Commands;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -14,8 +13,10 @@ using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 
-namespace SCMM.Web.Server.Services.Queries
+namespace SCMM.Steam.API.Queries
 {
     public class GetImageMosaicRequest : IQuery<GetImageMosaicResponse>
     {

@@ -1,7 +1,5 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.Extensions.Logging;
-using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
-using SCMM.Web.Data.Models.Domain.DTOs.Languages;
 using SCMM.Web.Data.Models.Domain.DTOs.Profiles;
 using System;
 using System.Collections.Generic;
@@ -9,6 +7,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using SCMM.Steam.Data.Models.Domain.Currencies;
+using SCMM.Steam.Data.Models.Domain.Languages;
 
 namespace SCMM.Web.Client
 {

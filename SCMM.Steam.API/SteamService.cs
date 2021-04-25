@@ -11,7 +11,6 @@ using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
-using SCMM.Web.Server.Services.Commands;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
@@ -23,8 +22,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API;
 
-namespace SCMM.Web.Server.Services
+namespace SCMM.Steam.API
 {
     public class SteamService
     {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SCMM.Web.Client;
-using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
-using SCMM.Web.Data.Models.Domain.DTOs.Languages;
-using SCMM.Web.Server.Services;
+using SCMM.Steam.Data.Models.Domain.Currencies;
+using SCMM.Steam.Data.Models.Domain.Languages;
+using SCMM.Steam.API;
 
 namespace SCMM.Web.Server.Extensions
 {

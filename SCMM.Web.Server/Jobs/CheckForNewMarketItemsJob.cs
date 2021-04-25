@@ -12,8 +12,6 @@ using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Server.Services.Jobs.CronJob;
-using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -21,8 +19,11 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Steam.API.Queries;
+using SCMM.Steam.API;
 
-namespace SCMM.Web.Server.Services.Jobs
+namespace SCMM.Web.Server.Jobs
 {
     public class CheckForNewMarketItemsJob : CronJobService
     {

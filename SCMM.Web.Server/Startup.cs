@@ -20,11 +20,11 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Middleware;
-using SCMM.Web.Server.Services;
-using SCMM.Web.Server.Services.Commands;
-using SCMM.Web.Server.Services.Jobs;
 using System;
 using System.Security.Claims;
+using SCMM.Web.Server.Jobs;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API;
 
 namespace SCMM.Web.Server
 {

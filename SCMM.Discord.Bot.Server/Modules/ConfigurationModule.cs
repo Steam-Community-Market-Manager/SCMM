@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Discord.Modules
+namespace SCMM.Discord.Bot.Server.Modules
 {
     [Group("configuration")]
     [Alias("config", "cfg")]

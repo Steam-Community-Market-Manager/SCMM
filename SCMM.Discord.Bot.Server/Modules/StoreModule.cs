@@ -1,10 +1,10 @@
 ﻿using CommandQuery;
 using Discord.Commands;
-using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Queries;
 
-namespace SCMM.Web.Server.Discord.Modules
+namespace SCMM.Discord.Bot.Server.Modules
 {
     [Group("store")]
     public class StoreModule : ModuleBase<SocketCommandContext>

@@ -1,7 +1,7 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
-using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
 using SCMM.Web.Data.Models.Steam;
 using System;
+using SCMM.Steam.Data.Models.Domain.Currencies;
 
 namespace SCMM.Web.Data.Models.Domain.DTOs.MarketItems
 {

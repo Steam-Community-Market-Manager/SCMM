@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Web.Data.Models.Domain.DTOs.Languages
+namespace SCMM.Steam.Data.Models.Domain.Languages
 {
     public class LanguageDetailedDTO
     {

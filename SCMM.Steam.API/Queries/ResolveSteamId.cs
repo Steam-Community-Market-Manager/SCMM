@@ -6,8 +6,9 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Queries;
 
-namespace SCMM.Web.Server.Services.Queries
+namespace SCMM.Steam.API.Queries
 {
     public class ResolveSteamIdRequest : IQuery<ResolveSteamIdResponse>
     {

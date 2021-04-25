@@ -6,8 +6,9 @@ using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Queries;
 
-namespace SCMM.Web.Server.Services.Queries
+namespace SCMM.Steam.API.Queries
 {
     public class GetStoreNextUpdateTimeRequest : IQuery<GetStoreNextUpdateTimeResponse>
     {

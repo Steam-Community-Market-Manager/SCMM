@@ -2,13 +2,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Web.Server.Jobs;
 
-namespace SCMM.Web.Server.Services.Jobs
+namespace SCMM.Web.Server.Jobs
 {
     public class DeleteExpiredImageDataJob : CronJobService
     {

@@ -1,7 +1,8 @@
 ﻿using SCMM.Data.Shared;
 using System;
+using SCMM.Steam.Data.Models.Domain.Currencies;
 
-namespace SCMM.Web.Data.Models.Domain.DTOs.Currencies
+namespace SCMM.Steam.Data.Models.Domain.Currencies
 {
     public class CurrencyDetailedDTO : CurrencyDTO, IExchangeableCurrency
     {

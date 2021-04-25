@@ -2,12 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.Data.Models.Domain.Currencies;
 
-namespace SCMM.Web.Server.Services
+namespace SCMM.Steam.API
 {
     public class SteamCurrencyService
     {

@@ -1,4 +1,4 @@
-﻿namespace SCMM.Web.Server.Discord.Modules
+﻿namespace SCMM.Discord.Bot.Server.Modules
 {
     /* TODO: Finish this...
     [Group("badge")]

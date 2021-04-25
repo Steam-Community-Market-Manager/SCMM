@@ -6,15 +6,16 @@ using Microsoft.Extensions.Logging;
 using SCMM.Data.Shared;
 using SCMM.Discord.Client;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services.Jobs.CronJob;
-using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Web.Server.Jobs;
+using SCMM.Steam.API.Queries;
 
-namespace SCMM.Web.Server.Services.Jobs
+namespace SCMM.Web.Server.Jobs
 {
     public class StartDiscordClientJob : CronJobService
     {

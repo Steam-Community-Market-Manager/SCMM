@@ -1,4 +1,4 @@
-﻿using SCMM.Web.Data.Models.Domain.DTOs.Currencies;
+﻿using SCMM.Steam.Data.Models.Domain.Currencies;
 
 namespace SCMM.Web.Data.Models.UI.MarketStatistics
 {

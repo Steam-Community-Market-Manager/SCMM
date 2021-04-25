@@ -5,15 +5,16 @@ using Microsoft.Extensions.Logging;
 using SCMM.Data.Shared.Store.Types;
 using SCMM.Google.Client;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services.Jobs.CronJob;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Web.Server.Jobs;
 
-namespace SCMM.Web.Server.Services.Jobs
+namespace SCMM.Web.Server.Jobs
 {
     public class CheckYouTubeForNewStoreVideosJobConfiguration : CronJobConfiguration
     {

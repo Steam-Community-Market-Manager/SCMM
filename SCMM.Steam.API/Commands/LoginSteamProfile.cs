@@ -12,8 +12,9 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ClaimTypes = SCMM.Data.Shared.ClaimTypes;
+using SCMM.Steam.API.Commands;
 
-namespace SCMM.Web.Server.Services.Commands
+namespace SCMM.Steam.API.Commands
 {
     public class LoginSteamProfileRequest : ICommand<LoginSteamProfileResponse>
     {

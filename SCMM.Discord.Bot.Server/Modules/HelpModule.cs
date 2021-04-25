@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SCMM.Web.Server.Discord.Modules
+namespace SCMM.Discord.Bot.Server.Modules
 {
     public class HelpModule : ModuleBase<SocketCommandContext>
     {

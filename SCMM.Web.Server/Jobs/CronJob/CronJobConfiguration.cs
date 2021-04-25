@@ -1,4 +1,4 @@
-﻿namespace SCMM.Web.Server.Services.Jobs.CronJob
+﻿namespace SCMM.Web.Server.Jobs.CronJob
 {
     public class CronJobConfiguration
     {

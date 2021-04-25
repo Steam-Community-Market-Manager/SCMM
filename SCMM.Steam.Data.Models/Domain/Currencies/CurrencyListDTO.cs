@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Web.Data.Models.Domain.DTOs.Currencies
+namespace SCMM.Steam.Data.Models.Domain.Currencies
 {
     public class CurrencyListDTO
     {

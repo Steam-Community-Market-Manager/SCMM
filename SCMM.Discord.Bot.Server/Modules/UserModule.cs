@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Data.Shared;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services.Commands;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Commands;
 
-namespace SCMM.Web.Server.Discord.Modules
+namespace SCMM.Discord.Bot.Server.Modules
 {
     public class UserModule : ModuleBase<SocketCommandContext>
     {

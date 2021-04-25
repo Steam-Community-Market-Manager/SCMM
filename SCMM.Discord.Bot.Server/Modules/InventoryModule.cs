@@ -9,15 +9,15 @@ using SCMM.Data.Shared.Extensions;
 using SCMM.Discord.Bot.Server.Extensions;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services;
-using SCMM.Web.Server.Services.Commands;
-using SCMM.Web.Server.Services.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
+using SCMM.Steam.API;
 
-namespace SCMM.Web.Server.Discord.Modules
+namespace SCMM.Discord.Bot.Server.Modules
 {
     [Group("inventory")]
     [Alias("inv")]

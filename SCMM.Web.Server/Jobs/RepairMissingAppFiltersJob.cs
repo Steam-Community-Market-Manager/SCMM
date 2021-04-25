@@ -5,12 +5,14 @@ using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Services.Jobs.CronJob;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Web.Server.Jobs;
+using SCMM.Steam.API;
 
-namespace SCMM.Web.Server.Services.Jobs
+namespace SCMM.Web.Server.Jobs
 {
     public class RepairMissingAppFiltersJob : CronJobService
     {

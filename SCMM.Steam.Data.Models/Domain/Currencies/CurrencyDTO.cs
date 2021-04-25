@@ -1,6 +1,6 @@
 ﻿using SCMM.Data.Shared;
 
-namespace SCMM.Web.Data.Models.Domain.DTOs.Currencies
+namespace SCMM.Steam.Data.Models.Domain.Currencies
 {
     public class CurrencyDTO : ICurrency
     {

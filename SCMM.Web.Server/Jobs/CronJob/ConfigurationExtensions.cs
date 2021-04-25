@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.Linq;
+using SCMM.Web.Server.Jobs.CronJob;
 
-namespace SCMM.Web.Server.Services.Jobs.CronJob
+namespace SCMM.Web.Server.Jobs.CronJob
 {
     public static class ConfigurationExtensions
     {

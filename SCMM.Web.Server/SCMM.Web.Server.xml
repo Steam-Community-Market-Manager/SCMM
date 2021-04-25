@@ -9,7 +9,7 @@
             List all supported currencies
             </summary>
             <returns>List of supported currencies</returns>
-            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.DTOs.Currencies.CurrencyDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.DTOs.Currencies.CurrencyListDTO"/>.</response>
+            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Steam.Data.Models.Domain.Currencies.CurrencyDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Steam.Data.Models.Domain.Currencies.CurrencyListDTO"/>.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ImageController.GetImage(System.Guid)">
@@ -28,7 +28,7 @@
             List all supported languages
             </summary>
             <returns>List of supported languages</returns>
-            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.DTOs.Languages.LanguageDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.DTOs.Languages.LanguageListDTO"/>.</response>
+            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Steam.Data.Models.Domain.Languages.LanguageDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Steam.Data.Models.Domain.Languages.LanguageListDTO"/>.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.MarketController.Get(System.String,System.Int32,System.Int32,System.String,Skclusive.Core.Component.Sort)">

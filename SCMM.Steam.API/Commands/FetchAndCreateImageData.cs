@@ -6,8 +6,9 @@ using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Commands;
 
-namespace SCMM.Web.Server.Services.Commands
+namespace SCMM.Steam.API.Commands
 {
     public class FetchAndCreateImageDataRequest : ICommand<FetchAndCreateImageDataResponse>
     {

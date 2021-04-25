@@ -11,8 +11,6 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Server.Services.Jobs.CronJob;
-using SCMM.Web.Server.Services.Queries;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System;
@@ -22,8 +20,11 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Steam.API.Queries;
+using SCMM.Steam.API;
 
-namespace SCMM.Web.Server.Services.Jobs
+namespace SCMM.Web.Server.Jobs
 {
     public class CheckForNewStoreItemsJob : CronJobService
     {

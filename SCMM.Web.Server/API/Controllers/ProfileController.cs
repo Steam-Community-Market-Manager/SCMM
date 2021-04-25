@@ -16,13 +16,13 @@ using SCMM.Web.Data.Models.Domain.DTOs.InventoryItems;
 using SCMM.Web.Data.Models.Domain.DTOs.Profiles;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Server.Services.Commands;
-using SCMM.Web.Server.Services.Queries;
 using Skclusive.Core.Component;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 
 namespace SCMM.Web.Server.API.Controllers
 {
