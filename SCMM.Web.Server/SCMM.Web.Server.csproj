@@ -35,9 +35,7 @@
     </PackageReference>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Cronos" Version="0.7.0" />
-    <PackageReference Include="SteamWebAPI2" Version="4.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.3" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.3.21201.4" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
@@ -49,6 +47,7 @@
     <ProjectReference Include="..\SCMM.Discord.Data.Store\SCMM.Discord.Data.Store.csproj" />
     <ProjectReference Include="..\SCMM.Google.Client\SCMM.Google.Client.csproj" />
     <ProjectReference Include="..\SCMM.Google.Data.Models\SCMM.Google.Data.Models.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />

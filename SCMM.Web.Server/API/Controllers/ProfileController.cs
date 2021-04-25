@@ -303,19 +303,6 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile inventory is empty (or is private)");
             }
 
-            // Snapshot the profiles inventory totals
-            if (profile.LastSnapshotInventoryOn == null || profile.LastSnapshotInventoryOn <= DateTime.Now.Subtract(TimeSpan.FromHours(1)))
-            {
-                await _commandProcessor.ProcessAsync(new SnapshotSteamProfileInventoryValueRequest()
-                {
-                    ProfileId = profile.SteamId,
-                    CurrencyId = this.Currency()?.SteamId,
-                    InventoryTotals = inventoryTotals
-                });
-
-                await _db.SaveChangesAsync();
-            }
-
             // Generate the profiles inventory thumbnail
             var inventoryThumbnail = (GenerateSteamProfileInventoryThumbnailResponse)null;
             if (generateInventoryMosaic)

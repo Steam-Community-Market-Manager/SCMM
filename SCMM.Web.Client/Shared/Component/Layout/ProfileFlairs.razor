@@ -1,4 +1,5 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component.Layout
+@using SCMM.Data.Shared
 @inject AppState State
 
 <style>
@@ -26,36 +27,36 @@
 </style>
 
 <Typography class="Profile-Roles" Variant="@TypographyVariant.Body2">
-    @if (State.IsInRole(SCMM.Web.Data.Models.Roles.Creator))
+    @if (State.IsInRole(Roles.Creator))
     {
         <Chip Size="@Size.Small" Variant="@ChipVariant.Outlined" class="Profile-Role Profile-Role-Creator">
             <IconContent>
                 <i class="fas fa-fw fa-paint-brush"></i>
             </IconContent>
             <LabelContent>
-                <span>@SCMM.Web.Data.Models.Roles.Creator</span>
+                <span>@Roles.Creator</span>
             </LabelContent>
         </Chip>
     }
-    @if (State.IsInRole(SCMM.Web.Data.Models.Roles.Donator))
+    @if (State.IsInRole(Roles.Donator))
     {
         <Chip Size="@Size.Small" Variant="@ChipVariant.Outlined" class="Profile-Role Profile-Role-Donator">
             <IconContent>
                 <i class="fas fa-fw fa-crown"></i>
             </IconContent>
             <LabelContent>
-                <span>@SCMM.Web.Data.Models.Roles.Donator</span>
+                <span>@Roles.Donator</span>
             </LabelContent>
         </Chip>
     }
-    @if (State.IsInRole(SCMM.Web.Data.Models.Roles.VIP))
+    @if (State.IsInRole(Roles.VIP))
     {
         <Chip Size="@Size.Small" Variant="@ChipVariant.Outlined" class="Profile-Role Profile-Role-VIP">
             <IconContent>
                 <i class="fas fa-fw fa-star"></i>
             </IconContent>
             <LabelContent>
-                <span>@SCMM.Web.Data.Models.Roles.VIP</span>
+                <span>@Roles.VIP</span>
             </LabelContent>
         </Chip>
     }

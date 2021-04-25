@@ -1,4 +1,4 @@
-﻿namespace SCMM.Web.Server.Services
+﻿namespace SCMM.Data.Shared
 {
     public enum ImageSymbol
     {

@@ -2,6 +2,7 @@
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using SCMM.Data.Shared;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Server.Services.Commands;
 using System;

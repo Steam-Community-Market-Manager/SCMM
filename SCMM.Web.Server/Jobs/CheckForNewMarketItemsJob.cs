@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Data.Shared;
 using SCMM.Data.Shared.Extensions;
 using SCMM.Data.Shared.Store;
 using SCMM.Discord.Client;

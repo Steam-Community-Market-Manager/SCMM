@@ -11,7 +11,6 @@ using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
-using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services.Commands;
 using Steam.Models;
 using Steam.Models.SteamEconomy;

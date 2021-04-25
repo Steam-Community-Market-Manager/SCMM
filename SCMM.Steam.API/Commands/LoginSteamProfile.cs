@@ -1,17 +1,17 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Data.Shared;
 using SCMM.Data.Shared.Extensions;
 using SCMM.Data.Shared.Store.Types;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ClaimTypes = SCMM.Web.Data.Models.ClaimTypes;
+using ClaimTypes = SCMM.Data.Shared.ClaimTypes;
 
 namespace SCMM.Web.Server.Services.Commands
 {

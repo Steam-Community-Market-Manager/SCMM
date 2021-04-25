@@ -15,4 +15,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SCMM.Data.Shared\SCMM.Data.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

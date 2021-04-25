@@ -40,6 +40,7 @@
     <ProjectReference Include="..\SCMM.Discord.Client\SCMM.Discord.Client.csproj" />
     <ProjectReference Include="..\SCMM.Discord.Data.Models\SCMM.Discord.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Discord.Data.Store\SCMM.Discord.Data.Store.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />

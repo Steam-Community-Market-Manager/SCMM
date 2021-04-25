@@ -4,11 +4,11 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SCMM.Data.Shared;
 using SCMM.Data.Shared.Extensions;
+using SCMM.Discord.Bot.Server.Extensions;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models;
-using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Services;
 using SCMM.Web.Server.Services.Commands;
 using SCMM.Web.Server.Services.Queries;
@@ -180,20 +180,6 @@ namespace SCMM.Web.Server.Discord.Modules
                     x.Content = $"Beep boop! I'm unable to value that profiles inventory. It's either private, or doesn't contain any items that I monitor."
                 );
                 return;
-            }
-
-            // Snapshot the profiles inventory totals
-            if (profile.LastSnapshotInventoryOn == null || profile.LastSnapshotInventoryOn <= DateTime.Now.Subtract(TimeSpan.FromHours(1)))
-            {
-                await message.LoadingAsync("💾 Snapshotting inventory value...");
-                await _commandProcessor.ProcessAsync(new SnapshotSteamProfileInventoryValueRequest()
-                {
-                    ProfileId = profile.SteamId,
-                    CurrencyId = currency.SteamId,
-                    InventoryTotals = inventoryTotals
-                });
-
-                _db.SaveChanges();
             }
 
             // Generate the profiles inventory thumbnail
