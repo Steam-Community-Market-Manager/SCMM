@@ -20,8 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Data.Shared.Store\SCMM.Data.Shared.Store.csproj" />
-    <ProjectReference Include="..\SCMM.Data.Shared\SCMM.Data.Shared.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />

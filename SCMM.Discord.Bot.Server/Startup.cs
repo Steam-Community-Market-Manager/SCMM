@@ -14,6 +14,7 @@ using Microsoft.Identity.Web.UI;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
@@ -67,7 +68,9 @@ namespace SCMM.Discord.Bot.Server
 
             // Command/query handlers
             services.AddCommands(typeof(Startup).Assembly);
+            services.AddCommands(typeof(SteamService).Assembly);
             services.AddQueries(typeof(Startup).Assembly);
+            services.AddQueries(typeof(SteamService).Assembly);
 
             // Controllers
             services.AddControllersWithViews(options =>

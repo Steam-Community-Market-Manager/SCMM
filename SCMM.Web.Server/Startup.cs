@@ -112,7 +112,9 @@ namespace SCMM.Web.Server
 
             // Command/query handlers
             services.AddCommands(typeof(Startup).Assembly);
+            services.AddCommands(typeof(SteamService).Assembly);
             services.AddQueries(typeof(Startup).Assembly);
+            services.AddQueries(typeof(SteamService).Assembly);
 
             // Services
             services.AddScoped<SteamService>();
@@ -121,6 +123,7 @@ namespace SCMM.Web.Server
 
             // Jobs
             services.AddHostedService<StartDiscordClientJob>();
+
             services.AddHostedService<RepopulateCacheJob>();
             services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<DeleteExpiredImageDataJob>();

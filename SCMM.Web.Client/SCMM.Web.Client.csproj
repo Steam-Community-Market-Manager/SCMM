@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SCMM.Data.Shared\SCMM.Data.Shared.csproj" />
     <ProjectReference Include="..\SCMM.Web.Data.Models\SCMM.Web.Data.Models.csproj" />
   </ItemGroup>
 
