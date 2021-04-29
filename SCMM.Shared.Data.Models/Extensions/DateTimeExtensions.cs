@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace SCMM.Data.Shared.Extensions
+namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class DateTimeExtensions
     {

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SCMM.Shared.Data.Models.Extensions;
 
-namespace SCMM.Data.Shared.Extensions
+namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class LevenshteinDistanceExtensions
     {

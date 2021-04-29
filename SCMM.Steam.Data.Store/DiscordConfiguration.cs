@@ -1,5 +1,5 @@
-﻿using SCMM.Data.Shared.Store;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using SCMM.Shared.Data.Store;
 
 namespace SCMM.Steam.Data.Store
 {

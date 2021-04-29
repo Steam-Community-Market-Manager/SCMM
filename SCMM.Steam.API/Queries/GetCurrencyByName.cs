@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Data.Shared.Extensions;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using SCMM.Steam.Data.Models.Domain.Currencies;
 using SCMM.Steam.API.Queries;
+using SCMM.Shared.Data.Models.Extensions;
 
 namespace SCMM.Steam.API.Queries
 {
@@ -35,7 +35,7 @@ namespace SCMM.Steam.API.Queries
         public async Task<GetCurrencyByNameResponse> HandleAsync(GetCurrencyByNameRequest request)
         {
             var currency = (SteamCurrency)null;
-            var currencies = _db.SteamCurrencies.AsNoTracking().ToList();
+            var currencies = await _db.SteamCurrencies.AsNoTracking().ToListAsync();
             if (!String.IsNullOrEmpty(request.Name))
             {
                 currency = currencies.Closest(x => x.Name, request.Name);

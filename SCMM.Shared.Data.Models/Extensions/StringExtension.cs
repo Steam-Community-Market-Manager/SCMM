@@ -1,4 +1,4 @@
-﻿namespace SCMM.Data.Shared.Extensions
+﻿namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class StringExtension
     {

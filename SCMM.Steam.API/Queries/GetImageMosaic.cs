@@ -2,7 +2,6 @@
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using SCMM.Data.Shared;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Collections.Generic;
@@ -15,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
+using SCMM.Shared.Data.Models;
 
 namespace SCMM.Steam.API.Queries
 {

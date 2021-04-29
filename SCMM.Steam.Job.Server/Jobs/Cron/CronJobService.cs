@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Steam.Job.Server.Jobs.Cron;
 
-namespace SCMM.Web.Server.Jobs.CronJob
+namespace SCMM.Steam.Job.Server.Jobs.Cron
 {
     public abstract class CronJobService : CronJobService<CronJobConfiguration>
     {

@@ -1,4 +1,4 @@
-﻿using SCMM.Data.Shared.Extensions;
+﻿using SCMM.Shared.Data.Models.Extensions;
 using Skclusive.Core.Component;
 using System.Linq;
 
@@ -14,8 +14,8 @@ namespace SCMM.Web.Server.Extensions
             }
             switch (sortDirection)
             {
-                case Sort.Ascending: return source.OrderBy(SCMM.Data.Shared.Extensions.QueryableExtensions.ToLambda<T>(sortBy));
-                case Sort.Descending: return source.OrderByDescending(SCMM.Data.Shared.Extensions.QueryableExtensions.ToLambda<T>(sortBy));
+                case Sort.Ascending: return source.OrderBy(sortBy.AsPropertyNameLambda<T>());
+                case Sort.Descending: return source.OrderByDescending(sortBy.AsPropertyNameLambda<T>());
                 default: return source;
             }
         }

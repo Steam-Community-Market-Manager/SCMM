@@ -2,8 +2,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using SCMM.Shared.Data.Models;
 
-namespace SCMM.Data.Shared.Store.Extensions
+namespace SCMM.Shared.Data.Store.Extensions
 {
     public static class PaginationExtensions
     {

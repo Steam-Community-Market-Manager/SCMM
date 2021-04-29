@@ -1,13 +1,26 @@
+using AutoMapper;
+using CommandQuery.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+using SCMM.Discord.Client;
+using SCMM.Discord.Client.Extensions;
+using SCMM.Google.Client;
+using SCMM.Google.Client.Extensions;
+using SCMM.Steam.API;
+using SCMM.Steam.Client;
+using SCMM.Steam.Client.Extensions;
+using SCMM.Steam.Data.Store;
+using SCMM.Steam.Job.Server.Jobs;
+using SCMM.Steam.Job.Server.Middleware;
 
 namespace SCMM.Steam.Job.Server
 {
@@ -20,10 +33,87 @@ namespace SCMM.Steam.Job.Server
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
+            // Logging
+            services.AddDatabaseDeveloperPageExceptionFilter();
+            services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.InstrumentationKey = Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+            });
+
+            // Authentication
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+
+            // Database
+            services.AddDbContext<SteamDbContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("SteamDbConnection"), sql =>
+                {
+                    //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    sql.EnableRetryOnFailure();
+                });
+                options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors();
+            });
+
+            // 3rd party clients
+            services.AddSingleton<SCMM.Discord.Client.DiscordConfiguration>((s) => Configuration.GetDiscordConfiguration());
+            services.AddSingleton<DiscordClient>();
+
+            services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());
+            services.AddSingleton<GoogleClient>();
+
+            services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
+            services.AddSingleton<SteamSession>((s) => new SteamSession(s));
+
+            services.AddScoped<SteamCommunityClient>();
+
+            // Auto-mapper
+            services.AddAutoMapper(typeof(Startup));
+
+            // Command/query handlers
+            services.AddCommands(typeof(Startup).Assembly);
+            services.AddCommands(typeof(SteamService).Assembly);
+            services.AddQueries(typeof(Startup).Assembly);
+            services.AddQueries(typeof(SteamService).Assembly);
+
+            // Services
+            services.AddScoped<SteamService>();
+            services.AddScoped<SteamLanguageService>();
+            services.AddScoped<SteamCurrencyService>();
+
+            // Jobs
+            services.AddHostedService<RepopulateCacheJob>();
+            services.AddHostedService<RefreshSteamSessionJob>();
+            services.AddHostedService<DeleteExpiredImageDataJob>();
+            services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
+            services.AddHostedService<RepairMissingAppFiltersJob>();
+            services.AddHostedService<UpdateAssetDescriptionsJob>();
+            services.AddHostedService<CheckForMissingMarketItemIdsJob>();
+            services.AddHostedService<CheckForNewMarketItemsJob>();
+            services.AddHostedService<CheckForNewStoreItemsJob>();
+            services.AddHostedService<CheckYouTubeForNewStoreVideosJobs>();
+            services.AddHostedService<UpdateAssetWorkshopFilesJob>();
+            services.AddHostedService<UpdateMarketItemOrdersJob>();
+            services.AddHostedService<UpdateMarketItemSalesJob>();
+            services.AddHostedService<UpdateStoreSalesStatisticsJob>();
+            services.AddHostedService<RecalculateMarketItemSnapshotsJob>();
+
+            // Controllers
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+
+            // Views
+            services.AddRazorPages()
+                 .AddMicrosoftIdentityUI();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -31,12 +121,14 @@ namespace SCMM.Steam.Job.Server
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                app.UseDevelopmentExceptionHandler();
+                // Enable automatic DB migrations
+                app.UseMigrationsEndPoint();
             }
             else
             {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseProductionExceptionHandler();
+                // Force HTTPS using HSTS
                 app.UseHsts();
             }
 
@@ -45,10 +137,15 @@ namespace SCMM.Steam.Job.Server
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}"
+                );
                 endpoints.MapRazorPages();
             });
         }

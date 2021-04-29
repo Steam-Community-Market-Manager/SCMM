@@ -1,7 +1,7 @@
-﻿using SCMM.Data.Shared;
-using SCMM.Data.Shared.Store;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Store;
 
 namespace SCMM.Steam.Data.Store
 {

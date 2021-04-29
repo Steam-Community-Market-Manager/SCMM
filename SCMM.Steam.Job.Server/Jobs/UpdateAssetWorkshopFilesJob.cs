@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Data.Shared.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
@@ -12,11 +11,12 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Web.Server.Jobs.CronJob;
-using SCMM.Web.Server.Jobs;
+using SCMM.Steam.Job.Server.Jobs.Cron;
+using SCMM.Steam.Job.Server.Jobs;
 using SCMM.Steam.API;
+using SCMM.Shared.Data.Models.Extensions;
 
-namespace SCMM.Web.Server.Jobs
+namespace SCMM.Steam.Job.Server.Jobs
 {
     public class UpdateAssetWorkshopFilesJob : CronJobService
     {

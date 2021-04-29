@@ -22,7 +22,6 @@ using SCMM.Web.Server.Extensions;
 using SCMM.Web.Server.Middleware;
 using System;
 using System.Security.Claims;
-using SCMM.Web.Server.Jobs;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API;
 
@@ -120,25 +119,6 @@ namespace SCMM.Web.Server
             services.AddScoped<SteamService>();
             services.AddScoped<SteamLanguageService>();
             services.AddScoped<SteamCurrencyService>();
-
-            // Jobs
-            services.AddHostedService<StartDiscordClientJob>();
-
-            services.AddHostedService<RepopulateCacheJob>();
-            services.AddHostedService<RefreshSteamSessionJob>();
-            services.AddHostedService<DeleteExpiredImageDataJob>();
-            services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
-            services.AddHostedService<RepairMissingAppFiltersJob>();
-            services.AddHostedService<UpdateAssetDescriptionsJob>();
-            services.AddHostedService<CheckForMissingMarketItemIdsJob>();
-            services.AddHostedService<CheckForNewMarketItemsJob>();
-            services.AddHostedService<CheckForNewStoreItemsJob>();
-            services.AddHostedService<CheckYouTubeForNewStoreVideosJobs>();
-            services.AddHostedService<UpdateAssetWorkshopFilesJob>();
-            services.AddHostedService<UpdateMarketItemOrdersJob>();
-            services.AddHostedService<UpdateMarketItemSalesJob>();
-            services.AddHostedService<UpdateStoreSalesStatisticsJob>();
-            services.AddHostedService<RecalculateMarketItemSnapshotsJob>();
 
             // Controllers
             services.AddControllersWithViews();

@@ -1,6 +1,6 @@
-﻿using SCMM.Data.Shared;
-using System;
+﻿using System;
 using SCMM.Steam.Data.Models.Domain.Currencies;
+using SCMM.Shared.Data.Models;
 
 namespace SCMM.Steam.Data.Models.Domain.Currencies
 {

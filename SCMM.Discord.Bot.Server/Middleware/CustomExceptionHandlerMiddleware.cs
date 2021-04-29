@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using SCMM.Data.Shared;
 using System;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SCMM.Shared.Data.Models;
 
 namespace SCMM.Discord.Bot.Server.Middleware
 {

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using SCMM.Data.Shared.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.Domain.DTOs.InventoryItems;
 using SCMM.Web.Data.Models.Domain.DTOs.MarketItems;
@@ -11,6 +10,8 @@ using SCMM.Web.Server.Extensions;
 using SCMM.Steam.Data.Models.Domain.Currencies;
 using SCMM.Steam.Data.Models.Domain.Languages;
 using SCMM.Steam.API.Queries;
+using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Extensions;
 
 namespace SCMM.Web.Server
 {

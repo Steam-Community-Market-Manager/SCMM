@@ -33,6 +33,7 @@ namespace SCMM.Discord.Bot.Server
         public void ConfigureServices(IServiceCollection services)
         {
             // Logging
+            services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddApplicationInsightsTelemetry(options =>
             {
                 options.InstrumentationKey = Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
@@ -93,6 +94,8 @@ namespace SCMM.Discord.Bot.Server
             if (env.IsDevelopment())
             {
                 app.UseDevelopmentExceptionHandler();
+                // Enable automatic DB migrations
+                app.UseMigrationsEndPoint();
             }
             else
             {

@@ -1,4 +1,4 @@
-﻿namespace SCMM.Data.Shared
+﻿namespace SCMM.Shared.Data.Models
 {
     public enum ImageSymbol
     {

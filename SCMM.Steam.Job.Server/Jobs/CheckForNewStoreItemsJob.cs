@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Data.Shared;
-using SCMM.Data.Shared.Extensions;
-using SCMM.Data.Shared.Store;
 using SCMM.Discord.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -19,11 +16,15 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Web.Server.Jobs.CronJob;
+using SCMM.Steam.Job.Server.Jobs.Cron;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.API;
+using SCMM.Steam.Job.Server.Extensions;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Store;
 
-namespace SCMM.Web.Server.Jobs
+namespace SCMM.Steam.Job.Server.Jobs
 {
     public class CheckForNewStoreItemsJob : CronJobService
     {

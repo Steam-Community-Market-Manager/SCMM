@@ -1,4 +1,4 @@
-﻿namespace SCMM.Data.Shared.Store
+﻿namespace SCMM.Shared.Data.Store
 {
     public struct ConfigurationDefinition
     {

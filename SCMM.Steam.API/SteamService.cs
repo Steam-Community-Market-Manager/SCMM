@@ -1,7 +1,6 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SCMM.Data.Shared.Store.Types;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
@@ -24,6 +23,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API;
+using SCMM.Shared.Data.Store.Types;
 
 namespace SCMM.Steam.API
 {

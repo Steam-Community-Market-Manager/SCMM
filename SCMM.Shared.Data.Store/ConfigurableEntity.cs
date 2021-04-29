@@ -1,11 +1,12 @@
-﻿using SCMM.Data.Shared.Extensions;
-using SCMM.Data.Shared.Store.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store.Types;
+using SCMM.Shared.Data.Store;
 
-namespace SCMM.Data.Shared.Store
+namespace SCMM.Shared.Data.Store
 {
     public abstract class ConfigurableEntity<T> : Entity where T : Configuration, new()
     {

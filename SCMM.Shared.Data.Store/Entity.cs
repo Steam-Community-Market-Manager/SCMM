@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SCMM.Data.Shared.Store
+namespace SCMM.Shared.Data.Store
 {
     public abstract class Entity
     {

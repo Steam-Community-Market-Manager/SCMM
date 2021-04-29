@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using SCMM.Shared.Data.Store.Types;
 
-namespace SCMM.Data.Shared.Store.Types
+namespace SCMM.Shared.Data.Store.Types
 {
     [ComplexType]
     public class PersistableStringCollection : PersistableScalarCollection<string>

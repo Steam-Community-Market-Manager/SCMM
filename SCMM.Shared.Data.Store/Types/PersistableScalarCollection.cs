@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SCMM.Data.Shared.Store.Types
+namespace SCMM.Shared.Data.Store.Types
 {
     public abstract class PersistableScalarCollection<T> : ICollection<T>
     {

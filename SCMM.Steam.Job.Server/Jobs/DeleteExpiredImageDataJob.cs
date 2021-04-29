@@ -6,10 +6,10 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Web.Server.Jobs.CronJob;
-using SCMM.Web.Server.Jobs;
+using SCMM.Steam.Job.Server.Jobs.Cron;
+using SCMM.Steam.Job.Server.Jobs;
 
-namespace SCMM.Web.Server.Jobs
+namespace SCMM.Steam.Job.Server.Jobs
 {
     public class DeleteExpiredImageDataJob : CronJobService
     {
@@ -23,7 +23,7 @@ namespace SCMM.Web.Server.Jobs
             _scopeFactory = scopeFactory;
         }
 
-        public override async Task DoWork(CancellationToken cancellationToken)
+        public override Task DoWork(CancellationToken cancellationToken)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -42,6 +42,8 @@ namespace SCMM.Web.Server.Jobs
                     db.SaveChanges();
                 }
             }
+
+            return Task.CompletedTask;
         }
     }
 }

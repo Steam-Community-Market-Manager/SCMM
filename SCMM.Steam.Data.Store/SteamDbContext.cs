@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SCMM.Data.Shared.Store;
+using SCMM.Shared.Data.Store;
 
 namespace SCMM.Steam.Data.Store
 {

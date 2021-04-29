@@ -19,28 +19,28 @@ namespace SCMM.Web.Server.Extensions
         public static Guid Id(this ClaimsPrincipal user)
         {
             Guid id;
-            Guid.TryParse(user?.FindFirst(SCMM.Data.Shared.ClaimTypes.Id)?.Value, out id);
+            Guid.TryParse(user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Id)?.Value, out id);
             return id;
         }
 
         public static string SteamId(this ClaimsPrincipal user)
         {
-            return user?.FindFirst(SCMM.Data.Shared.ClaimTypes.SteamId)?.Value;
+            return user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.SteamId)?.Value;
         }
 
         public static string Name(this ClaimsPrincipal user)
         {
-            return user?.FindFirst(SCMM.Data.Shared.ClaimTypes.Name)?.Value ?? user.Identity?.Name;
+            return user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Name)?.Value ?? user.Identity?.Name;
         }
 
         public static string Language(this ClaimsPrincipal user)
         {
-            return user?.FindFirst(SCMM.Data.Shared.ClaimTypes.Language)?.Value;
+            return user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Language)?.Value;
         }
 
         public static string Currency(this ClaimsPrincipal user)
         {
-            return user?.FindFirst(SCMM.Data.Shared.ClaimTypes.Currency)?.Value;
+            return user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Currency)?.Value;
         }
     }
 }

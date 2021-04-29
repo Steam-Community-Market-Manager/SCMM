@@ -4,10 +4,10 @@ using Microsoft.Extensions.Logging;
 using SCMM.Steam.Client;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Web.Server.Jobs.CronJob;
-using SCMM.Web.Server.Jobs;
+using SCMM.Steam.Job.Server.Jobs.Cron;
+using SCMM.Steam.Job.Server.Jobs;
 
-namespace SCMM.Web.Server.Jobs
+namespace SCMM.Steam.Job.Server.Jobs
 {
     public class RefreshSteamSessionJob : CronJobService
     {

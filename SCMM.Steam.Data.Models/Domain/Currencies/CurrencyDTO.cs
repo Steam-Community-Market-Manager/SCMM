@@ -1,4 +1,4 @@
-﻿using SCMM.Data.Shared;
+﻿using SCMM.Shared.Data.Models;
 
 namespace SCMM.Steam.Data.Models.Domain.Currencies
 {

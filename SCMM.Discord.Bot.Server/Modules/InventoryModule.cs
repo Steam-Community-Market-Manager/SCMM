@@ -4,8 +4,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SCMM.Data.Shared;
-using SCMM.Data.Shared.Extensions;
 using SCMM.Discord.Bot.Server.Extensions;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Steam.Data.Store;
@@ -16,6 +14,8 @@ using System.Threading.Tasks;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.API;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {

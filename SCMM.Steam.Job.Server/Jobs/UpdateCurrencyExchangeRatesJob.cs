@@ -9,11 +9,11 @@ using SCMM.Steam.Data.Store;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Web.Server.Jobs.CronJob;
-using SCMM.Web.Server.Jobs;
+using SCMM.Steam.Job.Server.Jobs.Cron;
+using SCMM.Steam.Job.Server.Jobs;
 using SCMM.Steam.API;
 
-namespace SCMM.Web.Server.Jobs
+namespace SCMM.Steam.Job.Server.Jobs
 {
     public class UpdateCurrencyExchangeRatesJob : CronJobService
     {

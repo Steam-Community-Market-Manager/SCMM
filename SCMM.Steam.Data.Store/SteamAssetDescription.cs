@@ -1,8 +1,8 @@
-﻿using SCMM.Data.Shared.Store;
-using SCMM.Data.Shared.Store.Types;
-using SCMM.Steam.Data.Models.Enums;
+﻿using SCMM.Steam.Data.Models.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
+using SCMM.Shared.Data.Store.Types;
+using SCMM.Shared.Data.Store;
 
 namespace SCMM.Steam.Data.Store
 {
