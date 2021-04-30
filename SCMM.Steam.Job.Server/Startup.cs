@@ -15,12 +15,12 @@ using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs;
-using SCMM.Steam.Job.Server.Middleware;
 
 namespace SCMM.Steam.Job.Server
 {

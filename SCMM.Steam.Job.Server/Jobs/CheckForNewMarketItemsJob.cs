@@ -17,11 +17,11 @@ using System.Threading.Tasks;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.API;
-using SCMM.Steam.Job.Server.Extensions;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
+using SCMM.Shared.Web.Extensions;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {

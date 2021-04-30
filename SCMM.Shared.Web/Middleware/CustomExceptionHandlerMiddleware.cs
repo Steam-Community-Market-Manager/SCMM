@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SCMM.Shared.Data.Models;
 
-namespace SCMM.Steam.Job.Server.Middleware
+namespace SCMM.Shared.Web.Middleware
 {
     public static class CustomExceptionHandlerMiddleware
     {

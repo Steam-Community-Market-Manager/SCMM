@@ -23,6 +23,7 @@ using SCMM.Steam.API.Queries;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store.Extensions;
+using SCMM.Shared.Web.Extensions;
 
 namespace SCMM.Web.Server.API.Controllers
 {

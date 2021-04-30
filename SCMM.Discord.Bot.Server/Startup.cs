@@ -73,6 +73,11 @@ namespace SCMM.Discord.Bot.Server
             services.AddQueries(typeof(Startup).Assembly);
             services.AddQueries(typeof(SteamService).Assembly);
 
+            // Services
+            services.AddScoped<SteamService>();
+            services.AddScoped<SteamLanguageService>();
+            services.AddScoped<SteamCurrencyService>();
+
             // Controllers
             services.AddControllersWithViews(options =>
             {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace SCMM.Steam.Job.Server.Extensions
+namespace SCMM.Shared.Web.Extensions
 {
     public static class ConfigurationExtensions
     {

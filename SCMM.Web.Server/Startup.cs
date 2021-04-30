@@ -18,12 +18,12 @@ using SCMM.Google.Client.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Server.Extensions;
-using SCMM.Web.Server.Middleware;
 using System;
 using System.Security.Claims;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API;
+using SCMM.Shared.Web.Middleware;
+using SCMM.Shared.Web.Extensions;
 
 namespace SCMM.Web.Server
 {
