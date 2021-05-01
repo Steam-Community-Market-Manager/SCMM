@@ -90,8 +90,8 @@ namespace SCMM.Web.Server
                     //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     sql.EnableRetryOnFailure();
                 });
-                options.EnableSensitiveDataLogging();
-                options.EnableDetailedErrors();
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
 
             // 3rd party clients

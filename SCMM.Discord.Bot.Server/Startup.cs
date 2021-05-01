@@ -14,11 +14,13 @@ using Microsoft.Identity.Web.UI;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
+using System;
 
 namespace SCMM.Discord.Bot.Server
 {
@@ -52,8 +54,8 @@ namespace SCMM.Discord.Bot.Server
                     //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     sql.EnableRetryOnFailure();
                 });
-                options.EnableSensitiveDataLogging();
-                options.EnableDetailedErrors();
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
 
             // 3rd party clients

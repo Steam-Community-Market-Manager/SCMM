@@ -15,12 +15,14 @@ using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs;
+using System;
 
 namespace SCMM.Steam.Job.Server
 {
@@ -54,8 +56,8 @@ namespace SCMM.Steam.Job.Server
                     //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     sql.EnableRetryOnFailure();
                 });
-                options.EnableSensitiveDataLogging();
-                options.EnableDetailedErrors();
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
 
             // 3rd party clients
