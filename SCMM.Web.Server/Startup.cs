@@ -107,13 +107,11 @@ namespace SCMM.Web.Server
             services.AddScoped<SteamCommunityClient>();
 
             // Auto-mapper
-            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(typeof(Startup), typeof(SteamAutoMapperProfile));
 
             // Command/query handlers
-            services.AddCommands(typeof(Startup).Assembly);
-            services.AddCommands(typeof(SteamService).Assembly);
-            services.AddQueries(typeof(Startup).Assembly);
-            services.AddQueries(typeof(SteamService).Assembly);
+            services.AddCommands(typeof(Startup).Assembly, typeof(SteamService).Assembly);
+            services.AddQueries(typeof(Startup).Assembly, typeof(SteamService).Assembly);
 
             // Services
             services.AddScoped<SteamService>();

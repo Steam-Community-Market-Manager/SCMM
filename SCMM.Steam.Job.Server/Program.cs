@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
+using SCMM.Shared.Web;
 using System;
 using System.Threading.Tasks;
 
@@ -25,6 +26,7 @@ namespace SCMM.Steam.Job.Server
                     logging.ClearProviders();
                     logging.AddDebug();
                     logging.AddConsole();
+                    logging.AddHtmlLogger();
                     logging.AddApplicationInsights();
                     logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Warning);
                 })

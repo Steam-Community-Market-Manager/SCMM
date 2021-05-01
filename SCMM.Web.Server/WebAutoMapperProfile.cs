@@ -8,25 +8,17 @@ using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
 using SCMM.Web.Server.Extensions;
 using SCMM.Steam.Data.Models.Domain.Currencies;
-using SCMM.Steam.Data.Models.Domain.Languages;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.API;
 
 namespace SCMM.Web.Server
 {
-    public class AutoMapping : Profile
+    public class WebAutoMapperProfile : Profile
     {
-        public AutoMapping()
+        public WebAutoMapperProfile()
         {
-            CreateMap<SteamLanguage, LanguageDTO>();
-            CreateMap<SteamLanguage, LanguageListDTO>();
-            CreateMap<SteamLanguage, LanguageDetailedDTO>();
-
-            CreateMap<SteamCurrency, CurrencyDTO>();
-            CreateMap<SteamCurrency, CurrencyListDTO>();
-            CreateMap<SteamCurrency, CurrencyDetailedDTO>();
-
             CreateMap<SteamProfile, ProfileDTO>();
             CreateMap<SteamProfile, ProfileDetailedDTO>();
             CreateMap<SteamProfile, ProfileSummaryDTO>();
@@ -147,14 +139,14 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null && p.Item.Description.WorkshopFile.Creator != null ? p.Item.Description.WorkshopFile.Creator.Name : p.Item.App.Name))
                 .ForMember(x => x.AuthorAvatarUrl, o => o.MapFrom(p => p.Item.Description.WorkshopFile != null && p.Item.Description.WorkshopFile.Creator != null ? p.Item.Description.WorkshopFile.Creator.AvatarUrl : p.Item.App.IconUrl))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
-                .ForMember(x => x.IsStillAvailableInStore, o => o.MapFrom(p => (p.Store != null && p.Store.End == null)))
+                .ForMember(x => x.IsStillAvailableInStore, o => o.MapFrom(p => p.Store != null && p.Store.End == null))
                 .ForMember(x => x.StorePrice, o => o.MapFrom(
                     (src, dst, _, context) =>
                     {
                         var currency = context.Items.ContainsKey(AutoMapperConfigurationExtensions.ContextKeyCurrency)
                             ? (CurrencyDetailedDTO)context.Options.Items[AutoMapperConfigurationExtensions.ContextKeyCurrency]
                             : null;
-                        return (currency != null && src.Item.Prices.ContainsKey(currency.Name))
+                        return currency != null && src.Item.Prices.ContainsKey(currency.Name)
                             ? src.Item.Prices[currency.Name]
                             : 0;
                     }
