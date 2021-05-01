@@ -1,0 +1,11 @@
+﻿@using SCMM.Discord.Client
+@inject DiscordClient Client
+
+<div class="navbar-brand">
+    <img src="@Client.UserAvatar" />
+    <p>
+        <strong>@Client.UserName #@Client.UserDiscriminator</strong>
+        <br />
+        <span>@Client.UserStatus</span>
+    </p>
+</div>
