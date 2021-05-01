@@ -67,16 +67,19 @@ namespace SCMM.Discord.Client
                 return;
             }
 
-            using (var scope = _services.CreateScope())
+            // Execute the command in a background thread to avoid clogging the gateway thread
+            _ = Task.Run(async () =>
             {
-                // Execute the command
-                var context = new ShardedCommandContext(_client, message);
-                var result = await _commands.ExecuteAsync(
-                    context: context,
-                    argPos: commandArgPos,
-                    services: scope.ServiceProvider
-                );
-            }
+                using (var scope = _services.CreateScope())
+                {
+                    var context = new ShardedCommandContext(_client, message);
+                    var result = await _commands.ExecuteAsync(
+                        context: context,
+                        argPos: commandArgPos,
+                        services: scope.ServiceProvider
+                    );
+                }
+            });
         }
 
         public async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
