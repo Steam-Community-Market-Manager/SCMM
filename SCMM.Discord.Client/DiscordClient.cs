@@ -233,5 +233,16 @@ namespace SCMM.Discord.Client
         public event Action<IDictionary<ulong, string>> Ready;
         public event Action<ulong, string> GuildJoined;
         public event Action<ulong, string> GuildLeft;
+
+        public string ConnectionState => _client.ConnectionState.ToString();
+        public string LoginState => _client.LoginState.ToString();
+        public int ShardId => _client.ShardId;
+        public int Latency => _client.Latency;
+
+        public string UserStatus => _client.CurrentUser?.Status.ToString();
+        public string UserAvatar => _client.CurrentUser?.GetAvatarUrl();
+        public string UserName => _client.CurrentUser?.Username;
+        public string UserDiscriminator => _client.CurrentUser?.Discriminator;
+        public string UserEmail => _client.CurrentUser?.Email;
     }
 }
