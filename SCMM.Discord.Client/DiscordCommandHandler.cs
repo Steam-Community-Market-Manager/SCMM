@@ -94,46 +94,75 @@ namespace SCMM.Discord.Client
                 _logger.LogInformation(
                     $"Command '{commandName}' executed successfully (guild: {guildName}, channel: {channelName}, user: {userName})"
                 );
+
+                await context.Message.AddReactionAsync(new Emoji("👌")); // ok
             }
             else
             {
+                var logLevel = LogLevel.Error;
+                var responseMessage = Task.CompletedTask;
+                var reactionEmoji = new Emoji("😢"); // cry
                 switch (result.Error)
                 {
-                    // Warning - bad request
                     case CommandError.UnknownCommand:
-                    case CommandError.MultipleMatches:
-                    case CommandError.ObjectNotFound:
-                    case CommandError.BadArgCount:
-                    case CommandError.ParseFailed:
-                        {
-                        _logger.LogWarning(
-                            $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}"
-                        );
-                        await context.Channel.SendMessageAsync($"Sorry, I don't understand your command 😕");
+                    {
+                        logLevel = LogLevel.Warning;
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, I don't understand that command 😕 use `{_configuration.CommandPrefix}help` for a list of support commands");
                         break;
                     }
-
-                    // Warning - insufficent permissions
+                    case CommandError.ParseFailed:
+                    {
+                        logLevel = LogLevel.Warning;
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command contains invalid characters or objects that I can't understand 😕");
+                        break;
+                    }
+                    case CommandError.BadArgCount:
+                    {
+                        logLevel = LogLevel.Warning;
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command has an invalid number of parameters 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
+                        break;
+                    }
+                    case CommandError.ObjectNotFound:
+                    {
+                        logLevel = LogLevel.Warning;
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it 😅");
+                        break;
+                    }
+                    case CommandError.MultipleMatches:
+                    {
+                        logLevel = LogLevel.Warning;
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command is ambiguous, try be more specific 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
+                        break;
+                    }
                     case CommandError.UnmetPrecondition:
                     {
-                        _logger.LogWarning(
-                            $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}"
-                        );
-                        await context.Channel.SendMessageAsync($"Sorry, you don't have permission to do that 😕");
+                        logLevel = LogLevel.Warning;
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, you don't have permission to do that 🚫");
+                            reactionEmoji = new Emoji("🚫"); // prohibited
+                            break;
+                    }
+                    case CommandError.Exception:
+                    {
+                        logLevel = LogLevel.Error;
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, something terrible went wrong your command cannot be completed right now 😵 try again later");
+                        reactionEmoji = new Emoji("🐛"); // bug
                         break;
                     }
-
-                    // Error - something went wrong...
-                    case CommandError.Exception:
                     case CommandError.Unsuccessful:
                     {
-                        _logger.LogError(
-                            $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}"
-                        );
-                        await context.Channel.SendMessageAsync($"Sorry, something went horribly wrong 😕");
+                        logLevel = LogLevel.Error;
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command cannot be completed right now and I'm unsure why 😵 try again later");
+                        reactionEmoji = new Emoji("🐛"); // bug
                         break;
                     }
                 }
+
+                _logger.Log(logLevel,
+                    $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}. The original message was \"{context.Message.Content}\""
+                );
+
+                await context.Message.AddReactionAsync(reactionEmoji);
+                await responseMessage;
             }
         }
 
