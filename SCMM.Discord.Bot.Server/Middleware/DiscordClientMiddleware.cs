@@ -1,0 +1,212 @@
+﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SCMM.Discord.Client;
+using SCMM.Steam.Data.Store;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using SCMM.Steam.API.Queries;
+using SCMM.Shared.Data.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+
+namespace SCMM.Discord.Bot.Server.Middleware
+{
+    public class DiscordClientMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly ILogger<DiscordClientMiddleware> _logger;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly DiscordClient _discordClient;
+        private readonly Timer _statusUpdateTimer;
+
+        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
+        {
+            _next = next;
+            _logger = logger;
+            _scopeFactory = scopeFactory;
+            _statusUpdateTimer = new Timer(OnStatusUpdate);
+            _discordClient = discordClient;
+            _discordClient.Ready += OnReady;
+            _discordClient.GuildJoined += OnGuildJoined;
+            _discordClient.GuildLeft += OnGuildLeft;
+            _ = _discordClient.ConnectAsync();
+        }
+
+        public Task Invoke(HttpContext httpContext)
+        {
+            return _next(httpContext);
+        }
+
+        private async void OnReady(IDictionary<ulong, string> guilds)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                try
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                    var discordGuilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
+
+                    // Start the status update timer
+                    _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
+
+                    // Add any guilds that we've joined
+                    var joinedGuilds = guilds.Where(x => !discordGuilds.Any(y => y.DiscordId == x.Key.ToString())).ToList();
+                    if (joinedGuilds.Any())
+                    {
+                        foreach (var joined in joinedGuilds)
+                        {
+                            db.DiscordGuilds.Add(new DiscordGuild()
+                            {
+                                DiscordId = joined.Key.ToString(),
+                                Name = joined.Value
+                            });
+                        }
+                    }
+
+                    // Update any guilds that we're still a member of
+                    var memberGuilds = discordGuilds.Join(guilds,
+                            x => x.DiscordId,
+                            y => y.Key.ToString(),
+                            (x, y) => new
+                            {
+                                Guild = x,
+                                Name = y.Value
+                            }
+                        )
+                        .Where(x => string.IsNullOrEmpty(x.Name))
+                        .ToList();
+                    if (memberGuilds.Any())
+                    {
+                        foreach (var member in memberGuilds)
+                        {
+                            member.Guild.Name = member.Name;
+                        }
+                    }
+
+                    // Remove any guilds that we've left
+                    var leftGuilds = discordGuilds.Where(x => !guilds.ContainsKey(ulong.Parse(x.DiscordId))).ToList();
+                    if (leftGuilds.Any())
+                    {
+                        foreach (var left in leftGuilds)
+                        {
+                            left.Configurations.Clear();
+                            left.BadgeDefinitions.Clear();
+                            db.DiscordGuilds.Remove(left);
+                        }
+                    }
+
+                    // Synchronise VIP roles for users belonging to VIP servers
+                    var vipServers = discordGuilds.Where(x => x.Flags.HasFlag(Steam.Data.Models.Enums.DiscordGuildFlags.VIP)).ToList();
+                    foreach (var vipServer in vipServers)
+                    {
+                        try
+                        {
+                            var vipUsers = await _discordClient.GetUsersWithRoleAsync(ulong.Parse(vipServer.DiscordId), Roles.Donator);
+                            if (vipUsers != null)
+                            {
+                                var newVipUsers = db.SteamProfiles
+                                    .Where(x => !x.Roles.Serialised.Contains(Roles.VIP))
+                                    .Where(x => vipUsers.Contains(x.DiscordId))
+                                    .ToList();
+
+                                foreach (var user in newVipUsers)
+                                {
+                                    user.Roles.Add(Roles.VIP);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Failed to check guild for new VIP members  (id: {vipServer.DiscordId}, name: {vipServer.Name})");
+                            continue;
+                        }
+                    }
+
+                    db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to synchronoise list of Discord guilds");
+                }
+            }
+        }
+
+        private void OnGuildJoined(ulong id, string name)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                try
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                    var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == id.ToString());
+                    if (discordGuild == null)
+                    {
+                        db.DiscordGuilds.Add(discordGuild = new DiscordGuild()
+                        {
+                            DiscordId = id.ToString(),
+                            Name = name
+                        });
+                        db.SaveChanges();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {id}, name: {name})");
+                }
+            }
+        }
+
+        private void OnGuildLeft(ulong id, string name)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                try
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                    var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == id.ToString());
+                    if (discordGuild != null)
+                    {
+                        db.DiscordGuilds.Remove(discordGuild);
+                        db.SaveChanges();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {id}, name: {name})");
+                }
+            }
+        }
+
+        private async void OnStatusUpdate(object state)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                try
+                {
+                    var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+                    var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+                    await _discordClient.SetStatus(
+                        $"the store, {storeNextUpdateTime.TimeDescription}"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to update discord client status");
+                }
+            }
+        }
+    }
+
+    public static class DiscordClientMiddlewareExtensions
+    {
+        public static IApplicationBuilder UseDiscordClient(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<DiscordClientMiddleware>();
+        }
+    }
+}

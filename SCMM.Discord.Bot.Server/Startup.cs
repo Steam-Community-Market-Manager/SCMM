@@ -14,6 +14,7 @@ using Microsoft.Identity.Web.UI;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -125,6 +126,8 @@ namespace SCMM.Discord.Bot.Server
                 );
                 endpoints.MapRazorPages();
             });
+
+            app.UseDiscordClient();
         }
     }
 }
