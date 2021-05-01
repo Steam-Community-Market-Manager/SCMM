@@ -1,14 +1,14 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.Extensions.Logging;
-using SCMM.Web.Data.Models.Domain.DTOs.Profiles;
+using SCMM.Web.Data.Models.Domain.Profiles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using SCMM.Steam.Data.Models.Domain.Currencies;
-using SCMM.Steam.Data.Models.Domain.Languages;
+using SCMM.Web.Data.Models.Domain.Currencies;
+using SCMM.Web.Data.Models.Domain.Languages;
 
 namespace SCMM.Web.Client
 {
@@ -105,30 +105,13 @@ namespace SCMM.Web.Client
             }
         }
 
-        public async Task TryGuessLocalityAsync(HttpClient http)
+        public async Task TryGuessLocalityAsync()
         {
             try
             {
-                // Assign defaults just incase something goes wrong
+                // Just assign defaults
                 LanguageId = DefaultLanguage;
                 CurrencyId = DefaultCurrency;
-
-                // Detect currency from the IP address and associated country
-                var country = await http.GetStringAsync("https://ipinfo.io/country");
-                if (!String.IsNullOrEmpty(country))
-                {
-                    var countryCurrencyTable = await http.GetFromJsonAsync<IDictionary<string, string>>("/json/country-currency.json");
-                    if (countryCurrencyTable != null)
-                    {
-                        var currencyName = countryCurrencyTable.FirstOrDefault(x => x.Key == country.Trim()).Value;
-                        if (!String.IsNullOrEmpty(currencyName))
-                        {
-                            CurrencyId = currencyName;
-                        }
-                    }
-                }
-
-                // TODO: Detect language from the browser
             }
             catch (Exception ex)
             {

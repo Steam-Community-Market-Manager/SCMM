@@ -34,19 +34,15 @@ namespace SCMM.Steam.API
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityClient _communityClient;
-        private readonly SteamCurrencyService _currencyService;
-        private readonly SteamLanguageService _languageService;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
 
-        public SteamService(SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, SteamCurrencyService currencyService, SteamLanguageService languageService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public SteamService(SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _communityClient = communityClient;
-            _currencyService = currencyService;
-            _languageService = languageService;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }

@@ -11,10 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using SCMM.Discord.Client;
-using SCMM.Discord.Client.Extensions;
-using SCMM.Google.Client;
-using SCMM.Google.Client.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
@@ -95,19 +91,12 @@ namespace SCMM.Web.Server
             });
 
             // 3rd party clients
-            services.AddSingleton<SCMM.Discord.Client.DiscordConfiguration>((s) => Configuration.GetDiscordConfiguration());
-            services.AddSingleton<DiscordClient>();
-
-            services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());
-            services.AddSingleton<GoogleClient>();
-
             services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
-
             services.AddScoped<SteamCommunityClient>();
 
             // Auto-mapper
-            services.AddAutoMapper(typeof(Startup), typeof(SteamAutoMapperProfile));
+            services.AddAutoMapper(typeof(Startup));
 
             // Command/query handlers
             services.AddCommands(typeof(Startup).Assembly, typeof(SteamService).Assembly);
@@ -156,7 +145,7 @@ namespace SCMM.Web.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, SteamLanguageService languageService, SteamCurrencyService currencyService)
         {
             if (env.IsDevelopment())
             {
@@ -201,6 +190,10 @@ namespace SCMM.Web.Server
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
             });
+
+            // TODO: Remove this
+            _ = languageService.RepopulateCache();
+            _ = currencyService.RepopulateCache();
         }
     }
 }

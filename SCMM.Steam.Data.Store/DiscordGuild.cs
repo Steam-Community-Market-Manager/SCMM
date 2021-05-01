@@ -8,11 +8,6 @@ namespace SCMM.Steam.Data.Store
 {
     public class DiscordGuild : ConfigurableEntity<DiscordConfiguration>
     {
-        public DiscordGuild()
-        {
-            BadgeDefinitions = new Collection<DiscordBadgeDefinition>();
-        }
-
         [Required]
         public string DiscordId { get; set; }
 
@@ -23,8 +18,5 @@ namespace SCMM.Steam.Data.Store
 
         protected override IEnumerable<ConfigurationDefinition> ConfigurationDefinitions
             => DiscordConfiguration.Definitions;
-
-        public ICollection<DiscordBadgeDefinition> BadgeDefinitions { get; set; }
-
     }
 }

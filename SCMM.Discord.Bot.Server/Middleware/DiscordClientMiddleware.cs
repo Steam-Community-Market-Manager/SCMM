@@ -41,7 +41,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
             return _next(httpContext);
         }
 
-        private async void OnReady(IEnumerable<Client.DiscordGuild> guilds)
+        private void OnReady(IEnumerable<Client.DiscordGuild> guilds)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -94,7 +94,6 @@ namespace SCMM.Discord.Bot.Server.Middleware
                         foreach (var left in leftGuilds)
                         {
                             left.Configurations.Clear();
-                            left.BadgeDefinitions.Clear();
                             db.DiscordGuilds.Remove(left);
                         }
                     }

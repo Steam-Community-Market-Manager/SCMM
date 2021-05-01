@@ -49,13 +49,13 @@ namespace SCMM.Discord.Client
             }
         }
 
-        private async Task OnMessageReceivedAsync(SocketMessage msg)
+        private Task OnMessageReceivedAsync(SocketMessage msg)
         {
             // Don't process the command if it was a system message
             var message = msg as SocketUserMessage;
             if (message == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             // Determine if the message is a command based on the prefix and make sure other bots don't trigger our commands
@@ -64,7 +64,7 @@ namespace SCMM.Discord.Client
                 message.HasMentionPrefix(_client.CurrentUser, ref commandArgPos)) ||
                 message.Author.IsBot)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             // Execute the command in a background thread to avoid clogging the gateway thread
@@ -80,6 +80,8 @@ namespace SCMM.Discord.Client
                     );
                 }
             });
+
+            return Task.CompletedTask;
         }
 
         public async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)

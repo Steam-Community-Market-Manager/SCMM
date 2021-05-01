@@ -11,4 +11,10 @@
     <Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SCMM.Discord.Client\SCMM.Discord.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Discord.Data.Models\SCMM.Discord.Data.Models.csproj" />
+    <ProjectReference Include="..\SCMM.Discord.Data.Store\SCMM.Discord.Data.Store.csproj" />
+  </ItemGroup>
+
 </Project>

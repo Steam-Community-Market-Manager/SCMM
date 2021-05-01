@@ -9,7 +9,7 @@ using SCMM.Steam.Data.Store;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.Data.Models.Domain.Languages;
+using SCMM.Web.Data.Models.Domain.Languages;
 
 namespace SCMM.Web.Server.API.Controllers
 {

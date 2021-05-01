@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models.Domain.DTOs.MarketItems;
+using SCMM.Web.Data.Models.Domain.MarketItems;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.MarketStatistics;
 using SCMM.Web.Server.Extensions;

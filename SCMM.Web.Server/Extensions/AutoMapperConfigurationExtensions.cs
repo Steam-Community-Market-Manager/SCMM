@@ -2,8 +2,8 @@
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq.Expressions;
-using SCMM.Steam.Data.Models.Domain.Currencies;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Web.Data.Models.Domain.Currencies;
 
 namespace SCMM.Web.Server.Extensions
 {

@@ -6,7 +6,6 @@ namespace SCMM.Steam.Data.Store
     public class SteamDbContext : DbContext
     {
         public DbSet<DiscordGuild> DiscordGuilds { get; set; }
-        public DbSet<DiscordBadge> DiscordBadges { get; set; }
 
         public DbSet<SteamLanguage> SteamLanguages { get; set; }
         public DbSet<SteamCurrency> SteamCurrencies { get; set; }
@@ -45,17 +44,9 @@ namespace SCMM.Steam.Data.Store
                 .HasMany(x => x.Configurations)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.Entity<DiscordGuild>()
-                .HasMany(x => x.BadgeDefinitions)
-                .WithOne(x => x.Guild)
-                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<DiscordConfiguration>()
                 .OwnsOne(x => x.List);
-
-            builder.Entity<DiscordBadge>()
-                .HasIndex(x => new { x.DiscordUserId, x.BadgeDefinitionId })
-                .IsUnique(true);
 
             builder.Entity<SteamApp>()
                 .HasIndex(x => x.SteamId)

@@ -42,7 +42,7 @@
             //    return;
             //}
 
-    await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username);
+            await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username);
         }
 
         [Command]

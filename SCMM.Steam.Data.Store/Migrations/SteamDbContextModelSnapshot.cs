@@ -19,7 +19,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                 .HasAnnotation("ProductVersion", "6.0.0-preview.3.21201.2")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("SCMM.Data.Shared.Store.ImageData", b =>
+            modelBuilder.Entity("SCMM.Shared.Data.Store.ImageData", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,54 +40,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ImageData");
-                });
-
-            modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordBadge", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BadgeDefinitionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DiscordUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BadgeDefinitionId");
-
-                    b.HasIndex("DiscordUserId", "BadgeDefinitionId")
-                        .IsUnique();
-
-                    b.ToTable("DiscordBadges");
-                });
-
-            modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordBadgeDefinition", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("GuildId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("IconId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuildId");
-
-                    b.HasIndex("IconId");
-
-                    b.ToTable("DiscordBadgeDefinition");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordConfiguration", b =>
@@ -978,36 +930,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.ToTable("SteamStoreItemItemStore");
                 });
 
-            modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordBadge", b =>
-                {
-                    b.HasOne("SCMM.Steam.Data.Store.DiscordBadgeDefinition", "BadgeDefinition")
-                        .WithMany()
-                        .HasForeignKey("BadgeDefinitionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BadgeDefinition");
-                });
-
-            modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordBadgeDefinition", b =>
-                {
-                    b.HasOne("SCMM.Steam.Data.Store.DiscordGuild", "Guild")
-                        .WithMany("BadgeDefinitions")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "Icon")
-                        .WithMany()
-                        .HasForeignKey("IconId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guild");
-
-                    b.Navigation("Icon");
-                });
-
             modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordConfiguration", b =>
                 {
                     b.HasOne("SCMM.Steam.Data.Store.DiscordGuild", null)
@@ -1015,7 +937,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasForeignKey("DiscordGuildId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.OwnsOne("SCMM.Data.Shared.Store.Types.PersistableStringCollection", "List", b1 =>
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "List", b1 =>
                         {
                             b1.Property<Guid>("DiscordConfigurationId")
                                 .HasColumnType("uniqueidentifier");
@@ -1036,11 +958,11 @@ namespace SCMM.Steam.Data.Store.Migrations
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamApp", b =>
                 {
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "Icon")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "Icon")
                         .WithMany()
                         .HasForeignKey("IconId");
 
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "IconLarge")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "IconLarge")
                         .WithMany()
                         .HasForeignKey("IconLargeId");
 
@@ -1057,11 +979,11 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "Icon")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "Icon")
                         .WithMany()
                         .HasForeignKey("IconId");
 
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "IconLarge")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "IconLarge")
                         .WithMany()
                         .HasForeignKey("IconLargeId");
 
@@ -1069,7 +991,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .WithMany()
                         .HasForeignKey("WorkshopFileId");
 
-                    b.OwnsOne("SCMM.Data.Shared.Store.Types.PersistableStringDictionary", "Tags", b1 =>
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringDictionary", "Tags", b1 =>
                         {
                             b1.Property<Guid>("SteamAssetDescriptionId")
                                 .HasColumnType("uniqueidentifier");
@@ -1103,7 +1025,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasForeignKey("SteamAppId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.OwnsOne("SCMM.Data.Shared.Store.Types.PersistableStringDictionary", "Options", b1 =>
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringDictionary", "Options", b1 =>
                         {
                             b1.Property<Guid>("SteamAssetFilterId")
                                 .HasColumnType("uniqueidentifier");
@@ -1135,7 +1057,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "Image")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "Image")
                         .WithMany()
                         .HasForeignKey("ImageId");
 
@@ -1172,11 +1094,11 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "ItemsThumbnail")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "ItemsThumbnail")
                         .WithMany()
                         .HasForeignKey("ItemsThumbnailId");
 
-                    b.OwnsOne("SCMM.Data.Shared.Store.Types.PersistableStringCollection", "Media", b1 =>
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "Media", b1 =>
                         {
                             b1.Property<Guid>("SteamItemStoreId")
                                 .HasColumnType("uniqueidentifier");
@@ -1268,11 +1190,11 @@ namespace SCMM.Steam.Data.Store.Migrations
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfile", b =>
                 {
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "Avatar")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "Avatar")
                         .WithMany()
                         .HasForeignKey("AvatarId");
 
-                    b.HasOne("SCMM.Data.Shared.Store.ImageData", "AvatarLarge")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "AvatarLarge")
                         .WithMany()
                         .HasForeignKey("AvatarLargeId");
 
@@ -1284,7 +1206,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .WithMany()
                         .HasForeignKey("LanguageId");
 
-                    b.OwnsOne("SCMM.Data.Shared.Store.Types.PersistableStringCollection", "Roles", b1 =>
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "Roles", b1 =>
                         {
                             b1.Property<Guid>("SteamProfileId")
                                 .HasColumnType("uniqueidentifier");
@@ -1318,7 +1240,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasForeignKey("SteamProfileId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.OwnsOne("SCMM.Data.Shared.Store.Types.PersistableStringCollection", "List", b1 =>
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "List", b1 =>
                         {
                             b1.Property<Guid>("SteamProfileConfigurationId")
                                 .HasColumnType("uniqueidentifier");
@@ -1511,8 +1433,6 @@ namespace SCMM.Steam.Data.Store.Migrations
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.DiscordGuild", b =>
                 {
-                    b.Navigation("BadgeDefinitions");
-
                     b.Navigation("Configurations");
                 });
 

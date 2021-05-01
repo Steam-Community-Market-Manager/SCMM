@@ -5,8 +5,6 @@ using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.Data.Models.Domain.Currencies;
-using SCMM.Steam.API.Queries;
 using SCMM.Shared.Data.Models.Extensions;
 
 namespace SCMM.Steam.API.Queries
@@ -18,18 +16,16 @@ namespace SCMM.Steam.API.Queries
 
     public class GetCurrencyByNameResponse
     {
-        public CurrencyDetailedDTO Currency { get; set; }
+        public SteamCurrency Currency { get; set; }
     }
 
     public class GetCurrencyByName : IQueryHandler<GetCurrencyByNameRequest, GetCurrencyByNameResponse>
     {
         private readonly SteamDbContext _db;
-        private readonly IMapper _mapper;
 
-        public GetCurrencyByName(SteamDbContext db, IMapper mapper)
+        public GetCurrencyByName(SteamDbContext db)
         {
             _db = db;
-            _mapper = mapper;
         }
 
         public async Task<GetCurrencyByNameResponse> HandleAsync(GetCurrencyByNameRequest request)
@@ -47,7 +43,7 @@ namespace SCMM.Steam.API.Queries
 
             return new GetCurrencyByNameResponse
             {
-                Currency = _mapper.Map<CurrencyDetailedDTO>(currency)
+                Currency = currency
             };
         }
     }

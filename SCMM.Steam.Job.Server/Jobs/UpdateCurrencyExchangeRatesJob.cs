@@ -32,7 +32,6 @@ namespace SCMM.Steam.Job.Server.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
-                var currencyService = scope.ServiceProvider.GetRequiredService<SteamCurrencyService>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
@@ -97,7 +96,8 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                 db.SaveChanges();
 
-                await currencyService.RepopulateCache();
+                // TODO: Repopulate cache
+                //await currencyService.RepopulateCache();
             }
         }
     }

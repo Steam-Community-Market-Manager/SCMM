@@ -69,11 +69,10 @@ namespace SCMM.Steam.Job.Server
 
             services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
-
             services.AddScoped<SteamCommunityClient>();
 
             // Auto-mapper
-            services.AddAutoMapper(typeof(Startup), typeof(SteamAutoMapperProfile));
+            services.AddAutoMapper(typeof(Startup));
 
             // Command/query handlers
             services.AddCommands(typeof(Startup).Assembly, typeof(SteamService).Assembly);
@@ -81,11 +80,8 @@ namespace SCMM.Steam.Job.Server
 
             // Services
             services.AddScoped<SteamService>();
-            services.AddScoped<SteamLanguageService>();
-            services.AddScoped<SteamCurrencyService>();
 
             // Jobs
-            services.AddHostedService<RepopulateCacheJob>();
             services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<DeleteExpiredImageDataJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();

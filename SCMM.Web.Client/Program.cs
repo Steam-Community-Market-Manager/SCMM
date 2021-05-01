@@ -16,7 +16,7 @@ namespace SCMM.Web.Client
     {
         public static async Task Main(string[] args)
         {
-            // TODO: Host.CreateDefaultBuilder
+            // TODO: Use Host.CreateDefaultBuilder
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
