@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Discord.Client
@@ -15,25 +14,27 @@ namespace SCMM.Discord.Client
     {
         private readonly ILogger<DiscordClient> _logger;
         private readonly DiscordConfiguration _configuration;
+        private readonly DiscordShardedClient _client;
         private readonly CommandService _commands;
-        private readonly DiscordSocketClient _client;
         private readonly DiscordCommandHandler _commandHandler;
-        private readonly ManualResetEvent _clientIsReady;
         private bool disposedValue;
 
         public DiscordClient(ILogger<DiscordClient> logger, DiscordConfiguration configuration, IServiceProvider serviceProvider)
         {
             _logger = logger;
             _configuration = configuration;
-            _commands = new CommandService();
-            _client = new DiscordSocketClient();
-            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client, configuration);
+            _client = new DiscordShardedClient(new DiscordSocketConfig()
+            {
+                ShardId = configuration.ShardId,
+                TotalShards = configuration.TotalShards
+            });
             _client.Log += OnClientLogAsync;
-            _client.Ready += OnClientReadyAsync;
+            _client.ShardReady += OnShardReadyAsync;
             _client.JoinedGuild += OnJoinedGuildSayHello;
-            _client.JoinedGuild += (x) => Task.Run(() => GuildJoined?.Invoke(x.Id, x.Name));
-            _client.LeftGuild += (x) => Task.Run(() => GuildLeft?.Invoke(x.Id, x.Name));
-            _clientIsReady = new ManualResetEvent(false);
+            _client.JoinedGuild += (x) => Task.Run(() => GuildJoined?.Invoke(new DiscordGuild(x)));
+            _client.LeftGuild += (x) => Task.Run(() => GuildLeft?.Invoke(new DiscordGuild(x)));
+            _commands = new CommandService();
+            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client, configuration);
         }
 
         private Task OnClientLogAsync(LogMessage message)
@@ -52,30 +53,28 @@ namespace SCMM.Discord.Client
                 case LogSeverity.Info:
                     _logger.LogInformation(message.Exception, message.Message);
                     break;
+                case LogSeverity.Verbose:
+                    _logger.LogTrace(message.Exception, message.Message);
+                    break;
+                case LogSeverity.Debug:
+                    _logger.LogDebug(message.Exception, message.Message);
+                    break;
             }
 
             return Task.CompletedTask;
         }
 
-        private Task OnClientReadyAsync()
+        private Task OnShardReadyAsync(DiscordSocketClient shard)
         {
-            _clientIsReady.Set();
-            Ready?.Invoke(Guilds);
+            Ready?.Invoke(shard.Guilds.Select(x => new DiscordGuild(x)));
             return Task.CompletedTask;
         }
 
         private Task OnJoinedGuildSayHello(SocketGuild guild)
         {
-            return BroadcastMessageAsync(
-                guildPattern: guild.Id.ToString(),
-                channelPattern: null,
-                message: $"Hello! Thanks for adding me. To learn more about my commands, type `{_configuration.CommandPrefix}help`."
+            return guild.DefaultChannel.SendMessageAsync(
+                $"Hello! Thanks for adding me. To learn more about my commands, type `{_configuration.CommandPrefix}help`."
             );
-        }
-
-        private void EnsureClientIsReady()
-        {
-            _clientIsReady.WaitOne(TimeSpan.FromSeconds(30));
         }
 
         protected virtual void Dispose(bool disposing)
@@ -110,27 +109,11 @@ namespace SCMM.Discord.Client
             await _client.StopAsync();
         }
 
-        public Task SetStatus(string status)
+        public Task SetWatchingStatus(string status)
         {
-            EnsureClientIsReady();
             return _client.SetGameAsync(
                 status, null, ActivityType.Watching
             );
-        }
-
-        public async Task<IEnumerable<string>> GetUsersWithRoleAsync(ulong serverId, string roleName)
-        {
-            EnsureClientIsReady();
-            var guild = _client.Guilds.FirstOrDefault(x => x.Id == serverId);
-            if (guild != null)
-            {
-                await guild.DownloadUsersAsync();
-                return guild.Users
-                    .Where(x => x.Roles.Any(y => y.Name.Contains(roleName, StringComparison.InvariantCultureIgnoreCase)))
-                    .Select(x => $"{x.Username}#{x.Discriminator}");
-            }
-
-            return null;
         }
 
         public Task BroadcastMessageAsync(string message, string title = null, string description = null, IDictionary<string, string> fields = null, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
@@ -145,8 +128,6 @@ namespace SCMM.Discord.Client
 
         public async Task BroadcastMessageAsync(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
-            EnsureClientIsReady();
-
             // If guild is null, we'll broadcast to all guilds
             var guilds = _client.Guilds
                 .OrderBy(x => x.Name)
@@ -218,31 +199,15 @@ namespace SCMM.Discord.Client
             }
         }
 
-        public IDictionary<ulong, string> Guilds
-        {
-            get
-            {
-                EnsureClientIsReady();
-                return _client.Guilds.ToDictionary(
-                    x => x.Id,
-                    x => x.Name
-                );
-            }
-        }
+        public IEnumerable<DiscordShard> Shards => _client.Shards.Select(x => new DiscordShard(x));
 
-        public event Action<IDictionary<ulong, string>> Ready;
-        public event Action<ulong, string> GuildJoined;
-        public event Action<ulong, string> GuildLeft;
+        public IEnumerable<DiscordGuild> Guilds => _client.Guilds.Select(x => new DiscordGuild(x));
 
-        public string ConnectionState => _client.ConnectionState.ToString();
-        public string LoginState => _client.LoginState.ToString();
-        public int ShardId => _client.ShardId;
-        public int Latency => _client.Latency;
+        public DiscordUser User => new DiscordUser(_client.CurrentUser);
 
-        public string UserStatus => _client.CurrentUser?.Status.ToString();
-        public string UserAvatar => _client.CurrentUser?.GetAvatarUrl();
-        public string UserName => _client.CurrentUser?.Username;
-        public string UserDiscriminator => _client.CurrentUser?.Discriminator;
-        public string UserEmail => _client.CurrentUser?.Email;
+        // Events
+        public event Action<IEnumerable<DiscordGuild>> Ready;
+        public event Action<DiscordGuild> GuildJoined;
+        public event Action<DiscordGuild> GuildLeft;
     }
 }

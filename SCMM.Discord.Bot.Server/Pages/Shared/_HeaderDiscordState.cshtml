@@ -2,10 +2,25 @@
 @inject DiscordClient Client
 
 <dl class="dl-horizontal">
-    <dt><i class="fas fa-plug fa-fw"></i> State</dt>
-    <dd>@Client.ConnectionState, @Client.LoginState</dd>
     <dt><i class="far fa-gem fa-fw"></i> Shard</dt>
-    <dd>@Client.ShardId</dd>
+    <dd>
+        @foreach (var shard in Client.Shards)
+        {
+            <span>@shard.Id → <i>@shard.Guilds guild(s)</i></span><br>
+        }
+    </dd>
+    <dt><i class="fas fa-plug fa-fw"></i> State</dt>
+    <dd>
+        @foreach (var shard in Client.Shards)
+        {
+            <span>@shard.ConnectionState, @shard.LoginState</span><br>
+        }
+    </dd>
     <dt><i class="fas fa-tachometer-alt fa-fw"></i> Latency</dt>
-    <dd>@(Client.Latency)ms</dd>
+    <dd>
+        @foreach (var shard in Client.Shards)
+        {
+            <span>@(shard.Latency)ms</span><br>
+        }
+    </dd>
 </dl>

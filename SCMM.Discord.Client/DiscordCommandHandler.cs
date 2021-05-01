@@ -10,15 +10,15 @@ using System.Threading.Tasks;
 
 namespace SCMM.Discord.Client
 {
-    public class DiscordCommandHandler
+    internal class DiscordCommandHandler
     {
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
         private readonly CommandService _commands;
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordShardedClient _client;
         private readonly DiscordConfiguration _configuration;
 
-        public DiscordCommandHandler(ILogger logger, IServiceProvider services, CommandService commands, DiscordSocketClient client, DiscordConfiguration configuration)
+        public DiscordCommandHandler(ILogger logger, IServiceProvider services, CommandService commands, DiscordShardedClient client, DiscordConfiguration configuration)
         {
             _logger = logger;
             _services = services;
@@ -45,7 +45,7 @@ namespace SCMM.Discord.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialise command handlers");
+                _logger.LogError(ex, "Failed to initialise command handlers, likely due to invalid dependencies");
             }
         }
 
@@ -70,7 +70,7 @@ namespace SCMM.Discord.Client
             using (var scope = _services.CreateScope())
             {
                 // Execute the command
-                var context = new SocketCommandContext(_client, message);
+                var context = new ShardedCommandContext(_client, message);
                 var result = await _commands.ExecuteAsync(
                     context: context,
                     argPos: commandArgPos,
@@ -79,41 +79,74 @@ namespace SCMM.Discord.Client
             }
         }
 
-        public Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        public async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
-            var commandName = command.IsSpecified ? command.Value.Name : "unspecified";
+            var commandName = command.IsSpecified ? ($"{command.Value?.Module?.Name} {command.Value?.Name}").Trim() : "unspecified";
+            var userName = $"{context.User.Username} #{context.User.Discriminator}";
+            var guildName = context.Guild.Name;
+            var channelName = context.Channel.Name;
             if (result.IsSuccess)
             {
+                // Success
                 _logger.LogInformation(
-                    $"Discord command '{commandName}' success (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username})"
+                    $"Command '{commandName}' executed successfully (guild: {guildName}, channel: {channelName}, user: {userName})"
                 );
             }
-            else if (result.Error == CommandError.Exception)
+            else
             {
-                _logger.LogError(
-                    $"Discord command '{commandName}' exeception occurred (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
-                );
-                return context.Channel.SendMessageAsync($"Something went horribly wrong 😕");
-            }
-            else if (result.Error != CommandError.UnknownCommand)
-            {
-                _logger.LogWarning(
-                    $"Discord command '{commandName}' failed (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username}). Reason: {result.ErrorReason}"
-                );
-            }
+                switch (result.Error)
+                {
+                    // Warning - bad request
+                    case CommandError.UnknownCommand:
+                    case CommandError.MultipleMatches:
+                    case CommandError.ObjectNotFound:
+                    case CommandError.BadArgCount:
+                    case CommandError.ParseFailed:
+                        {
+                        _logger.LogWarning(
+                            $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}"
+                        );
+                        await context.Channel.SendMessageAsync($"Sorry, I don't understand your command 😕");
+                        break;
+                    }
 
-            return Task.CompletedTask;
+                    // Warning - insufficent permissions
+                    case CommandError.UnmetPrecondition:
+                    {
+                        _logger.LogWarning(
+                            $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}"
+                        );
+                        await context.Channel.SendMessageAsync($"Sorry, you don't have permission to do that 😕");
+                        break;
+                    }
+
+                    // Error - something went wrong...
+                    case CommandError.Exception:
+                    case CommandError.Unsuccessful:
+                    {
+                        _logger.LogError(
+                            $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}"
+                        );
+                        await context.Channel.SendMessageAsync($"Sorry, something went horribly wrong 😕");
+                        break;
+                    }
+                }
+            }
         }
 
         public Task OnCommandLogAsync(LogMessage message)
         {
             if (message.Exception is CommandException commandException)
             {
-                var command = commandException.Command;
                 var context = commandException.Context;
+                var command = commandException.Command;
+                var commandName = ($"{command?.Module?.Name} {command?.Name}").Trim();
+                var userName = $"{context.User.Username} #{context.User.Discriminator}";
+                var guildName = context.Guild.Name;
+                var channelName = context.Channel.Name;
                 _logger.LogError(
                     commandException,
-                    $"Discord command '{command.Name}' unhandled exception (guild: {context.Guild.Name}, channel: {context.Channel.Name}, user: {context.User.Username})"
+                    $"Command '{commandName}' triggered an exception (guild: {guildName}, channel: {channelName}, user: {userName})"
                 );
             }
 

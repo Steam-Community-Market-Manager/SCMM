@@ -5,5 +5,9 @@
         public string BotToken { get; set; }
 
         public string CommandPrefix { get; set; }
+
+        public int? ShardId { get; set; }
+
+        public int TotalShards { get; set; }
     }
 }

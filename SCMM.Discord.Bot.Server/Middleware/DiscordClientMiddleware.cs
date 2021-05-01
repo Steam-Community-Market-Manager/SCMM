@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SCMM.Steam.API.Queries;
-using SCMM.Shared.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 
@@ -42,7 +41,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
             return _next(httpContext);
         }
 
-        private async void OnReady(IDictionary<ulong, string> guilds)
+        private async void OnReady(IEnumerable<Client.DiscordGuild> guilds)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -55,15 +54,15 @@ namespace SCMM.Discord.Bot.Server.Middleware
                     _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
                     // Add any guilds that we've joined
-                    var joinedGuilds = guilds.Where(x => !discordGuilds.Any(y => y.DiscordId == x.Key.ToString())).ToList();
+                    var joinedGuilds = guilds.Where(x => !discordGuilds.Any(y => y.DiscordId == x.Id.ToString())).ToList();
                     if (joinedGuilds.Any())
                     {
                         foreach (var joined in joinedGuilds)
                         {
-                            db.DiscordGuilds.Add(new DiscordGuild()
+                            db.DiscordGuilds.Add(new Steam.Data.Store.DiscordGuild()
                             {
-                                DiscordId = joined.Key.ToString(),
-                                Name = joined.Value
+                                DiscordId = joined.Id.ToString(),
+                                Name = joined.Name
                             });
                         }
                     }
@@ -71,11 +70,11 @@ namespace SCMM.Discord.Bot.Server.Middleware
                     // Update any guilds that we're still a member of
                     var memberGuilds = discordGuilds.Join(guilds,
                             x => x.DiscordId,
-                            y => y.Key.ToString(),
+                            y => y.Id.ToString(),
                             (x, y) => new
                             {
                                 Guild = x,
-                                Name = y.Value
+                                Name = y.Name
                             }
                         )
                         .Where(x => string.IsNullOrEmpty(x.Name))
@@ -89,7 +88,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                     }
 
                     // Remove any guilds that we've left
-                    var leftGuilds = discordGuilds.Where(x => !guilds.ContainsKey(ulong.Parse(x.DiscordId))).ToList();
+                    var leftGuilds = discordGuilds.Where(x => !guilds.Any(y => y.Id == ulong.Parse(x.DiscordId))).ToList();
                     if (leftGuilds.Any())
                     {
                         foreach (var left in leftGuilds)
@@ -97,33 +96,6 @@ namespace SCMM.Discord.Bot.Server.Middleware
                             left.Configurations.Clear();
                             left.BadgeDefinitions.Clear();
                             db.DiscordGuilds.Remove(left);
-                        }
-                    }
-
-                    // Synchronise VIP roles for users belonging to VIP servers
-                    var vipServers = discordGuilds.Where(x => x.Flags.HasFlag(Steam.Data.Models.Enums.DiscordGuildFlags.VIP)).ToList();
-                    foreach (var vipServer in vipServers)
-                    {
-                        try
-                        {
-                            var vipUsers = await _discordClient.GetUsersWithRoleAsync(ulong.Parse(vipServer.DiscordId), Roles.Donator);
-                            if (vipUsers != null)
-                            {
-                                var newVipUsers = db.SteamProfiles
-                                    .Where(x => !x.Roles.Serialised.Contains(Roles.VIP))
-                                    .Where(x => vipUsers.Contains(x.DiscordId))
-                                    .ToList();
-
-                                foreach (var user in newVipUsers)
-                                {
-                                    user.Roles.Add(Roles.VIP);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"Failed to check guild for new VIP members  (id: {vipServer.DiscordId}, name: {vipServer.Name})");
-                            continue;
                         }
                     }
 
@@ -136,39 +108,39 @@ namespace SCMM.Discord.Bot.Server.Middleware
             }
         }
 
-        private void OnGuildJoined(ulong id, string name)
+        private void OnGuildJoined(Client.DiscordGuild guild)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 try
                 {
                     var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                    var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == id.ToString());
+                    var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == guild.Id.ToString());
                     if (discordGuild == null)
                     {
-                        db.DiscordGuilds.Add(discordGuild = new DiscordGuild()
+                        db.DiscordGuilds.Add(discordGuild = new Steam.Data.Store.DiscordGuild()
                         {
-                            DiscordId = id.ToString(),
-                            Name = name
+                            DiscordId = guild.Id.ToString(),
+                            Name = guild.Name
                         });
                         db.SaveChanges();
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {id}, name: {name})");
+                    _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {guild.Id}, name: {guild.Name})");
                 }
             }
         }
 
-        private void OnGuildLeft(ulong id, string name)
+        private void OnGuildLeft(Client.DiscordGuild guild)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
                 try
                 {
                     var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                    var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == id.ToString());
+                    var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == guild.Id.ToString());
                     if (discordGuild != null)
                     {
                         db.DiscordGuilds.Remove(discordGuild);
@@ -177,7 +149,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {id}, name: {name})");
+                    _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {guild.Id}, name: {guild.Name})");
                 }
             }
         }
@@ -190,7 +162,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 {
                     var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
                     var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
-                    await _discordClient.SetStatus(
+                    await _discordClient.SetWatchingStatus(
                         $"the store, {storeNextUpdateTime.TimeDescription}"
                     );
                 }

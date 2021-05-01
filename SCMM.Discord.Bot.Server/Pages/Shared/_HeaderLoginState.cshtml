@@ -4,17 +4,14 @@
 @if (User.Identity.IsAuthenticated)
 {
     <li class="nav-item">
-        <i class="fas fa-user fa-fw"></i>
-        <strong class="navbar-text">@User.Identity.Name</strong>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+        <span><i class="fas fa-user fa-fw"></i><strong class="navbar-text">@User.Identity.Name</strong></span><br class="d-none d-sm-block" />
+        <a class="nav-btn btn btn-secondary btn-sm" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
     </li>
 }
 else
 {
     <li class="nav-item">
-        <a class="nav-link" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        <a class="nav-btn btn btn-secondary btn-sm" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
     </li>
 }
 </ul>
