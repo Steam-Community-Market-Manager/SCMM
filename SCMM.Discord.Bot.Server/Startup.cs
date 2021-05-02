@@ -1,7 +1,5 @@
 using AutoMapper;
-using CommandQuery;
 using CommandQuery.DependencyInjection;
-using Discord;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -13,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-using SCMM.Discord.API.Commands;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
@@ -26,7 +23,6 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace SCMM.Discord.Bot.Server
@@ -71,11 +67,11 @@ namespace SCMM.Discord.Bot.Server
             );
 
             // 3rd party clients
-            services.AddSingleton<SCMM.Discord.Client.DiscordConfiguration>((s) => Configuration.GetDiscordConfiguration());
+            services.AddSingleton((s) => Configuration.GetDiscordConfiguration());
             services.AddSingleton<DiscordClient>();
 
-            services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
-            services.AddSingleton<SteamSession>((s) => new SteamSession(s));
+            services.AddSingleton((s) => Configuration.GetSteamConfiguration());
+            services.AddSingleton((s) => new SteamSession(s));
             services.AddScoped<SteamCommunityClient>();
 
             // Auto-mapper

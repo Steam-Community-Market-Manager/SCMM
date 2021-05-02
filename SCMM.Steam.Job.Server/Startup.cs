@@ -11,8 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-using SCMM.Discord.Client;
-using SCMM.Discord.Client.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
 using SCMM.Shared.Azure.ServiceBus.Extensions;
@@ -69,18 +67,19 @@ namespace SCMM.Steam.Job.Server
             );
 
             // 3rd party clients
-            services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
-            services.AddSingleton<SteamSession>((s) => new SteamSession(s));
+            services.AddSingleton((s) => Configuration.GetSteamConfiguration());
+            services.AddSingleton((s) => new SteamSession(s));
             services.AddScoped<SteamCommunityClient>();
-            services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());
+            services.AddSingleton((s) => Configuration.GetGoogleConfiguration());
             services.AddSingleton<GoogleClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));
 
-            // Command/query handlers
+            // Command/query/message handlers
             services.AddCommands(typeof(Startup).Assembly, Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
             services.AddQueries(typeof(Startup).Assembly, Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            services.AddMessages(typeof(Startup).Assembly);
 
             // Services
             services.AddScoped<SteamService>();

@@ -13,6 +13,7 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API;
 using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.Domain.InventoryItems;
+using SCMM.Web.Data.Models.Domain.Languages;
 
 namespace SCMM.Web.Server
 {
@@ -20,6 +21,14 @@ namespace SCMM.Web.Server
     {
         public AutoMapperProfile()
         {
+            CreateMap<SteamLanguage, LanguageDTO>();
+            CreateMap<SteamLanguage, LanguageListDTO>();
+            CreateMap<SteamLanguage, LanguageDetailedDTO>();
+
+            CreateMap<SteamCurrency, CurrencyDTO>();
+            CreateMap<SteamCurrency, CurrencyListDTO>();
+            CreateMap<SteamCurrency, CurrencyDetailedDTO>();
+
             CreateMap<SteamProfile, ProfileDTO>();
             CreateMap<SteamProfile, ProfileDetailedDTO>();
             CreateMap<SteamProfile, ProfileSummaryDTO>();
