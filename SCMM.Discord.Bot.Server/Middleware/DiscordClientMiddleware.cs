@@ -160,7 +160,6 @@ namespace SCMM.Discord.Bot.Server.Middleware
             }
         }
 
-        
         private async void OnStatusUpdate(object state)
         {
             // If the next store update time is in the past, re-caculate it

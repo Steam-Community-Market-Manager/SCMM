@@ -4,6 +4,13 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<Version>0.10-alpha</Version>
+	<AssemblyVersion>0.10.0.0</AssemblyVersion>
+	<FileVersion>0.10.0.0</FileVersion>
+	<Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
