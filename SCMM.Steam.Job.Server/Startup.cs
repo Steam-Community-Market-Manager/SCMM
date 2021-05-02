@@ -15,6 +15,8 @@ using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Shared.Azure.ServiceBus.Extensions;
+using SCMM.Shared.Azure.ServiceBus.Middleware;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
@@ -23,6 +25,7 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs;
 using System;
+using System.Reflection;
 
 namespace SCMM.Steam.Job.Server
 {
@@ -60,23 +63,24 @@ namespace SCMM.Steam.Job.Server
                 options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
 
+            // Service bus
+            services.AddAzureServiceBus(
+                Configuration.GetConnectionString("ServiceBusConnection")
+            );
+
             // 3rd party clients
-            services.AddSingleton<SCMM.Discord.Client.DiscordConfiguration>((s) => Configuration.GetDiscordConfiguration());
-            services.AddSingleton<DiscordClient>();
-
-            services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());
-            services.AddSingleton<GoogleClient>();
-
             services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
             services.AddScoped<SteamCommunityClient>();
+            services.AddSingleton<GoogleConfiguration>((s) => Configuration.GetGoogleConfiguration());
+            services.AddSingleton<GoogleClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));
 
             // Command/query handlers
-            services.AddCommands(typeof(Startup).Assembly, typeof(SteamService).Assembly);
-            services.AddQueries(typeof(Startup).Assembly, typeof(SteamService).Assembly);
+            services.AddCommands(typeof(Startup).Assembly, Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            services.AddQueries(typeof(Startup).Assembly, Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
 
             // Services
             services.AddScoped<SteamService>();
@@ -144,6 +148,8 @@ namespace SCMM.Steam.Job.Server
                 );
                 endpoints.MapRazorPages();
             });
+
+            app.UseAzureServiceBusProcessor();
         }
     }
 }

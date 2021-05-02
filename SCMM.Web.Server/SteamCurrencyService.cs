@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SCMM.Web.Data.Models.Domain.Currencies;
 
-namespace SCMM.Steam.API
+namespace SCMM.Web.Server
 {
     // TODO: Remove this
     public class SteamCurrencyService
@@ -41,7 +41,7 @@ namespace SCMM.Steam.API
 
         public static CurrencyDetailedDTO GetByNameCached(string name)
         {
-            if (String.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name))
             {
                 return null;
             }

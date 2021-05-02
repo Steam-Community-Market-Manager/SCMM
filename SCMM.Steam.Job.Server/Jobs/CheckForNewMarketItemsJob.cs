@@ -22,6 +22,7 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Web.Extensions;
+using SCMM.Discord.API.Commands;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
@@ -43,7 +44,7 @@ namespace SCMM.Steam.Job.Server.Jobs
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
                 var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
                 var steamCommnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
@@ -141,7 +142,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                         db.SaveChanges();
 
-                        await BroadcastNewMarketItemsNotification(discord, db, app, newMarketItems, thumbnail);
+                        await BroadcastNewMarketItemsNotification(commandProcessor, db, app, newMarketItems, thumbnail);
                     }
                 }
             }
@@ -180,7 +181,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             };
         }
 
-        private async Task BroadcastNewMarketItemsNotification(DiscordClient discord, SteamDbContext db, SteamApp app, IEnumerable<SteamMarketItem> newMarketItems, ImageData thumbnail)
+        private async Task BroadcastNewMarketItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, SteamApp app, IEnumerable<SteamMarketItem> newMarketItems, ImageData thumbnail)
         {
             newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name);
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
@@ -223,19 +224,20 @@ namespace SCMM.Steam.Job.Server.Jobs
                     .Where(x => x.Description?.IconId != null)
                     .Select(x => x.Description.IconId);
 
-                await discord.BroadcastMessageAsync(
-                    guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{app.Name}").Value,
-                    message: null,
-                    title: $"{app.Name} Market - New Listings",
-                    description: $"{newMarketItems.Count()} new item(s) have just appeared in the {app.Name} marketplace.",
-                    fields: fields,
-                    fieldsInline: true,
-                    url: $"{_configuration.GetWebsiteUrl()}/steam/marketlistings",
-                    thumbnailUrl: app.IconUrl,
-                    imageUrl: $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnail?.Id}",
-                    color: ColorTranslator.FromHtml(app.PrimaryColor)
-                );
+                await commandProcessor.ProcessAsync(new BroadcastNotificationRequest()
+                {
+                    GuildPattern = guild.DiscordId,
+                    ChannelPattern = guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{app.Name}").Value,
+                    Message = null,
+                    Title = $"{app.Name} Market - New Listings",
+                    Description = $"{newMarketItems.Count()} new item(s) have just appeared in the {app.Name} marketplace.",
+                    Fields = fields,
+                    FieldsInline = true,
+                    Url = $"{_configuration.GetWebsiteUrl()}/steam/marketlistings",
+                    ThumbnailUrl = app.IconUrl,
+                    ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnail?.Id}",
+                    Colour = app.PrimaryColor
+                });
             }
         }
     }

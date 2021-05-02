@@ -23,6 +23,7 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Web.Extensions;
+using SCMM.Discord.API.Commands;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
@@ -47,7 +48,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                var discord = scope.ServiceProvider.GetRequiredService<DiscordClient>();
+                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
                 var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
                 var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
@@ -182,7 +183,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     db.SaveChanges();
 
                     // Send out a broadcast about any "new" items that weren't already in our store
-                    await BroadcastNewStoreItemsNotification(discord, db, app, newItemStore, newStoreItems, currencies);
+                    await BroadcastNewStoreItemsNotification(commandProcessor, db, app, newItemStore, newStoreItems, currencies);
                 }
             }
         }
@@ -220,7 +221,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             };
         }
 
-        private async Task BroadcastNewStoreItemsNotification(DiscordClient discord, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
+        private async Task BroadcastNewStoreItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
         {
             newStoreItems = newStoreItems?.OrderBy(x => x.Description.Name);
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
@@ -242,22 +243,23 @@ namespace SCMM.Steam.Job.Server.Jobs
                     filteredCurrencies = currencies.Where(x => x.IsCommon).ToList();
                 }
 
-                await discord.BroadcastMessageAsync(
-                    guildPattern: guild.DiscordId,
-                    channelPattern: guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
-                    message: null,
-                    title: $"{app.Name} Store - {store.Name}",
-                    description: $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
-                    fields: newStoreItems.ToDictionary(
+                await commandProcessor.ProcessAsync(new BroadcastNotificationRequest()
+                {
+                    GuildPattern = guild.DiscordId,
+                    ChannelPattern = guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
+                    Message = null,
+                    Title = $"{app.Name} Store - {store.Name}",
+                    Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
+                    Fields = newStoreItems.ToDictionary(
                         x => x.Description?.Name,
                         x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
-                    fieldsInline: true,
-                    url: $"{_configuration.GetWebsiteUrl()}/steam/store",
-                    thumbnailUrl: app.IconUrl,
-                    imageUrl: $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}",
-                    color: ColorTranslator.FromHtml(app.PrimaryColor)
-                );
+                    FieldsInline = true,
+                    Url = $"{_configuration.GetWebsiteUrl()}/steam/store",
+                    ThumbnailUrl = app.IconUrl,
+                    ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}",
+                    Colour = app.PrimaryColor
+                });
             }
         }
 

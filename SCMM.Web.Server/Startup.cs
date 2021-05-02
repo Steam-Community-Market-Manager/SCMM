@@ -20,6 +20,9 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.API;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Shared.Web.Extensions;
+using SCMM.Shared.Azure.ServiceBus.Extensions;
+using System.Reflection;
+using SCMM.Shared.Azure.ServiceBus.Middleware;
 
 namespace SCMM.Web.Server
 {
@@ -90,6 +93,11 @@ namespace SCMM.Web.Server
                 options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
 
+            // Service bus
+            services.AddAzureServiceBus(
+                Configuration.GetConnectionString("ServiceBusConnection")
+            );
+
             // 3rd party clients
             services.AddSingleton<SteamConfiguration>((s) => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>((s) => new SteamSession(s));
@@ -99,8 +107,8 @@ namespace SCMM.Web.Server
             services.AddAutoMapper(typeof(Startup));
 
             // Command/query handlers
-            services.AddCommands(typeof(Startup).Assembly, typeof(SteamService).Assembly);
-            services.AddQueries(typeof(Startup).Assembly, typeof(SteamService).Assembly);
+            services.AddCommands(typeof(Startup).Assembly, Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            services.AddQueries(typeof(Startup).Assembly, Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
 
             // Services
             services.AddScoped<SteamService>();
@@ -190,6 +198,8 @@ namespace SCMM.Web.Server
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
             });
+
+            app.UseAzureServiceBusProcessor();
 
             // TODO: Remove this
             _ = languageService.RepopulateCache();

@@ -45,7 +45,7 @@ namespace SCMM.Google.Client
             GC.SuppressFinalize(this);
         }
 
-        public async Task<IEnumerable<YouTubeVideo>> SearchVideos(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int maxResults = 30)
+        public async Task<IEnumerable<YouTubeVideo>> SearchVideosAsync(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int maxResults = 30)
         {
             var videos = new List<YouTubeVideo>();
             var request = _service.Search.List("snippet");

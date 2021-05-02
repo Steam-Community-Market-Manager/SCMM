@@ -68,7 +68,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                     foreach (var channel in Configuration.Channels)
                     {
-                        var videos = await googleClient.SearchVideos(
+                        var videos = await googleClient.SearchVideosAsync(
                             query: channel.Query,
                             channelId: channel.ChannelId,
                             publishedBefore: itemStore.End?.UtcDateTime,

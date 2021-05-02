@@ -161,7 +161,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 {
                     var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
                     var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
-                    await _discordClient.SetWatchingStatus(
+                    await _discordClient.SetWatchingStatusAsync(
                         $"the store, {storeNextUpdateTime.TimeDescription}"
                     );
                 }

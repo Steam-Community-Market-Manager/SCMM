@@ -1,5 +1,7 @@
 using AutoMapper;
+using CommandQuery;
 using CommandQuery.DependencyInjection;
+using Discord;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -11,9 +13,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using SCMM.Discord.API.Commands;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Shared.Azure.ServiceBus.Extensions;
+using SCMM.Shared.Azure.ServiceBus.Middleware;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
@@ -21,6 +26,8 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace SCMM.Discord.Bot.Server
 {
@@ -58,6 +65,11 @@ namespace SCMM.Discord.Bot.Server
                 options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
 
+            // Service bus
+            services.AddAzureServiceBus(
+                Configuration.GetConnectionString("ServiceBusConnection")
+            );
+
             // 3rd party clients
             services.AddSingleton<SCMM.Discord.Client.DiscordConfiguration>((s) => Configuration.GetDiscordConfiguration());
             services.AddSingleton<DiscordClient>();
@@ -69,9 +81,10 @@ namespace SCMM.Discord.Bot.Server
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));
 
-            // Command/query handlers
-            services.AddCommands(typeof(Startup).Assembly, typeof(SteamService).Assembly);
-            services.AddQueries(typeof(Startup).Assembly, typeof(SteamService).Assembly);
+            // Command/query/message handlers
+            services.AddCommands(typeof(Startup).Assembly, Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            services.AddQueries(typeof(Startup).Assembly, Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            services.AddMessages(typeof(Startup).Assembly);
 
             // Services
             services.AddScoped<SteamService>();
@@ -123,6 +136,8 @@ namespace SCMM.Discord.Bot.Server
                 );
                 endpoints.MapRazorPages();
             });
+
+            app.UseAzureServiceBusProcessor();
 
             app.UseDiscordClient();
         }

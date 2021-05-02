@@ -39,6 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.Azure.ServiceBus\SCMM.Shared.Azure.ServiceBus.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Web\SCMM.Shared.Web.csproj" />
     <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
     <ProjectReference Include="..\SCMM.Web.Client\SCMM.Web.Client.csproj" />
