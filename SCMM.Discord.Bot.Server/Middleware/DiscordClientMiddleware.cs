@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using SCMM.Steam.API.Queries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
+using SCMM.Shared.Data.Models.Extensions;
 
 namespace SCMM.Discord.Bot.Server.Middleware
 {
@@ -20,8 +21,9 @@ namespace SCMM.Discord.Bot.Server.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<DiscordClientMiddleware> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly DiscordClient _discordClient;
+        private readonly DiscordClient _client;
         private readonly Timer _statusUpdateTimer;
+        private DateTimeOffset _statusNextStoreUpdate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
 
         public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
         {
@@ -29,11 +31,11 @@ namespace SCMM.Discord.Bot.Server.Middleware
             _logger = logger;
             _scopeFactory = scopeFactory;
             _statusUpdateTimer = new Timer(OnStatusUpdate);
-            _discordClient = discordClient;
-            _discordClient.Ready += OnReady;
-            _discordClient.GuildJoined += OnGuildJoined;
-            _discordClient.GuildLeft += OnGuildLeft;
-            _ = _discordClient.ConnectAsync();
+            _client = discordClient;
+            _client.Ready += OnReady;
+            _client.GuildJoined += OnGuildJoined;
+            _client.GuildLeft += OnGuildLeft;
+            _ = _client.ConnectAsync();
         }
 
         public Task Invoke(HttpContext httpContext)
@@ -57,12 +59,13 @@ namespace SCMM.Discord.Bot.Server.Middleware
                     var joinedGuilds = guilds.Where(x => !discordGuilds.Any(y => y.DiscordId == x.Id.ToString())).ToList();
                     if (joinedGuilds.Any())
                     {
-                        foreach (var joined in joinedGuilds)
+                        foreach (var guild in joinedGuilds)
                         {
+                            _logger.LogInformation($"Guild was joined: {guild.Name}");
                             db.DiscordGuilds.Add(new Steam.Data.Store.DiscordGuild()
                             {
-                                DiscordId = joined.Id.ToString(),
-                                Name = joined.Name
+                                DiscordId = guild.Id.ToString(),
+                                Name = guild.Name
                             });
                         }
                     }
@@ -91,10 +94,11 @@ namespace SCMM.Discord.Bot.Server.Middleware
                     var leftGuilds = discordGuilds.Where(x => !guilds.Any(y => y.Id == ulong.Parse(x.DiscordId))).ToList();
                     if (leftGuilds.Any())
                     {
-                        foreach (var left in leftGuilds)
+                        foreach (var guild in leftGuilds)
                         {
-                            left.Configurations.Clear();
-                            db.DiscordGuilds.Remove(left);
+                            _logger.LogInformation($"Guild was left: {guild.Name}");
+                            guild.Configurations.Clear();
+                            db.DiscordGuilds.Remove(guild);
                         }
                     }
 
@@ -114,10 +118,11 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 try
                 {
                     var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                    var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == guild.Id.ToString());
-                    if (discordGuild == null)
+                    var dbGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == guild.Id.ToString());
+                    if (dbGuild == null)
                     {
-                        db.DiscordGuilds.Add(discordGuild = new Steam.Data.Store.DiscordGuild()
+                        _logger.LogInformation($"Guild was joined: {guild.Name}");
+                        db.DiscordGuilds.Add(dbGuild = new Steam.Data.Store.DiscordGuild()
                         {
                             DiscordId = guild.Id.ToString(),
                             Name = guild.Name
@@ -139,10 +144,12 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 try
                 {
                     var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                    var discordGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == guild.Id.ToString());
-                    if (discordGuild != null)
+                    var dbGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == guild.Id.ToString());
+                    if (dbGuild != null)
                     {
-                        db.DiscordGuilds.Remove(discordGuild);
+                        _logger.LogInformation($"Guild was left: {guild.Name}");
+                        dbGuild.Configurations.Clear();
+                        db.DiscordGuilds.Remove(dbGuild);
                         db.SaveChanges();
                     }
                 }
@@ -153,22 +160,37 @@ namespace SCMM.Discord.Bot.Server.Middleware
             }
         }
 
+        
         private async void OnStatusUpdate(object state)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            // If the next store update time is in the past, re-caculate it
+            if ((_statusNextStoreUpdate - DateTimeOffset.Now) <= TimeSpan.Zero)
             {
-                try
+                using (var scope = _scopeFactory.CreateScope())
                 {
-                    var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
-                    var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
-                    await _discordClient.SetWatchingStatusAsync(
-                        $"the store, {storeNextUpdateTime.TimeDescription}"
-                    );
+                    try
+                    {
+                        var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+                        var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+                        _statusNextStoreUpdate = storeNextUpdateTime.Timestamp;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to get the store next update time for client watching status");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to update discord client status");
-                }
+            }
+
+            // Display a countdown for the next store update using the last cached timestamp
+            var nextStoreIsOverdue = (_statusNextStoreUpdate <= DateTimeOffset.Now);
+            var nextStoreTimeRemaining = (_statusNextStoreUpdate - DateTimeOffset.Now);
+            var nextStoreTimeDescription = nextStoreTimeRemaining.ToDurationString(
+                prefix: (nextStoreIsOverdue ? "overdue by" : "due in"), zero: "due now", showSeconds: false, maxGranularity: 2
+            );
+
+            if (_client.IsConnected)
+            {
+                await _client.SetWatchingStatusAsync($"the store, {nextStoreTimeDescription}");
             }
         }
     }
