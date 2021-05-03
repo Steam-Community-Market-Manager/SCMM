@@ -136,7 +136,7 @@ namespace SCMM.Steam.Client
                 {
                     var xmlSerializer = new XmlSerializer(typeof(TResponse));
                     using var reader = new StringReader(xml);
-                    return (TResponse) xmlSerializer.Deserialize(reader);
+                    return (TResponse)xmlSerializer.Deserialize(reader);
                 }
             }
             catch (Exception ex)

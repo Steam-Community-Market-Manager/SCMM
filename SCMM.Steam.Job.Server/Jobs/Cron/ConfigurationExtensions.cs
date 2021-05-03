@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.Linq;
-using SCMM.Steam.Job.Server.Jobs.Cron;
 
 namespace SCMM.Steam.Job.Server.Jobs.Cron
 {

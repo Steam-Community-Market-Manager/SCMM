@@ -3,12 +3,12 @@ using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SCMM.Shared.Data.Models;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.API.Commands;
-using SCMM.Shared.Data.Models;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {

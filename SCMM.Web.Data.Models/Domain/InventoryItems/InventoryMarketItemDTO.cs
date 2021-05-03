@@ -1,6 +1,5 @@
-﻿using SCMM.Web.Data.Models.UI;
-using SCMM.Web.Data.Models.Domain.Currencies;
-using SCMM.Web.Data.Models.Domain.InventoryItems;
+﻿using SCMM.Web.Data.Models.Domain.Currencies;
+using SCMM.Web.Data.Models.UI;
 
 namespace SCMM.Web.Data.Models.Domain.InventoryItems
 {

@@ -1,9 +1,7 @@
 ﻿using SCMM.Shared.Azure.ServiceBus;
 using SCMM.Shared.Azure.ServiceBus.Attributes;
 using SCMM.Steam.API.Messages;
-using SCMM.Web.Server;
 using System.Threading.Tasks;
-using SCMM.Discord.Bot.Server.Handlers;
 
 namespace SCMM.Web.Server.Handlers
 {

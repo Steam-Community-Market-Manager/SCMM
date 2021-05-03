@@ -5,17 +5,17 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Web.Extensions;
+using SCMM.Steam.API;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.API.Commands;
-using SCMM.Steam.API.Queries;
-using SCMM.Steam.API;
-using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Models;
-using SCMM.Shared.Web.Extensions;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {

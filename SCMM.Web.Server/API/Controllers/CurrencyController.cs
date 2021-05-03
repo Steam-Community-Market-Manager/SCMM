@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Data.Models.Domain.Currencies;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Web.Data.Models.Domain.Currencies;
 
 namespace SCMM.Web.Server.API.Controllers
 {

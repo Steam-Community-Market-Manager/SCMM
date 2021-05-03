@@ -6,6 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store.Extensions;
+using SCMM.Shared.Web.Extensions;
+using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
@@ -18,12 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.API.Commands;
-using SCMM.Steam.API.Queries;
-using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Models;
-using SCMM.Shared.Data.Store.Extensions;
-using SCMM.Shared.Web.Extensions;
 
 namespace SCMM.Web.Server.API.Controllers
 {

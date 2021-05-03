@@ -11,20 +11,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using SCMM.Shared.Azure.ServiceBus.Extensions;
+using SCMM.Shared.Azure.ServiceBus.Middleware;
+using SCMM.Shared.Web.Extensions;
+using SCMM.Shared.Web.Middleware;
+using SCMM.Steam.API;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using System;
-using System.Security.Claims;
-using SCMM.Steam.API.Commands;
-using SCMM.Steam.API;
-using SCMM.Shared.Web.Middleware;
-using SCMM.Shared.Web.Extensions;
-using SCMM.Shared.Azure.ServiceBus.Extensions;
 using System.Reflection;
-using SCMM.Shared.Azure.ServiceBus.Middleware;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace SCMM.Web.Server
 {
@@ -156,7 +154,7 @@ namespace SCMM.Web.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger, LanguageCache languageService, CurrencyCache currencyService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, LanguageCache languageCache, CurrencyCache currencyCache)
         {
             if (env.IsDevelopment())
             {
@@ -203,6 +201,10 @@ namespace SCMM.Web.Server
             });
 
             app.UseAzureServiceBusProcessor();
+
+            // Prime caches
+            languageCache.RepopulateCache();
+            currencyCache.RepopulateCache();
         }
     }
 }

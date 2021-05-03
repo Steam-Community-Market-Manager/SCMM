@@ -25,12 +25,12 @@ namespace SCMM.Shared.Azure.ServiceBus.Extensions
             throw new ArgumentException(nameof(messageType), "Message type must have a [Topic] attribute declaration");
         }
 
-        public static Task<SubscriptionProperties> CreateSubscriptionAsync<T>(this ServiceBusAdministrationClient client, Action<CreateSubscriptionOptions>? optionsAction = null) where T : IMessage
+        public static Task<SubscriptionProperties> CreateSubscriptionAsync<T>(this ServiceBusAdministrationClient client, Action<CreateSubscriptionOptions> optionsAction = null) where T : IMessage
         {
             return CreateSubscriptionAsync(client, typeof(T), optionsAction);
         }
 
-        public static async Task<SubscriptionProperties> CreateSubscriptionAsync(this ServiceBusAdministrationClient client, Type messageType, Action<CreateSubscriptionOptions>? optionsAction = null)
+        public static async Task<SubscriptionProperties> CreateSubscriptionAsync(this ServiceBusAdministrationClient client, Type messageType, Action<CreateSubscriptionOptions> optionsAction = null)
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
             if (!String.IsNullOrEmpty(topicName))

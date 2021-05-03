@@ -1,8 +1,8 @@
-﻿using SCMM.Steam.Data.Models;
+﻿using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SCMM.Shared.Data.Models.Extensions;
 
 namespace SCMM.Web.Data.Models.Extensions
 {

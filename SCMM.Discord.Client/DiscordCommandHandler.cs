@@ -103,56 +103,56 @@ namespace SCMM.Discord.Client
                 switch (result.Error)
                 {
                     case CommandError.UnknownCommand:
-                    {
-                        logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, I don't understand that command 😕 use `{_configuration.CommandPrefix}help` for a list of support commands");
-                        break;
-                    }
+                        {
+                            logLevel = LogLevel.Warning;
+                            responseMessage = context.Channel.SendMessageAsync($"Sorry, I don't understand that command 😕 use `{_configuration.CommandPrefix}help` for a list of support commands");
+                            break;
+                        }
                     case CommandError.ParseFailed:
-                    {
-                        logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command contains invalid characters or objects that I can't understand 😕");
-                        break;
-                    }
+                        {
+                            logLevel = LogLevel.Warning;
+                            responseMessage = context.Channel.SendMessageAsync($"Sorry, your command contains invalid characters or objects that I can't understand 😕");
+                            break;
+                        }
                     case CommandError.BadArgCount:
-                    {
-                        logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command has an invalid number of parameters 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
-                        break;
-                    }
+                        {
+                            logLevel = LogLevel.Warning;
+                            responseMessage = context.Channel.SendMessageAsync($"Sorry, your command has an invalid number of parameters 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
+                            break;
+                        }
                     case CommandError.ObjectNotFound:
-                    {
-                        logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it 😅");
-                        break;
-                    }
+                        {
+                            logLevel = LogLevel.Warning;
+                            responseMessage = context.Channel.SendMessageAsync($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it 😅");
+                            break;
+                        }
                     case CommandError.MultipleMatches:
-                    {
-                        logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command is ambiguous, try be more specific 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
-                        break;
-                    }
+                        {
+                            logLevel = LogLevel.Warning;
+                            responseMessage = context.Channel.SendMessageAsync($"Sorry, your command is ambiguous, try be more specific 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
+                            break;
+                        }
                     case CommandError.UnmetPrecondition:
-                    {
-                        logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, you don't have permission to do that 🚫");
+                        {
+                            logLevel = LogLevel.Warning;
+                            responseMessage = context.Channel.SendMessageAsync($"Sorry, you don't have permission to do that 🚫");
                             reactionEmoji = new Emoji("🚫"); // prohibited
                             break;
-                    }
+                        }
                     case CommandError.Exception:
-                    {
-                        logLevel = LogLevel.Error;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, something terrible went wrong your command cannot be completed right now 😵 try again later");
-                        reactionEmoji = new Emoji("🐛"); // bug
-                        break;
-                    }
+                        {
+                            logLevel = LogLevel.Error;
+                            responseMessage = context.Channel.SendMessageAsync($"Sorry, something terrible went wrong your command cannot be completed right now 😵 try again later");
+                            reactionEmoji = new Emoji("🐛"); // bug
+                            break;
+                        }
                     case CommandError.Unsuccessful:
-                    {
-                        logLevel = LogLevel.Error;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command cannot be completed right now and I'm unsure why 😵 try again later");
-                        reactionEmoji = new Emoji("🐛"); // bug
-                        break;
-                    }
+                        {
+                            logLevel = LogLevel.Error;
+                            responseMessage = context.Channel.SendMessageAsync($"Sorry, your command cannot be completed right now and I'm unsure why 😵 try again later");
+                            reactionEmoji = new Emoji("🐛"); // bug
+                            break;
+                        }
                 }
 
                 _logger.Log(logLevel,

@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.Domain.MarketItems;
@@ -17,9 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Models;
-using SCMM.Shared.Data.Store.Extensions;
 
 namespace SCMM.Web.Server.API.Controllers
 {

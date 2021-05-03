@@ -1,6 +1,5 @@
 ﻿using SCMM.Web.Data.Models.UI;
 using System;
-using SCMM.Web.Data.Models.Domain.InventoryItems;
 
 namespace SCMM.Web.Data.Models.Domain.InventoryItems
 {

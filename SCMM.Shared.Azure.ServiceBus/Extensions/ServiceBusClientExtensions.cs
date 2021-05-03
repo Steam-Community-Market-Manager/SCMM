@@ -42,7 +42,7 @@ namespace SCMM.Shared.Azure.ServiceBus.Extensions
             {
                 return client.CreateProcessor(queueName, options);
             }
-            
+
             throw new ArgumentException(nameof(messageType), "Message type must have a [Queue] or [Topic] attribute declaration");
         }
     }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using SCMM.Web.Data.Models.Domain.InventoryItems;
 
 namespace SCMM.Web.Data.Models.Domain.InventoryItems
 {

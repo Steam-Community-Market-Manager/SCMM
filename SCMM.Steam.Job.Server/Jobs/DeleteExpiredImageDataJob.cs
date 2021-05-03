@@ -2,11 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Job.Server.Jobs.Cron;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Steam.Job.Server.Jobs.Cron;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {

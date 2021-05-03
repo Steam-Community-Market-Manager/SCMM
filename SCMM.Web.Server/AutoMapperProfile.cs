@@ -1,19 +1,17 @@
 ﻿using AutoMapper;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.API.Queries;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.Domain.InventoryItems;
+using SCMM.Web.Data.Models.Domain.Languages;
 using SCMM.Web.Data.Models.Domain.MarketItems;
 using SCMM.Web.Data.Models.Domain.Profiles;
 using SCMM.Web.Data.Models.Domain.StoreItems;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
 using SCMM.Web.Server.Extensions;
-using SCMM.Steam.API.Queries;
-using SCMM.Steam.Data.Models.Extensions;
-using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.API;
-using SCMM.Web.Data.Models.Domain.Currencies;
-using SCMM.Web.Data.Models.Domain.InventoryItems;
-using SCMM.Web.Data.Models.Domain.Languages;
 
 namespace SCMM.Web.Server
 {

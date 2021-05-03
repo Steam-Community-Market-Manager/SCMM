@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SCMM.Web.Data.Models.Domain.Currencies;
+using System;
 using System.Collections.Generic;
-using SCMM.Web.Data.Models.Domain.Currencies;
 
 namespace SCMM.Web.Data.Models.Domain.StoreItems
 {

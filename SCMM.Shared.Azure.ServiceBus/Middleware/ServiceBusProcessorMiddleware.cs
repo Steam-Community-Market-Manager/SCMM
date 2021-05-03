@@ -1,18 +1,18 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.AspNetCore.Builder;
-using Azure.Messaging.ServiceBus;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SCMM.Shared.Azure.ServiceBus.Attributes;
+using SCMM.Shared.Azure.ServiceBus.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using System;
-using System.Text.Json;
-using SCMM.Shared.Azure.ServiceBus.Attributes;
-using System.Reflection;
-using SCMM.Shared.Azure.ServiceBus.Extensions;
 using System.Collections.Generic;
-using Azure.Messaging.ServiceBus.Administration;
+using System.Linq;
+using System.Reflection;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace SCMM.Shared.Azure.ServiceBus.Middleware
 {

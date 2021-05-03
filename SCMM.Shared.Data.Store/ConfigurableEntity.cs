@@ -1,10 +1,9 @@
-﻿using System;
+﻿using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store.Types;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Store.Types;
-using SCMM.Shared.Data.Store;
 
 namespace SCMM.Shared.Data.Store
 {

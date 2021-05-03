@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using SCMM.Shared.Data.Models.Extensions;
 
 namespace SCMM.Shared.Data.Models.Extensions
 {

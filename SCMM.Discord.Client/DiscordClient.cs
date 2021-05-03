@@ -157,7 +157,7 @@ namespace SCMM.Discord.Client
 
             // Pre-build the embed content (so we can share it across all messages)
             // If the title is not null, we assume the message has emdeded content
-            var embed = (Embed) null;
+            var embed = (Embed)null;
             if (!String.IsNullOrEmpty(title))
             {
                 var fieldBuilders = new List<EmbedFieldBuilder>();

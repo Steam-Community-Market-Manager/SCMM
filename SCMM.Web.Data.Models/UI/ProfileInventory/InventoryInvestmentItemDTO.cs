@@ -1,5 +1,5 @@
-﻿using System;
-using SCMM.Web.Data.Models.Domain.Currencies;
+﻿using SCMM.Web.Data.Models.Domain.Currencies;
+using System;
 
 namespace SCMM.Web.Data.Models.UI.ProfileInventory
 {

@@ -1,12 +1,11 @@
 ﻿using CommandQuery;
+using SCMM.Shared.Data.Store;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.API.Commands;
-using SCMM.Shared.Data.Store;
 
 namespace SCMM.Steam.API.Commands
 {

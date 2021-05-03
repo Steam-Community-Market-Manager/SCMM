@@ -1,5 +1,5 @@
-﻿using System;
-using SCMM.Shared.Data.Store;
+﻿using SCMM.Shared.Data.Store;
+using System;
 
 namespace SCMM.Steam.Data.Store
 {

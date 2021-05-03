@@ -1,14 +1,13 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Store;
+using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.API.Commands;
-using SCMM.Steam.API.Queries;
-using SCMM.Shared.Data.Models;
-using SCMM.Shared.Data.Store;
 
 namespace SCMM.Steam.API.Commands
 {

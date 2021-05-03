@@ -1,14 +1,13 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.Extensions.Logging;
+using SCMM.Web.Data.Models.Domain.Currencies;
+using SCMM.Web.Data.Models.Domain.Languages;
 using SCMM.Web.Data.Models.Domain.Profiles;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using SCMM.Web.Data.Models.Domain.Currencies;
-using SCMM.Web.Data.Models.Domain.Languages;
 
 namespace SCMM.Web.Client
 {
@@ -105,7 +104,7 @@ namespace SCMM.Web.Client
             }
         }
 
-        public async Task TryGuessLocalityAsync()
+        public Task TryGuessLocalityAsync()
         {
             try
             {
@@ -117,6 +116,8 @@ namespace SCMM.Web.Client
             {
                 Logger.LogWarning(ex, $"Failed to auto-detect locality, falling back to default");
             }
+
+            return Task.CompletedTask;
         }
 
         public async Task RefreshAsync(HttpClient http)

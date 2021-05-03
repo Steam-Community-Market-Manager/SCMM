@@ -1,9 +1,9 @@
-﻿using System;
+﻿using SCMM.Shared.Data.Store;
+using SCMM.Shared.Data.Store.Types;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using SCMM.Shared.Data.Store.Types;
-using SCMM.Shared.Data.Store;
 
 namespace SCMM.Steam.Data.Store
 {

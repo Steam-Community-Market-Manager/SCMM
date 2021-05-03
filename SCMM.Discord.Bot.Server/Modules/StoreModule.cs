@@ -1,8 +1,8 @@
 ﻿using CommandQuery;
 using Discord.Commands;
+using SCMM.Steam.API.Queries;
 using System;
 using System.Threading.Tasks;
-using SCMM.Steam.API.Queries;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {

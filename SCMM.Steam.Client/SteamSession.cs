@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using SteamAuth;
 using System;
 using System.Net;
-using SteamAuth;
 
 namespace SCMM.Steam.Client
 {

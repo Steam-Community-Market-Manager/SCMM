@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.API;
+using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.Domain.StoreItems;
 using SCMM.Web.Server.Extensions;
@@ -12,8 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.API.Queries;
-using SCMM.Steam.API;
 
 namespace SCMM.Web.Server.API.Controllers
 {

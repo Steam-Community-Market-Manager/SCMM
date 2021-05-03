@@ -2,6 +2,8 @@
 using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using SCMM.Shared.Data.Models;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Collections.Generic;
@@ -12,9 +14,6 @@ using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using SCMM.Steam.API.Commands;
-using SCMM.Steam.API.Queries;
-using SCMM.Shared.Data.Models;
 
 namespace SCMM.Steam.API.Queries
 {
@@ -111,7 +110,7 @@ namespace SCMM.Steam.API.Queries
             var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
             var imageSourceQueue = new Queue<ImageSource>(imageSources);
             using var graphics = Graphics.FromImage(mosaic);
-            
+
             graphics.SmoothingMode = SmoothingMode.AntiAlias;
             graphics.CompositingQuality = CompositingQuality.HighQuality;
 

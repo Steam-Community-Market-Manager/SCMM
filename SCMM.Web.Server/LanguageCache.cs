@@ -18,10 +18,9 @@ namespace SCMM.Web.Server
         {
             _db = db;
             _mapper = mapper;
-            RepopulateCache();
         }
 
-        private void RepopulateCache()
+        public void RepopulateCache()
         {
             lock (Cache)
             {

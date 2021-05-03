@@ -1,16 +1,15 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Job.Server.Jobs.Cron;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Steam.Job.Server.Jobs.Cron;
-using SCMM.Steam.Job.Server.Jobs;
-using SCMM.Steam.API;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {

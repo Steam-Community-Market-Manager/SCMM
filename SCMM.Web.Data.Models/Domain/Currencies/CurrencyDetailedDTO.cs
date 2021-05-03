@@ -1,6 +1,5 @@
-﻿using System;
-using SCMM.Shared.Data.Models;
-using SCMM.Web.Data.Models.Domain.Currencies;
+﻿using SCMM.Shared.Data.Models;
+using System;
 
 namespace SCMM.Web.Data.Models.Domain.Currencies
 {
