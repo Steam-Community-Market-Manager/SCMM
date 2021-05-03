@@ -74,6 +74,7 @@ namespace SCMM.Discord.Client
             if (IsConnected)
             {
                 _clientIsConnected.Set();
+                Connected?.Invoke();
             }
 
             return Task.CompletedTask;
@@ -84,6 +85,7 @@ namespace SCMM.Discord.Client
             if (!IsConnected)
             {
                 _clientIsConnected.Reset();
+                Disconnected?.Invoke();
             }
 
             return Task.CompletedTask;
@@ -125,7 +127,6 @@ namespace SCMM.Discord.Client
         {
             await _client.LoginAsync(TokenType.Bot, _configuration.BotToken);
             await _client.StartAsync();
-
             await _commandHandler.AddCommandsAsync();
         }
 
@@ -227,6 +228,8 @@ namespace SCMM.Discord.Client
         public bool IsConnected => _client.Shards.All(x => x.ConnectionState == ConnectionState.Connected && x.LoginState == LoginState.LoggedIn);
 
         // Events
+        public event Action Connected;
+        public event Action Disconnected;
         public event Action<IEnumerable<DiscordGuild>> Ready;
         public event Action<DiscordGuild> GuildJoined;
         public event Action<DiscordGuild> GuildLeft;

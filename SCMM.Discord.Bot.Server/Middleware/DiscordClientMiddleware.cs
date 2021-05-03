@@ -32,6 +32,8 @@ namespace SCMM.Discord.Bot.Server.Middleware
             _scopeFactory = scopeFactory;
             _statusUpdateTimer = new Timer(OnStatusUpdate);
             _client = discordClient;
+            _client.Connected += OnConnected;
+            _client.Disconnected += OnDisconnected;
             _client.Ready += OnReady;
             _client.GuildJoined += OnGuildJoined;
             _client.GuildLeft += OnGuildLeft;
@@ -43,127 +45,40 @@ namespace SCMM.Discord.Bot.Server.Middleware
             return _next(httpContext);
         }
 
+        private void OnConnected()
+        {
+            // Start the status update timer
+            _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
+        }
+
+        private void OnDisconnected()
+        {
+            // Stop the status update timer
+            _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.Zero);
+        }
+
         private void OnReady(IEnumerable<Client.DiscordGuild> guilds)
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                try
-                {
-                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                    var discordGuilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
-
-                    // Start the status update timer
-                    _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
-
-                    // Add any guilds that we've joined
-                    var joinedGuilds = guilds.Where(x => !discordGuilds.Any(y => y.DiscordId == x.Id.ToString())).ToList();
-                    if (joinedGuilds.Any())
-                    {
-                        foreach (var guild in joinedGuilds)
-                        {
-                            _logger.LogInformation($"Guild was joined: {guild.Name}");
-                            db.DiscordGuilds.Add(new Steam.Data.Store.DiscordGuild()
-                            {
-                                DiscordId = guild.Id.ToString(),
-                                Name = guild.Name
-                            });
-                        }
-                    }
-
-                    // Update any guilds that we're still a member of
-                    var memberGuilds = discordGuilds.Join(guilds,
-                            x => x.DiscordId,
-                            y => y.Id.ToString(),
-                            (x, y) => new
-                            {
-                                Guild = x,
-                                Name = y.Name
-                            }
-                        )
-                        .Where(x => string.IsNullOrEmpty(x.Name))
-                        .ToList();
-                    if (memberGuilds.Any())
-                    {
-                        foreach (var member in memberGuilds)
-                        {
-                            member.Guild.Name = member.Name;
-                        }
-                    }
-
-                    // Remove any guilds that we've left
-                    var leftGuilds = discordGuilds.Where(x => !guilds.Any(y => y.Id == ulong.Parse(x.DiscordId))).ToList();
-                    if (leftGuilds.Any())
-                    {
-                        foreach (var guild in leftGuilds)
-                        {
-                            _logger.LogInformation($"Guild was left: {guild.Name}");
-                            guild.Configurations.Clear();
-                            db.DiscordGuilds.Remove(guild);
-                        }
-                    }
-
-                    db.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to synchronoise list of Discord guilds");
-                }
-            }
+            // Add any missing guilds to our database
+            AddGuildsToDatabaseIfMissing(guilds.ToArray());
         }
 
         private void OnGuildJoined(Client.DiscordGuild guild)
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                try
-                {
-                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                    var dbGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == guild.Id.ToString());
-                    if (dbGuild == null)
-                    {
-                        _logger.LogInformation($"Guild was joined: {guild.Name}");
-                        db.DiscordGuilds.Add(dbGuild = new Steam.Data.Store.DiscordGuild()
-                        {
-                            DiscordId = guild.Id.ToString(),
-                            Name = guild.Name
-                        });
-                        db.SaveChanges();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {guild.Id}, name: {guild.Name})");
-                }
-            }
+            // Add new guild to our database
+            _logger.LogInformation($"New guild was joined: {guild.Name}");
+            AddGuildsToDatabaseIfMissing(guild);
         }
 
         private void OnGuildLeft(Client.DiscordGuild guild)
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                try
-                {
-                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                    var dbGuild = db.DiscordGuilds.FirstOrDefault(x => x.DiscordId == guild.Id.ToString());
-                    if (dbGuild != null)
-                    {
-                        _logger.LogInformation($"Guild was left: {guild.Name}");
-                        dbGuild.Configurations.Clear();
-                        db.DiscordGuilds.Remove(dbGuild);
-                        db.SaveChanges();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to synchrnoise guild join (id: {guild.Id}, name: {guild.Name})");
-                }
-            }
+            _logger.LogInformation($"Guild was left: {guild.Name}");
         }
 
         private async void OnStatusUpdate(object state)
         {
-            // If the next store update time is in the past, re-caculate it
-            if ((_statusNextStoreUpdate - DateTimeOffset.Now) <= TimeSpan.Zero)
+            // If the next store update time is in the past by more than 6 hours, requery it to get a new timestamp
+            if ((_statusNextStoreUpdate - DateTimeOffset.Now).Add(TimeSpan.FromHours(6)) <= TimeSpan.Zero)
             {
                 using (var scope = _scopeFactory.CreateScope())
                 {
@@ -180,7 +95,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 }
             }
 
-            // Display a countdown for the next store update using the last cached timestamp
+            // Display a countdown until the next store update using the last cached timestamp
             var nextStoreIsOverdue = (_statusNextStoreUpdate <= DateTimeOffset.Now);
             var nextStoreTimeRemaining = (_statusNextStoreUpdate - DateTimeOffset.Now);
             var nextStoreTimeDescription = nextStoreTimeRemaining.ToDurationString(
@@ -190,6 +105,41 @@ namespace SCMM.Discord.Bot.Server.Middleware
             if (_client.IsConnected)
             {
                 await _client.SetWatchingStatusAsync($"the store, {nextStoreTimeDescription}");
+            }
+        }
+
+        private void AddGuildsToDatabaseIfMissing(params Client.DiscordGuild[] guilds)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                try
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                    var discordGuildIds = db.DiscordGuilds
+                        .Select(x => x.DiscordId)
+                        .AsNoTracking()
+                        .ToList();
+
+                    var missingGuilds = guilds.Where(x => !discordGuildIds.Any(y => y == x.Id.ToString())).ToList();
+                    if (missingGuilds.Any())
+                    {
+                        foreach (var guild in missingGuilds)
+                        {
+                            _logger.LogInformation($"New guild was joined: {guild.Name}");
+                            db.DiscordGuilds.Add(new Steam.Data.Store.DiscordGuild()
+                            {
+                                DiscordId = guild.Id.ToString(),
+                                Name = guild.Name
+                            });
+                        }
+
+                        db.SaveChanges();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to add newly joined guilds to persistent storage (count: {guilds.Length})");
+                }
             }
         }
     }
