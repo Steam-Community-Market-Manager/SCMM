@@ -1,14 +1,17 @@
 ﻿@using SCMM.Discord.Client
 @inject DiscordClient Client
 
-<div class="navbar-brand">
-    <img class="avatar" src="@Client.User.AvatarUrl" />
-    <div class="name">
-        <strong>@Client.User.Username #@Client.User.Discriminator</strong>
-        <br />
-        <span>@Client.User.Status</span>
+@if(!String.IsNullOrEmpty(@Client.User.Username))
+{
+    <div class="navbar-brand">
+        <img class="avatar" src="@Client.User.AvatarUrl" />
+        <div class="name">
+            <strong>@Client.User.Username #@Client.User.Discriminator</strong>
+            <br />
+            <span>@Client.User.Status</span>
+        </div>
+        <div class="activity d-none d-sm-block">
+            <i>@Client.User.Activity</i>
+        </div>
     </div>
-    <div class="activity d-none d-sm-block">
-        <i>@Client.User.Activity</i>
-    </div>
-</div>
+}
