@@ -68,10 +68,10 @@ namespace SCMM.Steam.Job.Server
 
             // 3rd party clients
             services.AddSingleton((s) => Configuration.GetSteamConfiguration());
-            services.AddSingleton((s) => new SteamSession(s));
-            services.AddScoped<SteamCommunityClient>();
             services.AddSingleton((s) => Configuration.GetGoogleConfiguration());
+            services.AddSingleton((s) => new SteamSession(s));
             services.AddSingleton<GoogleClient>();
+            services.AddScoped<SteamCommunityClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));

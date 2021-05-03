@@ -68,9 +68,8 @@ namespace SCMM.Discord.Bot.Server
 
             // 3rd party clients
             services.AddSingleton((s) => Configuration.GetDiscordConfiguration());
-            services.AddSingleton<DiscordClient>();
-
             services.AddSingleton((s) => Configuration.GetSteamConfiguration());
+            services.AddSingleton<DiscordClient>();
             services.AddSingleton((s) => new SteamSession(s));
             services.AddScoped<SteamCommunityClient>();
 
