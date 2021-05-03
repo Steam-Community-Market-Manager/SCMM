@@ -37,29 +37,27 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
+            var service = scope.ServiceProvider.GetRequiredService<SteamService>();
+            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+
+            var appItemStores = db.SteamItemStores
+                .Include(x => x.App)
+                .Include(x => x.Items).ThenInclude(x => x.Item)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Stores)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile)
+                .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
+                .ToList();
+
+            foreach (var appItemStore in appItemStores)
             {
-                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
-                var service = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-
-                var appItemStores = db.SteamItemStores
-                    .Include(x => x.App)
-                    .Include(x => x.Items).ThenInclude(x => x.Item)
-                    .Include(x => x.Items).ThenInclude(x => x.Item.Stores)
-                    .Include(x => x.Items).ThenInclude(x => x.Item.Description)
-                    .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile)
-                    .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
-                    .ToList();
-
-                foreach (var appItemStore in appItemStores)
-                {
-                    await UpdateItemStoreSubscribers(db, service, appItemStore);
-                    await UpdateItemStoreTopSellers(db, commnityClient, service, appItemStore);
-                }
-
-                db.SaveChanges();
+                await UpdateItemStoreSubscribers(db, service, appItemStore);
+                await UpdateItemStoreTopSellers(db, commnityClient, service, appItemStore);
             }
+
+            db.SaveChanges();
         }
 
         private async Task UpdateItemStoreTopSellers(SteamDbContext db, SteamCommunityClient commnityClient, SteamService service, SteamItemStore itemStore)

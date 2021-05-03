@@ -47,18 +47,16 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                using (var client = BuildSteamHttpClient(request.Uri))
+                using var client = BuildSteamHttpClient(request.Uri);
+                var response = await client.GetAsync(request.Uri);
+                if (!response.IsSuccessStatusCode)
                 {
-                    var response = await client.GetAsync(request.Uri);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
-                    }
-
-                    return new Tuple<byte[], string>(
-                        await response.Content.ReadAsByteArrayAsync(), response.Content.Headers?.ContentType?.MediaType
-                    );
+                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
                 }
+
+                return new Tuple<byte[], string>(
+                    await response.Content.ReadAsByteArrayAsync(), response.Content.Headers?.ContentType?.MediaType
+                );
             }
             catch (Exception ex)
             {
@@ -73,16 +71,14 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                using (var client = BuildSteamHttpClient(request.Uri))
+                using var client = BuildSteamHttpClient(request.Uri);
+                var response = await client.GetAsync(request.Uri);
+                if (!response.IsSuccessStatusCode)
                 {
-                    var response = await client.GetAsync(request.Uri);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
-                    }
-
-                    return await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
                 }
+
+                return await response.Content.ReadAsStringAsync();
             }
             catch (Exception ex)
             {
@@ -97,34 +93,30 @@ namespace SCMM.Steam.Client
         {
             try
             {
-                using (var client = BuildSteamHttpClient(request.Uri))
+                using var client = BuildSteamHttpClient(request.Uri);
+                var response = await client.GetAsync(request.Uri);
+                if (!response.IsSuccessStatusCode)
                 {
-                    var response = await client.GetAsync(request.Uri);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
-                    }
-
-                    var html = await response.Content.ReadAsStringAsync();
-                    if (String.IsNullOrEmpty(html))
-                    {
-                        return null;
-                    }
-
-                    // Sanitise the html first to clean-up dodgy tags that may cause XML parsing to fail
-                    // (e.g. <meta>, <link>, etc)
-                    var htmlDocument = new HtmlDocument();
-                    htmlDocument.LoadHtml(html);
-
-                    var sanitisedHtml = new StringBuilder();
-                    using (var stringWriter = new StringWriter(sanitisedHtml))
-                    {
-                        var xmlWriter = new XmlTextWriter(stringWriter);
-                        htmlDocument.Save(xmlWriter);
-                    }
-
-                    return XElement.Parse(sanitisedHtml.ToString());
+                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
                 }
+
+                var html = await response.Content.ReadAsStringAsync();
+                if (String.IsNullOrEmpty(html))
+                {
+                    return null;
+                }
+
+                // Sanitise the html first to clean-up dodgy tags that may cause XML parsing to fail
+                // (e.g. <meta>, <link>, etc)
+                var htmlDocument = new HtmlDocument();
+                htmlDocument.LoadHtml(html);
+
+                var sanitisedHtml = new StringBuilder();
+                using var stringWriter = new StringWriter(sanitisedHtml);
+                var xmlWriter = new XmlTextWriter(stringWriter);
+                htmlDocument.Save(xmlWriter);
+
+                return XElement.Parse(sanitisedHtml.ToString());
             }
             catch (Exception ex)
             {
@@ -143,10 +135,8 @@ namespace SCMM.Steam.Client
                 if (!String.IsNullOrEmpty(xml))
                 {
                     var xmlSerializer = new XmlSerializer(typeof(TResponse));
-                    using (var reader = new StringReader(xml))
-                    {
-                        return (TResponse)xmlSerializer.Deserialize(reader);
-                    }
+                    using var reader = new StringReader(xml);
+                    return (TResponse) xmlSerializer.Deserialize(reader);
                 }
             }
             catch (Exception ex)

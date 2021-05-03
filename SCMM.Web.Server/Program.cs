@@ -11,11 +11,8 @@ namespace SCMM.Web.Server
     {
         public static async Task Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
-            using (host)
-            {
-                await host.RunAsync();
-            }
+            using var host = CreateHostBuilder(args).Build();
+            await host.RunAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

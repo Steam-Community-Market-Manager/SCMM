@@ -12,6 +12,7 @@ using SCMM.Shared.Azure.ServiceBus.Attributes;
 using System.Reflection;
 using SCMM.Shared.Azure.ServiceBus.Extensions;
 using System.Collections.Generic;
+using Azure.Messaging.ServiceBus.Administration;
 
 namespace SCMM.Shared.Azure.ServiceBus.Middleware
 {
@@ -20,18 +21,33 @@ namespace SCMM.Shared.Azure.ServiceBus.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<ServiceBusProcessorMiddleware> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ServiceBusAdministrationClient _serviceBusAdministrationClient;
         private readonly ServiceBusClient _serviceBusClient;
         private readonly List<ServiceBusProcessor> _serviceBusProcessors;
         private bool disposedValue;
 
-        public ServiceBusProcessorMiddleware(RequestDelegate next, ILogger<ServiceBusProcessorMiddleware> logger, IServiceScopeFactory scopeFactory, ServiceBusClient serviceBusClient, MessageHandlerTypeCollection messageHandlerTypeCollection)
+        public ServiceBusProcessorMiddleware(RequestDelegate next, ILogger<ServiceBusProcessorMiddleware> logger, IServiceScopeFactory scopeFactory, ServiceBusAdministrationClient serviceBusAdministrationClient, ServiceBusClient serviceBusClient, MessageHandlerTypeCollection messageHandlerTypeCollection)
         {
             _next = next;
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _serviceBusAdministrationClient = serviceBusAdministrationClient;
             _serviceBusClient = serviceBusClient;
             _serviceBusProcessors = new List<ServiceBusProcessor>();
-            _ = StartMessageProcessors(messageHandlerTypeCollection);
+            _ = CreateMissingTopicSubscriptions(messageHandlerTypeCollection).ContinueWith(x =>
+            {
+                if (x.IsFaulted && x.Exception != null)
+                {
+                    _logger.LogError(x.Exception, "Failed to create topic subscriptions, some messages may not get handled");
+                }
+            });
+            _ = StartMessageProcessors(messageHandlerTypeCollection).ContinueWith(x =>
+            {
+                if (x.IsFaulted && x.Exception != null)
+                {
+                    _logger.LogError(x.Exception, "Failed to start service bus message processors, some messages may not get handled");
+                }
+            });
         }
 
         protected virtual async Task DisposeAsync(bool disposing)
@@ -57,6 +73,32 @@ namespace SCMM.Shared.Azure.ServiceBus.Middleware
             return _next(httpContext);
         }
 
+        private async Task CreateMissingTopicSubscriptions(MessageHandlerTypeCollection messageHandlerTypeCollection)
+        {
+            // Instantiate processors
+            var handlerAssemblies = messageHandlerTypeCollection.Assemblies.ToArray();
+            foreach (var handlerType in handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>)))
+            {
+                foreach (var handlerInterface in handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>)))
+                {
+                    var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
+                    if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)) || messageType.GetCustomAttribute<TopicAttribute>() == null)
+                    {
+                        continue; // not a supported message subscription
+                    }
+
+                    var topicSubscriptionExists = await _serviceBusAdministrationClient.SubscriptionExistsAsync(messageType);
+                    if (!topicSubscriptionExists)
+                    {
+                        await _serviceBusAdministrationClient.CreateSubscriptionAsync(messageType, options =>
+                        {
+                            options.AutoDeleteOnIdle = TimeSpan.FromDays(7); // auto-delete if no messages for 7 days
+                        });
+                    }
+                }
+            }
+        }
+
         private async Task StartMessageProcessors(MessageHandlerTypeCollection messageHandlerTypeCollection)
         {
             // Instantiate processors
@@ -80,14 +122,12 @@ namespace SCMM.Shared.Azure.ServiceBus.Middleware
 
                     processor.ProcessMessageAsync += async (x) =>
                     {
-                        using (var scope = _scopeFactory.CreateScope())
-                        {
-                            var message = JsonSerializer.Deserialize(x.Message.Body.ToArray(), messageType);
-                            var handler = scope.ServiceProvider.GetRequiredService(handlerInterface);
-                            var handleMethod = handler.GetType().GetMethod("HandleAsync");
-                            var task = (Task) handleMethod.Invoke(handler, new object[] { message });
-                            await task;
-                        }
+                        using var scope = _scopeFactory.CreateScope();
+                        var message = JsonSerializer.Deserialize(x.Message.Body.ToArray(), messageType);
+                        var handler = scope.ServiceProvider.GetRequiredService(handlerInterface);
+                        var handleMethod = handler.GetType().GetMethod("HandleAsync");
+                        var task = (Task)handleMethod.Invoke(handler, new object[] { message });
+                        await task;
                     };
 
                     processor.ProcessErrorAsync += (x) =>

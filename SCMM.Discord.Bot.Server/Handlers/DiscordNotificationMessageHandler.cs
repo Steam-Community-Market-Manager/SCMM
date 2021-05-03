@@ -1,4 +1,4 @@
-﻿using SCMM.Discord.API.Commands;
+﻿using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
 using SCMM.Shared.Azure.ServiceBus;
 using SCMM.Shared.Azure.ServiceBus.Attributes;
@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 namespace SCMM.Discord.Bot.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 10)]
-    public class BroadcastNotificationHandler : IMessageHandler<BroadcastNotificationRequest>
+    public class DiscordNotificationMessageHandler : IMessageHandler<DiscordNotificationMessage>
     {
         private readonly DiscordClient _client;
 
-        public BroadcastNotificationHandler( DiscordClient client)
+        public DiscordNotificationMessageHandler(DiscordClient client)
         {
             _client = client;
         }
 
-        public Task HandleAsync(BroadcastNotificationRequest message)
+        public Task HandleAsync(DiscordNotificationMessage message)
         {
-            return _client.BroadcastMessageAsync(
+            return _client.SendMessageAsync(
                 guildPattern: message.GuildPattern,
                 channelPattern: message.ChannelPattern,
                 message: message.Message,

@@ -26,27 +26,25 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
+            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+
+            var itemIds = await db.SteamMarketItems
+                .Select(x => x.Id)
+                .ToListAsync();
+
+            foreach (var itemId in itemIds)
             {
-                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var item = await db.SteamMarketItems
+                    .Include(x => x.BuyOrders)
+                    .Include(x => x.SellOrders)
+                    .Include(x => x.SalesHistory)
+                    .SingleOrDefaultAsync(x => x.Id == itemId);
 
-                var itemIds = await db.SteamMarketItems
-                    .Select(x => x.Id)
-                    .ToListAsync();
-
-                foreach (var itemId in itemIds)
-                {
-                    var item = await db.SteamMarketItems
-                        .Include(x => x.BuyOrders)
-                        .Include(x => x.SellOrders)
-                        .Include(x => x.SalesHistory)
-                        .SingleOrDefaultAsync(x => x.Id == itemId);
-
-                    item.RecalculateOrders();
-                    item.RecalculateSales();
-                    db.SaveChanges();
-                }
+                item.RecalculateOrders();
+                item.RecalculateSales();
+                db.SaveChanges();
             }
         }
     }

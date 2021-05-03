@@ -45,146 +45,144 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+            var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+            var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+            var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
+            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
+            var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
+
+            var steamApps = await db.SteamApps.ToListAsync();
+            if (!steamApps.Any())
             {
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
-                var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
-                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
-                var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
+                return;
+            }
 
-                var steamApps = await db.SteamApps.ToListAsync();
-                if (!steamApps.Any())
+            var currencies = await db.SteamCurrencies.ToListAsync();
+            if (currencies == null)
+            {
+                return;
+            }
+
+            var language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.IsDefault);
+            if (language == null)
+            {
+                return;
+            }
+
+            foreach (var app in steamApps)
+            {
+                _logger.LogInformation($"Checking for new store items (appId: {app.SteamId})");
+                var currency = currencies.FirstOrDefault(x => x.IsDefault);
+                var response = await steamEconomy.GetAssetPricesAsync(
+                    UInt32.Parse(app.SteamId), String.Empty, language.SteamId
+                );
+                if (response?.Data?.Success != true)
                 {
-                    return;
+                    _logger.LogError("Failed to get asset prices");
+                    continue;
                 }
 
-                var currencies = await db.SteamCurrencies.ToListAsync();
-                if (currencies == null)
+                // We want to compare the Steam item store with our most recent store
+                var theirStoreItemIds = response.Data.Assets
+                    .Select(x => x.Name)
+                    .OrderBy(x => x)
+                    .ToList();
+                var ourStoreItemIds = db.SteamItemStores
+                    .Where(x => x.End == null)
+                    .OrderByDescending(x => x.Start)
+                    .SelectMany(x => x.Items.Select(i => i.Item.SteamId))
+                    .ToList();
+
+                // If both stores contain the same items, then there is no need to update anything
+                var storesAreTheSame = (ourStoreItemIds != null && theirStoreItemIds.All(x => ourStoreItemIds.Contains(x)));
+                if (storesAreTheSame)
                 {
-                    return;
+                    continue;
                 }
 
-                var language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.IsDefault);
-                if (language == null)
+                // If we got here, then then item store has changed (either added or removed items)
+                // Load all of our active stores and their items
+                var activeItemStores = db.SteamItemStores
+                    .Include(x => x.ItemsThumbnail)
+                    .Where(x => x.End == null)
+                    .OrderByDescending(x => x.Start)
+                    .Include(x => x.Items).ThenInclude(x => x.Item)
+                    .Include(x => x.Items).ThenInclude(x => x.Item.Description)
+                    .ToList();
+
+                // End any stores that have items which are no longer available
+                foreach (var itemStore in activeItemStores.ToList())
                 {
-                    return;
+                    var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
+                    if (thisStoreItemIds.Any(x => !theirStoreItemIds.Contains(x)))
+                    {
+                        // TODO: We should be able to "end" individual items, rather than the entire store
+                        itemStore.End = DateTimeOffset.UtcNow;
+                        activeItemStores.Remove(itemStore);
+                    }
                 }
 
-                foreach (var app in steamApps)
+                // If there are no active item stores or they are older than 24hrs, create a new store
+                var newItemStore = activeItemStores.FirstOrDefault();
+                if (newItemStore == null || (DateTimeOffset.UtcNow - newItemStore.Start) > TimeSpan.FromDays(1))
                 {
-                    _logger.LogInformation($"Checking for new store items (appId: {app.SteamId})");
-                    var currency = currencies.FirstOrDefault(x => x.IsDefault);
-                    var response = await steamEconomy.GetAssetPricesAsync(
-                        UInt32.Parse(app.SteamId), String.Empty, language.SteamId
+                    var culture = CultureInfo.InvariantCulture;
+                    var storeDate = DateTimeOffset.UtcNow.Date;
+                    int storeDateWeek = culture.Calendar.GetWeekOfYear(storeDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
+                    var storeTitle = $"Week {storeDateWeek}";
+                    db.SteamItemStores.Add(
+                        newItemStore = new SteamItemStore()
+                        {
+                            App = app,
+                            AppId = app.Id,
+                            Name = storeTitle,
+                            Start = DateTimeOffset.UtcNow
+                        }
                     );
-                    if (response?.Data?.Success != true)
-                    {
-                        _logger.LogError("Failed to get asset prices");
-                        continue;
-                    }
-
-                    // We want to compare the Steam item store with our most recent store
-                    var theirStoreItemIds = response.Data.Assets
-                        .Select(x => x.Name)
-                        .OrderBy(x => x)
-                        .ToList();
-                    var ourStoreItemIds = db.SteamItemStores
-                        .Where(x => x.End == null)
-                        .OrderByDescending(x => x.Start)
-                        .SelectMany(x => x.Items.Select(i => i.Item.SteamId))
-                        .ToList();
-
-                    // If both stores contain the same items, then there is no need to update anything
-                    var storesAreTheSame = (ourStoreItemIds != null && theirStoreItemIds.All(x => ourStoreItemIds.Contains(x)));
-                    if (storesAreTheSame)
-                    {
-                        continue;
-                    }
-
-                    // If we got here, then then item store has changed (either added or removed items)
-                    // Load all of our active stores and their items
-                    var activeItemStores = db.SteamItemStores
-                        .Include(x => x.ItemsThumbnail)
-                        .Where(x => x.End == null)
-                        .OrderByDescending(x => x.Start)
-                        .Include(x => x.Items).ThenInclude(x => x.Item)
-                        .Include(x => x.Items).ThenInclude(x => x.Item.Description)
-                        .ToList();
-
-                    // End any stores that have items which are no longer available
-                    foreach (var itemStore in activeItemStores.ToList())
-                    {
-                        var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
-                        if (thisStoreItemIds.Any(x => !theirStoreItemIds.Contains(x)))
-                        {
-                            // TODO: We should be able to "end" individual items, rather than the entire store
-                            itemStore.End = DateTimeOffset.UtcNow;
-                            activeItemStores.Remove(itemStore);
-                        }
-                    }
-
-                    // If there are no active item stores or they are older than 24hrs, create a new store
-                    var newItemStore = activeItemStores.FirstOrDefault();
-                    if (newItemStore == null || (DateTimeOffset.UtcNow - newItemStore.Start) > TimeSpan.FromDays(1))
-                    {
-                        var culture = CultureInfo.InvariantCulture;
-                        var storeDate = DateTimeOffset.UtcNow.Date;
-                        int storeDateWeek = culture.Calendar.GetWeekOfYear(storeDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
-                        var storeTitle = $"Week {storeDateWeek}";
-                        db.SteamItemStores.Add(
-                            newItemStore = new SteamItemStore()
-                            {
-                                App = app,
-                                AppId = app.Id,
-                                Name = storeTitle,
-                                Start = DateTimeOffset.UtcNow
-                            }
-                        );
-                    }
-
-                    // Ensure that all store items are available in the database (create them if missing)
-                    var activeStoreItems = new List<SteamStoreItem>();
-                    foreach (var asset in response.Data.Assets)
-                    {
-                        activeStoreItems.Add(
-                            await steamService.AddOrUpdateAppStoreItem(
-                                app, currency, language.SteamId, asset, DateTimeOffset.Now
-                            )
-                        );
-                    }
-
-                    // Ensure that the store items are linked to the active store
-                    var newStoreItems = new List<SteamStoreItem>();
-                    foreach (var item in activeStoreItems)
-                    {
-                        if (!item.Stores.Any(x => activeItemStores.Select(x => x.Id).Contains(x.StoreId)))
-                        {
-                            newStoreItems.Add(item);
-                            newItemStore.Items.Add(new SteamStoreItemItemStore()
-                            {
-                                Store = newItemStore,
-                                Item = item
-                            });
-                        }
-                    }
-
-                    // Regenerate the store items thumbnail
-                    if (newItemStore.ItemsThumbnail == null)
-                    {
-                        var thumbnail = await GenerateStoreItemsThumbnail(queryProcessor, newItemStore.Items.Select(x => x.Item));
-                        if (thumbnail != null)
-                        {
-                            newItemStore.ItemsThumbnail = thumbnail;
-                        }
-                    }
-
-                    db.SaveChanges();
-
-                    // Send out a broadcast about any "new" items that weren't already in our store
-                    await BroadcastNewStoreItemsNotification(commandProcessor, db, app, newItemStore, newStoreItems, currencies);
                 }
+
+                // Ensure that all store items are available in the database (create them if missing)
+                var activeStoreItems = new List<SteamStoreItem>();
+                foreach (var asset in response.Data.Assets)
+                {
+                    activeStoreItems.Add(
+                        await steamService.AddOrUpdateAppStoreItem(
+                            app, currency, language.SteamId, asset, DateTimeOffset.Now
+                        )
+                    );
+                }
+
+                // Ensure that the store items are linked to the active store
+                var newStoreItems = new List<SteamStoreItem>();
+                foreach (var item in activeStoreItems)
+                {
+                    if (!item.Stores.Any(x => activeItemStores.Select(x => x.Id).Contains(x.StoreId)))
+                    {
+                        newStoreItems.Add(item);
+                        newItemStore.Items.Add(new SteamStoreItemItemStore()
+                        {
+                            Store = newItemStore,
+                            Item = item
+                        });
+                    }
+                }
+
+                // Regenerate the store items thumbnail
+                if (newItemStore.ItemsThumbnail == null)
+                {
+                    var thumbnail = await GenerateStoreItemsThumbnail(queryProcessor, newItemStore.Items.Select(x => x.Item));
+                    if (thumbnail != null)
+                    {
+                        newItemStore.ItemsThumbnail = thumbnail;
+                    }
+                }
+
+                db.SaveChanges();
+
+                // Send out a broadcast about any "new" items that weren't already in our store
+                await BroadcastNewStoreItemsNotification(commandProcessor, db, app, newItemStore, newStoreItems, currencies);
             }
         }
 
@@ -243,7 +241,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     filteredCurrencies = currencies.Where(x => x.IsCommon).ToList();
                 }
 
-                await commandProcessor.ProcessAsync(new BroadcastNotificationRequest()
+                await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuildPattern = guild.DiscordId,
                     ChannelPattern = guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,

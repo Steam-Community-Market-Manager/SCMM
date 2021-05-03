@@ -151,7 +151,7 @@ namespace SCMM.Discord.Client
             );
         }
 
-        public async Task BroadcastMessageAsync(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public async Task SendMessageAsync(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             WaitUntilClientIsConnected();
 
@@ -165,7 +165,7 @@ namespace SCMM.Discord.Client
                 {
                     fieldBuilders = fields.Select(x => new EmbedFieldBuilder()
                         .WithName(x.Key)
-                        .WithValue(x.Value)
+                        .WithValue(String.IsNullOrEmpty(x.Value) ? "-" : x.Value)
                         .WithIsInline(fieldsInline)
                     ).ToList();
                 }

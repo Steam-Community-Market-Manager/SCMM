@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SCMM.Steam.Job.Server.Jobs.Cron;
-using SCMM.Steam.Job.Server.Jobs;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
@@ -25,22 +24,20 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+
+            var now = DateTimeOffset.Now;
+            var expiredImageData = db.ImageData
+                .Where(x => x.ExpiresOn != null && x.ExpiresOn <= now)
+                .OrderByDescending(x => x.ExpiresOn)
+                .Take(100) // to avoid timing out
+                .ToList();
+
+            if (expiredImageData?.Any() == true)
             {
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-
-                var now = DateTimeOffset.Now;
-                var expiredImageData = db.ImageData
-                    .Where(x => x.ExpiresOn != null && x.ExpiresOn <= now)
-                    .OrderByDescending(x => x.ExpiresOn)
-                    .Take(100) // to avoid timing out
-                    .ToList();
-
-                if (expiredImageData?.Any() == true)
-                {
-                    db.ImageData.RemoveRange(expiredImageData);
-                    db.SaveChanges();
-                }
+                db.ImageData.RemoveRange(expiredImageData);
+                db.SaveChanges();
             }
 
             return Task.CompletedTask;

@@ -42,108 +42,106 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
+            var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+            var steamCommnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
+            var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
+            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+
+            var steamApps = db.SteamApps.ToList();
+            if (!steamApps.Any())
             {
-                var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
-                var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
-                var steamCommnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
-                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                return;
+            }
 
-                var steamApps = db.SteamApps.ToList();
-                if (!steamApps.Any())
+            var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
+            if (language == null)
+            {
+                return;
+            }
+
+            var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
+            if (currency == null)
+            {
+                return;
+            }
+
+            var pageRequests = new List<SteamMarketSearchPaginatedJsonRequest>();
+            foreach (var app in steamApps)
+            {
+                var appPageCountRequest = new SteamMarketSearchPaginatedJsonRequest()
                 {
-                    return;
+                    AppId = app.SteamId,
+                    Start = 1,
+                    Count = 1,
+                    Language = language.SteamId,
+                    CurrencyId = currency.SteamId,
+                    SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName
+                };
+
+                _logger.LogInformation($"Checking for new market items (appId: {app.SteamId})");
+                var appPageCountResponse = await steamCommnityClient.GetMarketSearchPaginated(appPageCountRequest);
+                if (appPageCountResponse?.Success != true || appPageCountResponse?.TotalCount <= 0)
+                {
+                    continue;
                 }
 
-                var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
-                if (language == null)
+                var total = appPageCountResponse.TotalCount;
+                var pageSize = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
+                var appPageRequests = new List<SteamMarketSearchPaginatedJsonRequest>();
+                for (var i = 0; i <= total; i += pageSize)
                 {
-                    return;
-                }
-
-                var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-                if (currency == null)
-                {
-                    return;
-                }
-
-                var pageRequests = new List<SteamMarketSearchPaginatedJsonRequest>();
-                foreach (var app in steamApps)
-                {
-                    var appPageCountRequest = new SteamMarketSearchPaginatedJsonRequest()
-                    {
-                        AppId = app.SteamId,
-                        Start = 1,
-                        Count = 1,
-                        Language = language.SteamId,
-                        CurrencyId = currency.SteamId,
-                        SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName
-                    };
-
-                    _logger.LogInformation($"Checking for new market items (appId: {app.SteamId})");
-                    var appPageCountResponse = await steamCommnityClient.GetMarketSearchPaginated(appPageCountRequest);
-                    if (appPageCountResponse?.Success != true || appPageCountResponse?.TotalCount <= 0)
-                    {
-                        continue;
-                    }
-
-                    var total = appPageCountResponse.TotalCount;
-                    var pageSize = SteamMarketSearchPaginatedJsonRequest.MaxPageSize;
-                    var appPageRequests = new List<SteamMarketSearchPaginatedJsonRequest>();
-                    for (var i = 0; i <= total; i += pageSize)
-                    {
-                        appPageRequests.Add(
-                            new SteamMarketSearchPaginatedJsonRequest()
-                            {
-                                AppId = app.SteamId,
-                                Start = i,
-                                Count = Math.Min(total - i, pageSize),
-                                Language = language.SteamId,
-                                CurrencyId = currency.SteamId,
-                                SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName
-                            }
-                        );
-                    }
-
-                    if (appPageRequests.Any())
-                    {
-                        pageRequests.AddRange(appPageRequests);
-                    }
-
-                    // Add a 10 second delay between requests to avoid "Too Many Requests" error
-                    var newMarketItems = await Observable.Interval(TimeSpan.FromSeconds(10))
-                        .Zip(pageRequests, (x, y) => y)
-                        .Select(x => Observable.FromAsync(() =>
+                    appPageRequests.Add(
+                        new SteamMarketSearchPaginatedJsonRequest()
                         {
-                            _logger.LogInformation($"Checking for new market items (appId: {x.AppId}, start: {x.Start}, end: {x.Start + x.Count})");
-                            return steamCommnityClient.GetMarketSearchPaginated(x);
-                        }))
-                        .Merge()
-                        .Where(x => x?.Success == true && x?.Results?.Count > 0)
-                        .SelectMany(x =>
-                        {
-                            var tasks = steamService.FindOrAddSteamMarketItems(x.Results, currency);
-                            Task.WaitAll(tasks);
-                            return tasks.Result;
-                        })
-                        .Where(x => x?.IsTransient == true)
-                        .Where(x => x?.App != null && x?.Description != null)
-                        .ToList();
-
-                    if (newMarketItems.Any())
-                    {
-                        var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
-                        var thumbnail = await GenerateMarketItemsThumbnail(queryProcessor, newMarketItems, thumbnailExpiry);
-                        if (thumbnail != null)
-                        {
-                            db.ImageData.Add(thumbnail);
+                            AppId = app.SteamId,
+                            Start = i,
+                            Count = Math.Min(total - i, pageSize),
+                            Language = language.SteamId,
+                            CurrencyId = currency.SteamId,
+                            SortColumn = SteamMarketSearchPaginatedJsonRequest.SortColumnName
                         }
+                    );
+                }
 
-                        db.SaveChanges();
+                if (appPageRequests.Any())
+                {
+                    pageRequests.AddRange(appPageRequests);
+                }
 
-                        await BroadcastNewMarketItemsNotification(commandProcessor, db, app, newMarketItems, thumbnail);
+                // Add a 10 second delay between requests to avoid "Too Many Requests" error
+                var newMarketItems = await Observable.Interval(TimeSpan.FromSeconds(10))
+                    .Zip(pageRequests, (x, y) => y)
+                    .Select(x => Observable.FromAsync(() =>
+                    {
+                        _logger.LogInformation($"Checking for new market items (appId: {x.AppId}, start: {x.Start}, end: {x.Start + x.Count})");
+                        return steamCommnityClient.GetMarketSearchPaginated(x);
+                    }))
+                    .Merge()
+                    .Where(x => x?.Success == true && x?.Results?.Count > 0)
+                    .SelectMany(x =>
+                    {
+                        var tasks = steamService.FindOrAddSteamMarketItems(x.Results, currency);
+                        Task.WaitAll(tasks);
+                        return tasks.Result;
+                    })
+                    .Where(x => x?.IsTransient == true)
+                    .Where(x => x?.App != null && x?.Description != null)
+                    .ToList();
+
+                if (newMarketItems.Any())
+                {
+                    var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
+                    var thumbnail = await GenerateMarketItemsThumbnail(queryProcessor, newMarketItems, thumbnailExpiry);
+                    if (thumbnail != null)
+                    {
+                        db.ImageData.Add(thumbnail);
                     }
+
+                    db.SaveChanges();
+
+                    await BroadcastNewMarketItemsNotification(commandProcessor, db, app, newMarketItems, thumbnail);
                 }
             }
         }
@@ -196,19 +194,23 @@ namespace SCMM.Steam.Job.Server.Jobs
                 foreach (var marketItem in newMarketItems)
                 {
                     var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
-                    var description = marketItem.Description?.Tags?.GetItemType(marketItem.Description?.Name) ?? marketItem.Description?.Description ?? marketItem.SteamId;
+                    var description = marketItem.Description?.Tags?.GetItemType(marketItem.Description?.Name);
+                    if (String.IsNullOrEmpty(description))
+                    {
+                        description = marketItem.Description?.Description ?? marketItem.SteamId;
+                    }
                     if (storeItem != null)
                     {
                         var estimateSales = String.Empty;
-                        if (storeItem.TotalSalesMax == null)
+                        if (storeItem.TotalSalesMax == null && storeItem.TotalSalesMin > 0)
                         {
                             estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()} or more";
                         }
-                        else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax)
+                        else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax && storeItem.TotalSalesMin > 0)
                         {
                             estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()}";
                         }
-                        else
+                        else if (storeItem.TotalSalesMin > 0 && storeItem.TotalSalesMax > 0)
                         {
                             estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
                         }
@@ -224,7 +226,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     .Where(x => x.Description?.IconId != null)
                     .Select(x => x.Description.IconId);
 
-                await commandProcessor.ProcessAsync(new BroadcastNotificationRequest()
+                await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuildPattern = guild.DiscordId,
                     ChannelPattern = guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{app.Name}").Value,

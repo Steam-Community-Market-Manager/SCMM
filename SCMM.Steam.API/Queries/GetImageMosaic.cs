@@ -110,160 +110,155 @@ namespace SCMM.Steam.API.Queries
 
             var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
             var imageSourceQueue = new Queue<ImageSource>(imageSources);
-            using (var graphics = Graphics.FromImage(mosaic))
+            using var graphics = Graphics.FromImage(mosaic);
+            
+            graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            graphics.CompositingQuality = CompositingQuality.HighQuality;
+
+            y = 0;
+            for (int r = 0; r < rows; r++)
             {
-                graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-
-                y = 0;
-                for (int r = 0; r < rows; r++)
+                x = 0;
+                for (int c = 0; c < columns; c++)
                 {
-                    x = 0;
-                    for (int c = 0; c < columns; c++)
+                    var imageSource = (imageSourceQueue.Any() ? imageSourceQueue.Dequeue() : null);
+                    if (imageSource?.ImageData == null)
                     {
-                        var imageSource = (imageSourceQueue.Any() ? imageSourceQueue.Dequeue() : null);
-                        if (imageSource?.ImageData == null)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
-                        graphics.DrawImage(
-                            image,
-                            x + ((Math.Max(2, tileSize - imageSize) / 2) - 1),
-                            y,
-                            imageSize,
-                            imageSize
+                    var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
+                    graphics.DrawImage(
+                        image,
+                        x + ((Math.Max(2, tileSize - imageSize) / 2) - 1),
+                        y,
+                        imageSize,
+                        imageSize
+                    );
+
+                    if (imageSource.Badge > 1)
+                    {
+                        var badge = $"{imageSource.Badge}";
+                        var badgeWidth = (int)Math.Max(indicatorSize, graphics.MeasureString(badge, font).Width + padding);
+                        var badgeHeight = indicatorSize;
+                        var badgeRect = new Rectangle(
+                            x + tileSize - badgeWidth - padding,
+                            y + padding,
+                            badgeWidth,
+                            badgeHeight
                         );
 
-                        if (imageSource.Badge > 1)
-                        {
-                            var badge = $"{imageSource.Badge}";
-                            var badgeWidth = (int)Math.Max(indicatorSize, graphics.MeasureString(badge, font).Width + padding);
-                            var badgeHeight = indicatorSize;
-                            var badgeRect = new Rectangle(
-                                x + tileSize - badgeWidth - padding,
-                                y + padding,
-                                badgeWidth,
-                                badgeHeight
+                        using var badgePath = GetRoundedRectPath(badgeRect, badgeHeight / 2);
+                        graphics.FillPath(
+                            solidBlue,
+                            badgePath
+                        );
+                        graphics.DrawPath(
+                            solidBlackOutlinePen,
+                            badgePath
+                        );
+
+                        graphics.DrawString(
+                            badge,
+                            font,
+                            solidBlack,
+                            new PointF(
+                                badgeRect.Left + (padding / 1.5f),
+                                badgeRect.Top + (padding / 3)
+                            )
+                        );
+                    }
+
+                    var symbolX = (x + tileSize - indicatorSize - padding);
+                    var symbolY = (y + tileSize - indicatorSize - padding);
+                    var symbolRect = new Rectangle(symbolX, symbolY, indicatorSize, indicatorSize);
+                    switch (imageSource.Symbol)
+                    {
+                        case ImageSymbol.ChevronUp:
+                            graphics.FillPolygon(
+                                solidGreen,
+                                GetChevronUpPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
                             );
+                            graphics.DrawPolygon(
+                                solidBlackOutlinePen,
+                                GetChevronUpPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
+                            );
+                            graphics.FillPolygon(
+                                solidGreen,
+                                GetChevronUpPoints(symbolX, symbolY, indicatorSize)
+                            );
+                            graphics.DrawPolygon(
+                                solidBlackOutlinePen,
+                                GetChevronUpPoints(symbolX, symbolY, indicatorSize)
+                            );
+                            break;
 
-                            using (var badgePath = GetRoundedRectPath(badgeRect, badgeHeight / 2))
-                            {
-                                graphics.FillPath(
-                                    solidBlue,
-                                    badgePath
-                                );
-                                graphics.DrawPath(
-                                    solidBlackOutlinePen,
-                                    badgePath
-                                );
-                            }
+                        case ImageSymbol.ChevronDown:
+                            graphics.FillPolygon(
+                                solidRed,
+                                GetChevronDownPoints(symbolX, symbolY, indicatorSize)
+                            );
+                            graphics.DrawPolygon(
+                                solidBlackOutlinePen,
+                                GetChevronDownPoints(symbolX, symbolY, indicatorSize)
+                            );
+                            graphics.FillPolygon(
+                                solidRed,
+                                GetChevronDownPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
+                            );
+                            graphics.DrawPolygon(
+                                solidBlackOutlinePen,
+                                GetChevronDownPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
+                            );
+                            break;
 
+                        case ImageSymbol.Cross:
+                            var lineWidth = (indicatorSize / 6);
+                            var lineFill = new Pen(solidRed, lineWidth);
+                            graphics.DrawLine(lineFill, symbolRect.Left, symbolRect.Top, symbolRect.Right, symbolRect.Bottom);
+                            graphics.DrawLine(lineFill, symbolRect.Right, symbolRect.Top, symbolRect.Left, symbolRect.Bottom);
+                            break;
+                    }
+
+                    if (!string.IsNullOrEmpty(imageSource.Title))
+                    {
+                        var title = imageSource.Title;
+                        var titleWidth = graphics.MeasureString(title, font).Width;
+                        while (titleWidth >= imageSize && title.Length > 0)
+                        {
+                            title = title.Substring(0, title.Length - 1);
+                            titleWidth = graphics.MeasureString(title, font).Width;
+                        }
+                        if (title.Length != imageSource.Title.Length)
+                        {
+                            title += "…";
+                        }
+                        if (!string.IsNullOrEmpty(title) && titleWidth > 0)
+                        {
                             graphics.DrawString(
-                                badge,
+                                title,
                                 font,
-                                solidBlack,
+                                solidWhite,
                                 new PointF(
-                                    badgeRect.Left + (padding / 1.5f),
-                                    badgeRect.Top + (padding / 3)
+                                    x + ((Math.Max(2, tileSize - titleWidth) / 2) - 1),
+                                    y + imageSize + padding
                                 )
                             );
                         }
-
-                        var symbolX = (x + tileSize - indicatorSize - padding);
-                        var symbolY = (y + tileSize - indicatorSize - padding);
-                        var symbolRect = new Rectangle(symbolX, symbolY, indicatorSize, indicatorSize);
-                        switch (imageSource.Symbol)
-                        {
-                            case ImageSymbol.ChevronUp:
-                                graphics.FillPolygon(
-                                    solidGreen,
-                                    GetChevronUpPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
-                                );
-                                graphics.DrawPolygon(
-                                    solidBlackOutlinePen,
-                                    GetChevronUpPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
-                                );
-                                graphics.FillPolygon(
-                                    solidGreen,
-                                    GetChevronUpPoints(symbolX, symbolY, indicatorSize)
-                                );
-                                graphics.DrawPolygon(
-                                    solidBlackOutlinePen,
-                                    GetChevronUpPoints(symbolX, symbolY, indicatorSize)
-                                );
-                                break;
-
-                            case ImageSymbol.ChevronDown:
-                                graphics.FillPolygon(
-                                    solidRed,
-                                    GetChevronDownPoints(symbolX, symbolY, indicatorSize)
-                                );
-                                graphics.DrawPolygon(
-                                    solidBlackOutlinePen,
-                                    GetChevronDownPoints(symbolX, symbolY, indicatorSize)
-                                );
-                                graphics.FillPolygon(
-                                    solidRed,
-                                    GetChevronDownPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
-                                );
-                                graphics.DrawPolygon(
-                                    solidBlackOutlinePen,
-                                    GetChevronDownPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
-                                );
-                                break;
-
-                            case ImageSymbol.Cross:
-                                var lineWidth = (indicatorSize / 6);
-                                var lineFill = new Pen(solidRed, lineWidth);
-                                graphics.DrawLine(lineFill, symbolRect.Left, symbolRect.Top, symbolRect.Right, symbolRect.Bottom);
-                                graphics.DrawLine(lineFill, symbolRect.Right, symbolRect.Top, symbolRect.Left, symbolRect.Bottom);
-                                break;
-                        }
-
-                        if (!string.IsNullOrEmpty(imageSource.Title))
-                        {
-                            var title = imageSource.Title;
-                            var titleWidth = graphics.MeasureString(title, font).Width;
-                            while (titleWidth >= imageSize && title.Length > 0)
-                            {
-                                title = title.Substring(0, title.Length - 1);
-                                titleWidth = graphics.MeasureString(title, font).Width;
-                            }
-                            if (title.Length != imageSource.Title.Length)
-                            {
-                                title += "…";
-                            }
-                            if (!string.IsNullOrEmpty(title) && titleWidth > 0)
-                            {
-                                graphics.DrawString(
-                                    title,
-                                    font,
-                                    solidWhite,
-                                    new PointF(
-                                        x + ((Math.Max(2, tileSize - titleWidth) / 2) - 1),
-                                        y + imageSize + padding
-                                    )
-                                );
-                            }
-                        }
-                        x += tileSize;
                     }
-                    y += tileSize;
+                    x += tileSize;
                 }
+                y += tileSize;
             }
 
-            using (var mosaicStream = new MemoryStream())
+            using var mosaicStream = new MemoryStream();
+            mosaic.Save(mosaicStream, ImageFormat.Png);
+            var mosaicRaw = mosaicStream.ToArray();
+            return new GetImageMosaicResponse
             {
-                mosaic.Save(mosaicStream, ImageFormat.Png);
-                var mosaicRaw = mosaicStream.ToArray();
-                return new GetImageMosaicResponse
-                {
-                    Data = mosaicRaw,
-                    MimeType = "image/png"
-                };
-            }
+                Data = mosaicRaw,
+                MimeType = "image/png"
+            };
         }
 
         public async Task<GetImageMosaicResponse> HandleAsync(GetTradeImageMosaicRequest request)
@@ -293,94 +288,90 @@ namespace SCMM.Steam.API.Queries
             await HydrateImageData(wantImageSources);
 
             var mosaic = new Bitmap((columns + 1 + columns) * tileSize, (rows * tileSize) + fontSize + (textPadding * 2));
-            using (var graphics = Graphics.FromImage(mosaic))
+            using var graphics = Graphics.FromImage(mosaic);
+            graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
+            var gradientTop = Color.FromArgb(133, 133, 133);
+            var gradientBottom = Color.FromArgb(99, 99, 99);
+            var bluePen = new Pen(Color.FromArgb(66, 66, 66), 3);
+            bluePen.LineJoin = LineJoin.Round;
+
+            var x = 0;
+            var y = 0;
+
+            if (haveImageSources.Any())
             {
-                graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                var path = new GraphicsPath();
+                path.AddString(
+                    $"Have", sansSerif, (int)FontStyle.Bold, fontSize, new PointF(x + textPadding, y + textPadding), StringFormat.GenericTypographic
+                );
+                graphics.DrawPath(bluePen, path);
+                graphics.FillPath(
+                    new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical),
+                    path
+                );
 
-                var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
-                var gradientTop = Color.FromArgb(133, 133, 133);
-                var gradientBottom = Color.FromArgb(99, 99, 99);
-                var bluePen = new Pen(Color.FromArgb(66, 66, 66), 3);
-                bluePen.LineJoin = LineJoin.Round;
-
-                var x = 0;
-                var y = 0;
-
-                if (haveImageSources.Any())
+                y += (fontSize + (textPadding * 2));
+                var haveImageQueue = new Queue<ImageSource>(haveImageSources);
+                for (int r = 0; r < rows; r++)
                 {
-                    var path = new GraphicsPath();
-                    path.AddString(
-                        $"Have", sansSerif, (int)FontStyle.Bold, fontSize, new PointF(x + textPadding, y + textPadding), StringFormat.GenericTypographic
-                    );
-                    graphics.DrawPath(bluePen, path);
-                    graphics.FillPath(
-                        new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical),
-                        path
-                    );
-
-                    y += (fontSize + (textPadding * 2));
-                    var haveImageQueue = new Queue<ImageSource>(haveImageSources);
-                    for (int r = 0; r < rows; r++)
+                    for (int c = 0; c < columns; c++)
                     {
-                        for (int c = 0; c < columns; c++)
+                        var imageSource = (haveImageQueue.Any() ? haveImageQueue.Dequeue() : null);
+                        if (imageSource?.ImageData == null)
                         {
-                            var imageSource = (haveImageQueue.Any() ? haveImageQueue.Dequeue() : null);
-                            if (imageSource?.ImageData == null)
-                            {
-                                continue;
-                            }
-
-                            var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
-                            graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
+                            continue;
                         }
+
+                        var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
+                        graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
                     }
-                    x += ((columns * tileSize) + tileSize);
-                    y = 0;
                 }
-
-                if (wantImageSources.Any())
-                {
-                    var path = new GraphicsPath();
-                    path.AddString(
-                        $"Want", sansSerif, (int)FontStyle.Bold, fontSize, new PointF(x + textPadding, y + textPadding), StringFormat.GenericTypographic
-                    );
-                    graphics.DrawPath(bluePen, path);
-                    graphics.FillPath(
-                        new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical),
-                        path
-                    );
-
-                    y += (fontSize + (textPadding * 2));
-                    var wantImageQueue = new Queue<ImageSource>(wantImageSources);
-                    for (int r = 0; r < rows; r++)
-                    {
-                        for (int c = 0; c < columns; c++)
-                        {
-                            var imageSource = (wantImageQueue.Any() ? wantImageQueue.Dequeue() : null);
-                            if (imageSource?.ImageData == null)
-                            {
-                                continue;
-                            }
-
-                            var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
-                            graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
-                        }
-                    }
-                    x += ((columns * tileSize) + tileSize);
-                    y = 0;
-                }
+                x += ((columns * tileSize) + tileSize);
+                y = 0;
             }
 
-            using (var mosaicStream = new MemoryStream())
+            if (wantImageSources.Any())
             {
-                mosaic.Save(mosaicStream, ImageFormat.Png);
-                var mosaicRaw = mosaicStream.ToArray();
-                return new GetImageMosaicResponse
+                var path = new GraphicsPath();
+                path.AddString(
+                    $"Want", sansSerif, (int)FontStyle.Bold, fontSize, new PointF(x + textPadding, y + textPadding), StringFormat.GenericTypographic
+                );
+                graphics.DrawPath(bluePen, path);
+                graphics.FillPath(
+                    new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical),
+                    path
+                );
+
+                y += (fontSize + (textPadding * 2));
+                var wantImageQueue = new Queue<ImageSource>(wantImageSources);
+                for (int r = 0; r < rows; r++)
                 {
-                    Data = mosaicRaw,
-                    MimeType = "image/png"
-                };
+                    for (int c = 0; c < columns; c++)
+                    {
+                        var imageSource = (wantImageQueue.Any() ? wantImageQueue.Dequeue() : null);
+                        if (imageSource?.ImageData == null)
+                        {
+                            continue;
+                        }
+
+                        var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
+                        graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
+                    }
+                }
+                x += ((columns * tileSize) + tileSize);
+                y = 0;
             }
+
+            using var mosaicStream = new MemoryStream();
+            mosaic.Save(mosaicStream, ImageFormat.Png);
+            var mosaicRaw = mosaicStream.ToArray();
+            return new GetImageMosaicResponse
+            {
+                Data = mosaicRaw,
+                MimeType = "image/png"
+            };
         }
 
         private async Task HydrateImageData(IEnumerable<ImageSource> imageSources)

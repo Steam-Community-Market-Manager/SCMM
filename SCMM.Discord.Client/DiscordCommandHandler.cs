@@ -35,13 +35,11 @@ namespace SCMM.Discord.Client
 
             try
             {
-                using (var scope = _services.CreateScope())
-                {
-                    await _commands.AddModulesAsync(
-                        assembly: Assembly.GetEntryAssembly(),
-                        services: scope.ServiceProvider
-                    );
-                }
+                using var scope = _services.CreateScope();
+                await _commands.AddModulesAsync(
+                    assembly: Assembly.GetEntryAssembly(),
+                    services: scope.ServiceProvider
+                );
             }
             catch (Exception ex)
             {
@@ -70,15 +68,13 @@ namespace SCMM.Discord.Client
             // Execute the command in a background thread to avoid clogging the gateway thread
             _ = Task.Run(async () =>
             {
-                using (var scope = _services.CreateScope())
-                {
-                    var context = new ShardedCommandContext(_client, message);
-                    var result = await _commands.ExecuteAsync(
-                        context: context,
-                        argPos: commandArgPos,
-                        services: scope.ServiceProvider
-                    );
-                }
+                using var scope = _services.CreateScope();
+                var context = new ShardedCommandContext(_client, message);
+                var result = await _commands.ExecuteAsync(
+                    context: context,
+                    argPos: commandArgPos,
+                    services: scope.ServiceProvider
+                );
             });
 
             return Task.CompletedTask;

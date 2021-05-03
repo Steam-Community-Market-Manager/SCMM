@@ -42,62 +42,60 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var googleClient = scope.ServiceProvider.GetService<GoogleClient>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+            using var scope = _scopeFactory.CreateScope();
+            var googleClient = scope.ServiceProvider.GetService<GoogleClient>();
+            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
-                var steamApps = await db.SteamApps.ToListAsync();
-                if (!steamApps.Any())
+            var steamApps = await db.SteamApps.ToListAsync();
+            if (!steamApps.Any())
+            {
+                return;
+            }
+
+            foreach (var app in steamApps)
+            {
+                var media = new Dictionary<DateTime, string>();
+                var itemStore = db.SteamItemStores
+                    .Where(x => x.End == null)
+                    .OrderByDescending(x => x.Start)
+                    .FirstOrDefault();
+
+                if (itemStore == null)
                 {
-                    return;
+                    continue;
                 }
 
-                foreach (var app in steamApps)
+                foreach (var channel in Configuration.Channels)
                 {
-                    var media = new Dictionary<DateTime, string>();
-                    var itemStore = db.SteamItemStores
-                        .Where(x => x.End == null)
-                        .OrderByDescending(x => x.Start)
-                        .FirstOrDefault();
-
-                    if (itemStore == null)
+                    var videos = await googleClient.SearchVideosAsync(
+                        query: channel.Query,
+                        channelId: channel.ChannelId,
+                        publishedBefore: itemStore.End?.UtcDateTime,
+                        publishedAfter: itemStore.Start.UtcDateTime
+                    );
+                    if (videos?.Any() == true)
                     {
-                        continue;
-                    }
-
-                    foreach (var channel in Configuration.Channels)
-                    {
-                        var videos = await googleClient.SearchVideosAsync(
-                            query: channel.Query,
-                            channelId: channel.ChannelId,
-                            publishedBefore: itemStore.End?.UtcDateTime,
-                            publishedAfter: itemStore.Start.UtcDateTime
-                        );
-                        if (videos?.Any() == true)
+                        foreach (var video in videos.Where(x => x.PublishedAt != null))
                         {
-                            foreach (var video in videos.Where(x => x.PublishedAt != null))
+                            if (video.Title.Contains(channel.Query.Trim('\"'), StringComparison.InvariantCultureIgnoreCase))
                             {
-                                if (video.Title.Contains(channel.Query.Trim('\"'), StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    media[video.PublishedAt.Value] = video.Id;
-                                }
+                                media[video.PublishedAt.Value] = video.Id;
                             }
                         }
                     }
+                }
 
-                    var newMedia = media
-                        .Where(x => !itemStore.Media.Contains(x.Value))
-                        .OrderBy(x => x.Key)
-                        .ToList();
+                var newMedia = media
+                    .Where(x => !itemStore.Media.Contains(x.Value))
+                    .OrderBy(x => x.Key)
+                    .ToList();
 
-                    if (newMedia.Any())
-                    {
-                        itemStore.Media = new PersistableStringCollection(
-                            itemStore.Media.Union(newMedia.Select(x => x.Value))
-                        );
-                        db.SaveChanges();
-                    }
+                if (newMedia.Any())
+                {
+                    itemStore.Media = new PersistableStringCollection(
+                        itemStore.Media.Union(newMedia.Select(x => x.Value))
+                    );
+                    db.SaveChanges();
                 }
             }
         }

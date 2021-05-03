@@ -23,13 +23,11 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var steamSession = scope.ServiceProvider.GetRequiredService<SteamSession>();
+            if (steamSession != null)
             {
-                var steamSession = scope.ServiceProvider.GetRequiredService<SteamSession>();
-                if (steamSession != null)
-                {
-                    steamSession.Refresh(scope.ServiceProvider);
-                }
+                steamSession.Refresh(scope.ServiceProvider);
             }
 
             return Task.CompletedTask;

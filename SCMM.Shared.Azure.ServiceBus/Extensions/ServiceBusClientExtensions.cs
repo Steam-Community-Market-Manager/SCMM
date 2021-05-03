@@ -9,34 +9,41 @@ namespace SCMM.Shared.Azure.ServiceBus.Extensions
     {
         public static ServiceBusSender CreateSender<T>(this ServiceBusClient client) where T : IMessage
         {
-            return client.CreateSender(GetQueueNameForMessageType(typeof(T)));
+            return CreateSender(client, typeof(T));
         }
 
         public static ServiceBusSender CreateSender(this ServiceBusClient client, Type messageType)
         {
-            return client.CreateSender(GetQueueNameForMessageType(messageType));
+            var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
+            var queueName = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
+            if (!String.IsNullOrEmpty(topicName) || !String.IsNullOrEmpty(queueName))
+            {
+                return client.CreateSender(topicName ?? queueName);
+            }
+
+            throw new ArgumentException(nameof(messageType), "Message type must have a [Queue] or [Topic] attribute declaration");
         }
 
         public static ServiceBusProcessor CreateProcessor<T>(this ServiceBusClient client, ServiceBusProcessorOptions options) where T : IMessage
         {
-            return client.CreateProcessor(GetQueueNameForMessageType(typeof(T)), options);
+            return CreateProcessor(client, typeof(T), options);
         }
 
         public static ServiceBusProcessor CreateProcessor(this ServiceBusClient client, Type messageType, ServiceBusProcessorOptions options)
         {
-            return client.CreateProcessor(GetQueueNameForMessageType(messageType), options);
-        }
-
-        private static string GetQueueNameForMessageType(Type messageType)
-        {
-            var queueAttribute = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
-            var topicAttribute = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
-            if (String.IsNullOrEmpty(queueAttribute) && String.IsNullOrEmpty(topicAttribute))
+            var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
+            if (!String.IsNullOrEmpty(topicName))
             {
-                throw new ArgumentException(nameof(messageType), "Message type must have a [Queue] or [Topic] attribute declaration");
+                return client.CreateProcessor(topicName, Assembly.GetEntryAssembly().GetName().Name, options);
             }
 
-            return queueAttribute ?? topicAttribute;
+            var queueName = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
+            if (!String.IsNullOrEmpty(queueName))
+            {
+                return client.CreateProcessor(queueName, options);
+            }
+            
+            throw new ArgumentException(nameof(messageType), "Message type must have a [Queue] or [Topic] attribute declaration");
         }
     }
 }

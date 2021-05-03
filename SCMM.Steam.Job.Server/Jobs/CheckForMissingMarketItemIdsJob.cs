@@ -30,47 +30,45 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
+            var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
+            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+
+            var itemsWithMissingIds = db.SteamMarketItems
+                .Where(x => String.IsNullOrEmpty(x.SteamId))
+                .Include(x => x.App)
+                .Include(x => x.Description)
+                .Take(10) // batch 10 at a time
+                .ToList();
+
+            if (!itemsWithMissingIds.Any())
             {
-                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
-                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                return;
+            }
 
-                var itemsWithMissingIds = db.SteamMarketItems
-                    .Where(x => String.IsNullOrEmpty(x.SteamId))
-                    .Include(x => x.App)
-                    .Include(x => x.Description)
-                    .Take(10) // batch 10 at a time
-                    .ToList();
-
-                if (!itemsWithMissingIds.Any())
-                {
-                    return;
-                }
-
-                // Add a 30 second delay between requests to avoid "Too Many Requests" error
-                _logger.LogInformation($"Checking for missing market item name ids (ids: {itemsWithMissingIds.Count()})");
-                var updatedItems = await Observable.Interval(TimeSpan.FromSeconds(30))
-                    .Zip(itemsWithMissingIds, (x, y) => y)
-                    .Select(async x =>
-                        steamService.UpdateMarketItemNameId(x,
-                            await commnityClient.GetMarketListingItemNameId(
-                                new SteamMarketListingPageRequest()
-                                {
-                                    AppId = x.App.SteamId,
-                                    MarketHashName = x.Description.Name,
-                                }
-                            )
+            // Add a 30 second delay between requests to avoid "Too Many Requests" error
+            _logger.LogInformation($"Checking for missing market item name ids (ids: {itemsWithMissingIds.Count()})");
+            var updatedItems = await Observable.Interval(TimeSpan.FromSeconds(30))
+                .Zip(itemsWithMissingIds, (x, y) => y)
+                .Select(async x =>
+                    steamService.UpdateMarketItemNameId(x,
+                        await commnityClient.GetMarketListingItemNameId(
+                            new SteamMarketListingPageRequest()
+                            {
+                                AppId = x.App.SteamId,
+                                MarketHashName = x.Description.Name,
+                            }
                         )
                     )
-                    .Merge()
-                    .Where(x => !String.IsNullOrEmpty(x.SteamId))
-                    .ToList();
+                )
+                .Merge()
+                .Where(x => !String.IsNullOrEmpty(x.SteamId))
+                .ToList();
 
-                if (updatedItems.Any())
-                {
-                    db.SaveChanges();
-                }
+            if (updatedItems.Any())
+            {
+                db.SaveChanges();
             }
         }
     }

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SCMM.Steam.Job.Server.Jobs.Cron;
 
 namespace SCMM.Steam.Job.Server.Jobs.Cron
 {
@@ -62,13 +61,17 @@ namespace SCMM.Steam.Job.Server.Jobs.Cron
                     }
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        var jobName = GetType().Name;
                         try
                         {
+                            _logger.LogTrace($"{jobName} is now being triggered...");
                             await DoWork(cancellationToken);
+                            var nextRun = _expression?.GetNextOccurrence(DateTimeOffset.Now, TimeZoneInfo.Local);
+                            _logger.LogTrace($"{jobName} has completed, will next run at {nextRun}");
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, $"{this.GetType().Name} work failed");
+                            _logger.LogError(ex, $"{jobName} failed");
                         }
                     }
                     if (!cancellationToken.IsCancellationRequested)

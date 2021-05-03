@@ -37,7 +37,13 @@ namespace SCMM.Discord.Bot.Server.Middleware
             _client.Ready += OnReady;
             _client.GuildJoined += OnGuildJoined;
             _client.GuildLeft += OnGuildLeft;
-            _ = _client.ConnectAsync();
+            _ = _client.ConnectAsync().ContinueWith(x =>
+            {
+                if (x.IsFaulted && x.Exception != null)
+                {
+                    _logger.LogError(x.Exception, "Failed to connect to Discord");
+                }
+            });
         }
 
         public Task Invoke(HttpContext httpContext)
@@ -80,18 +86,16 @@ namespace SCMM.Discord.Bot.Server.Middleware
             // If the next store update time is in the past by more than 6 hours, requery it to get a new timestamp
             if ((_statusNextStoreUpdate - DateTimeOffset.Now).Add(TimeSpan.FromHours(6)) <= TimeSpan.Zero)
             {
-                using (var scope = _scopeFactory.CreateScope())
+                using var scope = _scopeFactory.CreateScope();
+                try
                 {
-                    try
-                    {
-                        var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
-                        var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
-                        _statusNextStoreUpdate = storeNextUpdateTime.Timestamp;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Failed to get the store next update time for client watching status");
-                    }
+                    var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
+                    var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+                    _statusNextStoreUpdate = storeNextUpdateTime.Timestamp;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to get the store next update time for client watching status");
                 }
             }
 
@@ -110,36 +114,34 @@ namespace SCMM.Discord.Bot.Server.Middleware
 
         private void AddGuildsToDatabaseIfMissing(params Client.DiscordGuild[] guilds)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            try
             {
-                try
-                {
-                    var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                    var discordGuildIds = db.DiscordGuilds
-                        .Select(x => x.DiscordId)
-                        .AsNoTracking()
-                        .ToList();
+                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+                var discordGuildIds = db.DiscordGuilds
+                    .Select(x => x.DiscordId)
+                    .AsNoTracking()
+                    .ToList();
 
-                    var missingGuilds = guilds.Where(x => !discordGuildIds.Any(y => y == x.Id.ToString())).ToList();
-                    if (missingGuilds.Any())
+                var missingGuilds = guilds.Where(x => !discordGuildIds.Any(y => y == x.Id.ToString())).ToList();
+                if (missingGuilds.Any())
+                {
+                    foreach (var guild in missingGuilds)
                     {
-                        foreach (var guild in missingGuilds)
+                        _logger.LogInformation($"New guild was joined: {guild.Name}");
+                        db.DiscordGuilds.Add(new Steam.Data.Store.DiscordGuild()
                         {
-                            _logger.LogInformation($"New guild was joined: {guild.Name}");
-                            db.DiscordGuilds.Add(new Steam.Data.Store.DiscordGuild()
-                            {
-                                DiscordId = guild.Id.ToString(),
-                                Name = guild.Name
-                            });
-                        }
-
-                        db.SaveChanges();
+                            DiscordId = guild.Id.ToString(),
+                            Name = guild.Name
+                        });
                     }
+
+                    db.SaveChanges();
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to add newly joined guilds to persistent storage (count: {guilds.Length})");
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to add newly joined guilds to persistent storage (count: {guilds.Length})");
             }
         }
     }

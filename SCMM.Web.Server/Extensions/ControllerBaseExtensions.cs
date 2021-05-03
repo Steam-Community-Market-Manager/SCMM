@@ -28,8 +28,8 @@ namespace SCMM.Web.Server.Extensions
                 languageName = controller.Request.Headers[AppState.HttpHeaderLanguage].ToString();
             }
 
-            return SteamLanguageService.GetByNameCached(languageName) ??
-                   SteamLanguageService.GetByNameCached(AppState.DefaultLanguage);
+            return LanguageCache.GetByName(languageName) ??
+                   LanguageCache.GetByName(AppState.DefaultLanguage);
         }
 
         public static CurrencyDetailedDTO Currency(this ControllerBase controller)
@@ -47,8 +47,8 @@ namespace SCMM.Web.Server.Extensions
                 currencyName = controller.Request.Headers[AppState.HttpHeaderCurrency].ToString();
             }
 
-            return SteamCurrencyService.GetByNameCached(currencyName) ??
-                   SteamCurrencyService.GetByNameCached(AppState.DefaultCurrency);
+            return CurrencyCache.GetByName(currencyName) ??
+                   CurrencyCache.GetByName(AppState.DefaultCurrency);
         }
     }
 }

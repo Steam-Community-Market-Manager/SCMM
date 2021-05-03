@@ -32,66 +32,64 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         public override async Task DoWork(CancellationToken cancellationToken)
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using var scope = _scopeFactory.CreateScope();
+            var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
+            var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
+            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+
+            var items = db.SteamMarketItems
+                .Include(x => x.App)
+                .Include(x => x.Description)
+                .OrderBy(x => x.LastCheckedSalesOn)
+                .Take(5) // batch 5 at a time
+                .ToList();
+
+            if (!items.Any())
             {
-                var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
-                var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
-                var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-
-                var items = db.SteamMarketItems
-                    .Include(x => x.App)
-                    .Include(x => x.Description)
-                    .OrderBy(x => x.LastCheckedSalesOn)
-                    .Take(5) // batch 5 at a time
-                    .ToList();
-
-                if (!items.Any())
-                {
-                    return;
-                }
-
-                var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
-                if (language == null)
-                {
-                    return;
-                }
-
-                var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-                if (currency == null)
-                {
-                    return;
-                }
-
-                foreach (var item in items)
-                {
-                    var response = await commnityClient.GetMarketPriceHistory(
-                        new SteamMarketPriceHistoryJsonRequest()
-                        {
-                            AppId = item.App.SteamId,
-                            MarketHashName = item.Description.Name,
-                            Language = language.SteamId,
-                            CurrencyId = currency.SteamId,
-                            NoRender = true
-                        }
-                    );
-
-                    try
-                    {
-                        await steamService.UpdateSteamMarketItemSalesHistory(
-                            item,
-                            currency.Id,
-                            response
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'");
-                        continue;
-                    }
-                }
-
-                db.SaveChanges();
+                return;
             }
+
+            var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
+            if (language == null)
+            {
+                return;
+            }
+
+            var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
+            if (currency == null)
+            {
+                return;
+            }
+
+            foreach (var item in items)
+            {
+                var response = await commnityClient.GetMarketPriceHistory(
+                    new SteamMarketPriceHistoryJsonRequest()
+                    {
+                        AppId = item.App.SteamId,
+                        MarketHashName = item.Description.Name,
+                        Language = language.SteamId,
+                        CurrencyId = currency.SteamId,
+                        NoRender = true
+                    }
+                );
+
+                try
+                {
+                    await steamService.UpdateSteamMarketItemSalesHistory(
+                        item,
+                        currency.Id,
+                        response
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'");
+                    continue;
+                }
+            }
+
+            db.SaveChanges();
         }
     }
 }
