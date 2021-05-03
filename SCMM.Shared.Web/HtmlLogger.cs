@@ -44,10 +44,14 @@ namespace SCMM.Shared.Web
             var log = $"<span style=\"color:{gray}\">[{DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss")}]</span> <strong><samp>{logLevel.ToString().ToUpper()}</samp></strong> <span>{formatter(state, exception)}</span>";
             if (!String.IsNullOrEmpty(exception?.StackTrace))
             {
-                log += $"<blockquote>{exception.StackTrace}</blockquote>";
+                log += $"<pre style=\"color: {gray}; margin:0px\">{exception.StackTrace}</pre>";
+            }
+            else
+            {
+                log += $"<br/>";
             }
 
-            Logs.Add($"<span style=\"background-color:{background};color:{foreground}\">{log}</span><br/>");
+            Logs.Add($"<div style=\"background-color:{background};color:{foreground}\">{log}</div>");
             var overcommited = (Logs.Count - MaxLogCount);
             if (overcommited > 0)
             {
