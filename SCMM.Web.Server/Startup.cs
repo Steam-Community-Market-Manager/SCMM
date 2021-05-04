@@ -4,12 +4,17 @@ using AutoMapper;
 using CommandQuery;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using Microsoft.OpenApi.Models;
 using SCMM.Shared.Azure.ServiceBus.Extensions;
 using SCMM.Shared.Azure.ServiceBus.Middleware;
@@ -45,40 +50,50 @@ namespace SCMM.Web.Server
             });
 
             // Authentication
-            var authConfiguration = services.AddAuthentication(options =>
-            {
-                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = SteamAuthenticationDefaults.AuthenticationScheme;
-            });
-            authConfiguration.AddCookie(options =>
-            {
-                options.LoginPath = "/signin";
-                options.LogoutPath = "/signout";
-                options.AccessDeniedPath = "/";
-                options.SlidingExpiration = true;
-                options.ExpireTimeSpan = TimeSpan.FromDays(7);
-                options.Cookie.Name = "scmmLoginSecure";
-                options.Cookie.IsEssential = true;
-                options.Cookie.HttpOnly = false;
-            });
-            authConfiguration.AddSteam(options =>
-            {
-                options.ApplicationKey = Configuration.GetSteamConfiguration().ApplicationKey;
-                options.Events = new OpenIdAuthenticationEvents
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
                 {
-                    OnTicketReceived = async (ctx) =>
+                    options.LoginPath = "/signin";
+                    options.LogoutPath = "/signout";
+                    options.AccessDeniedPath = "/";
+                    options.SlidingExpiration = true;
+                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                    options.Cookie.Name = "scmmLoginSecure";
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.HttpOnly = false;
+                })
+                .AddSteam(options =>
+                {
+                    options.ApplicationKey = Configuration.GetSteamConfiguration().ApplicationKey;
+                    options.Events = new OpenIdAuthenticationEvents
                     {
-                        var db = ctx.HttpContext.RequestServices.GetRequiredService<SteamDbContext>();
-                        var commandProcessor = ctx.HttpContext.RequestServices.GetRequiredService<ICommandProcessor>();
-                        var loggedInProfile = await commandProcessor.ProcessWithResultAsync(new LoginSteamProfileRequest()
+                        OnTicketReceived = async (ctx) =>
                         {
-                            Claim = ctx.Principal.FindFirstValue(ClaimTypes.NameIdentifier)
-                        });
+                            var db = ctx.HttpContext.RequestServices.GetRequiredService<SteamDbContext>();
+                            var commandProcessor = ctx.HttpContext.RequestServices.GetRequiredService<ICommandProcessor>();
+                            var loggedInProfile = await commandProcessor.ProcessWithResultAsync(new LoginSteamProfileRequest()
+                            {
+                                Claim = ctx.Principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                            });
 
-                        ctx.Principal.AddIdentity(loggedInProfile.Identity);
-                        await db.SaveChangesAsync();
-                    }
-                };
+                            ctx.Principal.AddIdentity(loggedInProfile.Identity);
+                            await db.SaveChangesAsync();
+                        }
+                    };
+                });
+                /* TODO: Get this to work alongside Steam OpenID
+                .AddMicrosoftIdentityWebApp(
+                    openIdConnectScheme: OpenIdConnectDefaults.AuthenticationScheme,
+                    cookieScheme: $"{OpenIdConnectDefaults.AuthenticationScheme}{CookieAuthenticationDefaults.AuthenticationScheme}",
+                    configurationSection: Configuration.GetSection("AzureAd")
+                );
+                */
+
+            // Authorization
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(AuthorizationPolicies.Administrator, AuthorizationPolicies.AdministratorBuilder);
+                options.AddPolicy(AuthorizationPolicies.User, AuthorizationPolicies.UserBuilder);
             });
 
             // Database
@@ -117,10 +132,23 @@ namespace SCMM.Web.Server
             services.AddScoped<CurrencyCache>();
 
             // Controllers
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add(
+                    new AuthorizeFilter(
+                        new AuthorizationPolicyBuilder()
+                            .AddAuthenticationSchemes(SteamAuthenticationDefaults.AuthenticationScheme)
+                            .RequireAuthenticatedUser()
+                            .RequireRole("Administrator")
+                            .Build()
+                    )
+                );
+            });
 
             // Views
             services.AddRazorPages();
+                // TODO: Get this to work alongside Steam OpenID
+                //.AddMicrosoftIdentityUI();
 
             // Auto-documentation
             services.AddSwaggerGen(config =>
@@ -195,8 +223,12 @@ namespace SCMM.Web.Server
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
                 endpoints.MapControllers();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}"
+                );
+                endpoints.MapRazorPages();
                 endpoints.MapFallbackToFile("index.html");
             });
 

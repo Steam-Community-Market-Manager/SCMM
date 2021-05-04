@@ -263,7 +263,23 @@ else
                     SubTitle = "Manage your account",
                     Path = "settings",
                     Prefix = true
-                },
+                }
+            });
+            if (State.IsInRole(Roles.Administrator))
+            {
+                items.AddRange(new List<NavigationItem>
+                {
+                    new NavigationItem
+                    {
+                        Icon = @<CogIcon />,
+                        Title = "Administration",
+                        Path = "admin",
+                        Prefix = true
+                    },
+                });
+            }
+            items.AddRange(new List<NavigationItem>
+            {
                 new NavigationItem
                 {
                     Icon = @<ExitDoorIcon />,

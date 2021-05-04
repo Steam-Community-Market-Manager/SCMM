@@ -83,9 +83,16 @@ namespace SCMM.Web.Server.API.Controllers
                 // Map the DB profile over top of the default profile
                 // NOTE: This is done so that the language/currency pass-through if they haven't been set yet
                 var authenticatedProfile = _mapper.Map<ProfileDetailedDTO>(profile);
-                authenticatedProfile.Language = (authenticatedProfile.Language ?? defaultProfile.Language);
-                authenticatedProfile.Currency = (authenticatedProfile.Currency ?? defaultProfile.Currency);
-                return Ok(authenticatedProfile);
+                if (authenticatedProfile != null)
+                {
+                    authenticatedProfile.Language = (authenticatedProfile.Language ?? defaultProfile.Language);
+                    authenticatedProfile.Currency = (authenticatedProfile.Currency ?? defaultProfile.Currency);
+                    return Ok(authenticatedProfile);
+                }
+                else
+                {
+                    return Ok(defaultProfile);
+                }
             }
 
             // Else, use a transient guest profile
@@ -107,7 +114,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="401">If the request is unauthenticated (login first).</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize]
+        [Authorize(AuthorizationPolicies.User)]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -722,7 +729,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="401">If the request is unauthenticated (login first) or the requested inventory item does not belong to the authenticated user.</response>
         /// <response code="404">If the inventory item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize]
+        [Authorize(AuthorizationPolicies.User)]
         [HttpPut("{steamId}/inventory/item/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -779,7 +786,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="401">If the request is unauthenticated (login first) or the requested inventory item does not belong to the authenticated user.</response>
         /// <response code="404">If the inventory item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize]
+        [Authorize(AuthorizationPolicies.User)]
         [HttpPut("{steamId}/inventory/item/{itemOrAssetId}/{flag}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -846,7 +853,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="401">If the request is unauthenticated (login first) or the requested market item does not belong to the authenticated user.</response>
         /// <response code="404">If the market item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize]
+        [Authorize(AuthorizationPolicies.User)]
         [HttpPut("{steamId}/market/item/{itemOrAssetId}/{flag}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

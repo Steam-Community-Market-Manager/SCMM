@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using AspNet.Security.OpenId.Steam;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SCMM.Web.Server.Controllers
 {
+    [AllowAnonymous]
     public class AuthenticationController : Controller
     {
         /// <summary>
@@ -18,7 +21,8 @@ namespace SCMM.Web.Server.Controllers
                 new AuthenticationProperties
                 {
                     RedirectUri = returnUrl
-                }
+                },
+                SteamAuthenticationDefaults.AuthenticationScheme
             );
         }
 
