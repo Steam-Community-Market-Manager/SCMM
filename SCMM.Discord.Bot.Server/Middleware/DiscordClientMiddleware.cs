@@ -66,14 +66,14 @@ namespace SCMM.Discord.Bot.Server.Middleware
         private void OnReady(IEnumerable<Client.DiscordGuild> guilds)
         {
             // Add any missing guilds to our database
-            AddGuildsToDatabaseIfMissing(guilds.ToArray());
+            _ = AddGuildsToDatabaseIfMissing(guilds.ToArray());
         }
 
         private void OnGuildJoined(Client.DiscordGuild guild)
         {
             // Add new guild to our database
             _logger.LogInformation($"New guild was joined: {guild.Name}");
-            AddGuildsToDatabaseIfMissing(guild);
+            _ = AddGuildsToDatabaseIfMissing(guild);
         }
 
         private void OnGuildLeft(Client.DiscordGuild guild)
@@ -112,16 +112,16 @@ namespace SCMM.Discord.Bot.Server.Middleware
             }
         }
 
-        private void AddGuildsToDatabaseIfMissing(params Client.DiscordGuild[] guilds)
+        private async Task AddGuildsToDatabaseIfMissing(params Client.DiscordGuild[] guilds)
         {
             using var scope = _scopeFactory.CreateScope();
             try
             {
                 var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-                var discordGuildIds = db.DiscordGuilds
+                var discordGuildIds = await db.DiscordGuilds
                     .Select(x => x.DiscordId)
                     .AsNoTracking()
-                    .ToList();
+                    .ToListAsync();
 
                 var missingGuilds = guilds.Where(x => !discordGuildIds.Any(y => y == x.Id.ToString())).ToList();
                 if (missingGuilds.Any())
@@ -136,7 +136,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                         });
                     }
 
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
