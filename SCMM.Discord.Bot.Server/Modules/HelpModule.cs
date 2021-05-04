@@ -22,7 +22,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("help")]
         [Alias("?")]
         [Summary("Show this command help text")]
-        public async Task SayHelpAsync()
+        public async Task<RuntimeResult> SayHelpAsync()
         {
             var embed = new EmbedBuilder();
             var modules = _commandService.Modules.ToList();
@@ -126,8 +126,8 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
             }
 
-            await ReplyAsync(
-                message: "These are all the commands I support.",
+            return CommandResult.Success(
+                message: "These are the commands that I support.",
                 embed: embed.Build()
             );
         }

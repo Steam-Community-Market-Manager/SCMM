@@ -1,12 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Discord.Client;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DiscordConfiguration = SCMM.Steam.Data.Store.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -25,7 +27,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
         [Command("options")]
         [Summary("Show a list of all supported configuration options you can personalise for this server")]
-        public async Task GetConfigNamesAsync()
+        public async Task<RuntimeResult> GetConfigNamesAsync()
         {
             var fields = new List<EmbedFieldBuilder>();
             var configurationDefinitions = DiscordConfiguration.Definitions;
@@ -54,7 +56,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .WithFields(fields)
                 .Build();
 
-            await ReplyAsync(
+            return CommandResult.Success(
                 embed: embed
             );
         }
@@ -63,18 +65,17 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Summary("Get the value of a configuration for this server")]
         [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task GetConfigValueAsync(
+        public async Task<RuntimeResult> GetConfigValueAsync(
             [Name("option")][Summary("Supported config option name")] string option
         )
         {
-            var guild = _db.DiscordGuilds
+            var guild = await _db.DiscordGuilds
                 .AsNoTracking()
                 .Include(x => x.Configurations)
-                .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
+                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
-                return;
+                return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
             }
 
             try
@@ -82,16 +83,16 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var config = guild.Get(option);
                 if (!String.IsNullOrEmpty(config.Value))
                 {
-                    await ReplyAsync($"'{config.Key?.Name ?? option}' is '{config.Value}'");
+                    return CommandResult.Success($"'{config.Key?.Name ?? option}' is '{config.Value}'");
                 }
                 else
                 {
-                    await ReplyAsync($"'{config.Key?.Name ?? option}' is not set");
+                    return CommandResult.Success($"'{config.Key?.Name ?? option}' is not set");
                 }
             }
             catch (ArgumentException ex)
             {
-                await ReplyAsync(ex.Message);
+                return CommandResult.Fail(ex.Message);
             }
         }
 
@@ -99,37 +100,36 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Summary("Set the value of a configuration for this server")]
         [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetConfigValueAsync(
+        public async Task<RuntimeResult> SetConfigValueAsync(
             [Name("option")][Summary("Supported config option name")] string option,
             [Name("value")][Summary("New value to set as the config")][Remainder] string value
         )
         {
-            var guild = _db.DiscordGuilds
+            var guild = await _db.DiscordGuilds
                 .Include(x => x.Configurations)
-                .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
+                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
-                return;
+                return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
             }
 
             try
             {
                 var config = guild.Set(option, value);
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
 
                 if (config != null && !String.IsNullOrEmpty(config.Value))
                 {
-                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is now '{config.Value}'.");
+                    return CommandResult.Success($"Ok. '{config?.Name ?? option}' is now '{config.Value}'.");
                 }
                 else
                 {
-                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is no longer set.");
+                    return CommandResult.Success($"Ok. '{config?.Name ?? option}' is no longer set.");
                 }
             }
             catch (ArgumentException ex)
             {
-                await ReplyAsync(ex.Message);
+                return CommandResult.Fail(ex.Message);
             }
         }
 
@@ -137,33 +137,29 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Summary("Add the specified value to a configuration for this server")]
         [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddConfigValueAsync(
+        public async Task<RuntimeResult> AddConfigValueAsync(
             [Name("option")][Summary("Supported config option name")] string option,
             [Name("values")][Summary("New value to add to the config")] params string[] values
         )
         {
-            var guild = _db.DiscordGuilds
+            var guild = await _db.DiscordGuilds
                 .Include(x => x.Configurations)
-                .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
+                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
-                return;
+                return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
             }
 
             try
             {
                 var config = guild.Add(option, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
 
-                if (config != null && config.List?.Any() == true)
-                {
-                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is now '{String.Join(", ", config.List)}'.");
-                }
+                return CommandResult.Success($"Ok. '{config?.Name ?? option}' is now '{String.Join(", ", config.List)}'.");
             }
             catch (ArgumentException ex)
             {
-                await ReplyAsync(ex.Message);
+                return CommandResult.Fail(ex.Message);
             }
         }
 
@@ -171,37 +167,36 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Summary("Remove the specified value from a configuration for this server")]
         [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task RemoveConfigValueAsync(
+        public async Task<RuntimeResult> RemoveConfigValueAsync(
             [Name("option")][Summary("Supported config option name")] string option,
             [Name("values")][Summary("Value to remove from the config")] params string[] values
         )
         {
-            var guild = _db.DiscordGuilds
+            var guild = await _db.DiscordGuilds
                 .Include(x => x.Configurations)
-                .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
+                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
-                return;
+                return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
             }
 
             try
             {
                 var config = guild.Remove(option, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
 
                 if (config != null && config.List?.Any() == true)
                 {
-                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is now '{String.Join(", ", config.List)}'.");
+                    return CommandResult.Success($"Ok. '{config?.Name ?? option}' is now '{String.Join(", ", config.List)}'.");
                 }
                 else
                 {
-                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is no longer set.");
+                    return CommandResult.Success($"Ok. '{config?.Name ?? option}' is no longer set.");
                 }
             }
             catch (ArgumentException ex)
             {
-                await ReplyAsync(ex.Message);
+                return CommandResult.Fail(ex.Message);
             }
         }
 
@@ -209,32 +204,28 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Summary("Clear all values from a configuration for this server")]
         [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ClearConfigValueAsync(
+        public async Task<RuntimeResult> ClearConfigValueAsync(
             [Name("option")][Summary("Supported config option name")] string option
         )
         {
-            var guild = _db.DiscordGuilds
+            var guild = await _db.DiscordGuilds
                 .Include(x => x.Configurations)
-                .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
+                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
-                return;
+                return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
             }
 
             try
             {
                 var config = guild.Clear(option);
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
 
-                if (config != null)
-                {
-                    await ReplyAsync($"Ok. '{config?.Name ?? option}' is no longer set.");
-                }
+                return CommandResult.Success($"Ok. '{config?.Name ?? option}' is no longer set.");
             }
             catch (ArgumentException ex)
             {
-                await ReplyAsync(ex.Message);
+                return CommandResult.Fail(ex.Message);
             }
         }
 
@@ -242,18 +233,17 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Summary("List the set values for a configuration for this server")]
         [Remarks("You must be a server manager to use this command")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ListConfigValueAsync(
+        public async Task<RuntimeResult> ListConfigValueAsync(
             [Name("option")][Summary("Supported config option name")] string option
         )
         {
-            var guild = _db.DiscordGuilds
+            var guild = await _db.DiscordGuilds
                 .AsNoTracking()
                 .Include(x => x.Configurations)
-                .FirstOrDefault(x => x.DiscordId == Context.Guild.Id.ToString());
+                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
             if (guild == null)
             {
-                await ReplyAsync($"Beep boop! I'm unable to find the Discord configuration for this guild.");
-                return;
+                return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
             }
 
             try
@@ -261,16 +251,16 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var config = guild.List(option);
                 if (config.Value?.Any() == true)
                 {
-                    await ReplyAsync($"'{config.Key?.Name ?? option}' is '{String.Join(", ", config.Value)}'.");
+                    return CommandResult.Success($"'{config.Key?.Name ?? option}' is '{String.Join(", ", config.Value)}'.");
                 }
                 else
                 {
-                    await ReplyAsync($"'{config.Key?.Name ?? option}' is not set.");
+                    return CommandResult.Success($"'{config.Key?.Name ?? option}' is not set.");
                 }
             }
             catch (ArgumentException ex)
             {
-                await ReplyAsync(ex.Message);
+                return CommandResult.Fail(ex.Message);
             }
         }
     }

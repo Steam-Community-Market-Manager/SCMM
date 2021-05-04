@@ -20,7 +20,7 @@
         [Name("request")]
         [Alias("request")]
         [Summary("Show trading information for a Discord user. This only works if the user has a profile on the SCMM website and has linked their Discord account and if the profile has set their Steam trade URL on their profile and has flagged some 'wanted' and 'trading' items on their inventory")]
-        public async Task SayProfileTradeRequestAsync(
+        public async Task<RuntimeResult> SayProfileTradeRequestAsync(
             [Name("discord_user")][Summary("Valid Discord user name or user mention")] SocketUser user = null
         )
         {
@@ -42,7 +42,7 @@
             //    return;
             //}
 
-            await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username);
+            return await SayProfileTradeRequestInternalAsync(message, profile?.SteamId ?? user?.Username);
         }
 
         [Command]
@@ -50,14 +50,14 @@
         [Name("request")]
         [Alias("request")]
         [Summary("Show trading information for a Steam profile. Only works if the profile has set their Steam trade URL on their profile and has flagged some 'wanted' and 'trading' items on their inventory")]
-        public async Task SayProfileTradeRequestAsync(
+        public async Task<RuntimeResult> SayProfileTradeRequestAsync(
             [Name("steam_id")][Summary("Valid SteamID or Steam profile URL")] string steamId
         )
         {
-            await SayProfileTradeRequestInternalAsync(null, steamId);
+            return await SayProfileTradeRequestInternalAsync(null, steamId);
         }
 
-        private async Task SayProfileTradeRequestInternalAsync(IUserMessage message, string steamId)
+        private async Task<RuntimeResult> SayProfileTradeRequestInternalAsync(IUserMessage message, string steamId)
         {
             message = (message ?? await ReplyAsync("Finding Steam profile..."));
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()

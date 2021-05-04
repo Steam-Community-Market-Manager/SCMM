@@ -1,11 +1,14 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Community.Responses.Xml;
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -129,22 +132,51 @@ namespace SCMM.Steam.Client
         protected async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request)
             where TRequest : SteamRequest
         {
+            var xml = (string)null;
             try
             {
-                var xml = await GetText(request);
+                xml = await GetText(request);
                 if (!String.IsNullOrEmpty(xml))
                 {
                     var xmlSerializer = new XmlSerializer(typeof(TResponse));
                     using var reader = new StringReader(xml);
-                    return (TResponse)xmlSerializer.Deserialize(reader);
+                    var response = (TResponse)xmlSerializer.Deserialize(reader);
+                    if (response != null)
+                    {
+                        return response;
+                    }
+                    else
+                    {
+                        throw new SerializationException("The response was empty");
+                    }
+                }
+                else
+                {
+                    throw new HttpRequestException("The response was empty");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request}' failed");
+                if (!String.IsNullOrEmpty(xml))
+                {
+                    var xmlSerializer = new XmlSerializer(typeof(SteamErrorXmlResponse));
+                    using var reader = new StringReader(xml);
+                    var error = (SteamErrorXmlResponse) xmlSerializer.Deserialize(reader);
+                    if (error != null)
+                    {
+                        throw new SteamRequestException(error.Error, ex, error);
+                    }
+                    else
+                    {
+                        _logger.LogError($"XML response could not be parsed (request: {typeof(TRequest)}, response: {typeof(TResponse)}, length: {xml?.Length ?? -1}).\n{xml}");
+                        throw new SteamRequestException($"The response could not be parsed (request: {typeof(TRequest)}, response: {typeof(TResponse)}, length: {xml?.Length ?? -1})");
+                    }
+                }
+                else
+                {
+                    throw new SteamRequestException("The request failed", ex);
+                }
             }
-
-            return default(TResponse);
         }
 
         protected async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request)

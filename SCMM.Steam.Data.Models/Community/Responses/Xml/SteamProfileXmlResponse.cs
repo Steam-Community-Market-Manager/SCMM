@@ -18,9 +18,15 @@ namespace SCMM.Steam.Data.Models.Community.Responses.Xml
         [XmlElement("stateMessage")]
         public string StateMessage { get; set; }
 
+        /// <summary>
+        /// public, friendsonly, private
+        /// </summary>
         [XmlElement("privacyState")]
         public string PrivacyState { get; set; }
 
+        /// <summary>
+        /// public=3, friendsonly=1, private=1
+        /// </summary>
         [XmlElement("visibilityState")]
         public int VisibilityState { get; set; }
 

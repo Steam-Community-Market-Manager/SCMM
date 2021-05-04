@@ -3,8 +3,11 @@ using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models;
+using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
@@ -30,36 +33,48 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("steamid")]
         [Alias("steam")]
         [Summary("Link your SteamID to your Discord user so that you don't have to specify it when using other commands")]
-        public async Task SetUserSteamIdAsync(
+        public async Task<RuntimeResult> SetUserSteamIdAsync(
             [Name("steam_id")][Summary("Valid SteamID or Steam profile URL")] string steamId
         )
         {
             var user = Context.User;
             var discordId = $"{user.Username}#{user.Discriminator}";
+            var profile = (SteamProfile)null;
 
-            // Load the steam profile
-            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+            try
             {
-                ProfileId = steamId
-            });
+                // Load the profile
+                var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+                {
+                    ProfileId = steamId
+                });
 
-            var profile = fetchAndCreateProfile?.Profile;
-            if (profile == null)
+                profile = fetchAndCreateProfile?.Profile;
+            }
+            catch (SteamRequestException ex)
             {
-                await Context.Message.AddReactionAsync(
-                   new Emoji("❌")
-                );
-                return;
+                if (ex.Error?.Message?.Contains("profile could not be found", StringComparison.InvariantCultureIgnoreCase) == true)
+                {
+                    return CommandResult.Fail(
+                        reason: $"Steam ID could not be found",
+                        explaination: $"That Steam ID doesn't exist. You can find your ID by viewing your Steam profile and copying the unique name or number shown in the URL bar. Pasting the full URL also works.",
+                        helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_find_your_profile_id.png"
+                    );
+                }
+                else
+                {
+                    return CommandResult.Fail(ex.Error.Message);
+                }
             }
 
             // Set the discord profile
             profile.DiscordId = discordId;
 
             // Load the discord guild
-            var guild = _db.DiscordGuilds
+            var guild = await _db.DiscordGuilds
                 .AsNoTracking()
                 .Include(x => x.Configurations)
-                .FirstOrDefault(x => x.DiscordId == this.Context.Guild.Id.ToString());
+                .FirstOrDefaultAsync(x => x.DiscordId == this.Context.Guild.Id.ToString());
 
             // Promote donators from VIP servers to VIP role
             if (guild?.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.DiscordGuildFlags.VIP) == true)
@@ -77,11 +92,9 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
             }
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
-            await Context.Message.AddReactionAsync(
-               new Emoji("✅")
-            );
+            return CommandResult.Success();
         }
     }
 }
