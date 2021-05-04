@@ -67,9 +67,9 @@ namespace SCMM.Steam.Job.Server
             );
 
             // 3rd party clients
-            services.AddSingleton((s) => Configuration.GetSteamConfiguration());
-            services.AddSingleton((s) => Configuration.GetGoogleConfiguration());
-            services.AddSingleton((s) => new SteamSession(s));
+            services.AddSingleton(x => Configuration.GetSteamConfiguration());
+            services.AddSingleton(x => Configuration.GetGoogleConfiguration());
+            services.AddSingleton<SteamSession>();
             services.AddSingleton<GoogleClient>();
             services.AddScoped<SteamCommunityClient>();
 
@@ -85,7 +85,6 @@ namespace SCMM.Steam.Job.Server
             services.AddScoped<SteamService>();
 
             // Jobs
-            services.AddHostedService<RefreshSteamSessionJob>();
             services.AddHostedService<DeleteExpiredImageDataJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
             services.AddHostedService<RepairMissingAppFiltersJob>();

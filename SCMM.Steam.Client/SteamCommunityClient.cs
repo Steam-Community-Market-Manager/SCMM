@@ -100,7 +100,7 @@ namespace SCMM.Steam.Client
         public async Task<SteamMarketPriceHistoryJsonResponse> GetMarketPriceHistory(SteamMarketPriceHistoryJsonRequest request)
         {
             // API returns BadRequest unless authenticated
-            if (Session?.IsValid != true)
+            if (Session?.IsLoggedIn != true)
             {
                 _logger.LogError($"GET '{request}' was skipped because session is not authenticated");
                 return null;

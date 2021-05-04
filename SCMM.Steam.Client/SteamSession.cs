@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using SCMM.Steam.Data.Models;
 using SteamAuth;
 using System;
 using System.Net;
@@ -7,38 +8,64 @@ namespace SCMM.Steam.Client
 {
     public class SteamSession
     {
-        private readonly object _sessionLock = new object();
+        private readonly ILogger<SteamSession> _logger;
+        private readonly SteamConfiguration _configuration;
+        private readonly CookieContainer _cookies;
+        private readonly object _lock = new object();
         private SessionData _session;
 
-        public SteamSession(IServiceProvider serviceProvider)
+        public SteamSession(ILogger<SteamSession> logger, SteamConfiguration configuration)
         {
-            Refresh(serviceProvider);
+            _logger = logger;
+            _configuration = configuration;
+            _cookies = new CookieContainer();
         }
 
-        public void Refresh(IServiceProvider serviceProvider)
+        public void Refresh()
         {
-            lock (_sessionLock)
+            lock (_lock)
             {
-                var logger = serviceProvider.GetService(typeof(ILogger<SteamSession>)) as ILogger<SteamSession>;
-                var config = serviceProvider.GetService(typeof(SteamConfiguration)) as SteamConfiguration;
                 try
                 {
-                    logger.LogInformation($"Refreshing steam session data");
-                    var login = new UserLogin(config.Username, config.Password);
+                    // Refresh session
+                    _logger.LogInformation($"Refreshing Steam session cookies...");
+                    var login = new UserLogin(_configuration.Username, _configuration.Password);
                     var result = login.DoLogin();
-                    if (result != LoginResult.LoginOkay)
+                    if (result == LoginResult.LoginOkay)
                     {
-                        logger.LogError($"Failed to login to steam (result: {result})");
+                        _logger.LogInformation($"Steam login was successful (result: {result})");
+                        _session = login.Session;
+                    }
+                    else
+                    {
+                        _logger.LogError($"Steam login was unsuccessful (result: {result})");
+                        Reset();
                     }
 
-                    logger.LogInformation($"Steam login result was {result}");
-                    _session = login.Session;
+                    // Refresh cookies
+                    if (_session != null)
+                    {
+                        _session.AddCookies(_cookies);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error logging in to steam");
-                    throw;
+                    _logger.LogError(ex, "Steam login was unsuccessful");
+                    Reset();
                 }
+            }
+        }
+
+        public void Reset()
+        {
+            lock (_lock)
+            {
+                // Clear cookies
+                var steamCommunityCookies = _cookies.GetCookies(new Uri(Constants.SteamCommunityUrl));
+                steamCommunityCookies?.Clear();
+
+                // Clear session
+                _session = null;
             }
         }
 
@@ -46,15 +73,18 @@ namespace SCMM.Steam.Client
         {
             get
             {
-                lock (_sessionLock)
+                lock (_lock)
                 {
-                    var cookies = new CookieContainer();
-                    _session?.AddCookies(cookies);
-                    return cookies;
+                    // If we haven't got any cookies, try refreshing the session first
+                    if (_cookies.Count == 0)
+                    {
+                        Refresh();
+                    }
                 }
+                return _cookies;
             }
         }
 
-        public bool IsValid => !String.IsNullOrEmpty(_session?.SteamLoginSecure);
+        public bool IsLoggedIn => !String.IsNullOrEmpty(_session?.SteamLoginSecure);
     }
 }
