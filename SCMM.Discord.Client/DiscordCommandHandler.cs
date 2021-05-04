@@ -57,9 +57,11 @@ namespace SCMM.Discord.Client
             }
 
             // Determine if the message is a command based on the prefix and make sure other bots don't trigger our commands
+            // Commands should start with the prefix character followed by a non-white-space character (i.e. "> hello" is a blockquote, not a command)
             int commandArgPos = 0;
             if (!(message.HasCharPrefix(_configuration.CommandPrefix.FirstOrDefault(), ref commandArgPos) ||
                 message.HasMentionPrefix(_client.CurrentUser, ref commandArgPos)) ||
+                message.Content.StartsWith($"{_configuration.CommandPrefix} ", StringComparison.InvariantCultureIgnoreCase) ||
                 message.Author.IsBot)
             {
                 return Task.CompletedTask;
