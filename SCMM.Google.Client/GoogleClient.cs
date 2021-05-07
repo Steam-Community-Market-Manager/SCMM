@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using Google.Apis.YouTube.v3.Data;
 using Microsoft.Extensions.Logging;
 using SCMM.Google.Data.Models;
 using System;
@@ -11,6 +12,8 @@ namespace SCMM.Google.Client
 {
     public class GoogleClient : IDisposable
     {
+        private const string Snippet = "snippet";
+
         private readonly ILogger<GoogleClient> _logger;
         private readonly GoogleConfiguration _configuration;
         private readonly YouTubeService _service;
@@ -48,7 +51,7 @@ namespace SCMM.Google.Client
         public async Task<IEnumerable<YouTubeVideo>> SearchVideosAsync(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int maxResults = 30)
         {
             var videos = new List<YouTubeVideo>();
-            var request = _service.Search.List("snippet");
+            var request = _service.Search.List(Snippet);
             request.Q = query;
             request.ChannelId = channelId;
             request.PublishedBefore = publishedBefore;
@@ -75,6 +78,29 @@ namespace SCMM.Google.Client
             }
 
             return videos;
+        }
+
+        public async Task CommentVideoAsync(string channelId, string videoId, string comment)
+        {
+            var commentThread = new CommentThread()
+            {
+                Snippet = new CommentThreadSnippet()
+                {
+                    ChannelId = channelId,
+                    VideoId = videoId,
+                    TopLevelComment = new Comment()
+                    {
+                        Snippet = new CommentSnippet()
+                        {
+                            TextOriginal = comment
+                        }
+                    }
+                }
+            };
+
+            var request = _service.CommentThreads.Insert(commentThread, Snippet);
+            var response = await request.ExecuteAsync();
+            return;
         }
     }
 }
