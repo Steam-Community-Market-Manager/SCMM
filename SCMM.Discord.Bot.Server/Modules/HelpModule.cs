@@ -25,7 +25,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> SayHelpAsync()
         {
             var embed = new EmbedBuilder();
-            var modules = _commandService.Modules.ToList();
+            var modules = _commandService.Modules
+                .Where(x => !x.Preconditions.Any(a => a is RequireOwnerAttribute || a is RequireContextAttribute))
+                .ToList();
+
             foreach (var module in modules)
             {
                 var commands = module.Commands;
@@ -89,6 +92,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                         commandSummary.Append(string.Join(' ', commandParamSummaries));
                     }
                     commandSummary.Append("`");
+                    if (command.Preconditions.Any(x => x is RequireUserPermissionAttribute))
+                    {
+                        commandSummary.Append(" 🔒 ");
+                    }
 
                     // Build the command detailed info
                     var commandDescription = new StringBuilder();

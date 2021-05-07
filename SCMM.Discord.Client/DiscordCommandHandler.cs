@@ -87,7 +87,7 @@ namespace SCMM.Discord.Client
             var commandResult = (result as CommandResult);
             var commandName = command.IsSpecified ? ($"{command.Value?.Module?.Name} {command.Value?.Name}").Trim() : "unspecified";
             var userName = $"{context.User.Username} #{context.User.Discriminator}";
-            var guildName = context.Guild.Name;
+            var guildName = context.Guild?.Name;
             var channelName = context.Channel.Name;
 
             // Success
@@ -170,8 +170,7 @@ namespace SCMM.Discord.Client
 
                     case CommandError.UnmetPrecondition:
                         logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, you don't have permission to do that 😕");
-                        reactionEmoji = new Emoji("🚫"); // prohibited
+                        responseMessage = context.Channel.SendMessageAsync($"Sorry, {result.ErrorReason}");
                         break;
 
                     case CommandError.Exception:
@@ -204,7 +203,7 @@ namespace SCMM.Discord.Client
                 var command = commandException.Command;
                 var commandName = ($"{command?.Module?.Name} {command?.Name}").Trim();
                 var userName = $"{context.User.Username} #{context.User.Discriminator}";
-                var guildName = context.Guild.Name;
+                var guildName = context.Guild?.Name;
                 var channelName = context.Channel.Name;
                 _logger.LogError(
                     commandException,
