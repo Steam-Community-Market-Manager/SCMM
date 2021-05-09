@@ -71,7 +71,8 @@ namespace SCMM.Discord.Bot.Server
             services.AddSingleton(x => Configuration.GetSteamConfiguration());
             services.AddSingleton<DiscordClient>();
             services.AddSingleton<SteamSession>();
-            services.AddScoped<SteamCommunityClient>();
+            services.AddScoped<SteamWebClient>();
+            services.AddScoped<SteamCommunityWebClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));
