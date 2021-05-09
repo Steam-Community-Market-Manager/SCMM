@@ -18,13 +18,13 @@ using System.Xml.Serialization;
 namespace SCMM.Steam.Client
 {
     // TODO: Add error proper handling for StatusCode: 429, ReasonPhrase: 'Too Many Requests'
-    public abstract class SteamClient
+    public class SteamWebClient
     {
-        private readonly ILogger<SteamClient> _logger;
+        private readonly ILogger<SteamWebClient> _logger;
         private readonly HttpClientHandler _httpHandler;
         private readonly SteamSession _session;
 
-        public SteamClient(ILogger<SteamClient> logger, SteamSession session)
+        public SteamWebClient(ILogger<SteamWebClient> logger, SteamSession session)
         {
             _logger = logger;
             _session = session;
@@ -45,7 +45,7 @@ namespace SCMM.Steam.Client
             };
         }
 
-        protected async Task<Tuple<byte[], string>> GetBinary<TRequest>(TRequest request)
+        public async Task<Tuple<byte[], string>> GetBinary<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             try
@@ -69,7 +69,7 @@ namespace SCMM.Steam.Client
             return null;
         }
 
-        protected async Task<string> GetText<TRequest>(TRequest request)
+        public async Task<string> GetText<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             try
@@ -91,7 +91,7 @@ namespace SCMM.Steam.Client
             return null;
         }
 
-        protected async Task<XElement> GetHtml<TRequest>(TRequest request)
+        public async Task<XElement> GetHtml<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             try
@@ -129,7 +129,7 @@ namespace SCMM.Steam.Client
             return null;
         }
 
-        protected async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request)
+        public async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request)
             where TRequest : SteamRequest
         {
             var xml = (string)null;
@@ -179,7 +179,7 @@ namespace SCMM.Steam.Client
             }
         }
 
-        protected async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request)
+        public async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request)
             where TRequest : SteamRequest
         {
             try

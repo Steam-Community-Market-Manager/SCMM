@@ -32,12 +32,12 @@ namespace SCMM.Steam.API
 
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
-        private readonly SteamCommunityClient _communityClient;
+        private readonly SteamCommunityWebClient _communityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
 
-        public SteamService(SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public SteamService(SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();

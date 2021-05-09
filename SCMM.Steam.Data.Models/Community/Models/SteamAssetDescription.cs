@@ -53,6 +53,9 @@ namespace SCMM.Steam.Data.Models.Community.Models
         [JsonProperty("icon_url_large")]
         public string IconUrlLarge { get; set; }
 
+        [JsonProperty("descriptions")]
+        public List<SteamAssetDescriptionDescription> Descriptions { get; set; }
+
         [JsonProperty("commodity")]
         public bool Commodity { get; set; }
 

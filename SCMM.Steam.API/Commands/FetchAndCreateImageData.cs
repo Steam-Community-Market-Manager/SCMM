@@ -29,9 +29,9 @@ namespace SCMM.Steam.API.Commands
     public class FetchAndCreateImageData : ICommandHandler<FetchAndCreateImageDataRequest, FetchAndCreateImageDataResponse>
     {
         private readonly SteamDbContext _db;
-        private readonly SteamCommunityClient _communityClient;
+        private readonly SteamCommunityWebClient _communityClient;
 
-        public FetchAndCreateImageData(SteamDbContext db, SteamCommunityClient communityClient)
+        public FetchAndCreateImageData(SteamDbContext db, SteamCommunityWebClient communityClient)
         {
             _db = db;
             _communityClient = communityClient;

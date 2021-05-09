@@ -33,10 +33,10 @@ namespace SCMM.Steam.API.Commands
         private readonly ILogger<FetchAndCreateSteamProfile> _logger;
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
-        private readonly SteamCommunityClient _communityClient;
+        private readonly SteamCommunityWebClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
 
-        public FetchAndCreateSteamProfile(ILogger<FetchAndCreateSteamProfile> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityClient communityClient, IQueryProcessor queryProcessor)
+        public FetchAndCreateSteamProfile(ILogger<FetchAndCreateSteamProfile> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;

@@ -37,7 +37,7 @@ namespace SCMM.Steam.Job.Server.Jobs
         public override async Task DoWork(CancellationToken cancellationToken)
         {
             using var scope = _scopeFactory.CreateScope();
-            var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
+            var commnityClient = scope.ServiceProvider.GetService<SteamCommunityWebClient>();
             var service = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
@@ -59,7 +59,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             db.SaveChanges();
         }
 
-        private async Task UpdateItemStoreTopSellers(SteamDbContext db, SteamCommunityClient commnityClient, SteamService service, SteamItemStore itemStore)
+        private async Task UpdateItemStoreTopSellers(SteamDbContext db, SteamCommunityWebClient commnityClient, SteamService service, SteamItemStore itemStore)
         {
             _logger.LogInformation($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
             var storePage = await commnityClient.GetItemStorePage(new SteamItemStorePageRequest()

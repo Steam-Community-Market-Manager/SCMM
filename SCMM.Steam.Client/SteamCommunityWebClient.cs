@@ -12,11 +12,11 @@ using System.Xml.Linq;
 
 namespace SCMM.Steam.Client
 {
-    public class SteamCommunityClient : SteamClient
+    public class SteamCommunityWebClient : SteamWebClient
     {
-        private readonly ILogger<SteamCommunityClient> _logger;
+        private readonly ILogger<SteamCommunityWebClient> _logger;
 
-        public SteamCommunityClient(ILogger<SteamCommunityClient> logger, SteamSession session)
+        public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, SteamSession session)
             : base(logger, session)
         {
             _logger = logger;

@@ -28,12 +28,12 @@ namespace SCMM.Steam.API.Commands
     public class FetchSteamProfileInventory : ICommandHandler<FetchSteamProfileInventoryRequest, FetchSteamProfileInventoryResponse>
     {
         private readonly SteamDbContext _db;
-        private readonly SteamCommunityClient _communityClient;
+        private readonly SteamCommunityWebClient _communityClient;
         private readonly SteamService _steamService;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public FetchSteamProfileInventory(SteamDbContext db, SteamCommunityClient communityClient, SteamService steamService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public FetchSteamProfileInventory(SteamDbContext db, SteamCommunityWebClient communityClient, SteamService steamService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _communityClient = communityClient;

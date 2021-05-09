@@ -30,7 +30,7 @@ namespace SCMM.Steam.Job.Server.Jobs
         public override async Task DoWork(CancellationToken cancellationToken)
         {
             using var scope = _scopeFactory.CreateScope();
-            var commnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
+            var commnityClient = scope.ServiceProvider.GetService<SteamCommunityWebClient>();
             var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 

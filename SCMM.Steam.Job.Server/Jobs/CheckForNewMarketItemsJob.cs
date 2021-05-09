@@ -43,7 +43,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             using var scope = _scopeFactory.CreateScope();
             var commandProcessor = scope.ServiceProvider.GetRequiredService<ICommandProcessor>();
             var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
-            var steamCommnityClient = scope.ServiceProvider.GetService<SteamCommunityClient>();
+            var steamCommnityClient = scope.ServiceProvider.GetService<SteamCommunityWebClient>();
             var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 

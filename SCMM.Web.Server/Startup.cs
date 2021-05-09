@@ -116,7 +116,7 @@ namespace SCMM.Web.Server
             // 3rd party clients
             services.AddSingleton(x => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>();
-            services.AddScoped<SteamCommunityClient>();
+            services.AddScoped<SteamCommunityWebClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));
