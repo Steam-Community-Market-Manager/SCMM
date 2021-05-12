@@ -417,14 +417,6 @@
             <response code="200">The expected date/time of the next item store release.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.VersionController.Get">
-            <summary>
-            Get the server application version
-            </summary>
-            <returns>Server application version</returns>
-            <response code="200">The server application version.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
         <member name="M:SCMM.Web.Server.Controllers.AuthenticationController.SignIn(System.String)">
             <summary>
             Sign-in via Steam OpenId
