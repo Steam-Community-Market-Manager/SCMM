@@ -1,0 +1,68 @@
+
+<MudThemeProvider Theme="@Theme" />
+<MudSnackbarProvider />
+<MudDialogProvider />
+
+<ChartJsScript />
+<ChartJsInteropScript />
+<ChartJsStyles />
+
+@code
+{
+    private static MudTheme Theme = new MudTheme()
+    {
+        Palette = new MudBlazor.Palette()
+        {
+            Surface = "#333333",
+            DrawerBackground = "#333333",
+            DrawerText = "#dddddd",
+            DrawerIcon = "#dddddd", 
+            AppbarBackground = "rgb(51,51,51)",
+            AppbarText = "rgb(255,255,255)",
+            LinesDefault = "rgba(255,255,255, 0.12)",
+            LinesInputs = "rgba(255,255,255, 0.3)",
+            Background = "rgb(0,0,0)",
+            BackgroundGrey = "rgb(0,0,0)",
+            TableLines = "rgba(255,255,255, 0.12)",
+            //TableHover = null,
+            Divider = "rgba(255,255,255, 0.12)",
+            DividerLight = "rgba(255,255,255, 0.06)",
+            //GrayDefault = null,
+            //GrayLight = null,
+            //GrayLighter = null,
+            //GrayDark = null,
+            //GrayDarker = null,
+            //TableStriped = null,
+            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+            ActionDisabled = "rgba(255,255,255, 0.26)",
+            ActionDefault = "#adadb1",
+            Black = "#000000",
+            White = "#ffffff",
+            Primary = "#66c0f4",
+            PrimaryContrastText = "#000000",
+            Secondary = "#dddddd",
+            SecondaryContrastText = "#000000",
+            //Tertiary = null,
+            //TertiaryContrastText = null,
+            //Info = null,
+            //InfoContrastText = null,
+            //Success = null,
+            //SuccessContrastText = null,
+            //Warning = null,
+            //WarningContrastText = null,
+            //Error = null,
+            //ErrorContrastText = null,
+            //Dark = null,
+            //DarkContrastText = null,
+            TextPrimary = "#ffffff",
+            TextSecondary = "#dddddd",
+            TextDisabled = "#666666",
+            //OverlayDark = "rgba(0,0,0, 0.4)",
+            //OverlayLight = "rgba(0,0,0, 0.8)"
+            HoverOpacity = 0.2d
+        }
+    };
+    
+    protected override bool ShouldRender() => false;
+
+}

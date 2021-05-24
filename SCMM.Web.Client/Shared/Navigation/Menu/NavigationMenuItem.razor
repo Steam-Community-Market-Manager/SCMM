@@ -1,0 +1,55 @@
+﻿@namespace SCMM.Web.Client.Shared.Navigation.Menu
+
+<style>
+
+    .NavMenuItem-SubTitle {
+        font-size: 0.8em;
+        margin-top: -4px;
+        color: var(--mud-palette-drawer-text);
+        filter: brightness(0.7);
+    }
+
+</style>
+
+@if (ItemGroup != null)
+{
+    <MudNavGroup Icon="@ItemGroup.Icon" Title="@ItemGroup.Title" Disabled="@ItemGroup.Disabled">
+        @foreach (var item in ItemGroup.Children)
+        {
+            <NavigationMenuItem Item="item" />
+        }
+    </MudNavGroup>
+}
+else if (ItemLink != null)
+{
+    <MudNavLink OnClick="@ItemLink.OnClick" Href="@ItemLink.Path" Icon="@ItemLink.Icon" Disabled="@ItemLink.Disabled">
+        <div>@ItemLink.Title</div>
+        @if(ItemLink.SubTitle != null)
+        {
+            @if(!String.IsNullOrWhiteSpace(ItemLink.SubTitle))
+            {
+                <div Typo="Typo.subtitle2" class="NavMenuItem-SubTitle">@ItemLink.SubTitle</div>
+            }
+            else
+            {
+                <MudSkeleton class="NavMenuItem-SubTitle" />
+            }
+        }
+    </MudNavLink>
+}
+else
+{
+    <MudDivider Class="my-2" />
+}
+
+@code 
+{
+
+    [Parameter]
+    public INavigationMenuItem Item { set; get; }
+
+    private NavigationMenuItemGroup ItemGroup => (Item as NavigationMenuItemGroup);
+
+    private NavigationMenuItemLink ItemLink => (Item as NavigationMenuItemLink);
+
+}

@@ -1,4 +1,5 @@
-﻿@page "/steam/inventory/{SteamId}"
+﻿@page "/inventory/{SteamId}"
+@page "/steam/inventory/{SteamId}"
 @using SCMM.Web.Data.Models.UI;
 @using SCMM.Web.Data.Models.UI.ProfileInventory;
 @using SCMM.Web.Data.Models.Domain.InventoryItems
@@ -18,9 +19,9 @@
         <ResponsiveTextField Label="Steam ID" Placeholder="steam id" Value="@SteamId" OnChange="@(x => OnSteamIdChanged(x))">
             <StartAdornment>
                 <Hidden SmallDown>
-                    <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+                    <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body1" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         <span>https://steamcommunity.com/id/</span>
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </Hidden>
             </StartAdornment>
             <EndAdornment>
@@ -33,9 +34,9 @@
     <Grid Item ExtraSmall="@GridSize.Twelve" Large="@GridSize.Six">
         <ResponsiveTextField Label="Filter" Placeholder="type an item name or tag..." OnChange="@(async x => await OnFilterChanged(x))">
             <StartAdornment>
-                <Typography Variant="@TypographyVariant.Body1" Color="@Color.TextSecondary">
+                <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body1" Color="@Skclusive.Core.Component.Color.TextSecondary">
                     <i class="fas fa-fw fa-filter"></i>
-                </Typography>
+                </Skclusive.Material.Typography.Typography>
             </StartAdornment>
         </ResponsiveTextField>
     </Grid>
@@ -62,8 +63,8 @@
         <Grid Item ExtraSmall="@GridSize.Twelve">
             <Tabs Value="@SelectedInventoryPanel"
                     OnChange="@(x => OnSelectedInventoryPanelChanged(x))"
-                    IndicatorColor="@Color.Primary"
-                    TextColor="@Color.Primary"
+                    IndicatorColor="@Skclusive.Core.Component.Color.Primary"
+                    TextColor="@Skclusive.Core.Component.Color.Primary"
                     Variant="@TabsVariant.FullWidth">
                 <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="0" Label="Inventory" Wrapped />
                 <Tab Id="inventory-tab" Control="inventory-tab-panel" Value="1" Label="Wishlist" Wrapped />

@@ -1,9 +1,10 @@
 @inject ILogger<App> Logger
+@inject ISnackbar Snackbar
 @inject ILocalStorageService LocalStorage
 @inject AppState AppState
 @inject HttpClient Http
 
-<AppResources />
+<AppProviders />
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         @if (State != null)
@@ -13,8 +14,8 @@
         }
     </Found>
     <NotFound>
-        <LayoutView Layout="@typeof(ErrorLayout)">
-            <NotFound />
+        <LayoutView Layout="@typeof(AppErrorLayout)">
+            <Error Title="404" SubTitle="Not Found" />
         </LayoutView>
     </NotFound>
 </Router>
@@ -40,6 +41,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to initialise app state");
+            Snackbar.Add("Unable to load application state", MudBlazor.Severity.Error);
         }
     }
 

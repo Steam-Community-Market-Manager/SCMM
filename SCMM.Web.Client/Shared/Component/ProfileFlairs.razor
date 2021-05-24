@@ -1,0 +1,26 @@
+﻿@namespace SCMM.Web.Client.Shared.Component
+@inject AppState State
+
+<div class="Profile-Flairs-Root">
+    @if (State.IsInRole(Roles.Creator))
+    {
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-paint-brush" Text="@Roles.Creator" Variant="MudBlazor.Variant.Outlined"
+                 style="border-color: #81c784; color: #81c784;" />
+    }
+    @if (State.IsInRole(Roles.Donator))
+    {
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-crown" Text="@Roles.Donator" Variant="MudBlazor.Variant.Outlined" 
+                 style="border-color: gold; color: gold;" />
+    }
+    @if (State.IsInRole(Roles.VIP))
+    {
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-star" Text="@Roles.VIP" Variant="MudBlazor.Variant.Outlined" 
+                 style="border-color: gold; color: gold;" />
+    }
+</div>
+
+@code {
+    
+    protected override bool ShouldRender() => false;
+
+}

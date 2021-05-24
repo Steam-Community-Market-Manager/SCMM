@@ -1,0 +1,21 @@
+﻿@namespace SCMM.Web.Client.Shared.Navigation
+
+<div class="Loading-Root" @attributes="AdditionalAttributes">
+    <MudProgressCircular Indeterminate="true" Size="@Size" />
+    <MudText Typo="MudBlazor.Typo.caption">@Message</MudText>
+</div>
+
+@code {
+
+    [Parameter]
+    public string Message { set; get; } = "Loading...";
+    
+    [Parameter]
+    public MudBlazor.Size Size { get; set; } = MudBlazor.Size.Large;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+    
+    protected override bool ShouldRender() => false;
+
+}

@@ -1,6 +1,8 @@
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
+using MudBlazor.Services;
 using Skclusive.Core.Component;
 using Skclusive.Material.Alert;
 using Skclusive.Material.Chip;
@@ -36,6 +38,15 @@ namespace SCMM.Web.Client
                 sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("default")
             );
 
+            builder.Services.AddMudServices(config =>
+            {
+                config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+                config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
+                config.SnackbarConfiguration.PreventDuplicates = true;
+                config.SnackbarConfiguration.NewestOnTop = true;
+                config.SnackbarConfiguration.ShowCloseIcon = true;
+            });
+
             var materialConfig = new MaterialConfigBuilder()
                 .WithIsPreRendering(false)
                 .WithIsServer(false)
@@ -46,7 +57,6 @@ namespace SCMM.Web.Client
             builder.Services.TryAddAlertServices(materialConfig);
             builder.Services.TryAddChipServices(materialConfig);
             builder.Services.TryAddMaterialServices(materialConfig);
-
             await builder.Build().RunAsync();
         }
     }

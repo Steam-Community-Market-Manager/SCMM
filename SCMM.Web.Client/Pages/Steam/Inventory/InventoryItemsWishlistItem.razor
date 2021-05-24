@@ -9,25 +9,17 @@
 
 @if (Item.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
 {
-    <ContextContainer Class="Item-Summary-Root" Invisible="@ReadOnly">
-        <ChildContent>
-            <div class="Item-Summary-Body" style="@GetItemStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
-                <img src="@Item.IconUrl" />
-                @if (Item.BuyNowPrice != null && Item.BuyNowPrice > 0)
-                {
-                    <Typography Variant="@TypographyVariant.Body2">
-                        @Item.Currency.ToPriceString(Item.BuyNowPrice.Value)
-                    </Typography>
-                }
-            </div>
-        </ChildContent>
-        <ContextMenu>
-            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileMarketItemFlags.WantToBuy, false))">
-                <i class="fas fa-fw fa-trash" style="margin-right:8px"></i>
-                <span>Remove from my wishlist</span>
-            </ContextMenuItem>
-        </ContextMenu>
-    </ContextContainer>
+    <div class="Item-Summary-Root">
+        <div class="Item-Summary-Body" style="@GetItemStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
+            <img src="@Item.IconUrl" />
+            @if (Item.BuyNowPrice != null && Item.BuyNowPrice > 0)
+            {
+                <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2">
+                    @Item.Currency.ToPriceString(Item.BuyNowPrice.Value)
+                </Skclusive.Material.Typography.Typography>
+            }
+        </div>
+    </div>
 }
 
 @code {

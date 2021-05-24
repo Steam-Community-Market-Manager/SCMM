@@ -1,47 +1,38 @@
 ﻿@inherits LayoutComponentBase
-@inject AppState State
 
-<MainLayout>
-    <LogoContent>
+<MudLayout>
+    <MudAppBar Fixed="true" Dense="false">
+        <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" />
         <AppLogo />
-    </LogoContent>
-    <TitleContent>
-        <Hidden SmallDown Context="HiddenContext">
-            <div class="@HiddenContext.Class">
+        <MudText Typo="Typo.h6" Class="ml-3">
+            <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
                 <span>Rust - Steam Community Market Manager</span>
                 <ReleaseVersionBadge />
-            </div>
-        </Hidden>
-        <Hidden ExtraSmallDown MediumUp Context="HiddenContext">
-            <div class="@HiddenContext.Class">
+            </MudHidden>
+            <MudHidden Breakpoint="MudBlazor.Breakpoint.SmAndDown" Invert="true">
                 <span>Rust - SCMM</span>
-                <ReleaseVersionBadge />
-            </div>
-        </Hidden>
-        <Hidden SmallUp Context="HiddenContext">
-            <div class="@HiddenContext.Class">
-                <span>SCMM</span>
-            </div>
-        </Hidden>
-    </TitleContent>
-    <ActionsContent>
-        <CurrencySelector />
-    </ActionsContent>
-    <SidebarContent>
-        @if (State.IsAuthenticated)
-        {
-            <Profile Name="@State.Profile.Name" Avatar="@State.Profile.AvatarLargeUrl" />
-            <ProfileFlairs />
-        }
+                <MudHidden Breakpoint="MudBlazor.Breakpoint.Xs">
+                    <ReleaseVersionBadge />
+                </MudHidden>
+            </MudHidden >
+        </MudText>
+        <MudAppBarSpacer />
+        <CurrencyChanger />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_isDrawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <AppNavigation />
-    </SidebarContent>
-    <BodyContent>
+    </MudDrawer>
+    <MudMainContent>
         @Body
-    </BodyContent>
-    <FooterContent>
-        <p>
-            <span><strong>SCMM</strong></span>
-            <span>&copy; 2021 Rhys Koedijk</span>
-        </p>
-    </FooterContent>
-</MainLayout>
+    </MudMainContent>
+</MudLayout>
+
+@code
+{
+    bool _isDrawerOpen = true;
+    
+    void ToggleDrawer()
+    {
+        _isDrawerOpen = !_isDrawerOpen;
+    }
+}

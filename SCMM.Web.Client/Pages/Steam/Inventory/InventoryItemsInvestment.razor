@@ -9,7 +9,7 @@
 @inject HttpClient Http
 @inject AppState State
 
-<Table Size="@Size.Small" StickyHeader>
+<Table Size="@Skclusive.Core.Component.Size.Small" StickyHeader>
     <TableHead>
         <TableRow>
             <TableCell>
@@ -67,7 +67,7 @@
                         }
                         else
                         {
-                            <InputBase Margin="@Margin.None" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.Currency ?? State.Currency, item.BuyPriceLocal))">
+                            <InputBase Margin="@Skclusive.Core.Component.Margin.None" PlaceHolder="Price" @bind-Value="@item.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(item, item.Currency ?? State.Currency, item.BuyPriceLocal))">
                                 <StartAdornment>
                                     <span style="padding-right:5px;">@((item.Currency ?? State.Currency).PrefixText)</span>
                                 </StartAdornment>

@@ -8,63 +8,45 @@
 @inject HttpClient Http
 @inject AppState State
 
-<ContextContainer Class="Item-Summary-Root" Invisible="@(!State.IsAuthenticated)">
-    <ChildContent>
-        <div class="Item-Summary-Body" style="@GetBorderStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
-            <Badge Class="Item-Summary-Badge Item-Summary-Badge-Flags Item-Summary-Badge-Top"
-                   Invisible="@(!Item.ProfileFlags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))"
-                   Color="@Color.Custom"
-                   Horizontal="@Horizontal.Left"
-                   Vertical="@Vertical.Top">
-                <BadgeContent>
-                    @if (Item.ProfileFlags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
-                    {
-                        <i class="fas fa-star" title="You want this item" />
-                    }
-                </BadgeContent>
-                <ChildContent>
-                    <Grid Container Spacing="@Spacing.Two">
-                        <Grid Item ExtraSmall="@GridSize.Four">
-                            <div class="Image-Root">
-                                <img src="@Item.IconUrl" />
-                            </div>
-                        </Grid>
-                        <Grid Item ExtraSmall="@GridSize.Eight">
-                            <Typography Variant="@TypographyVariant.Body1" style="@GetTitleStyles(Item)">
-                                <strong>@Item.Name</strong>
-                            </Typography>
-                            <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary">
-                                <span><strong>@Item.Supply</strong> for sale starting at <strong>@Item.Currency.ToPriceString(Item.BuyNowPrice)</strong>.</span>
-                            </Typography>
-                            <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary">
-                                <span><strong>@Item.Demand</strong> for requests to buy at <strong>@Item.Currency.ToPriceString(Item.BuyAskingPrice)</strong> or lower.</span>
-                            </Typography>
-                            <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary">
-                                <span><strong>@Item.Last24hrSales</strong> sold in the last 24 hours.</span>
-                            </Typography>
-                        </Grid>
+<div class="Item-Summary-Root">
+    <div class="Item-Summary-Body" style="@GetBorderStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
+        <Badge Class="Item-Summary-Badge Item-Summary-Badge-Flags Item-Summary-Badge-Top"
+                Invisible="@(!Item.ProfileFlags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))"
+                Color="@Skclusive.Core.Component.Color.Custom"
+                Horizontal="@Horizontal.Left"
+                Vertical="@Vertical.Top">
+            <BadgeContent>
+                @if (Item.ProfileFlags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
+                {
+                    <i class="fas fa-star" title="You want this item" />
+                }
+            </BadgeContent>
+            <ChildContent>
+                <Grid Container Spacing="@Spacing.Two">
+                    <Grid Item ExtraSmall="@GridSize.Four">
+                        <div class="Image-Root">
+                            <img src="@Item.IconUrl" />
+                        </div>
                     </Grid>
-                </ChildContent>
-            </Badge>
-        </div>
-    </ChildContent>
-    <ContextMenu>
-        @if (Item.ProfileFlags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
-        {
-            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileMarketItemFlags.WantToBuy, false))">
-                <i class="far fa-fw fa-star" style="margin-right:8px"></i>
-                <span>Remove from wishlist</span>
-            </ContextMenuItem>
-        }
-        else
-        {
-            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileMarketItemFlags.WantToBuy, true))">
-                <i class="fas fa-fw fa-star" style="margin-right:8px"></i>
-                <span>Add to wishlist</span>
-            </ContextMenuItem>
-        }
-    </ContextMenu>
-</ContextContainer>
+                    <Grid Item ExtraSmall="@GridSize.Eight">
+                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body1" style="@GetTitleStyles(Item)">
+                            <strong>@Item.Name</strong>
+                        </Skclusive.Material.Typography.Typography>
+                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary">
+                            <span><strong>@Item.Supply</strong> for sale starting at <strong>@Item.Currency.ToPriceString(Item.BuyNowPrice)</strong>.</span>
+                        </Skclusive.Material.Typography.Typography>
+                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary">
+                            <span><strong>@Item.Demand</strong> for requests to buy at <strong>@Item.Currency.ToPriceString(Item.BuyAskingPrice)</strong> or lower.</span>
+                        </Skclusive.Material.Typography.Typography>
+                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary">
+                            <span><strong>@Item.Last24hrSales</strong> sold in the last 24 hours.</span>
+                        </Skclusive.Material.Typography.Typography>
+                    </Grid>
+                </Grid>
+            </ChildContent>
+        </Badge>
+    </div>
+</div>
 
 @code {
 

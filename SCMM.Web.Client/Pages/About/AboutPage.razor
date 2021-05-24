@@ -1,0 +1,114 @@
+﻿@page "/about"
+@using SCMM.Web.Data.Models.Domain.Profiles;
+@inject ILogger<AboutPage> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+
+<PageContainer Title="About Website">
+
+    <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Primary" GutterBottom>About</MudText>
+    <MudText Typo="MudBlazor.Typo.body2" GutterBottom>
+        Steam Community Market Manager (SCMM) aggregates and analyses public data collected from Steam (and other sources) to help better understand market history, trends, and patterns.
+    </MudText>
+    <MudText Typo="MudBlazor.Typo.body2" GutterBottom>
+        This website is still under development and may change (or be removed) without notice.
+        I make no claims that the information provided here is accurate; use it at your own risk.
+    </MudText>
+
+    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Primary">Frequently Asked Questions</MudText>
+    <ul class="fa-ul">
+        <li>
+            <span class="fa-li"><i class="fas fa-fw fa-question-circle"></i></span>
+            <MudText Typo="MudBlazor.Typo.body1">
+                <span>Why does the website take so long to load?</span>
+            </MudText>
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                <span>This website is built using <MudLink Typo="MudBlazor.Typo.body2" Href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor" Target="_blank">Blazor</MudLink>, a fairly new web technology that is not as mature and optimised as traditional JavaScript based websites.</span><br/>
+                <span><MudLink Typo="MudBlazor.Typo.body2" Href="https://github.com/dotnet/aspnetcore/issues/5466" Target="_blank">Performance will improve</MudLink> over time as the technology matures.</span>
+            </MudText>
+        </li>
+        <li>
+            <span class="fa-li"><i class="fas fa-fw fa-question-circle"></i></span>
+            <MudText Typo="MudBlazor.Typo.body1">
+                <span>I have an suggestion or issue, where can I get help?</span>
+            </MudText>
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                <span>Any feedback is appreicated and bug reports are welcomed, drop me a message on Discord (Bipolar Penguin#8838).</span>
+            </MudText>
+        </li>
+        <li>
+            <span class="fa-li"><i class="fas fa-fw fa-question-circle"></i></span>
+            <MudText Typo="MudBlazor.Typo.body1">
+                <span>I want to help with this project, how can I get involved?</span>
+            </MudText>
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                <span>At this time I'm not actively looking for any help, the project is still very early days and the development environment isn't geared up for public consumption.</span><br/>
+                <span>Ideally one day I'd like to setup something public to allow contributions, but this is very far down on the todo list.</span>
+            </MudText>
+        </li>
+        <li>
+            <span class="fa-li"><i class="fas fa-fw fa-question-circle"></i></span>
+            <MudText Typo="MudBlazor.Typo.body1">
+                <span>I have make YouTube videos showcasing weekly rust skins, how can I get featured on the item store page?</span>
+            </MudText>
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                <span>If your channel makes weekly videos and the primary purpose of the videos are to showcase or provide your opinion on the item store, I'll be happy to add it.</span><br/>
+                <span>Send me a message on Discord (Bipolar Penguin#883) and we'll talk.</span>
+            </MudText>
+        </li>
+    </ul>
+
+    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Primary">Acknowledgements</MudText>
+    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+        <ul class="fa-ul">
+            <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="https://steamcommunity.com/" Target="_blank">Steam Community</MudLink> and <MudLink Typo="MudBlazor.Typo.body2" Href="https://partner.steamgames.com/doc/webapi" Target="_blank">Steam WebAPI</MudLink> for providing much of the source data.</li>
+            <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="https://discord.gg/CRMf95Z" Target="_blank">OMIGHTY Youtube Discord Community</MudLink> for their feedback and support towards this project.</li>
+        </ul>
+    </MudText>
+
+    @if (Donators == null)
+    {
+        <Loading Message="Loading donator list..." />
+    }
+    else if (Donators.Any())
+    {
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+            An extra special thank to the following for their generous support towards this project:
+        </MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+            <ul class="fa-ul Donators">
+                @foreach (var donator in Donators)
+                {
+                    <li class="Donator">
+                        <img class="fa-li" src="@donator.AvatarUrl" />
+                        <span>@donator.Name</span>
+                        @if (Donators.Take(3).Contains(donator))
+                        {
+                            <i class="fas fa-fw fa-trophy"></i>
+                        }
+                    </li>
+                }
+            </ul>
+        </MudText>
+    }
+
+</PageContainer>
+
+@code {
+
+    private IList<ProfileDTO> Donators { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Donators = await Http.GetFromJsonAsync<ProfileDTO[]>($"api/profile/donators");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading donators");
+            Snackbar.Add("Unable to load donator list", MudBlazor.Severity.Error);
+        }
+    }
+
+}

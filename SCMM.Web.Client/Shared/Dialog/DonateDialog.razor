@@ -1,0 +1,49 @@
+﻿@namespace SCMM.Web.Client.Shared.Dialog
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6">Donate to show your support</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="MudBlazor.Typo.body2">
+            <p>This website is free to use, but isn't free to host.</p>
+            <p>If you found it useful and would like to support further development, consider buying me a drink or a Rust skin.</p>
+        </MudText>
+        <MudGrid Spacing="0">
+            <MudItem xs="6">
+                <MudTooltip Text="Buy me a drink!">
+                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+                        <input type="hidden" name="cmd" value="_donations" onfocus="this.blur()" />
+                        <input type="hidden" name="business" value="P29WU38RQJM8J" onfocus="this.blur()" />
+                        <input type="hidden" name="currency_code" value="NZD" onfocus="this.blur()" />
+                        <input type="image" name="submit" src="/images/donate-paypal.png" border="0" alt="Donate with PayPal" onfocus="this.blur()" />
+                    </form>
+                </MudTooltip>
+            </MudItem>
+            <MudItem xs="6">
+                <MudTooltip Text="Send me a skin!">
+                    <MudLink Href="https://steamcommunity.com/tradeoffer/new/?partner=121835790&token=AjBXyQhL" Target="_blank">
+                        <img src="/images/donate-steam.png" alt="Donate with Steam" />
+                    </MudLink>
+                </MudTooltip>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] 
+    MudDialogInstance Dialog { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        Dialog.Options.CloseButton = true;
+        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.ExtraSmall;
+        Dialog.SetOptions(Dialog.Options);
+    }
+    
+    protected override bool ShouldRender() => false;
+
+}

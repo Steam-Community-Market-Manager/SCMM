@@ -7,75 +7,43 @@
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 
-<ContextContainer Class="Item-Summary-Root" Invisible="@ReadOnly">
-    <ChildContent>
-        <div class="Item-Summary-Body" style="@GetItemStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
-            <Badge Class="Item-Summary-Badge Item-Summary-Badge-Flags Item-Summary-Badge-Top"
-                   Invisible="@(!Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) && !Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))"
-                   Color="@Color.Custom"
-                   Horizontal="@Horizontal.Left"
-                   Vertical="@Vertical.Top">
-                <BadgeContent>
-                    @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
-                    {
-                        <i class="fas fa-hand-holding-usd" title="@((ProfileIsMe ? "You want" : $"{ProfileName} wants") + " to sell this")"/>
-                    }
-                    @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
-                    {
-                        <i class="fas fa-exchange-alt" title="@((ProfileIsMe ? "You're" : $"{ProfileName} is") + " interested in trade offers for this")" />
-                    }
-                </BadgeContent>
-                <ChildContent>
-                    <Badge Class="Item-Summary-Badge Item-Summary-Quantity-Badge"
-                            Invisible="@(Item.Quantity <= 1)"
-                            BadgeText="@Item.Quantity.ToString()"
-                            Max="99"
-                            Color="@Color.Primary"
-                            Horizontal="@Horizontal.Right"
-                            Vertical="@Vertical.Top">
-                        <img src="@Item.IconUrl" />
-                    </Badge>
-                </ChildContent>
-            </Badge>
-            @if (Item.Value != null)
-            {
-                <Typography Variant="@TypographyVariant.Body2">
-                    @Item.Currency.ToPriceString(Item.Value.Value)
-                </Typography>
-            }
-        </div>
-    </ChildContent>
-    <ContextMenu>
-        @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
+<div class="Item-Summary-Root">
+    <div class="Item-Summary-Body" style="@GetItemStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
+        <Badge Class="Item-Summary-Badge Item-Summary-Badge-Flags Item-Summary-Badge-Top"
+                Invisible="@(!Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell) && !Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))"
+                Color="@Skclusive.Core.Component.Color.Custom"
+                Horizontal="@Horizontal.Left"
+                Vertical="@Vertical.Top">
+            <BadgeContent>
+                @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToSell))
+                {
+                    <i class="fas fa-hand-holding-usd" title="@((ProfileIsMe ? "You want" : $"{ProfileName} wants") + " to sell this")"/>
+                }
+                @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
+                {
+                    <i class="fas fa-exchange-alt" title="@((ProfileIsMe ? "You're" : $"{ProfileName} is") + " interested in trade offers for this")" />
+                }
+            </BadgeContent>
+            <ChildContent>
+                <Badge Class="Item-Summary-Badge Item-Summary-Quantity-Badge"
+                        Invisible="@(Item.Quantity <= 1)"
+                        BadgeText="@Item.Quantity.ToString()"
+                        Max="99"
+                        Color="@Skclusive.Core.Component.Color.Primary"
+                        Horizontal="@Horizontal.Right"
+                        Vertical="@Vertical.Top">
+                    <img src="@Item.IconUrl" />
+                </Badge>
+            </ChildContent>
+        </Badge>
+        @if (Item.Value != null)
         {
-            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToSell, false))">
-                <i class="fas fa-fw fa-hand-holding-usd" style="margin-right:8px"></i>
-                <span>I don't want to sell this anymore</span>
-            </ContextMenuItem>
+            <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2">
+                @Item.Currency.ToPriceString(Item.Value.Value)
+            </Skclusive.Material.Typography.Typography>
         }
-        else
-        {
-            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToSell, true))">
-                <i class="fas fa-fw fa-hand-holding-usd" style="margin-right:8px"></i>
-                <span>I want to sell this</span>
-            </ContextMenuItem>
-        }
-        @if (Item.Flags.HasFlag(SteamProfileInventoryItemFlags.WantToTrade))
-        {
-            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToTrade, false))">
-                <i class="fas fa-fw fa-exchange-alt" style="margin-right:8px"></i>
-                <span>I'm not interested in trade offers anymore</span>
-            </ContextMenuItem>
-        }
-        else
-        {
-            <ContextMenuItem OnClick="@(() => UpdateItemFlag(Item, SteamProfileInventoryItemFlags.WantToTrade, true))">
-                <i class="fas fa-fw fa-exchange-alt" style="margin-right:8px"></i>
-                <span>I'm interested in trade offers for this</span>
-            </ContextMenuItem>
-        }
-    </ContextMenu>
-</ContextContainer>
+    </div>
+</div>
 
 @code {
     

@@ -1,0 +1,20 @@
+﻿@namespace SCMM.Web.Client.Shared.Layout
+
+@if (!String.IsNullOrEmpty(Title))
+{
+    <Title Value="@Title" />
+}
+
+<div class="ma-6">
+    @ChildContent
+</div>
+
+@code {
+    
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+}

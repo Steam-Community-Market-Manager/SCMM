@@ -1,4 +1,4 @@
-﻿@page "/steam/marketstatistics"
+﻿@page "/stats"
 @using SCMM.Steam.Data.Models
 @using SCMM.Steam.Data.Models.Enums
 @using SCMM.Web.Data.Models
@@ -36,7 +36,7 @@
 <Grid Container Spacing="@Spacing.Two">
 
     <Grid Item ExtraSmall="@GridSize.Twelve">
-        <Alert Severity="@Severity.Info" Variant="@AlertVariant.Outlined">
+        <Alert Severity="@Skclusive.Core.Component.Severity.Info" Variant="@AlertVariant.Outlined">
             <IconContent>
                 <DiscordBotIcon />
             </IconContent>
@@ -45,7 +45,7 @@
                 <span>Beep Boop! Did you know I can join your Discord community to provide tools and alerts for the Steam community marketplace? Click the <a @onclick="InviteDiscordBot">invite button</a> to get started.</span>
             </ChildContent>
             <ActionContent>
-                <Button Color="@Color.Inherit" Size="@Size.Large"
+                <Button Color="@Skclusive.Core.Component.Color.Inherit" Size="@Skclusive.Core.Component.Size.Large"
                         OnClick="@(() => InviteDiscordBot())">
                     INVITE
                 </Button>
@@ -59,35 +59,35 @@
                 <TitleContent>
                     <Grid Container>
                         <Grid Item ExtraSmall="@GridSize.Twelve" Small="@GridSize.Three">
-                            <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                            <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                                 Market Sales
-                            </Typography>
-                            <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                            </Skclusive.Material.Typography.Typography>
+                            <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                                 Total number of sales per day
-                            </Typography>
+                            </Skclusive.Material.Typography.Typography>
                         </Grid>
                         <Grid Item Container ExtraSmall="@GridSize.Twelve" Small="@GridSize.Nine" Style="flex-direction: row-reverse">
-                            <Button OnClick="@(() => RefreshSalesPerDay(null))" Color="@Color.TextSecondary">
+                            <Button OnClick="@(() => RefreshSalesPerDay(null))" Color="@Skclusive.Core.Component.Color.TextSecondary">
                                 All
                             </Button>
-                            <Divider Orientation="@Orientation.Vertical" />
-                            <Button OnClick="@(() => RefreshSalesPerDay(365))" Color="@Color.TextSecondary">
+                            <Divider Orientation="@Skclusive.Core.Component.Orientation.Vertical" />
+                            <Button OnClick="@(() => RefreshSalesPerDay(365))" Color="@Skclusive.Core.Component.Color.TextSecondary">
                                 12m
                             </Button>
-                            <Divider Orientation="@Orientation.Vertical" />
-                            <Button OnClick="@(() => RefreshSalesPerDay(182))" Color="@Color.TextSecondary">
+                            <Divider Orientation="@Skclusive.Core.Component.Orientation.Vertical" />
+                            <Button OnClick="@(() => RefreshSalesPerDay(182))" Color="@Skclusive.Core.Component.Color.TextSecondary">
                                 6m
                             </Button>
-                            <Divider Orientation="@Orientation.Vertical" />
-                            <Button OnClick="@(() => RefreshSalesPerDay(30))" Color="@Color.TextSecondary">
+                            <Divider Orientation="@Skclusive.Core.Component.Orientation.Vertical" />
+                            <Button OnClick="@(() => RefreshSalesPerDay(30))" Color="@Skclusive.Core.Component.Color.TextSecondary">
                                 1m
                             </Button>
                             @if (SalesYesterday > 0)
                             {
-                                <Divider Orientation="@Orientation.Vertical" />
-                                <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
+                                <Divider Orientation="@Skclusive.Core.Component.Orientation.Vertical" />
+                                <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
                                     <strong>@SalesYesterday.ToQuantityString() sales yesterday</strong>
-                                </Typography>
+                                </Skclusive.Material.Typography.Typography>
                             }
                         </Grid>
                     </Grid>
@@ -110,16 +110,16 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         Hot Right Now
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Items with the highest number of sales in the past 24hrs.
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableBody>
                         <Virtualize ItemsProvider="LoadHotRightNow" Context="item">
                             <ItemContent>
@@ -157,16 +157,16 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         Most Recent
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Items with the lowest market age.
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableBody>
                         <Virtualize ItemsProvider="LoadMostRecent" Context="item">
                             <ItemContent>
@@ -204,17 +204,17 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         <img src="/images/stonks-guy.png" style="width:24px; margin-right: -10px;" />
                         📈 Stonking
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Items currently at their all-time highest value.
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableBody>
                         <Virtualize ItemsProvider="LoadAllTimeHigh" Context="item">
                             <ItemContent>
@@ -252,17 +252,17 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         <img src="/images/stonks-guy.png" style="width:24px; margin-right: -10px;" />
                         📉 Crashing
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Items currently at their all-time lowest value.
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableBody>
                         <Virtualize ItemsProvider="LoadAllTimeLow" Context="item">
                             <ItemContent>
@@ -300,16 +300,16 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         Profitable Flips
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Items with the largest gap in asking price vs buy now price with a upward trending average price. These items can be profitable if you are able to buy low and then sell high after the seven day market cooldown.
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableHead>
                         <TableRow>
                             <TableCell></TableCell>
@@ -358,16 +358,16 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         Most Profitable
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Items with the highest current market value.
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableBody>
                         <Virtualize ItemsProvider="LoadMostProfitable" Context="item">
                             <ItemContent>
@@ -405,16 +405,16 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         Most Popular
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Items with them highest number of unique owners (subscribers).
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableBody>
                         <Virtualize ItemsProvider="LoadMostPopular" Context="item">
                             <ItemContent>
@@ -455,16 +455,16 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         Most Saturated
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Items with the highest number of listings on the marketplace
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableHead>
                         <TableRow>
                             <TableCell></TableCell>
@@ -520,16 +520,16 @@
         <Card Class="Dashboard-Card">
             <CardHeader>
                 <TitleContent>
-                    <Typography Variant="TypographyVariant.H6" Color="@Color.TextPrimary">
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.H6" Color="@Skclusive.Core.Component.Color.TextPrimary">
                         Skin Creators
-                    </Typography>
-                    <Typography Variant="TypographyVariant.Body2" Color="@Color.TextSecondary">
+                    </Skclusive.Material.Typography.Typography>
+                    <Skclusive.Material.Typography.Typography Variant="TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                         Creators with the highest number of accepted in-game skins.
-                    </Typography>
+                    </Skclusive.Material.Typography.Typography>
                 </TitleContent>
             </CardHeader>
             <CardContent>
-                <Table Size="@Size.Small">
+                <Table Size="@Skclusive.Core.Component.Size.Small">
                     <TableHead>
                         <TableRow>
                             <TableCell></TableCell>

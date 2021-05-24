@@ -1,3 +1,5 @@
+@page "/"
+@page "/store"
 @page "/steam/store"
 @using SCMM.Web.Data.Models.Domain.StoreItems
 @using SCMM.Web.Data.Models
@@ -128,8 +130,8 @@ else
                 <Tabs Class="Store-List"
                       Value="@SelectedStore"
                       OnChange="@OnSelectedStoreChanged"
-                      IndicatorColor="@Color.Primary"
-                      TextColor="@Color.Primary"
+                      IndicatorColor="@Skclusive.Core.Component.Color.Primary"
+                      TextColor="@Skclusive.Core.Component.Color.Primary"
                       Variant="@TabsVariant.Scrollable"
                       ScrollButton="@ScrollButton.On"
                       Style="margin:-16px; padding-bottom:0px">
@@ -143,7 +145,7 @@ else
                             <Tab Class="Store" Id="@store.Id.ToString()" Value="@store" Label="@store.Name" />
                         }
                         <TabScrollButton Side="Side.Right" />
-                        <Button OnClick="@HandleStoreSelectorDialogOpen" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary" Style="position:sticky; right:16px; margin:8px; background-color:var(--theme-palette-background-paper)">
+                        <Button OnClick="@HandleStoreSelectorDialogOpen" Variant="@ButtonVariant.Outlined" Color="@Skclusive.Core.Component.Color.TextSecondary" Style="position:sticky; right:16px; margin:8px; background-color:var(--theme-palette-background-paper)">
                             <i class="fas fa-history"></i>
                         </Button>
                     </ChildContent>
@@ -190,16 +192,16 @@ else
                                 </div>
                             </AvatarContent>
                             <TitleContent>
-                                <Typography Variant="@TypographyVariant.H6" Style="@GetNameStyles(item)">
+                                <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.H6" Style="@GetNameStyles(item)">
                                     <span>@item.Name</span>
-                                </Typography>
+                                </Skclusive.Material.Typography.Typography>
                             </TitleContent>
                             <SubHeaderContent>
                                 @if (!String.IsNullOrEmpty(item.ItemType))
                                 {
-                                    <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary">
+                                    <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
                                         <span>@item.ItemType</span>
-                                    </Typography>
+                                    </Skclusive.Material.Typography.Typography>
                                 }
                             </SubHeaderContent>
                         </CardHeader>
@@ -213,14 +215,14 @@ else
                                 <Grid Item ExtraSmall="@GridSize.Six">
                                     @if (item.MarketRankTotal > 0)
                                     {
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary" GutterBottom>
+                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary" GutterBottom>
                                             <i class="fas fa-fw fa-balance-scale-left"></i>
                                             <span>@item.MarketRankPosition cheaper @item.ItemType.Pluralise(item.MarketRankPosition) in the marketplace (@item.MarketRankTotal total).</span>
-                                        </Typography>
+                                        </Skclusive.Material.Typography.Typography>
                                     }
                                     @if (item.HasWorkshopFile)
                                     {
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary" NoWrap>
+                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary" NoWrap>
                                             <i class="fas fa-fw fa-shopping-cart"></i>
                                             @if (item.TotalSalesMax == null)
                                             {
@@ -234,76 +236,76 @@ else
                                             {
                                                 <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
                                             }
-                                        </Typography>
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary" NoWrap>
+                                        </Skclusive.Material.Typography.Typography>
+                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary" NoWrap>
                                             <i class="fas fa-fw fa-user"></i>
                                             @if (item.Subscriptions > 0)
                                             {
                                                 <span style="padding:8px">@item.Subscriptions.Value.ToQuantityString()</span>
                                             }
-                                        </Typography>
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextPrimary" NoWrap GutterBottom>
+                                        </Skclusive.Material.Typography.Typography>
+                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary" NoWrap GutterBottom>
                                             <i class="fas fa-fw fa-eye"></i>
                                             @if (item.Views > 0)
                                             {
                                                 <span style="padding:8px">@item.Views.Value.ToQuantityString()</span>
                                             }
-                                        </Typography>
+                                        </Skclusive.Material.Typography.Typography>
                                     }
                                     else
                                     {
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.Primary">
                                             <span>This item is not from the workshop, detailed statistics are unavailable.</span>
-                                        </Typography>
+                                        </Skclusive.Material.Typography.Typography>
                                     }
                                     @if (!item.IsStillAvailableInStore)
                                     {
                                         @if (!item.HasMarketListing)
                                         {
-                                            <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                            <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.Primary">
                                                 <span>This item is no longer available.</span>
-                                            </Typography>
+                                            </Skclusive.Material.Typography.Typography>
                                         }
                                         else 
                                         {
-                                            <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                            <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.Primary">
                                                 <span>This item is no longer available, grab it from the marketplace instead.</span>
-                                            </Typography>
+                                            </Skclusive.Material.Typography.Typography>
                                         }
                                     }
                                     else if (item.HasMarketListing)
                                     {
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.Primary">
+                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.Primary">
                                             <span>This item is also available in the marketplace.</span>
-                                        </Typography>
+                                        </Skclusive.Material.Typography.Typography>
                                     }
                                 </Grid>
                                 <Grid Item Class="Action-Root" ExtraSmall="@GridSize.Six">
-                                    <Typography Class="Theme-Success">
-                                        <Button OnClick="@(() => BuyItemStore(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary" Disabled="@(!item.IsStillAvailableInStore)">
+                                    <Skclusive.Material.Typography.Typography Class="Theme-Success">
+                                        <Button OnClick="@(() => BuyItemStore(item))" Variant="@ButtonVariant.Contained" Color="@Skclusive.Core.Component.Color.Primary" Disabled="@(!item.IsStillAvailableInStore)">
                                             <i class="fas fa-fw fa-shopping-cart"></i>
                                             <strong>@item.Currency.ToPriceString(item.StorePrice)</strong>
                                         </Button>
-                                    </Typography>
+                                    </Skclusive.Material.Typography.Typography>
                                 </Grid>
                                 <Grid Item Class="Action-Root" ExtraSmall="@GridSize.Six">
                                     @if (item.HasMarketListing)
                                     {
-                                        <Typography>
-                                            <Button OnClick="@(() => BuyItemMarket(item))" Variant="@ButtonVariant.Contained" Color="@Color.Primary">
+                                        <Skclusive.Material.Typography.Typography>
+                                            <Button OnClick="@(() => BuyItemMarket(item))" Variant="@ButtonVariant.Contained" Color="@Skclusive.Core.Component.Color.Primary">
                                                 <i class="fas fa-fw fa-balance-scale-left"></i>
                                                 <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
                                             </Button>
-                                        </Typography>
+                                        </Skclusive.Material.Typography.Typography>
                                     }
                                     else if (item.HasWorkshopFile)
                                     {
-                                        <Typography>
-                                            <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
+                                        <Skclusive.Material.Typography.Typography>
+                                            <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Skclusive.Core.Component.Color.TextSecondary">
                                                 <i class="fas fa-fw fa-eye"></i>
                                                 <span>View</span>
                                             </Button>
-                                        </Typography>
+                                        </Skclusive.Material.Typography.Typography>
                                     }
                                 </Grid>
                             </Grid>
@@ -317,15 +319,15 @@ else
                         <Paper>
                             <Tabs Value="@SelectedItemChartPanel"
                                   OnChange="@OnSelectedItemChartChanged"
-                                  IndicatorColor="@Color.Primary"
-                                  TextColor="@Color.Primary"
+                                  IndicatorColor="@Skclusive.Core.Component.Color.Primary"
+                                  TextColor="@Skclusive.Core.Component.Color.Primary"
                                   Variant="@TabsVariant.FullWidth">
-                                <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Sales" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Subscribers" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Subscriber Timeline" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Revenue" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Sales" Wrapped />
+                                <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Timeline" Wrapped />
                                 @if (Store.Items.Any(x => x.HasMarketListing))
                                 {
-                                    <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Marketplace Performance" Wrapped />
+                                    <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Profitability" Wrapped />
                                 }
                             </Tabs>
                             <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
@@ -334,9 +336,9 @@ else
                                     @if (ItemSalesChart != null)
                                     {
                                         <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
-                                        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" Class="Chart-Footnote">
+                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary" Class="Chart-Footnote">
                                             <span><strong>NOTE:</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
-                                        </Typography>
+                                        </Skclusive.Material.Typography.Typography>
                                     }
                                     else
                                     {

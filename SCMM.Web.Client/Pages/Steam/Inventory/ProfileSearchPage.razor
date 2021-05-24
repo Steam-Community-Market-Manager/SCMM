@@ -1,4 +1,4 @@
-@page "/steam/inventory"
+@page "/inventory"
 @inject AppState State
 @inject ILocalStorageService LocalStorage
 @inject HttpClient Http
@@ -17,12 +17,12 @@
         </DialogContentText>
         <div style="margin:16px 0px">
             <Paper Style="display: flex; padding: 2px 4px; align-items: center;">
-                <Typography Style="padding: 10px;">
+                <Skclusive.Material.Typography.Typography Style="padding: 10px;">
                     <PersonIcon />
-                </Typography>
-                <Typography Variant="@TypographyVariant.Body2">
+                </Skclusive.Material.Typography.Typography>
+                <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2">
                     https://steamcommunity.com/id/
-                </Typography>
+                </Skclusive.Material.Typography.Typography>
                 <InputBase OnChange="@OnSteamIdChanged" Style="flex: 1; margin-left: 8px;" Placeholder="your steam id" />
                 <IconButton OnClick="@ViewProfileInventory" Style="padding: 10px;">
                     <SearchIcon />

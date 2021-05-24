@@ -1,0 +1,8 @@
+﻿
+.mud-tooltip {
+    max-width: 33vw;
+}
+
+.mud-chip-size-small > .mud-icon-size-small {
+    font-size: inherit;
+}

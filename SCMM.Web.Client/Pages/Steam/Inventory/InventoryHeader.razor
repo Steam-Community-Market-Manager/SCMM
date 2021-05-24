@@ -93,11 +93,11 @@
 @if (Profile != null && ProfileIsMe)
 {
     <Grid ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Large="@GridSize.Four" ExtraLarge="@GridSize.Two" Style="padding:8px">
-        <Typography Variant="@TypographyVariant.Body2" Color="@Color.TextSecondary" GutterBottom>
+        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary" GutterBottom>
             Last synchronised @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago
-        </Typography>
-        <Button OnClick="@SynchroniseInventory" Size="@Size.Small"
-                Variant="@ButtonVariant.Outlined" Color="@Color.TextSecondary">
+        </Skclusive.Material.Typography.Typography>
+        <Button OnClick="@SynchroniseInventory" Size="@Skclusive.Core.Component.Size.Small"
+                Variant="@ButtonVariant.Outlined" Color="@Skclusive.Core.Component.Color.TextSecondary">
             Synchronise
         </Button>
     </Grid>

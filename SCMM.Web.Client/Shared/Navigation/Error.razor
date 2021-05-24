@@ -1,0 +1,47 @@
+﻿@namespace SCMM.Web.Client.Shared.Navigation
+
+<div class="Error-Root" @attributes="AdditionalAttributes">
+    <MudGrid Spacing="4" Justify="MudBlazor.Justify.Center">
+        <MudItem>
+            <MudText Typo="MudBlazor.Typo.h3">
+                @Title
+            </MudText>
+            <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                @if (Exception != null)
+                {
+                    @Exception.GetType().Name
+                }
+                else
+                {
+                    @SubTitle
+                }
+            </MudText>
+            @if (Exception != null)
+            {
+                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">@Exception.Message</MudText>
+            }
+            @ChildContent
+        </MudItem>
+    </MudGrid>
+</div>
+
+@code {
+    
+    [Parameter]
+    public string Title { set; get; } = "Whoops!";
+
+    [Parameter]
+    public string SubTitle { set; get; }
+    
+    [Parameter]
+    public Exception Exception { set; get; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+    
+    protected override bool ShouldRender() => false;
+
+}

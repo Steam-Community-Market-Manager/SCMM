@@ -1,74 +1,50 @@
-﻿@using SCMM.Web.Data.Models.Domain.InventoryItems
+﻿@using SCMM.Web.Client.Shared.Navigation.Menu
+@using SCMM.Web.Client.Shared.Dialog
+@using SCMM.Web.Data.Models.Domain.InventoryItems
 @using SCMM.Web.Data.Models
 @inject ILogger<AppNavigation> Logger
+@inject IDialogService Dialogs
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject AppState State
 
-@if (NavigationItems == null)
+@if (State.IsAuthenticated)
 {
-    <Loading Message="" />
+    <div class="Profile-Root">
+        <MudAvatar Image="@State.Profile.AvatarLargeUrl" Style="height:64px; width:64px;" />
+        <MudText Typo="MudBlazor.Typo.subtitle2">@State.Profile.Name</MudText>
+        <ProfileFlairs />
+    </div>
 }
 else
 {
-    @if (!State.IsAuthenticated)
-    {
-        <a class="SignIn-Button" @onclick="@SignInWarningOpen">
-            <img src="/images/sits_01.png" alt="Sign-in through Steam" title="Sign-in through Steam" />
-        </a>
-    }
-    <Navigation Items="@NavigationItems">
-    </Navigation>
+    <div class="SignIn-Root">
+        <MudLink Class="SignIn-Button" @onclick="async () => await ShowSignInDialog()">
+            <img src="/images/sits_01.png" alt="Sign in through Steam" title="Sign in through Steam" />
+        </MudLink>
+    </div>
 }
 
-<Dialog Open="@SignInDialogOpened" OnClose="@SignInWarningClose">
-    <DialogTitle>
-        <i class="fas fa-fw fa-lock"></i>
-        <span>Keep your account safe</span>
-    </DialogTitle>
-    <DialogContent>
-        <DialogContentText>
-            <ul class="SignIn-Dialog-Tips">
-                <li>
-                    <p>Only enter your password on offical Steam websites.</p>
-                    <img src="/images/steam_secure_login.png" />
-                </li>
-                <li>Regularly check your <a href="https://steamcommunity.com/dev/apikey" target="_blank">API key</a>, remove it unless you actually use it.</li>
-                <li>Enable <a href="https://support.steampowered.com/kb_article.php?ref=4440-rtui-9218" target="_blank">Steam Guard</a> for improved account security.</li>
-            </ul>
-        </DialogContentText>
-    </DialogContent>
-    <DialogActions>
-        <a class="SignIn-Dialog-Button" @onclick="@SignIn">
-            <img src="/images/sits_01.png" alt="Continue to sign-in through Steam" title="Continue to sign-in through Steam" />
-        </a>
-    </DialogActions>
-</Dialog>
-
-<DonateDialog @bind-Open="@DonateDialogOpened" />
+<NavigationMenu Items="@NavigationMenuItems" />
 
 @code {
 
-    private List<NavigationItem> NavigationItems { get; set; }
+    private List<INavigationMenuItem> NavigationMenuItems { get; set; }
 
     private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
 
     private DateTimeOffset? StoreNextUpdateTime { get; set; }
-
-    private bool DonateDialogOpened { get; set; }
-
-    private bool SignInDialogOpened { get; set; }
-
+    
     protected override void OnInitialized()
     {
-        NavigationItems = RebuildNaviationItems();
+        NavigationMenuItems = RebuildMenuItems();
         Task.Run(async () =>
         {
-        /// Do in background...
-        await RefreshInventoryTotals();
+            /// Do in background...
+            await RefreshInventoryTotals();
             await RefreshStoreTimeRemaining();
-            NavigationItems = RebuildNaviationItems();
+            NavigationMenuItems = RebuildMenuItems();
             StateHasChanged();
         });
     }
@@ -105,7 +81,7 @@ else
         }
     }
 
-    private List<NavigationItem> RebuildNaviationItems()
+    private List<INavigationMenuItem> RebuildMenuItems()
     {
         var inventoryValue = String.Empty;
         if (InventoryTotals?.TotalMarketValue > 0)
@@ -122,40 +98,31 @@ else
             );
         }
 
-        var items = new List<NavigationItem>();
+        var items = new List<INavigationMenuItem>();
         if (State.IsAuthenticated)
         {
-            items.AddRange(new List<NavigationItem>
+            items.AddRange(new List<INavigationMenuItem>
             {
-                new NavigationItem
+                new NavigationMenuItemLink
                 {
-                    Icon = @<CashIcon />,
-                    Title = "Inventory",
-                    Path = $"steam/inventory/{State.Profile?.SteamId}",
+                    Icon = "fas fa-fw fa-funnel-dollar",
+                    Title = "Item Inventory",
+                    Path = $"/inventory/{State.Profile?.SteamId}",
                     SubTitle = inventoryValue,
                     Prefix = true
-                },
-                /*
-                new NavigationItem
-                {
-                    Icon = @<CardExchangeIcon />,
-                    Title = "Trade History",
-                    Path =  "steam/history",
-                    Prefix =  true,
-                    Disabled = true
                 }
-                */
             });
         }
         else
         {
-            items.AddRange(new List<NavigationItem>
+            items.AddRange(new List<INavigationMenuItem>
             {
-                new NavigationItem
+                new NavigationMenuItemLink
                 {
-                    Icon = @<CashIcon />,
-                    Title = "Inventory Value",
-                    Path = $"steam/inventory",
+                    Icon = "fas fa-fw fa-funnel-dollar",
+                    Title = "Inventory Analyser",
+                    SubTitle = "What is your inventory worth?",
+                    Path = $"/inventory",
                     Prefix = true
                 }
             });
@@ -164,150 +131,129 @@ else
         {
             items.Add(null);
         }
-        items.AddRange(new List<NavigationItem>
+        items.AddRange(new List<INavigationMenuItem>
         {
-            new NavigationItem
+            new NavigationMenuItemLink
             {
-                Icon = @<PodiumIcon />,
-                Title = "Market Statistics",
-                Path = "steam/marketstatistics",
-                Prefix = true
-            },
-            new NavigationItem
-            {
-                Icon = @<ChartIcon />,
-                Title = "Market Listings",
-                Path = "steam/marketlistings",
-                Prefix = true
-            },
-            /*
-            new NavigationItem
-            {
-                Icon = @<ArtificialIntelligenceIcon />,
-                Title = "Market Insights",
-                Path =  "steam/marketinsights",
-                Prefix =  true,
-                Disabled = true
-            },
-            */
-            null,
-            new NavigationItem
-            {
-                Icon = @<ShopIcon />,
-                Title = "Item Store",
+                Icon = "fas fa-fw fa-shopping-cart",
+                Title = "Store",
                 SubTitle = storeUpdateTimeRemaining,
-                Path =  "steam/store",
+                Path =  "/store",
                 Prefix =  true
             },
-            /*
-            new NavigationItem
+            new NavigationMenuItemLink
             {
-                Icon = @<PencilRulerIcon />,
-                Title = "Item Workshop",
-                Path =  "steam/workshop",
-                Prefix =  true,
-                Disabled = true
+                Icon = "fas fa-fw fa-paint-roller",
+                Title = "Skins",
+                SubTitle = "Explore all item skins",
+                Path = "/skins",
+                Prefix = true
             },
-            new NavigationItem
+            new NavigationMenuItemLink
             {
-                Icon = @<PaletteIcon />,
-                Title = "Item Skins",
-                Path =  "skins",
-                Prefix =  true,
-                Disabled = true
+                Icon = "fas fa-fw fa-chart-pie",
+                Title = "Statistics",
+                SubTitle = "View market trends and stats",
+                Path = "/stats",
+                Prefix = true
             }
-            */
         });
         if (items.Any())
         {
             items.Add(null);
         }
-        items.AddRange(new List<NavigationItem>
+        items.AddRange(new List<INavigationMenuItem>
         {
-            new NavigationItem
+            new NavigationMenuItemLink
             {
-                Icon = @<DiscussionIcon />,
-                Title = "Community",
-                SubTitle = "Join the Discord",
-                Path =  "https://discord.gg/CRMf95Z",
-                Prefix =  false
+                Icon = "fab fa-fw fa-discord",
+                Title = "Discord",
+                SubTitle = "Join the community",
+                Path =  "https://discord.gg/CRMf95Z"
             },
-            new NavigationItem
+            new NavigationMenuItemLink
             {
-                Icon = @<InformationIcon />,
-                Title = "About",
-                SubTitle = "FAQ and changes",
-                Path =  "about",
-                Prefix =  true
-            },
-            new NavigationItem
-            {
-                Icon = @<ReceiveMoneyIcon />,
+                Icon = "fas fa-fw fa-donate",
                 Title = "Donate",
                 SubTitle = "Show your support",
-                OnClick = DonationOpen
+                OnClick = ShowDonationDialog
+            },
+            new NavigationMenuItemGroup
+            {
+                Icon = "fas fa-fw fa-info-circle",
+                Title = "About",
+                Children = new List<INavigationMenuItem>
+                {
+                    new NavigationMenuItemLink
+                    {
+                        //Icon = "fas fa-fw fa-info fa-sm",
+                        Title = "Website",
+                        Path =  "/about",
+                        Prefix = true
+                    },
+                    new NavigationMenuItemLink
+                    {
+                        //Icon = "fas fa-fw fa-user-secret fa-sm",
+                        Title = "Privacy Policy",
+                        Path =  "/privacy",
+                        Prefix =  true
+                    },
+                    new NavigationMenuItemLink
+                    {
+                        //Icon = "fas fa-fw fa-handshake fa-sm",
+                        Title = "Terms of Service",
+                        Path =  "/tos",
+                        Prefix =  true
+                    },
+                    new NavigationMenuItemLink
+                    {
+                        //Icon = "fas fa-fw fa-history fa-sm",
+                        Title = "Change History",
+                        Path =  "/changes",
+                        Prefix = true
+                    },
+                    new NavigationMenuItemLink
+                    {
+                        //Icon = "fas fa-fw fa-book fa-sm",
+                        Title = "API Documentation",
+                        Path =  "/docs"
+                    },
+                }
             }
         });
-        if (State.IsAuthenticated)
+        if (State.IsAuthenticated && State.IsInRole(Roles.Administrator))
         {
             if (items.Any())
             {
                 items.Add(null);
             }
-            items.AddRange(new List<NavigationItem>
+            items.AddRange(new List<INavigationMenuItem>
             {
-                new NavigationItem
+                new NavigationMenuItemLink
                 {
-                    Icon = @<CogIcon />,
-                    Title = "Settings",
-                    SubTitle = "Manage your account",
-                    Path = "settings",
+                    Icon = "fas fa-fw fa-cog",
+                    Title = "Administration",
+                    Path = "/admin",
                     Prefix = true
-                }
-            });
-            if (State.IsInRole(Roles.Administrator))
-            {
-                items.AddRange(new List<NavigationItem>
-                {
-                    new NavigationItem
-                    {
-                        Icon = @<CogIcon />,
-                        Title = "Administration",
-                        Path = "admin",
-                        Prefix = true
-                    },
-                });
-            }
-            items.AddRange(new List<NavigationItem>
-            {
-                new NavigationItem
-                {
-                    Icon = @<ExitDoorIcon />,
-                    Title = "Sign out",
-                    OnClick = SignOut
-                }
+                },
             });
         }
 
         return items;
     }
 
-    private void DonationOpen()
+    private void ShowDonationDialog()
     {
-        DonateDialogOpened = true;
-        StateHasChanged();
+        Dialogs.Show<DonateDialog>();
     }
 
-    private void SignInWarningOpen()
+    private async Task ShowSignInDialog()
     {
-        SignInDialogOpened = true;
-        StateHasChanged();
-    }
-
-    private void SignInWarningClose()
-    {
-        SignInDialogOpened = false;
-        StateHasChanged();
+        var result = await Dialogs.Show<SignInDialog>().Result;
+        if (!result.Cancelled && (bool) result.Data == true)
+        {
+            SignIn();
+        }
     }
 
     private void SignIn()

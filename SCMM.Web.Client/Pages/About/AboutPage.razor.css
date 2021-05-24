@@ -1,0 +1,28 @@
+﻿
+.Donators li:nth-child(1) {
+    color: gold;
+}
+
+.Donators li:nth-child(2) {
+    color: silver;
+}
+
+.Donators li:nth-child(3) {
+    color: #cd7f32;
+}
+
+.Donator {
+    display: flex;
+    align-content: center;
+    align-items: center;
+}
+
+.Donator > img {
+    max-width: 24px;
+    max-height: 24px;
+}
+
+.Donator > span {
+    margin: 4px 8px;
+    font-weight: bold;
+}
