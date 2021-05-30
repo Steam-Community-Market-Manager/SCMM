@@ -158,7 +158,14 @@ namespace SteamAuth
                 session.SteamLogin = session.SteamID + "%7C%7C" + oAuthData.SteamLogin;
                 session.SteamLoginSecure = session.SteamID + "%7C%7C" + oAuthData.SteamLoginSecure;
                 session.WebCookie = oAuthData.Webcookie;
-                session.SessionID = readableCookies["sessionid"].Value;
+                try
+                {
+                    session.SessionID = readableCookies["sessionid"].Value;
+                }
+                catch (Exception ex)
+                {
+
+                }
                 this.Session = session;
                 this.LoggedIn = true;
                 return LoginResult.LoginOkay;
