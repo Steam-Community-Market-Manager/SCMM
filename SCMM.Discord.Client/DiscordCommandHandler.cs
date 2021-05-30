@@ -56,6 +56,12 @@ namespace SCMM.Discord.Client
                 return Task.CompletedTask;
             }
 
+            // If we are mentioned, show some love
+            if (message.Content.Contains(_client.CurrentUser.Username, StringComparison.InvariantCultureIgnoreCase))
+            {
+                _ = message.AddReactionAsync(new Emoji("❤️"));
+            }
+
             // Determine if the message is a command based on the prefix and make sure other bots don't trigger our commands
             // Commands should start with the prefix character followed by a non-white-space character (i.e. "> hello" is a blockquote, not a command)
             int commandArgPos = 0;
