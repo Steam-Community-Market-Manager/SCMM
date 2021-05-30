@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using SCMM.Discord.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -136,6 +137,22 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success(
                 message: "These are the commands that I support.",
                 embed: embed.Build()
+            );
+        }
+
+        [Command("invite")]
+        [Summary("Show the Discord invite link for this bot")]
+        public async Task<RuntimeResult> SayInviteUrl()
+        {
+            var name = Context.Client.CurrentUser.Username;
+            return CommandResult.Success(
+                embed: new EmbedBuilder()
+                    .WithColor(Color.Red)
+                    .WithTitle($"Invite {name} to your Discord server")
+                    .WithDescription($"{name} is an app for analysing Steam Community Market information. Click the link above to invite {name} to your own Discord server!")
+                    .WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
+                    .WithUrl(_cfg.InviteUrl)
+                    .Build()
             );
         }
     }

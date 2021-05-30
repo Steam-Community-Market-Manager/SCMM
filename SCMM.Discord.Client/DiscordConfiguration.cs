@@ -9,5 +9,7 @@
         public int? ShardId { get; set; }
 
         public int TotalShards { get; set; }
+
+        public string InviteUrl { get; set; }
     }
 }
