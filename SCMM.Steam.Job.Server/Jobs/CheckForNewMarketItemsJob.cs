@@ -120,9 +120,9 @@ namespace SCMM.Steam.Job.Server.Jobs
                     .Where(x => x?.Success == true && x?.Results?.Count > 0)
                     .SelectMany(x =>
                     {
-                        var tasks = steamService.FindOrAddSteamMarketItems(x.Results, currency);
-                        Task.WaitAll(tasks);
-                        return tasks.Result;
+                        var task = steamService.FindOrAddSteamMarketItems(x.Results, currency);
+                        Task.WaitAll(task);
+                        return task.Result;
                     })
                     .Where(x => x?.IsTransient == true)
                     .Where(x => x?.App != null && x?.Description != null)

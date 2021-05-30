@@ -60,8 +60,12 @@ namespace SCMM.Steam.API.Commands
                 var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
                 var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
                 var response = await steamUser.GetPlayerSummaryAsync(UInt64.Parse(resolvedId.SteamId));
-                
-                var profileId = response?.Data?.ProfileUrl;
+                if (response?.Data == null)
+                {
+                    throw new ArgumentException(nameof(request), "SteamID is invalid, or profile no longer exists");
+                }
+
+                var profileId = response.Data.ProfileUrl;
                 if (String.IsNullOrEmpty(profileId))
                 {
                     throw new ArgumentException(nameof(request), "ProfileID is invalid");
@@ -99,8 +103,12 @@ namespace SCMM.Steam.API.Commands
                     ProfileId = resolvedId.ProfileId,
                     Xml = true
                 });
+                if (response == null)
+                {
+                    throw new ArgumentException(nameof(request), "ProfileID is invalid, or profile no longer exists");
+                }
 
-                var steamId = response?.SteamID64.ToString();
+                var steamId = response.SteamID64.ToString();
                 if (String.IsNullOrEmpty(steamId))
                 {
                     throw new ArgumentException(nameof(request), "SteamID is invalid");

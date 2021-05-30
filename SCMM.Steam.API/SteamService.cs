@@ -198,17 +198,23 @@ namespace SCMM.Steam.API
                 // Update creator
                 if (workshopFile.CreatorId == null && publishedFile.Creator > 0)
                 {
-                    var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+                    try
                     {
-                        ProfileId = publishedFile.Creator.ToString()
-                    });
-                    if (fetchAndCreateProfile?.Profile != null)
-                    {
-                        workshopFile.Creator = fetchAndCreateProfile.Profile;
-                        if (!assetDescription.Tags.ContainsKey(Constants.SteamAssetTagCreator))
+                        var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
                         {
-                            assetDescription.Tags[Constants.SteamAssetTagCreator] = fetchAndCreateProfile.Profile.Name;
+                            ProfileId = publishedFile.Creator.ToString()
+                        });
+                        if (fetchAndCreateProfile?.Profile != null)
+                        {
+                            workshopFile.Creator = fetchAndCreateProfile.Profile;
+                            if (!assetDescription.Tags.ContainsKey(Constants.SteamAssetTagCreator))
+                            {
+                                assetDescription.Tags[Constants.SteamAssetTagCreator] = fetchAndCreateProfile.Profile.Name;
+                            }
                         }
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
 
