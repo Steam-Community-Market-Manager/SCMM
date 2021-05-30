@@ -26,6 +26,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("options")]
+        [Alias("names")]
         [Summary("Show a list of all supported configuration options you can personalise for this server")]
         public async Task<RuntimeResult> GetConfigNamesAsync()
         {
