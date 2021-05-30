@@ -60,7 +60,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Load the profile
-            var profileInventory = _db.SteamProfiles
+            var profileInventory = await _db.SteamProfiles
                 .Include(x => x.InventoryItems).ThenInclude(x => x.App)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
@@ -71,7 +71,7 @@ namespace SCMM.Steam.API.Commands
                     TotalItems = x.InventoryItems.Count,
                     LastUpdatedOn = x.LastUpdatedInventoryOn
                 })
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             // If the profile inventory is less than 1 hour old and we aren't forcing an update, just return the current inventory
             var profile = profileInventory?.Profile;
@@ -94,14 +94,14 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Load the language
-            var language = _db.SteamLanguages.AsNoTracking().FirstOrDefault(x => x.IsDefault);
+            var language = await _db.SteamLanguages.AsNoTracking().FirstOrDefaultAsync(x => x.IsDefault);
             if (language == null)
             {
                 return null;
             }
 
             // Load the apps
-            var apps = _db.SteamApps.ToList();
+            var apps = await _db.SteamApps.ToListAsync();
             if (!apps.Any())
             {
                 return null;

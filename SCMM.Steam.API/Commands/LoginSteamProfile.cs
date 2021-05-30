@@ -57,7 +57,7 @@ namespace SCMM.Steam.API.Commands
             if (profile != null && !profile.IsTransient)
             {
                 // Load more extended profile information from our database
-                var profileInfoQuery = _db.SteamProfiles
+                var profileInfoQuery = await _db.SteamProfiles
                     .Include(x => x.Language)
                     .Include(x => x.Currency)
                     .Where(x => x.Id == profile.Id)
@@ -67,7 +67,7 @@ namespace SCMM.Steam.API.Commands
                         IsCreator = x.WorkshopFiles.Any(x => x.AcceptedOn != null),
                         IsDonator = x.DonatorLevel > 0
                     })
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync();
 
                 // Assign dynamic roles to the profile (if missing)
                 var dynamicRoles = new List<string>();

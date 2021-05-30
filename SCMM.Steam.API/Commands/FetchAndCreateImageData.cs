@@ -1,4 +1,5 @@
 ﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Store;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
@@ -42,7 +43,7 @@ namespace SCMM.Steam.API.Commands
             // If we have already fetched this image source before, return the existing copy
             if (request.UseExisting)
             {
-                var existingImageData = _db.ImageData.FirstOrDefault(x => x.Source == request.Url);
+                var existingImageData = await _db.ImageData.FirstOrDefaultAsync(x => x.Source == request.Url);
                 if (existingImageData != null)
                 {
                     return new FetchAndCreateImageDataResponse

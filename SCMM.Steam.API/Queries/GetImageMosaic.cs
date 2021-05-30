@@ -54,13 +54,11 @@ namespace SCMM.Steam.API.Queries
 
         private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
-        private readonly IMapper _mapper;
 
-        public GetImageMosaic(SteamDbContext db, ICommandProcessor commandProcessor, IMapper mapper)
+        public GetImageMosaic(SteamDbContext db, ICommandProcessor commandProcessor)
         {
             _db = db;
             _commandProcessor = commandProcessor;
-            _mapper = mapper;
         }
 
         public async Task<GetImageMosaicResponse> HandleAsync(GetImageMosaicRequest request)
@@ -402,7 +400,7 @@ namespace SCMM.Steam.API.Queries
 
             // Check the second-level cache (database) for missing image data
             var missingImageUrls = missingImages.Select(x => x.ImageUrl).ToList();
-            var missingImageData = _db.ImageData.AsNoTracking().Where(x => missingImageUrls.Contains(x.Source)).ToList();
+            var missingImageData = await _db.ImageData.AsNoTracking().Where(x => missingImageUrls.Contains(x.Source)).ToListAsync();
             if (missingImageData.Any())
             {
                 foreach (var imageSource in missingImages.ToList())

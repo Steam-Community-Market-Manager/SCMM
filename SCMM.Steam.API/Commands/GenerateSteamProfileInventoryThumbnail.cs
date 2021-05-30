@@ -48,7 +48,7 @@ namespace SCMM.Steam.API.Commands
                 Id = request.ProfileId
             });
 
-            var inventoryItemIcons = _db.SteamProfileInventoryItems
+            var inventoryItemIcons = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.Id)
                 .Where(x => x.Description != null)
@@ -62,7 +62,7 @@ namespace SCMM.Steam.API.Commands
                     Banned = x.Description.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Banned)
                 })
                 .OrderByDescending(x => x.Value)
-                .ToList();
+                .ToListAsync();
 
             var inventoryImageSources = new List<ImageSource>();
             foreach (var inventoryItemIcon in inventoryItemIcons)

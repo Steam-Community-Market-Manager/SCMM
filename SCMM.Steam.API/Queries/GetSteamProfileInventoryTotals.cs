@@ -52,9 +52,9 @@ namespace SCMM.Steam.API.Queries
             });
 
             // Load the currency
-            var currency = _db.SteamCurrencies
+            var currency = await _db.SteamCurrencies
                 .AsNoTracking()
-                .FirstOrDefault(x => x.SteamId == request.CurrencyId);
+                .FirstOrDefaultAsync(x => x.SteamId == request.CurrencyId);
 
             if (currency == null)
             {
@@ -62,7 +62,7 @@ namespace SCMM.Steam.API.Queries
             }
 
             // Load the profile inventory
-            var profileInventoryItems = _db.SteamProfileInventoryItems
+            var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.Id)
                 .Where(x => x.Description != null)
@@ -78,7 +78,7 @@ namespace SCMM.Steam.API.Queries
                     ItemResellTax = (x.Description.MarketItem != null ? x.Description.MarketItem.ResellTax : 0),
                     ItemExchangeRateMultiplier = (x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : (x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0))
                 })
-                .ToList();
+                .ToListAsync();
 
             if (!profileInventoryItems.Any())
             {
