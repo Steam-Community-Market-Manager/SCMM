@@ -53,7 +53,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             user = (user ?? Context.User);
 
-            var message = await ReplyAsync("Loading...");
+            var message = await Context.Message.ReplyAsync("Loading...");
             await message.LoadingAsync("🔍 Finding Steam profile...");
 
             // Load the profile using the discord id
@@ -100,7 +100,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
         private async Task<RuntimeResult> SayProfileInventoryValueInternalAsync(IUserMessage message, string steamId, string currencyId)
         {
-            message = (message ?? await ReplyAsync("Loading..."));
+            message = (message ?? await Context.Message.ReplyAsync("Loading..."));
             
             var profile = (SteamProfile)null;
             try

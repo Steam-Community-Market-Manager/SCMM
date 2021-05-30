@@ -27,7 +27,7 @@
             user = (user ?? Context.User);
 
             // Load the profile using the discord id
-            var message = await ReplyAsync("Finding Steam profile...");
+            var message = await Context.Message.ReplyAsync("Finding Steam profile...");
             var discordId = $"{user.Username}#{user.Discriminator}";
             var profile = _db.SteamProfiles
                 .AsNoTracking()
@@ -59,7 +59,7 @@
 
         private async Task<RuntimeResult> SayProfileTradeRequestInternalAsync(IUserMessage message, string steamId)
         {
-            message = (message ?? await ReplyAsync("Finding Steam profile..."));
+            message = (message ?? await Context.Message.ReplyAsync("Finding Steam profile..."));
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
                 Id = steamId
@@ -148,7 +148,7 @@
                 .Build();
 
             await message.DeleteAsync();
-            await ReplyAsync(
+            await Context.Message.ReplyAsync(
                 embed: embed
             );
         }

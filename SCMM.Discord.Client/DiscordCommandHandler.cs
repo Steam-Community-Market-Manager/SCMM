@@ -63,11 +63,11 @@ namespace SCMM.Discord.Client
             }
 
             // Determine if the message is a command based on the prefix and make sure other bots don't trigger our commands
-            // Commands should start with the prefix character followed by a non-white-space character (i.e. "> hello" is a blockquote, not a command)
+            // Commands should start with the prefix character followed by a non-white-space character (i.e. ">cmd", not "> cmd")
             int commandArgPos = 0;
             if (!(message.HasCharPrefix(_configuration.CommandPrefix.FirstOrDefault(), ref commandArgPos) ||
+                message.HasStringPrefix($"{_configuration.CommandPrefix} ", ref commandArgPos, StringComparison.InvariantCultureIgnoreCase) ||
                 message.HasMentionPrefix(_client.CurrentUser, ref commandArgPos)) ||
-                message.Content.StartsWith($"{_configuration.CommandPrefix} ", StringComparison.InvariantCultureIgnoreCase) ||
                 message.Author.IsBot)
             {
                 return Task.CompletedTask;
@@ -109,7 +109,7 @@ namespace SCMM.Discord.Client
                 }
                 if (commandResult?.Reason != null || commandResult?.Embed != null)
                 {
-                    await context.Channel.SendMessageAsync(
+                    await context.Message.ReplyAsync(
                         text: commandResult.Reason,
                         embed: commandResult.Embed
                     );
@@ -129,7 +129,7 @@ namespace SCMM.Discord.Client
                 }
                 if (commandResult?.Reason != null || commandResult?.Explaination != null)
                 {
-                    await context.Channel.SendMessageAsync(
+                    await context.Message.ReplyAsync(
                         text: (commandResult.Explaination != null) ? null : commandResult.Reason,
                         embed: (commandResult.Explaination == null) ? null : new EmbedBuilder()
                             .WithTitle(commandResult.Reason)
@@ -151,43 +151,43 @@ namespace SCMM.Discord.Client
                 {
                     case CommandError.UnknownCommand:
                         logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, I don't understand that command 😕 use `{_configuration.CommandPrefix}help` for a list of support commands");
+                        responseMessage = context.Message.ReplyAsync($"Sorry, I don't understand that command 😕 use `{_configuration.CommandPrefix}help` for a list of support commands");
                         break;
 
                     case CommandError.ParseFailed:
                         logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command contains invalid characters or objects that I can't understand 😕");
+                        responseMessage = context.Message.ReplyAsync($"Sorry, your command contains invalid characters or objects that I can't understand 😕");
                         break;
 
                     case CommandError.BadArgCount:
                         logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command has an invalid number of parameters 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
+                        responseMessage = context.Message.ReplyAsync($"Sorry, your command has an invalid number of parameters 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
                         break;
 
                     case CommandError.ObjectNotFound:
                         logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it 😅");
+                        responseMessage = context.Message.ReplyAsync($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it 😅");
                         break;
 
                     case CommandError.MultipleMatches:
                         logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command is ambiguous, try be more specific 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
+                        responseMessage = context.Message.ReplyAsync($"Sorry, your command is ambiguous, try be more specific 😕 use `{_configuration.CommandPrefix}help` for details on command usage");
                         break;
 
                     case CommandError.UnmetPrecondition:
                         logLevel = LogLevel.Warning;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, {result.ErrorReason}");
+                        responseMessage = context.Message.ReplyAsync($"Sorry, {result.ErrorReason}");
                         break;
 
                     case CommandError.Exception:
                         logLevel = LogLevel.Error;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, something terrible went wrong your command cannot be completed right now 😵 try again later");
+                        responseMessage = context.Message.ReplyAsync($"Sorry, something terrible went wrong your command cannot be completed right now 😵 try again later");
                         reactionEmoji = new Emoji("🐛"); // bug
                         break;
 
                     case CommandError.Unsuccessful:
                         logLevel = LogLevel.Error;
-                        responseMessage = context.Channel.SendMessageAsync($"Sorry, your command cannot be completed right now and I'm unsure why 😵 try again later");
+                        responseMessage = context.Message.ReplyAsync($"Sorry, your command cannot be completed right now and I'm unsure why 😵 try again later");
                         reactionEmoji = new Emoji("🐛"); // bug
                         break;
                 }
