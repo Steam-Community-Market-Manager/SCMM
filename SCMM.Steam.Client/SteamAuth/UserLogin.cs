@@ -162,7 +162,7 @@ namespace SteamAuth
                 {
                     session.SessionID = readableCookies["sessionid"].Value;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
 
                 }

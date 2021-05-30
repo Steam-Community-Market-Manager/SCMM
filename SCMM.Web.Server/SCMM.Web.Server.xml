@@ -381,7 +381,7 @@
             List all known item store identifiers
             </summary>
             <returns>List of stores</returns>
-            <response code="200">List of known item stores. Use <see cref="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.Guid)"/> <code>/store/{storeId}</code> to get the detailed contents of an item store.</response>
+            <response code="200">List of known item stores. Use <see cref="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.String)"/> <code>/store/{dateTime}</code> to get the detailed contents of an item store.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetCurrentStore">
@@ -397,13 +397,16 @@
             <response code="404">If there are no currently active item stores.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.Guid)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.String)">
             <summary>
             Get an item store details
             </summary>
-            <param name="storeId">Id of a known item store</param>
+            <param name="dateTime">The date and time to load the item store for. Format is <code>yyyy-MM-dd-HHmm</code>.</param>
             <returns>The item store details</returns>
-            <remarks>The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').</remarks>
+            <remarks>
+            If there are multiple active stores at the specified date time, only the most recent will be returned.
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
             <response code="200">The store details.</response>
             <response code="404">If the store cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
