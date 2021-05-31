@@ -31,7 +31,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             var expiredImageData = db.ImageData
                 .Where(x => x.ExpiresOn != null && x.ExpiresOn <= now)
                 .OrderByDescending(x => x.ExpiresOn)
-                .Take(100) // to avoid timing out
+                .Take(10) // to avoid timing out
                 .ToList();
 
             if (expiredImageData?.Any() == true)
