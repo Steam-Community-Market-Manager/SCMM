@@ -8,7 +8,6 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -63,11 +62,8 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request}' failed. {ex.Message}");
-                throw new SteamRequestException($"GET '{request}' failed", ex);
+                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex);
             }
-
-            return null;
         }
 
         public async Task<string> GetText<TRequest>(TRequest request)
@@ -86,11 +82,8 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request}' failed. {ex.Message}");
-                throw new SteamRequestException($"GET '{request}' failed", ex);
+                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex);
             }
-
-            return null;
         }
 
         public async Task<XElement> GetHtml<TRequest>(TRequest request)
@@ -125,79 +118,59 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request}' failed. {ex.Message}");
-                throw new SteamRequestException($"GET '{request}' failed", ex);
+                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex);
             }
-
-            return null;
         }
 
         public async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request)
             where TRequest : SteamRequest
         {
-            var xml = (string)null;
-            try
+            var xml = await GetText(request);
+            if (!String.IsNullOrEmpty(xml))
             {
-                xml = await GetText(request);
-                if (!String.IsNullOrEmpty(xml))
+                try
                 {
                     var xmlSerializer = new XmlSerializer(typeof(TResponse));
                     using var reader = new StringReader(xml);
-                    var response = (TResponse)xmlSerializer.Deserialize(reader);
-                    if (response != null)
-                    {
-                        return response;
-                    }
-                    else
-                    {
-                        throw new SerializationException("The response was empty");
-                    }
+                    return (TResponse)xmlSerializer.Deserialize(reader);
                 }
-                else
+                catch (Exception ex)
                 {
-                    throw new HttpRequestException("The response was empty");
+                    var error = (SteamErrorXmlResponse)null;
+                    try
+                    {
+                        // Check if the response is actually a Steam error
+                        var xmlSerializer = new XmlSerializer(typeof(SteamErrorXmlResponse));
+                        using var reader = new StringReader(xml);
+                        error = (SteamErrorXmlResponse)xmlSerializer.Deserialize(reader);
+                    }
+                    finally
+                    {
+                        throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex, error);
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                if (!String.IsNullOrEmpty(xml))
-                {
-                    var xmlSerializer = new XmlSerializer(typeof(SteamErrorXmlResponse));
-                    using var reader = new StringReader(xml);
-                    var error = (SteamErrorXmlResponse) xmlSerializer.Deserialize(reader);
-                    if (error != null)
-                    {
-                        throw new SteamRequestException(error.Error, ex, error);
-                    }
-                    else
-                    {
-                        _logger.LogError($"XML response could not be parsed (request: {typeof(TRequest)}, response: {typeof(TResponse)}, length: {xml?.Length ?? -1}).\n{xml}");
-                        throw new SteamRequestException($"The response could not be parsed (request: {typeof(TRequest)}, response: {typeof(TResponse)}, length: {xml?.Length ?? -1})");
-                    }
-                }
-                
-                throw new SteamRequestException($"GET '{request}' failed", ex);
-            }
+
+            return default;
         }
 
         public async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request)
             where TRequest : SteamRequest
         {
-            try
+            var json = await GetText(request);
+            if (!String.IsNullOrEmpty(json))
             {
-                var json = await GetText(request);
-                if (!String.IsNullOrEmpty(json))
+                try
                 {
                     return JsonConvert.DeserializeObject<TResponse>(json);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"GET '{request}' failed. {ex.Message}");
-                throw new SteamRequestException($"GET '{request}' failed", ex);
+                catch (Exception ex)
+                {
+                    throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex);
+                }
             }
 
-            return default(TResponse);
+            return default;
         }
     }
 }

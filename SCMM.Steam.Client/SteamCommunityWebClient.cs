@@ -64,13 +64,13 @@ namespace SCMM.Steam.Client
 
         public async Task<string> GetMarketListingItemNameId(SteamMarketListingPageRequest request)
         {
-            // TODO: Find a better way to look this up...
             var html = await GetText(request);
             if (String.IsNullOrEmpty(html))
             {
                 return null;
             }
 
+            // TODO: Find a better way to look this up...
             var itemNameIdMatchGroup = Regex.Match(html, Constants.SteamMarketListingItemNameIdRegex).Groups;
             return (itemNameIdMatchGroup.Count > 1)
                 ? itemNameIdMatchGroup[1].Value.Trim()
@@ -107,16 +107,6 @@ namespace SCMM.Steam.Client
             }
 
             return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request);
-        }
-
-        public async Task<Tuple<byte[], string>> GetEconomyImage(SteamEconomyImageBlobRequest request)
-        {
-            return await GetBinary<SteamEconomyImageBlobRequest>(request);
-        }
-
-        public async Task<Tuple<byte[], string>> GetImage(SteamBlobRequest request)
-        {
-            return await GetBinary<SteamBlobRequest>(request);
         }
     }
 }

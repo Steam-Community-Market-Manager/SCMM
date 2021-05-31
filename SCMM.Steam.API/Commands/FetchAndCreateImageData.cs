@@ -54,7 +54,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Fetch the image from its source
-            var imageResponse = await _communityClient.GetImage(new SteamBlobRequest(request.Url));
+            var imageResponse = await _communityClient.GetBinary(new SteamBlobRequest(request.Url));
             if (imageResponse == null)
             {
                 return null;
