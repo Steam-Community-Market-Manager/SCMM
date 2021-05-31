@@ -4,7 +4,7 @@ namespace SCMM.Web.Data.Models.Domain.StoreItems
 {
     public class ItemStoreListDTO
     {
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         public string Name { get; set; }
 

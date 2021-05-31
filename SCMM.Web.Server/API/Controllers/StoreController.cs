@@ -8,10 +8,12 @@ using Microsoft.Extensions.Logging;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Domain.StoreItems;
 using SCMM.Web.Server.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,7 +45,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List all known item store identifiers
         /// </summary>
         /// <returns>List of stores</returns>
-        /// <response code="200">List of known item stores. Use <see cref="GetStore(Guid)"/> <code>/store/{storeId}</code> to get the detailed contents of an item store.</response>
+        /// <response code="200">List of known item stores. Use <see cref="GetStore(string)"/> <code>/store/{dateTime}</code> to get the detailed contents of an item store.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
@@ -81,42 +83,43 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCurrentStore()
         {
-            var appId = this.App();
-            var latestItemStoreId = await _db.SteamItemStores
-                .AsNoTracking()
-                .Where(x => x.App.SteamId == appId)
-                .Where(x => x.End == null)
-                .OrderByDescending(x => x.Start)
-                .Select(x => x.Id)
-                .FirstOrDefaultAsync();
-
-            if (latestItemStoreId == Guid.Empty)
-            {
-                return NotFound();
-            }
-
-            return await GetStore(latestItemStoreId);
+            return await GetStore(DateTime.UtcNow.ToString(Constants.StoreIdDateFormat));
         }
 
         /// <summary>
         /// Get an item store details
         /// </summary>
-        /// <param name="storeId">Id of a known item store</param>
+        /// <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
         /// <returns>The item store details</returns>
-        /// <remarks>The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').</remarks>
+        /// <remarks>
+        /// If there are multiple active stores at the specified date time, only the most recent will be returned.
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
         /// <response code="200">The store details.</response>
+        /// <response code="400">If the store date is invalid or cannot be parsed asa date time.</response>
         /// <response code="404">If the store cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{storeId}")]
+        [HttpGet("{dateTime}")]
         [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetStore([FromRoute] Guid storeId)
+        public async Task<IActionResult> GetStore([FromRoute] string dateTime)
         {
+            var storeDate = DateTime.UtcNow;
+            if (!DateTime.TryParseExact(dateTime, Constants.StoreIdDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+            {
+                if (!DateTime.TryParse(dateTime, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+                {
+                    return BadRequest("Store date is invalid and cannot be parsed");
+                }
+            }
+
             var itemStore = await _db.SteamItemStores
                 .AsNoTracking()
-                .Where(x => x.Id == storeId)
+                .OrderByDescending(x => x.Start)
+                .Where(x => storeDate >= x.Start)
+                .Take(1)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.App)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description)

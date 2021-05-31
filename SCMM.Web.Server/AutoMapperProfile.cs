@@ -3,6 +3,7 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.Domain.InventoryItems;
 using SCMM.Web.Data.Models.Domain.Languages;
@@ -128,8 +129,11 @@ namespace SCMM.Web.Server
             CreateMap<SteamMarketItemSale, MarketItemSaleDTO>()
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Item.Currency));
 
-            CreateMap<SteamItemStore, ItemStoreListDTO>();
-            CreateMap<SteamItemStore, ItemStoreDetailedDTO>();
+            CreateMap<SteamItemStore, ItemStoreListDTO>()
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.ToString(Constants.StoreIdDateFormat)));
+
+            CreateMap<SteamItemStore, ItemStoreDetailedDTO>()
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.ToString(Constants.StoreIdDateFormat)));
 
             CreateMap<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>()
                 .ForMember(x => x.Currency, o => o.MapFromCurrency());
