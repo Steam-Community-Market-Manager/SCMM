@@ -54,7 +54,7 @@ namespace SCMM.Steam.Client
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
+                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
                 }
 
                 return new Tuple<byte[], string>(
@@ -63,7 +63,8 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed. {ex.Message}");
+                throw new SteamRequestException($"GET '{request}' failed", ex);
             }
 
             return null;
@@ -78,14 +79,15 @@ namespace SCMM.Steam.Client
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
+                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
                 }
 
                 return await response.Content.ReadAsStringAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed. {ex.Message}");
+                throw new SteamRequestException($"GET '{request}' failed", ex);
             }
 
             return null;
@@ -100,7 +102,7 @@ namespace SCMM.Steam.Client
                 var response = await client.GetAsync(request.Uri);
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}");
+                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
                 }
 
                 var html = await response.Content.ReadAsStringAsync();
@@ -123,7 +125,8 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed. {ex.Message}");
+                throw new SteamRequestException($"GET '{request}' failed", ex);
             }
 
             return null;
@@ -172,10 +175,8 @@ namespace SCMM.Steam.Client
                         throw new SteamRequestException($"The response could not be parsed (request: {typeof(TRequest)}, response: {typeof(TResponse)}, length: {xml?.Length ?? -1})");
                     }
                 }
-                else
-                {
-                    throw new SteamRequestException("The request failed", ex);
-                }
+                
+                throw new SteamRequestException($"GET '{request}' failed", ex);
             }
         }
 
@@ -192,7 +193,8 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"GET '{request}' failed");
+                _logger.LogError(ex, $"GET '{request}' failed. {ex.Message}");
+                throw new SteamRequestException($"GET '{request}' failed", ex);
             }
 
             return default(TResponse);
