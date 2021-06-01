@@ -1,5 +1,4 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace SCMM.Web.Data.Models.Extensions
 
         public static IEnumerable<KeyValuePair<string, string>> WithoutWorkshopTags(this IDictionary<string, string> tags)
         {
-            return tags?.Where(x => !x.Key.StartsWith(Constants.SteamAssetTagWorkshop));
+            return tags?.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop));
         }
     }
 }

@@ -36,11 +36,13 @@ namespace SCMM.Steam.Job.Server.Jobs
             var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
+            var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
             var items = db.SteamMarketItems
+                .Where(x => x.LastCheckedOrdersOn <= cutoff)
+                .OrderBy(x => x.LastCheckedSalesOn)
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .OrderBy(x => x.LastCheckedSalesOn)
-                .Take(5) // batch 5 at a time
+                .Take(100) // batch 100 at a time
                 .ToList();
 
             if (!items.Any())
@@ -60,6 +62,8 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return;
             }
 
+            var id = Guid.NewGuid();
+            _logger.LogInformation($"Updating market item sales information (id: {id}, count: {items.Count()})");
             foreach (var item in items)
             {
                 var response = await commnityClient.GetMarketPriceHistory(
@@ -89,6 +93,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             }
 
             db.SaveChanges();
+            _logger.LogInformation($"Updated market item sales information (id: {id})");
         }
     }
 }

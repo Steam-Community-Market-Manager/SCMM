@@ -401,13 +401,14 @@
             <summary>
             Get an item store details
             </summary>
-            <param name="dateTime">The date and time to load the item store for. Format is <code>yyyy-MM-dd-HHmm</code>.</param>
+            <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
             <returns>The item store details</returns>
             <remarks>
             If there are multiple active stores at the specified date time, only the most recent will be returned.
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
             <response code="200">The store details.</response>
+            <response code="400">If the store date is invalid or cannot be parsed asa date time.</response>
             <response code="404">If the store cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>

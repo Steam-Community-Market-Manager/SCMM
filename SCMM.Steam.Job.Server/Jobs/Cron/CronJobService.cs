@@ -71,7 +71,7 @@ namespace SCMM.Steam.Job.Server.Jobs.Cron
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, $"{jobName} failed");
+                            _logger.LogError(ex, $"{jobName} failed. {ex.Message}");
                         }
                     }
                     if (!cancellationToken.IsCancellationRequested)

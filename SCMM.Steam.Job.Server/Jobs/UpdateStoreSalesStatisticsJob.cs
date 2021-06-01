@@ -42,12 +42,12 @@ namespace SCMM.Steam.Job.Server.Jobs
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
             var appItemStores = db.SteamItemStores
+                .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
                 .Include(x => x.App)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Stores)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile)
-                .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
                 .ToList();
 
             foreach (var appItemStore in appItemStores)
