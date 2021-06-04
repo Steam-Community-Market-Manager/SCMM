@@ -37,14 +37,19 @@ namespace SCMM.Steam.Client
             return await GetHtml<SteamWorkshopBrowsePageRequest>(request);
         }
 
-        public async Task<XElement> GetItemStorePage(SteamItemStorePageRequest request)
+        public async Task<XElement> GetStorePage(SteamStorePageRequest request)
         {
-            return await GetHtml<SteamItemStorePageRequest>(request);
+            return await GetHtml<SteamStorePageRequest>(request);
         }
 
-        public async Task<SteamItemStorePaginatedJsonResponse> GetItemStorePaginated(SteamItemStorePaginatedJsonRequest request)
+        public async Task<SteamStorePaginatedJsonResponse> GetStorePaginated(SteamStorePaginatedJsonRequest request)
         {
-            return await GetJson<SteamItemStorePaginatedJsonRequest, SteamItemStorePaginatedJsonResponse>(request);
+            return await GetJson<SteamStorePaginatedJsonRequest, SteamStorePaginatedJsonResponse>(request);
+        }
+
+        public async Task<XElement> GetStoreItemPage(SteamStoreItemPageRequest request)
+        {
+            return await GetHtml<SteamStoreItemPageRequest>(request);
         }
 
         public async Task<SteamInventoryPaginatedJsonResponse> GetInventoryPaginated(SteamInventoryPaginatedJsonRequest request)

@@ -7,10 +7,8 @@
     var salesOutdated = DB.SteamMarketItems.Count(x => x.LastCheckedSalesOn <= cutOff);
     var ordersOldest = DB.SteamMarketItems.Min(x => x.LastCheckedOrdersOn) ?? DateTimeOffset.UtcNow;
     var ordersOutdated = DB.SteamMarketItems.Count(x => x.LastCheckedOrdersOn <= cutOff);
-    var assetsOldest = DB.SteamAssetDescriptions.Min(x => x.LastCheckedOn) ?? DateTimeOffset.UtcNow;
-    var assetsOutdated = DB.SteamAssetDescriptions.Count(x => x.LastCheckedOn <= cutOff);
-    var workshopOldest = DB.SteamAssetWorkshopFiles.Min(x => x.LastCheckedOn) ?? DateTimeOffset.UtcNow;
-    var workshopOutdated = DB.SteamAssetWorkshopFiles.Count(x => x.LastCheckedOn <= cutOff);
+    var assetsOldest = DB.SteamAssetDescriptions.Min(x => x.TimeChecked) ?? DateTimeOffset.UtcNow;
+    var assetsOutdated = DB.SteamAssetDescriptions.Count(x => x.TimeChecked <= cutOff);
 
 }
 <dl class="dl-horizontal">
@@ -28,10 +26,5 @@
     <dd>
         <span>@((DateTime.UtcNow - assetsOldest).ToDurationString(showYears: false, showMonths: false, showWeeks: false, showDays: false, showHours: true, showMinutes: true, showSeconds: false, suffix: "old", maxGranularity: 1))</span><br />
         <span><i>(@assetsOutdated)</i></span>
-    </dd>
-    <dt><i class="fas fa-tools fa-fw"></i> Workshop Files</dt>
-    <dd>
-        <span>@((DateTime.UtcNow - workshopOldest).ToDurationString(showYears: false, showMonths: false, showWeeks: false, showDays: false, showHours: true, showMinutes: true, showSeconds: false, suffix: "old", maxGranularity: 1))</span><br />
-        <span><i>(@workshopOutdated)</i></span>
     </dd>
 </dl>

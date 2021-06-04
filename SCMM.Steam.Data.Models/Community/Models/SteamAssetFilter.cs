@@ -6,7 +6,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
     public class SteamAssetFilter
     {
         [JsonProperty("appid")]
-        public string AppId { get; set; }
+        public ulong AppId { get; set; }
 
         [JsonProperty("name")]
         public string Name { get; set; }

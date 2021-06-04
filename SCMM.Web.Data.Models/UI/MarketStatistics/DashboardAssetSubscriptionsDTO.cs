@@ -2,6 +2,6 @@
 {
     public class DashboardAssetSubscriptionsDTO : DashboardAssetDTO
     {
-        public int Subscriptions { get; set; }
+        public long Subscriptions { get; set; }
     }
 }

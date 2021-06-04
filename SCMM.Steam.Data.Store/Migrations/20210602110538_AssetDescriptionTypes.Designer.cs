@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210602110538_AssetDescriptionTypes")]
+    partial class AssetDescriptionTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -161,8 +163,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<Guid?>("CreatorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long?>("CurrentSubscriptions")
-                        .HasColumnType("bigint");
+                    b.Property<decimal?>("CurrentSubscriptions")
+                        .HasColumnType("decimal(20,0)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -209,8 +211,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("ItemType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("MarketableRestrictionDays")
-                        .HasColumnType("int");
+                    b.Property<long?>("MarketableRestrictionDays")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -233,11 +235,11 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<DateTimeOffset?>("TimeUpdated")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<long?>("TotalSubscriptions")
-                        .HasColumnType("bigint");
+                    b.Property<decimal?>("TotalSubscriptions")
+                        .HasColumnType("decimal(20,0)");
 
-                    b.Property<int?>("TradableRestrictionDays")
-                        .HasColumnType("int");
+                    b.Property<long?>("TradableRestrictionDays")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal?>("WorkshopFileId")
                         .HasColumnType("decimal(20,0)");
@@ -950,11 +952,11 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("SteamId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<long?>("TotalSalesMax")
-                        .HasColumnType("bigint");
+                    b.Property<decimal?>("TotalSalesMax")
+                        .HasColumnType("decimal(20,0)");
 
-                    b.Property<long>("TotalSalesMin")
-                        .HasColumnType("bigint");
+                    b.Property<decimal>("TotalSalesMin")
+                        .HasColumnType("decimal(20,0)");
 
                     b.HasKey("Id");
 

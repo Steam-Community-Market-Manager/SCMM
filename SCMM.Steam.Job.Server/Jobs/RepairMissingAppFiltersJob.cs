@@ -52,7 +52,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     continue;
                 }
 
-                var appFilters = response.Facets.Where(x => x.Value?.AppId == app.SteamId).Select(x => x.Value);
+                var appFilters = response.Facets.Where(x => x.Value?.AppId.ToString() == app.SteamId).Select(x => x.Value);
                 foreach (var appFilter in appFilters)
                 {
                     steamService.AddOrUpdateAppAssetFilter(app, appFilter);

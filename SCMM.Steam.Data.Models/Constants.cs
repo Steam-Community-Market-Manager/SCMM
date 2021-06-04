@@ -11,6 +11,7 @@
         public const string SteamAssetTagItemType = "itemclass";
         public const string SteamAssetTagWorkshop = "workshop";
         public const string SteamAssetTagCreator = "creator";
+        public const string SteamAssetTagSkin = "skin";
         public const string SteamAssetTagSet = "set";
         public const string SteamAssetTagAcceptedYear = "accepted.year";
         public const string SteamAssetTagAcceptedWeek = "accepted.week";

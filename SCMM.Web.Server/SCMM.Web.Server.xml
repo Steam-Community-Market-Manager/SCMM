@@ -4,6 +4,19 @@
         <name>SCMM.Web.Server</name>
     </assembly>
     <members>
+        <member name="M:SCMM.Web.Server.API.Controllers.AssetController.GetStore(System.String)">
+            <summary>
+            Get all assets that belong to a given set
+            </summary>
+            <param name="name">The name of the asset set</param>
+            <returns>The assets belonging to the set</returns>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <response code="200">The asset set list.</response>
+            <response code="400">If the asset set name is missing.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.CurrencyController.Get(System.Boolean)">
             <summary>
             List all supported currencies
@@ -378,15 +391,15 @@
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStores">
             <summary>
-            List all known item store identifiers
+            List all known item store instances
             </summary>
             <returns>List of stores</returns>
-            <response code="200">List of known item stores. Use <see cref="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.String)"/> <code>/store/{dateTime}</code> to get the detailed contents of an item store.</response>
+            <response code="200">List of known item stores. Use <see cref="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.String)"/> <code>/store/{dateTime}</code> to get the details of a specific store.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetCurrentStore">
             <summary>
-            Get the most recent item store details
+            Get the most recent item store instance
             </summary>
             <remarks>
             There may be multiple active item stores, only the most recent is returned.
@@ -399,7 +412,7 @@
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.String)">
             <summary>
-            Get an item store details
+            Get an item store instance
             </summary>
             <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
             <returns>The item store details</returns>
@@ -408,13 +421,13 @@
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
             <response code="200">The store details.</response>
-            <response code="400">If the store date is invalid or cannot be parsed asa date time.</response>
+            <response code="400">If the store date is invalid or cannot be parsed as a date time.</response>
             <response code="404">If the store cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStoreNextUpdateTime">
             <summary>
-            Get the next item store release date/time (estimate only)
+            Get the next (estimated) item store release date time
             </summary>
             <remarks>This is an estimate only and the exact time varies from week to week. Sometimes the store can even be late by a day or two.</remarks>
             <returns>The expected store release date/time</returns>

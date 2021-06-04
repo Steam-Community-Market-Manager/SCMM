@@ -56,7 +56,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             var groupedAssetDescriptions = assetDescriptions.GroupBy(x => x.App);
             foreach (var group in groupedAssetDescriptions)
             {
-                var assetClassIds = group.Select(x => UInt64.Parse(x.SteamId)).ToList();
+                var assetClassIds = group.Select(x => x.AssetId).ToList();
                 foreach (var batch in assetClassIds.Batch(100)) // Batch to 100 per request to avoid server ban
                 {
                     _logger.LogInformation($"Updating asset description information (ids: {batch.Count()})");
@@ -70,8 +70,8 @@ namespace SCMM.Steam.Job.Server.Jobs
                     }
 
                     var assetDescriptionsJoined = response.Data.AssetClasses.Join(group,
-                        x => x.ClassId.ToString(),
-                        y => y.SteamId,
+                        x => x.ClassId,
+                        y => y.AssetId,
                         (x, y) => new
                         {
                             AssetDescription = y,

@@ -47,7 +47,6 @@ namespace SCMM.Steam.Job.Server.Jobs
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Stores)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description)
-                .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile)
                 .ToList();
 
             foreach (var appItemStore in appItemStores)
@@ -62,12 +61,12 @@ namespace SCMM.Steam.Job.Server.Jobs
         private async Task UpdateItemStoreTopSellers(SteamDbContext db, SteamCommunityWebClient commnityClient, SteamService service, SteamItemStore itemStore)
         {
             _logger.LogInformation($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
-            var storePage = await commnityClient.GetItemStorePage(new SteamItemStorePageRequest()
+            var storePage = await commnityClient.GetStorePage(new SteamStorePageRequest()
             {
                 AppId = itemStore.App.SteamId,
                 Start = 0,
-                Count = SteamItemStorePageRequest.MaxPageSize,
-                Filter = SteamItemStorePageRequest.FilterFeatured
+                Count = SteamStorePageRequest.MaxPageSize,
+                Filter = SteamStorePageRequest.FilterFeatured
             });
             if (storePage == null)
             {
@@ -106,7 +105,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             var storeItems = itemStore.Items.ToArray();
             var missingStoreItems = storeItems
                 .Where(x => !storeItemIds.Contains(x.Item.SteamId))
-                .OrderByDescending(x => x.Item.Description?.WorkshopFile?.Subscriptions ?? 0);
+                .OrderByDescending(x => x.Item.Description?.TotalSubscriptions ?? 0);
             foreach (var storeItem in missingStoreItems)
             {
                 storeItemIds.Add(storeItem.Item.SteamId);
@@ -132,13 +131,13 @@ namespace SCMM.Steam.Job.Server.Jobs
         {
             var assetDescriptions = itemStore.Items
                 .Select(x => x.Item)
-                .Where(x => x.Description?.WorkshopFile?.SteamId != null)
+                .Where(x => x.Description?.WorkshopFileId != null)
                 .Select(x => x.Description)
                 .Take(Constants.SteamStoreItemsMax)
                 .ToList();
 
             var workshopFileIds = assetDescriptions
-                .Select(x => UInt64.Parse(x.WorkshopFile.SteamId))
+                .Select(x => x.WorkshopFileId.Value)
                 .ToList();
 
             if (!workshopFileIds.Any())
@@ -157,8 +156,8 @@ namespace SCMM.Steam.Job.Server.Jobs
             }
 
             var assetWorkshopJoined = response.Data.Join(assetDescriptions,
-                x => x.PublishedFileId.ToString(),
-                y => y.WorkshopFile.SteamId,
+                x => x.PublishedFileId,
+                y => y.WorkshopFileId,
                 (x, y) => new
                 {
                     AssetDescription = y,

@@ -59,7 +59,7 @@ namespace SCMM.Steam.API.Commands
                     Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
                     ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue > 0 : false),
                     ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue < 0 : false),
-                    Banned = x.Description.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.SteamAssetDescriptionFlags.Banned)
+                    Banned = x.Description.IsBanned
                 })
                 .OrderByDescending(x => x.Value)
                 .ToListAsync();

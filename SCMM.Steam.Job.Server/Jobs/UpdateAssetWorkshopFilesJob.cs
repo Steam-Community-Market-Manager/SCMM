@@ -38,11 +38,10 @@ namespace SCMM.Steam.Job.Server.Jobs
             var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
             var assetDescriptions = db.SteamAssetDescriptions
-                .Where(x => x.WorkshopFile.SteamId != null)
-                .Include(x => x.WorkshopFile)
+                .Where(x => x.WorkshopFileId != null)
                 .ToList();
 
-            var workshopFileIds = assetDescriptions.Select(x => UInt64.Parse(x.WorkshopFile.SteamId)).ToList();
+            var workshopFileIds = assetDescriptions.Select(x => x.WorkshopFileId.Value).ToList();
             foreach (var batch in workshopFileIds.Batch(100)) // Batch to 100 per request to avoid server ban
             {
                 _logger.LogInformation($"Updating asset workshop information (ids: {batch.Count()})");
@@ -56,8 +55,8 @@ namespace SCMM.Steam.Job.Server.Jobs
                 }
 
                 var assetWorkshopJoined = response.Data.Join(assetDescriptions,
-                    x => x.PublishedFileId.ToString(),
-                    y => y.WorkshopFile.SteamId,
+                    x => x.PublishedFileId,
+                    y => y.WorkshopFileId,
                     (x, y) => new
                     {
                         AssetDescription = y,

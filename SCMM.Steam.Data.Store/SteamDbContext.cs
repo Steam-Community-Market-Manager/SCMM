@@ -82,12 +82,20 @@ namespace SCMM.Steam.Data.Store
                 .OwnsOne(x => x.Options);
 
             builder.Entity<SteamAssetDescription>()
-                .HasIndex(x => x.SteamId)
+                .HasIndex(x => x.AssetId)
                 .IsUnique(true);
+            builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.Tags);
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.Icon);
             builder.Entity<SteamAssetDescription>()
-                .HasOne(x => x.WorkshopFile);
+                .HasOne(x => x.IconLarge);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.Image);
+            builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.CraftingRequirements);
+            builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.BreaksDownInto);
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.StoreItem)
                 .WithOne(x => x.Description)
@@ -96,8 +104,6 @@ namespace SCMM.Steam.Data.Store
                 .HasOne(x => x.MarketItem)
                 .WithOne(x => x.Description)
                 .HasForeignKey<SteamMarketItem>(x => x.DescriptionId);
-            builder.Entity<SteamAssetDescription>()
-                .OwnsOne(x => x.Tags);
 
             builder.Entity<SteamAssetWorkshopFile>()
                 .HasIndex(x => x.SteamId)

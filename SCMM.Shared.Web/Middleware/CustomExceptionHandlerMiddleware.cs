@@ -42,7 +42,7 @@ namespace SCMM.Shared.Web.Middleware
             var status = httpContext.Response.StatusCode;
             var title = includeDetails ? $"An error occured: {ex.Message}" : "An error occured";
             var details = includeDetails ? ex.ToString() : null;
-            var error = new WebError
+            var problem = new WebError
             {
                 Status = status,
                 Message = title,
@@ -53,11 +53,12 @@ namespace SCMM.Shared.Web.Middleware
             var traceId = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
             if (traceId != null)
             {
-                error.TraceId = traceId;
+                problem.TraceId = traceId;
             }
 
-            httpContext.Response.ContentType = "application/json";
-            await JsonSerializer.SerializeAsync(httpContext.Response.Body, error);
+            httpContext.Response.ContentType = "application/problem+json";
+            var stream = httpContext.Response.Body;
+            await JsonSerializer.SerializeAsync(stream, problem);
         }
     }
 }

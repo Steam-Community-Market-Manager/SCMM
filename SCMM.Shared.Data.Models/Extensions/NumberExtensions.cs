@@ -4,21 +4,9 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class NumberExtensions
     {
-        public static string ToRegularityString(this long value, long max)
-        {
-            if (value == 0 || max == 0)
-            {
-                return null;
-            }
-            var regularity = Math.Round((decimal)value / max * 100, 2);
-            return $"{regularity.ToString("#,##0.00")}%";
-        }
-
         public static string ToQuantityString(this int quantity)
         {
-            return quantity > 0
-                ? quantity.ToString("#,##")
-                : "∞";
+            return ToQuantityString((long)quantity);
         }
 
         public static string ToQuantityString(this long quantity)
@@ -28,23 +16,24 @@ namespace SCMM.Shared.Data.Models.Extensions
                 : "∞";
         }
 
+        public static string ToMovementString(this int value, int max)
+        {
+            return ToMovementString((long)value, (long)max);
+        }
+
         public static string ToMovementString(this long value, long max)
         {
             if (value == 0 || max == 0)
             {
                 return null;
             }
-            var percentage = (int)Math.Round((decimal)value / max * 100, 0) - 100;
-            var prefix = "";
-            if (percentage >= 0)
-            {
-                prefix = "🡱";
-            }
-            if (percentage < 0)
-            {
-                prefix = "🡳";
-            }
-            return $"{prefix} {Math.Abs(percentage).ToString("#,##0")}%".Trim();
+            var movement = Math.Abs(100 - (int)Math.Round((decimal)value / max * 100, 0));
+            return $"{movement.ToString("#,##0")}%".Trim();
+        }
+
+        public static string ToPercentageString(this int value, int max)
+        {
+            return ToPercentageString((long)value, (long)max);
         }
 
         public static string ToPercentageString(this long value, long max)
@@ -54,39 +43,12 @@ namespace SCMM.Shared.Data.Models.Extensions
                 return null;
             }
             var percentage = (int)Math.Round((decimal)value / max * 100, 0);
-            var prefix = "";
-            if (percentage >= 100)
-            {
-                prefix = "🡱";
-            }
-            if (percentage < 100)
-            {
-                prefix = "🡳";
-            }
-            return $"{prefix} {percentage.ToString("#,##0")}%".Trim();
+            return $"{percentage.ToString("#,##0")}%".Trim();
         }
 
         public static string ToRoIString(this int percentage)
         {
-            var prefix = string.Empty;
-            if (percentage >= 0)
-            {
-                prefix = "🡱";
-            }
-            if (percentage < 0)
-            {
-                prefix = "🡳";
-            }
-            return (percentage != 0 ? $"{prefix} {percentage}%" : "∞").Trim();
-        }
-
-        public static string ToRatioPercentageString(this int a, int b)
-        {
-            if (a == 0 || b == 0)
-            {
-                return "∞";
-            }
-            return $"{Math.Abs((int)Math.Floor((double)a / b * 100 - 100)).ToQuantityString()}%";
+            return (percentage != 0 ? $"{percentage}%" : "-").Trim();
         }
 
         public static string ToGCDRatioString(this int a, int b)

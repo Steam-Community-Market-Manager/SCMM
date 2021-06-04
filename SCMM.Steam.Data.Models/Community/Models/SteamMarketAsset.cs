@@ -5,27 +5,27 @@ namespace SCMM.Steam.Data.Models.Community.Models
     public class SteamMarketAsset : SteamAssetDescription
     {
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public ulong Id { get; set; }
 
         [JsonProperty("amount")]
-        public string Amount { get; set; }
+        public uint Amount { get; set; }
 
         [JsonProperty("currency")]
-        public int Currency { get; set; }
+        public uint Currency { get; set; }
 
         [JsonProperty("status")]
-        public int Status { get; set; }
+        public uint Status { get; set; }
 
         [JsonProperty("unowned_id")]
-        public string UnownedId { get; set; }
+        public ulong UnownedId { get; set; }
 
         [JsonProperty("unowned_contextid")]
-        public string UnownedContextId { get; set; }
+        public ulong UnownedContextId { get; set; }
 
         [JsonProperty("new_id")]
-        public string NewId { get; set; }
+        public ulong NewId { get; set; }
 
         [JsonProperty("new_contextid")]
-        public string NewContextId { get; set; }
+        public ulong NewContextId { get; set; }
     }
 }

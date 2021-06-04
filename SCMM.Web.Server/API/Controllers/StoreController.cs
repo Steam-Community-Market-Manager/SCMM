@@ -42,14 +42,14 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List all known item store identifiers
+        /// List all known item store instances
         /// </summary>
         /// <returns>List of stores</returns>
-        /// <response code="200">List of known item stores. Use <see cref="GetStore(string)"/> <code>/store/{dateTime}</code> to get the detailed contents of an item store.</response>
+        /// <response code="200">List of known item stores. Use <see cref="GetStore(string)"/> <code>/store/{dateTime}</code> to get the details of a specific store.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ItemStoreListDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<StoreListItemDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStores()
         {
@@ -61,12 +61,12 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             return Ok(
-                itemStores.Select(x => _mapper.Map<SteamItemStore, ItemStoreListDTO>(x, this)).ToList()
+                itemStores.Select(x => _mapper.Map<SteamItemStore, StoreListItemDTO>(x, this)).ToList()
             );
         }
 
         /// <summary>
-        /// Get the most recent item store details
+        /// Get the most recent item store instance
         /// </summary>
         /// <remarks>
         /// There may be multiple active item stores, only the most recent is returned.
@@ -78,7 +78,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("current")]
-        [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(StoreDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCurrentStore()
@@ -87,7 +87,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get an item store details
+        /// Get an item store instance
         /// </summary>
         /// <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
         /// <returns>The item store details</returns>
@@ -96,12 +96,13 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <response code="200">The store details.</response>
-        /// <response code="400">If the store date is invalid or cannot be parsed asa date time.</response>
+        /// <response code="400">If the store date is invalid or cannot be parsed as a date time.</response>
         /// <response code="404">If the store cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{dateTime}")]
-        [ProducesResponseType(typeof(ItemStoreDetailedDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(StoreDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStore([FromRoute] string dateTime)
@@ -123,52 +124,45 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.App)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description)
-                .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile)
-                .Include(x => x.Items).ThenInclude(x => x.Item.Description.WorkshopFile.Creator)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.Creator)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem.Currency)
                 .FirstOrDefaultAsync();
 
-            var itemStoreDetail = _mapper.Map<SteamItemStore, ItemStoreDetailedDTO>(itemStore, this);
+            var itemStoreDetail = _mapper.Map<SteamItemStore, StoreDTO>(itemStore, this);
             if (itemStoreDetail == null)
             {
                 return NotFound();
             }
 
-            // TODO: Do this better, very lazy
-            var itemStoreTaggedItems = itemStoreDetail.Items.Where(x => x.Tags != null);
-            foreach (var item in itemStoreTaggedItems)
+            // Calculate market price ranks
+            var storeItems = itemStoreDetail.Items.Where(x => !String.IsNullOrEmpty(x.ItemType));
+            if (storeItems.Any())
             {
-                var itemType = Uri.EscapeDataString(item.ItemType ?? String.Empty);
-                if (String.IsNullOrEmpty(itemType))
-                {
-                    continue;
-                }
-
-                var itemPrice = itemStore.Items.Select(x => x.Item).FirstOrDefault(x => x.SteamId == item.SteamId)?.Price;
-                if (itemPrice == null || itemPrice <= 0)
-                {
-                    continue;
-                }
-
-                var marketRank = await _db.SteamApps
-                    .Where(x => x.SteamId == item.SteamAppId)
-                    .Select(app => new
+                var storeItemIds = storeItems.Select(x => x.Id.ToString()).ToArray();
+                var marketPriceRanks = await _db.SteamStoreItems
+                    .Where(x => storeItemIds.Contains(x.SteamId))
+                    .Select(x => new
                     {
-                        Position = app.MarketItems
-                            .Where(x => x.Description.Tags.Serialised.Contains(itemType))
-                            .Where(x => x.BuyNowPrice < itemPrice.Value)
+                        ItemId = x.SteamId,
+                        Position = x.App.MarketItems
+                            .Where(y => y.Description.ItemType == x.Description.ItemType)
+                            .Where(y => y.BuyNowPrice < x.Price)
                             .Count(),
-                        Total = app.MarketItems
-                            .Where(x => x.Description.Tags.Serialised.Contains(itemType))
+                        Total = x.App.MarketItems
+                            .Where(y => y.Description.ItemType == x.Description.ItemType)
                             .Count() + 1,
                     })
-                    .SingleOrDefaultAsync();
+                    .ToListAsync();
 
-                if (marketRank.Total > 1)
+                foreach (var marketPriceRank in marketPriceRanks)
                 {
-                    item.MarketRankPosition = marketRank.Position;
-                    item.MarketRankTotal = marketRank.Total;
+                    var storeItem = storeItems.FirstOrDefault(x => x.Id.ToString() == marketPriceRank.ItemId);
+                    if (storeItem != null)
+                    {
+                        storeItem.MarketPriceRankPosition = marketPriceRank.Position;
+                        storeItem.MarketPriceRankTotal = marketPriceRank.Total;
+                    }
                 }
             }
 
@@ -176,7 +170,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get the next item store release date/time (estimate only)
+        /// Get the next (estimated) item store release date time
         /// </summary>
         /// <remarks>This is an estimate only and the exact time varies from week to week. Sometimes the store can even be late by a day or two.</remarks>
         /// <returns>The expected store release date/time</returns>

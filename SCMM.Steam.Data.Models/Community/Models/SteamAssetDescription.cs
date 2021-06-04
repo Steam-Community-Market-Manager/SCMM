@@ -6,16 +6,16 @@ namespace SCMM.Steam.Data.Models.Community.Models
     public class SteamAssetDescription
     {
         [JsonProperty("classid")]
-        public string ClassId { get; set; }
+        public ulong ClassId { get; set; }
 
         [JsonProperty("contextid")]
-        public string ContextId { get; set; }
+        public ulong ContextId { get; set; }
 
         [JsonProperty("instanceid")]
-        public string InstanceId { get; set; }
+        public ulong InstanceId { get; set; }
 
         [JsonProperty("appid")]
-        public string AppId { get; set; }
+        public ulong AppId { get; set; }
 
         [JsonProperty("type")]
         public string Type { get; set; }
@@ -30,10 +30,10 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public bool Marketable { get; set; }
 
         [JsonProperty("market_marketable_restriction")]
-        public int MarketMarketableRestriction { get; set; }
+        public uint MarketMarketableRestriction { get; set; }
 
         [JsonProperty("market_tradable_restriction")]
-        public int MarketTradableRestriction { get; set; }
+        public uint MarketTradableRestriction { get; set; }
 
         [JsonProperty("tradable")]
         public bool Tradable { get; set; }

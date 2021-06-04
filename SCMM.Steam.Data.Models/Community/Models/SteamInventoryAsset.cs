@@ -5,12 +5,12 @@ namespace SCMM.Steam.Data.Models.Community.Models
     public class SteamInventoryAsset
     {
         [JsonProperty("assetid")]
-        public string AssetId { get; set; }
+        public ulong AssetId { get; set; }
 
         [JsonProperty("classid")]
-        public string ClassId { get; set; }
+        public ulong ClassId { get; set; }
 
         [JsonProperty("amount")]
-        public int Amount { get; set; }
+        public uint Amount { get; set; }
     }
 }

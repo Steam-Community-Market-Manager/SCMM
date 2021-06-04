@@ -30,9 +30,9 @@ namespace SCMM.Steam.Data.Store
 
         public ICollection<SteamStoreItemItemStore> Stores { get; set; }
 
-        public int TotalSalesMin { get; set; }
+        public long TotalSalesMin { get; set; }
 
-        public int? TotalSalesMax { get; set; }
+        public long? TotalSalesMax { get; set; }
 
         public PersistableDailyGraphDataSet TotalSalesGraph { get; set; }
 
@@ -50,8 +50,8 @@ namespace SCMM.Steam.Data.Store
             // NOTE: This approach just assumes a 10-20% increase over subscriptions
             var item = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
             var itemIndex = orderedStoreItems.IndexOf(item);
-            var itemUniqueSales = (Description?.WorkshopFile?.Subscriptions ?? 0);
-            var itemDuplicateSales = (int)Math.Floor(itemUniqueSales > 0 ? ((decimal)itemUniqueSales / Math.Max(10, 20 - itemIndex)) : 0);
+            var itemUniqueSales = (Description?.TotalSubscriptions ?? 0);
+            var itemDuplicateSales = (long)Math.Floor(itemUniqueSales > 0 ? ((decimal)itemUniqueSales / Math.Max(10, 20 - itemIndex)) : 0);
             var itemTotalSales = (itemUniqueSales + itemDuplicateSales);
             TotalSalesMin = itemTotalSales;
             TotalSalesMax = null;

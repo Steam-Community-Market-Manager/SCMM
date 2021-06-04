@@ -16,4 +16,8 @@
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Domain\StoreItems\" />
+  </ItemGroup>
+
 </Project>

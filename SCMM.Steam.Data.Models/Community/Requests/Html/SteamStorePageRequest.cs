@@ -2,7 +2,7 @@
 
 namespace SCMM.Steam.Data.Models.Community.Requests.Html
 {
-    public class SteamItemStorePageRequest : SteamRequest
+    public class SteamStorePageRequest : SteamRequest
     {
         public const int MaxPageSize = 100;
 

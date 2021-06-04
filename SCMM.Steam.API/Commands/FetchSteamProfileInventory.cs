@@ -133,25 +133,25 @@ namespace SCMM.Steam.API.Commands
 
                 // Add assets
                 var missingAssets = inventory.Assets
-                    .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId))
+                    .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId.ToString()))
                     .ToList();
                 foreach (var asset in missingAssets)
                 {
-                    var assetDescription = await _steamService.AddOrUpdateAssetDescription(app, language.SteamId, UInt64.Parse(asset.ClassId));
+                    var assetDescription = await _steamService.AddOrUpdateAssetDescription(app, language.SteamId, asset.ClassId);
                     if (assetDescription == null)
                     {
                         continue;
                     }
                     var inventoryItem = new SteamProfileInventoryItem()
                     {
-                        SteamId = asset.AssetId,
+                        SteamId = asset.AssetId.ToString(),
                         Profile = profile,
                         ProfileId = profile.Id,
                         App = app,
                         AppId = app.Id,
                         Description = assetDescription,
                         DescriptionId = assetDescription.Id,
-                        Quantity = asset.Amount
+                        Quantity = (int) asset.Amount
                     };
 
                     profile.InventoryItems.Add(inventoryItem);
@@ -160,16 +160,16 @@ namespace SCMM.Steam.API.Commands
                 // Update assets
                 foreach (var asset in inventory.Assets)
                 {
-                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.SteamId == asset.AssetId);
+                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.SteamId == asset.AssetId.ToString());
                     if (existingAsset != null)
                     {
-                        existingAsset.Quantity = asset.Amount;
+                        existingAsset.Quantity = (int) asset.Amount;
                     }
                 }
 
                 // Remove assets
                 var removedAssets = profile.InventoryItems
-                    .Where(x => !inventory.Assets.Any(y => y.AssetId == x.SteamId))
+                    .Where(x => !inventory.Assets.Any(y => y.AssetId.ToString() == x.SteamId))
                     .ToList();
                 foreach (var asset in removedAssets)
                 {

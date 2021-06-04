@@ -5,7 +5,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
     public class SteamMarketBuyOrder
     {
         [JsonProperty("appid")]
-        public string AppId { get; set; }
+        public ulong AppId { get; set; }
 
         [JsonProperty("hash_name")]
         public string HashName { get; set; }

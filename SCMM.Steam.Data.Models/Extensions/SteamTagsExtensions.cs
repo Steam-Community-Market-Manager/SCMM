@@ -13,6 +13,12 @@ namespace SCMM.Steam.Data.Models.Extensions
             {
                 return itemType;
             }
+            if (itemTags.ContainsKey(Constants.SteamAssetTagSkin))
+            {
+                itemType = Uri.EscapeDataString(
+                    itemTags[Constants.SteamAssetTagSkin]
+                );
+            }
             if (itemTags.ContainsKey(Constants.SteamAssetTagItemType))
             {
                 itemType = Uri.EscapeDataString(
