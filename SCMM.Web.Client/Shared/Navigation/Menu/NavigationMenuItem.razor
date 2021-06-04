@@ -1,16 +1,5 @@
 ﻿@namespace SCMM.Web.Client.Shared.Navigation.Menu
 
-<style>
-
-    .NavMenuItem-SubTitle {
-        font-size: 0.8em;
-        margin-top: -4px;
-        color: var(--mud-palette-drawer-text);
-        filter: brightness(0.7);
-    }
-
-</style>
-
 @if (ItemGroup != null)
 {
     <MudNavGroup Icon="@ItemGroup.Icon" Title="@ItemGroup.Title" Disabled="@ItemGroup.Disabled">
@@ -26,14 +15,18 @@ else if (ItemLink != null)
         <div>@ItemLink.Title</div>
         @if(ItemLink.SubTitle != null)
         {
-            @if(!String.IsNullOrWhiteSpace(ItemLink.SubTitle))
-            {
-                <div Typo="Typo.subtitle2" class="NavMenuItem-SubTitle">@ItemLink.SubTitle</div>
-            }
-            else
-            {
-                <MudSkeleton class="NavMenuItem-SubTitle" />
-            }
+            <div class="NavMenuItem-SubTitle">
+                <MudText Typo="MudBlazor.Typo.caption">
+                    @if(!String.IsNullOrWhiteSpace(ItemLink.SubTitle))
+                    {
+                        <span>@ItemLink.SubTitle</span>
+                    }
+                    else
+                    {
+                        <MudSkeleton class="NavMenuItem-SubTitle" />
+                    }
+                </MudText>
+            </div>
         }
     </MudNavLink>
 }

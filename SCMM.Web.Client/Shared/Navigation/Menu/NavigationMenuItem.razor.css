@@ -1,0 +1,6 @@
+﻿
+.NavMenuItem-SubTitle {
+    margin-top: -4px;
+    color: var(--mud-palette-drawer-text);
+    filter: brightness(0.7);
+}

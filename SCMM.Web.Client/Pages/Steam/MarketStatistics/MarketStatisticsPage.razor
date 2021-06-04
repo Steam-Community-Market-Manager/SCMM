@@ -131,7 +131,7 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span class="Text-NoWrap">@item.Last24hrSales.ToQuantityString()</span>
+                                        <span class="NoWrap">@item.Last24hrSales.ToQuantityString()</span>
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
@@ -178,7 +178,7 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span class="Text-NoWrap">@item.MarketAge</span>
+                                        <span class="NoWrap">@item.MarketAge</span>
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
@@ -226,7 +226,7 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
+                                        <span class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
@@ -274,7 +274,7 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
+                                        <span class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
@@ -328,10 +328,10 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</span>
+                                        <span class="NoWrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</span>
                                     </TableCell>
                                     <TableCell>
-                                        <span class="Text-NoWrap Text-Success">@item.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.FeeMultiplier, 1))))</span>
+                                        <span class="NoWrap Text-Success">@item.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.FeeMultiplier, 1))))</span>
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
@@ -379,7 +379,7 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span class="Text-NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
+                                        <span class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</span>
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>
@@ -426,7 +426,7 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <span class="Text-NoWrap">
+                                        <span class="NoWrap">
                                             <i class="fas fa-fw fa-user"></i>
                                             @item.Subscriptions.ToQuantityString()
                                         </span>
@@ -483,7 +483,7 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <strong class="Text-NoWrap">@item.Supply.ToQuantityString()</strong>
+                                        <strong class="NoWrap">@item.Supply.ToQuantityString()</strong>
                                     </TableCell>
                                     <TableCell>
                                         @if (item.Demand > 0)
@@ -547,7 +547,7 @@
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <strong class="Text-NoWrap">@item.Items.ToQuantityString()</strong>
+                                        <strong class="NoWrap">@item.Items.ToQuantityString()</strong>
                                     </TableCell>
                                 </TableRow>
                             </ItemContent>

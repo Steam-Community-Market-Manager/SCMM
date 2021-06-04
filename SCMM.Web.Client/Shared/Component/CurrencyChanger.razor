@@ -9,7 +9,7 @@
 
 @if (State.Currency != null && Currencies != null)
 {
-    <MudMenu Label="@State.Currency.Name" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Dense="true" MaxHeight="500">
+    <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.Currency.Name" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Dense="true" MaxHeight="500">
         @foreach (var currency in Currencies)
         {
             <MudMenuItem OnClick="@(() => ChangeCurrency(currency))">
@@ -32,7 +32,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error loading currencies");
-            Snackbar.Add("Unable to load currency list", MudBlazor.Severity.Error);
+            Snackbar.Add($"Unable to load currency list. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 

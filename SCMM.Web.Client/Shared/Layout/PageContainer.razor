@@ -5,7 +5,7 @@
     <Title Value="@Title" />
 }
 
-<div class="ma-6">
+<div class="ma-6" @attributes="AdditionalAttributes">
     @ChildContent
 </div>
 
@@ -16,5 +16,8 @@
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
-
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+    
 }

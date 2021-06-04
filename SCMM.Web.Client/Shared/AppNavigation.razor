@@ -1,20 +1,21 @@
 ﻿@using SCMM.Web.Client.Shared.Navigation.Menu
-@using SCMM.Web.Client.Shared.Dialog
 @using SCMM.Web.Data.Models.Domain.InventoryItems
 @using SCMM.Web.Data.Models
 @inject ILogger<AppNavigation> Logger
 @inject IDialogService Dialogs
 @inject NavigationManager Navigation
+@inject ExternalNavigationManager ExternalNavigation
 @inject HttpClient Http
-@inject IJSRuntime JSRuntime
 @inject AppState State
 
 @if (State.IsAuthenticated)
 {
     <div class="Profile-Root">
         <MudAvatar Image="@State.Profile.AvatarLargeUrl" Style="height:64px; width:64px;" />
-        <MudText Typo="MudBlazor.Typo.subtitle2">@State.Profile.Name</MudText>
-        <ProfileFlairs />
+        <MudText Typo="MudBlazor.Typo.h6">@State.Profile.Name</MudText>
+        <UserFlairs Roles="@State.Profile.Roles" />
+        <MudIconButton OnClick="NavigateSettings" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-cog" title="Your settings" />
+        <MudIconButton OnClick="NavigateSignOut" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-sign-out-alt" title="Sign out" />
     </div>
 }
 else
@@ -252,20 +253,23 @@ else
         var result = await Dialogs.Show<SignInDialog>().Result;
         if (!result.Cancelled && (bool) result.Data == true)
         {
-            SignIn();
+            NavigateSignIn();
         }
     }
-
-    private void SignIn()
+    
+    private void NavigateSettings()
     {
-        var url = $"signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}";
-        JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
+        Navigation.NavigateTo($"/settings");
     }
 
-    private void SignOut()
+    private void NavigateSignIn()
     {
-        var url = $"signout?returnUrl={Uri.EscapeDataString(Navigation.Uri)}";
-        JSRuntime.InvokeVoidAsync("WindowInterop.open", url);
+        ExternalNavigation.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+    }
+
+    private void NavigateSignOut()
+    {
+        ExternalNavigation.NavigateTo($"/signout?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
     }
 
 }

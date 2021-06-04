@@ -9,8 +9,9 @@
     <Found Context="routeData">
         @if (State != null)
         {
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)">
-            </RouteView>
+            <CascadingValue Value="@routeData">
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)" />
+            </CascadingValue>
         }
     </Found>
     <NotFound>
@@ -41,7 +42,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to initialise app state");
-            Snackbar.Add("Unable to load application state", MudBlazor.Severity.Error);
+            Snackbar.Add($"Unable to load application state. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 

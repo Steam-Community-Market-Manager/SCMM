@@ -3,7 +3,9 @@
 <MudLayout>
     <MudAppBar Fixed="true" Dense="false">
         <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" />
-        <AppLogo />
+        <MudText Typo="Typo.h6" Class="ml-3">
+            <AppLogo />
+        </MudText>
         <MudText Typo="Typo.h6" Class="ml-3">
             <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
                 <span>Rust - Steam Community Market Manager</span>
@@ -19,7 +21,7 @@
         <MudAppBarSpacer />
         <CurrencyChanger />
     </MudAppBar>
-    <MudDrawer @bind-Open="_isDrawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    <MudDrawer @bind-Open="_isDrawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0">
         <AppNavigation />
     </MudDrawer>
     <MudMainContent>

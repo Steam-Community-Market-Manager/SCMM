@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
+using SCMM.Web.Client.Shared.Navigation;
 using Skclusive.Core.Component;
 using Skclusive.Material.Alert;
 using Skclusive.Material.Chip;
@@ -23,6 +24,7 @@ namespace SCMM.Web.Client
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddSingleton<AppState>();
+            builder.Services.AddTransient<ExternalNavigationManager>();
 
             builder.Services.AddHttpClient("default", (serviceProvider, client) =>
             {

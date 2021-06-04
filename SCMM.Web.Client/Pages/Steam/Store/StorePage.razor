@@ -1,421 +1,338 @@
-@page "/"
+﻿@page "/"
 @page "/store"
+@page "/store/{StoreId}"
 @page "/steam/store"
 @using SCMM.Web.Data.Models.Domain.StoreItems
 @using SCMM.Web.Data.Models
 @inject ILogger<StorePage> Logger
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject ExternalNavigationManager ExternalNavigation
 @inject HttpClient Http
-@inject IJSRuntime JSRuntime
 @inject AppState State
 
-<style>
-
-    .Store-List {
-        margin: -16px;
-        padding-bottom: 0px
-    }
-
-    .Store .TabIndicator-Root {
-        top: 0px;
-    }
-
-    .Store-Item .Card-Root {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .Store-Item .CardContent-Root {
-        flex-grow: 1;
-    }
-
-    .Store-Item .CardContent-Root:last-child {
-        padding-bottom: 16px;
-    }
-
-    .Store-Item .CardContent-Root > .Grid-Root {
-        height: 100%;
-    }
-
-    .Store-Item .Paper-Root {
-        width: 100%;
-        height: 100%;
-    }
-    
-    .Store-Item .Image-Root {
-        text-align: center;
-    }
-
-    .Store-Item .Image-Root img {
-        width: 100%;
-        max-width: 144px;
-    }
-
-    .Store-Item .Button-Root {
-        width: 100%;
-    }
-    
-    .Store-Item .Button-Root i {
-        margin-right: 6px;
-    }
-    
-    .Store-Item .Price-Root {
-        width: 100%;
-        text-align: center;
-        padding: 8px;
-    }
-    
-    .Store-Item .Price-Root {
-        width: 100%;
-        text-align: center;
-        padding: 8px;
-    }
-
-    .Store-Item .Action-Root {
-        display: flex;
-        align-items: flex-end;
-    }
-
-    .Store-Item .Action-Root .Typography-Root {
-        width: 100%;
-    }
-
-    .Tabs-Container {
-        /*margin: 0px -40px;*/
-    }
-    
-    .Tabs-Container .TabScrollButton-Root {
-        display: none;
-        position: sticky;
-        z-index: 100000;
-    }
-    
-    .Tabs-Container .TabScrollButton-Root:first {
-        left: 0px;
-    }
-    
-    .Tabs-Container .TabScrollButton-Root:last {
-        right: 0px;
-    }
-    
-    .Chart-Radar {
-        padding-bottom: 16px;
-    }
-
-    .Chart-Footnote {
-        padding: 0px 16px 16px;
-    }
-
-</style>
-
-<Title Value="Item Store" />
-
-@if (Stores == null)
+@if (StoreList == null)
 {
-    @if(StoreException == null)
+    @if (StoreException == null)
     {
-        <Loading Message="Loading item stores..." />
+        <Loading Message="Loading store list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
     }
     else
     {
         <Error Exception="@StoreException" />
     }
 }
-else
+else if (StoreList.Any())
 {
-    <Grid Container Spacing="@Spacing.Two">
-        @if(Stores.Any())
+    <MudTabs Elevation="0" Position="MudBlazor.Position.Bottom" ActivePanelIndex="StoreIndex" ActivePanelIndexChanged="OnSelectedStoreChanged" Class="mud-transparent-tabs">
+        @foreach (var store in StoreList)
         {
-            <Grid Item ExtraSmall="@GridSize.Twelve">
-                <Tabs Class="Store-List"
-                      Value="@SelectedStore"
-                      OnChange="@OnSelectedStoreChanged"
-                      IndicatorColor="@Skclusive.Core.Component.Color.Primary"
-                      TextColor="@Skclusive.Core.Component.Color.Primary"
-                      Variant="@TabsVariant.Scrollable"
-                      ScrollButton="@ScrollButton.On"
-                      Style="margin:-16px; padding-bottom:0px">
-                    <IndicatorContent>
-                        <div />
-                    </IndicatorContent>
-                    <ChildContent>
-                        <TabScrollButton Side="Side.Left" />
-                        @foreach (var store in Stores.OrderByDescending(x => x.Start))
-                        {
-                            <Tab Class="Store" Id="@store.Id.ToString()" Value="@store" Label="@store.Name" />
-                        }
-                        <TabScrollButton Side="Side.Right" />
-                        <Button OnClick="@HandleStoreSelectorDialogOpen" Variant="@ButtonVariant.Outlined" Color="@Skclusive.Core.Component.Color.TextSecondary" Style="position:sticky; right:16px; margin:8px; background-color:var(--theme-palette-background-paper)">
-                            <i class="fas fa-history"></i>
-                        </Button>
-                    </ChildContent>
-                </Tabs>
-            </Grid>
-            <Dialog OnClose="@HandleStoreSelectorDialogClose" Open="@StoreSelectorDialogOpen">
-                <DialogTitle>
-                    Select an item store
-                </DialogTitle>
-                <List Dense="true">
-                    @foreach (var store in Stores.OrderByDescending(x => x.Start))
-                    {
-                        <ListItem Button OnClick="@((arg) => OnSelectedStoreChanged(store))" Selected="@(store == SelectedStore)">
-                            <ListItemText Primary="@($"{store.Start.Year} {store.Name}")" />
-                        </ListItem>
-                    }
-                </List>
-            </Dialog>
+            <MudTabPanel ID="@store.Id.ToString()" Text="@store.Name" />
         }
-        @if (Store == null)
-        {
-            <Grid Item ExtraSmall="@GridSize.Twelve">
-                @if(StoreException == null)
-                {
-                    <Loading Message="Loading item store..." />
-                }
-                else
-                {
-                    <Error Exception="@StoreException" />
-                }
-            </Grid>
-        }
-        else
-        {
-            @foreach (var item in Store.Items.OrderBy(x => x.StoreIndex))
+    </MudTabs>
+    <PageContainer Title="Store" Class="mb-6 ml-6 mr-6">
+
+        <MudGrid Spacing="2">
+            @if (Store == null)
             {
-                <Grid Item Class="Store-Item" ExtraSmall="@GridSize.Twelve" Small="@GridSize.Six" Medium="@GridSize.Four" ExtraLarge="@GridSize.Three">
-                    <Card style="@GetCardStyles(item)">
-                        <CardHeader DisableTypography="true">
-                            <AvatarContent>
-                                <div title="@item.AuthorName">
-                                    <Avatar Src="@item.AuthorAvatarUrl" Alt="@item.AuthorName">
-                                    </Avatar>
-                                </div>
-                            </AvatarContent>
-                            <TitleContent>
-                                <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.H6" Style="@GetNameStyles(item)">
-                                    <span>@item.Name</span>
-                                </Skclusive.Material.Typography.Typography>
-                            </TitleContent>
-                            <SubHeaderContent>
-                                @if (!String.IsNullOrEmpty(item.ItemType))
-                                {
-                                    <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary">
-                                        <span>@item.ItemType</span>
-                                    </Skclusive.Material.Typography.Typography>
-                                }
-                            </SubHeaderContent>
-                        </CardHeader>
-                        <CardContent>
-                            <Grid Container Spacing="@Spacing.Two">
-                                <Grid Item ExtraSmall="@GridSize.Six">
-                                    <div class="Image-Root">
-                                        <img src="@item.IconUrl" />
-                                    </div>
-                                </Grid>
-                                <Grid Item ExtraSmall="@GridSize.Six">
-                                    @if (item.MarketRankTotal > 0)
-                                    {
-                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary" GutterBottom>
-                                            <i class="fas fa-fw fa-balance-scale-left"></i>
-                                            <span>@item.MarketRankPosition cheaper @item.ItemType.Pluralise(item.MarketRankPosition) in the marketplace (@item.MarketRankTotal total).</span>
-                                        </Skclusive.Material.Typography.Typography>
-                                    }
-                                    @if (item.HasWorkshopFile)
-                                    {
-                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary" NoWrap>
-                                            <i class="fas fa-fw fa-shopping-cart"></i>
-                                            @if (item.TotalSalesMax == null)
-                                            {
-                                                <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() or more</span>
-                                            }
-                                            else if (item.TotalSalesMin == item.TotalSalesMax)
-                                            {
-                                                <span style="padding:8px">@item.TotalSalesMin.ToQuantityString()</span>
-                                            }
-                                            else
-                                            {
-                                                <span style="padding:8px">@item.TotalSalesMin.ToQuantityString() - @item.TotalSalesMax.Value.ToQuantityString()</span>
-                                            }
-                                        </Skclusive.Material.Typography.Typography>
-                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary" NoWrap>
-                                            <i class="fas fa-fw fa-user"></i>
-                                            @if (item.Subscriptions > 0)
-                                            {
-                                                <span style="padding:8px">@item.Subscriptions.Value.ToQuantityString()</span>
-                                            }
-                                        </Skclusive.Material.Typography.Typography>
-                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextPrimary" NoWrap GutterBottom>
-                                            <i class="fas fa-fw fa-eye"></i>
-                                            @if (item.Views > 0)
-                                            {
-                                                <span style="padding:8px">@item.Views.Value.ToQuantityString()</span>
-                                            }
-                                        </Skclusive.Material.Typography.Typography>
-                                    }
-                                    else
-                                    {
-                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.Primary">
-                                            <span>This item is not from the workshop, detailed statistics are unavailable.</span>
-                                        </Skclusive.Material.Typography.Typography>
-                                    }
-                                    @if (!item.IsStillAvailableInStore)
-                                    {
-                                        @if (!item.HasMarketListing)
-                                        {
-                                            <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.Primary">
-                                                <span>This item is no longer available.</span>
-                                            </Skclusive.Material.Typography.Typography>
-                                        }
-                                        else 
-                                        {
-                                            <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.Primary">
-                                                <span>This item is no longer available, grab it from the marketplace instead.</span>
-                                            </Skclusive.Material.Typography.Typography>
-                                        }
-                                    }
-                                    else if (item.HasMarketListing)
-                                    {
-                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.Primary">
-                                            <span>This item is also available in the marketplace.</span>
-                                        </Skclusive.Material.Typography.Typography>
-                                    }
-                                </Grid>
-                                <Grid Item Class="Action-Root" ExtraSmall="@GridSize.Six">
-                                    <Skclusive.Material.Typography.Typography Class="Theme-Success">
-                                        <Button OnClick="@(() => BuyItemStore(item))" Variant="@ButtonVariant.Contained" Color="@Skclusive.Core.Component.Color.Primary" Disabled="@(!item.IsStillAvailableInStore)">
-                                            <i class="fas fa-fw fa-shopping-cart"></i>
-                                            <strong>@item.Currency.ToPriceString(item.StorePrice)</strong>
-                                        </Button>
-                                    </Skclusive.Material.Typography.Typography>
-                                </Grid>
-                                <Grid Item Class="Action-Root" ExtraSmall="@GridSize.Six">
-                                    @if (item.HasMarketListing)
-                                    {
-                                        <Skclusive.Material.Typography.Typography>
-                                            <Button OnClick="@(() => BuyItemMarket(item))" Variant="@ButtonVariant.Contained" Color="@Skclusive.Core.Component.Color.Primary">
-                                                <i class="fas fa-fw fa-balance-scale-left"></i>
-                                                <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
-                                            </Button>
-                                        </Skclusive.Material.Typography.Typography>
-                                    }
-                                    else if (item.HasWorkshopFile)
-                                    {
-                                        <Skclusive.Material.Typography.Typography>
-                                            <Button OnClick="@(() => ViewItem(item))" Variant="@ButtonVariant.Outlined" Color="@Skclusive.Core.Component.Color.TextSecondary">
-                                                <i class="fas fa-fw fa-eye"></i>
-                                                <span>View</span>
-                                            </Button>
-                                        </Skclusive.Material.Typography.Typography>
-                                    }
-                                </Grid>
-                            </Grid>
-                        </CardContent>
-                    </Card>
-                </Grid>   
+                <MudItem xs="12">
+                    @if (StoreException == null)
+                    {
+                        <Loading Message="Loading store..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+                    }
+                    else
+                    {
+                        <Error Exception="@StoreException" />
+                    }
+                </MudItem>
             }
-            <Grid Item ExtraSmall="@GridSize.Twelve" >
-                <Grid Container Spacing="@Spacing.Two">
-                    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-                        <Paper>
-                            <Tabs Value="@SelectedItemChartPanel"
-                                  OnChange="@OnSelectedItemChartChanged"
-                                  IndicatorColor="@Skclusive.Core.Component.Color.Primary"
-                                  TextColor="@Skclusive.Core.Component.Color.Primary"
-                                  Variant="@TabsVariant.FullWidth">
-                                <Tab Id="store-tab" Control="store-tab-panel-0" Value="0" Label="Revenue" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel-1" Value="1" Label="Sales" Wrapped />
-                                <Tab Id="store-tab" Control="store-tab-panel-2" Value="2" Label="Timeline" Wrapped />
-                                @if (Store.Items.Any(x => x.HasMarketListing))
-                                {
-                                    <Tab Id="store-tab" Control="store-tab-panel-3" Value="3" Label="Profitability" Wrapped />
-                                }
-                            </Tabs>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="0">
-                                @if ((int)SelectedItemChartPanel == 0)
-                                {
-                                    @if (ItemSalesChart != null)
-                                    {
-                                        <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
-                                        <Skclusive.Material.Typography.Typography Variant="@TypographyVariant.Body2" Color="@Skclusive.Core.Component.Color.TextSecondary" Class="Chart-Footnote">
-                                            <span><strong>NOTE:</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
-                                        </Skclusive.Material.Typography.Typography>
-                                    }
-                                    else
-                                    {
-                                        <Error Title="Unavailable" SubTitle="No data yet" />
-                                    }
-                                }
-                            </TabPanel>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="1">
-                                @if ((int)SelectedItemChartPanel == 1)
-                                {
-                                    @if (ItemSubscribersChart != null)
-                                    {
-                                        <ChartJsBarChart @ref="ItemSubscribersChartJs" Config="@ItemSubscribersChart" />
-                                    }
-                                    else
-                                    {
-                                        <Error Title="Unavailable" SubTitle="No data yet" />
-                                    }
-                                }
-                            </TabPanel>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="2">
-                                @if ((int)SelectedItemChartPanel == 2)
-                                {
-                                    @if (ItemSubscribersHistoryChart != null)
-                                    {
-                                        <ChartJsLineChart @ref="ItemSubscribersHistoryChartJs" Config="@ItemSubscribersHistoryChart" />
-                                    }
-                                    else
-                                    {
-                                        <Error Title="Unavailable" SubTitle="No data yet" />
-                                    }
-                                }
-                            </TabPanel>
-                            <TabPanel Id="store-tab-panel" Label="store-tab" Value="@SelectedItemChartPanel" Index="3">
-                                @if ((int)SelectedItemChartPanel == 3)
-                                {
-                                    @if (ItemMarketplacePerformanceChart != null)
-                                    {
-                                        <div class="Chart-Radar">
-                                            <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
+            else
+            {
+                @foreach (var item in Store.Items.OrderBy(x => x.StoreIndex))
+                {
+                    <MudItem xs="12" sm="6" md="4" xl="3">
+                        <div class="Store-Item">
+                            <MudCard Outlined="true">
+                                <MudCardHeader>
+                                    <CardHeaderAvatar>
+                                        <MudTooltip Text="@item.AuthorName">
+                                            <MudAvatar Image="@item.AuthorAvatarUrl" Size="MudBlazor.Size.Medium" />
+                                        </MudTooltip>
+                                    </CardHeaderAvatar>
+                                    <CardHeaderContent>
+                                        <div class="Item-Name">
+                                            <MudText Typo="MudBlazor.Typo.h6" Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
                                         </div>
-                                    }
-                                    else
-                                    {
-                                        <Error Title="Unavailable" SubTitle="No data yet" />
-                                    }
+                                        @if (!String.IsNullOrEmpty(item.ItemType))
+                                        {
+                                            <div class="Item-Type">
+                                                <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">@item.ItemType</MudText>
+                                            </div>
+                                        }
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudGrid Spacing="1">
+
+                                        <MudItem xs="5">
+                                            <div class="Image-Root">
+                                                <MudTooltip Text="@(item.HasWorkshopFile ? "Click to view workshop page" : null)" Placement="MudBlazor.Placement.Top">
+                                                    <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" />
+                                                </MudTooltip>
+                                            </div>
+                                        </MudItem>
+                                        <MudItem xs="7">
+                                            @if (!item.HasWorkshopFile)
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
+                                                    <span>This item is not from the Rust workshop, some statistics may be unavailable.</span>
+                                                </MudText>
+                                            }
+                                            @if (item.MarketPriceRankTotal > 0)
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-balance-scale-left"></i>
+                                                    <span><MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketPriceRankPosition cheaper @item.ItemType.Pluralise(item.MarketPriceRankPosition)</MudLink> in the marketplace (@item.MarketPriceRankTotal total).</span>
+                                                </MudText>
+                                            }
+                                            @if (item.SalesMinimum > 0)
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-shopping-cart"></i>
+                                                    <span>
+                                                        @if (item.SalesMaximum == null)
+                                                        {
+                                                            <span>More than <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() sold</MudLink></span>
+                                                        }
+                                                        else if (item.SalesMinimum == item.SalesMaximum)
+                                                        {
+                                                            <span><MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() sold</MudLink></span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>Between <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink></span>
+                                                        }
+                                                    </span>
+                                                </MudText>
+                                            }
+                                            @if (item.BreaksDownInto != null)
+                                            {
+                                                @foreach (var component in item.BreaksDownInto)
+                                                {
+                                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
+                                                        <i class="fas fa-fw fa-cubes"></i>
+                                                        <span>Breaks down into <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@(component.Value)x @component.Key</MudLink></span>
+                                                    </MudText>
+                                                }
+                                            }
+                                            @if (!String.IsNullOrEmpty(item.ItemSet))
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-paint-roller"></i>
+                                                    <span>Part of the <MudLink @onclick="@(() => ShowAssetItemSetDialog(item.ItemSet))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemSet</MudLink> set</span>
+                                                </MudText>
+                                            }
+                                            <div class="my-3">
+                                                <MudTooltip>
+                                                    <ChildContent>
+                                                        <MudChip Size="MudBlazor.Size.Medium" Text="Tradable" Disabled="@(!item.IsTradable)"
+                                                                 Icon="@(item.IsTradable ? "fas fa-fw fa-exchange-alt mr-2" : "fas fa-fw fa-times")" 
+                                                                 Variant="@(item.IsTradable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                                                 Color="@(item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
+                                                    </ChildContent>
+                                                    <TooltipContent>
+                                                        @if (item.IsTradable)
+                                                        {
+                                                            @if (item.TradableRestrictionDays > 0)
+                                                            {
+                                                                <span>This item <strong>can</strong> be traded <strong>@(item.TradableRestrictionDays)</strong> day(s) after purchase</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>This item <strong>can</strong> be traded immediately after purchase</span>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>This item <strong>cannot</strong> be traded once purchased</span>
+                                                        }
+                                                    </TooltipContent>
+                                                </MudTooltip>
+                                                <MudTooltip>
+                                                    <ChildContent>
+                                                        <MudChip Size="MudBlazor.Size.Medium" Text="Marketable" Disabled="@(!item.IsMarketable)"
+                                                                 Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : "fas fa-fw fa-times")" 
+                                                                 Variant="@(item.IsMarketable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                                                 Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
+                                                    </ChildContent>
+                                                    <TooltipContent>
+                                                        @if (item.IsMarketable)
+                                                        {
+                                                            @if (item.MarketableRestrictionDays > 0)
+                                                            {
+                                                                <span>This item <strong>can</strong> be listed on the Steam Community Market after <strong>@(item.MarketableRestrictionDays)</strong> day(s) after purchase</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>This item <strong>can</strong> be listed on the Steam Community Market immediately after purchase</span>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>This item <strong>cannot</strong> be listed on the Steam Community Market once purchased</span>
+                                                        }
+                                                    </TooltipContent>
+                                                </MudTooltip>
+                                            </div>
+                                            @if (!item.IsStillAvailableInStore)
+                                            {
+                                                @if (!item.HasMarketListing)
+                                                {
+                                                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                        <span>This item is no longer available.</span>
+                                                    </MudText>
+                                                }
+                                                else 
+                                                {
+                                                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                        <span>This item is no longer available on the store, grab it from the marketplace instead.</span>
+                                                    </MudText>
+                                                }
+                                            }
+                                            else if (item.HasMarketListing)
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                    <span>This item is also available in the marketplace.</span>
+                                                </MudText>
+                                            }
+                                        </MudItem>
+                                    
+                                        <MudItem xs="5" Class="Centered">
+                                            <div class="@(item.IsStillAvailableInStore ? "Price mud-elevation-4" : null)">
+                                                <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableInStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Style="@(item.IsStillAvailableInStore ? null : "text-decoration: line-through")">
+                                                    <span>@item.Currency.ToPriceString(item.StorePrice)</span>
+                                                </MudText>
+                                            </div>
+                                        </MudItem>
+                                        <MudItem xs="7">
+                                            <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableInStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Text)" 
+                                                       Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableInStore)" FullWidth>
+                                                <RustIcon />        
+                                                <strong class="ml-1">@item.AppName store</strong>
+                                            </MudButton>
+                                        </MudItem>
+
+                                        @if (item.HasMarketListing)
+                                        {
+                                            <MudItem xs="5" Class="Centered">
+                                                <div class="Price mud-elevation-4">
+                                                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                                        <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
+                                                        @if (item.MarketPrice != null && item.MarketPrice > item.StorePrice)
+                                                        {
+                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToPercentageString(item.StorePrice)" 
+                                                                     Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="ml-2" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToPercentageString(item.StorePrice)" 
+                                                                     Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="ml-2" />
+                                                        }
+                                                    </MudText>
+                                                </div>
+                                            </MudItem>
+                                            <MudItem xs="7">
+                                                <MudButton OnClick="@(() => BuyItemFromMarket(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" FullWidth>
+                                                    <strong>Steam Marketplace</strong>
+                                                </MudButton>
+                                            </MudItem>
+                                        }
+
+                                    </MudGrid>
+                                </MudCardContent>
+                            </MudCard>
+                        </div>
+                    </MudItem>   
+                }
+
+                <MudItem xs="12" xl="6">
+                    <MudPaper Outlined="true">
+                        <MudTabs KeepPanelsAlive="true" Rounded="true" Centered="true" >
+                            <MudTabPanel Text="Revenue">
+                                @if (ItemSalesChart != null)
+                                {
+                                    <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
+                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="Chart-Footnote">
+                                        <span><strong>NOTE:</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
+                                    </MudText>
                                 }
-                            </TabPanel>
-                        </Paper>
-                    </Grid>
-                    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-                        <Grid Container Spacing="@Spacing.Two">
-                            @foreach (var media in Store.Media)
-                            {
-                                <Grid Item ExtraSmall="@GridSize.Twelve" Medium="@GridSize.Six">
-                                    <YouTubeVideo VideoId="@media" />
-                                </Grid>
-                            }
-                        </Grid>
-                    </Grid>
-                </Grid>
-            </Grid>
-        }
-    </Grid>
+                                else
+                                {
+                                    <Error Title="Unavailable" SubTitle="No data yet" />
+                                }
+                            </MudTabPanel>
+                            <MudTabPanel Text="Sales">
+                                @if (ItemSubscribersChart != null)
+                                {
+                                    <ChartJsBarChart @ref="ItemSubscribersChartJs" Config="@ItemSubscribersChart" />
+                                }
+                                else
+                                {
+                                    <Error Title="Unavailable" SubTitle="No data yet" />
+                                }
+                            </MudTabPanel>
+                            <MudTabPanel Text="Timeline">
+                                @if (ItemSubscribersHistoryChart != null)
+                                {
+                                    <ChartJsLineChart @ref="ItemSubscribersHistoryChartJs" Config="@ItemSubscribersHistoryChart" />
+                                }
+                                else
+                                {
+                                    <Error Title="Unavailable" SubTitle="No data yet" />
+                                }
+                            </MudTabPanel>
+                            <MudTabPanel Text="Marketplace Performance">
+                                @if (ItemMarketplacePerformanceChart != null)
+                                {
+                                    <div class="Chart-Radar">
+                                        <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <Error Title="Unavailable" SubTitle="No data yet" />
+                                }
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudPaper >
+                </MudItem>
+
+                @foreach (var media in Store.Media)
+                {
+                    <MudItem xs="12" sm="6" md="4" xl="3">
+                        <YouTubeVideo VideoId="@media" />
+                    </MudItem>
+                }
+            }
+        </MudGrid>
+
+    </PageContainer>
 }
 
 @code {
-    private ItemStoreListDTO[] Stores { get; set; }
 
-    private ItemStoreListDTO SelectedStore { get; set; }
-
-    private ItemStoreDetailedDTO Store { get; set; }
+    private StoreListItemDTO[] StoreList { get; set; }
+    
+    private StoreDTO Store { get; set; }
+    
+    [Parameter]
+    public string StoreId { get; set; }
+    
+    private int StoreIndex { get; set; }
 
     private Exception StoreException { get; set; }
-
-    private object SelectedItemChartPanel { get; set; } = 1;
-
+    
     private ChartJsBarChart ItemSalesChartJs { get; set; }
 
     private ChartJsBarChart ItemSubscribersChartJs { get; set; }
@@ -431,120 +348,122 @@ else
     private LineConfig ItemSubscribersHistoryChart { get; set; }
 
     private RadarConfig ItemMarketplacePerformanceChart { get; set; }
-
-    private bool StoreSelectorDialogOpen { get; set; }
-
+    
     protected override async Task OnInitializedAsync()
     {
-        await RefreshStores();
+        // Load store list
+        await LoadStoreList();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // If the selected store has changed, reload it
+        if (!String.Equals(StoreId, Store?.Id.ToString(), StringComparison.InvariantCultureIgnoreCase))
+        {
+            await LoadStore();
+        }
     }
     
-    private void BuyItemStore(StoreItemDetailDTO item)
+    private void OnSelectedStoreChanged(int index)
     {
-        string url = $"https://store.steampowered.com/itemstore/{item.SteamAppId}/detail/{item.SteamId}/";
-        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
-    }
-    
-    private void BuyItemMarket(StoreItemDetailDTO item)
-    {
-        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
+        var oldStore = StoreList.ElementAtOrDefault(StoreIndex);
+        StoreIndex = index;
+
+        // Navigate to the selected store page
+        var store = StoreList.ElementAtOrDefault(index);
+        if (store != null && store != oldStore)
+        {
+            Navigation.NavigateTo($"/store/{store.Id}");  
+        }
     }
 
-    private void ViewItem(StoreItemDetailDTO item)
-    {
-        string url = $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.SteamWorkshopId}";
-        JSRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", url);
-    }
-
-    private void HandleStoreSelectorDialogOpen()
-    {
-        StoreSelectorDialogOpen = true;
-        StateHasChanged();
-    }
-
-    private void HandleStoreSelectorDialogClose()
-    {
-        StoreSelectorDialogOpen = false;
-        StateHasChanged();
-    }
-
-    private async Task RefreshStores()
+    private async Task LoadStoreList()
     {
         try
         {
-            Stores = await Http.GetFromJsonAsync<ItemStoreListDTO[]>($"api/store");
-            if (Stores.Any())
+            Store = null;
+            StoreList = null;
+            StoreException = null;
+            StateHasChanged();
+
+            // Load the store list
+            StoreList = (await Http.GetFromJsonAsync<StoreListItemDTO[]>($"api/store"))
+                .OrderByDescending(x => x.Start)
+                .ToArray();
+                
+            StateHasChanged();
+            if (StoreList.Any())
             {
-                await OnSelectedStoreChanged(Stores.Last());
+                if (String.IsNullOrEmpty(StoreId))
+                {
+                    // No store has been selected yet, navigate to the most recent store page as a default
+                    Navigation.NavigateTo($"/store/{StoreList.FirstOrDefault()?.Id}");  
+                }
             }
         }
         catch (Exception ex)
         {
             StoreException = ex;
-            Logger.LogError(ex, $"Error loading the store");
+            Logger.LogError(ex, $"Error loading the store list");
+            Snackbar.Add($"Unable to load store list. {ex.Message}", MudBlazor.Severity.Error);
+            StateHasChanged();
         }
-        StateHasChanged();
     }
 
-    private async Task RefreshStore(Guid storeId)
+    private async Task LoadStore()
     {
         try
         {
             Store = null;
             StoreException = null;
             StateHasChanged();
-            Store = await Http.GetFromJsonAsync<ItemStoreDetailedDTO>($"api/store/{storeId}");
-            if (Store != null)
+
+            if (!String.IsNullOrEmpty(StoreId))
             {
-                SelectedItemChartPanel = (Store.End == null ? 0 : 3);
-                OnSelectedItemChartChanged(SelectedItemChartPanel);
+                // Load the new store (if any)
+                Store = await Http.GetFromJsonAsync<StoreDTO>($"api/store/{StoreId}");
+                StoreId = Store.Id;
+                
+                // The selected store should show as the active tab in the store tab list
+                StoreIndex = Array.IndexOf(StoreList, StoreList.FirstOrDefault(x => x.Id == StoreId));
+                
+                RedrawItemSalesChart();
+                RedrawItemSubscribersChart();
+                RedrawItemSubscribersTimelineChart();
+                RedrawItemMarketplacePerformanceChart();
+                StateHasChanged();
             }
         }
         catch (Exception ex)
         {
             StoreException = ex;
-            Logger.LogError(ex, $"Error loading the store");
-        }
-        StateHasChanged();
-    }
-
-    private async Task OnSelectedStoreChanged(object value)
-    {
-        StoreSelectorDialogOpen = false;
-        SelectedStore = (ItemStoreListDTO) value;
-        if (SelectedStore != null)
-        {
-            await RefreshStore(SelectedStore.Id);
+            Logger.LogError(ex, $"Error loading store {StoreId}");
+            Snackbar.Add($"Unable to load store details. {ex.Message}", MudBlazor.Severity.Error);
+            StateHasChanged();
         }
     }
 
-    private void OnSelectedItemChartChanged(object value)
+    private void BuyItemFromStore(StoreItemDTO item)
     {
-        SelectedItemChartPanel = value;
-        ItemSalesChart = null;
-        ItemSubscribersChart = null;
-        ItemSubscribersHistoryChart = null;
-        ItemMarketplacePerformanceChart = null;
-        switch (SelectedItemChartPanel)
-        {
-            case 0: RedrawItemSalesChart(); break;
-            case 1: RedrawItemSubscribersChart(); break;
-            case 2: RedrawItemSubscribersTimelineChart(); break;
-            case 3: RedrawItemMarketplacePerformanceChart(); break;
-        }
-
-        StateHasChanged();
+        ExternalNavigation.NavigateToNewTab($"https://store.steampowered.com/itemstore/{item.AppId}/detail/{item.Id}/");
     }
     
-    private string GetCardStyles(StoreItemDetailDTO item)
+    private void BuyItemFromMarket(StoreItemDTO item)
     {
-        return $"border: 2px solid {item.ForegroundColour}";
+        ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/market/listings/{item.AppId}/{Uri.EscapeDataString(item.Name)}");
     }
 
-    private string GetNameStyles(StoreItemDetailDTO item)
+    private void ViewItemWorkshopPage(StoreItemDTO item)
     {
-        return $"color: {item.ForegroundColour}";
+        ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/sharedfiles/filedetails/?id={item.WorkshopFileId}");
+    }
+    
+    private void ShowAssetItemSetDialog(string itemSet)
+    {
+        Dialogs.Show<ViewAssetItemSetDialog>(itemSet, parameters: new DialogParameters()
+        {
+            ["ItemSet"] = itemSet
+        });
     }
 
     private void RedrawItemSalesChart()
@@ -642,7 +561,7 @@ else
             BorderWidth = 1
         };
         authorRevenue.AddRange(
-            storeItems.Select(x => (DoubleWrapper)Math.Round((double)((x.TotalSalesMin * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
+            storeItems.Select(x => (DoubleWrapper)Math.Round((double)((x.SalesMinimum * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
         );
 
         var totalRevenue = new BarDataset<DoubleWrapper>
@@ -653,7 +572,7 @@ else
             BorderWidth = 1
         };
         totalRevenue.AddRange(
-            storeItems.Select(x => (DoubleWrapper)Math.Round((double)(x.TotalSalesMin * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
+            storeItems.Select(x => (DoubleWrapper)Math.Round((double)(x.SalesMinimum * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
         );
 
         ItemSalesChart.Data.Datasets.AddRange(new[] {
@@ -947,7 +866,7 @@ else
         };
     }
 
-    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(StoreItemDetailDTO item, DateTime startOfWeek)
+    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(StoreItemDTO item, DateTime startOfWeek)
     {
         var dataSet = new List<DoubleWrapper>();
         if (item?.SubscriptionsHistory?.Any() != true)

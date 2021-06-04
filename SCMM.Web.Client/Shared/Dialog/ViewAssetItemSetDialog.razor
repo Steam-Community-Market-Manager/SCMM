@@ -1,0 +1,81 @@
+﻿@namespace SCMM.Web.Client.Shared.Dialog
+@using SCMM.Web.Data.Models.Domain.StoreItems
+@inject ILogger<ViewAssetItemSetDialog> Logger
+@inject ISnackbar Snackbar
+@inject ExternalNavigationManager ExternalNavigation
+@inject HttpClient Http
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6">@ItemSet Set</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (Items == null)
+        {
+            <Loading Message="Loading asset set list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+        } 
+        else
+        {
+            <MudGrid Spacing="2">
+                @foreach (var item in Items)
+                {
+                    <MudItem xs="2">
+                        <MudCard>
+                            <MudCardMedia Image="@item.IconUrl" Height="144" />
+                            <MudCardContent>
+                                <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
+                                @if (item.StorePrice != null)
+                                {
+                                    <MudText Typo="MudBlazor.Typo.body2">
+                                        <RustIcon />
+                                        <span>@item.Currency.ToPriceString(item.StorePrice.Value)</span>
+                                    </MudText>
+                                }
+                                @if (item.MarketPrice != null)
+                                {
+                                    <MudText Typo="MudBlazor.Typo.body2">
+                                        <i class="fab fa-fw fa-steam"></i>
+                                        <span>@item.Currency.ToPriceString(item.MarketPrice.Value)</span>
+                                    </MudText>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] 
+    public MudDialogInstance Dialog { get; set; }
+
+    [Parameter]
+    public string ItemSet { get; set; }
+    
+    private AssetSetListItemDTO[] Items { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Items = (await Http.GetFromJsonAsync<AssetSetListItemDTO[]>($"api/asset/set/{ItemSet}")).ToArray();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading the asset set list");
+            Snackbar.Add($"Unable to load asset set list. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        Dialog.Options.CloseButton = true;
+        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.ExtraLarge;
+        Dialog.SetOptions(Dialog.Options);
+    }
+    
+}

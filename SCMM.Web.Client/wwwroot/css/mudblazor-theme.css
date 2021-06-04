@@ -5,4 +5,17 @@
 
 .mud-chip-size-small > .mud-icon-size-small {
     font-size: inherit;
+    margin-right: 8px;
+}
+
+.mud-transparent-tabs .mud-tabs-toolbar {
+    background: none;
+}
+
+.mud-transparent-tabs .mud-tab:hover {
+    background: none;
+}
+
+.mud-transparent-tabs .mud-tab-active:hover {
+    background: none;
 }

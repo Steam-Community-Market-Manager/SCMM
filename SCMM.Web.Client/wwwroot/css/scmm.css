@@ -1,4 +1,14 @@
 ﻿
-.Text-NoWrap {
+.Centered {
+    text-align: center;
+}
+
+.FullWidth {
+    width: 100%;
+}
+
+.NoWrap {
+    overflow: hidden;
     white-space: nowrap;
+    text-overflow: ellipsis;
 }
