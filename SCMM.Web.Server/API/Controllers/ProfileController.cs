@@ -186,12 +186,12 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Load the profile
-            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = steamId
             });
 
-            var profile = fetchAndCreateProfile?.Profile;
+            var profile = importedProfile?.Profile;
             if (profile == null)
             {
                 return NotFound($"Profile not found");
@@ -230,13 +230,13 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Reload the profile's inventory
-            var fetchProfileInventory = await _commandProcessor.ProcessWithResultAsync(new FetchSteamProfileInventoryRequest()
+            var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = steamId,
                 Force = force
             });
 
-            var profile = fetchProfileInventory?.Profile;
+            var profile = importedInventory?.Profile;
             if (profile == null)
             {
                 return NotFound($"Profile with SteamID '{steamId}' was not found");
@@ -281,24 +281,24 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Load the profile
-            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = steamId
             });
 
-            var profile = fetchAndCreateProfile?.Profile;
+            var profile = importedProfile?.Profile;
             if (profile == null)
             {
                 return NotFound("Profile not found");
             }
 
             // Reload the profiles inventory
-            var profileInventory = await _commandProcessor.ProcessWithResultAsync(new FetchSteamProfileInventoryRequest()
+            var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString(),
                 Force = force
             });
-            if (profileInventory?.Profile?.Privacy != SteamVisibilityType.Public)
+            if (importedInventory?.Profile?.Privacy != SteamVisibilityType.Public)
             {
                 return NotFound("Profile inventory is private");
             }

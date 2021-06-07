@@ -93,9 +93,9 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.Image);
             builder.Entity<SteamAssetDescription>()
-                .OwnsOne(x => x.CraftingRequirements);
+                .OwnsOne(x => x.CraftingComponents);
             builder.Entity<SteamAssetDescription>()
-                .OwnsOne(x => x.BreaksDownInto);
+                .OwnsOne(x => x.BreaksIntoComponents);
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.StoreItem)
                 .WithOne(x => x.Description)

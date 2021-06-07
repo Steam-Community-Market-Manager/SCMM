@@ -2,7 +2,6 @@
 using AutoMapper;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
-using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Domain.Currencies;
@@ -14,8 +13,6 @@ using SCMM.Web.Data.Models.Domain.StoreItems;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
 using SCMM.Web.Server.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace SCMM.Web.Server
@@ -208,9 +205,9 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.IsTradable, o => o.MapFrom(p => p.Item.Description.IsTradable))
                 .ForMember(x => x.TradableRestrictionDays, o => o.MapFrom(p => p.Item.Description.TradableRestrictionDays))
                 .ForMember(x => x.IsBreakable, o => o.MapFrom(p => p.Item.Description.IsBreakable))
-                .ForMember(x => x.BreaksDownInto, o => o.MapFrom(p => p.Item.Description.BreaksDownInto.ToDictionary(x => x.Key, x => x.Value)))
+                .ForMember(x => x.BreaksIntoComponents, o => o.MapFrom(p => p.Item.Description.BreaksIntoComponents.ToDictionary(x => x.Key, x => x.Value)))
                 .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Item.Description.ItemType))
                 .ForMember(x => x.ItemSet, o => o.MapFrom(p => p.Item.Description.Tags.ContainsKey(SCMM.Steam.Data.Models.Constants.SteamAssetTagSet) ? p.Item.Description.Tags[SCMM.Steam.Data.Models.Constants.SteamAssetTagSet] : null));
+        }
     }
-}
 }

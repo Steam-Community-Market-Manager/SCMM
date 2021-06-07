@@ -60,9 +60,8 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("Asset set name is required");
             }
 
-            var nameWords = name.Split(' ');
             var query = _db.SteamAssetDescriptions.AsNoTracking();
-            foreach (var word in name.Split(' '))
+            foreach (var word in name.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 query = query.Where(x => x.Name.Contains(word));
             }

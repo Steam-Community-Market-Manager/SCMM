@@ -12,8 +12,8 @@ namespace SCMM.Steam.Data.Store
         public SteamAssetDescription()
         {
             Tags = new PersistableStringDictionary();
-            CraftingRequirements = new PersistableAssetQuantityDictionary();
-            BreaksDownInto = new PersistableAssetQuantityDictionary();
+            CraftingComponents = new PersistableAssetQuantityDictionary();
+            BreaksIntoComponents = new PersistableAssetQuantityDictionary();
         }
 
         [Required]
@@ -80,13 +80,15 @@ namespace SCMM.Steam.Data.Store
 
         public int? TradableRestrictionDays { get; set; }
 
+        public bool IsCraftingComponent { get; set; }
+
         public bool IsCraftable { get; set; }
 
-        public PersistableAssetQuantityDictionary CraftingRequirements { get; set; }
+        public PersistableAssetQuantityDictionary CraftingComponents { get; set; }
 
         public bool IsBreakable { get; set; }
 
-        public PersistableAssetQuantityDictionary BreaksDownInto { get; set; }
+        public PersistableAssetQuantityDictionary BreaksIntoComponents { get; set; }
 
         public bool IsBanned { get; set; }
 

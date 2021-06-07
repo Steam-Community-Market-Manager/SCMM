@@ -116,9 +116,9 @@ else if (StoreList.Any())
                                                     </span>
                                                 </MudText>
                                             }
-                                            @if (item.BreaksDownInto != null)
+                                            @if (item.BreaksIntoComponents != null)
                                             {
-                                                @foreach (var component in item.BreaksDownInto)
+                                                @foreach (var component in item.BreaksIntoComponents)
                                                 {
                                                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
                                                         <i class="fas fa-fw fa-cubes"></i>

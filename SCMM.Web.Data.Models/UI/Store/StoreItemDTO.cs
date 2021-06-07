@@ -68,7 +68,7 @@ namespace SCMM.Web.Data.Models.Domain.StoreItems
 
         public bool IsBreakable { get; set; }
 
-        public IDictionary<string, uint> BreaksDownInto { get; set; }
+        public IDictionary<string, uint> BreaksIntoComponents { get; set; }
 
         public string ItemType { get; set; }
 
