@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using System;
@@ -110,75 +111,89 @@ namespace SCMM.Steam.API.Commands
             // Fetch the profiles inventory for each of the apps we monitor
             foreach (var app in apps)
             {
-                // Fetch assets
-                var inventory = await _communityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
+                try
                 {
-                    AppId = app.SteamId,
-                    SteamId = profile.SteamId,
-                    Start = 1,
-                    Count = SteamInventoryPaginatedJsonRequest.MaxPageSize,
-                    NoRender = true
-                });
-                if (inventory == null)
-                {
-                    // Inventory is probably private
-                    profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Private;
-                    continue;
-                }
-                if (inventory.Assets?.Any() != true)
-                {
-                    // Inventory doesn't have any items for this app
-                    continue;
-                }
-
-                // Add assets
-                var missingAssets = inventory.Assets
-                    .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId.ToString()))
-                    .ToList();
-                foreach (var asset in missingAssets)
-                {
-                    var assetDescription = await _steamService.AddOrUpdateAssetDescription(app, language.SteamId, asset.ClassId);
-                    if (assetDescription == null)
+                    // Fetch assets
+                    var inventory = await _communityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
                     {
+                        AppId = app.SteamId,
+                        SteamId = profile.SteamId,
+                        Start = 1,
+                        Count = SteamInventoryPaginatedJsonRequest.MaxPageSize,
+                        NoRender = true
+                    });
+                    if (inventory == null)
+                    {
+                        // Inventory is probably private
+                        profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Private;
                         continue;
                     }
-                    var inventoryItem = new SteamProfileInventoryItem()
+                    if (inventory.Assets?.Any() != true)
                     {
-                        SteamId = asset.AssetId.ToString(),
-                        Profile = profile,
-                        ProfileId = profile.Id,
-                        App = app,
-                        AppId = app.Id,
-                        Description = assetDescription,
-                        DescriptionId = assetDescription.Id,
-                        Quantity = (int) asset.Amount
-                    };
+                        // Inventory doesn't have any items for this app
+                        continue;
+                    }
 
-                    profile.InventoryItems.Add(inventoryItem);
+                    // Add assets
+                    var missingAssets = inventory.Assets
+                        .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId.ToString()))
+                        .ToList();
+                    foreach (var asset in missingAssets)
+                    {
+                        var assetDescription = await _steamService.AddOrUpdateAssetDescription(app, language.SteamId, asset.ClassId);
+                        if (assetDescription == null)
+                        {
+                            continue;
+                        }
+                        var inventoryItem = new SteamProfileInventoryItem()
+                        {
+                            SteamId = asset.AssetId.ToString(),
+                            Profile = profile,
+                            ProfileId = profile.Id,
+                            App = app,
+                            AppId = app.Id,
+                            Description = assetDescription,
+                            DescriptionId = assetDescription.Id,
+                            Quantity = (int)asset.Amount
+                        };
+
+                        profile.InventoryItems.Add(inventoryItem);
+                    }
+
+                    // Update assets
+                    foreach (var asset in inventory.Assets)
+                    {
+                        var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.SteamId == asset.AssetId.ToString());
+                        if (existingAsset != null)
+                        {
+                            existingAsset.Quantity = (int)asset.Amount;
+                        }
+                    }
+
+                    // Remove assets
+                    var removedAssets = profile.InventoryItems
+                        .Where(x => !inventory.Assets.Any(y => y.AssetId.ToString() == x.SteamId))
+                        .ToList();
+                    foreach (var asset in removedAssets)
+                    {
+                        profile.InventoryItems.Remove(asset);
+                    }
+
+                    // Update last inventory update timestamp and privacy state
+                    profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
+                    profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Public;
                 }
-
-                // Update assets
-                foreach (var asset in inventory.Assets)
+                catch (SteamRequestException ex)
                 {
-                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.SteamId == asset.AssetId.ToString());
-                    if (existingAsset != null)
+                    if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
                     {
-                        existingAsset.Quantity = (int) asset.Amount;
+                        profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Private;
+                    }
+                    else
+                    {
+                        throw;
                     }
                 }
-
-                // Remove assets
-                var removedAssets = profile.InventoryItems
-                    .Where(x => !inventory.Assets.Any(y => y.AssetId.ToString() == x.SteamId))
-                    .ToList();
-                foreach (var asset in removedAssets)
-                {
-                    profile.InventoryItems.Remove(asset);
-                }
-
-                // Update last inventory update timestamp and privacy state
-                profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
-                profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Public;
             }
 
             return new FetchSteamProfileInventoryResponse()

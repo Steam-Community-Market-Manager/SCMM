@@ -108,7 +108,7 @@ namespace SCMM.Steam.API.Queries
                     .Sum(x => (x.ItemResellTax / x.ItemExchangeRateMultiplier) * x.Quantity)
             };
 
-            var hasSetupInvestment = ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 90); // if more than 90% have buy prices set
+            var hasSetupInvestment = ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 50); // if more than 50% have buy prices set
             return new GetSteamProfileInventoryTotalsResponse()
             {
                 TotalItems = profileInventory.TotalItems,

@@ -15,11 +15,12 @@ using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Domain.InventoryItems;
 using SCMM.Web.Data.Models.Domain.Profiles;
+using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
 using SCMM.Web.Server.Extensions;
-using Skclusive.Core.Component;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -193,7 +194,7 @@ namespace SCMM.Web.Server.API.Controllers
             var profile = fetchAndCreateProfile?.Profile;
             if (profile == null)
             {
-                return NotFound($"Profile with SteamID '{steamId}' was not found or is private");
+                return NotFound($"Profile not found");
             }
 
             await _db.SaveChangesAsync();
@@ -264,7 +265,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="force">If true, the inventory will always be fetched from Steam. If false, calls to Steam are cached for one hour</param>
         /// <response code="200">Profile inventory value.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the profile cannot be found or is the inventory is private.</response>
+        /// <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{steamId}/inventory/value")]
@@ -288,15 +289,19 @@ namespace SCMM.Web.Server.API.Controllers
             var profile = fetchAndCreateProfile?.Profile;
             if (profile == null)
             {
-                return NotFound("Profile not found (or is private)");
+                return NotFound("Profile not found");
             }
 
             // Reload the profiles inventory
-            _ = await _commandProcessor.ProcessWithResultAsync(new FetchSteamProfileInventoryRequest()
+            var profileInventory = await _commandProcessor.ProcessWithResultAsync(new FetchSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString(),
                 Force = force
             });
+            if (profileInventory?.Profile?.Privacy != SteamVisibilityType.Public)
+            {
+                return NotFound("Profile inventory is private");
+            }
 
             await _db.SaveChangesAsync();
 
@@ -308,7 +313,7 @@ namespace SCMM.Web.Server.API.Controllers
             });
             if (inventoryTotals == null)
             {
-                return NotFound("Profile inventory is empty (or is private)");
+                return NotFound("Profile inventory is empty (no marketable items)");
             }
 
             // Generate the profiles inventory thumbnail
@@ -355,7 +360,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
         /// <response code="200">Profile inventory item totals.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the profile cannot be found.</response>
+        /// <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{steamId}/inventory/total")]
@@ -370,18 +375,18 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("Profile id is invalid");
             }
 
-            var inventoryTotal = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
+            var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = steamId,
                 CurrencyId = this.Currency().SteamId
             });
-            if (inventoryTotal == null)
+            if (inventoryTotals == null)
             {
-                return NotFound("Profile not found");
+                return NotFound("Profile inventory is empty (no marketable items)");
             }
 
             return Ok(
-                _mapper.Map<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>(inventoryTotal, this)
+                _mapper.Map<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>(inventoryTotals, this)
             );
         }
 
@@ -483,13 +488,15 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="sortDirection">Sort item direction</param>
         /// <response code="200">Profile inventory investment information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="401">If the request is unauthenticated (login first) or the requested inventory does not belong to the authenticated user.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
+        [Authorize(AuthorizationPolicies.User)]
         [HttpGet("{steamId}/inventory/investment")]
         [ProducesResponseType(typeof(PaginatedResult<InventoryInvestmentItemDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetInventoryInvestment([FromRoute] string steamId, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] Sort sortDirection = Sort.Ascending)
+        public async Task<IActionResult> GetInventoryInvestment([FromRoute] string steamId, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending)
         {
             if (String.IsNullOrEmpty(steamId))
             {
@@ -500,9 +507,15 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 Id = steamId
             });
-            if (resolvedId?.Exists != true)
+            if (resolvedId?.Exists != true || resolvedId.Id == null)
             {
                 return NotFound("Profile not found");
+            }
+
+            if (!User.Is(resolvedId.Id.Value))
+            {
+                _logger.LogError($"Inventory does not belong to you and you do not have permission to view it");
+                return Unauthorized($"Inventory does not belong to you and you do not have permission to view it");
             }
 
             filter = Uri.UnescapeDataString(filter?.Trim() ?? String.Empty);

@@ -92,7 +92,7 @@ namespace SCMM.Steam.API.Commands
 
             if (profile == null)
             {
-                throw new ArgumentException(nameof(request), $"Unable to fetch Steam profile for '{steamId}', it either does not exist or is private");
+                throw new ArgumentException(nameof(request), $"Unable to find Steam profile for '{steamId}'");
             }
 
             // Update the last signin timestamp

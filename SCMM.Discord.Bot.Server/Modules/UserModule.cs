@@ -39,32 +39,21 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             var user = Context.User;
             var discordId = $"{user.Username}#{user.Discriminator}";
-            var profile = (SteamProfile)null;
-
-            try
+           
+            // Load the profile
+            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
-                // Load the profile
-                var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
-                {
-                    ProfileId = steamId
-                });
+                ProfileId = steamId
+            });
 
-                profile = fetchAndCreateProfile?.Profile;
-            }
-            catch (SteamRequestException ex)
+            var profile = fetchAndCreateProfile?.Profile;
+            if (profile == null)
             {
-                if (ex.Error?.Message?.Contains("profile could not be found", StringComparison.InvariantCultureIgnoreCase) == true)
-                {
-                    return CommandResult.Fail(
-                        reason: $"Steam ID could not be found",
-                        explaination: $"That Steam ID doesn't exist. You can find your ID by viewing your Steam profile and copying the unique name or number shown in the URL bar. Pasting the full URL also works.",
-                        helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_find_your_profile_id.png"
-                    );
-                }
-                else
-                {
-                    return CommandResult.Fail(ex.Error.Message);
-                }
+                return CommandResult.Fail(
+                    reason: $"Steam ID could not be found",
+                    explaination: $"That Steam ID doesn't exist. You can find your ID by viewing your Steam profile and copying the unique name or number shown in the URL bar. Pasting the full URL also works.",
+                    helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_find_your_profile_id.png"
+                );
             }
 
             // Set the discord profile

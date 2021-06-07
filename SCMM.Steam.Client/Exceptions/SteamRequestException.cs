@@ -1,5 +1,6 @@
 ﻿using SCMM.Steam.Data.Models;
 using System;
+using System.Net;
 
 namespace SCMM.Steam.Client.Exceptions
 {
@@ -7,16 +8,21 @@ namespace SCMM.Steam.Client.Exceptions
     {
         public ISteamError Error { get; set; }
 
-        public SteamRequestException() : base()
+        public HttpStatusCode? StatusCode { get; set; }
+
+        public SteamRequestException(HttpStatusCode? statusCode = null) : base()
         {
+            StatusCode = statusCode;
         }
 
-        public SteamRequestException(string message) : base(message)
+        public SteamRequestException(string message, HttpStatusCode? statusCode = null) : base(message)
         {
+            StatusCode = statusCode;
         }
 
-        public SteamRequestException(string message, Exception innerException, ISteamError error = null) : base(message, innerException)
+        public SteamRequestException(string message, HttpStatusCode? statusCode = null, Exception innerException = null, ISteamError error = null) : base(message, innerException)
         {
+            StatusCode = statusCode;
             Error = error;
         }
     }

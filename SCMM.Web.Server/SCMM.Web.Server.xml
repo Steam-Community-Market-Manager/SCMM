@@ -253,7 +253,7 @@
             <param name="force">If true, the inventory will always be fetched from Steam. If false, calls to Steam are cached for one hour</param>
             <response code="200">Profile inventory value.</response>
             <response code="400">If the request data is malformed/invalid.</response>
-            <response code="404">If the profile cannot be found or is the inventory is private.</response>
+            <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryTotal(System.String)">
@@ -266,7 +266,7 @@
             <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
             <response code="200">Profile inventory item totals.</response>
             <response code="400">If the request data is malformed/invalid.</response>
-            <response code="404">If the profile cannot be found.</response>
+            <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryItems(System.String)">
@@ -281,7 +281,7 @@
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryInvestment(System.String,System.String,System.Int32,System.Int32,System.String,Skclusive.Core.Component.Sort)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryInvestment(System.String,System.String,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection)">
             <summary>
             Get profile inventory investment information
             </summary>
@@ -296,6 +296,7 @@
             <param name="sortDirection">Sort item direction</param>
             <response code="200">Profile inventory investment information.</response>
             <response code="400">If the request data is malformed/invalid.</response>
+            <response code="401">If the request is unauthenticated (login first) or the requested inventory does not belong to the authenticated user.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryWishlist(System.String)">

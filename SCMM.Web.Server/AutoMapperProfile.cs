@@ -14,6 +14,7 @@ using SCMM.Web.Data.Models.Domain.StoreItems;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
 using SCMM.Web.Server.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -51,6 +52,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Currency, o => o.MapFromCurrency());
 
             CreateMap<SteamAssetDescription, ProfileInventoryItemSummaryDTO>()
+                .ForMember(x => x.SteamId, o => o.MapFrom(p => p.AssetId))
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.Flags, o => o.Ignore());

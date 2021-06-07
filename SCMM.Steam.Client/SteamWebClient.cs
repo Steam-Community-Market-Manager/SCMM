@@ -62,7 +62,7 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex);
+                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
             }
         }
 
@@ -82,7 +82,7 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex);
+                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
             }
         }
 
@@ -118,7 +118,7 @@ namespace SCMM.Steam.Client
             }
             catch (Exception ex)
             {
-                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex);
+                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
             }
         }
 
@@ -146,7 +146,14 @@ namespace SCMM.Steam.Client
                     }
                     finally
                     {
-                        throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex, error);
+                        if (error != null)
+                        {
+                            throw new SteamRequestException($"GET '{request}' failed. {error.Message}", null, null, error);
+                        }
+                        else
+                        {
+                            throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", null, ex);
+                        }
                     }
                 }
             }
@@ -166,7 +173,7 @@ namespace SCMM.Steam.Client
                 }
                 catch (Exception ex)
                 {
-                    throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", ex);
+                    throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
                 }
             }
 

@@ -102,34 +102,22 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             message = (message ?? await Context.Message.ReplyAsync("Loading..."));
             
-            var profile = (SteamProfile)null;
-            try
+            // Load the profile
+            await message.LoadingAsync("🔍 Finding Steam profile...");
+            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
             {
-                // Load the profile
-                await message.LoadingAsync("🔍 Finding Steam profile...");
-                var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
-                {
-                    ProfileId = steamId
-                });
+                ProfileId = steamId
+            });
 
-                profile = fetchAndCreateProfile?.Profile;
-            }
-            catch (SteamRequestException ex)
+            var profile = fetchAndCreateProfile?.Profile;
+            if (profile == null)
             {
-                if (ex.Error?.Message?.Contains("profile could not be found", StringComparison.InvariantCultureIgnoreCase) == true)
-                {
-                    await message.DeleteAsync();
-                    return CommandResult.Fail(
-                        reason: $"Steam ID could not be found",
-                        explaination: $"That Steam ID doesn't exist. You can find your ID by viewing your Steam profile and copying the unique name or number shown in the URL bar. Pasting the full URL also works.",
-                        helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_find_your_profile_id.png"
-                    );
-                }
-                else
-                {
-                    await message.DeleteAsync();
-                    return CommandResult.Fail(ex.Error.Message);
-                }
+                await message.DeleteAsync();
+                return CommandResult.Fail(
+                    reason: $"Steam ID could not be found",
+                    explaination: $"That Steam ID doesn't exist. You can find your ID by viewing your Steam profile and copying the unique name or number shown in the URL bar. Pasting the full URL also works.",
+                    helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_find_your_profile_id.png"
+                );
             }
 
             // Load the guild
@@ -159,10 +147,19 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             // Reload the profiles inventory
             await message.LoadingAsync("🔄 Fetching inventory details from Steam...");
-            _ = await _commandProcessor.ProcessWithResultAsync(new FetchSteamProfileInventoryRequest()
+            var profileInventory = await _commandProcessor.ProcessWithResultAsync(new FetchSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString()
             });
+            if (profileInventory?.Profile?.Privacy != Steam.Data.Models.Enums.SteamVisibilityType.Public)
+            {
+                await message.DeleteAsync();
+                return CommandResult.Fail(
+                    reason: $"Private inventory",
+                    explaination: $"That Steam inventory is **private**. Check your profile privacy to ensure that your inventory is public, then try again.",
+                    helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_privacy_public.png"
+                );
+            }
 
             await _db.SaveChangesAsync();
 
@@ -177,9 +174,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 await message.DeleteAsync();
                 return CommandResult.Fail(
-                    reason: $"Private inventory (or no Rust items)",
-                    explaination: $"That Steam inventory is either **private** or doesn't contain any **marketable** Rust items. Check your profile privacy and ensure that your inventory is public and that at least one of your items are marketable.",
-                    helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_privacy_public.png"
+                    reason: $"No Rust items found",
+                    explaination: $"That Steam inventory doesn't contain any **marketable** Rust items. If you've recently purchased some items, it can take up to 7 days for those items to become marketable."
                 );
             }
 
