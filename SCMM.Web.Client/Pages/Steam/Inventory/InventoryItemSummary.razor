@@ -1,0 +1,33 @@
+﻿@using SCMM.Web.Data.Models.Domain.InventoryItems;
+@inject ExternalNavigationManager ExternalNavigationManager
+
+<div class="align-self-stretch">
+    <MudTooltip Text="@Item.Name">
+        <div class="Item-Summary d-flex flex-wrap flex-column align-center justify-center" @onclick="@((_) => OnItemClicked(Item))">
+            <div class="Hover-Zoom">
+                <img src="@Item.IconUrl" class="ma-5" />
+            </div>
+            @if (Item.Value != null)
+            {
+                <MudText Typo="MudBlazor.Typo.subtitle2" Class="Centered NoWrap">
+                    @Item.Currency.ToPriceString(Item.Value.Value)
+                </MudText>
+            }
+        </div>
+    </MudTooltip>
+</div>
+
+@code {
+    
+    [Parameter]
+    public ProfileInventoryItemSummaryDTO Item { get; set; }
+    
+    private void OnItemClicked(ProfileInventoryItemSummaryDTO item)
+    {
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        ExternalNavigationManager.NavigateToNewTab(url);
+    }
+
+    protected override bool ShouldRender() => false;
+
+}

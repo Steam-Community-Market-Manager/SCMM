@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Shared.Client", "SCMM.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Discord.API", "SCMM.Discord.API\SCMM.Discord.API.csproj", "{DD380BE2-5025-4FFF-84F3-20EFBB5A702F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCMM.Shared.Azure.ServiceBus", "SCMM.Shared.Azure.ServiceBus\SCMM.Shared.Azure.ServiceBus.csproj", "{71E4F567-5E63-4106-BC4F-89C21936E2A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Shared.Azure.ServiceBus", "SCMM.Shared.Azure.ServiceBus\SCMM.Shared.Azure.ServiceBus.csproj", "{71E4F567-5E63-4106-BC4F-89C21936E2A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

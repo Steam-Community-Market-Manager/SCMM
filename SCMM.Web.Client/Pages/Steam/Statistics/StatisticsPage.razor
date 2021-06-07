@@ -5,7 +5,7 @@
 @using SCMM.Web.Data.Models.Steam
 @using SCMM.Web.Data.Models.UI
 @using SCMM.Web.Data.Models.UI.MarketStatistics
-@inject ILogger<MarketStatisticsPage> Logger
+@inject ILogger<StatisticsPage> Logger
 @inject NavigationManager Navigation
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
@@ -36,21 +36,17 @@
 <Grid Container Spacing="@Spacing.Two">
 
     <Grid Item ExtraSmall="@GridSize.Twelve">
-        <Alert Severity="@Skclusive.Core.Component.Severity.Info" Variant="@AlertVariant.Outlined">
-            <IconContent>
-                <DiscordBotIcon />
-            </IconContent>
+        <MudAlert Severity="@MudBlazor.Severity.Info">
             <ChildContent>
-                <AlertTitle>SCMM Discord Bot</AlertTitle>
+                <DiscordBotIcon />
+                <span>SCMM Discord Bot</span>
                 <span>Beep Boop! Did you know I can join your Discord community to provide tools and alerts for the Steam community marketplace? Click the <a @onclick="InviteDiscordBot">invite button</a> to get started.</span>
-            </ChildContent>
-            <ActionContent>
                 <Button Color="@Skclusive.Core.Component.Color.Inherit" Size="@Skclusive.Core.Component.Size.Large"
                         OnClick="@(() => InviteDiscordBot())">
                     INVITE
                 </Button>
-        </ActionContent>
-        </Alert>
+            </ChildContent>
+        </MudAlert>
     </Grid>
 
     <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">    

@@ -1,9 +1,9 @@
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
 using SCMM.Web.Client.Shared.Navigation;
+using SCMM.Web.Client.Shared.Storage;
 using Skclusive.Core.Component;
 using Skclusive.Material.Alert;
 using Skclusive.Material.Chip;
@@ -24,7 +24,8 @@ namespace SCMM.Web.Client
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddSingleton<AppState>();
-            builder.Services.AddTransient<ExternalNavigationManager>();
+            builder.Services.AddSingleton<LocalStorageService>();
+            builder.Services.AddSingleton<ExternalNavigationManager>();
 
             builder.Services.AddHttpClient("default", (serviceProvider, client) =>
             {
@@ -47,6 +48,7 @@ namespace SCMM.Web.Client
                 config.SnackbarConfiguration.PreventDuplicates = true;
                 config.SnackbarConfiguration.NewestOnTop = true;
                 config.SnackbarConfiguration.ShowCloseIcon = true;
+                config.SnackbarConfiguration.RequireInteraction = true;
             });
 
             var materialConfig = new MaterialConfigBuilder()
@@ -55,7 +57,6 @@ namespace SCMM.Web.Client
                 .WithTheme(Theme.Dark)
                 .Build();
 
-            builder.Services.AddBlazoredLocalStorage();
             builder.Services.TryAddAlertServices(materialConfig);
             builder.Services.TryAddChipServices(materialConfig);
             builder.Services.TryAddMaterialServices(materialConfig);

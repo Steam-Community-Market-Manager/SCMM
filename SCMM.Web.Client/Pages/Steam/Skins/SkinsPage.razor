@@ -1,0 +1,94 @@
+﻿@page "/skins"
+@page "/items"
+@using SCMM.Web.Data.Models.UI
+@using SCMM.Web.Data.Models.Domain.MarketItems
+@using System.Timers
+@inject ILogger<SkinsPage> Logger
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+
+<PageContainer Title="Skins">
+
+    <TextField Variant="@TextFieldVariant.Outlined" Margin="@Skclusive.Core.Component.Margin.None" OnChange="@(async (x) => await RefreshItems(x.Value.ToString()))"
+               Placeholder="Type an item name or tag here to filter results (e.g. 'sheet metal door' or 'blackout')" />
+
+    @if (Items == null)
+    {
+        <Loading Message="Finding market items..." />
+    }
+    else 
+    {
+        <MudGrid Spacing="2">
+            @foreach (var item in Items.Items)
+            {
+                <MudItem xs="12" sm="6" md="4" xl="3">
+                    <MudPaper Outlined="true">
+                        <SkinItemSummary Item="@item" />
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+</PageContainer>
+
+@code {
+
+    private PaginatedResult<MarketItemListDTO> Items { get; set; }
+
+    private string Filter { get; set; }
+    
+    [Parameter]
+    public Action<string> OnSearch { get; set; }
+
+    private Timer SearchTimer { get; set; }
+
+    private string SearchText { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        SearchTimer = new System.Timers.Timer(1000);
+        SearchTimer.AutoReset = false;
+        SearchTimer.Elapsed += (source, e) => OnSearch?.Invoke(SearchText);
+        await RefreshItems(Filter);
+    }
+    
+    private void OnSearchTextChanged(ChangeEventArgs args)
+    {
+        SearchText = (string)args.Value;
+        SearchTimer.Stop();
+        SearchTimer.Start();
+    }
+
+    private void OnItemSelectionChanged(MarketItemListDTO item)
+    {
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        ExternalNavigationManager.NavigateToNewTab(url);
+    }
+
+    private async Task RefreshItems(string filter = null)
+    {
+        try
+        {
+            if (!String.IsNullOrEmpty(filter))
+            {
+                Filter = filter;
+            }
+
+            Items = null;
+            StateHasChanged();
+            Items = await Http.GetFromJsonAsync<PaginatedResult<MarketItemListDTO>>(
+                $"api/market?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count=100"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing market items");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+}

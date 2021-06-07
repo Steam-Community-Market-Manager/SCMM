@@ -1,55 +1,89 @@
-﻿@namespace SCMM.Web.Client.Pages.Steam.Inventory
-@using SCMM.Web.Data.Models.Domain.InventoryItems;
-@using SCMM.Web.Data.Models; 
-@inherits ComponentBase
+﻿@using SCMM.Web.Data.Models.Domain.InventoryItems
+@inject ILogger<InventoryStatisticsPanel> Logger
+@inject NavigationManager Navigation
+@inject HttpClient Http
 @inject AppState State
 
-<Grid Container>
-    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-        @if(InventoryPerformanceValueHistoryChart == null)
+@if (InventoryPerformance == null)
+{
+    @if (LoadingError != null)
+    {
+        <Alert Exception="@LoadingError" />
+    }
+    else
+    {
+        <Loading Message="Loading inventory statistics..." />
+    }
+}
+else
+{
+    <MudGrid Spacing="2" Class="ma-4">
+        @if(InventoryPerformanceValueHistoryChart != null)
         {
-            <Loading Message="Loading value history..." />
+            <MudItem xs="12" xl="6">
+                <ChartJsLineChart @ref="InventoryPerformanceValueHistoryChartJs" Config="@InventoryPerformanceValueHistoryChart" />
+            </MudItem>
         }
-        else
+        @if(InventoryPerformanceValueChart != null)
         {
-            <ChartJsLineChart @ref="InventoryPerformanceValueHistoryChartJs" Config="@InventoryPerformanceValueHistoryChart" />
+            <MudItem xs="12" xl="6">
+                <ChartJsPieChart @ref="InventoryPerformanceValueChartJs" Config="@InventoryPerformanceValueChart" />
+            </MudItem>
         }
-    </Grid>
-    <Grid Item ExtraSmall="@GridSize.Twelve" ExtraLarge="@GridSize.Six">
-        @if(InventoryPerformanceValueChart == null)
-        {
-            <Loading Message="Loading value pie..." />
-        }
-        else
-        {
-            <ChartJsPieChart @ref="InventoryPerformanceValueChartJs" Config="@InventoryPerformanceValueChart" />
-        }
-    </Grid>
-</Grid>
+    </MudGrid>
+}
 
 @code {
-
+    
     [Parameter]
-    public ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
-
+    public string SteamId { get; set; }
+    
     [Parameter]
-    public ProfileInventoryTotalsDTO InventoryTotal { get; set; }
+    public ProfileInventoryTotalsDTO InventoryTotals { get; set; }
+
+    private ProfileInventoryPerformanceDTO InventoryPerformance { get; set; }
 
     private ChartJsPieChart InventoryPerformanceValueChartJs;
     private PieConfig InventoryPerformanceValueChart;
 
     private ChartJsLineChart InventoryPerformanceValueHistoryChartJs;
     private LineConfig InventoryPerformanceValueHistoryChart;
-
-    protected override void OnInitialized()
+    
+    private Exception LoadingError { get; set; }
+    
+    protected override async Task OnInitializedAsync()
     {
-        if (InventoryTotal != null)
+        await LoadInventoryPerformance();
+
+        if (InventoryTotals != null)
         {
             RedrawInventoryPerformanceValueChart();
-            if (InventoryPerformance != null)
-            {
-                RedrawInventoryPerformanceValueHistoryChart();
-            }
+        }
+        if (InventoryPerformance != null)
+        {
+            RedrawInventoryPerformanceValueHistoryChart();
+        }
+    }
+    
+    private async Task LoadInventoryPerformance()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory performance...");
+            InventoryPerformance = await Http.GetFromJsonAsync<ProfileInventoryPerformanceDTO>(
+                $"api/profile/{SteamId}/inventory/performance"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory performance for '{SteamId}'");
+            InventoryPerformance = null;
+            LoadingError = ex;
+            throw;
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
@@ -89,7 +123,7 @@
 
         var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
         var localScaleDivisor = Int64.Parse($"1{localScaleString}");
-        if (InventoryTotal != null)
+        if (InventoryTotals != null)
         {
             var inventoryValueDataSet = new PieDataset
             {
@@ -106,7 +140,7 @@
                 (DoubleWrapper)0,
                 (DoubleWrapper)0,
                 (DoubleWrapper)0,
-                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellValue / localScaleDivisor, State.Currency.Scale)
+                (DoubleWrapper)Math.Round((double)InventoryTotals.TotalResellValue / localScaleDivisor, State.Currency.Scale)
             });
 
             var inventoryValueBreakdownDataSet = new PieDataset
@@ -121,9 +155,9 @@
             };
 
             inventoryValueBreakdownDataSet.Data.AddRange(new double[] {
-                (DoubleWrapper)Math.Round((double)(InventoryTotal.TotalInvested ?? 0) / localScaleDivisor, State.Currency.Scale),
-                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellTax / localScaleDivisor, State.Currency.Scale),
-                (DoubleWrapper)Math.Round((double)InventoryTotal.TotalResellProfit / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)Math.Round((double)(InventoryTotals.TotalInvested ?? 0) / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)Math.Round((double)InventoryTotals.TotalResellTax / localScaleDivisor, State.Currency.Scale),
+                (DoubleWrapper)Math.Round((double)InventoryTotals.TotalResellProfit / localScaleDivisor, State.Currency.Scale),
                 (DoubleWrapper)0
             });
 
@@ -209,7 +243,7 @@
         var localScaleString = String.Empty.PadRight(State.Currency.Scale, '0');
         var localScaleDivisor = Int64.Parse($"1{localScaleString}");
 
-        if (InventoryPerformance?.ProfitHistoryGraph != null && InventoryTotal?.TotalResellProfit > 0)
+        if (InventoryPerformance?.ProfitHistoryGraph != null && InventoryTotals?.TotalResellProfit > 0)
         {
             var profitHistoryDataSet = new LineDataset<DoubleWrapper>
             {

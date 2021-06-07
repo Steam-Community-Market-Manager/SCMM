@@ -20,7 +20,7 @@
     }
     else
     {
-        <Error Exception="@StoreException" />
+        <Alert Exception="@StoreException" />
     }
 }
 else if (StoreList.Any())
@@ -43,7 +43,7 @@ else if (StoreList.Any())
                     }
                     else
                     {
-                        <Error Exception="@StoreException" />
+                        <Alert Exception="@StoreException" />
                     }
                 </MudItem>
             }
@@ -269,7 +269,7 @@ else if (StoreList.Any())
                                 }
                                 else
                                 {
-                                    <Error Title="Unavailable" SubTitle="No data yet" />
+                                    <Alert Title="Unavailable" SubTitle="No data yet" />
                                 }
                             </MudTabPanel>
                             <MudTabPanel Text="Sales">
@@ -279,7 +279,7 @@ else if (StoreList.Any())
                                 }
                                 else
                                 {
-                                    <Error Title="Unavailable" SubTitle="No data yet" />
+                                    <Alert Title="Unavailable" SubTitle="No data yet" />
                                 }
                             </MudTabPanel>
                             <MudTabPanel Text="Timeline">
@@ -289,21 +289,24 @@ else if (StoreList.Any())
                                 }
                                 else
                                 {
-                                    <Error Title="Unavailable" SubTitle="No data yet" />
+                                    <Alert Title="Unavailable" SubTitle="No data yet" />
                                 }
                             </MudTabPanel>
-                            <MudTabPanel Text="Marketplace Performance">
-                                @if (ItemMarketplacePerformanceChart != null)
-                                {
-                                    <div class="Chart-Radar">
-                                        <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
-                                    </div>
-                                }
-                                else
-                                {
-                                    <Error Title="Unavailable" SubTitle="No data yet" />
-                                }
-                            </MudTabPanel>
+                            @if (Store.Items.Any(x => x.HasMarketListing))
+                            {
+                                <MudTabPanel Text="Marketplace Performance">
+                                    @if (ItemMarketplacePerformanceChart != null)
+                                    {
+                                        <div class="Chart-Radar">
+                                            <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <Alert Title="Unavailable" SubTitle="No data yet" />
+                                    }
+                                </MudTabPanel>
+                            }
                         </MudTabs>
                     </MudPaper >
                 </MudItem>

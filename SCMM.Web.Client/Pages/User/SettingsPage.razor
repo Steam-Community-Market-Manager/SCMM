@@ -16,7 +16,7 @@
             <MudCard>
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="@MudBlazor.Typo.h6">
+                        <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
                             Your Profile
                         </MudText>
                     </CardHeaderContent>
@@ -95,17 +95,17 @@
             <MudCard>
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="@MudBlazor.Typo.h6">
+                        <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
                             Your Data
                         </MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText GutterBottom>
+                    <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
                         <span>This is where you can manage all data SCMM collects about you. You may download a copy, or delete it.</span><br/>
                         <span>Your data includes things like:</span>
                     </MudText>
-                    <MudText GutterBottom>
+                    <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
                         <ul class="fa-ul">
                             <li><span class="fa-li">-</span>Your Steam profile details</li>
                             <li><span class="fa-li">-</span>Your Steam inventory item details (including quantities and purchase prices)</li>
@@ -113,15 +113,15 @@
                             <li><span class="fa-li">-</span>All of the information shown on this page</li>
                         </ul>
                     </MudText>
-                    <MudText GutterBottom>
+                    <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
                         <span><strong>NOTE:</strong> If you are an accepted workshop creator and you choose to delete your data, we will still retain a copy of your basic Steam profile information (i.e. id, name, avatar). This is nessecary for completeness of the Steam item database.</span>
                     </MudText>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download">
+                    <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download" Disabled="true">
                         Download Your Data
                     </MudButton>
-                    <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash">
+                    <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash" Disabled="true">
                         Delete Your Data
                     </MudButton>
                 </MudCardActions>

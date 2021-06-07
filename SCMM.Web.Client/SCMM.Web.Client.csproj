@@ -20,7 +20,6 @@
     <PackageReference Include="Skclusive.Material.Alert" Version="5.2.0" />
     <PackageReference Include="Skclusive.Material.Component" Version="5.2.0" />
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="Blazored.LocalStorage" Version="4.1.1" />
     <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
 
   </ItemGroup>

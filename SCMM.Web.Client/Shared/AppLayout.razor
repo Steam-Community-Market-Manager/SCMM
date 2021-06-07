@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 <MudLayout>
-    <MudAppBar Fixed="true" Dense="false">
+    <MudAppBar Fixed="true" Dense="false" Elevation="4">
         <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" />
         <MudText Typo="Typo.h6" Class="ml-3">
             <AppLogo />
@@ -21,7 +21,7 @@
         <MudAppBarSpacer />
         <CurrencyChanger />
     </MudAppBar>
-    <MudDrawer @bind-Open="_isDrawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0">
+    <MudDrawer @bind-Open="IsDrawerOpen" Variant="MudBlazor.DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always" Breakpoint="MudBlazor.Breakpoint.Md" Elevation="2">
         <AppNavigation />
     </MudDrawer>
     <MudMainContent>
@@ -31,10 +31,10 @@
 
 @code
 {
-    bool _isDrawerOpen = true;
+    private bool IsDrawerOpen { get; set; } = true;
     
     void ToggleDrawer()
     {
-        _isDrawerOpen = !_isDrawerOpen;
+        IsDrawerOpen = !IsDrawerOpen;
     }
 }

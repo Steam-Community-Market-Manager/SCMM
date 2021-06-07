@@ -1,0 +1,26 @@
+﻿
+.Item-Summary {
+    height: 100%;
+}
+
+.Item-Summary:hover {
+    cursor: pointer;
+}
+
+.Item-Summary img {
+    width: 5rem;
+    height: 5rem;
+}
+
+.Hover-Zoom {
+    overflow: hidden;
+}
+
+.Hover-Zoom img {
+    transition: transform .5s ease;
+}
+
+.Hover-Zoom:hover img {
+    transform: scale(1.5);
+    filter: drop-shadow(2px 4px 8px #999999);
+}

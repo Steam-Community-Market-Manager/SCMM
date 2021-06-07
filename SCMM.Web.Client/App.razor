@@ -1,6 +1,5 @@
 @inject ILogger<App> Logger
 @inject ISnackbar Snackbar
-@inject ILocalStorageService LocalStorage
 @inject AppState AppState
 @inject HttpClient Http
 
@@ -15,8 +14,8 @@
         }
     </Found>
     <NotFound>
-        <LayoutView Layout="@typeof(AppErrorLayout)">
-            <Error Title="404" SubTitle="Not Found" />
+        <LayoutView Layout="@typeof(AppLayout)">
+            <Alert Title="Not Found (404)" SubTitle="Looks like that doesn't exist anymore, check that the URL is correct, then try again." />
         </LayoutView>
     </NotFound>
 </Router>
@@ -29,10 +28,10 @@
     {
         try
         {
-            if (!(await AppState.ReadFromStorageAsync(LocalStorage)))
+            if (!(await AppState.ReadFromStorageAsync()))
             {
                 await AppState.TryGuessLocalityAsync();
-                await AppState.WriteToStorageAsync(LocalStorage);
+                await AppState.WriteToStorageAsync();
             }
             await AppState.RefreshAsync(Http);
 

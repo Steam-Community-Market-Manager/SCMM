@@ -2,13 +2,13 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="MudBlazor.Typo.h6">
+        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
             <i class="fas fa-fw fa-lock"></i>  
             <span>Keep your Steam account safe</span>
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudText Typo="MudBlazor.Typo.body2">
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
             <ul class="fa-ul">
                 <li>
                     <MudText Color="MudBlazor.Color.Success" Class="fa-li fa-lg"><i class="fas fa-check-square"></i></MudText>
@@ -50,7 +50,7 @@
     </DialogContent>
     <DialogActions>
         <MudFocusTrap DefaultFocus="MudBlazor.DefaultFocus.LastChild">
-            <MudTooltip Text="This will send you to Steam to complete the login process">
+            <MudTooltip Text="Continue to Steam to complete the login process">
                 <MudLink @onclick="@SignIn" Class="SignIn-Button">
                     <img src="/images/sits_01.png" alt="Sign in through Steam" />
                 </MudLink>

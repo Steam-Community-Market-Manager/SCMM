@@ -15,7 +15,7 @@ else if (ItemLink != null)
         <div>@ItemLink.Title</div>
         @if(ItemLink.SubTitle != null)
         {
-            <div class="NavMenuItem-SubTitle">
+            <div class="NavMenuItem-SubTitle NoWrap">
                 <MudText Typo="MudBlazor.Typo.caption">
                     @if(!String.IsNullOrWhiteSpace(ItemLink.SubTitle))
                     {

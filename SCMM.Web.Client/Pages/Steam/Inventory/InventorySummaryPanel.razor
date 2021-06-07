@@ -1,0 +1,102 @@
+﻿@using SCMM.Web.Data.Models.Domain.InventoryItems
+@using SCMM.Web.Data.Models.UI.ProfileInventory
+@inject ILogger<InventorySummaryPanel> Logger
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+@inject AppState State
+
+@if (InventoryItems == null)
+{
+    @if (LoadingError != null)
+    {
+        <Alert Exception="@LoadingError" />
+    }
+    else
+    {
+        <Loading Message="Loading inventory items..." />
+    }
+}
+else if (!InventoryItems.Any())
+{
+    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="Inventory is empty, nothing to see here." />
+}
+else 
+{
+    <div class="d-flex flex-wrap flex-row align-start justify-start">
+        @foreach (var item in FilteredItems(InventoryItems))
+        {
+            @if (item.Quantity > 1)
+            {
+                <MudBadge Color="MudBlazor.Color.Primary" Content="@item.Quantity" Max="Int32.MaxValue" Overlap="true" Bordered="true" Class="mud-badge-overlap-extra">
+                    <InventoryItemSummary Item="@item" />
+                </MudBadge>
+            }
+            else
+            {
+                <InventoryItemSummary Item="@item" />
+            }
+        }
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string SteamId { get; set; }
+    
+    [Parameter]
+    public string Filter { get; set; }
+
+    public bool HideFree { get; set; }
+    
+    private IList<ProfileInventoryItemSummaryDTO> InventoryItems { get; set; }
+    
+    private Exception LoadingError { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInventoryItems();
+    }
+
+    private async Task LoadInventoryItems()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory summary...");
+            InventoryItems = await Http.GetFromJsonAsync<IList<ProfileInventoryItemSummaryDTO>>(
+                $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/items"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory summary for '{SteamId}'");
+            InventoryItems = null;
+            LoadingError = ex;
+            throw;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+    
+    private void ViewItem(InventoryInvestmentItemDTO item)
+    {
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        ExternalNavigationManager.NavigateTo(url);
+    }
+    
+    private IEnumerable<T> FilteredItems<T>(IEnumerable<T> items)
+        where T : IFilterableItem
+    {
+        if (String.IsNullOrEmpty(Filter))
+        {
+            return items;
+        }
+
+        return items.Where(x => 
+            x.Name.Contains(Filter, StringComparison.CurrentCultureIgnoreCase)
+        );
+    }
+    
+}

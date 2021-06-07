@@ -11,7 +11,7 @@
     public string Message { set; get; } = "Loading...";
     
     [Parameter]
-    public MudBlazor.Size Size { get; set; } = MudBlazor.Size.Large;
+    public MudBlazor.Size Size { get; set; } = MudBlazor.Size.Medium;
     
     [Parameter]
     public MudBlazor.Typo Typo { get; set; } = MudBlazor.Typo.h6;
@@ -19,6 +19,4 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object> AdditionalAttributes { get; set; }
     
-    protected override bool ShouldRender() => false;
-
 }

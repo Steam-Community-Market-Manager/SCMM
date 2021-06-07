@@ -19,3 +19,23 @@
 .mud-transparent-tabs .mud-tab-active:hover {
     background: none;
 }
+
+.mud-badge-overlap-extra .mud-badge-badge {
+    margin-left: -20px !important;
+    margin-right: -20px !important;
+    margin-top: -16px !important;
+    margin-bottom: -16px !important;
+}
+
+.mud-table-dense-extra * .mud-table-row .mud-table-cell {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+.mud-table-dense-extra .mud-input-control .mud-input {
+    margin-top: 0px !important;
+}
+
+.mud-skeleton-light {
+    background-color: rgba(255,255,255,.5);
+}

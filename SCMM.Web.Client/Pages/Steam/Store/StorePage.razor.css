@@ -19,81 +19,9 @@
     margin-top: -8px;
 }
 
-.Store-Item .Action-Root {
-    display: flex;
-    align-items: flex-end;
-}
-
 .Store-Item .Price {
     background: #222222;
     border-radius: var(--mud-default-borderradius);
     margin-right: -1rem;
     height: 100%;
 }
-
-/*
-.Store-Item .Card-Root {
-    display: flex;
-    flex-direction: column;
-}
-
-.Store-Item .CardContent-Root {
-    flex-grow: 1;
-}
-
-.Store-Item .CardContent-Root:last-child {
-    padding-bottom: 16px;
-}
-
-.Store-Item .CardContent-Root > .Grid-Root {
-    height: 100%;
-}
-
-.Store-Item .Paper-Root {
-    width: 100%;
-    height: 100%;
-}
-
-.Store-Item .Button-Root {
-    width: 100%;
-}
-
-.Store-Item .Button-Root i {
-    margin-right: 6px;
-}
-
-.Store-Item .Price-Root {
-    width: 100%;
-    text-align: center;
-    padding: 8px;
-}
-
-.Store-Item .Price-Root {
-    width: 100%;
-    text-align: center;
-    padding: 8px;
-}
-
-.Tabs-Container .TabScrollButton-Root {
-    display: none;
-    position: sticky;
-    z-index: 100000;
-}
-
-.Tabs-Container .TabScrollButton-Root:first {
-    left: 0px;
-}
-
-.Tabs-Container .TabScrollButton-Root:last {
-    right: 0px;
-}
-
-.Chart-Radar {
-    padding-bottom: 16px;
-}
-
-.Chart-Footnote {
-    padding: 0px 16px 16px;
-}
-
-*/

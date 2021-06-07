@@ -2,7 +2,6 @@
 @using SCMM.Web.Data.Models.Domain.Currencies;
 @inject ILogger<CurrencyChanger> Logger
 @inject ISnackbar Snackbar
-@inject ILocalStorageService LocalStorage
 @inject NavigationManager Navigation
 @inject AppState State
 @inject HttpClient Http
@@ -42,7 +41,7 @@
         State.ChangeCurrency(currency);
         StateHasChanged();
         
-        await State.WriteToStorageAsync(LocalStorage);
+        await State.WriteToStorageAsync();
         Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     }
 

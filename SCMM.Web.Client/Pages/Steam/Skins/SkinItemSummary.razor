@@ -1,0 +1,52 @@
+﻿@using SCMM.Web.Data.Models.Domain.MarketItems;
+@using SCMM.Steam.Data.Models.Enums;
+@using SCMM.Web.Data.Models; 
+@inject ILogger<SkinItemSummary> Logger
+@inject ExternalNavigationManager ExternalNavigationManager
+
+<div style="@GetBorderStyles(Item)" @onclick="@((_) => OnItemClicked(Item))" title="@Item.Name">
+    <MudGrid Spacing="2">
+        <MudItem xs="4">
+            <img src="@Item.IconUrl" />
+        </MudItem>
+        <MudItem xs="8">
+            <MudText Variant="MudBlazor.Variant.body1" style="@GetTitleStyles(Item)">
+                <strong>@Item.Name</strong>
+            </MudText>
+            <MudText Variant="MudBlazor.Variant.body2" Color="MudBlazor.Color.Default">
+                <span><strong>@Item.Supply</strong> for sale starting at <strong>@Item.Currency.ToPriceString(Item.BuyNowPrice)</strong>.</span>
+            </MudText>
+            <MudText Variant="MudBlazor.Variant.body2" Color="MudBlazor.Color.Default">
+                <span><strong>@Item.Demand</strong> for requests to buy at <strong>@Item.Currency.ToPriceString(Item.BuyAskingPrice)</strong> or lower.</span>
+            </MudText>
+            <MudText Variant="MudBlazor.Variant.body2" Color="MudBlazor.Color.Default">
+                <span><strong>@Item.Last24hrSales</strong> sold in the last 24 hours.</span>
+            </MudText>
+        </MudItem>
+    </MudGrid>
+</div>
+
+@code {
+
+    [Parameter]
+    public MarketItemListDTO Item { get; set; }
+    
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    private string GetBorderStyles(MarketItemListDTO item)
+    {
+        return $"border: 2px solid {item.ForegroundColour}";
+    }
+    
+    private string GetTitleStyles(MarketItemListDTO item)
+    {
+        return $"color: {item.ForegroundColour}";
+    }
+
+    private void OnItemClicked(MarketItemListDTO item)
+    {
+        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
+        ExternalNavigationManager.NavigateToNewTab(url);
+    }
+}

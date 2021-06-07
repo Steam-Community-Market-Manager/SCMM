@@ -1,5 +1,5 @@
-﻿using Blazored.LocalStorage;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using SCMM.Web.Client.Shared.Storage;
 using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.Domain.Languages;
 using SCMM.Web.Data.Models.Domain.Profiles;
@@ -19,10 +19,12 @@ namespace SCMM.Web.Client
         public const string DefaultCurrency = "USD";
 
         private readonly ILogger<AppState> Logger;
+        private readonly LocalStorageService Storage;
 
-        public AppState(ILogger<AppState> logger)
+        public AppState(ILogger<AppState> logger, LocalStorageService storage)
         {
             this.Logger = logger;
+            this.Storage = storage;
         }
 
         public event EventHandler Changed;
@@ -61,12 +63,12 @@ namespace SCMM.Web.Client
         }
 
         // TODO: Store this info as a cookie with a fixed-expiry
-        public async Task<bool> ReadFromStorageAsync(ILocalStorageService storage)
+        public async Task<bool> ReadFromStorageAsync()
         {
             try
             {
-                LanguageId = await storage.GetItemAsync<string>(nameof(LanguageId));
-                CurrencyId = await storage.GetItemAsync<string>(nameof(CurrencyId));
+                LanguageId = await Storage.GetAsync<string>(nameof(LanguageId));
+                CurrencyId = await Storage.GetAsync<string>(nameof(CurrencyId));
                 return (!String.IsNullOrEmpty(LanguageId) && !String.IsNullOrEmpty(CurrencyId));
             }
             catch (Exception ex)
@@ -77,25 +79,25 @@ namespace SCMM.Web.Client
         }
 
         // TODO: Store this info as a cookie with a fixed-expiry
-        public async Task WriteToStorageAsync(ILocalStorageService storage)
+        public async Task WriteToStorageAsync()
         {
             try
             {
                 if (!String.IsNullOrEmpty(LanguageId))
                 {
-                    await storage.SetItemAsync<string>(nameof(LanguageId), LanguageId);
+                    await Storage.SetAsync<string>(nameof(LanguageId), LanguageId);
                 }
                 else
                 {
-                    await storage.RemoveItemAsync(nameof(LanguageId));
+                    await Storage.RemoveAsync(nameof(LanguageId));
                 }
                 if (!String.IsNullOrEmpty(CurrencyId))
                 {
-                    await storage.SetItemAsync<string>(nameof(CurrencyId), CurrencyId);
+                    await Storage.SetAsync<string>(nameof(CurrencyId), CurrencyId);
                 }
                 else
                 {
-                    await storage.RemoveItemAsync(nameof(CurrencyId));
+                    await Storage.RemoveAsync(nameof(CurrencyId));
                 }
             }
             catch (Exception ex)

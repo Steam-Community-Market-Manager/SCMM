@@ -1,0 +1,200 @@
+﻿@page "/inventory/{SteamId}"
+@page "/inventory/{SteamId}/{PanelName}"
+@using SCMM.Web.Data.Models.Domain.InventoryItems
+@inject ILogger<InventoryPage> Logger
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject AppState State
+
+<PageContainer Title="@(Profile != null ? $"Inventory - {Profile.Name}" : "Inventory")">
+    <MudGrid Spacing="2">
+        <InventoryHeaderPanel Profile="@Profile" InventoryTotal="@InventoryTotals" SynchroniseInventory="@OnSynchroniseInventory" />
+        <MudItem xs="12">
+            @if (Profile == null || InventoryTotals == null)
+            {
+                @if (LoadingError != null)
+                {
+                    if (LoadingErrorStatusCode == HttpStatusCode.NotFound && Profile == null)
+                    {
+                        <Alert Title="Steam profile not found" SubTitle="Profile does not exist. Check your SteamID is correct, then try again." />
+                    }
+                    else if (LoadingErrorStatusCode == HttpStatusCode.NotFound && InventoryTotals == null)
+                    {
+                        <Alert Title="Steam inventory is private" SubTitle="Inventory is private. Check your profile privacy to ensure that your inventory is public, then try again." />
+                    }
+                    else
+                    {
+                        <Alert Exception="@LoadingError" />
+                    }
+                }
+                else
+                {
+                    <Loading Message="@LoadingMessage" />
+                }
+            }
+            else
+            {
+                <MudTabs Elevation="0" ActivePanelIndex="PanelIndex" ActivePanelIndexChanged="OnSelectedPanelChanged" Class="mud-transparent-tabs">
+                    <MudTabPanel Icon="fas fa-fw fa-th" Text="Inventory">
+                        <MudPaper Outlined="true">
+                            <InventorySummaryPanel SteamId="@SteamId" Filter="@Filter" />
+                        </MudPaper>
+                    </MudTabPanel>
+                    <MudTabPanel Icon="fas fa-fw fa-poll-h" Text="Investment Performance" Disabled="@(!ProfileIsMe)">
+                        <MudPaper Outlined="true">
+                            <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!ProfileIsMe)"/>
+                        </MudPaper>
+                    </MudTabPanel>
+                    <MudTabPanel Icon="fas fa-fw fa-chart-pie" Text="Statistics">
+                        <MudPaper Outlined="true">
+                            <InventoryStatisticsPanel SteamId="@SteamId" InventoryTotals="@InventoryTotals" />
+                        </MudPaper>
+                    </MudTabPanel>
+                </MudTabs>
+            }
+        </MudItem>
+    </MudGrid>
+</PageContainer>
+
+@code {
+
+    [Parameter]
+    public string SteamId { get; set; }
+
+    private ProfileSummaryDTO Profile { get; set; }
+    
+    private bool ProfileIsMe => (Profile != null && (State.Profile?.SteamId == Profile?.SteamId || State.Profile?.SteamId == Profile?.ProfileId));
+
+    private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
+
+    private string LoadingMessage { get; set; }
+
+    private Exception LoadingError { get; set; }
+    
+    private HttpStatusCode? LoadingErrorStatusCode => (LoadingError as HttpRequestException)?.StatusCode;
+
+    private string Filter { get; set; }
+
+    [Parameter]
+    public string PanelName { get; set; }
+
+    private int PanelIndex { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        switch (PanelName)
+        {
+            case "summary": PanelIndex = 0; break;
+            case "investment": PanelIndex = 1; break;
+            case "statistics": PanelIndex = 2; break;
+        }
+        
+        await LoadProfileAndInventory();
+    }
+
+    private void OnSelectedPanelChanged(int index)
+    {
+        PanelIndex = index;
+        switch (index)
+        {
+            case 0: Navigation.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/summary"); break;
+            case 1: Navigation.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/investment"); break;
+            case 2: Navigation.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/statistics"); break;
+        }
+    }
+    
+    private async Task OnSynchroniseInventory()
+    {
+        Profile = null;
+        StateHasChanged();
+        await LoadProfileAndInventory(force: true);
+        StateHasChanged();
+    }
+    
+    private async Task LoadProfileAndInventory(bool force = false)
+    {
+        try
+        {
+            Logger.LogInformation($"Loading inventory for '{SteamId}'...");
+            Profile = null;
+            InventoryTotals = null;
+
+            LoadingError = null;
+            LoadingMessage = "Finding Steam profile...";
+            StateHasChanged();
+            await LoadProfile();
+
+            LoadingMessage = "Synchronising inventory with Steam...";
+            StateHasChanged();
+            await SynchroniseInventory(force);
+
+            LoadingMessage = "Calculating inventory value...";
+            StateHasChanged();
+            await LoadInventoryTotals();
+            
+            LoadingMessage = null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading profile inventory '{SteamId}'");
+            LoadingMessage = null;
+            LoadingError = ex;
+            throw;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadProfile()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory profile...");
+            Profile = await Http.GetFromJsonAsync<ProfileSummaryDTO>(
+                $"api/profile/{Uri.EscapeDataString(SteamId)}/summary"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory profile for '{SteamId}'");
+            Profile = null;
+            throw;
+        }
+    }
+    
+    private async Task SynchroniseInventory(bool force = false)
+    {
+        try
+        {
+            Logger.LogInformation("Synchronising inventory items...");
+            await Http.PostAsync(
+                $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/sync?force={force}", null
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error synchronising inventory items for '{SteamId}'");
+            throw;
+        }
+    }
+
+    private async Task LoadInventoryTotals()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory totals...");
+            InventoryTotals = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
+                $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/total"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory totals for '{SteamId}'");
+            InventoryTotals = null;
+            throw;
+        }
+    }
+
+}

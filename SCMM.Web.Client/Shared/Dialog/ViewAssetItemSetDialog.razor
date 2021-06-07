@@ -19,23 +19,23 @@
             <MudGrid Spacing="2">
                 @foreach (var item in Items)
                 {
-                    <MudItem xs="2">
-                        <MudCard>
-                            <MudCardMedia Image="@item.IconUrl" Height="144" />
+                    <MudItem>
+                        <MudCard Elevation="0">
+                            <MudCardMedia Image="@item.IconUrl" Height="192" />
                             <MudCardContent>
                                 <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
-                                @if (item.StorePrice != null)
-                                {
-                                    <MudText Typo="MudBlazor.Typo.body2">
-                                        <RustIcon />
-                                        <span>@item.Currency.ToPriceString(item.StorePrice.Value)</span>
-                                    </MudText>
-                                }
                                 @if (item.MarketPrice != null)
                                 {
                                     <MudText Typo="MudBlazor.Typo.body2">
                                         <i class="fab fa-fw fa-steam"></i>
                                         <span>@item.Currency.ToPriceString(item.MarketPrice.Value)</span>
+                                    </MudText>
+                                }
+                                else if (item.StorePrice != null)
+                                {
+                                    <MudText Typo="MudBlazor.Typo.body2">
+                                        <i class="fas fa-fw fa-shopping-cart"></i>
+                                        <span>@item.Currency.ToPriceString(item.StorePrice.Value)</span>
                                     </MudText>
                                 }
                             </MudCardContent>
