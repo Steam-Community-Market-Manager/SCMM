@@ -154,14 +154,14 @@ namespace SCMM.Discord.Bot.Server.Modules
                 result.WorkshopFileId = workshopFileId;
                 if (publishedFile?.Creator != null)
                 {
-                    var profileResponse = await _commandProcessor.ProcessWithResultAsync(
-                        new FetchAndCreateSteamProfileRequest()
+                    var importedProfile = await _commandProcessor.ProcessWithResultAsync(
+                        new ImportSteamProfileRequest()
                         {
                             ProfileId = publishedFile.Creator.ToString()
                         }
                     );
 
-                    result.Creator = profileResponse?.Profile;
+                    result.Creator = importedProfile?.Profile;
                 }
                 result.Name = assetDescription.MarketName;
                 result.NameHash = assetDescription.MarketHashName;

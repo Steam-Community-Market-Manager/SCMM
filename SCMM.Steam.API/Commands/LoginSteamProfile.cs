@@ -47,13 +47,13 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Fetch the profile from steam
-            var fetchedProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = steamId
             });
 
             // If this is an already existing profile
-            var profile = fetchedProfile?.Profile;
+            var profile = importedProfile?.Profile;
             if (profile != null && !profile.IsTransient)
             {
                 // Load more extended profile information from our database

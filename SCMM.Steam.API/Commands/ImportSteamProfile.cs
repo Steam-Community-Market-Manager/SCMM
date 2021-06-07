@@ -18,12 +18,12 @@ using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
 {
-    public class FetchAndCreateSteamProfileRequest : ICommand<FetchAndCreateSteamProfileResponse>
+    public class ImportSteamProfileRequest : ICommand<ImportSteamProfileResponse>
     {
         public string ProfileId { get; set; }
     }
 
-    public class FetchAndCreateSteamProfileResponse
+    public class ImportSteamProfileResponse
     {
         /// <remarks>
         /// If profile does not exist, this will be null
@@ -31,15 +31,15 @@ namespace SCMM.Steam.API.Commands
         public SteamProfile Profile { get; set; }
     }
 
-    public class FetchAndCreateSteamProfile : ICommandHandler<FetchAndCreateSteamProfileRequest, FetchAndCreateSteamProfileResponse>
+    public class ImportSteamProfile : ICommandHandler<ImportSteamProfileRequest, ImportSteamProfileResponse>
     {
-        private readonly ILogger<FetchAndCreateSteamProfile> _logger;
+        private readonly ILogger<ImportSteamProfile> _logger;
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly IQueryProcessor _queryProcessor;
 
-        public FetchAndCreateSteamProfile(ILogger<FetchAndCreateSteamProfile> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
+        public ImportSteamProfile(ILogger<ImportSteamProfile> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
@@ -48,7 +48,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<FetchAndCreateSteamProfileResponse> HandleAsync(FetchAndCreateSteamProfileRequest request)
+        public async Task<ImportSteamProfileResponse> HandleAsync(ImportSteamProfileRequest request)
         {
             // Resolve the id
             var profile = (SteamProfile)null;
@@ -154,7 +154,7 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            return new FetchAndCreateSteamProfileResponse
+            return new ImportSteamProfileResponse
             {
                 Profile = profile
             };

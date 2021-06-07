@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
 {
-    public class FetchAndCreateImageDataRequest : ICommand<FetchAndCreateImageDataResponse>
+    public class ImportImageDataRequest : ICommand<ImportImageDataResponse>
     {
         public string Url { get; set; }
 
@@ -22,23 +22,23 @@ namespace SCMM.Steam.API.Commands
         public bool UseExisting { get; set; } = true;
     }
 
-    public class FetchAndCreateImageDataResponse
+    public class ImportImageDataResponse
     {
         public ImageData Image { get; set; }
     }
 
-    public class FetchAndCreateImageData : ICommandHandler<FetchAndCreateImageDataRequest, FetchAndCreateImageDataResponse>
+    public class ImportImageData : ICommandHandler<ImportImageDataRequest, ImportImageDataResponse>
     {
         private readonly SteamDbContext _db;
         private readonly SteamCommunityWebClient _communityClient;
 
-        public FetchAndCreateImageData(SteamDbContext db, SteamCommunityWebClient communityClient)
+        public ImportImageData(SteamDbContext db, SteamCommunityWebClient communityClient)
         {
             _db = db;
             _communityClient = communityClient;
         }
 
-        public async Task<FetchAndCreateImageDataResponse> HandleAsync(FetchAndCreateImageDataRequest request)
+        public async Task<ImportImageDataResponse> HandleAsync(ImportImageDataRequest request)
         {
             // If we have already fetched this image source before, return the existing copy
             if (request.UseExisting)
@@ -46,7 +46,7 @@ namespace SCMM.Steam.API.Commands
                 var existingImageData = await _db.ImageData.FirstOrDefaultAsync(x => x.Source == request.Url);
                 if (existingImageData != null)
                 {
-                    return new FetchAndCreateImageDataResponse
+                    return new ImportImageDataResponse
                     {
                         Image = existingImageData
                     };
@@ -71,7 +71,7 @@ namespace SCMM.Steam.API.Commands
             // Save the new image data to the database
             _db.ImageData.Add(imageData);
 
-            return new FetchAndCreateImageDataResponse
+            return new ImportImageDataResponse
             {
                 Image = imageData
             };

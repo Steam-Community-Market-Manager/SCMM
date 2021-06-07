@@ -41,12 +41,12 @@ namespace SCMM.Discord.Bot.Server.Modules
             var discordId = $"{user.Username}#{user.Discriminator}";
            
             // Load the profile
-            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = steamId
             });
 
-            var profile = fetchAndCreateProfile?.Profile;
+            var profile = importedProfile?.Profile;
             if (profile == null)
             {
                 return CommandResult.Fail(

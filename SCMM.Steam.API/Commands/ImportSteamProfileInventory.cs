@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
 {
-    public class FetchSteamProfileInventoryRequest : ICommand<FetchSteamProfileInventoryResponse>
+    public class ImportSteamProfileInventoryRequest : ICommand<ImportSteamProfileInventoryResponse>
     {
         public string ProfileId { get; set; }
 
@@ -21,12 +21,12 @@ namespace SCMM.Steam.API.Commands
         public bool Force { get; set; } = false;
     }
 
-    public class FetchSteamProfileInventoryResponse
+    public class ImportSteamProfileInventoryResponse
     {
         public SteamProfile Profile { get; set; }
     }
 
-    public class FetchSteamProfileInventory : ICommandHandler<FetchSteamProfileInventoryRequest, FetchSteamProfileInventoryResponse>
+    public class ImportSteamProfileInventory : ICommandHandler<ImportSteamProfileInventoryRequest, ImportSteamProfileInventoryResponse>
     {
         private readonly SteamDbContext _db;
         private readonly SteamCommunityWebClient _communityClient;
@@ -34,7 +34,7 @@ namespace SCMM.Steam.API.Commands
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public FetchSteamProfileInventory(SteamDbContext db, SteamCommunityWebClient communityClient, SteamService steamService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamProfileInventory(SteamDbContext db, SteamCommunityWebClient communityClient, SteamService steamService, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _db = db;
             _communityClient = communityClient;
@@ -43,7 +43,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<FetchSteamProfileInventoryResponse> HandleAsync(FetchSteamProfileInventoryRequest request)
+        public async Task<ImportSteamProfileInventoryResponse> HandleAsync(ImportSteamProfileInventoryRequest request)
         {
             // Resolve the id
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
@@ -54,7 +54,7 @@ namespace SCMM.Steam.API.Commands
             // If the profile id does not yet exist, fetch it now
             if (!resolvedId.Exists)
             {
-                _ = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
                 {
                     ProfileId = request.ProfileId
                 });
@@ -78,7 +78,7 @@ namespace SCMM.Steam.API.Commands
             var profile = profileInventory?.Profile;
             if (profile != null && profileInventory.TotalItems > 0 && DateTime.Now.Subtract(TimeSpan.FromHours(1)) < profileInventory.LastUpdatedOn && request.Force == false)
             {
-                return new FetchSteamProfileInventoryResponse()
+                return new ImportSteamProfileInventoryResponse()
                 {
                     Profile = profile
                 };
@@ -196,7 +196,7 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            return new FetchSteamProfileInventoryResponse()
+            return new ImportSteamProfileInventoryResponse()
             {
                 Profile = profile
             };

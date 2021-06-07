@@ -104,12 +104,12 @@ namespace SCMM.Discord.Bot.Server.Modules
             
             // Load the profile
             await message.LoadingAsync("🔍 Finding Steam profile...");
-            var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = steamId
             });
 
-            var profile = fetchAndCreateProfile?.Profile;
+            var profile = importedProfile?.Profile;
             if (profile == null)
             {
                 await message.DeleteAsync();
@@ -147,11 +147,11 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             // Reload the profiles inventory
             await message.LoadingAsync("🔄 Fetching inventory details from Steam...");
-            var profileInventory = await _commandProcessor.ProcessWithResultAsync(new FetchSteamProfileInventoryRequest()
+            var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString()
             });
-            if (profileInventory?.Profile?.Privacy != Steam.Data.Models.Enums.SteamVisibilityType.Public)
+            if (importedInventory?.Profile?.Privacy != Steam.Data.Models.Enums.SteamVisibilityType.Public)
             {
                 await message.DeleteAsync();
                 return CommandResult.Fail(

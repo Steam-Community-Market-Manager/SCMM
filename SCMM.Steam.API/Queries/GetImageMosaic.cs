@@ -422,16 +422,16 @@ namespace SCMM.Steam.API.Queries
             // Fetch all remaining images directly from their source
             foreach (var imageSource in missingImages)
             {
-                var fetchedImage = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
                 {
                     Url = imageSource.ImageUrl,
                     UseExisting = false, // we've already checked, it doesn't exist
                     ExpiresOn = DateTimeOffset.Now.AddDays(7) // cache for 7 days, then delete
                 });
-                if (fetchedImage?.Image?.Data != null)
+                if (importedImage?.Image?.Data != null)
                 {
-                    Cache.Set(imageSource.ImageUrl, fetchedImage.Image.Data);
-                    imageSource.ImageData = fetchedImage.Image.Data;
+                    Cache.Set(imageSource.ImageUrl, importedImage.Image.Data);
+                    imageSource.ImageData = importedImage.Image.Data;
                 }
             }
         }

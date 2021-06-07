@@ -105,14 +105,14 @@ namespace SCMM.Steam.API
             }
             if (assetDescription.IconId == null && !String.IsNullOrEmpty(assetDescription.IconUrl))
             {
-                var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
                 {
                     Url = assetDescription.IconUrl,
                     UseExisting = true
                 });
-                if (fetchAndCreateImageData?.Image != null)
+                if (importedImage?.Image != null)
                 {
-                    assetDescription.Icon = fetchAndCreateImageData.Image;
+                    assetDescription.Icon = importedImage.Image;
                 }
             }
             if (String.IsNullOrEmpty(assetDescription.IconLargeUrl) && !String.IsNullOrEmpty(assetClass.IconUrlLarge?.ToString()))
@@ -121,14 +121,14 @@ namespace SCMM.Steam.API
             }
             if (assetDescription.IconLargeId == null && !String.IsNullOrEmpty(assetDescription.IconLargeUrl))
             {
-                var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
                 {
                     Url = assetDescription.IconLargeUrl,
                     UseExisting = true
                 });
-                if (fetchAndCreateImageData?.Image != null)
+                if (importedImage?.Image != null)
                 {
-                    assetDescription.IconLarge = fetchAndCreateImageData.Image;
+                    assetDescription.IconLarge = importedImage.Image;
                 }
             }
 
@@ -184,14 +184,14 @@ namespace SCMM.Steam.API
                 }
                 if (assetDescription.ImageId == null && !String.IsNullOrEmpty(assetDescription.ImageUrl))
                 {
-                    var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
                     {
                         Url = assetDescription.ImageUrl,
                         UseExisting = true
                     });
-                    if (fetchAndCreateImageData?.Image != null)
+                    if (importedImage?.Image != null)
                     {
-                        assetDescription.Image = fetchAndCreateImageData.Image;
+                        assetDescription.Image = importedImage.Image;
                     }
                 }
 
@@ -200,16 +200,16 @@ namespace SCMM.Steam.API
                 {
                     try
                     {
-                        var fetchAndCreateProfile = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateSteamProfileRequest()
+                        var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
                         {
                             ProfileId = publishedFile.Creator.ToString()
                         });
-                        if (fetchAndCreateProfile?.Profile != null)
+                        if (importedProfile?.Profile != null)
                         {
-                            assetDescription.Creator = fetchAndCreateProfile.Profile;
+                            assetDescription.Creator = importedProfile.Profile;
                             if (!assetDescription.Tags.ContainsKey(Constants.SteamAssetTagCreator))
                             {
-                                assetDescription.Tags[Constants.SteamAssetTagCreator] = fetchAndCreateProfile.Profile.Name;
+                                assetDescription.Tags[Constants.SteamAssetTagCreator] = importedProfile.Profile.Name;
                             }
                         }
                     }
@@ -373,26 +373,26 @@ namespace SCMM.Steam.API
 
             if (dbAssetDescription.IconId == null && !String.IsNullOrEmpty(dbAssetDescription.IconUrl))
             {
-                var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
                 {
                     Url = dbAssetDescription.IconUrl,
                     UseExisting = true
                 });
-                if (fetchAndCreateImageData?.Image != null)
+                if (importedImage?.Image != null)
                 {
-                    dbAssetDescription.Icon = fetchAndCreateImageData.Image;
+                    dbAssetDescription.Icon = importedImage.Image;
                 }
             }
             if (dbAssetDescription.IconLargeId == null && !String.IsNullOrEmpty(dbAssetDescription.IconLargeUrl))
             {
-                var fetchAndCreateImageData = await _commandProcessor.ProcessWithResultAsync(new FetchAndCreateImageDataRequest()
+                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
                 {
                     Url = dbAssetDescription.IconLargeUrl,
                     UseExisting = true
                 });
-                if (fetchAndCreateImageData?.Image != null)
+                if (importedImage?.Image != null)
                 {
-                    dbAssetDescription.IconLarge = fetchAndCreateImageData.Image;
+                    dbAssetDescription.IconLarge = importedImage.Image;
                 }
             }
 
