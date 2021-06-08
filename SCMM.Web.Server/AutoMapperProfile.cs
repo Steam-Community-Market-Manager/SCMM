@@ -49,7 +49,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Currency, o => o.MapFromCurrency());
 
             CreateMap<SteamAssetDescription, ProfileInventoryItemSummaryDTO>()
-                .ForMember(x => x.SteamId, o => o.MapFrom(p => p.AssetId))
+                .ForMember(x => x.SteamId, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.Flags, o => o.Ignore());
@@ -69,7 +69,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.ResellProfit, o => o.MapFromUsingCurrencyExchange(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.ResellProfit : null, p => p.Description.MarketItem.Currency));
 
             CreateMap<SteamProfileMarketItem, ProfileInventoryItemWishDTO>()
-                .ForMember(x => x.SteamId, o => o.MapFrom(p => p.Description.AssetId.ToString()))
+                .ForMember(x => x.SteamId, o => o.MapFrom(p => p.Description.ClassId.ToString()))
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
@@ -107,7 +107,7 @@ namespace SCMM.Web.Server
 
             CreateMap<SteamMarketItem, MarketItemListDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
-                .ForMember(x => x.SteamDescriptionId, o => o.MapFrom(p => p.Description.AssetId.ToString()))
+                .ForMember(x => x.SteamDescriptionId, o => o.MapFrom(p => p.Description.ClassId.ToString()))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
@@ -156,7 +156,7 @@ namespace SCMM.Web.Server
             // ASSETS
             //
             CreateMap<SteamAssetDescription, AssetSetListItemDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.AssetId))
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.AppName, o => o.MapFrom(p => p.App.Name))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
@@ -181,7 +181,6 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Item.SteamId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.Item.App.SteamId))
                 .ForMember(x => x.AppName, o => o.MapFrom(p => p.Item.App.Name))
-                .ForMember(x => x.AssetId, o => o.MapFrom(p => p.Item.Description.AssetId))
                 .ForMember(x => x.WorkshopFileId, o => o.MapFrom(p => p.Item.Description.WorkshopFileId))
                 .ForMember(x => x.MarketListingId, o => o.MapFrom(p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.SteamId : null))
                 .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Item.Description.Creator != null ? p.Item.Description.Creator.Name : p.Item.App.Name))
@@ -207,7 +206,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.IsBreakable, o => o.MapFrom(p => p.Item.Description.IsBreakable))
                 .ForMember(x => x.BreaksIntoComponents, o => o.MapFrom(p => p.Item.Description.BreaksIntoComponents.ToDictionary(x => x.Key, x => x.Value)))
                 .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Item.Description.ItemType))
-                .ForMember(x => x.ItemSet, o => o.MapFrom(p => p.Item.Description.Tags.ContainsKey(SCMM.Steam.Data.Models.Constants.SteamAssetTagSet) ? p.Item.Description.Tags[SCMM.Steam.Data.Models.Constants.SteamAssetTagSet] : null));
+                .ForMember(x => x.ItemCollection, o => o.MapFrom(p => p.Item.Description.ItemCollection));
         }
     }
 }

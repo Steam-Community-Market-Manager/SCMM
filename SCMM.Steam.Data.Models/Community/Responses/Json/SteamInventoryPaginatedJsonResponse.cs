@@ -16,6 +16,6 @@ namespace SCMM.Steam.Data.Models.Community.Responses.Json
         public List<SteamInventoryAsset> Assets { get; set; }
 
         [JsonProperty("descriptions")]
-        public List<SteamAssetDescription> Descriptions { get; set; }
+        public List<SteamAssetClass> Descriptions { get; set; }
     }
 }

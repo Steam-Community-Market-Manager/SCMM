@@ -2,7 +2,7 @@
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
-    public class SteamAssetTag
+    public class SteamAppFilterTag
     {
         [JsonProperty("localized_name")]
         public string Localized_Name { get; set; }

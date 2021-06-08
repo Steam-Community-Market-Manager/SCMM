@@ -436,7 +436,7 @@ namespace SCMM.Web.Server.API.Controllers
             var profileInventoryItemsSummaries = new List<ProfileInventoryItemSummaryDTO>();
             foreach (var item in profileInventoryItems)
             {
-                if (!profileInventoryItemsSummaries.Any(x => x.SteamId == item.Description.AssetId.ToString()))
+                if (!profileInventoryItemsSummaries.Any(x => x.SteamId == item.Description.ClassId.ToString()))
                 {
                     var itemSummary = _mapper.Map<SteamAssetDescription, ProfileInventoryItemSummaryDTO>(
                         item.Description, this
@@ -456,12 +456,12 @@ namespace SCMM.Web.Server.API.Controllers
 
                     // Calculate the item's quantity
                     itemSummary.Quantity = profileInventoryItems
-                        .Where(x => x.Description.AssetId == item.Description.AssetId)
+                        .Where(x => x.Description.ClassId == item.Description.ClassId)
                         .Sum(x => x.Quantity);
 
                     // Calculate the item's flags
                     itemSummary.Flags = profileInventoryItems
-                        .Where(x => x.Description.AssetId == item.Description.AssetId)
+                        .Where(x => x.Description.ClassId == item.Description.ClassId)
                         .Select(x => x.Flags)
                         .Aggregate((x, y) => x | y);
 
@@ -821,7 +821,7 @@ namespace SCMM.Web.Server.API.Controllers
             var profileId = User.Id();
             var inventoryItems = await _db.SteamProfileInventoryItems
                 .Where(x => x.ProfileId == profileId)
-                .Where(x => x.SteamId == itemOrAssetId || x.Description.AssetId.ToString() == itemOrAssetId)
+                .Where(x => x.SteamId == itemOrAssetId || x.Description.ClassId.ToString() == itemOrAssetId)
                 .ToListAsync();
             if (!(inventoryItems?.Any() == true))
             {
@@ -888,13 +888,13 @@ namespace SCMM.Web.Server.API.Controllers
             var profileId = User.Id();
             var marketItems = await _db.SteamProfileMarketItems
                 .Where(x => x.ProfileId == profileId)
-                .Where(x => x.SteamId == itemOrAssetId || x.Description.AssetId.ToString() == itemOrAssetId)
+                .Where(x => x.SteamId == itemOrAssetId || x.Description.ClassId.ToString() == itemOrAssetId)
                 .ToListAsync();
 
             if (!(marketItems?.Any() == true))
             {
                 var assetDescription = await _db.SteamAssetDescriptions
-                    .Where(x => x.AssetId.ToString() == itemOrAssetId)
+                    .Where(x => x.ClassId.ToString() == itemOrAssetId)
                     .FirstOrDefaultAsync();
                 if (assetDescription == null)
                 {

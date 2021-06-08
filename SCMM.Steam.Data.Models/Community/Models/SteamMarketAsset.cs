@@ -2,7 +2,7 @@
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
-    public class SteamMarketAsset : SteamAssetDescription
+    public class SteamMarketAsset : SteamAssetClass
     {
         [JsonProperty("id")]
         public ulong Id { get; set; }

@@ -12,8 +12,6 @@ namespace SCMM.Web.Data.Models.Domain.StoreItems
 
         public string AppName { get; set; }
 
-        public ulong AssetId { get; set; }
-
         public ulong? WorkshopFileId { get; set; }
 
         public bool HasWorkshopFile => (WorkshopFileId != null);
@@ -25,6 +23,10 @@ namespace SCMM.Web.Data.Models.Domain.StoreItems
         public string AuthorName { get; set; }
 
         public string AuthorAvatarUrl { get; set; }
+
+        public string ItemType { get; set; }
+
+        public string ItemCollection { get; set; }
 
         public string Name { get; set; }
 
@@ -69,9 +71,5 @@ namespace SCMM.Web.Data.Models.Domain.StoreItems
         public bool IsBreakable { get; set; }
 
         public IDictionary<string, uint> BreaksIntoComponents { get; set; }
-
-        public string ItemType { get; set; }
-
-        public string ItemSet { get; set; }
     }
 }

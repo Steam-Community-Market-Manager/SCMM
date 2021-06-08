@@ -24,7 +24,7 @@ namespace SCMM.Steam.Data.Models.Community.Responses.Json
         /// n2: AssetId
         /// </summary>
         [JsonProperty("assets")]
-        public Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetDescription>>> Assets { get; set; }
+        public Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>> Assets { get; set; }
 
         [JsonProperty("listings")]
         public List<SteamMarketListing> Listings { get; set; }

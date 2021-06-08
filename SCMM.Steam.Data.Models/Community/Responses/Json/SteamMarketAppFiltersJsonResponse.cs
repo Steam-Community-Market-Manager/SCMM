@@ -10,6 +10,6 @@ namespace SCMM.Steam.Data.Models.Community.Responses.Json
         public bool Success { get; set; }
 
         [JsonProperty("facets")]
-        public Dictionary<string, SteamAssetFilter> Facets { get; set; }
+        public Dictionary<string, SteamAppFilter> Facets { get; set; }
     }
 }

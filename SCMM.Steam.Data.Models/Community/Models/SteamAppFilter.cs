@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
-    public class SteamAssetFilter
+    public class SteamAppFilter
     {
         [JsonProperty("appid")]
         public ulong AppId { get; set; }
@@ -15,6 +15,6 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public string Localized_Name { get; set; }
 
         [JsonProperty("tags")]
-        public Dictionary<string, SteamAssetTag> Tags { get; set; }
+        public Dictionary<string, SteamAppFilterTag> Tags { get; set; }
     }
 }

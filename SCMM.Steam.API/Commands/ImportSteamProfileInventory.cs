@@ -140,7 +140,17 @@ namespace SCMM.Steam.API.Commands
                         .ToList();
                     foreach (var asset in missingAssets)
                     {
-                        var assetDescription = await _steamService.AddOrUpdateAssetDescription(app, language.SteamId, asset.ClassId);
+                        var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => x.ClassId == asset.ClassId);
+                        if (assetDescription == null)
+                        {
+                            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                            {
+                                AppId = ulong.Parse(app.SteamId),
+                                AssetClassId = asset.ClassId,
+                                AssetClass = inventory.Descriptions.FirstOrDefault(x => x.ClassId == asset.ClassId)
+                            });
+                            assetDescription = importAssetDescription.AssetDescription;
+                        }
                         if (assetDescription == null)
                         {
                             continue;

@@ -92,7 +92,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Where(x => x.ProfileId == profileId)
                     .Select(x => new
                     {
-                        SteamAssetId = x.Description.AssetId,
+                        SteamAssetId = x.Description.ClassId,
                         Flags = x.Flags
                     })
                     .ToListAsync();
@@ -257,7 +257,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.Last24hrSales)
                 .Select(x => new DashboardAssetSalesDTO()
                 {
-                    SteamId = x.Description.AssetId.ToString(),
+                    SteamId = x.Description.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -295,7 +295,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetAgeDTO()
                 {
-                    SteamId = x.Description.AssetId.ToString(),
+                    SteamId = x.Description.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -337,7 +337,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetMarketValueDTO()
                 {
-                    SteamId = x.Description.AssetId.ToString(),
+                    SteamId = x.Description.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -380,7 +380,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetMarketValueDTO()
                 {
-                    SteamId = x.Description.AssetId.ToString(),
+                    SteamId = x.Description.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -426,7 +426,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetBuyOrderValueDTO()
                 {
-                    SteamId = x.Description.AssetId.ToString(),
+                    SteamId = x.Description.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -467,7 +467,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetMarketValueDTO()
                 {
-                    SteamId = x.Description.AssetId.ToString(),
+                    SteamId = x.Description.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -500,7 +500,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.TotalSubscriptions)
                 .Select(x => new DashboardAssetSubscriptionsDTO()
                 {
-                    SteamId = x.AssetId.ToString(),
+                    SteamId = x.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
                     Name = x.Name,
                     BackgroundColour = x.BackgroundColour,
@@ -536,7 +536,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.Supply)
                 .Select(x => new DashboardAssetSupplyDemandDTO()
                 {
-                    SteamId = x.Description.AssetId.ToString(),
+                    SteamId = x.Description.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,

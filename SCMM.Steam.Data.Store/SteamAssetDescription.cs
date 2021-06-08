@@ -22,8 +22,11 @@ namespace SCMM.Steam.Data.Store
         public SteamApp App { get; set; }
 
         [Required]
-        public ulong AssetId { get; set; }
+        public ulong ClassId { get; set; }
 
+        /// <summary>
+        /// e.g. Publisher Item, Workshop Item
+        /// </summary>
         public SteamAssetDescriptionType AssetType { get; set; }
 
         public ulong? WorkshopFileId { get; set; }
@@ -32,7 +35,15 @@ namespace SCMM.Steam.Data.Store
 
         public SteamProfile Creator { get; set; }
 
+        /// <summary>
+        /// e.g. Large Wood Box, Sheet Metal Door, etc
+        /// </summary>
         public string ItemType { get; set; }
+
+        /// <summary>
+        /// e.g. Blackout, Whiteout, etc
+        /// </summary>
+        public string ItemCollection { get; set; }
 
         public string Name { get; set; }
 
@@ -100,7 +111,10 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? TimeAccepted { get; set; }
 
-        public DateTimeOffset? TimeChecked { get; set; }
+        /// <summary>
+        /// Last time this asset description was updated from Steam
+        /// </summary>
+        public DateTimeOffset? TimeRefreshed { get; set; }
 
         public SteamStoreItem StoreItem { get; set; }
 

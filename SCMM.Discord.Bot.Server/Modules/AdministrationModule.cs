@@ -30,46 +30,44 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("asset import")]
-        public async Task<RuntimeResult> AssetImportAsync(params ulong[] assetIds)
+        public async Task<RuntimeResult> AssetImportAsync(params ulong[] assetClassIds)
         {
-            foreach (var assetId in assetIds)
+            foreach (var assetClassId in assetClassIds)
             {
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = 252490, // Rust
-                    AssetId = assetId
+                    AssetClassId = assetClassId
                 });
-
-                await _db.SaveChangesAsync();
             }
 
+            await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
 
-        [Command("asset tag set")]
-        public async Task<RuntimeResult> AssetTagSetAsync(string set)
+        [Command("asset tag collection")]
+        public async Task<RuntimeResult> AssetTagCollectionAsync([Remainder] string collectionName)
         {
             var query = _db.SteamAssetDescriptions.AsQueryable();
-            foreach (var word in set.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            foreach (var word in collectionName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 query = query.Where(x => x.Name.Contains(word));
             }
 
             var assets = await query.ToListAsync();
-            if (assets.Any())
+            foreach (var assetGroup in assets.GroupBy(x => x.CreatorId))
             {
-                foreach (var asset in assets)
+                if (assetGroup.Count() > 1)
                 {
-                    asset.Tags[Constants.SteamAssetTagSet] = set;
+                    foreach (var asset in assets)
+                    {
+                        asset.ItemCollection = collectionName;
+                    }
                 }
+            }
 
-                await _db.SaveChangesAsync();
-                return CommandResult.Success($"{assets.Count} assets were updated. {String.Join(", ", assets.Select(x => x.Name))}.");
-            }
-            else
-            {
-                return CommandResult.Fail($"No assets found matching \"{set}\"");
-            }
+            await _db.SaveChangesAsync();
+            return CommandResult.Success();
         }
     }
 }

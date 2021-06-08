@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CommandQuery;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.API;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
@@ -20,14 +22,14 @@ using System.Threading.Tasks;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
-    public class UpdateStoreSalesStatisticsJob : CronJobService
+    public class UpdateCurrentStoreStatisticsJob : CronJobService
     {
-        private readonly ILogger<UpdateStoreSalesStatisticsJob> _logger;
+        private readonly ILogger<UpdateCurrentStoreStatisticsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly SteamConfiguration _steamConfiguration;
 
-        public UpdateStoreSalesStatisticsJob(IConfiguration configuration, ILogger<UpdateStoreSalesStatisticsJob> logger, IServiceScopeFactory scopeFactory)
-            : base(logger, configuration.GetJobConfiguration<UpdateStoreSalesStatisticsJob>())
+        public UpdateCurrentStoreStatisticsJob(IConfiguration configuration, ILogger<UpdateCurrentStoreStatisticsJob> logger, IServiceScopeFactory scopeFactory)
+            : base(logger, configuration.GetJobConfiguration<UpdateCurrentStoreStatisticsJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -38,6 +40,7 @@ namespace SCMM.Steam.Job.Server.Jobs
         {
             using var scope = _scopeFactory.CreateScope();
             var commnityClient = scope.ServiceProvider.GetService<SteamCommunityWebClient>();
+            var commandProcessor = scope.ServiceProvider.GetService<ICommandProcessor>();
             var service = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
@@ -51,7 +54,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             foreach (var appItemStore in appItemStores)
             {
-                await UpdateItemStoreSubscribers(db, service, appItemStore);
+                await UpdateItemStoreSubscribers(db, service, commandProcessor, appItemStore);
                 await UpdateItemStoreTopSellers(db, commnityClient, service, appItemStore);
             }
 
@@ -127,7 +130,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             db.SaveChanges();
         }
 
-        private async Task UpdateItemStoreSubscribers(SteamDbContext db, SteamService service, SteamItemStore itemStore)
+        private async Task UpdateItemStoreSubscribers(SteamDbContext db, SteamService service, ICommandProcessor commandProcessor, SteamItemStore itemStore)
         {
             var assetDescriptions = itemStore.Items
                 .Select(x => x.Item)
@@ -167,9 +170,11 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             foreach (var item in assetWorkshopJoined)
             {
-                await service.UpdateAssetDescription(
-                    item.AssetDescription, item.PublishedFile, updateSubscriptionGraph: true
-                );
+                _ = await commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+                {
+                    AssetDescription = item.AssetDescription,
+                    PublishedFile = item.PublishedFile
+                });
             }
 
             db.SaveChanges();

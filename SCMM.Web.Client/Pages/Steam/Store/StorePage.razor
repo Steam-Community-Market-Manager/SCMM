@@ -126,11 +126,11 @@ else if (StoreList.Any())
                                                     </MudText>
                                                 }
                                             }
-                                            @if (!String.IsNullOrEmpty(item.ItemSet))
+                                            @if (!String.IsNullOrEmpty(item.ItemCollection))
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
                                                     <i class="fas fa-fw fa-paint-roller"></i>
-                                                    <span>Part of the <MudLink @onclick="@(() => ShowAssetItemSetDialog(item.ItemSet))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemSet</MudLink> set</span>
+                                                    <span>Part of the <MudLink @onclick="@(() => ShowAssetItemSetDialog(item.ItemCollection))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink> set</span>
                                                 </MudText>
                                             }
                                             <div class="my-3">

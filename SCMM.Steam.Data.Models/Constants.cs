@@ -10,31 +10,37 @@
         public const string SteamAssetTagCategory = "steamcat";
         public const string SteamAssetTagItemType = "itemclass";
         public const string SteamAssetTagWorkshop = "workshop";
-        public const string SteamAssetTagCreator = "creator";
-        public const string SteamAssetTagSkin = "skin";
-        public const string SteamAssetTagSet = "set";
-        public const string SteamAssetTagAcceptedYear = "accepted.year";
-        public const string SteamAssetTagAcceptedWeek = "accepted.week";
+
+        public static readonly string[] SteamIgnoredWorkshopTags = { 
+            "Skin", "Version3" 
+        };
+
+        public static readonly string[] SteamItemNameCommonWords = {
+            "Pants", "Vest", "AR"
+        };
 
         public const string SteamLoginClaimSteamIdRegex = @"\/openid\/id\/([^\/]*)";
         public const string SteamProfileUrlProfileIdRegex = @"\/id\/([^\/]*)";
         public const string SteamProfileUrlSteamIdRegex = @"\/profiles\/([^\/]*)";
 
-        public static readonly string[] SteamIgnoredWorkshopTags = { "Skin", "Version3" };
-
-        public const string SteamActionViewWorkshopItem = "#Workshop_Commerce_ViewItem";
+        public const string SteamAssetClassTypeWorkshopItem = "Workshop Item";
+        public const string SteamActionViewWorkshopItemId = "#Workshop_Commerce_ViewItem";
+        public const string SteamActionViewWorkshopItem = "View Workshop Item";
         public const string SteamActionViewWorkshopItemRegex = @"filedetails\/\?id=(\d+)";
 
         public const int SteamStoreItemsMax = 30;
         public const string SteamStoreItemDef = "item_def_grid_item";
         public const string SteamStoreItemDefName = "item_def_name";
         public const string SteamStoreItemDefLinkRegex = @"detail\/(\d+)";
+        public const string SteamStoreItemDescriptionName = "item_description_snippet";
 
-        public const string SteamMarketListingItemNameIdRegex = @"Market_LoadOrderSpread\((.*)\)";
+        public const string SteamMarketListingItemNameIdRegex = @"ItemActivityTicker.Start\\((.*)\\);\r\n";
+        public const string SteamMarketListingAssetJsonRegex = "g_rgAssets\\s*=\\s*(.*);\r\n";
 
-        public const string SteamWorkshopItemClass = "workshopItem";
-        public const string SteamWorkshopItemPublishedFileIdAttribute = "data-publishedfileid";
+        public const string SteamAssetClassDescriptionTypeHtml = "html";
+        public const string SteamAssetClassDescriptionStripHtmlRegex = @"<[^>]*>";
+        public const string SteamAssetClassDescriptionTypeBBCode = "bbcode";
+        public const string SteamAssetClassDescriptionStripBBCodeRegex = @"\[[^\]]*\]";
 
-        public const string DefaultContextId = "2";
     }
 }

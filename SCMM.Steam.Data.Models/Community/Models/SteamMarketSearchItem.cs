@@ -14,7 +14,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public string IdName { get; set; }
 
         [JsonProperty("asset_description")]
-        public SteamAssetDescription AssetDescription { get; set; }
+        public SteamAssetClass AssetDescription { get; set; }
 
         [JsonProperty("sell_listings")]
         public int SellListings { get; set; }

@@ -7,8 +7,8 @@
     var salesOutdated = DB.SteamMarketItems.Count(x => x.LastCheckedSalesOn <= cutOff);
     var ordersOldest = DB.SteamMarketItems.Min(x => x.LastCheckedOrdersOn) ?? DateTimeOffset.UtcNow;
     var ordersOutdated = DB.SteamMarketItems.Count(x => x.LastCheckedOrdersOn <= cutOff);
-    var assetsOldest = DB.SteamAssetDescriptions.Min(x => x.TimeChecked) ?? DateTimeOffset.UtcNow;
-    var assetsOutdated = DB.SteamAssetDescriptions.Count(x => x.TimeChecked <= cutOff);
+    var assetsOldest = DB.SteamAssetDescriptions.Min(x => x.TimeRefreshed) ?? DateTimeOffset.UtcNow;
+    var assetsOutdated = DB.SteamAssetDescriptions.Count(x => x.TimeRefreshed <= cutOff);
 
 }
 <dl class="dl-horizontal">

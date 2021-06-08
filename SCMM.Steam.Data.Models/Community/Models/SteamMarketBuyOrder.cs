@@ -26,6 +26,6 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public string BuyOrderId { get; set; }
 
         [JsonProperty("description")]
-        public SteamAssetDescription Description { get; set; }
+        public SteamAssetClass Description { get; set; }
     }
 }

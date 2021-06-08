@@ -2,7 +2,7 @@
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
-    public class SteamAssetAction
+    public class SteamAssetClassAction
     {
         [JsonProperty("name")]
         public string Name { get; set; }

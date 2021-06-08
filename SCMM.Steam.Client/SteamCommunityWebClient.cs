@@ -1,12 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
-using System;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -14,12 +10,9 @@ namespace SCMM.Steam.Client
 {
     public class SteamCommunityWebClient : SteamWebClient
     {
-        private readonly ILogger<SteamCommunityWebClient> _logger;
-
         public SteamCommunityWebClient(ILogger<SteamCommunityWebClient> logger, SteamSession session)
             : base(logger, session)
         {
-            _logger = logger;
         }
 
         public async Task<SteamProfileXmlResponse> GetProfile(SteamProfilePageRequest request)
@@ -67,21 +60,6 @@ namespace SCMM.Steam.Client
             return await GetJson<SteamMarketMyHistoryPaginatedJsonRequest, SteamMarketMyHistoryPaginatedJsonResponse>(request);
         }
 
-        public async Task<string> GetMarketListingItemNameId(SteamMarketListingPageRequest request)
-        {
-            var html = await GetText(request);
-            if (String.IsNullOrEmpty(html))
-            {
-                return null;
-            }
-
-            // TODO: Find a better way to look this up...
-            var itemNameIdMatchGroup = Regex.Match(html, Constants.SteamMarketListingItemNameIdRegex).Groups;
-            return (itemNameIdMatchGroup.Count > 1)
-                ? itemNameIdMatchGroup[1].Value.Trim()
-                : null;
-        }
-
         public async Task<SteamMarketSearchPaginatedJsonResponse> GetMarketSearchPaginated(SteamMarketSearchPaginatedJsonRequest request)
         {
             return await GetJson<SteamMarketSearchPaginatedJsonRequest, SteamMarketSearchPaginatedJsonResponse>(request);
@@ -104,13 +82,6 @@ namespace SCMM.Steam.Client
 
         public async Task<SteamMarketPriceHistoryJsonResponse> GetMarketPriceHistory(SteamMarketPriceHistoryJsonRequest request)
         {
-            // API returns BadRequest unless authenticated
-            if (Session?.IsLoggedIn != true)
-            {
-                _logger.LogError($"GET '{request}' was skipped because session is not authenticated");
-                return null;
-            }
-
             return await GetJson<SteamMarketPriceHistoryJsonRequest, SteamMarketPriceHistoryJsonResponse>(request);
         }
     }

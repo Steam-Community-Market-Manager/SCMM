@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
-    public class SteamAssetDescription
+    public class SteamAssetClass
     {
         [JsonProperty("classid")]
         public ulong ClassId { get; set; }
@@ -24,16 +24,16 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public string MarketName { get; set; }
 
         [JsonProperty("market_hash_name")]
-        public string MarketNameHash { get; set; }
+        public string MarketHashName { get; set; }
 
         [JsonProperty("marketable")]
         public bool Marketable { get; set; }
 
         [JsonProperty("market_marketable_restriction")]
-        public uint MarketMarketableRestriction { get; set; }
+        public string MarketMarketableRestriction { get; set; }
 
         [JsonProperty("market_tradable_restriction")]
-        public uint MarketTradableRestriction { get; set; }
+        public string MarketTradableRestriction { get; set; }
 
         [JsonProperty("tradable")]
         public bool Tradable { get; set; }
@@ -54,12 +54,15 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public string IconUrlLarge { get; set; }
 
         [JsonProperty("descriptions")]
-        public List<SteamAssetDescriptionDescription> Descriptions { get; set; }
+        public List<SteamAssetClassDescription> Descriptions { get; set; }
 
         [JsonProperty("commodity")]
         public bool Commodity { get; set; }
 
         [JsonProperty("actions")]
-        public List<SteamAssetAction> Actions { get; set; }
+        public List<SteamAssetClassAction> Actions { get; set; }
+
+        [JsonProperty("tags")]
+        public List<SteamAssetClassTag> Tags { get; set; }
     }
 }

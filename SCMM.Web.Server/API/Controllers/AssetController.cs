@@ -60,13 +60,8 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("Asset set name is required");
             }
 
-            var query = _db.SteamAssetDescriptions.AsNoTracking();
-            foreach (var word in name.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            {
-                query = query.Where(x => x.Name.Contains(word));
-            }
-
-            var assets = await query
+            var assets = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.ItemCollection == name)
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)

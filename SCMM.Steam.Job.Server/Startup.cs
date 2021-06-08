@@ -89,14 +89,12 @@ namespace SCMM.Steam.Job.Server
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
             services.AddHostedService<RepairMissingAppFiltersJob>();
             services.AddHostedService<UpdateAssetDescriptionsJob>();
-            services.AddHostedService<CheckForMissingMarketItemIdsJob>();
             services.AddHostedService<CheckForNewMarketItemsJob>();
             services.AddHostedService<CheckForNewStoreItemsJob>();
             services.AddHostedService<CheckYouTubeForNewStoreVideosJobs>();
-            services.AddHostedService<UpdateAssetWorkshopFilesJob>();
             services.AddHostedService<UpdateMarketItemOrdersJob>();
             services.AddHostedService<UpdateMarketItemSalesJob>();
-            services.AddHostedService<UpdateStoreSalesStatisticsJob>();
+            services.AddHostedService<UpdateCurrentStoreStatisticsJob>();
             services.AddHostedService<RecalculateMarketItemSnapshotsJob>();
 
             // Controllers

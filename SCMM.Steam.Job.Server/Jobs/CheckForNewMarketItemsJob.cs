@@ -192,7 +192,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 foreach (var marketItem in newMarketItems)
                 {
                     var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
-                    var description = marketItem.Description?.Tags?.GetItemType(marketItem.Description?.Name);
+                    var description = marketItem.Description?.ItemType;
                     if (String.IsNullOrEmpty(description))
                     {
                         description = marketItem.Description?.Description ?? marketItem.SteamId;
