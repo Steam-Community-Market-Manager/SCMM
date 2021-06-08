@@ -139,7 +139,7 @@ else if (StoreList.Any())
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
                                                     <i class="fas fa-fw fa-paint-roller"></i>
-                                                    <span>Part of the <MudLink @onclick="@(() => ShowAssetItemSetDialog(item.ItemCollection))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink> set</span>
+                                                    <span>Part of the <MudLink @onclick="@(() => ShowItemCollectionDialog(item.ItemCollection))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink> set</span>
                                                 </MudText>
                                             }
                                             <div class="my-3">
@@ -470,11 +470,11 @@ else if (StoreList.Any())
         ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/sharedfiles/filedetails/?id={item.WorkshopFileId}");
     }
     
-    private void ShowAssetItemSetDialog(string itemSet)
+    private void ShowItemCollectionDialog(string itemCollection)
     {
-        Dialogs.Show<ViewAssetItemSetDialog>(itemSet, parameters: new DialogParameters()
+        Dialogs.Show<ViewItemCollectionDialog>(itemCollection, parameters: new DialogParameters()
         {
-            ["ItemSet"] = itemSet
+            ["ItemCollection"] = itemCollection
         });
     }
 

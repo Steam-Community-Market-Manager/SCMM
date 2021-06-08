@@ -1,10 +1,9 @@
 ﻿using SCMM.Web.Data.Models.Domain.Currencies;
 using System;
-using System.Collections.Generic;
 
-namespace SCMM.Web.Data.Models.Domain.StoreItems
+namespace SCMM.Web.Data.Models.Domain.Item
 {
-    public class AssetSetListItemDTO
+    public class ItemCollectionListItemDTO
     {
         public ulong Id { get; set; }
 

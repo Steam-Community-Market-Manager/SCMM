@@ -1,13 +1,13 @@
 ﻿@namespace SCMM.Web.Client.Shared.Dialog
-@using SCMM.Web.Data.Models.Domain.StoreItems
-@inject ILogger<ViewAssetItemSetDialog> Logger
+@using SCMM.Web.Data.Models.Domain.Item
+@inject ILogger<ViewItemCollectionDialog> Logger
 @inject ISnackbar Snackbar
 @inject ExternalNavigationManager ExternalNavigation
 @inject HttpClient Http
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="MudBlazor.Typo.h6">@ItemSet Set</MudText>
+        <MudText Typo="MudBlazor.Typo.h6">@ItemCollection Set</MudText>
     </TitleContent>
     <DialogContent>
         @if (Items == null)
@@ -53,20 +53,20 @@
     public MudDialogInstance Dialog { get; set; }
 
     [Parameter]
-    public string ItemSet { get; set; }
+    public string ItemCollection { get; set; }
     
-    private AssetSetListItemDTO[] Items { get; set; }
+    private ItemCollectionListItemDTO[] Items { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            Items = (await Http.GetFromJsonAsync<AssetSetListItemDTO[]>($"api/asset/set/{ItemSet}")).ToArray();
+            Items = (await Http.GetFromJsonAsync<ItemCollectionListItemDTO[]>($"api/item/collection/{ItemCollection}")).ToArray();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error loading the asset set list");
-            Snackbar.Add($"Unable to load asset set list. {ex.Message}", MudBlazor.Severity.Error);
+            Logger.LogError(ex, $"Error loading the item collection");
+            Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 

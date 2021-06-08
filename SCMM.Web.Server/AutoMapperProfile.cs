@@ -6,6 +6,7 @@ using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.Domain.InventoryItems;
+using SCMM.Web.Data.Models.Domain.Item;
 using SCMM.Web.Data.Models.Domain.Languages;
 using SCMM.Web.Data.Models.Domain.MarketItems;
 using SCMM.Web.Data.Models.Domain.Profiles;
@@ -153,9 +154,9 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Item.Currency));
 
             //
-            // ASSETS
+            // ITEM
             //
-            CreateMap<SteamAssetDescription, AssetSetListItemDTO>()
+            CreateMap<SteamAssetDescription, ItemCollectionListItemDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.AppName, o => o.MapFrom(p => p.App.Name))

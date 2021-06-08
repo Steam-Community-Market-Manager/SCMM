@@ -4,19 +4,6 @@
         <name>SCMM.Web.Server</name>
     </assembly>
     <members>
-        <member name="M:SCMM.Web.Server.API.Controllers.AssetController.GetStore(System.String)">
-            <summary>
-            Get all assets that belong to a given set
-            </summary>
-            <param name="name">The name of the asset set</param>
-            <returns>The assets belonging to the set</returns>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <response code="200">The asset set list.</response>
-            <response code="400">If the asset set name is missing.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.CurrencyController.Get(System.Boolean)">
             <summary>
             List all supported currencies
@@ -34,6 +21,19 @@
             <returns>Image data</returns>
             <response code="200">If the image is valid, the response body will contain the image data, the <code>Content-Type</code> header will contain the image mime-type, and <code>Expires</code> header will contain the image UTC expiry date (if any).</response>
             <response code="404">If the image cannot be found or has expired.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetStore(System.String)">
+            <summary>
+            Get all items that belong to a given collection
+            </summary>
+            <param name="name">The name of the item collection</param>
+            <returns>The items belonging to the collection</returns>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <response code="200">The list of items within the collection.</response>
+            <response code="400">If the collection name is missing.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.LanguageController.Get(System.Boolean)">
