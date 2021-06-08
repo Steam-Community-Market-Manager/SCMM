@@ -29,6 +29,25 @@ namespace SCMM.Discord.Bot.Server.Modules
             _queryProcessor = queryProcessor;
         }
 
+        [Command("donator")]
+        public async Task<RuntimeResult> ProfileDonatorAsync(string steamId, [Remainder] int donatorLevel)
+        {
+            var profile = await _db.SteamProfiles
+                .Where(x => x.SteamId == steamId)
+                .FirstOrDefaultAsync();
+
+            if (profile != null)
+            {
+                profile.DonatorLevel = donatorLevel;
+                await _db.SaveChangesAsync();
+                return CommandResult.Success();
+            }
+            else
+            {
+                return CommandResult.Fail("Unable to find a profile for the SteamID");
+            }
+        }
+
         [Command("asset import")]
         public async Task<RuntimeResult> AssetImportAsync(params ulong[] assetClassIds)
         {
@@ -81,6 +100,66 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             await _db.SaveChangesAsync();
             return CommandResult.Success();
+        }
+
+        [Command("store name")]
+        public async Task<RuntimeResult> StoreNameAsync(DateTime storeDate, [Remainder] string storeName)
+        {
+            var itemStore = await _db.SteamItemStores
+                .OrderByDescending(x => x.Start)
+                .Where(x => storeDate >= x.Start)
+                .FirstOrDefaultAsync();
+
+            if (itemStore != null)
+            {
+                itemStore.Name = storeName;
+                await _db.SaveChangesAsync();
+                return CommandResult.Success();
+            }
+            else
+            {
+                return CommandResult.Fail("Unable to find a store for the specific date");
+            }
+        }
+
+        [Command("store media add")]
+        public async Task<RuntimeResult> StoreMediaAddAsync(DateTime storeDate, [Remainder] string media)
+        {
+            var itemStore = await _db.SteamItemStores
+                .OrderByDescending(x => x.Start)
+                .Where(x => storeDate >= x.Start)
+                .FirstOrDefaultAsync();
+
+            if (itemStore != null)
+            {
+                itemStore.Media.Add(media);
+                await _db.SaveChangesAsync();
+                return CommandResult.Success();
+            }
+            else
+            {
+                return CommandResult.Fail("Unable to find a store for the specific date");
+            }
+        }
+
+        [Command("store media remove")]
+        public async Task<RuntimeResult> StoreMediaRemoveAsync(DateTime storeDate, [Remainder] string media)
+        {
+            var itemStore = await _db.SteamItemStores
+                .OrderByDescending(x => x.Start)
+                .Where(x => storeDate >= x.Start)
+                .FirstOrDefaultAsync();
+
+            if (itemStore != null)
+            {
+                itemStore.Media.Remove(media);
+                await _db.SaveChangesAsync();
+                return CommandResult.Success();
+            }
+            else
+            {
+                return CommandResult.Fail("Unable to find a store for the specific date");
+            }
         }
     }
 }
