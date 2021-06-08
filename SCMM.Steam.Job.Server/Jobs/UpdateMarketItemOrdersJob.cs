@@ -35,7 +35,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
             var items = db.SteamMarketItems
                 .Where(x => !String.IsNullOrEmpty(x.SteamId))
-                .Where(x => x.LastCheckedOrdersOn <= cutoff)
+                .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
                 .OrderBy(x => x.LastCheckedOrdersOn)
                 .Take(100) // batch 100 at a time
                 .ToList();

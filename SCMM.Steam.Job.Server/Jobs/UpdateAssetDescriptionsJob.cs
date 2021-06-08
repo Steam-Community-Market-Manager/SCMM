@@ -33,7 +33,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
             var assetDescriptions = db.SteamAssetDescriptions
-                .Where(x => x.TimeRefreshed <= cutoff)
+                .Where(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutoff)
                 .OrderBy(x => x.TimeRefreshed)
                 .Select(x => new
                 {
