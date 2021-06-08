@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SCMM.Steam.Data.Models;
 using SCMM.Web.Client;
 using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.Domain.Languages;
@@ -10,7 +11,7 @@ namespace SCMM.Web.Server.Extensions
         public static string App(this ControllerBase controller)
         {
             // TODO: Make this configurable by the client
-            return "252490"; // Rust"
+            return Constants.SteamRustAppId.ToString();
         }
 
         public static LanguageDetailedDTO Language(this ControllerBase controller)

@@ -2,6 +2,8 @@
 {
     public static class Constants
     {
+        public const ulong SteamRustAppId = 252490L;
+
         public const string SteamStoreUrl = "https://store.steampowered.com";
         public const string SteamCommunityUrl = "https://steamcommunity.com";
         public const string SteamCommunityAssetUrl = "https://steamcommunity-a.akamaihd.net";

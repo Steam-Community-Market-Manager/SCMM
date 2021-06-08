@@ -18,7 +18,6 @@ using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -126,16 +125,11 @@ namespace SCMM.Steam.Job.Server.Jobs
                 var newItemStore = activeItemStores.FirstOrDefault();
                 if (newItemStore == null || (DateTimeOffset.UtcNow - newItemStore.Start) > TimeSpan.FromDays(1))
                 {
-                    var culture = CultureInfo.InvariantCulture;
-                    var storeDate = DateTimeOffset.UtcNow.Date;
-                    int storeDateWeek = culture.Calendar.GetWeekOfYear(storeDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
-                    var storeTitle = $"Week {storeDateWeek}";
                     db.SteamItemStores.Add(
                         newItemStore = new SteamItemStore()
                         {
                             App = app,
                             AppId = app.Id,
-                            Name = storeTitle,
                             Start = DateTimeOffset.UtcNow
                         }
                     );
@@ -167,7 +161,14 @@ namespace SCMM.Steam.Job.Server.Jobs
                     }
                 }
 
-                // Regenerate the store items thumbnail
+                // Recalculate store statistics
+                var orderedStoreItems = newItemStore.Items.OrderBy(x => x.Index).ToList();
+                foreach (var storeItem in orderedStoreItems)
+                {
+                    storeItem.Item.RecalculateTotalSales(newItemStore);
+                }
+
+                // Regenerate store thumbnail (if missing)
                 if (newItemStore.ItemsThumbnail == null)
                 {
                     var thumbnail = await GenerateStoreItemsThumbnail(queryProcessor, newItemStore.Items.Select(x => x.Item));
@@ -244,7 +245,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     GuildPattern = guild.DiscordId,
                     ChannelPattern = guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
                     Message = null,
-                    Title = $"{app.Name} Store - {store.Name}",
+                    Title = $"{app.Name} Store - {store.GetFullName()}",
                     Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
                     Fields = newStoreItems.ToDictionary(
                         x => x.Description?.Name,

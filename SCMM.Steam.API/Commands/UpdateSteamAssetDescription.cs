@@ -92,11 +92,14 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse asset tags (where missing)
-                foreach (var tag in assetClass?.Tags)
+                if (assetClass.Tags != null)
                 {
-                    if (!assetDescription.Tags.ContainsKey(tag.Category))
+                    foreach (var tag in assetClass.Tags)
                     {
-                        assetDescription.Tags.Add(tag.Category, tag.Name);
+                        if (!assetDescription.Tags.ContainsKey(tag.Category))
+                        {
+                            assetDescription.Tags.Add(tag.Category, tag.Name);
+                        }
                     }
                 }
             }
@@ -138,13 +141,17 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse asset workshop tags (where missing)
-                foreach (var tag in publishedFile.Tags.Where(x => !Constants.SteamIgnoredWorkshopTags.Any(y => x == y)))
+                if (publishedFile.Tags != null)
                 {
-                    var tagTrimmed = tag.Replace(" ", String.Empty).Trim();
-                    var tagKey = $"{Constants.SteamAssetTagWorkshop}.{Char.ToLowerInvariant(tagTrimmed[0]) + tagTrimmed.Substring(1)}";
-                    if (!assetDescription.Tags.ContainsKey(tagKey))
+                    var interestingTags = publishedFile.Tags.Where(x => !Constants.SteamIgnoredWorkshopTags.Any(y => x == y));
+                    foreach (var tag in interestingTags)
                     {
-                        assetDescription.Tags[tagKey] = tag;
+                        var tagTrimmed = tag.Replace(" ", String.Empty).Trim();
+                        var tagKey = $"{Constants.SteamAssetTagWorkshop}.{Char.ToLowerInvariant(tagTrimmed[0]) + tagTrimmed.Substring(1)}";
+                        if (!assetDescription.Tags.ContainsKey(tagKey))
+                        {
+                            assetDescription.Tags[tagKey] = tag;
+                        }
                     }
                 }
 
@@ -334,8 +341,8 @@ namespace SCMM.Steam.API.Commands
             // Parse asset item type (if missing)
             if (String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(assetDescription.Description))
             {
-                // e.g. "This is a skin for the Large Wood Box item" 
-                var itemTypeMatchGroup = Regex.Match(assetDescription.Description, @"skin for the (.*) item").Groups;
+                // e.g. "This is a skin for the Large Wood Box item." 
+                var itemTypeMatchGroup = Regex.Match(assetDescription.Description, @"skin for the (.*) item\.").Groups;
                 var itemType = (itemTypeMatchGroup.Count > 1)
                     ? itemTypeMatchGroup[1].Value.Trim()
                     : null;
@@ -345,8 +352,8 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            // Parse asset item collection (if missing)
-            if (String.IsNullOrEmpty(assetDescription.ItemCollection) && assetDescription.Tags.Any())
+            // Parse asset item collection (if missing and is a user created item)
+            if (String.IsNullOrEmpty(assetDescription.ItemCollection) && assetDescription.CreatorId != null)
             {
                 // Remove all common item words from the collection name (e.g. "Box", "Pants", Door", etc)
                 var itemCollection = assetDescription.Name;
@@ -367,7 +374,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     // Count the number of other assets created by the same author that also contain the remaining unique collection words.
                     // If there is more than one item, then it must be part of a set.
-                    var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId == assetDescription.CreatorId);
+                    var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null && x.CreatorId == assetDescription.CreatorId);
                     foreach (var word in itemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                     {
                         query = query.Where(x => x.Name.Contains(word));

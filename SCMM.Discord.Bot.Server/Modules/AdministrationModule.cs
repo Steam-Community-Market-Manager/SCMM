@@ -36,7 +36,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
-                    AppId = 252490, // Rust
+                    AppId = Constants.SteamRustAppId,
                     AssetClassId = assetClassId
                 });
             }
@@ -45,25 +45,38 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("asset tag collection")]
-        public async Task<RuntimeResult> AssetTagCollectionAsync([Remainder] string collectionName)
+        [Command("asset collection create")]
+        public async Task<RuntimeResult> AssetCollectionCreateAsync([Remainder] string collectionName)
         {
-            var query = _db.SteamAssetDescriptions.AsQueryable();
+            var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null);
             foreach (var word in collectionName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 query = query.Where(x => x.Name.Contains(word));
             }
 
-            var assets = await query.ToListAsync();
-            foreach (var assetGroup in assets.GroupBy(x => x.CreatorId))
+            var assetDescriptions = await query.ToListAsync();
+            foreach (var assetDescriptionGroup in assetDescriptions.GroupBy(x => x.CreatorId))
             {
-                if (assetGroup.Count() > 1)
+                if (assetDescriptionGroup.Count() > 1)
                 {
-                    foreach (var asset in assets)
+                    foreach (var assetDescription in assetDescriptionGroup)
                     {
-                        asset.ItemCollection = collectionName;
+                        assetDescription.ItemCollection = collectionName;
                     }
                 }
+            }
+
+            await _db.SaveChangesAsync();
+            return CommandResult.Success();
+        }
+
+        [Command("asset collection delete")]
+        public async Task<RuntimeResult> AssetCollectionDeleteAsync([Remainder] string collectionName)
+        {
+            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => x.ItemCollection == collectionName).ToListAsync();
+            foreach (var assetDescription in assetDescriptions)
+            {
+                assetDescription.ItemCollection = null;
             }
 
             await _db.SaveChangesAsync();

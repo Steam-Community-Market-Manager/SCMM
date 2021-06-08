@@ -280,7 +280,8 @@ namespace SCMM.Steam.API
             {
                 AppId = ulong.Parse(dbApp.SteamId),
                 AssetClassId = item.AssetDescription.ClassId,
-                AssetClass = item.AssetDescription
+                // TODO: Test this more. It seems there is missing data sometimes so we'll fetch the full details from Steam instead
+                //AssetClass = item.AssetDescription 
             });
             var assetDescription = importAssetDescription.AssetDescription;
             if (assetDescription == null)

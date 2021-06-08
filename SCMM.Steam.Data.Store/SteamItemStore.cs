@@ -36,7 +36,7 @@ namespace SCMM.Steam.Data.Store
 
         public PersistableStringCollection Media { get; set; }
 
-        public string GetDisplayName()
+        public string GetFullName()
         {
             var culture = CultureInfo.InvariantCulture;
             var storeDate = Start.UtcDateTime;

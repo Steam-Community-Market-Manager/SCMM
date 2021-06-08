@@ -109,7 +109,6 @@ namespace SCMM.Steam.API.Commands
                 {
                     IconUrl = request.AssetClass.IconUrl,
                     IconUrlLarge = request.AssetClass.IconUrlLarge,
-                    //IconDragUrl = ???,
                     Name = request.AssetClass.Name,
                     MarketHashName = request.AssetClass.MarketHashName,
                     MarketName = request.AssetClass.MarketName,
@@ -121,7 +120,6 @@ namespace SCMM.Steam.API.Commands
                     Commodity = request.AssetClass.Commodity ? "1" : "0",
                     MarketTradableRestriction = request.AssetClass.MarketTradableRestriction,
                     MarketMarketableRestriction = request.AssetClass.MarketMarketableRestriction,
-                    //FraudWarnings = ???,
                     Descriptions = new ReadOnlyCollection<AssetClassDescriptionModel>(
                         new List<AssetClassDescriptionModel>(
                             request.AssetClass.Descriptions.Select(x => new AssetClassDescriptionModel()
@@ -140,7 +138,6 @@ namespace SCMM.Steam.API.Commands
                             })
                         )
                     ),
-                    //MarketActions = ???,
                     Tags = new ReadOnlyCollection<AssetClassTagModel>(
                         new List<AssetClassTagModel>(
                             request.AssetClass.Tags.Select(x => new AssetClassTagModel()
@@ -152,7 +149,6 @@ namespace SCMM.Steam.API.Commands
                             })
                         )
                     ),
-                    //AppData = ???,
                     ClassId = request.AssetClass.ClassId,
                 };
             }

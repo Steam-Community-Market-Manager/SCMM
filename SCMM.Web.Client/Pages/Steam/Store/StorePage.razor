@@ -85,7 +85,7 @@ else if (StoreList.Any())
                                         <MudItem xs="7">
                                             @if (!item.HasWorkshopFile)
                                             {
-                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
                                                     <span>This item is not from the Rust workshop, some statistics may be unavailable.</span>
                                                 </MudText>
                                             }
@@ -113,6 +113,15 @@ else if (StoreList.Any())
                                                         {
                                                             <span>Between <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink></span>
                                                         }
+                                                    </span>
+                                                </MudText>
+                                            }
+                                            else if (item.Subscriptions > 0)
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-user"></i>
+                                                    <span>
+                                                        <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.Subscriptions.Value.ToQuantityString() subscribers</MudLink>
                                                     </span>
                                                 </MudText>
                                             }
