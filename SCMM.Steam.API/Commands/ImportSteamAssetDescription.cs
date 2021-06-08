@@ -160,8 +160,8 @@ namespace SCMM.Steam.API.Commands
             // Get item description text from asset class (if available)
             var itemDescription = assetClass.Descriptions?
                 .Where(x => 
-                    String.Equals(x.Type, "html", StringComparison.InvariantCultureIgnoreCase) || 
-                    String.Equals(x.Type, "bbcode", StringComparison.InvariantCultureIgnoreCase)
+                    String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) || 
+                    String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
                 )
                 .Select(x => x.Value)
                 .FirstOrDefault();
@@ -239,8 +239,7 @@ namespace SCMM.Steam.API.Commands
                 AssetClass = assetClass,
                 PublishedFile = publishedFile,
                 MarketListingPageHtml = marketListingPageHtml,
-                StoreItemPageHtml = storeItemPageHtml,
-                ItemDescription = itemDescription
+                StoreItemPageHtml = storeItemPageHtml
             });
 
             return new ImportSteamAssetDescriptionResponse

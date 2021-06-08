@@ -11,7 +11,7 @@ namespace SCMM.Web.Server.Extensions
         public static string App(this ControllerBase controller)
         {
             // TODO: Make this configurable by the client
-            return Constants.SteamRustAppId.ToString();
+            return Constants.RustAppId.ToString();
         }
 
         public static LanguageDetailedDTO Language(this ControllerBase controller)

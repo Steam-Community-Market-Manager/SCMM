@@ -55,7 +55,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
-                    AppId = Constants.SteamRustAppId,
+                    AppId = Constants.RustAppId,
                     AssetClassId = assetClassId
                 });
             }

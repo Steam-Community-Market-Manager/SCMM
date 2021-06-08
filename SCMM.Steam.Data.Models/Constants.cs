@@ -2,8 +2,6 @@
 {
     public static class Constants
     {
-        public const ulong SteamRustAppId = 252490L;
-
         public const string SteamStoreUrl = "https://store.steampowered.com";
         public const string SteamCommunityUrl = "https://steamcommunity.com";
         public const string SteamCommunityAssetUrl = "https://steamcommunity-a.akamaihd.net";
@@ -15,10 +13,6 @@
 
         public static readonly string[] SteamIgnoredWorkshopTags = { 
             "Skin", "Version3" 
-        };
-
-        public static readonly string[] SteamItemNameCommonWords = {
-            "Pants", "Vest", "AR"
         };
 
         public const string SteamLoginClaimSteamIdRegex = @"\/openid\/id\/([^\/]*)";
@@ -36,13 +30,29 @@
         public const string SteamStoreItemDefLinkRegex = @"detail\/(\d+)";
         public const string SteamStoreItemDescriptionName = "item_description_snippet";
 
-        public const string SteamMarketListingItemNameIdRegex = @"ItemActivityTicker.Start\\((.*)\\);\r\n";
-        public const string SteamMarketListingAssetJsonRegex = "g_rgAssets\\s*=\\s*(.*);\r\n";
+        public const string SteamMarketListingItemNameIdRegex = @"ItemActivityTicker.Start\((.*)\);";
+        public const string SteamMarketListingAssetJsonRegex = @"g_rgAssets\s*=\s*(.*);";
 
         public const string SteamAssetClassDescriptionTypeHtml = "html";
         public const string SteamAssetClassDescriptionStripHtmlRegex = @"<[^>]*>";
         public const string SteamAssetClassDescriptionTypeBBCode = "bbcode";
         public const string SteamAssetClassDescriptionStripBBCodeRegex = @"\[[^\]]*\]";
 
+        #region Rust
+
+        public const ulong RustAppId = 252490L;
+
+        public static readonly string[] RustItemNameCommonWords = {
+            "Pants", "Vest"
+        };
+
+        public const string RustItemTypeResource = "Resource";
+        public const string RustItemTypeContainer = "Container";
+        public const string RustItemTypeUnique = "Unique Item";
+        public const string RustItemTypeUnderwear = "Underwear Item";
+
+        public const string RustItemTypeLR300 = "LR300";
+
+        #endregion
     }
 }

@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using Steam.Models.SteamEconomy;
 using Steam.Models;
 using SCMM.Steam.Data.Models.Community.Models;
+using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -34,8 +35,6 @@ namespace SCMM.Steam.API.Commands
         public string MarketListingPageHtml { get; set; }
 
         public XElement StoreItemPageHtml { get; set; }
-
-        public string ItemDescription { get; set; }
     }
 
     public class UpdateSteamAssetDescriptionResponse
@@ -91,15 +90,32 @@ namespace SCMM.Steam.API.Commands
                     case Constants.SteamAssetClassTypeWorkshopItem: assetDescription.AssetType = SteamAssetDescriptionType.WorkshopItem; break;
                 }
 
-                // Parse asset tags (where missing)
+                // Parse asset description (if any)
+                if (assetClass.Descriptions != null && String.IsNullOrEmpty(assetDescription.Description))
+                {
+                    var itemDescription = assetClass.Descriptions
+                        .Where(x =>
+                            String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
+                            String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
+                        )
+                        .Select(x => x.Value)
+                        .FirstOrDefault();
+
+                    if (!String.IsNullOrEmpty(itemDescription))
+                    {
+                        // Strip any HTML and BBCode tags, just get the plain-text
+                        itemDescription = Regex.Replace(itemDescription, Constants.SteamAssetClassDescriptionStripHtmlRegex, String.Empty).Trim();
+                        itemDescription = Regex.Replace(itemDescription, Constants.SteamAssetClassDescriptionStripBBCodeRegex, String.Empty).Trim();
+                        assetDescription.Description = itemDescription;
+                    }
+                }
+
+                // Parse asset tags (if any)
                 if (assetClass.Tags != null)
                 {
                     foreach (var tag in assetClass.Tags)
                     {
-                        if (!assetDescription.Tags.ContainsKey(tag.Category))
-                        {
-                            assetDescription.Tags.Add(tag.Category, tag.Name);
-                        }
+                        assetDescription.Tags[tag.Category] = tag.Name;
                     }
                 }
             }
@@ -148,10 +164,7 @@ namespace SCMM.Steam.API.Commands
                     {
                         var tagTrimmed = tag.Replace(" ", String.Empty).Trim();
                         var tagKey = $"{Constants.SteamAssetTagWorkshop}.{Char.ToLowerInvariant(tagTrimmed[0]) + tagTrimmed.Substring(1)}";
-                        if (!assetDescription.Tags.ContainsKey(tagKey))
-                        {
-                            assetDescription.Tags[tagKey] = tag;
-                        }
+                        assetDescription.Tags[tagKey] = tag;
                     }
                 }
 
@@ -173,12 +186,6 @@ namespace SCMM.Steam.API.Commands
                 }
                 */
             }
-
-            // Parse asset app
-            //if (assetDescription.AppId == Guid.Empty)
-            //{
-            //    assetDescription.App = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString());
-            //}
 
             // Parse asset icon and image data
             if (assetDescription.IconId == null && !String.IsNullOrEmpty(assetDescription.IconUrl))
@@ -221,68 +228,66 @@ namespace SCMM.Steam.API.Commands
             // Parse asset description and name id from the market list page (if available)
             if (!String.IsNullOrEmpty(request.MarketListingPageHtml))
             {
-                var listingAssetMatchGroup = Regex.Match(request.MarketListingPageHtml, Constants.SteamMarketListingAssetJsonRegex).Groups;
-                var listingAssetJson = (listingAssetMatchGroup.Count > 1)
-                    ? listingAssetMatchGroup[1].Value.Trim()
-                    : null;
-
-                if (!String.IsNullOrEmpty(listingAssetJson))
+                if (String.IsNullOrEmpty(assetDescription.Description))
                 {
-                    try
+                    var listingAssetMatchGroup = Regex.Match(request.MarketListingPageHtml, Constants.SteamMarketListingAssetJsonRegex).Groups;
+                    var listingAssetJson = (listingAssetMatchGroup.Count > 1)
+                        ? listingAssetMatchGroup[1].Value.Trim()
+                        : null;
+
+                    if (!String.IsNullOrEmpty(listingAssetJson))
                     {
-                        // NOTE: This is a bit hacky, but the data we need is inside a JavaScript variable within a <script> element, so we try to parse the JSON value of the variable
-                        var listingAsset = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>>>(listingAssetJson);
-                        var itemDescriptionHtml = listingAsset?
-                            .FirstOrDefault().Value?
-                            .FirstOrDefault().Value?
-                            .FirstOrDefault().Value?
-                            .Descriptions?
-                            .Where(x => String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase))
-                            .Select(x => x.Value)
-                            .FirstOrDefault();
-                        if (!String.IsNullOrEmpty(itemDescriptionHtml))
+                        try
                         {
-                            // Strip HTML tags, just get the plain-text
-                            assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, String.Empty).Trim();
+                            // NOTE: This is a bit hacky, but the data we need is inside a JavaScript variable within a <script> element, so we try to parse the JSON value of the variable
+                            var listingAsset = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>>>(listingAssetJson);
+                            var itemDescriptionHtml = listingAsset?
+                                .FirstOrDefault().Value?
+                                .FirstOrDefault().Value?
+                                .FirstOrDefault().Value?
+                                .Descriptions?
+                                .Where(x => String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase))
+                                .Select(x => x.Value)
+                                .FirstOrDefault();
+                            if (!String.IsNullOrEmpty(itemDescriptionHtml))
+                            {
+                                // Strip any HTML tags, just get the plain-text
+                                assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, String.Empty).Trim();
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            // Likely because page says "no listings for item"
+                            // The item probably isn't available on the community market
                         }
                     }
-                    catch (Exception)
-                    {
-                        // Likely because page says "no listings for item"
-                        // The item probably isn't available on the community market
-                    }
                 }
-
-                var itemNameIdMatchGroup = Regex.Match(request.MarketListingPageHtml, Constants.SteamMarketListingItemNameIdRegex).Groups;
-                var itemNameId = (itemNameIdMatchGroup.Count > 1)
-                    ? itemNameIdMatchGroup[1].Value.Trim()
-                    : null;
-
-                if (!String.IsNullOrEmpty(itemNameId))
+                if (assetDescription.NameId == null)
                 {
-                    assetDescription.NameId = UInt64.Parse(itemNameId);
+                    var itemNameIdMatchGroup = Regex.Match(request.MarketListingPageHtml, Constants.SteamMarketListingItemNameIdRegex).Groups;
+                    var itemNameId = (itemNameIdMatchGroup.Count > 1)
+                        ? itemNameIdMatchGroup[1].Value.Trim()
+                        : null;
+
+                    if (!String.IsNullOrEmpty(itemNameId))
+                    {
+                        assetDescription.NameId = UInt64.Parse(itemNameId);
+                    }
                 }
             }
 
             // Parse asset description from the store page (if available)
             if (request.StoreItemPageHtml != null)
             {
-                var itemDescriptionHtml = request.StoreItemPageHtml.Descendants("div").FirstOrDefault(x => x?.Attribute("class")?.Value == Constants.SteamStoreItemDescriptionName).Value;
-                if (!String.IsNullOrEmpty(itemDescriptionHtml))
+                if (String.IsNullOrEmpty(assetDescription.Description))
                 {
-                    // Strip HTML tags, just get the plain-text
-                    assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, String.Empty).Trim();
+                    var itemDescriptionHtml = request.StoreItemPageHtml.Descendants("div").FirstOrDefault(x => x?.Attribute("class")?.Value == Constants.SteamStoreItemDescriptionName).Value;
+                    if (!String.IsNullOrEmpty(itemDescriptionHtml))
+                    {
+                        // Strip any HTML tags, just get the plain-text
+                        assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, String.Empty).Trim();
+                    }
                 }
-            }
-
-            // Parse asset description from the item description html (if available)
-            if (!String.IsNullOrEmpty(request.ItemDescription))
-            {
-                // Strip HTML and BBCode tags, just get the plain-text
-                var itemDescription = request.ItemDescription;
-                itemDescription = Regex.Replace(request.ItemDescription, Constants.SteamAssetClassDescriptionStripHtmlRegex, String.Empty).Trim();
-                itemDescription = Regex.Replace(request.ItemDescription, Constants.SteamAssetClassDescriptionStripBBCodeRegex, String.Empty).Trim();
-                assetDescription.Description = itemDescription;
             }
 
             // Parse asset crafting components from the description text (if available)
@@ -312,7 +317,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     assetDescription.Description = assetDescription.Description.Replace(breaksDownMatchGroup[0].Value, String.Empty).Trim();
                     assetDescription.IsBreakable = true;
-                    assetDescription.BreaksIntoComponents = new Steam.Data.Store.Types.PersistableAssetQuantityDictionary();
+                    assetDescription.BreaksIntoComponents = new PersistableAssetQuantityDictionary();
 
                     // e.g. "1x Cloth", "1x Wood", "1x Metal"
                     var componentMatches = Regex.Matches(breaksDown, @"(\d+)\s*x\s*(\D*)").OfType<Match>();
@@ -339,16 +344,57 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Parse asset item type (if missing)
-            if (String.IsNullOrEmpty(assetDescription.ItemType) && !String.IsNullOrEmpty(assetDescription.Description))
+            if (String.IsNullOrEmpty(assetDescription.ItemType))
             {
-                // e.g. "This is a skin for the Large Wood Box item." 
-                var itemTypeMatchGroup = Regex.Match(assetDescription.Description, @"skin for the (.*) item\.").Groups;
-                var itemType = (itemTypeMatchGroup.Count > 1)
-                    ? itemTypeMatchGroup[1].Value.Trim()
-                    : null;
-                if (!String.IsNullOrEmpty(itemType))
+                if (!String.IsNullOrEmpty(assetDescription.Description))
                 {
-                    assetDescription.ItemType = itemType;
+                    // e.g. "This is a skin for the Large Wood Box item." 
+                    var itemTypeMatchGroup = Regex.Match(assetDescription.Description, @"skin for the (.*) item\.").Groups;
+                    var itemType = (itemTypeMatchGroup.Count > 1)
+                        ? itemTypeMatchGroup[1].Value.Trim()
+                        : null;
+
+                    // Is it an item skin?
+                    if (!String.IsNullOrEmpty(itemType))
+                    {
+                        assetDescription.ItemType = itemType;
+                    }
+                    // Is it a crafting component?
+                    else if (assetDescription.IsCraftingComponent)
+                    {
+                        assetDescription.ItemType = Constants.RustItemTypeResource;
+                    }
+                    // Is it a craftable container?
+                    else if (assetDescription.IsCraftable)
+                    {
+                        assetDescription.ItemType = Constants.RustItemTypeContainer;
+                    }
+                    // Is it a non-craftable container?
+                    // e.g. "This special crate acquired from a twitch drop during Trust in Rust 3 will yield a random skin"
+                    else if (Regex.IsMatch(assetDescription.Description, @"crate .* random skin"))
+                    {
+                        assetDescription.ItemType = Constants.RustItemTypeContainer;
+                    }
+                    // Is it a unique item?
+                    // e.g. "Having this item in your Steam Inventory means you'll be able to craft it in game. If you sell, trade or break this item you will no longer have this ability in game."
+                    else if (Regex.IsMatch(assetDescription.Description, @"craft it in game"))
+                    {
+                        assetDescription.ItemType = Constants.RustItemTypeUnique;
+                    }
+                    // Is it an underwear item?
+                    // e.g. "Having this item in your Steam Inventory means you'll be able to select this as your players default appearance. If you sell, trade or break this item you will no longer have this ability in game."
+                    else if (Regex.IsMatch(assetDescription.Description, @"players default appearance"))
+                    {
+                        assetDescription.ItemType = Constants.RustItemTypeUnderwear;
+                    }
+                }
+                else
+                {
+                    // HACK: Facepunch messed up the LR300 skins. The item descriptions are always empty so try fill in the blanks
+                    if (assetDescription.Tags.Any(x => x.Value == Constants.RustItemTypeLR300))
+                    {
+                        assetDescription.ItemType = Constants.RustItemTypeLR300;
+                    }
                 }
             }
 
@@ -364,7 +410,7 @@ namespace SCMM.Steam.API.Commands
                         itemCollection = itemCollection.Replace(word, String.Empty, StringComparison.InvariantCultureIgnoreCase);
                     }
                 }
-                foreach (var word in Constants.SteamItemNameCommonWords)
+                foreach (var word in Constants.RustItemNameCommonWords)
                 {
                     itemCollection = itemCollection.Replace(word, String.Empty, StringComparison.InvariantCultureIgnoreCase);
                 }
