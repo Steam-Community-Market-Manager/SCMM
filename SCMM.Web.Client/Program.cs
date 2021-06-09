@@ -4,11 +4,6 @@ using MudBlazor;
 using MudBlazor.Services;
 using SCMM.Web.Client.Shared.Navigation;
 using SCMM.Web.Client.Shared.Storage;
-using Skclusive.Core.Component;
-using Skclusive.Material.Alert;
-using Skclusive.Material.Chip;
-using Skclusive.Material.Component;
-using Skclusive.Material.Core;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -51,15 +46,6 @@ namespace SCMM.Web.Client
                 config.SnackbarConfiguration.RequireInteraction = true;
             });
 
-            var materialConfig = new MaterialConfigBuilder()
-                .WithIsPreRendering(false)
-                .WithIsServer(false)
-                .WithTheme(Theme.Dark)
-                .Build();
-
-            builder.Services.TryAddAlertServices(materialConfig);
-            builder.Services.TryAddChipServices(materialConfig);
-            builder.Services.TryAddMaterialServices(materialConfig);
             await builder.Build().RunAsync();
         }
     }

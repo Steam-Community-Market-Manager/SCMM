@@ -16,8 +16,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.4.21253.5" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="Skclusive.Material.Alert" Version="5.2.0" />
-    <PackageReference Include="Skclusive.Material.Component" Version="5.2.0" />
     <PackageReference Include="MudBlazor" Version="5.0.11" />
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.4.21253.7" />
     <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />

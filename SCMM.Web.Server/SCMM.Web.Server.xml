@@ -57,7 +57,7 @@
             <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.Languages.LanguageDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.Languages.LanguageListDTO"/>.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.Get(System.String,System.Int32,System.Int32,System.String,Skclusive.Core.Component.Sort)">
+        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.Get(System.String,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection)">
             <summary>
             List market listings
             </summary>

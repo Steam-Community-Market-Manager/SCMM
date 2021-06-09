@@ -9,7 +9,7 @@
 
 <PageContainer Title="Skins">
 
-    <TextField Variant="@TextFieldVariant.Outlined" Margin="@Skclusive.Core.Component.Margin.None" OnChange="@(async (x) => await RefreshItems(x.Value.ToString()))"
+    <TextField Variant="Outlined" Margin="None" @*OnChange="@(async (x) => await RefreshItems(x.Value.ToString()))"*@
                Placeholder="Type an item name or tag here to filter results (e.g. 'sheet metal door' or 'blackout')" />
 
     @if (Items == null)

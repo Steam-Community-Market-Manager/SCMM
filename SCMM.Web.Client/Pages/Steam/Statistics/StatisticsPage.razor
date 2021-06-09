@@ -45,21 +45,21 @@
                                 <MudButton OnClick="@(() => RefreshSalesPerDay(null))" Color="MudBlazor.Color.Secondary">
                                     All
                                 </MudButton>
-                                <Divider Orientation="@Skclusive.Core.Component.Orientation.Vertical" />
+                                <Divider Orientation="Vertical" />
                                 <MudButton OnClick="@(() => RefreshSalesPerDay(365))" Color="MudBlazor.Color.Secondary">
                                     12m
                                 </MudButton>
-                                <Divider Orientation="@Skclusive.Core.Component.Orientation.Vertical" />
+                                <Divider Orientation="Vertical" />
                                 <MudButton OnClick="@(() => RefreshSalesPerDay(182))" Color="MudBlazor.Color.Secondary">
                                     6m
                                 </MudButton>
-                                <Divider Orientation="@Skclusive.Core.Component.Orientation.Vertical" />
+                                <Divider Orientation="Vertical" />
                                 <MudButton OnClick="@(() => RefreshSalesPerDay(30))" Color="MudBlazor.Color.Secondary">
                                     1m
                                 </MudButton>
                                 @if (SalesYesterday > 0)
                                 {
-                                    <Divider Orientation="@Skclusive.Core.Component.Orientation.Vertical" />
+                                    <Divider Orientation="Vertical" />
                                     <MudText Variant="MudBlazor.Variant.body2" Color="MudBlazor.Color.Secondary" Style="display: flex; align-items: center; align-content: center; padding: 8px 16px;">
                                         <strong>@SalesYesterday.ToQuantityString() sales yesterday</strong>
                                     </MudText>
@@ -94,11 +94,11 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableBody>
                             <Virtualize ItemsProvider="LoadHotRightNow" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewItem(item))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
@@ -141,11 +141,11 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableBody>
                             <Virtualize ItemsProvider="LoadMostRecent" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewItem(item))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
@@ -189,11 +189,11 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableBody>
                             <Virtualize ItemsProvider="LoadAllTimeHigh" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewItem(item))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
@@ -237,11 +237,11 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableBody>
                             <Virtualize ItemsProvider="LoadAllTimeLow" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewItem(item))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
@@ -284,7 +284,7 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableHead>
                             <TableRow>
                                 <TableCell></TableCell>
@@ -295,7 +295,7 @@
                         <TableBody>
                             <Virtualize ItemsProvider="LoadProfitableFlips" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewItem(item))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
@@ -342,11 +342,11 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableBody>
                             <Virtualize ItemsProvider="LoadMostProfitable" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewItem(item))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
@@ -389,11 +389,11 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableBody>
                             <Virtualize ItemsProvider="LoadMostPopular" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewItem(item))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
@@ -439,7 +439,7 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableHead>
                             <TableRow>
                                 <TableCell></TableCell>
@@ -450,7 +450,7 @@
                         <TableBody>
                             <Virtualize ItemsProvider="LoadMostSaturated" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewItem(item))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewItem(item))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.IconUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
@@ -504,7 +504,7 @@
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <Table Size="@Skclusive.Core.Component.Size.Small">
+                    <Table Size="Small">
                         <TableHead>
                             <TableRow>
                                 <TableCell></TableCell>
@@ -514,7 +514,7 @@
                         <TableBody>
                             <Virtualize ItemsProvider="LoadAcceptedCreators" Context="item">
                                 <ItemContent>
-                                    <TableRow Hover OnClick="@((_) => ViewProfile(item.SteamId))">
+                                    <TableRow Hover @*OnClick="@((_) => ViewProfile(item.SteamId))"*@>
                                         <TableCell>
                                             <div style="display:flex; align-content:center; align-items:center">
                                                 <img src="@item.AvatarUrl" style="max-width:32px; max-height:32px; margin:-4px 0px;" />
