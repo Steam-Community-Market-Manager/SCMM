@@ -24,7 +24,7 @@
     <MudDrawer @bind-Open="IsDrawerOpen" Variant="MudBlazor.DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always" Breakpoint="MudBlazor.Breakpoint.Md" Elevation="2">
         <AppNavigation />
     </MudDrawer>
-    <MudMainContent>
+    <MudMainContent Style="overflow:hidden">
         @Body
     </MudMainContent>
 </MudLayout>

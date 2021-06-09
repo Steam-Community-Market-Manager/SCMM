@@ -6,7 +6,6 @@
 .Item:hover {
     background-color: var(--mud-palette-overlay-dark);
     border: 1px solid var(--mud-palette-lines-default);
-    cursor: pointer;
 }
 
 .Item-Icon img {
@@ -28,4 +27,8 @@
 .Hover-Zoom:hover img {
     transform: scale(1.3);
     filter: drop-shadow(2px 4px 6px black);
+}
+
+.Purchasable {
+    cursor: pointer;
 }

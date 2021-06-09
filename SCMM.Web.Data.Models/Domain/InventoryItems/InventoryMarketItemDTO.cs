@@ -1,9 +1,10 @@
 ﻿using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.UI;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.Domain.InventoryItems
 {
-    public class InventoryMarketItemDTO : IFilterableItem
+    public class InventoryMarketItemDTO : ISearchable
     {
         public string SteamId { get; set; }
 
@@ -34,5 +35,8 @@ namespace SCMM.Web.Data.Models.Domain.InventoryItems
         public long ResellProfit { get; set; }
 
         public long Last1hrValue { get; set; }
+
+        [JsonIgnore]
+        public object[] SearchData => new object[] { SteamId, Name };
     }
 }

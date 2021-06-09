@@ -1,9 +1,12 @@
 ﻿using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
+using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store.Types;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -116,8 +119,51 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public DateTimeOffset? TimeRefreshed { get; set; }
 
+        #region Pricing
+
         public SteamStoreItem StoreItem { get; set; }
 
         public SteamMarketItem MarketItem { get; set; }
+
+        public PriceType? BuyNowFrom => GetPrices().OrderByDescending(x => x.BuyPrice).FirstOrDefault()?.Type;
+
+        public SteamCurrency BuyNowCurrency => GetPrices().OrderByDescending(x => x.BuyPrice).FirstOrDefault()?.Currency;
+
+        public long? BuyNowPrice => GetPrices().OrderByDescending(x => x.BuyPrice).FirstOrDefault()?.BuyPrice;
+
+        public string BuyNowUrl => GetPrices().OrderByDescending(x => x.BuyPrice).FirstOrDefault()?.BuyUrl;
+
+        private IEnumerable<Price> GetPrices()
+        {
+            if (StoreItem != null && StoreItem.IsActive)
+            {
+                yield return new Price
+                {
+                    Type = PriceType.SteamStore,
+                    Currency = StoreItem.Currency,
+                    BuyPrice = StoreItem.Price,
+                    BuyUrl = new SteamStorePageRequest()
+                    {
+                        AppId = (StoreItem.App?.SteamId ?? App?.SteamId)
+                    }
+                };
+            }
+            if (MarketItem != null)
+            {
+                yield return new Price
+                {
+                    Type = PriceType.SteamCommunityMarket,
+                    Currency = MarketItem.Currency,
+                    BuyPrice = MarketItem.BuyNowPrice,
+                    BuyUrl = new SteamMarketListingPageRequest()
+                    {
+                        AppId = (MarketItem.App?.SteamId ?? App?.SteamId),
+                        MarketHashName = NameHash
+                    }
+                };
+            }
+        }
+
+        #endregion
     }
 }

@@ -2,7 +2,7 @@
 @page "/store"
 @page "/store/{StoreId}"
 @page "/steam/store"
-@using SCMM.Web.Data.Models.Domain.StoreItems
+@using SCMM.Web.Data.Models.UI.Store
 @using SCMM.Web.Data.Models
 @inject ILogger<StorePage> Logger
 @inject IDialogService Dialogs
@@ -93,7 +93,7 @@ else if (StoreList.Any())
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
                                                     <i class="fas fa-fw fa-balance-scale-left"></i>
-                                                    <span><MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketPriceRankPosition cheaper @item.ItemType.Pluralise(item.MarketPriceRankPosition)</MudLink> in the marketplace (@item.MarketPriceRankTotal total).</span>
+                                                    <span><MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketPriceRankPosition cheaper @item.ItemType.Pluralise(item.MarketPriceRankPosition)</MudLink> in the marketplace (@item.MarketPriceRankTotal total).</span>
                                                 </MudText>
                                             }
                                             @if (item.SalesMinimum > 0)
@@ -103,15 +103,15 @@ else if (StoreList.Any())
                                                     <span>
                                                         @if (item.SalesMaximum == null)
                                                         {
-                                                            <span>More than <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() sold</MudLink></span>
+                                                            <span>More than <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() sold</MudLink></span>
                                                         }
                                                         else if (item.SalesMinimum == item.SalesMaximum)
                                                         {
-                                                            <span><MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() sold</MudLink></span>
+                                                            <span><MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() sold</MudLink></span>
                                                         }
                                                         else
                                                         {
-                                                            <span>Between <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink></span>
+                                                            <span>Between <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink></span>
                                                         }
                                                     </span>
                                                 </MudText>
@@ -121,7 +121,7 @@ else if (StoreList.Any())
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
                                                     <i class="fas fa-fw fa-user"></i>
                                                     <span>
-                                                        <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.Subscriptions.Value.ToQuantityString() subscribers</MudLink>
+                                                        <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.Subscriptions.Value.ToQuantityString() subscribers</MudLink>
                                                     </span>
                                                 </MudText>
                                             }
@@ -131,7 +131,7 @@ else if (StoreList.Any())
                                                 {
                                                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
                                                         <i class="fas fa-fw fa-cubes"></i>
-                                                        <span>Breaks down into <MudLink Href="#" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@(component.Value)x @component.Key</MudLink></span>
+                                                        <span>Breaks down into <span class="mud-default-text">@(component.Value)x @component.Key</span></span>
                                                     </MudText>
                                                 }
                                             }
@@ -139,7 +139,7 @@ else if (StoreList.Any())
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
                                                     <i class="fas fa-fw fa-paint-roller"></i>
-                                                    <span>Part of the <MudLink @onclick="@(() => ShowItemCollectionDialog(item.ItemCollection))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink> set</span>
+                                                    <span>Part of the <MudLink @onclick="@(() => ShowItemCollectionDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink> set</span>
                                                 </MudText>
                                             }
                                             <div class="my-3">
@@ -225,7 +225,7 @@ else if (StoreList.Any())
                                             </div>
                                         </MudItem>
                                         <MudItem xs="7">
-                                            <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableInStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Text)" 
+                                            <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableInStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
                                                        Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableInStore)" FullWidth>
                                                 <RustIcon />        
                                                 <strong class="ml-1">@item.AppName store</strong>
@@ -272,7 +272,7 @@ else if (StoreList.Any())
                                 @if (ItemSalesChart != null)
                                 {
                                     <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
-                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="Chart-Footnote">
+                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="ma-4">
                                         <span><strong>NOTE:</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
                                     </MudText>
                                 }
@@ -291,22 +291,12 @@ else if (StoreList.Any())
                                     <Alert Title="Unavailable" SubTitle="No data yet" />
                                 }
                             </MudTabPanel>
-                            <MudTabPanel Text="Timeline">
-                                @if (ItemSubscribersHistoryChart != null)
-                                {
-                                    <ChartJsLineChart @ref="ItemSubscribersHistoryChartJs" Config="@ItemSubscribersHistoryChart" />
-                                }
-                                else
-                                {
-                                    <Alert Title="Unavailable" SubTitle="No data yet" />
-                                }
-                            </MudTabPanel>
                             @if (Store.Items.Any(x => x.HasMarketListing))
                             {
                                 <MudTabPanel Text="Marketplace Performance">
                                     @if (ItemMarketplacePerformanceChart != null)
                                     {
-                                        <div class="Chart-Radar">
+                                        <div class="ma-4">
                                             <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
                                         </div>
                                     }
@@ -334,9 +324,9 @@ else if (StoreList.Any())
 
 @code {
 
-    private StoreListItemDTO[] StoreList { get; set; }
+    private StoreIdentiferDTO[] StoreList { get; set; }
     
-    private StoreDTO Store { get; set; }
+    private StoreDetailsDTO Store { get; set; }
     
     [Parameter]
     public string StoreId { get; set; }
@@ -349,15 +339,11 @@ else if (StoreList.Any())
 
     private ChartJsBarChart ItemSubscribersChartJs { get; set; }
 
-    private ChartJsLineChart ItemSubscribersHistoryChartJs { get; set; }
-
     private ChartJsRadarChart ItemMarketplacePerformanceChartJs { get; set; }
 
     private BarConfig ItemSalesChart { get; set; }
 
     private BarConfig ItemSubscribersChart { get; set; }
-
-    private LineConfig ItemSubscribersHistoryChart { get; set; }
 
     private RadarConfig ItemMarketplacePerformanceChart { get; set; }
     
@@ -399,9 +385,7 @@ else if (StoreList.Any())
             StateHasChanged();
 
             // Load the store list
-            StoreList = (await Http.GetFromJsonAsync<StoreListItemDTO[]>($"api/store"))
-                .OrderByDescending(x => x.Start)
-                .ToArray();
+            StoreList = await Http.GetFromJsonAsync<StoreIdentiferDTO[]>($"api/store");
                 
             StateHasChanged();
             if (StoreList.Any())
@@ -433,7 +417,7 @@ else if (StoreList.Any())
             if (!String.IsNullOrEmpty(StoreId))
             {
                 // Load the new store (if any)
-                Store = await Http.GetFromJsonAsync<StoreDTO>($"api/store/{StoreId}");
+                Store = await Http.GetFromJsonAsync<StoreDetailsDTO>($"api/store/{StoreId}");
                 StoreId = Store.Id;
                 
                 // The selected store should show as the active tab in the store tab list
@@ -441,7 +425,6 @@ else if (StoreList.Any())
                 
                 RedrawItemSalesChart();
                 RedrawItemSubscribersChart();
-                RedrawItemSubscribersTimelineChart();
                 RedrawItemMarketplacePerformanceChart();
                 StateHasChanged();
             }
@@ -455,29 +438,46 @@ else if (StoreList.Any())
         }
     }
 
-    private void BuyItemFromStore(StoreItemDTO item)
+    private void BuyItemFromStore(StoreItemDetailsDTO item)
     {
         ExternalNavigation.NavigateToNewTab($"https://store.steampowered.com/itemstore/{item.AppId}/detail/{item.Id}/");
     }
     
-    private void BuyItemFromMarket(StoreItemDTO item)
+    private void BuyItemFromMarket(StoreItemDetailsDTO item)
     {
         ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/market/listings/{item.AppId}/{Uri.EscapeDataString(item.Name)}");
     }
 
-    private void ViewItemWorkshopPage(StoreItemDTO item)
+    private void ViewItemWorkshopPage(StoreItemDetailsDTO item)
     {
         ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/sharedfiles/filedetails/?id={item.WorkshopFileId}");
     }
     
-    private void ShowItemCollectionDialog(string itemCollection)
+    private void ShowItemTypeDialog(StoreItemDetailsDTO item)
     {
-        Dialogs.Show<ViewItemCollectionDialog>(itemCollection, parameters: new DialogParameters()
+        Dialogs.Show<ViewItemListDialog>(item.ItemType, parameters: new DialogParameters()
         {
-            ["ItemCollection"] = itemCollection
+            ["ItemType"] = item.ItemType,
+            ["ItemId"] = item.Id.ToString()
         });
     }
 
+    private void ShowItemSalesDialog(StoreItemDetailsDTO item)
+    {
+    }
+
+    private void ShowItemBreakdownDialog(StoreItemDetailsDTO item)
+    {
+    }
+    
+    private void ShowItemCollectionDialog(StoreItemDetailsDTO item)
+    {
+        Dialogs.Show<ViewItemCollectionDialog>(item.ItemCollection, parameters: new DialogParameters()
+        {
+            ["CollectionName"] = item.ItemCollection
+        });
+    }
+    
     private void RedrawItemSalesChart()
     {
         var storeItems = Store.Items
@@ -691,108 +691,6 @@ else if (StoreList.Any())
         });
     }
 
-    private void RedrawItemSubscribersTimelineChart()
-    {
-        var startOfWeek = Store.Start.DateTime;
-        var storeItems = Store.Items
-            .Where(x => x.HasWorkshopFile)
-            .OrderBy(x => x.StoreIndex)
-            .ToList();
-
-        if (!storeItems.Any())
-        {
-            return;
-        }
-
-        ItemSubscribersHistoryChart = new LineConfig
-        {
-            Options = new LineOptions
-            {
-                Legend = new Legend
-                {
-                    Display = true,
-                    Labels = new LegendLabelConfiguration()
-                    {
-                        FontColor = "#ffffff"
-                    }
-                },
-                Responsive = true,
-                Tooltips = new Tooltips
-                {
-                    Enabled = true
-                },
-                Scales = new Scales
-                {
-
-                    xAxes = new List<CartesianAxis>
-                    {
-                        new CategoryAxis
-                        {
-                            Ticks = new CategoryTicks()
-                            {
-                                Display = true,
-                                FontColor = "#ffffff"
-                            },
-                            ScaleLabel = new ScaleLabel()
-                            {
-                                Display = true,
-                                FontColor = "#ffffff"
-                            },
-                            GridLines = new GridLines
-                            {
-                                Display = true,
-                                Color = "#e0e0e0"
-                            }
-                        }
-                    },
-                    yAxes = new List<CartesianAxis>
-                    {
-                        new LinearCartesianAxis
-                        {
-                            Ticks = new LinearCartesianTicks()
-                            {
-                                Display = true,
-                                FontColor = "#ffffff",
-                                BeginAtZero = true
-                            },
-                            ScaleLabel = new ScaleLabel()
-                            {
-                                Display = true,
-                                FontColor = "#ffffff"
-                            },
-                            GridLines = new GridLines
-                            {
-                                Display = true,
-                                Color = "#e0e0e0"
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        ItemSubscribersHistoryChart.Data.Labels = GetSkinWeekDates(startOfWeek)
-            .Select(x => x.ToString("dd MMMM yyyy"))
-            .ToList();
-
-        foreach (var item in storeItems)
-        {
-            var itemDataSet = new LineDataset<DoubleWrapper>
-            {
-                Label = item.Name,
-                BackgroundColor = GraphDataSetColours[storeItems.IndexOf(item)],
-                BorderColor = GraphDataSetColours[storeItems.IndexOf(item)],
-                BorderWidth = 3,
-                LineTension = 0.1,
-                Fill = false
-            };
-            itemDataSet.AddRange(
-                GetItemSubscriptionDataset(item, startOfWeek)
-            );
-            ItemSubscribersHistoryChart.Data.Datasets.Add(itemDataSet);
-        }
-    }
-
     private void RedrawItemMarketplacePerformanceChart()
     {
         var storeItems = Store.Items
@@ -863,56 +761,5 @@ else if (StoreList.Any())
             itemMarketPrices, itemStorePrices
         });
     }
-
-    IEnumerable<DateTime> GetSkinWeekDates(DateTime startOfWeek)
-    {
-        return new[] {
-            startOfWeek.Date.AddDays(-1),
-            startOfWeek.Date.AddDays(0),
-            startOfWeek.Date.AddDays(1),
-            startOfWeek.Date.AddDays(2),
-            startOfWeek.Date.AddDays(3),
-            startOfWeek.Date.AddDays(4),
-            startOfWeek.Date.AddDays(5),
-            startOfWeek.Date.AddDays(6)
-        };
-    }
-
-    IEnumerable<DoubleWrapper> GetItemSubscriptionDataset(StoreItemDTO item, DateTime startOfWeek)
-    {
-        var dataSet = new List<DoubleWrapper>();
-        if (item?.SubscriptionsHistory?.Any() != true)
-        {
-            return dataSet;
-        }
-
-        var graphDates = GetSkinWeekDates(startOfWeek).Where(x => x < DateTime.UtcNow);
-        foreach (var graphDate in graphDates)
-        {
-            var dataPoint = 0d;
-            var dataKey = graphDate.Date.ToString("dd MMM yyyy");
-            var keys = item.SubscriptionsHistory.Keys.ToArray();
-            if (item.SubscriptionsHistory.ContainsKey(dataKey))
-            {
-                dataPoint = item.SubscriptionsHistory[dataKey];
-            }
-            dataSet.Add(dataPoint);
-        }
-        return dataSet;
-    }
-
-    private string[] GraphDataSetColours = {
-        "#2196F3",
-        "#8BC34A",
-        "#FF5722",
-        "#E91E63",
-        "#9C27B0",
-        "#3F51B5",
-        "#FF9800",
-        "#FFEB3B",
-        "#795548",
-        "#00BCD4",
-        "#607D8B"
-    };
 
 }

@@ -39,3 +39,7 @@
 .mud-skeleton-light {
     background-color: rgba(255,255,255,.5);
 }
+
+.mud-link:hover {
+    cursor: pointer;
+}

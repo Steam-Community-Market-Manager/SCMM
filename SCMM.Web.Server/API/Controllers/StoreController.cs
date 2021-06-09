@@ -9,7 +9,7 @@ using SCMM.Steam.API;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Data.Models.Domain.StoreItems;
+using SCMM.Web.Data.Models.UI.Store;
 using SCMM.Web.Server.Extensions;
 using System;
 using System.Collections.Generic;
@@ -49,7 +49,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<StoreListItemDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<StoreIdentiferDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStores()
         {
@@ -57,11 +57,11 @@ namespace SCMM.Web.Server.API.Controllers
             var itemStores = await _db.SteamItemStores
                 .AsNoTracking()
                 .Where(x => x.App.SteamId == appId)
-                .OrderBy(x => x.Start)
+                .OrderByDescending(x => x.Start)
                 .ToListAsync();
 
             return Ok(
-                itemStores.Select(x => _mapper.Map<SteamItemStore, StoreListItemDTO>(x, this)).ToList()
+                itemStores.Select(x => _mapper.Map<SteamItemStore, StoreIdentiferDTO>(x, this)).ToList()
             );
         }
 
@@ -78,7 +78,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("current")]
-        [ProducesResponseType(typeof(StoreDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(StoreDetailsDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCurrentStore()
@@ -101,7 +101,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{dateTime}")]
-        [ProducesResponseType(typeof(StoreDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(StoreDetailsDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -129,7 +129,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem.Currency)
                 .FirstOrDefaultAsync();
 
-            var itemStoreDetail = _mapper.Map<SteamItemStore, StoreDTO>(itemStore, this);
+            var itemStoreDetail = _mapper.Map<SteamItemStore, StoreDetailsDTO>(itemStore, this);
             if (itemStoreDetail == null)
             {
                 return NotFound();

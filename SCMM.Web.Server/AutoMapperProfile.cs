@@ -6,14 +6,15 @@ using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.Domain.InventoryItems;
-using SCMM.Web.Data.Models.Domain.Item;
 using SCMM.Web.Data.Models.Domain.Languages;
 using SCMM.Web.Data.Models.Domain.MarketItems;
 using SCMM.Web.Data.Models.Domain.Profiles;
-using SCMM.Web.Data.Models.Domain.StoreItems;
 using SCMM.Web.Data.Models.Extensions;
+using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.ProfileInventory;
+using SCMM.Web.Data.Models.UI.Store;
 using SCMM.Web.Server.Extensions;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SCMM.Web.Server
@@ -58,6 +59,7 @@ namespace SCMM.Web.Server
             CreateMap<SteamProfileInventoryItem, InventoryInvestmentItemDTO>()
                 .ForMember(x => x.SteamAppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
+                .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Description.ItemType))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
@@ -156,29 +158,30 @@ namespace SCMM.Web.Server
             //
             // ITEM
             //
-            CreateMap<SteamAssetDescription, ItemCollectionListItemDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
-                .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
-                .ForMember(x => x.AppName, o => o.MapFrom(p => p.App.Name))
-                .ForMember(x => x.Currency, o => o.MapFromCurrency())
-                .ForMember(x => x.MarketListingId, o => o.MapFrom(p => p.MarketItem != null ? p.MarketItem.SteamId : null))
-                .ForMember(x => x.MarketPrice, o => o.MapFromUsingCurrencyExchange(p => p.MarketItem != null ? p.MarketItem.BuyNowPrice : null, p => p.MarketItem != null ? p.MarketItem.Currency : null))
-                .ForMember(x => x.StoreItemId, o => o.MapFrom(p => p.StoreItem != null ? p.StoreItem.SteamId : null))
-                .ForMember(x => x.StorePrice, o => o.MapFromUsingCurrencyTable(p => p.StoreItem != null ? p.StoreItem.Prices : null));
+            CreateMap<List<SteamAssetDescription>, ItemCollectionDTO>()
+                .ForMember(x => x.Name, o => o.MapFrom(p => p.Count > 0 ? p.FirstOrDefault().ItemCollection : null))
+                .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Count(x => x.Creator != null) > 0 ? p.FirstOrDefault(x => x.Creator != null).Creator.Name : null))
+                .ForMember(x => x.AuthorAvatarUrl, o => o.MapFrom(p => p.Count(x => x.Creator != null) > 0 ? p.FirstOrDefault(x => x.Creator != null).Creator.AvatarUrl : null))
+                .ForMember(x => x.BuyNowCurrency, o => o.MapFrom(p => p.Count > 0 ? p.FirstOrDefault().BuyNowCurrency : null))
+                .ForMember(x => x.BuyNowPrice, o => o.MapFrom(p => p.Count > 0 ? p.Sum(x => x.BuyNowPrice) : null))
+                .ForMember(x => x.Items, o => o.MapFrom(p => p));
+
+            CreateMap<SteamAssetDescription, ItemDetailsDTO>()
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId));
 
             //
             // STORE
             //
 
-            CreateMap<SteamItemStore, StoreListItemDTO>()
+            CreateMap<SteamItemStore, StoreIdentiferDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.StoreIdDateFormat)))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.GetFullName()));
 
-            CreateMap<SteamItemStore, StoreDTO>()
+            CreateMap<SteamItemStore, StoreDetailsDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.StoreIdDateFormat)))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.GetFullName()));
 
-            CreateMap<SteamStoreItemItemStore, StoreItemDTO>()
+            CreateMap<SteamStoreItemItemStore, StoreItemDetailsDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Item.SteamId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.Item.App.SteamId))
                 .ForMember(x => x.AppName, o => o.MapFrom(p => p.Item.App.Name))
@@ -187,27 +190,25 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Item.Description.Creator != null ? p.Item.Description.Creator.Name : p.Item.App.Name))
                 .ForMember(x => x.AuthorAvatarUrl, o => o.MapFrom(p => p.Item.Description.Creator != null ? p.Item.Description.Creator.AvatarUrl : p.Item.App.IconUrl))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Item.Description.Name))
+                .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Item.Description.ItemType))
+                .ForMember(x => x.ItemCollection, o => o.MapFrom(p => p.Item.Description.ItemCollection))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Item.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Item.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Item.Description.IconUrl))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.StorePrice, o => o.MapFromUsingCurrencyTable(p => p.Item != null ? p.Item.Prices : null))
                 .ForMember(x => x.StoreIndex, o => o.MapFrom(p => p.Index))
-                .ForMember(x => x.IsStillAvailableInStore, o => o.MapFrom(p => p.Store != null && p.Store.End == null))
+                .ForMember(x => x.IsStillAvailableInStore, o => o.MapFrom(p => p.Item != null ? p.Item.IsActive : false))
                 .ForMember(x => x.MarketPrice, o => o.MapFromUsingCurrencyExchange(p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.BuyNowPrice : null, p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.Currency : null))
                 .ForMember(x => x.SalesMinimum, o => o.MapFrom(p => p.Item.TotalSalesMin))
                 .ForMember(x => x.SalesMaximum, o => o.MapFrom(p => p.Item.TotalSalesMax))
-                .ForMember(x => x.SalesHistory, o => o.MapFrom(p => p.Item.TotalSalesGraph.ToDailyGraphDictionary()))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Item.Description.TotalSubscriptions != null ? p.Item.Description.TotalSubscriptions : null))
-                //.ForMember(x => x.SubscriptionsHistory, o => o.MapFrom(p => p.Item.Description.SubscriptionsGraph != null ? p.Item.Description.SubscriptionsGraph.ToDailyGraphDictionary() : null))
                 .ForMember(x => x.IsMarketable, o => o.MapFrom(p => p.Item.Description.IsMarketable))
                 .ForMember(x => x.MarketableRestrictionDays, o => o.MapFrom(p => p.Item.Description.MarketableRestrictionDays))
                 .ForMember(x => x.IsTradable, o => o.MapFrom(p => p.Item.Description.IsTradable))
                 .ForMember(x => x.TradableRestrictionDays, o => o.MapFrom(p => p.Item.Description.TradableRestrictionDays))
                 .ForMember(x => x.IsBreakable, o => o.MapFrom(p => p.Item.Description.IsBreakable))
-                .ForMember(x => x.BreaksIntoComponents, o => o.MapFrom(p => p.Item.Description.BreaksIntoComponents.ToDictionary(x => x.Key, x => x.Value)))
-                .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Item.Description.ItemType))
-                .ForMember(x => x.ItemCollection, o => o.MapFrom(p => p.Item.Description.ItemCollection));
+                .ForMember(x => x.BreaksIntoComponents, o => o.MapFrom(p => p.Item.Description.BreaksIntoComponents.ToDictionary(x => x.Key, x => x.Value)));
         }
     }
 }

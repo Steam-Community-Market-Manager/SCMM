@@ -114,8 +114,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 await message.DeleteAsync();
                 return CommandResult.Fail(
-                    reason: $"Steam ID could not be found",
-                    explaination: $"That Steam ID doesn't exist. You can find your ID by viewing your Steam profile and copying the unique name or number shown in the URL bar. Pasting the full URL also works.",
+                    reason: $"Steam profile not found",
+                    explaination: $"That Steam profile doesn't exist. Supported options are **Steam ID64**, **Custom URL**, or **Profile URL**. You can easily find your Profile URL by viewing your profile in Steam and copying it from the URL bar.",
                     helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_find_your_profile_id.png"
                 );
             }
@@ -141,7 +141,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 await message.DeleteAsync();
                 return CommandResult.Fail(
-                    $"Beep boop! I don't support that currency."
+                    $"Sorry, I don't support that currency."
                 );
             }
 
@@ -195,6 +195,11 @@ namespace SCMM.Discord.Bot.Server.Modules
                 color = Color.Gold;
             }
 
+            var explainations = (
+                "The **Market Value** is the price that people are paying for this inventory, based on the most recent sales data for each item. " +
+                "The **Market Cash-Out Value** is the amount of money you could *probably* get if all items were listed (and sold) on the Steam Community Market by undercutting the current 'buy now' prices."
+            );
+
             var author = new EmbedAuthorBuilder()
                 .WithName(profile.Name)
                 .WithIconUrl(profile.AvatarUrl)
@@ -202,14 +207,19 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             var fields = new List<EmbedFieldBuilder>();
             fields.Add(new EmbedFieldBuilder()
-                .WithName("📈 Current Market Value")
+                .WithName("📈 Market Value")
                 .WithValue(currency.ToPriceString(inventoryTotals.TotalMarketValue))
+                .WithIsInline(false)
+            );
+            fields.Add(new EmbedFieldBuilder()
+                .WithName("💰 Market Cash-Out Value")
+                .WithValue($"{currency.ToPriceString(inventoryTotals.TotalResellValue - inventoryTotals.TotalResellTax)} *(after Steam fees)*")
                 .WithIsInline(false)
             );
             if (inventoryTotals.TotalInvested != null && inventoryTotals.TotalInvested > 0)
             {
                 fields.Add(new EmbedFieldBuilder()
-                    .WithName("💰 Invested")
+                    .WithName("💰 Investment Cost")
                     .WithValue(currency.ToPriceString(inventoryTotals.TotalInvested.Value))
                     .WithIsInline(true)
                 );
@@ -222,7 +232,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             var embed = new EmbedBuilder()
                 .WithAuthor(author)
-                .WithDescription($"Inventory of {inventoryTotals.TotalItems.ToQuantityString()} item(s).")
+                .WithDescription($"Inventory of **{inventoryTotals.TotalItems.ToQuantityString()} item(s)**.")
                 .WithFields(fields)
                 .WithImageUrl($"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail?.Image?.Id}")
                 .WithThumbnailUrl(profile.AvatarUrl)

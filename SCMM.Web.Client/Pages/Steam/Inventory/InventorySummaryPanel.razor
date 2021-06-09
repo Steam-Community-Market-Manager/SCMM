@@ -87,7 +87,7 @@ else
     }
     
     private IEnumerable<T> FilteredItems<T>(IEnumerable<T> items)
-        where T : IFilterableItem
+        where T : ISearchable
     {
         if (String.IsNullOrEmpty(Filter))
         {
@@ -95,7 +95,7 @@ else
         }
 
         return items.Where(x => 
-            x.Name.Contains(Filter, StringComparison.CurrentCultureIgnoreCase)
+            x.SearchData.Any(y => y?.ToString()?.Contains(Filter, StringComparison.CurrentCultureIgnoreCase) == true)
         );
     }
     

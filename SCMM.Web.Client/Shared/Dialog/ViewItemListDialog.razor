@@ -1,55 +1,37 @@
 ﻿@namespace SCMM.Web.Client.Shared.Dialog
 @using SCMM.Steam.Data.Models.Enums
 @using SCMM.Web.Data.Models.UI.Item
-@inject ILogger<ViewItemCollectionDialog> Logger
+@using SCMM.Web.Data.Models.UI.Store
+@inject ILogger<ViewItemListDialog> Logger
 @inject ISnackbar Snackbar
 @inject ExternalNavigationManager ExternalNavigation
 @inject HttpClient Http
 
 <MudDialog>
     <TitleContent>
-        @if (Collection == null)
-        {
-            <MudText Typo="MudBlazor.Typo.h6">@CollectionName</MudText>
-        } 
-        else
-        {
-            <MudTooltip Text="@Collection.AuthorName">
-                <MudAvatar Image="@Collection.AuthorAvatarUrl" Size="MudBlazor.Size.Medium" />
-            </MudTooltip>
-            <div class="d-inline-block ml-2">
-                <div class="Collection-Name">
-                    <MudText Typo="MudBlazor.Typo.h6">@Collection.Name</MudText>
-                </div>
-                <div class="Collection-Description">
-                    <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
-                        <span>There are <strong>@Collection.Items.Count items</strong> in this collection. Total cost: <strong>@Collection.BuyNowCurrency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
-                    </MudText>
-                </div>
-            </div>
-        }
+        <MudText Typo="MudBlazor.Typo.h6">@ItemType</MudText>
     </TitleContent>
     <DialogContent>
-        @if (Collection == null)
+        @if (Items == null)
         {
-            <Loading Message="Loading item collection..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+            <Loading Message="Loading item list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
         } 
         else
         {
             <MudGrid Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
-                @foreach (var item in Collection.Items)
+                @foreach (var item in Items.OrderBy(x => x.BuyNowPrice))
                 {
                     <MudItem xs="6" sm="3" md="2">
-                        <div class="Item mud-paper" @onclick="@(() => BuyItem(item))">
+                        <div class="@((item is IPurchasable) ? "Item Purchasable mud-paper" : "Item mud-paper")" @onclick="@(() => BuyItem(item as IPurchasable))">
                             <div class="Item-Icon Hover-Zoom">
                                 <img src="@item.IconUrl" />
                             </div>
                             <div class="ma-2 d-flex flex-column justify-center align-center Centered">
                                 <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
-                                @if (item.BuyNowPrice != null)
+                                @if ((item is IPurchasable) && (item as IPurchasable).BuyNowPrice != null)
                                 {
                                     <MudText Typo="MudBlazor.Typo.body2" Class="NoWrap">
-                                        @switch(item.BuyNowFrom)
+                                        @switch((item as IPurchasable).BuyNowFrom)
                                         {
                                             case PriceType.SteamStore:
                                             {
@@ -62,7 +44,7 @@
                                                 break;
                                             }
                                         }
-                                        <span>@item.BuyNowCurrency.ToPriceString(item.BuyNowPrice.Value)</span>
+                                        <span>@((item as IPurchasable).BuyNowCurrency.ToPriceString((item as IPurchasable).BuyNowPrice.Value))</span>
                                     </MudText>
                                 }
                             </div>
@@ -78,22 +60,25 @@
 
     [CascadingParameter] 
     public MudDialogInstance Dialog { get; set; }
+    
+    [Parameter]
+    public string ItemType { get; set; }
 
     [Parameter]
-    public string CollectionName { get; set; }
-    
-    private ItemCollectionDTO Collection { get; set; }
+    public string ItemId { get; set; }
+
+    private ItemDetailsDTO[] Items { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>($"api/item/collection/{CollectionName}");
+            Items = await Http.GetFromJsonAsync<ItemDetailsDTO[]>($"api/item/marketPriceRank/{ItemType}?storeItemId={ItemId}");
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error loading the item collection");
-            Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
+            Logger.LogError(ex, $"Error loading the item list");
+            Snackbar.Add($"Unable to load item list. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
 
@@ -106,7 +91,7 @@
         Dialog.SetOptions(Dialog.Options);
     }
     
-    private void BuyItem(ItemDetailsDTO item)
+    private void BuyItem(IPurchasable item)
     {
         if (!String.IsNullOrEmpty(item.BuyNowUrl))
         {

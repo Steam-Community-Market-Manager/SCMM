@@ -1,10 +1,11 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
 using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.UI;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.Domain.InventoryItems
 {
-    public class ProfileInventoryItemSummaryDTO : IFilterableItem
+    public class ProfileInventoryItemSummaryDTO : ISearchable
     {
         public string SteamId { get; set; }
 
@@ -25,5 +26,8 @@ namespace SCMM.Web.Data.Models.Domain.InventoryItems
         public long? Value { get; set; }
 
         public SteamProfileInventoryItemFlags Flags { get; set; }
+
+        [JsonIgnore]
+        public object[] SearchData => new object[] { SteamId, Name };
     }
 }

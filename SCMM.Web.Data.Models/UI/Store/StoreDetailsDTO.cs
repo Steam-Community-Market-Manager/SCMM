@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace SCMM.Web.Data.Models.Domain.StoreItems
+namespace SCMM.Web.Data.Models.UI.Store
 {
-    public class StoreDTO
+    public class StoreDetailsDTO : ISearchable
     {
         public string Id { get; set; }
 
@@ -13,8 +14,11 @@ namespace SCMM.Web.Data.Models.Domain.StoreItems
 
         public DateTimeOffset? End { get; set; }
 
-        public IList<StoreItemDTO> Items { get; set; }
+        public IList<StoreItemDetailsDTO> Items { get; set; }
 
         public IList<string> Media { get; set; }
+
+        [JsonIgnore]
+        public object[] SearchData => new object[] { Id, Name };
     }
 }

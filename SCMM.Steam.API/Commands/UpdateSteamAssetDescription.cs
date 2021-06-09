@@ -418,20 +418,25 @@ namespace SCMM.Steam.API.Commands
                 itemCollection = itemCollection.Trim();
                 if (!String.IsNullOrEmpty(itemCollection))
                 {
-                    // Count the number of other assets created by the same author that also contain the remaining unique collection words.
-                    // If there is more than one item, then it must be part of a set.
-                    var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null && x.CreatorId == assetDescription.CreatorId);
-                    foreach (var word in itemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    // Ensure the collection name is longer than three characters.
+                    // This fixes issues like "Satchelo" => "o", which would match against nearly anything
+                    if (itemCollection.Length >= 3)
                     {
-                        query = query.Where(x => x.Name.Contains(word));
-                    }
-                    var collectionItems = await query.ToListAsync();
-                    if (collectionItems.Count > 1)
-                    {
-                        // Update all items in the collection (this helps fix old items when they become part of a new collection)
-                        foreach (var item in collectionItems)
+                        // Count the number of other assets created by the same author that also contain the remaining unique collection words.
+                        // If there is more than one item, then it must be part of a set.
+                        var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null && x.CreatorId == assetDescription.CreatorId);
+                        foreach (var word in itemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                         {
-                            item.ItemCollection = itemCollection;
+                            query = query.Where(x => x.Name.Contains(word));
+                        }
+                        var collectionItems = await query.ToListAsync();
+                        if (collectionItems.Count > 1)
+                        {
+                            // Update all items in the collection (this helps fix old items when they become part of a new collection)
+                            foreach (var item in collectionItems)
+                            {
+                                item.ItemCollection = itemCollection;
+                            }
                         }
                     }
                 }

@@ -3,7 +3,13 @@
     height: 100%;
 }
 
+.Item-Summary {
+    border: 1px solid transparent;
+}
+
 .Item-Summary:hover {
+    background-color: var(--mud-palette-overlay-dark);
+    border: 1px solid var(--mud-palette-lines-default);
     cursor: pointer;
 }
 
@@ -12,15 +18,11 @@
     height: 5rem;
 }
 
-.Hover-Zoom {
-    overflow: hidden;
-}
-
 .Hover-Zoom img {
     transition: transform .5s ease;
 }
 
 .Hover-Zoom:hover img {
     transform: scale(1.5);
-    filter: drop-shadow(2px 4px 8px #999999);
+    filter: drop-shadow(2px 4px 6px black);
 }

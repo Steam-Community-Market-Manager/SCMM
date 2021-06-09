@@ -3,7 +3,7 @@ using System;
 
 namespace SCMM.Web.Data.Models.Domain.InventoryItems
 {
-    public class ProfileSummaryDTO : IFilterableItem
+    public class ProfileSummaryDTO
     {
         public string SteamId { get; set; }
 

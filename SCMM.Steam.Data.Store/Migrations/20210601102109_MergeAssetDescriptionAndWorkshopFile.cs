@@ -219,10 +219,10 @@ namespace SCMM.Steam.Data.Store.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.Sql(@"
-                UPDATE[SteamAssetDescriptions] SET [Type] = 0 WHERE[AssetWorkshopFileId] IS NULL
+                UPDATE [SteamAssetDescriptions] SET [Type] = 0 WHERE[AssetWorkshopFileId] IS NULL
             ");
             migrationBuilder.Sql(@"
-                UPDATE[SteamAssetDescriptions] SET [Type] = 1 WHERE[AssetWorkshopFileId] IS NOT NULL
+                UPDATE [SteamAssetDescriptions] SET [Type] = 1 WHERE[AssetWorkshopFileId] IS NOT NULL
             ");
             migrationBuilder.Sql(@"
                 UPDATE Asset
@@ -243,6 +243,9 @@ namespace SCMM.Steam.Data.Store.Migrations
                 FROM [SteamAssetDescriptions] Asset
                    INNER JOIN[SteamAssetWorkshopFiles] Workshop ON Workshop.Id = Asset.AssetWorkshopFileId
                    RIGHT OUTER JOIN[SteamMarketItems] Market ON Market.DescriptionId = Asset.Id
+            ");
+            migrationBuilder.Sql(@"
+                UPDATE [SteamAssetDescriptions] SET [Tags_Serialised] = NULL, [Description] = NULL, [LastCheckedOn] = NULL
             ");
         }
 

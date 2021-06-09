@@ -20,6 +20,11 @@ namespace SCMM.Steam.Data.Store
 
         public SteamCurrency Currency { get; set; }
 
+        /// <summary>
+        /// If true, the associate item store is current active and can be purchased from
+        /// </summary>
+        public bool IsActive { get; set; }
+
         public long Price { get; set; }
 
         /// <summary>

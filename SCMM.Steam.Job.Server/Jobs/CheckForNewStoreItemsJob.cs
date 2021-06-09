@@ -115,8 +115,12 @@ namespace SCMM.Steam.Job.Server.Jobs
                     var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
                     if (thisStoreItemIds.Any(x => !theirStoreItemIds.Contains(x)))
                     {
-                        // TODO: We should be able to "end" individual items, rather than the entire store
                         itemStore.End = DateTimeOffset.UtcNow;
+                        foreach (var item in itemStore.Items)
+                        {
+                            item.Item.IsActive = false;
+                        }
+
                         activeItemStores.Remove(itemStore);
                     }
                 }

@@ -1,9 +1,10 @@
 ﻿using SCMM.Web.Data.Models.Domain.Currencies;
 using System;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.ProfileInventory
 {
-    public class InventoryInvestmentItemDTO : IFilterableItem
+    public class InventoryInvestmentItemDTO : ISearchable, IItemDescription
     {
         public Guid Id { get; set; }
 
@@ -12,6 +13,8 @@ namespace SCMM.Web.Data.Models.UI.ProfileInventory
         public string SteamAppId { get; set; }
 
         public string Name { get; set; }
+
+        public string ItemType { get; set; }
 
         public string BackgroundColour { get; set; }
 
@@ -34,5 +37,8 @@ namespace SCMM.Web.Data.Models.UI.ProfileInventory
         public long? ResellTax { get; set; }
 
         public long? ResellProfit { get; set; }
+
+        [JsonIgnore]
+        public object[] SearchData => new object[] { SteamId, Name };
     }
 }
