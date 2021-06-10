@@ -293,6 +293,7 @@ namespace SCMM.Steam.API
 
             dbApp.MarketItems.Add(dbItem = new SteamMarketItem()
             {
+                SteamId = assetDescription.NameId?.ToString(),
                 App = dbApp,
                 AppId = dbApp.Id,
                 Description = assetDescription,

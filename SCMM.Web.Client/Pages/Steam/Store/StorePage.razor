@@ -194,25 +194,22 @@ else if (StoreList.Any())
                                                     </TooltipContent>
                                                 </MudTooltip>
                                             </div>
-                                            @if (!item.IsStillAvailableInStore)
+                                            @if (item.IsStillAvailableInStore)
                                             {
-                                                @if (!item.HasMarketListing)
-                                                {
-                                                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                                                        <span>This item is no longer available.</span>
-                                                    </MudText>
-                                                }
-                                                else 
-                                                {
-                                                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                                                        <span>This item is no longer available on the store, grab it from the marketplace instead.</span>
-                                                    </MudText>
-                                                }
+                                                <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                    <span>This item is also available in the marketplace.</span>
+                                                </MudText>
                                             }
                                             else if (item.HasMarketListing)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                                                    <span>This item is also available in the marketplace.</span>
+                                                    <span>This item is no longer available on the store, grab it from the marketplace instead.</span>
+                                                </MudText>
+                                            }
+                                            else 
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                    <span>This item is no longer available.</span>
                                                 </MudText>
                                             }
                                         </MudItem>

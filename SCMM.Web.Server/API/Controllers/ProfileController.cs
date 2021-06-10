@@ -904,7 +904,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 var marketItem = new SteamProfileMarketItem()
                 {
-                    SteamId = null,
+                    SteamId = assetDescription.NameId?.ToString(),
                     AppId = assetDescription.AppId,
                     DescriptionId = assetDescription.Id,
                     ProfileId = profileId,
