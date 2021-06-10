@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Item
 {
-    public class ItemDetailsDTO : ISearchable, IPurchasable, IItemDescription
+    public class ItemDetailsDTO : IItemDescription, IPurchasable, ISubscribable, ISearchable
     {
         public ulong Id { get; set; }
 
@@ -25,6 +25,8 @@ namespace SCMM.Web.Data.Models.UI.Item
         public long? BuyNowPrice { get; set; }
 
         public string BuyNowUrl { get; set; }
+
+        public long? Subscriptions { get; set;  }
 
         [JsonIgnore]
         public object[] SearchData => new object[] { Id, Name, ItemType };

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.ProfileInventory
 {
-    public class InventoryInvestmentItemDTO : ISearchable, IItemDescription
+    public class InventoryInvestmentItemDTO : IItemDescription, ISearchable
     {
         public Guid Id { get; set; }
 

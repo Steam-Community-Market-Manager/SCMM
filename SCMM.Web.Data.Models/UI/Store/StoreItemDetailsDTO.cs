@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Store
 {
-    public class StoreItemDetailsDTO : ISearchable, IItemDescription
+    public class StoreItemDetailsDTO : IItemDescription, ISubscribable, ISearchable
     {
         public ulong Id { get; set; }
 
