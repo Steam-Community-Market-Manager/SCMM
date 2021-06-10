@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
@@ -114,15 +115,18 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
             await _db.SaveChangesAsync();
 
-            // Rebuild item collections
-            foreach (var assetDescription in assetDescriptions)
+            // Rebuild item collections (batch it, can take a while...)
+            foreach (var assetDescriptionBatch in assetDescriptions.Batch(100))
             {
-                _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+                foreach (var assetDescription in assetDescriptionBatch)
                 {
-                    AssetDescription = assetDescription
-                });
+                    _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+                    {
+                        AssetDescription = assetDescription
+                    });
+                }
+                await _db.SaveChangesAsync();
             }
-            await _db.SaveChangesAsync();
 
             return CommandResult.Success();
         }
