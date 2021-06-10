@@ -245,7 +245,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                    RIGHT OUTER JOIN[SteamMarketItems] Market ON Market.DescriptionId = Asset.Id
             ");
             migrationBuilder.Sql(@"
-                UPDATE [SteamAssetDescriptions] SET [Tags_Serialised] = NULL, [Description] = NULL, [LastCheckedOn] = NULL
+                UPDATE [SteamAssetDescriptions] SET [Tags_Serialised] = NULL, [Description] = NULL, [TimeChecked] = NULL
             ");
         }
 
