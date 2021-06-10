@@ -49,7 +49,7 @@ else if (StoreList.Any())
             }
             else
             {
-                @foreach (var item in Store.Items.OrderBy(x => x.StoreIndex))
+                @foreach (var item in Store.Items.OrderByDescending(x => x.SalesMinimum * x.StorePrice))
                 {
                     <MudItem xs="12" sm="6" md="4" xl="3">
                         <div class="Store-Item">
@@ -131,7 +131,7 @@ else if (StoreList.Any())
                                                 {
                                                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap" GutterBottom>
                                                         <i class="fas fa-fw fa-cubes"></i>
-                                                        <span>Breaks down into <span class="mud-default-text">@(component.Value)x @component.Key</span></span>
+                                                        <span>Breaks down into <MudLink @onclick="@(() => ShowItemBreakdownDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@(component.Value)x @component.Key</MudLink></span>
                                                     </MudText>
                                                 }
                                             }
@@ -240,12 +240,12 @@ else if (StoreList.Any())
                                                         <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
                                                         @if (item.MarketPrice != null && item.MarketPrice > item.StorePrice)
                                                         {
-                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToPercentageString(item.StorePrice)" 
+                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice)" 
                                                                      Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="ml-2" />
                                                         }
                                                         else
                                                         {
-                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToPercentageString(item.StorePrice)" 
+                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice)" 
                                                                      Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="ml-2" />
                                                         }
                                                     </MudText>
@@ -264,8 +264,15 @@ else if (StoreList.Any())
                         </div>
                     </MudItem>   
                 }
+                
+                @foreach (var media in Store.Media)
+                {
+                    <MudItem xs="12" sm="6" md="4" xl="3">
+                        <YouTubeVideo VideoId="@media" />
+                    </MudItem>
+                }
 
-                <MudItem xs="12" xl="6">
+                <MudItem xs="12">
                     <MudPaper Outlined="true">
                         <MudTabs KeepPanelsAlive="true" Rounded="true" Centered="true" >
                             <MudTabPanel Text="Revenue">
@@ -310,12 +317,6 @@ else if (StoreList.Any())
                     </MudPaper >
                 </MudItem>
 
-                @foreach (var media in Store.Media)
-                {
-                    <MudItem xs="12" sm="6" md="4" xl="3">
-                        <YouTubeVideo VideoId="@media" />
-                    </MudItem>
-                }
             }
         </MudGrid>
 
