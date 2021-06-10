@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
+using SCMM.Web.Client.Shared;
 using SCMM.Web.Client.Shared.Navigation;
 using SCMM.Web.Client.Shared.Storage;
 using System;
@@ -21,6 +22,7 @@ namespace SCMM.Web.Client
             builder.Services.AddSingleton<AppState>();
             builder.Services.AddSingleton<LocalStorageService>();
             builder.Services.AddSingleton<ExternalNavigationManager>();
+            builder.Services.AddSingleton<DocumentManager>();
 
             builder.Services.AddHttpClient("default", (serviceProvider, client) =>
             {

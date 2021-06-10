@@ -3,7 +3,6 @@
 @using SCMM.Web.Data.Models.UI.Item
 @inject ILogger<ViewItemCollectionDialog> Logger
 @inject ISnackbar Snackbar
-@inject ExternalNavigationManager ExternalNavigation
 @inject HttpClient Http
 
 <MudDialog>
@@ -40,33 +39,7 @@
                 @foreach (var item in Collection.Items)
                 {
                     <MudItem xs="6" sm="3" md="2">
-                        <div class="Item mud-paper" @onclick="@(() => BuyItem(item))">
-                            <div class="Item-Icon Hover-Zoom">
-                                <img src="@item.IconUrl" />
-                            </div>
-                            <div class="ma-2 d-flex flex-column justify-center align-center Centered">
-                                <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
-                                @if (item.BuyNowPrice != null)
-                                {
-                                    <MudText Typo="MudBlazor.Typo.body2" Class="NoWrap">
-                                        @switch(item.BuyNowFrom)
-                                        {
-                                            case PriceType.SteamStore:
-                                            {
-                                                @:<i class="fas fa-fw fa-shopping-cart"></i>
-                                                break;
-                                            }
-                                            case PriceType.SteamCommunityMarket:
-                                            {
-                                                @:<i class="fab fa-fw fa-steam"></i>
-                                                break;
-                                            }
-                                        }
-                                        <span>@item.BuyNowCurrency.ToPriceString(item.BuyNowPrice.Value)</span>
-                                    </MudText>
-                                }
-                            </div>
-                        </div>
+                        <ItemDescriptionDetails Item="@item" />
                     </MudItem>
                 }
             </MudGrid>
@@ -105,12 +78,5 @@
         Dialog.Options.FullWidth = true;
         Dialog.SetOptions(Dialog.Options);
     }
-    
-    private void BuyItem(ItemDetailsDTO item)
-    {
-        if (!String.IsNullOrEmpty(item.BuyNowUrl))
-        {
-            ExternalNavigation.NavigateToNewTab(item.BuyNowUrl);
-        }
-    }
+
 }

@@ -23,11 +23,12 @@
             <response code="404">If the image cannot be found or has expired.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByType(System.String,System.String)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByType(System.String,System.Nullable{System.UInt64})">
             <summary>
             Get all marketable items of the specific item type
             </summary>
             <param name="itemType">The name of the item type</param>
+            <param name="compareWithItemId">The id of an item to be included in the list, for comparison</param>
             <returns>The items of the specified item type</returns>
             <remarks>
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').

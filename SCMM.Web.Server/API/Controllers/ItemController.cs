@@ -42,6 +42,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get all marketable items of the specific item type
         /// </summary>
         /// <param name="itemType">The name of the item type</param>
+        /// <param name="compareWithItemId">The id of an item to be included in the list, for comparison</param>
         /// <returns>The items of the specified item type</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -54,7 +55,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(typeof(ItemDetailsDTO[]), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsByType([FromRoute] string itemType, string storeItemId = null)
+        public async Task<IActionResult> GetItemsByType([FromRoute] string itemType, ulong? compareWithItemId = null)
         {
             if (String.IsNullOrEmpty(itemType))
             {
@@ -64,7 +65,7 @@ namespace SCMM.Web.Server.API.Controllers
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => 
                     (x.ItemType == itemType && x.IsMarketable && x.MarketItem != null) ||
-                    (x.StoreItem != null && x.StoreItem.SteamId == storeItemId)
+                    (compareWithItemId != null && x.ClassId == compareWithItemId)
                 )
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)

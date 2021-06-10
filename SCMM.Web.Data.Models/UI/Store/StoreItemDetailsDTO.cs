@@ -13,6 +13,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string AppName { get; set; }
 
+        public ulong? AssetDescriptionId { get; set; }
+
         public ulong? WorkshopFileId { get; set; }
 
         public bool HasWorkshopFile => (WorkshopFileId != null);

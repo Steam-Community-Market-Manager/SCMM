@@ -4,8 +4,8 @@
 @using SCMM.Web.Data.Models.UI.Store
 @inject ILogger<ViewItemListDialog> Logger
 @inject ISnackbar Snackbar
-@inject ExternalNavigationManager ExternalNavigation
 @inject HttpClient Http
+@inject DocumentManager Document
 
 <MudDialog>
     <TitleContent>
@@ -22,33 +22,7 @@
                 @foreach (var item in Items.OrderBy(x => x.BuyNowPrice))
                 {
                     <MudItem xs="6" sm="3" md="2">
-                        <div class="@((item is IPurchasable) ? "Item Purchasable mud-paper" : "Item mud-paper")" @onclick="@(() => BuyItem(item as IPurchasable))">
-                            <div class="Item-Icon Hover-Zoom">
-                                <img src="@item.IconUrl" />
-                            </div>
-                            <div class="ma-2 d-flex flex-column justify-center align-center Centered">
-                                <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
-                                @if ((item is IPurchasable) && (item as IPurchasable).BuyNowPrice != null)
-                                {
-                                    <MudText Typo="MudBlazor.Typo.body2" Class="NoWrap">
-                                        @switch((item as IPurchasable).BuyNowFrom)
-                                        {
-                                            case PriceType.SteamStore:
-                                            {
-                                                @:<i class="fas fa-fw fa-shopping-cart"></i>
-                                                break;
-                                            }
-                                            case PriceType.SteamCommunityMarket:
-                                            {
-                                                @:<i class="fab fa-fw fa-steam"></i>
-                                                break;
-                                            }
-                                        }
-                                        <span>@((item as IPurchasable).BuyNowCurrency.ToPriceString((item as IPurchasable).BuyNowPrice.Value))</span>
-                                    </MudText>
-                                }
-                            </div>
-                        </div>
+                        <ItemDescriptionDetails Item="@item" Highlighted="@(item.Id == ItemId)" />
                     </MudItem>
                 }
             </MudGrid>
@@ -62,10 +36,10 @@
     public MudDialogInstance Dialog { get; set; }
     
     [Parameter]
-    public string ItemType { get; set; }
+    public ulong ItemId { get; set; }
 
     [Parameter]
-    public string ItemId { get; set; }
+    public string ItemType { get; set; }
 
     private ItemDetailsDTO[] Items { get; set; }
     
@@ -73,7 +47,9 @@
     {
         try
         {
-            Items = await Http.GetFromJsonAsync<ItemDetailsDTO[]>($"api/item/marketPriceRank/{ItemType}?storeItemId={ItemId}");
+            Items = await Http.GetFromJsonAsync<ItemDetailsDTO[]>($"api/item/marketPriceRank/{ItemType}?compareWithItemId={ItemId}");
+            StateHasChanged();
+            Document.ScrollElementIntoView("Highlighted", TimeSpan.FromSeconds(0.5));
         }
         catch (Exception ex)
         {
@@ -81,7 +57,7 @@
             Snackbar.Add($"Unable to load item list. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
-
+    
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -89,13 +65,5 @@
         Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Medium;
         Dialog.Options.FullWidth = true;
         Dialog.SetOptions(Dialog.Options);
-    }
-    
-    private void BuyItem(IPurchasable item)
-    {
-        if (!String.IsNullOrEmpty(item.BuyNowUrl))
-        {
-            ExternalNavigation.NavigateToNewTab(item.BuyNowUrl);
-        }
     }
 }

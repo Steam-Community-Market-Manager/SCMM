@@ -187,6 +187,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Item.SteamId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.Item.App.SteamId))
                 .ForMember(x => x.AppName, o => o.MapFrom(p => p.Item.App.Name))
+                .ForMember(x => x.AssetDescriptionId, o => o.MapFrom(p => p.Item.Description.ClassId))
                 .ForMember(x => x.WorkshopFileId, o => o.MapFrom(p => p.Item.Description.WorkshopFileId))
                 .ForMember(x => x.MarketListingId, o => o.MapFrom(p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.SteamId : null))
                 .ForMember(x => x.AuthorName, o => o.MapFrom(p => p.Item.Description.Creator != null ? p.Item.Description.Creator.Name : p.Item.App.Name))

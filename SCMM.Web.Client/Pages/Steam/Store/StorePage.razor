@@ -455,8 +455,8 @@ else if (StoreList.Any())
     {
         Dialogs.Show<ViewItemListDialog>(item.ItemType, parameters: new DialogParameters()
         {
-            ["ItemType"] = item.ItemType,
-            ["ItemId"] = item.Id.ToString()
+            ["ItemId"] = item.AssetDescriptionId,
+            ["ItemType"] = item.ItemType
         });
     }
 

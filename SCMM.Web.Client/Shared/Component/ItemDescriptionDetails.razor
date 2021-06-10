@@ -1,0 +1,66 @@
+﻿@namespace SCMM.Web.Client.Shared.Component
+@using SCMM.Steam.Data.Models.Enums
+@inject ExternalNavigationManager ExternalNavigation
+
+<div class="@($"Item {GetDynamicClassNames()} mud-paper")" @onclick="@(() => BuyItem())">
+    <div class="Item-Icon Hover-Zoom">
+        <img src="@Item.IconUrl" />
+    </div>
+    <div class="ma-2 d-flex flex-column justify-center align-center Centered">
+        <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {Item.ForegroundColour}")">
+            <span>@Item.Name</span>
+        </MudText>
+        @if (PurchasableItem?.BuyNowPrice != null)
+        {
+            <MudText Typo="MudBlazor.Typo.body2" Class="NoWrap">
+                @switch(PurchasableItem.BuyNowFrom)
+                {
+                    case PriceType.SteamStore:
+                    {
+                        @:<i class="fas fa-fw fa-shopping-cart"></i>
+                        break;
+                    }
+                    case PriceType.SteamCommunityMarket:
+                    {
+                        @:<i class="fab fa-fw fa-steam"></i>
+                        break;
+                    }
+                }
+                <span>@PurchasableItem.BuyNowCurrency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
+            </MudText>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public bool Highlighted { get; set; }
+
+    [Parameter]
+    public IItemDescription Item { get; set; }
+
+    private IPurchasable PurchasableItem => (Item as IPurchasable);
+
+    private string GetDynamicClassNames()
+    {
+        var classNames = new List<string>();
+        if (PurchasableItem != null)
+        {
+            classNames.Add("Purchasable");
+        }
+        if (Highlighted)
+        {
+            classNames.Add("Highlighted");
+        }
+        return String.Join(' ', classNames);
+    }
+    private void BuyItem()
+    {
+        if (!String.IsNullOrEmpty(PurchasableItem?.BuyNowUrl))
+        {
+            ExternalNavigation.NavigateToNewTab(PurchasableItem.BuyNowUrl);
+        }
+    }
+
+}
