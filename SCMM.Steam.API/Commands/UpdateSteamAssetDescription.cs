@@ -445,9 +445,12 @@ namespace SCMM.Steam.API.Commands
                     itemCollection = Regex.Replace(itemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
                 }
 
-                // Ensure all remaining words are longer than two characters, otherwise strip them out.
-                // This fixes scenarios like "Satchelo" => "o", "Rainbow Doors" => "Rainbow s", "Cardboard AR" => "Cardboard AR", etc
-                itemCollection = Regex.Replace(itemCollection, @"\b(\w{1,2})\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase).Trim();
+                // Ensure all remaining words are longer than one character, otherwise strip them out.
+                // This fixes scenarios like "Satchelo" => "o", "Rainbow Doors" => "Rainbow s", etc
+                itemCollection = Regex.Replace(itemCollection, @"\b(\w{1,2})\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+                // Trim any junk characters
+                itemCollection = itemCollection.Trim(' ', ',', '.', '-', '\'', ':').Trim();
 
                 // If there is anything left, we have a unique collection name
                 if (!String.IsNullOrEmpty(itemCollection))
