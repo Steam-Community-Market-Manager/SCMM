@@ -146,12 +146,14 @@ namespace SCMM.Web.Server.API.Controllers
                     {
                         ItemId = x.SteamId,
                         Position = x.App.MarketItems
+                            .Where(y => y.Description.IsMarketable)
                             .Where(y => y.Description.ItemType == x.Description.ItemType)
                             .Where(y => y.BuyNowPrice < x.Price)
                             .Count(),
                         Total = x.App.MarketItems
+                            .Where(y => y.Description.IsMarketable)
                             .Where(y => y.Description.ItemType == x.Description.ItemType)
-                            .Count() + 1,
+                            .Count(),
                     })
                     .ToListAsync();
 
