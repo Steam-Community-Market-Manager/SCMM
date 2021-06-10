@@ -195,25 +195,15 @@ namespace SCMM.Discord.Bot.Server.Modules
                 color = Color.Gold;
             }
 
-            var explainations = (
-                "The **Market Value** is the price that people are paying for this inventory, based on the most recent sales data for each item. " +
-                "The **Market Cash-Out Value** is the amount of money you could *probably* get if all items were listed (and sold) on the Steam Community Market by undercutting the current 'buy now' prices."
-            );
-
             var author = new EmbedAuthorBuilder()
                 .WithName(profile.Name)
                 .WithIconUrl(profile.AvatarUrl)
-                .WithUrl($"{_configuration.GetWebsiteUrl()}/steam/inventory/{profile.SteamId}");
+                .WithUrl($"{_configuration.GetWebsiteUrl()}/inventory/{profile.SteamId}");
 
             var fields = new List<EmbedFieldBuilder>();
             fields.Add(new EmbedFieldBuilder()
                 .WithName("📈 Market Value")
                 .WithValue(currency.ToPriceString(inventoryTotals.TotalMarketValue))
-                .WithIsInline(false)
-            );
-            fields.Add(new EmbedFieldBuilder()
-                .WithName("💰 Market Cash-Out Value")
-                .WithValue($"{currency.ToPriceString(inventoryTotals.TotalResellValue - inventoryTotals.TotalResellTax)} *(after Steam fees)*")
                 .WithIsInline(false)
             );
             if (inventoryTotals.TotalInvested != null && inventoryTotals.TotalInvested > 0)
