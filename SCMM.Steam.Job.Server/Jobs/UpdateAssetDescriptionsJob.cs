@@ -62,7 +62,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to update asset description for '{assetDescription.ClassId}'");
+                    _logger.LogError(ex, $"Failed to update asset description for '{assetDescription.ClassId}'. {ex.Message}");
                     continue;
                 }
             }

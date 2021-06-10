@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Queries;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.UI.Store;
 using SCMM.Web.Server.Extensions;
 using System;
@@ -83,7 +83,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCurrentStore()
         {
-            return await GetStore(DateTime.UtcNow.ToString(Constants.StoreIdDateFormat));
+            return await GetStore(DateTime.UtcNow.ToString(Constants.SCMMStoreIdDateFormat));
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStore([FromRoute] string dateTime)
         {
             var storeDate = DateTime.UtcNow;
-            if (!DateTime.TryParseExact(dateTime, Constants.StoreIdDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+            if (!DateTime.TryParseExact(dateTime, Constants.SCMMStoreIdDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
             {
                 if (!DateTime.TryParse(dateTime, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
                 {

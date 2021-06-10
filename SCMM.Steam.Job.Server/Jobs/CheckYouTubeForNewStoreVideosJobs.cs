@@ -83,7 +83,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                                 googleClient.CommentVideoAsync(
                                     video.ChannelId,
                                     video.Id,
-                                    $"thank you for showcasing this weeks Rust skins,  your video has been featured on https://scmm.app/steam/store for {itemStore.Name} ({itemStore.Start.Year})"
+                                    $"thank you for showcasing this weeks Rust skins, your video has been featured on https://scmm.app/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
                                 );
                                 */
                             }

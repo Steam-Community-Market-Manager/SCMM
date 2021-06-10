@@ -233,7 +233,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     Description = $"{newMarketItems.Count()} new item(s) have just appeared in the {app.Name} marketplace.",
                     Fields = fields,
                     FieldsInline = true,
-                    Url = $"{_configuration.GetWebsiteUrl()}/steam/marketlistings",
+                    Url = $"{_configuration.GetWebsiteUrl()}/items",
                     ThumbnailUrl = app.IconUrl,
                     ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnail?.Id}",
                     Colour = app.PrimaryColor

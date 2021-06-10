@@ -81,7 +81,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to update market item order history for '{item.SteamId}'");
+                    _logger.LogError(ex, $"Failed to update market item order history for '{item.SteamId}'. {ex.Message}");
                     continue;
                 }
             }

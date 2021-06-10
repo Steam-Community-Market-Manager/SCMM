@@ -2,8 +2,8 @@
 using AutoMapper;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.Domain.Currencies;
 using SCMM.Web.Data.Models.Domain.InventoryItems;
 using SCMM.Web.Data.Models.Domain.Languages;
@@ -174,11 +174,11 @@ namespace SCMM.Web.Server
             //
 
             CreateMap<SteamItemStore, StoreIdentiferDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.StoreIdDateFormat)))
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.GetFullName()));
 
             CreateMap<SteamItemStore, StoreDetailsDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.StoreIdDateFormat)))
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.GetFullName()));
 
             CreateMap<SteamStoreItemItemStore, StoreItemDetailsDTO>()

@@ -66,19 +66,19 @@ namespace SCMM.Steam.Job.Server.Jobs
             _logger.LogInformation($"Updating market item sales information (id: {id}, count: {items.Count()})");
             foreach (var item in items)
             {
-                var response = await commnityClient.GetMarketPriceHistory(
-                    new SteamMarketPriceHistoryJsonRequest()
-                    {
-                        AppId = item.App.SteamId,
-                        MarketHashName = item.Description.Name,
-                        Language = language.SteamId,
-                        CurrencyId = currency.SteamId,
-                        NoRender = true
-                    }
-                );
-
                 try
                 {
+                    var response = await commnityClient.GetMarketPriceHistory(
+                        new SteamMarketPriceHistoryJsonRequest()
+                        {
+                            AppId = item.App.SteamId,
+                            MarketHashName = item.Description.Name,
+                            Language = language.SteamId,
+                            CurrencyId = currency.SteamId,
+                            NoRender = true
+                        }
+                    );
+
                     await steamService.UpdateSteamMarketItemSalesHistory(
                         item,
                         currency.Id,
@@ -87,7 +87,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'");
+                    _logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'. {ex.Message}");
                     continue;
                 }
             }

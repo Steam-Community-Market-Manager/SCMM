@@ -54,5 +54,11 @@
         public const string RustItemTypeLR300 = "LR300";
 
         #endregion
+
+        #region SCMM
+
+        public const string SCMMStoreIdDateFormat = "yyyy-MM-dd-HHmm";
+
+        #endregion
     }
 }

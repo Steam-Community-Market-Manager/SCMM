@@ -12,6 +12,7 @@ using SCMM.Steam.API;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using SteamWebAPI2.Interfaces;
@@ -256,7 +257,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                         x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
                     FieldsInline = true,
-                    Url = $"{_configuration.GetWebsiteUrl()}/steam/store",
+                    Url = $"{_configuration.GetWebsiteUrl()}/store/{store.Start.ToString(Constants.SCMMStoreIdDateFormat)}",
                     ThumbnailUrl = app.IconUrl,
                     ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}",
                     Colour = app.PrimaryColor
