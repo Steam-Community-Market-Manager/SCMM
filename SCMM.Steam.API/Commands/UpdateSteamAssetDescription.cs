@@ -190,38 +190,59 @@ namespace SCMM.Steam.API.Commands
             // Parse asset icon and image data
             if (assetDescription.IconId == null && !String.IsNullOrEmpty(assetDescription.IconUrl))
             {
-                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                try
                 {
-                    Url = assetDescription.IconUrl,
-                    UseExisting = true
-                });
-                if (importedImage?.Image != null)
+                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    {
+                        Url = assetDescription.IconUrl,
+                        UseExisting = true
+                    });
+                    if (importedImage?.Image != null)
+                    {
+                        assetDescription.Icon = importedImage.Image;
+                    }
+                }
+                catch (Exception ex)
                 {
-                    assetDescription.Icon = importedImage.Image;
+                    _logger.LogWarning(ex, $"Unable to import asset description icon. {ex.Message}");
                 }
             }
             if (assetDescription.IconLargeId == null && !String.IsNullOrEmpty(assetDescription.IconLargeUrl))
             {
-                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                try
                 {
-                    Url = assetDescription.IconLargeUrl,
-                    UseExisting = true
-                });
-                if (importedImage?.Image != null)
+                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    {
+                        Url = assetDescription.IconLargeUrl,
+                        UseExisting = true
+                    });
+                    if (importedImage?.Image != null)
+                    {
+                        assetDescription.IconLarge = importedImage.Image;
+                    }
+                }
+                catch (Exception ex)
                 {
-                    assetDescription.IconLarge = importedImage.Image;
+                    _logger.LogWarning(ex, $"Unable to import asset description large icon. {ex.Message}");
                 }
             }
             if (assetDescription.ImageId == null && !String.IsNullOrEmpty(assetDescription.ImageUrl))
             {
-                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                try
                 {
-                    Url = assetDescription.ImageUrl,
-                    UseExisting = true
-                });
-                if (importedImage?.Image != null)
+                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    {
+                        Url = assetDescription.ImageUrl,
+                        UseExisting = true
+                    });
+                    if (importedImage?.Image != null)
+                    {
+                        assetDescription.Image = importedImage.Image;
+                    }
+                }
+                catch (Exception ex)
                 {
-                    assetDescription.Image = importedImage.Image;
+                    _logger.LogWarning(ex, $"Unable to import asset description image. {ex.Message}");
                 }
             }
 
