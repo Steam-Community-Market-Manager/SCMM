@@ -125,13 +125,13 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public PriceType? BuyNowFrom => GetPrices().OrderByDescending(x => x.BuyPrice).FirstOrDefault()?.Type;
+        public PriceType? BuyNowFrom => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.Type;
 
-        public SteamCurrency BuyNowCurrency => GetPrices().OrderByDescending(x => x.BuyPrice).FirstOrDefault()?.Currency;
+        public SteamCurrency BuyNowCurrency => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.Currency;
 
-        public long? BuyNowPrice => GetPrices().OrderByDescending(x => x.BuyPrice).FirstOrDefault()?.BuyPrice;
+        public long? BuyNowPrice => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyPrice;
 
-        public string BuyNowUrl => GetPrices().OrderByDescending(x => x.BuyPrice).FirstOrDefault()?.BuyUrl;
+        public string BuyNowUrl => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyUrl;
 
         private IEnumerable<Price> GetPrices()
         {
