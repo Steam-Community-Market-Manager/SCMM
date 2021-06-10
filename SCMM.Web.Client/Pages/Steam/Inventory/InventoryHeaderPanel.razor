@@ -2,7 +2,7 @@
 @using SCMM.Web.Data.Models;
 @inject AppState State
 
-@if(!ProfileIsMe)
+@if(!State.Is(Profile?.SteamId))
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
         <div class="d-flex flex-row justify-start align-center">
@@ -205,7 +205,7 @@
     </MudItem>
 }
 
-@if (ProfileIsMe && Profile != null)
+@if (Profile != null && State.Is(Profile.SteamId))
 {
     <MudItem xs="12" sm="6" lg="4" xl="2" Class="d-flex flex-row justify-start align-center">
         <MudTooltip Text="Fetch the latest inventory data from your Steam account">
@@ -236,7 +236,5 @@
 
     [Parameter]
     public EventCallback SynchroniseInventory { get; set; }
-
-    private bool ProfileIsMe => (Profile != null && (State.Profile?.SteamId == Profile?.SteamId || State.Profile?.SteamId == Profile?.ProfileId));
 
 }

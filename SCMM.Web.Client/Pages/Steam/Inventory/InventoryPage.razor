@@ -41,9 +41,9 @@
                             <InventorySummaryPanel SteamId="@SteamId" Filter="@Filter" />
                         </MudPaper>
                     </MudTabPanel>
-                    <MudTabPanel Icon="fas fa-fw fa-poll-h" Text="Investment Performance" Disabled="@(!ProfileIsMe)">
+                    <MudTabPanel Icon="fas fa-fw fa-poll-h" Text="Investment Performance" Disabled="@(!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator))">
                         <MudPaper Outlined="true">
-                            <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!ProfileIsMe)"/>
+                            <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!State.Is(Profile?.SteamId))"/>
                         </MudPaper>
                     </MudTabPanel>
                     <MudTabPanel Icon="fas fa-fw fa-chart-pie" Text="Statistics">
@@ -64,8 +64,6 @@
 
     private ProfileSummaryDTO Profile { get; set; }
     
-    private bool ProfileIsMe => (Profile != null && (State.Profile?.SteamId == Profile?.SteamId || State.Profile?.SteamId == Profile?.ProfileId));
-
     private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
 
     private string LoadingMessage { get; set; }

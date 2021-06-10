@@ -136,7 +136,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             if (profile == null)
             {
-                return BadRequest($"Profile with Steam ID '{User.SteamId()}' was not found");
+                return BadRequest($"Profile {profileId} was not found");
             }
 
             if (command.DiscordId != null)
@@ -478,6 +478,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get profile inventory investment information
         /// </summary>
         /// <remarks>
+        /// This API requires authentication.
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
@@ -512,7 +513,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
-            if (!User.Is(resolvedId.Id.Value))
+            if (!User.Is(resolvedId.Id.Value) && !User.IsInRole(Roles.Administrator))
             {
                 _logger.LogError($"Inventory does not belong to you and you do not have permission to view it");
                 return Unauthorized($"Inventory does not belong to you and you do not have permission to view it");
@@ -766,7 +767,7 @@ namespace SCMM.Web.Server.API.Controllers
                 _logger.LogError($"Inventory item with id '{itemId}' was not found");
                 return NotFound($"Inventory item with id '{itemId}' was not found");
             }
-            if (!User.Is(inventoryItem.ProfileId))
+            if (!User.Is(inventoryItem.ProfileId) && !User.IsInRole(Roles.Administrator))
             {
                 _logger.LogError($"Inventory item with id '{itemId}' does not belong to you and you do not have permission to modify it");
                 return Unauthorized($"Inventory item with id '{itemId}' does not belong to you and you do not have permission to modify it");

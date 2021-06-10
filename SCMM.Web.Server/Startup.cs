@@ -1,20 +1,13 @@
 using AspNet.Security.OpenId;
-using AspNet.Security.OpenId.Steam;
-using AutoMapper;
 using CommandQuery;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
 using Microsoft.OpenApi.Models;
 using SCMM.Shared.Azure.ServiceBus.Extensions;
 using SCMM.Shared.Azure.ServiceBus.Middleware;
@@ -94,6 +87,7 @@ namespace SCMM.Web.Server
             {
                 options.AddPolicy(AuthorizationPolicies.Administrator, AuthorizationPolicies.AdministratorBuilder);
                 options.AddPolicy(AuthorizationPolicies.User, AuthorizationPolicies.UserBuilder);
+                options.DefaultPolicy = options.GetPolicy(AuthorizationPolicies.User);
             });
 
             // Database
@@ -132,23 +126,13 @@ namespace SCMM.Web.Server
             services.AddScoped<CurrencyCache>();
 
             // Controllers
-            services.AddControllersWithViews(options =>
-            {
-                options.Filters.Add(
-                    new AuthorizeFilter(
-                        new AuthorizationPolicyBuilder()
-                            .AddAuthenticationSchemes(SteamAuthenticationDefaults.AuthenticationScheme)
-                            .RequireAuthenticatedUser()
-                            .RequireRole("Administrator")
-                            .Build()
-                    )
-                );
-            });
+            services.AddControllers();
 
             // Views
-            services.AddRazorPages();
-                // TODO: Get this to work alongside Steam OpenID
-                //.AddMicrosoftIdentityUI();
+            services.AddRazorPages(options =>
+            {
+                options.Conventions.AuthorizePage("/admin", AuthorizationPolicies.Administrator);
+            });
 
             // Auto-documentation
             services.AddSwaggerGen(config =>
@@ -223,12 +207,15 @@ namespace SCMM.Web.Server
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapRazorPages()
+                    .RequireAuthorization(AuthorizationPolicies.Administrator);
+
                 endpoints.MapControllers();
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}"
                 );
-                endpoints.MapRazorPages();
+
                 endpoints.MapFallbackToFile("index.html");
             });
 

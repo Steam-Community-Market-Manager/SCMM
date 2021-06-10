@@ -48,6 +48,11 @@ namespace SCMM.Web.Client
             return Profile?.Roles?.Any(x => String.Equals(x, role, StringComparison.OrdinalIgnoreCase)) == true;
         }
 
+        public bool Is(string steamId)
+        {
+            return (Profile?.SteamId == steamId || Profile?.ProfileId == steamId) == true;
+        }
+
         public void AddHeadersTo(HttpClient client)
         {
             if (!String.IsNullOrEmpty(LanguageId))

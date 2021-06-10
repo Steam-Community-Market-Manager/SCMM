@@ -101,7 +101,7 @@ namespace SCMM.Steam.API.Commands
             // Build a identity for the profile
             var identity = new ClaimsIdentity(
                 GetClaimsFromSteamProfile(profile),
-                null,
+                "SCMM",
                 ClaimTypes.Name,
                 ClaimTypes.Role
             );
