@@ -102,6 +102,31 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
+        [Command("asset collection rebuild")]
+        public async Task<RuntimeResult> AssetCollectionRebuildAsync()
+        {
+            var assetDescriptions = await _db.SteamAssetDescriptions.ToListAsync();
+
+            // Reset item collections
+            foreach (var assetDescription in assetDescriptions)
+            {
+                assetDescription.ItemCollection = null;
+            }
+            await _db.SaveChangesAsync();
+
+            // Rebuild item collections
+            foreach (var assetDescription in assetDescriptions)
+            {
+                _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+                {
+                    AssetDescription = assetDescription
+                });
+            }
+            await _db.SaveChangesAsync();
+
+            return CommandResult.Success();
+        }
+
         [Command("store name")]
         public async Task<RuntimeResult> StoreNameAsync(DateTime storeDate, [Remainder] string storeName)
         {

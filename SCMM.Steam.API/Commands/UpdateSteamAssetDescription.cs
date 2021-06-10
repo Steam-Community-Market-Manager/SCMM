@@ -402,41 +402,49 @@ namespace SCMM.Steam.API.Commands
             if (String.IsNullOrEmpty(assetDescription.ItemCollection) && assetDescription.CreatorId != null)
             {
                 // Remove all common item words from the collection name (e.g. "Box", "Pants", Door", etc)
+                // NOTE: Pattern match word boundarys to prevent replacing words within words.
+                //       e.g. "Stone" in "Stonecraft Hatchet" shouldn't end up like "craft Hatchet"
                 var itemCollection = assetDescription.Name;
+                if (!String.IsNullOrEmpty(assetDescription.ItemType))
+                {
+                    foreach (var word in assetDescription.ItemType.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    {
+                        itemCollection = Regex.Replace(itemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+                    }
+                }
                 foreach (var tag in assetDescription.Tags)
                 {
                     foreach (var word in tag.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                     {
-                        itemCollection = itemCollection.Replace(word, String.Empty, StringComparison.InvariantCultureIgnoreCase);
+                        itemCollection = Regex.Replace(itemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
                     }
                 }
                 foreach (var word in Constants.RustItemNameCommonWords)
                 {
-                    itemCollection = itemCollection.Replace(word, String.Empty, StringComparison.InvariantCultureIgnoreCase);
+                    itemCollection = Regex.Replace(itemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
                 }
 
-                itemCollection = itemCollection.Trim();
+                // Ensure all remaining words are longer than two characters, otherwise strip them out.
+                // This fixes scenarios like "Satchelo" => "o", "Rainbow Doors" => "Rainbow s", "Cardboard AR" => "Cardboard AR", etc
+                itemCollection = Regex.Replace(itemCollection, @"\b(\w{1,2})\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase).Trim();
+
+                // If there is anything left, we have a unique collection name
                 if (!String.IsNullOrEmpty(itemCollection))
                 {
-                    // Ensure the collection name is longer than three characters.
-                    // This fixes issues like "Satchelo" => "o", which would match against nearly anything
-                    if (itemCollection.Length >= 3)
+                    // Count the number of other assets created by the same author that also contain the remaining unique collection words.
+                    // If there is more than one item, then it must be part of a set.
+                    var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null && x.CreatorId == assetDescription.CreatorId);
+                    foreach (var word in itemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                     {
-                        // Count the number of other assets created by the same author that also contain the remaining unique collection words.
-                        // If there is more than one item, then it must be part of a set.
-                        var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null && x.CreatorId == assetDescription.CreatorId);
-                        foreach (var word in itemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        query = query.Where(x => x.Name.Contains(word));
+                    }
+                    var collectionItems = await query.ToListAsync();
+                    if (collectionItems.Count > 1)
+                    {
+                        // Update all items in the collection (this helps fix old items when they become part of a new collection)
+                        foreach (var item in collectionItems)
                         {
-                            query = query.Where(x => x.Name.Contains(word));
-                        }
-                        var collectionItems = await query.ToListAsync();
-                        if (collectionItems.Count > 1)
-                        {
-                            // Update all items in the collection (this helps fix old items when they become part of a new collection)
-                            foreach (var item in collectionItems)
-                            {
-                                item.ItemCollection = itemCollection;
-                            }
+                            item.ItemCollection = itemCollection;
                         }
                     }
                 }
