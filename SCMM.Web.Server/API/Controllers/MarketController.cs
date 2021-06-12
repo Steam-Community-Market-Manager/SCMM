@@ -179,16 +179,12 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var from = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(2));
             var to = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var query = _db.SteamMarketItemSale
+            var salesToday = await _db.SteamMarketItemSale
                 .AsNoTracking()
-                .Where(x => x.Timestamp.Date >= from && x.Timestamp.Date <= to.Date)
-                .GroupBy(x => x.Timestamp.Date)
-                .OrderByDescending(x => x.Key.Date)
-                .Select(x => x.Sum(y => y.Quantity));
+                .Where(x => x.Timestamp >= from && x.Timestamp <= to)
+                .SumAsync(x => x.Quantity);
 
-            return Ok(
-                await query.SingleOrDefaultAsync()
-            );
+            return Ok(salesToday);
         }
 
         /// <summary>
@@ -229,7 +225,7 @@ namespace SCMM.Web.Server.API.Controllers
                     x => new DashboardSalesDataDTO
                     {
                         Sales = x.Sales,
-                        Revenue = x.Revenue
+                        Revenue = this.Currency().CalculateExchange(x.Revenue)
                     }
                 )
             );
