@@ -1,7 +1,6 @@
 ﻿@namespace SCMM.Web.Client.Shared.Dialog
 @using SCMM.Steam.Data.Models.Enums
 @using SCMM.Web.Data.Models.UI.Item
-@using SCMM.Web.Data.Models.UI.Store
 @inject ILogger<ViewItemListDialog> Logger
 @inject ISnackbar Snackbar
 @inject HttpClient Http
@@ -9,20 +8,20 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="MudBlazor.Typo.h6">@ItemType</MudText>
+        <MudText Typo="MudBlazor.Typo.h6">@ListName</MudText>
     </TitleContent>
     <DialogContent>
-        @if (Items == null)
+        @if (List == null)
         {
             <Loading Message="Loading item list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
         } 
         else
         {
             <MudGrid Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
-                @foreach (var item in Items.OrderBy(x => x.BuyNowPrice))
+                @foreach (var item in List.OrderBy(x => x.BuyNowPrice))
                 {
                     <MudItem xs="6" sm="3" md="2">
-                        <ItemDescriptionDetails Item="@item" Highlighted="@(item.Id == ItemId)" />
+                        <ItemDescriptionDetails Item="@item" Highlighted="@(item.Id == HighlightedItemId)" />
                     </MudItem>
                 }
             </MudGrid>
@@ -36,20 +35,27 @@
     public MudDialogInstance Dialog { get; set; }
     
     [Parameter]
-    public ulong ItemId { get; set; }
+    public string ListName { get; set; }
+    
+    [Parameter]
+    public string ListUrl { get; set; }
 
     [Parameter]
-    public string ItemType { get; set; }
+    public ulong HighlightedItemId { get; set; }
 
-    private ItemDetailsDTO[] Items { get; set; }
+    private ItemDetailsDTO[] List { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            Items = await Http.GetFromJsonAsync<ItemDetailsDTO[]>($"api/item/marketPriceRank/{ItemType}?compareWithItemId={ItemId}");
+            List = await Http.GetFromJsonAsync<ItemDetailsDTO[]>(ListUrl);
             StateHasChanged();
-            Document.ScrollElementIntoView("Highlighted", TimeSpan.FromSeconds(0.5));
+
+            if (HighlightedItemId > 0)
+            {
+                Document.ScrollElementIntoView("Highlighted", TimeSpan.FromSeconds(0.5));
+            }
         }
         catch (Exception ex)
         {

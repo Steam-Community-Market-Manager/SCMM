@@ -455,8 +455,9 @@ else if (StoreList.Any())
     {
         Dialogs.Show<ViewItemListDialog>(item.ItemType, parameters: new DialogParameters()
         {
-            ["ItemId"] = item.AssetDescriptionId,
-            ["ItemType"] = item.ItemType
+            ["ListName"] = item.ItemType,
+            ["ListUrl"] = $"api/item/marketPriceRank/{item.ItemType}?compareWithItemId={item.AssetDescriptionId}",
+            ["HighlightedItemId"] = item.AssetDescriptionId,
         });
     }
 
@@ -472,7 +473,8 @@ else if (StoreList.Any())
     {
         Dialogs.Show<ViewItemCollectionDialog>(item.ItemCollection, parameters: new DialogParameters()
         {
-            ["CollectionName"] = item.ItemCollection
+            ["CollectionName"] = item.ItemCollection,
+            ["CollectionUrl"] = $"api/item/collection/{item.ItemCollection}"
         });
     }
     

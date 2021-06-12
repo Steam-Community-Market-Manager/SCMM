@@ -55,13 +55,16 @@
     [Parameter]
     public string CollectionName { get; set; }
     
+    [Parameter]
+    public string CollectionUrl { get; set; }
+
     private ItemCollectionDTO Collection { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>($"api/item/collection/{CollectionName}");
+            Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>(CollectionUrl);
         }
         catch (Exception ex)
         {
