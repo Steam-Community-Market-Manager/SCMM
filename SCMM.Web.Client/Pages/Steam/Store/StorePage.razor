@@ -49,11 +49,69 @@ else if (StoreList.Any())
             }
             else
             {
+                <MudItem xs="12">
+                    <MudExpansionPanels>
+                        <MudExpansionPanel>
+                            <TitleContent>
+                                <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="Centered my-n4 mx-n2">
+                                    <i class="fa fa-fw fa-flask mr-1" />
+                                    <span>Item Analytics & Insights</span>
+                                </MudText>
+                            </TitleContent>
+                            <ChildContent>
+                                <MudTabs KeepPanelsAlive="true" Rounded="true" Centered="true" >
+                                    <MudTabPanel Text="Units Sold">
+                                        @if (ItemSubscribersChart != null)
+                                        {
+                                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Warning" Class="Centered ma-4">
+                                                <span><i class="fa fa-fw fa-exclamation-circle mr-1"></i> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of units sold per-item. Because an individual can purchase multiple copies of the same item, actual sales will likely be higher.</span>
+                                            </MudText>
+                                            <ChartJsBarChart @ref="ItemSubscribersChartJs" Config="@ItemSubscribersChart" />
+                                        }
+                                        else
+                                        {
+                                            <Alert Title="Unavailable" SubTitle="No data yet" />
+                                        }
+                                    </MudTabPanel>
+                                    <MudTabPanel Text="Sales Revenue">
+                                        @if (ItemSalesChart != null)
+                                        {
+                                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Warning" Class="Centered ma-4">
+                                                <span><i class="fa fa-fw fa-exclamation-circle mr-1"></i> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of sales revenue per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
+                                            </MudText>
+                                            <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
+                                        }
+                                        else
+                                        {
+                                            <Alert Title="Unavailable" SubTitle="No data yet" />
+                                        }
+                                    </MudTabPanel>
+                                    @if (Store.Items.Any(x => x.HasMarketListing))
+                                    {
+                                        <MudTabPanel Text="Profitability">
+                                            @if (ItemMarketplacePerformanceChart != null)
+                                            {
+                                                <div class="ma-4">
+                                                    <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <Alert Title="Unavailable" SubTitle="No data yet" />
+                                            }
+                                        </MudTabPanel>
+                                    }
+                                </MudTabs>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                </MudItem>
+
                 @foreach (var item in Store.Items.OrderByDescending(x => x.SalesMinimum * x.StorePrice))
                 {
                     <MudItem xs="12" sm="6" md="4" xl="3">
-                        <div class="Store-Item">
-                            <MudCard Outlined="true">
+                        <div class="Store-Item FullHeight">
+                            <MudCard Outlined="true" Class="FullHeight">
                                 <MudCardHeader>
                                     <CardHeaderAvatar>
                                         <MudTooltip Text="@item.AuthorName">
@@ -145,7 +203,7 @@ else if (StoreList.Any())
                                             <div class="my-3">
                                                 <MudTooltip>
                                                     <ChildContent>
-                                                        <MudChip Size="MudBlazor.Size.Medium" Text="Tradable" Disabled="@(!item.IsTradable)"
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Tradable" Disabled="@(!item.IsTradable)"
                                                                  Icon="@(item.IsTradable ? "fas fa-fw fa-exchange-alt mr-2" : "fas fa-fw fa-times")" 
                                                                  Variant="@(item.IsTradable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
                                                                  Color="@(item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
@@ -170,7 +228,7 @@ else if (StoreList.Any())
                                                 </MudTooltip>
                                                 <MudTooltip>
                                                     <ChildContent>
-                                                        <MudChip Size="MudBlazor.Size.Medium" Text="Marketable" Disabled="@(!item.IsMarketable)"
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Marketable" Disabled="@(!item.IsMarketable)"
                                                                  Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : "fas fa-fw fa-times")" 
                                                                  Variant="@(item.IsMarketable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
                                                                  Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
@@ -215,42 +273,42 @@ else if (StoreList.Any())
                                         </MudItem>
                                     
                                         <MudItem xs="5" Class="Centered">
-                                            <div class="@(item.IsStillAvailableInStore ? "Price mud-elevation-4" : null)">
-                                                <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableInStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Style="@(item.IsStillAvailableInStore ? null : "text-decoration: line-through")">
+                                            <div class="d-flex flex-row justify-center align-center">
+                                                <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableInStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Class="NoWrap" Style="@(item.IsStillAvailableInStore ? null : "text-decoration: line-through")">
                                                     <span>@item.Currency.ToPriceString(item.StorePrice)</span>
                                                 </MudText>
                                             </div>
                                         </MudItem>
-                                        <MudItem xs="7">
+                                        <MudItem xs="7" Class="Centered d-flex align-stretch">
                                             <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableInStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
                                                        Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableInStore)" FullWidth>
                                                 <RustIcon />        
-                                                <strong class="ml-1">@item.AppName store</strong>
+                                                <strong class="ml-1">Store</strong>
                                             </MudButton>
                                         </MudItem>
 
                                         @if (item.HasMarketListing)
                                         {
                                             <MudItem xs="5" Class="Centered">
-                                                <div class="Price mud-elevation-4">
-                                                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                                <div class="d-flex flex-column justify-center align-center">
+                                                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="NoWrap">
                                                         <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
-                                                        @if (item.MarketPrice != null && item.MarketPrice > item.StorePrice)
-                                                        {
-                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice)" 
-                                                                     Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="ml-2" />
-                                                        }
-                                                        else
-                                                        {
-                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice)" 
-                                                                     Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="ml-2" />
-                                                        }
                                                     </MudText>
+                                                    @if (item.MarketPrice != null && item.MarketPrice > item.StorePrice)
+                                                    {
+                                                        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice)" 
+                                                                 Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice)" 
+                                                                 Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                    }
                                                 </div>
                                             </MudItem>
-                                            <MudItem xs="7">
+                                            <MudItem xs="7" Class="Centered d-flex align-stretch">
                                                 <MudButton OnClick="@(() => BuyItemFromMarket(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" FullWidth>
-                                                    <strong>Steam Marketplace</strong>
+                                                    <strong>Marketplace</strong>
                                                 </MudButton>
                                             </MudItem>
                                         }
@@ -268,51 +326,6 @@ else if (StoreList.Any())
                         <YouTubeVideo VideoId="@media" />
                     </MudItem>
                 }
-
-                <MudItem xs="12">
-                    <MudPaper Outlined="true">
-                        <MudTabs KeepPanelsAlive="true" Rounded="true" Centered="true" >
-                            <MudTabPanel Text="Revenue">
-                                @if (ItemSalesChart != null)
-                                {
-                                    <ChartJsBarChart @ref="ItemSalesChartJs" Config="@ItemSalesChart" />
-                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="ma-4">
-                                        <span><strong>NOTE:</strong> Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of revenue earned per-item. Because an individual can purchase multiple copies of the same item, actual revenue will likely be higher.</span>
-                                    </MudText>
-                                }
-                                else
-                                {
-                                    <Alert Title="Unavailable" SubTitle="No data yet" />
-                                }
-                            </MudTabPanel>
-                            <MudTabPanel Text="Sales">
-                                @if (ItemSubscribersChart != null)
-                                {
-                                    <ChartJsBarChart @ref="ItemSubscribersChartJs" Config="@ItemSubscribersChart" />
-                                }
-                                else
-                                {
-                                    <Alert Title="Unavailable" SubTitle="No data yet" />
-                                }
-                            </MudTabPanel>
-                            @if (Store.Items.Any(x => x.HasMarketListing))
-                            {
-                                <MudTabPanel Text="Marketplace Performance">
-                                    @if (ItemMarketplacePerformanceChart != null)
-                                    {
-                                        <div class="ma-4">
-                                            <ChartJsRadarChart @ref="ItemMarketplacePerformanceChartJs" Config="@ItemMarketplacePerformanceChart" />
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <Alert Title="Unavailable" SubTitle="No data yet" />
-                                    }
-                                </MudTabPanel>
-                            }
-                        </MudTabs>
-                    </MudPaper >
-                </MudItem>
 
             }
         </MudGrid>
@@ -571,7 +584,7 @@ else if (StoreList.Any())
 
         var authorRevenue = new BarDataset<DoubleWrapper>
         {
-            Label = "Skin Author Royalties",
+            Label = "Skin Author Revenue",
             BackgroundColor = "#6BC16F",
             BorderColor = "#335E33",
             BorderWidth = 1
@@ -582,7 +595,7 @@ else if (StoreList.Any())
 
         var totalRevenue = new BarDataset<DoubleWrapper>
         {
-            Label = "Skin Sales Revenue",
+            Label = "Total Sales Revenue",
             BackgroundColor = "#388e3c",
             BorderColor = "#1b5e20",
             BorderWidth = 1
@@ -741,7 +754,7 @@ else if (StoreList.Any())
 
         var itemMarketPrices = new RadarDataset
         {
-            Label = "Market Price",
+            Label = "Current Market Price",
             BackgroundColor = "#bbdefb",
             BorderColor = "#0d47a1",
             BorderWidth = 1,
@@ -752,7 +765,7 @@ else if (StoreList.Any())
 
         var itemStorePrices = new RadarDataset
         {
-            Label = "Store Price",
+            Label = "Original Store Price",
             BackgroundColor = "#c8e6c9",
             BorderColor = "#1b5e20",
             BorderWidth = 1,

@@ -1,4 +1,8 @@
 ﻿
+.mud-toolbar.mud-toolbar-appbar {
+    height: var(--mud-appbar-min-height) !important;
+}
+
 .mud-tooltip {
     max-width: 33vw;
 }
