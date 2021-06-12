@@ -2,11 +2,12 @@
 {
     public enum SteamProfileInventoryItemAcquisitionType : byte
     {
-        Unknown = 0,
+        Other = 0,
         Store,
-        Drop,
-        Gift,
+        Marketplace,
         Trade,
-        Gambling
+        Gambling,
+        Gift,
+        Drop,
     }
 }

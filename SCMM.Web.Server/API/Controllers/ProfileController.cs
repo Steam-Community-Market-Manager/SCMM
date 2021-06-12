@@ -773,10 +773,29 @@ namespace SCMM.Web.Server.API.Controllers
                 return Unauthorized($"Inventory item with id '{itemId}' does not belong to you and you do not have permission to modify it");
             }
 
-            if (command.CurrencyId != Guid.Empty)
+            if (command.AcquiredBy != null)
+            {
+                inventoryItem.AcquiredBy = command.AcquiredBy.Value;
+                switch (inventoryItem.AcquiredBy)
+                {
+                    // Items sourced from gambling, gifts, and drops don't need prices
+                    case SteamProfileInventoryItemAcquisitionType.Gambling:
+                    case SteamProfileInventoryItemAcquisitionType.Gift:
+                    case SteamProfileInventoryItemAcquisitionType.Drop:
+                    {
+                        inventoryItem.CurrencyId = null;
+                        inventoryItem.BuyPrice = null;
+                        break;
+                    }
+                }
+            }
+            if (command.CurrencyId != null)
             {
                 inventoryItem.CurrencyId = command.CurrencyId;
-                inventoryItem.BuyPrice = command.BuyPrice;
+            }
+            if (command.BuyPrice != null)
+            {
+                inventoryItem.BuyPrice = (command.BuyPrice > 0 ? command.BuyPrice : null);
             }
 
             await _db.SaveChangesAsync();

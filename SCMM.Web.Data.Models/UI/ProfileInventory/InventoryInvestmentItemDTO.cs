@@ -1,4 +1,5 @@
-﻿using SCMM.Web.Data.Models.Domain.Currencies;
+﻿using SCMM.Steam.Data.Models.Enums;
+using SCMM.Web.Data.Models.Domain.Currencies;
 using System;
 using System.Text.Json.Serialization;
 
@@ -22,9 +23,13 @@ namespace SCMM.Web.Data.Models.UI.ProfileInventory
 
         public string IconUrl { get; set; }
 
-        public CurrencyDTO Currency { get; set; }
+        public SteamProfileInventoryItemAcquisitionType AcquiredBy { get; set; }
+
+        public CurrencyDetailedDTO Currency { get; set; }
 
         public long? BuyPrice { get; set; }
+
+        public long? BuyPriceStore { get; set; }
 
         public string BuyPriceText { get; set; }
 

@@ -1,6 +1,7 @@
 ﻿@using SCMM.Web.Data.Models.Domain.Currencies
 @using SCMM.Web.Data.Models.Domain.InventoryItems
 @using SCMM.Web.Data.Models.UI.ProfileInventory
+@using SCMM.Steam.Data.Models.Enums;
 @inject ILogger<InventoryInvestmentPanel> Logger
 @inject HttpClient Http
 @inject AppState State
@@ -12,7 +13,7 @@
 else
 {
     <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@ReadOnly" Class="mud-table-dense-extra"
-              ServerData="@LoadItems" RowsPerPage="25" CommitEditTooltip="Save Changes">
+              ServerData="@LoadItems" RowsPerPage="25" CommitEditTooltip="Save Changes" SortLabel="Description.MarketItem.Last1hrValue" AllowUnsorted="false">
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2">
                 <span>Track your investment performance by clicking on an item and entering the price you paid for it.</span><br/>
@@ -23,39 +24,39 @@ else
         </ToolBarContent>
         <HeaderContent>
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The name of the item. These are a 1:1 mirror of your inventory items; If you have a stack of items, they'll show as a stack here too">
+                @*<MudTooltip Text="The name of the item. These are a 1:1 mirror of your inventory items; If you have a stack of items, they'll show as a stack here too">*@
                     <MudTableSortLabel SortLabel="Description.Name" T="InventoryInvestmentItemDTO">Item</MudTableSortLabel>
-                </MudTooltip>
+                @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The price that you paid for the item">
-                    <MudTableSortLabel SortLabel="BuyPrice" T="InventoryInvestmentItemDTO">Purchase Price</MudTableSortLabel>
-                </MudTooltip>
+                @*<MudTooltip Text="The price that you paid for the item">*@
+                    <MudTableSortLabel SortLabel="BuyPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Purchase Price</MudTableSortLabel>
+                @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The price that people are actually buying the item for, which could be lower than the listing price if item price has been inflated by market manipulation, or which could be higher if the item demand has recently surged up">
-                    <MudTableSortLabel SortLabel="Description.MarketItem.Last1hrValue" T="InventoryInvestmentItemDTO">Current Market Value</MudTableSortLabel>
-                </MudTooltip>
+                @*<MudTooltip Text="The price that people are actually buying the item for, which could be lower than the listing price if item price has been inflated by market manipulation, or which could be higher if the item demand has recently surged up">*@
+                    <MudTableSortLabel SortLabel="Description.MarketItem.Last1hrValue" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Current Market Value</MudTableSortLabel>
+                @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The price you could reasonably expect to sell the item for right now by undercutting the lowest 'buy now' price">
-                    <MudTableSortLabel SortLabel="Description.MarketItem.ResellPrice" T="InventoryInvestmentItemDTO">List Price</MudTableSortLabel>
-                </MudTooltip>
+                @*<MudTooltip Text="The price you could reasonably expect to sell the item for right now by undercutting the lowest 'buy now' price">*@
+                    <MudTableSortLabel SortLabel="Description.MarketItem.ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">List Price</MudTableSortLabel>
+                @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The fees Steam charge when selling items on the Steam Community Market (~12% of sale price)">
-                    <MudTableSortLabel SortLabel="Description.MarketItem.ResellTax" T="InventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
-                </MudTooltip>
+                @*<MudTooltip Text="The fees Steam charge when selling items on the Steam Community Market (~12% of sale price)">*@
+                    <MudTableSortLabel SortLabel="Description.MarketItem.ResellTax" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
+                @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and Steam seller fees">
+                @*<MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and Steam seller fees">*@
                     <span>Profit / Loss</span>
-                </MudTooltip>
+                @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="Your return on investment, as a percentage. 0% is break-even, a positive number is profit, negative is a loss">
+                @*<MudTooltip Text="Your return on investment, as a percentage. 0% is break-even, a positive number is profit, negative is a loss">*@
                     <span>RoI %</span>
-                </MudTooltip>
+                @*</MudTooltip>*@
             </MudTh>
         </HeaderContent>
         <RowTemplate>
@@ -70,13 +71,77 @@ else
                 </div>
             </MudTd>
             <MudTd>
-                @if (context.Currency != null && context.BuyPrice != null)
+                @switch(context.AcquiredBy)
                 {
-                    @context.Currency.ToPriceString(context.BuyPrice.Value)
-                }
-                else
-                {
-                    <span>—</span>
+                    case SteamProfileInventoryItemAcquisitionType.Store: 
+                    {
+                        <i class="fas fa-fw fa-shopping-cart mr-1" />
+                        @if (context.Currency != null && context.BuyPrice != null)
+                        {
+                            @context.Currency.ToPriceString(context.BuyPrice.Value)
+                        }
+                        else
+                        {
+                            <span class="mud-secondary-text">Unknown</span>
+                        }
+                        break;
+                    }
+                    case SteamProfileInventoryItemAcquisitionType.Marketplace: 
+                    {
+                        <i class="fas fa-fw fa-search-dollar mr-1" />
+                        @if (context.Currency != null && context.BuyPrice != null)
+                        {
+                            @context.Currency.ToPriceString(context.BuyPrice.Value)
+                        }
+                        else
+                        {
+                            <span class="mud-secondary-text">Unknown</span>
+                        }
+                        break;
+                    }
+                    case SteamProfileInventoryItemAcquisitionType.Trade: 
+                    {
+                        <i class="fa fa-fw fa-exchange-alt mr-1" />
+                        @if (context.Currency != null && context.BuyPrice != null)
+                        {
+                            @context.Currency.ToPriceString(context.BuyPrice.Value)
+                        }
+                        else
+                        {
+                            <span class="mud-secondary-text">Unknown</span>
+                        }
+                        break;
+                    }
+                    case SteamProfileInventoryItemAcquisitionType.Gambling: 
+                    {
+                        <i class="fa fa-fw fa-dice mr-1" />
+                        <span>Gambling <span class="mud-secondary-text">(Free)</span></span>
+                        break;
+                    }
+                    case SteamProfileInventoryItemAcquisitionType.Gift: 
+                    {
+                        <i class="fa fa-fw fa-gift mr-1" />
+                        <span>Gift <span class="mud-secondary-text">(Free)</span></span>
+                        break;
+                    }
+                    case SteamProfileInventoryItemAcquisitionType.Drop: 
+                    {
+                        <i class="fa fa-fw fa-gift mr-1" />
+                        <span>Game Drop <span class="mud-secondary-text">(Free)</span></span>
+                        break;
+                    }
+                    default:
+                    {
+                        @if (context.Currency != null && context.BuyPrice != null)
+                        {
+                            @context.Currency.ToPriceString(context.BuyPrice.Value)
+                        }
+                        else
+                        {
+                            <span class="mud-secondary-text">Unknown</span>
+                        }
+                        break;
+                    }
                 }
             </MudTd>
             <MudTd>
@@ -86,7 +151,7 @@ else
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd>
@@ -96,7 +161,7 @@ else
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd>
@@ -106,27 +171,27 @@ else
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd>
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPrice != null && context.BuyPrice > 0 && (context.ResellPrice - context.ResellTax) > 0)
+                @if (context.ResellPrice != null && context.ResellTax != null && (context.ResellPrice - context.ResellTax) > 0)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - context.BuyPrice.Value) 
+                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPrice ?? 0)) 
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPrice != null && context.BuyPrice > 0 && (context.ResellPrice - context.ResellTax) > 0)
+                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPrice != null && context.BuyPrice > 0 && (context.ResellPrice - context.ResellTax) != 0)
                 {
                     @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">N/A</span>
                 }
             </MudTd>
         </RowTemplate>
@@ -142,9 +207,49 @@ else
                 </div>
             </MudTd>
             <MudTd>
-                <MudTextField @bind-Value="@context.BuyPriceText" @onblur="@((e) => UpdateItemPrice(context, context.BuyPriceText))" PlaceHolder="Price" Class="ma-0" AutoFocus="true"
-                              Adornment="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? MudBlazor.Adornment.Start : MudBlazor.Adornment.End)"
-                              AdornmentText="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? State.Currency.PrefixText : State.Currency.SuffixText)" />
+                <div class="d-flex flex-row justify-space-between align-baseline">
+                    <MudSelect T="SteamProfileInventoryItemAcquisitionType" @bind-Value="@context.AcquiredBy" SelectedValuesChanged="@((e) => UpdateItemAcquired(context, context.AcquiredBy))">
+                        <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Store">
+                            <i class="fas fa-fw fa-shopping-cart" />
+                            <span>Store</span>
+                        </MudSelectItem>
+                        <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Marketplace">
+                            <i class="fas fa-fw fa-search-dollar" />
+                            <span>Marketplace</span>
+                        </MudSelectItem>
+                        <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Trade">
+                            <i class="fa fa-fw fa-exchange-alt" />
+                            <span>Trade</span>
+                        </MudSelectItem>
+                        <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Gambling">
+                            <i class="fa fa-fw fa-dice" />
+                            <span>Gambling <span class="mud-secondary-text">(Free)</span></span>
+                        </MudSelectItem>
+                        <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Gift">
+                            <i class="fa fa-fw fa-gift" />
+                            <span>Gift <span class="mud-secondary-text">(Free)</span></span>
+                        </MudSelectItem>
+                        <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Drop">
+                            <i class="fa fa-fw fa-gift" />
+                            <span>Game Drop <span class="mud-secondary-text">(Free)</span></span>
+                        </MudSelectItem>
+                        <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Other">
+                            <span>Other</span>
+                        </MudSelectItem>
+                    </MudSelect>
+                    @if (context.AcquiredBy == SteamProfileInventoryItemAcquisitionType.Store && context.BuyPriceStore != null)
+                    {
+                        <span class="mx-4">@State.Currency.ToPriceString(context.BuyPriceStore.Value)</span>
+                    }
+                    else if(context.AcquiredBy != SteamProfileInventoryItemAcquisitionType.Gambling && 
+                            context.AcquiredBy != SteamProfileInventoryItemAcquisitionType.Gift && 
+                            context.AcquiredBy != SteamProfileInventoryItemAcquisitionType.Drop)
+                    {
+                        <MudTextField @bind-Value="@context.BuyPriceText" OnDebounceIntervalElapsed="@((e) => UpdateItemPrice(context, context.BuyPriceText))" DebounceInterval="500" PlaceHolder="Price" AutoFocus="true"
+                                      Adornment="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? MudBlazor.Adornment.Start : MudBlazor.Adornment.End)"
+                                      AdornmentText="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? State.Currency.PrefixText : State.Currency.SuffixText)" />
+                    }
+                </div>
             </MudTd>
             <MudTd>
                 @if (context.Last1hrValue != null)
@@ -153,7 +258,7 @@ else
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd>
@@ -163,7 +268,7 @@ else
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd>
@@ -173,17 +278,17 @@ else
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd>
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPrice != null && context.BuyPrice > 0 && (context.ResellPrice - context.ResellTax) > 0)
+                @if (context.ResellPrice != null && context.ResellTax != null && (context.ResellPrice - context.ResellTax) > 0)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - context.BuyPrice.Value) 
+                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPrice ?? 0)) 
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
@@ -193,7 +298,7 @@ else
                 }
                 else
                 {
-                    <span>—</span>
+                    <span class="mud-secondary-text">N/A</span>
                 }
             </MudTd>
         </RowEditingTemplate>
@@ -244,7 +349,30 @@ else
             StateHasChanged();
         }
     }
-
+    
+    private async Task UpdateItemAcquired(InventoryInvestmentItemDTO item, SteamProfileInventoryItemAcquisitionType value)
+    {
+        try 
+        {
+            Logger.LogInformation($"Updating acquired from for '{item.Id}' (value: '{value}', )");
+            var useStorePrice = (value == SteamProfileInventoryItemAcquisitionType.Store && item.BuyPriceStore != null);
+            await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
+            {
+                AcquiredBy = value,
+                CurrencyId = (useStorePrice ? State.Currency.Id : item.Currency?.Id),
+                BuyPrice = (useStorePrice ? item.BuyPriceStore : item.BuyPrice)
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error updating item acquired by for '{item.Id}' (value: '{value}')");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+    
     private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, string value)
     {
         var buyPrice = value.SteamPriceAsInt(useDecimalShortCircuit: false);
@@ -280,7 +408,7 @@ else
             return null;
         }
         var roi = ((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPrice.Value) * 100, 0));
-        if (roi >= 100)
+        if (roi > 100)
         {
             return "mud-success";
         }
