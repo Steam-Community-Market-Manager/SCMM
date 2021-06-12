@@ -353,8 +353,14 @@ else if (StoreList.Any())
 
     protected override async Task OnParametersSetAsync()
     {
-        // If the selected store has changed, reload it
-        if (!String.Equals(StoreId, Store?.Id.ToString(), StringComparison.InvariantCultureIgnoreCase))
+        // If there is no store selected yet, navigate to the current one
+        if (String.IsNullOrEmpty(StoreId))
+        {
+            NavigationManager.NavigateTo($"/store/current");
+        }
+
+        // Otherwise, load the selected store details
+        else if (!String.Equals(StoreId, Store?.Id.ToString(), StringComparison.InvariantCultureIgnoreCase))
         {
             await LoadStore();
         }
@@ -384,16 +390,8 @@ else if (StoreList.Any())
 
             // Load the store list
             StoreList = await Http.GetFromJsonAsync<StoreIdentiferDTO[]>($"api/store");
-                
+   
             StateHasChanged();
-            if (StoreList.Any())
-            {
-                if (String.IsNullOrEmpty(StoreId))
-                {
-                    // No store has been selected yet, navigate to the most recent store page as a default
-                    NavigationManager.NavigateTo($"/store/{StoreList.FirstOrDefault()?.Id}");  
-                }
-            }
         }
         catch (Exception ex)
         {
