@@ -7,6 +7,7 @@ using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Store;
 using System;
@@ -32,9 +33,9 @@ namespace SCMM.Discord.Bot.Server.Modules
 
         [Command("steamid")]
         [Alias("steam")]
-        [Summary("Link your SteamID to your Discord user so that you don't have to specify it when using other commands")]
+        [Summary("Link your SteamID so that you don't have to specify it when using other commands")]
         public async Task<RuntimeResult> SetUserSteamIdAsync(
-            [Name("steam_id")][Summary("Valid SteamID or Steam profile URL")] string steamId
+            [Name("steam_id")][Summary("Valid SteamID or Steam URL")] string steamId
         )
         {
             var user = Context.User;
@@ -81,6 +82,48 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
             }
 
+            await _db.SaveChangesAsync();
+
+            return CommandResult.Success();
+        }
+
+        [Command("currency")]
+        [Summary("Set your preferred currency so that you don't have to specify it when using other commands")]
+        public async Task<RuntimeResult> SetUserCurrencyAsync(
+            [Name("currency_id")][Summary("Supported three-letter currency code (e.g. USD, EUR, AUD)")] string currencyId = null
+        )
+        {
+            var user = Context.User;
+            var discordId = $"{user.Username}#{user.Discriminator}";
+
+            // Load the profile
+            var profile = await _db.SteamProfiles
+                .FirstOrDefaultAsync(x => x.DiscordId == discordId);
+
+            if (profile == null)
+            {
+                return CommandResult.Fail(
+                    reason: $"Steam account not found",
+                    explaination: $"You need to link your Steam account before you can use this command."
+                );
+            }
+
+            // Load the currency
+            var getCurrencyByName = await _queryProcessor.ProcessAsync(new GetCurrencyByNameRequest()
+            {
+                Name = currencyId
+            });
+
+            var currency = getCurrencyByName.Currency;
+            if (currency == null)
+            {
+                return CommandResult.Fail(
+                    $"Sorry, I don't support that currency."
+                );
+            }
+
+            // Set the currency
+            profile.Currency = currency;
             await _db.SaveChangesAsync();
 
             return CommandResult.Success();
