@@ -16,8 +16,8 @@
         };
 
         public const string SteamLoginClaimSteamIdRegex = @"\/openid\/id\/([^\/]*)";
-        public const string SteamProfileUrlProfileIdRegex = @"\/id\/([^\/]*)";
-        public const string SteamProfileUrlSteamIdRegex = @"\/profiles\/([^\/]*)";
+        public const string SteamProfileUrlCustomUrlRegex = @"\/id\/([^\/]*)";
+        public const string SteamProfileUrlSteamId64Regex = @"\/profiles\/([^\/]*)";
 
         public const string SteamAssetClassTypeWorkshopItem = "Workshop Item";
         public const string SteamActionViewWorkshopItemId = "#Workshop_Commerce_ViewItem";

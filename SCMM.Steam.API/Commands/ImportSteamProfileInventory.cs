@@ -65,7 +65,7 @@ namespace SCMM.Steam.API.Commands
                 .Include(x => x.InventoryItems).ThenInclude(x => x.App)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Description)
                 .Include(x => x.InventoryItems).ThenInclude(x => x.Currency)
-                .Where(x => x.Id == resolvedId.Id)
+                .Where(x => x.Id == resolvedId.ProfileId)
                 .Select(x => new
                 {
                     Profile = x,
@@ -75,23 +75,13 @@ namespace SCMM.Steam.API.Commands
                 .FirstOrDefaultAsync();
 
             // If the profile inventory is less than 1 hour old and we aren't forcing an update, just return the current inventory
-            var profile = profileInventory?.Profile;
-            if (profile != null && profileInventory.TotalItems > 0 && DateTime.Now.Subtract(TimeSpan.FromHours(1)) < profileInventory.LastUpdatedOn && request.Force == false)
+            var profile = profileInventory?.Profile ?? resolvedId.Profile;
+            if (profile != null && profileInventory != null && profileInventory.TotalItems > 0 && DateTime.Now.Subtract(TimeSpan.FromHours(1)) < profileInventory.LastUpdatedOn && request.Force == false)
             {
                 return new ImportSteamProfileInventoryResponse()
                 {
                     Profile = profile
                 };
-            }
-
-            // If the profile is null, double check that it isnt transient (newly created)
-            if (profile == null)
-            {
-                profile = _db.SteamProfiles.Local.FirstOrDefault(x => x.SteamId == resolvedId.SteamId || x.ProfileId == resolvedId.ProfileId);
-                if (profile == null)
-                {
-                    return null;
-                }
             }
 
             // Load the language

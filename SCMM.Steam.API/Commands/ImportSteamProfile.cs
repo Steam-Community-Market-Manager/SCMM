@@ -1,5 +1,4 @@
 ﻿using CommandQuery;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.API.Queries;
@@ -60,11 +59,11 @@ namespace SCMM.Steam.API.Commands
             try
             {
                 // If we know the exact steam id, fetch using the Steam API
-                if (!String.IsNullOrEmpty(resolvedId.SteamId))
+                if (resolvedId.SteamId64 != null)
                 {
                     var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
                     var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
-                    var response = await steamUser.GetPlayerSummaryAsync(UInt64.Parse(resolvedId.SteamId));
+                    var response = await steamUser.GetPlayerSummaryAsync(resolvedId.SteamId64.Value);
                     if (response?.Data == null)
                     {
                         throw new ArgumentException(nameof(request), "SteamID is invalid, or profile no longer exists");
@@ -76,23 +75,21 @@ namespace SCMM.Steam.API.Commands
                         throw new ArgumentException(nameof(request), "ProfileID is invalid");
                     }
 
-                    if (Regex.IsMatch(profileId, Constants.SteamProfileUrlSteamIdRegex))
+                    if (Regex.IsMatch(profileId, Constants.SteamProfileUrlSteamId64Regex))
                     {
-                        profileId = Regex.Match(profileId, Constants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
+                        profileId = Regex.Match(profileId, Constants.SteamProfileUrlSteamId64Regex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
                     }
-                    else if (Regex.IsMatch(profileId, Constants.SteamProfileUrlProfileIdRegex))
+                    else if (Regex.IsMatch(profileId, Constants.SteamProfileUrlCustomUrlRegex))
                     {
-                        profileId = Regex.Match(profileId, Constants.SteamProfileUrlProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
+                        profileId = Regex.Match(profileId, Constants.SteamProfileUrlCustomUrlRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? profileId;
                     }
 
-                    profile = await _db.SteamProfiles.FirstOrDefaultAsync(
-                        x => x.SteamId == resolvedId.SteamId
-                    );
-                    profile = profile ?? new SteamProfile()
+                    profile = resolvedId.Profile ?? new SteamProfile()
                     {
-                        SteamId = resolvedId.SteamId
+                        SteamId = resolvedId.SteamId64.ToString()
                     };
 
+                    profile.SteamId = resolvedId.SteamId64.ToString();
                     profile.ProfileId = profileId;
                     profile.Name = response.Data.Nickname?.Trim();
                     profile.AvatarUrl = response.Data.AvatarMediumUrl;
@@ -101,11 +98,11 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Else, if we know the custom profile id, fetch using the legacy XML API
-                else if (!String.IsNullOrEmpty(resolvedId.ProfileId))
+                else if (!String.IsNullOrEmpty(resolvedId.CustomUrl))
                 {
                     var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
                     {
-                        ProfileId = resolvedId.ProfileId,
+                        ProfileId = resolvedId.CustomUrl,
                         Xml = true
                     });
                     if (response == null)
@@ -119,16 +116,13 @@ namespace SCMM.Steam.API.Commands
                         throw new ArgumentException(nameof(request), "SteamID is invalid");
                     }
 
-                    profile = await _db.SteamProfiles.FirstOrDefaultAsync(
-                        x => x.SteamId == steamId
-                    );
-                    profile = profile ?? new SteamProfile()
+                    profile = resolvedId.Profile ?? new SteamProfile()
                     {
-                        ProfileId = resolvedId.ProfileId
+                        ProfileId = resolvedId.CustomUrl
                     };
 
                     profile.SteamId = response.SteamID64.ToString();
-                    profile.ProfileId = resolvedId.ProfileId;
+                    profile.ProfileId = resolvedId.CustomUrl;
                     profile.Name = response.SteamID.Trim();
                     profile.AvatarUrl = response.AvatarMedium;
                     profile.AvatarLargeUrl = response.AvatarFull;

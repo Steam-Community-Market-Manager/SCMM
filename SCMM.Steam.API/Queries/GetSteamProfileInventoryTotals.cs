@@ -64,7 +64,7 @@ namespace SCMM.Steam.API.Queries
             // Load the profile inventory
             var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
-                .Where(x => x.ProfileId == resolvedId.Id)
+                .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
                 .Select(x => new
                 {

@@ -1,5 +1,4 @@
 ﻿using CommandQuery;
-using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using System;
@@ -16,13 +15,15 @@ namespace SCMM.Steam.API.Queries
 
     public class ResolveSteamIdResponse
     {
-        public Guid? Id { get; set; }
+        public SteamProfile Profile { get; set; }
 
-        public string SteamId { get; set; }
+        public Guid? ProfileId { get; set; }
 
-        public string ProfileId { get; set; }
+        public ulong? SteamId64 { get; set; }
 
-        public bool Exists => (Id != null && Id != Guid.Empty);
+        public string CustomUrl { get; set; }
+
+        public bool Exists => (Profile != null);
     }
 
     public class ResolveSteamId : IQueryHandler<ResolveSteamIdRequest, ResolveSteamIdResponse>
@@ -36,17 +37,17 @@ namespace SCMM.Steam.API.Queries
 
         public async Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request)
         {
-            Guid id = Guid.Empty;
-            ulong steamId = 0;
-            string profileId = null;
             SteamProfile profile = null;
+            Guid profileId = Guid.Empty;
+            ulong steamId64 = 0;
+            string customUrl = null;
             if (string.IsNullOrEmpty(request.Id))
             {
                 return null;
             }
 
             // Is this a guid id?
-            if (Guid.TryParse(request.Id, out id))
+            if (Guid.TryParse(request.Id, out profileId))
             {
             }
 
@@ -54,56 +55,60 @@ namespace SCMM.Steam.API.Queries
             // e.g. 76561198082101518
             else if (long.TryParse(request.Id, out _))
             {
-                ulong.TryParse(request.Id, out steamId);
+                ulong.TryParse(request.Id, out steamId64);
             }
 
             // Else, is this a profile page url containing a string steam id?
             // e.g. https://steamcommunity.com/profiles/76561198082101518/
-            else if (Regex.IsMatch(request.Id, Constants.SteamProfileUrlSteamIdRegex))
+            else if (Regex.IsMatch(request.Id, Constants.SteamProfileUrlSteamId64Regex))
             {
-                ulong.TryParse(Regex.Match(request.Id, Constants.SteamProfileUrlSteamIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? request.Id, out steamId);
+                ulong.TryParse(Regex.Match(request.Id, Constants.SteamProfileUrlSteamId64Regex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? request.Id, out steamId64);
             }
 
             // Else, is this a profile page url containing a custom string profile id...
             // e.g. https://steamcommunity.com/id/bipolar_penguin/
-            else if (Regex.IsMatch(request.Id, Constants.SteamProfileUrlProfileIdRegex))
+            else if (Regex.IsMatch(request.Id, Constants.SteamProfileUrlCustomUrlRegex))
             {
-                profileId = Regex.Match(request.Id, Constants.SteamProfileUrlProfileIdRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? request.Id;
+                customUrl = Regex.Match(request.Id, Constants.SteamProfileUrlCustomUrlRegex).Groups.OfType<Capture>().LastOrDefault()?.Value ?? request.Id;
             }
 
             // Else, assume this is a custom string profile id...
             // e.g. bipolar_penguin
             else
             {
-                profileId = request.Id;
+                customUrl = request.Id;
             }
 
-            // Look up the profiles true info if it exists in the database already
-            if (id != Guid.Empty)
+            // Look up the profiles true info if it exists in the database already (use local cache first, to reduce round-trips)
+            if (profileId != Guid.Empty)
             {
-                profile = await _db.SteamProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+                profile = _db.SteamProfiles.Local.FirstOrDefault(x => x.Id == profileId) ??
+                          _db.SteamProfiles.FirstOrDefault(x => x.Id == profileId);
             }
-            else if (steamId > 0)
+            else if (steamId64 > 0)
             {
-                profile = await _db.SteamProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.SteamId == steamId.ToString());
+                profile = _db.SteamProfiles.Local.FirstOrDefault(x => x.SteamId == steamId64.ToString()) ??
+                          _db.SteamProfiles.FirstOrDefault(x => x.SteamId == steamId64.ToString());
             }
-            else if (!string.IsNullOrEmpty(profileId))
+            else if (!string.IsNullOrEmpty(customUrl))
             {
-                profile = await _db.SteamProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.ProfileId == profileId);
+                profile = _db.SteamProfiles.Local.FirstOrDefault(x => x.ProfileId == customUrl) ??
+                          _db.SteamProfiles.FirstOrDefault(x => x.ProfileId == customUrl);
             }
 
             if (profile != null)
             {
-                id = profile.Id;
-                ulong.TryParse(profile.SteamId, out steamId);
-                profileId = profile.ProfileId;
+                profileId = profile.Id;
+                ulong.TryParse(profile.SteamId, out steamId64);
+                customUrl = profile.ProfileId;
             }
 
             return new ResolveSteamIdResponse
             {
-                Id = id != Guid.Empty ? id : null,
-                SteamId = steamId > 0 ? steamId.ToString() : null,
-                ProfileId = profileId
+                Profile = profile,
+                ProfileId = profileId != Guid.Empty ? profileId : null,
+                SteamId64 = steamId64 > 0 ? steamId64 : null,
+                CustomUrl = customUrl
             };
         }
     }

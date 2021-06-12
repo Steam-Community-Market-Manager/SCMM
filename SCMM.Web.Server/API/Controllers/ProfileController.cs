@@ -423,7 +423,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
-                .Where(x => x.ProfileId == resolvedId.Id)
+                .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
@@ -508,12 +508,12 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 Id = steamId
             });
-            if (resolvedId?.Exists != true || resolvedId.Id == null)
+            if (resolvedId?.Exists != true || resolvedId.ProfileId == null)
             {
                 return NotFound("Profile not found");
             }
 
-            if (!User.Is(resolvedId.Id.Value) && !User.IsInRole(Roles.Administrator))
+            if (!User.Is(resolvedId.ProfileId.Value) && !User.IsInRole(Roles.Administrator))
             {
                 _logger.LogError($"Inventory does not belong to you and you do not have permission to view it");
                 return Unauthorized($"Inventory does not belong to you and you do not have permission to view it");
@@ -522,7 +522,7 @@ namespace SCMM.Web.Server.API.Controllers
             filter = Uri.UnescapeDataString(filter?.Trim() ?? String.Empty);
             var query = _db.SteamProfileInventoryItems
                 .AsNoTracking()
-                .Where(x => x.ProfileId == resolvedId.Id)
+                .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.ToLower().Contains(filter.ToLower()))
                 .Include(x => x.App)
                 .Include(x => x.Currency)
@@ -572,7 +572,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var profileMarketItems = await _db.SteamProfileMarketItems
                 .AsNoTracking()
-                .Where(x => x.ProfileId == resolvedId.Id)
+                .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
                 .Include(x => x.App)
                 .Include(x => x.Description.MarketItem)
@@ -629,7 +629,7 @@ namespace SCMM.Web.Server.API.Controllers
             var currency = this.Currency();
             var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
-                .Where(x => x.ProfileId == resolvedId.Id)
+                .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description.MarketItem != null)
                 .Select(x => new
                 {

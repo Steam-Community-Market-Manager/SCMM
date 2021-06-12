@@ -50,7 +50,7 @@ namespace SCMM.Steam.API.Commands
 
             var inventoryItemIcons = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
-                .Where(x => x.ProfileId == resolvedId.Id)
+                .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
                 .Select(x => new
                 {
