@@ -142,9 +142,9 @@ else
                 </div>
             </MudTd>
             <MudTd>
-                <MudTextField @bind-Value="@context.BuyPriceLocal" @onblur="@((e) => UpdateItemPrice(context, context.Currency ?? State.Currency, context.BuyPriceLocal))" PlaceHolder="Price" Class="ma-0" AutoFocus="true"
-                              Adornment="@(String.IsNullOrEmpty((context.Currency ?? State.Currency).SuffixText) ? MudBlazor.Adornment.Start : MudBlazor.Adornment.End)"
-                              AdornmentText="@(String.IsNullOrEmpty((context.Currency ?? State.Currency).SuffixText) ? (context.Currency ?? State.Currency).PrefixText : (context.Currency ?? State.Currency).SuffixText)" />
+                <MudTextField @bind-Value="@context.BuyPriceText" @onblur="@((e) => UpdateItemPrice(context, context.BuyPriceText))" PlaceHolder="Price" Class="ma-0" AutoFocus="true"
+                              Adornment="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? MudBlazor.Adornment.Start : MudBlazor.Adornment.End)"
+                              AdornmentText="@(String.IsNullOrEmpty(State.Currency.SuffixText) ? State.Currency.PrefixText : State.Currency.SuffixText)" />
             </MudTd>
             <MudTd>
                 @if (context.Last1hrValue != null)
@@ -245,16 +245,17 @@ else
         }
     }
 
-    private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, CurrencyDTO currency, string value)
+    private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, string value)
     {
         var buyPrice = value.SteamPriceAsInt(useDecimalShortCircuit: false);
         if (buyPrice != item.BuyPrice)
         {
-            Logger.LogInformation($"Updating buy price for '{item.Id}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}')");
-            item.Currency = State.Currency;
-            item.BuyPrice = buyPrice;
             try 
             {
+                item.Currency = State.Currency;
+                item.BuyPrice = buyPrice;
+
+                Logger.LogInformation($"Updating buy price for '{item.Id}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}', currency: '{item.Currency.CultureName}')");
                 await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
                 {
                     CurrencyId = State.Currency.Id,
@@ -264,6 +265,10 @@ else
             catch (Exception ex)
             {
                 Logger.LogError(ex, $"Error updating item buy price for '{item.Id}' (value: '{value}')");
+            }
+            finally
+            {
+                StateHasChanged();
             }
         }
     }

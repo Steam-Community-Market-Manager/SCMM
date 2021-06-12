@@ -26,7 +26,7 @@ namespace SCMM.Web.Data.Models.UI.ProfileInventory
 
         public long? BuyPrice { get; set; }
 
-        public string BuyPriceLocal { get; set; }
+        public string BuyPriceText { get; set; }
 
         public int Quantity { get; set; }
 
