@@ -148,6 +148,7 @@ namespace SCMM.Steam.API.Commands
                         if (importedProfile?.Profile != null)
                         {
                             assetDescription.Creator = importedProfile.Profile;
+                            assetDescription.CreatorId = importedProfile.Profile.Id;
                         }
                     }
                     catch (Exception)
@@ -200,6 +201,7 @@ namespace SCMM.Steam.API.Commands
                     if (importedImage?.Image != null)
                     {
                         assetDescription.Icon = importedImage.Image;
+                        assetDescription.IconId = importedImage.Image.Id;
                     }
                 }
                 catch (Exception ex)
@@ -219,6 +221,7 @@ namespace SCMM.Steam.API.Commands
                     if (importedImage?.Image != null)
                     {
                         assetDescription.IconLarge = importedImage.Image;
+                        assetDescription.IconLargeId = importedImage.Image.Id;
                     }
                 }
                 catch (Exception ex)
@@ -238,6 +241,7 @@ namespace SCMM.Steam.API.Commands
                     if (importedImage?.Image != null)
                     {
                         assetDescription.Image = importedImage.Image;
+                        assetDescription.ImageId = importedImage.Image.Id;
                     }
                 }
                 catch (Exception ex)
@@ -452,7 +456,7 @@ namespace SCMM.Steam.API.Commands
                 // Trim any junk characters
                 itemCollection = itemCollection.Trim(' ', ',', '.', '-', '\'', ':').Trim();
 
-                // If there is anything left, we have a unique collection name
+                // If there is anything left, we have a unique collection name, try find others with the same name
                 if (!String.IsNullOrEmpty(itemCollection))
                 {
                     // Count the number of other assets created by the same author that also contain the remaining unique collection words.
