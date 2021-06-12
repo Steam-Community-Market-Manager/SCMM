@@ -3,8 +3,8 @@
 @using SCMM.Web.Data.Models
 @inject ILogger<AppNavigation> Logger
 @inject IDialogService Dialogs
-@inject NavigationManager Navigation
-@inject ExternalNavigationManager ExternalNavigation
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
 @inject AppState State
 
@@ -157,8 +157,7 @@ else
                 Title = "Statistics",
                 SubTitle = "View market trends and stats",
                 Path = "/stats",
-                Prefix = true,
-                Disabled = true
+                Prefix = true
             }
         });
         if (items.Any())
@@ -261,17 +260,17 @@ else
     
     private void NavigateSettings()
     {
-        Navigation.NavigateTo($"/settings");
+        NavigationManager.NavigateTo($"/settings");
     }
 
     private void NavigateSignIn()
     {
-        ExternalNavigation.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+        ExternalNavigationManager.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
     }
 
     private void NavigateSignOut()
     {
-        ExternalNavigation.NavigateTo($"/signout?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+        ExternalNavigationManager.NavigateTo($"/signout?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
     }
 
 }

@@ -7,8 +7,8 @@
 @inject ILogger<StorePage> Logger
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
-@inject NavigationManager Navigation
-@inject ExternalNavigationManager ExternalNavigation
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
 @inject AppState State
 
@@ -369,7 +369,7 @@ else if (StoreList.Any())
         var store = StoreList.ElementAtOrDefault(index);
         if (store != null && store != oldStore)
         {
-            Navigation.NavigateTo($"/store/{store.Id}");  
+            NavigationManager.NavigateTo($"/store/{store.Id}");  
         }
     }
 
@@ -391,7 +391,7 @@ else if (StoreList.Any())
                 if (String.IsNullOrEmpty(StoreId))
                 {
                     // No store has been selected yet, navigate to the most recent store page as a default
-                    Navigation.NavigateTo($"/store/{StoreList.FirstOrDefault()?.Id}");  
+                    NavigationManager.NavigateTo($"/store/{StoreList.FirstOrDefault()?.Id}");  
                 }
             }
         }
@@ -438,17 +438,23 @@ else if (StoreList.Any())
 
     private void BuyItemFromStore(StoreItemDetailsDTO item)
     {
-        ExternalNavigation.NavigateToNewTab($"https://store.steampowered.com/itemstore/{item.AppId}/detail/{item.Id}/");
+        ExternalNavigationManager.NavigateToNewTab(
+            $"https://store.steampowered.com/itemstore/{item.AppId}/detail/{item.Id}/"
+        );
     }
     
     private void BuyItemFromMarket(StoreItemDetailsDTO item)
     {
-        ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/market/listings/{item.AppId}/{Uri.EscapeDataString(item.Name)}");
+        ExternalNavigationManager.NavigateToNewTab(
+            $"https://steamcommunity.com/market/listings/{item.AppId}/{Uri.EscapeDataString(item.Name)}"
+        );
     }
 
     private void ViewItemWorkshopPage(StoreItemDetailsDTO item)
     {
-        ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/sharedfiles/filedetails/?id={item.WorkshopFileId}");
+        ExternalNavigationManager.NavigateToNewTab(
+            $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.WorkshopFileId}"
+        );
     }
     
     private void ShowItemTypeDialog(StoreItemDetailsDTO item)

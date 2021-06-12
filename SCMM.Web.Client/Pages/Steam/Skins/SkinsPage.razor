@@ -62,8 +62,9 @@
 
     private void OnItemSelectionChanged(MarketItemListDTO item)
     {
-        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        ExternalNavigationManager.NavigateToNewTab(url);
+        ExternalNavigationManager.NavigateToNewTab(
+            $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}"
+        );
     }
 
     private async Task RefreshItems(string filter = null)

@@ -3,7 +3,7 @@
 @page "/steam/inventory/{SteamId}"
 @using SCMM.Web.Data.Models.Domain.InventoryItems
 @inject ILogger<InventoryPage> Logger
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject AppState State
 
@@ -96,9 +96,9 @@
         PanelIndex = index;
         switch (index)
         {
-            case 0: Navigation.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/summary"); break;
-            case 1: Navigation.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/investment"); break;
-            case 2: Navigation.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/statistics"); break;
+            case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/summary"); break;
+            case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/investment"); break;
+            case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/statistics"); break;
         }
     }
     

@@ -1,6 +1,6 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
 @using SCMM.Steam.Data.Models.Enums
-@inject ExternalNavigationManager ExternalNavigation
+@inject ExternalNavigationManager ExternalNavigationManager
 
 <div class="@($"Item {GetDynamicClassNames()} mud-paper")" @onclick="@(() => BuyItem())">
     <div class="Item-Icon Hover-Zoom">
@@ -87,7 +87,7 @@
     {
         if (!String.IsNullOrEmpty(PurchasableItem?.BuyNowUrl))
         {
-            ExternalNavigation.NavigateToNewTab(PurchasableItem.BuyNowUrl);
+            ExternalNavigationManager.NavigateToNewTab(PurchasableItem.BuyNowUrl);
         }
     }
 

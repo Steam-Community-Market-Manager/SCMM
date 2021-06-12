@@ -1,6 +1,6 @@
 @page "/inventory"
 @inject AppState State
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 
 <PageContainer Title="Inventory">
     <MudContainer MaxWidth="MudBlazor.MaxWidth.Small">
@@ -19,7 +19,7 @@
 
     private void ViewProfileInventory()
     {
-        Navigation.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}");
+        NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}");
     }
 
 }

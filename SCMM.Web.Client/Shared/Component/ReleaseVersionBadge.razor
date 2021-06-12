@@ -1,5 +1,5 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
-@inject NavigationManager Navigation
+@inject NavigationManager NavigationManager
 
 <MudChip Size="MudBlazor.Size.Small" OnClick="@ViewAboutPage">Preview</MudChip>
 
@@ -7,7 +7,7 @@
 
     private void ViewAboutPage()
     {
-        Navigation.NavigateTo($"about");
+        NavigationManager.NavigateTo($"about");
     }
 
     protected override bool ShouldRender() => false;
