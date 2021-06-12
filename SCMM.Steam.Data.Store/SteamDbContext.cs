@@ -62,7 +62,7 @@ namespace SCMM.Steam.Data.Store
                 .WithOne(x => x.App)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamApp>()
-                .HasMany(x => x.Assets)
+                .HasMany(x => x.AssetDescriptions)
                 .WithOne(x => x.App)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamApp>()

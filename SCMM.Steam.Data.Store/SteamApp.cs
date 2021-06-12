@@ -12,7 +12,7 @@ namespace SCMM.Steam.Data.Store
         {
             Filters = new Collection<SteamAssetFilter>();
             WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
-            Assets = new Collection<SteamAssetDescription>();
+            AssetDescriptions = new Collection<SteamAssetDescription>();
             MarketItems = new Collection<SteamMarketItem>();
             StoreItems = new Collection<SteamStoreItem>();
             ItemStores = new Collection<SteamItemStore>();
@@ -46,7 +46,7 @@ namespace SCMM.Steam.Data.Store
 
         public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }
 
-        public ICollection<SteamAssetDescription> Assets { get; set; }
+        public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
 
         public ICollection<SteamMarketItem> MarketItems { get; set; }
 
