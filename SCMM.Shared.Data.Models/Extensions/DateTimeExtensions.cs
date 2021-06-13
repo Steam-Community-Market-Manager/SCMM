@@ -5,6 +5,25 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class DateTimeExtensions
     {
+        public static string GetDaySuffix(this DateTime dateTime)
+        {
+            switch (dateTime.Day)
+            {
+                case 1:
+                case 21:
+                case 31:
+                    return "st";
+                case 2:
+                case 22:
+                    return "nd";
+                case 3:
+                case 23:
+                    return "rd";
+                default:
+                    return "th";
+            }
+        }
+
         public static string ToDurationString(this TimeSpan timeSpan, bool showYears = true, bool showMonths = true, bool showWeeks = true,
             bool showDays = true, bool showHours = true, bool showMinutes = true, bool showSeconds = true, string prefix = null, string suffix = null, string zero = null, int maxGranularity = 7)
         {

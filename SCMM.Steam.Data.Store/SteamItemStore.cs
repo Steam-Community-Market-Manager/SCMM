@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Text;
 
 namespace SCMM.Steam.Data.Store
@@ -38,23 +37,18 @@ namespace SCMM.Steam.Data.Store
 
         public string GetFullName()
         {
-            var culture = CultureInfo.InvariantCulture;
-            var storeDate = Start.UtcDateTime;
-            var storeDateWeek = culture.Calendar.GetWeekOfYear(storeDate, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday);
-            var storeDateYear = (storeDate.Year < DateTime.UtcNow.Year) ? storeDate.Year : 0;
-            
             var name = new StringBuilder();
-            if (storeDate.Year < DateTime.UtcNow.Year)
+            if (Start.UtcDateTime.Year != DateTime.UtcNow.Year)
             {
-                name.Append($"{storeDateYear} ");
+                name.Append($"{Start.UtcDateTime.Year} ");
             }
-            name.Append($"Week {storeDateWeek}");
+            name.Append(Start.UtcDateTime.ToString("MMMM d"));
             if (!String.IsNullOrEmpty(Name))
             {
                 name.Append($" \"{Name}\"");
             }
 
-            return name.ToString();
+            return name.ToString().Trim();
         }
     }
 }

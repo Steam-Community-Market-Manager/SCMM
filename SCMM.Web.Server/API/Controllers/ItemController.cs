@@ -106,7 +106,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Creator)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .OrderByDescending(x => x.TimeCreated)
+                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
                 .ToListAsync();
 
             var assetDetails = _mapper.Map<List<SteamAssetDescription>, ItemCollectionDTO>(assetDescriptions, this);

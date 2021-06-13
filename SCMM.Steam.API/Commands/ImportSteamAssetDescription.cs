@@ -204,7 +204,7 @@ namespace SCMM.Steam.API.Commands
 
             // Get store details from Steam (if item description is missing and it is a recently accepted store item)
             var storeItemPageHtml = (XElement)null;
-            var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(30)));
+            var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
             if (String.IsNullOrEmpty(itemDescription) && assetIsRecentlyAccepted)
             {
                 var storeItems = await _client.GetStorePaginated(new SteamStorePaginatedJsonRequest()
