@@ -1,0 +1,54 @@
+﻿@namespace SCMM.Web.Client.Pages.Steam.Store
+@using SCMM.Web.Data.Models.UI.Store
+@inject ILogger<ViewStoreListDialog> Logger
+@inject NavigationManager NavigationManager
+
+<MudDialog DisableSidePadding="true" ClassContent="pa-0">
+    <DialogContent>
+        <div class="d-flex flex-row justify-center align-start">
+            @foreach (var group in List.GroupBy(x => x.Start.Year))
+            {
+                <div class="d-flex flex-column justify-center align-start">
+                    <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Primary" Class="mt-4 mx-4">@group.Key.ToString()</MudText>
+                    <MudList Clickable="true">
+                        @foreach (var item in group.OrderBy(x => x.Start))
+                        {
+                            <MudListItem OnClick="@(() => ViewStore(item))">
+                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@item.Start.ToString("MMMM d")@item.Start.GetDaySuffix()</MudText>
+                                @if(!String.IsNullOrEmpty(item.Name))
+                                {
+                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">@item.Name</MudText>
+                                }
+                            </MudListItem>
+                        }
+                    </MudList>
+                </div>
+                <MudDivider Vertical="true" FlexItem="true" />
+            }
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] 
+    public MudDialogInstance Dialog { get; set; }
+    
+    [Parameter]
+    public StoreIdentiferDTO[] List { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Dialog.Options.NoHeader = true;
+        Dialog.Options.CloseButton = false;
+        Dialog.SetOptions(Dialog.Options); 
+    }
+
+    private void ViewStore(StoreIdentiferDTO store)
+    {
+        NavigationManager.NavigateTo($"/store/{store.Id}");  
+    }
+    
+    protected override bool ShouldRender() => false;
+
+}

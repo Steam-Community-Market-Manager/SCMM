@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -34,21 +33,5 @@ namespace SCMM.Steam.Data.Store
         public ImageData ItemsThumbnail { get; set; }
 
         public PersistableStringCollection Media { get; set; }
-
-        public string GetFullName()
-        {
-            var name = new StringBuilder();
-            if (Start.UtcDateTime.Year != DateTime.UtcNow.Year)
-            {
-                name.Append($"{Start.UtcDateTime.Year} ");
-            }
-            name.Append(Start.UtcDateTime.ToString("MMMM d"));
-            if (!String.IsNullOrEmpty(Name))
-            {
-                name.Append($" \"{Name}\"");
-            }
-
-            return name.ToString().Trim();
-        }
     }
 }

@@ -35,10 +35,9 @@
 
     [CascadingParameter] 
     public MudDialogInstance Dialog { get; set; }
-
-    protected override void OnParametersSet()
+    
+    protected override void OnInitialized()
     {
-        base.OnParametersSet();
         Dialog.Options.CloseButton = true;
         Dialog.Options.MaxWidth = MudBlazor.MaxWidth.ExtraSmall;
         Dialog.SetOptions(Dialog.Options);

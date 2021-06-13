@@ -5,7 +5,7 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class DateTimeExtensions
     {
-        public static string GetDaySuffix(this DateTime dateTime)
+        public static string GetDaySuffix(this DateTimeOffset dateTime)
         {
             switch (dateTime.Day)
             {

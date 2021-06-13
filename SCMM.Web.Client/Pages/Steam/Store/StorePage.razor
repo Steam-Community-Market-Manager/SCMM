@@ -25,12 +25,15 @@
 }
 else if (StoreList.Any())
 {
-    <MudTabs Elevation="0" Position="MudBlazor.Position.Bottom" ActivePanelIndex="StoreIndex" ActivePanelIndexChanged="OnSelectedStoreChanged" Class="mud-transparent-tabs">
-        @foreach (var store in StoreList)
-        {
-            <MudTabPanel ID="@store.Id.ToString()" Text="@store.Name" />
-        }
-    </MudTabs>
+    <div class="d-flex">
+        <MudTabs Elevation="0" Position="MudBlazor.Position.Bottom" ActivePanelIndex="StoreIndex" ActivePanelIndexChanged="OnSelectedStoreChanged" Class="mud-transparent-tabs" Style="width: calc(100% - 48px)">
+            @foreach (var store in StoreList)
+            {
+                <MudTabPanel ID="@store.Id.ToString()" Text="@GetStoreTitle(store)" />
+            }
+        </MudTabs>
+        <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" />
+    </div>
     <PageContainer Title="Store" Class="mb-6 ml-6 mr-6">
 
         <MudGrid Spacing="2">
@@ -50,7 +53,7 @@ else if (StoreList.Any())
             else
             {
                 <MudItem xs="12">
-                    <MudExpansionPanels>
+                    <MudExpansionPanels Dense="true" DisableGutters="true">
                         <MudExpansionPanel>
                             <TitleContent>
                                 <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="Centered my-n4 mx-n2">
@@ -468,6 +471,14 @@ else if (StoreList.Any())
         );
     }
     
+    private void ShowStoreListDialog(StoreIdentiferDTO[] stores)
+    {
+        Dialogs.Show<ViewStoreListDialog>("Store List", parameters: new DialogParameters()
+        {
+            ["List"] = stores
+        });
+    }
+
     private void ShowItemTypeDialog(StoreItemDetailsDTO item)
     {
         Dialogs.Show<ViewItemListDialog>(item.ItemType, parameters: new DialogParameters()
@@ -495,6 +506,18 @@ else if (StoreList.Any())
         });
     }
     
+    private string GetStoreTitle(StoreIdentiferDTO store)
+    {
+        var title = new StringBuilder();
+        title.Append(store.Start.ToString("MMMM d"));
+        if (!String.IsNullOrEmpty(store.Name))
+        {
+            title.Append($" - {store.Name}");
+        }
+
+        return title.ToString().Trim();
+    }
+
     private void RedrawItemSalesChart()
     {
         var storeItems = Store.Items

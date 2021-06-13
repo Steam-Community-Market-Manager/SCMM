@@ -13,6 +13,7 @@ using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using SteamWebAPI2.Interfaces;
@@ -250,7 +251,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     GuildPattern = guild.DiscordId,
                     ChannelPattern = guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
                     Message = null,
-                    Title = $"{app.Name} Store - {store.GetFullName()}",
+                    Title = $"{app.Name} Store - {store.Start.ToString("yyyy MMMM d")}{store.Start.GetDaySuffix()}",
                     Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
                     Fields = newStoreItems.ToDictionary(
                         x => x.Description?.Name,

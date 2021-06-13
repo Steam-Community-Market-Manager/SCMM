@@ -179,12 +179,10 @@ namespace SCMM.Web.Server
             //
 
             CreateMap<SteamItemStore, StoreIdentiferDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)))
-                .ForMember(x => x.Name, o => o.MapFrom(p => p.GetFullName()));
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)));
 
             CreateMap<SteamItemStore, StoreDetailsDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)))
-                .ForMember(x => x.Name, o => o.MapFrom(p => p.GetFullName()));
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)));
 
             CreateMap<SteamStoreItemItemStore, StoreItemDetailsDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Item.SteamId))

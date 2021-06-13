@@ -62,6 +62,10 @@
     
     protected override async Task OnInitializedAsync()
     {
+        Dialog.Options.CloseButton = true;
+        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Medium;
+        Dialog.SetOptions(Dialog.Options);
+
         try
         {
             Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>(CollectionUrl);
@@ -71,15 +75,6 @@
             Logger.LogError(ex, $"Error loading the item collection");
             Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
         }
-    }
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-        Dialog.Options.CloseButton = true;
-        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Medium;
-        Dialog.Options.FullWidth = true;
-        Dialog.SetOptions(Dialog.Options);
     }
 
 }
