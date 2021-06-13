@@ -10,8 +10,8 @@ namespace SCMM.Discord.Bot.Server.Modules
 {
     public partial class AdministrationModule
     {
-        [Command("store name")]
-        public async Task<RuntimeResult> StoreNameAsync(DateTime storeDate, [Remainder] string storeName)
+        [Command("update-store-name")]
+        public async Task<RuntimeResult> UpdateStoreNameAsync(DateTime storeDate, [Remainder] string storeName)
         {
             var itemStore = await _db.SteamItemStores
                 .OrderByDescending(x => x.Start)
@@ -30,8 +30,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
-        [Command("store media add")]
-        public async Task<RuntimeResult> StoreMediaAddAsync(DateTime storeDate, [Remainder] string media)
+        [Command("add-store-media")]
+        public async Task<RuntimeResult> AddStoreMediaAsync(DateTime storeDate, [Remainder] string media)
         {
             var itemStore = await _db.SteamItemStores
                 .OrderByDescending(x => x.Start)
@@ -50,8 +50,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
-        [Command("store media remove")]
-        public async Task<RuntimeResult> StoreMediaRemoveAsync(DateTime storeDate, [Remainder] string media)
+        [Command("remove-store-media")]
+        public async Task<RuntimeResult> RemoveStoreMediaAsync(DateTime storeDate, [Remainder] string media)
         {
             var itemStore = await _db.SteamItemStores
                 .OrderByDescending(x => x.Start)
@@ -70,8 +70,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
-        [Command("store rebuild history")]
-        public async Task<RuntimeResult> StoreRebuildHistoryAsync()
+        [Command("rebuild-store-list")]
+        public async Task<RuntimeResult> RebuildStoreListAsync()
         {
             //...
 

@@ -8,8 +8,8 @@ namespace SCMM.Discord.Bot.Server.Modules
 {
     public partial class AdministrationModule
     {
-        [Command("donator")]
-        public async Task<RuntimeResult> ProfileDonatorAsync(string steamId, [Remainder] int donatorLevel)
+        [Command("update-donator")]
+        public async Task<RuntimeResult> UpdateDonatorAsync(string steamId, [Remainder] int donatorLevel)
         {
             var profile = await _db.SteamProfiles
                 .Where(x => x.SteamId == steamId)
