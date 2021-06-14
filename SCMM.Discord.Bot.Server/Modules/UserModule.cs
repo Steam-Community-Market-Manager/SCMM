@@ -32,7 +32,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("steamid")]
-        [Alias("steam")]
+        [Alias("steam", "steamId64", "customUrl", "profileUrl")]
         [Summary("Link your SteamID so that you don't have to specify it when using other commands")]
         public async Task<RuntimeResult> SetUserSteamIdAsync(
             [Name("steam_id")][Summary("Valid SteamID or Steam URL")] string steamId
@@ -77,6 +77,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                         if (!profile.Roles.Any(x => x == Roles.VIP))
                         {
                             profile.Roles.Add(Roles.VIP);
+                            await Context.Message.AddReactionsAsync(new IEmote[]
+                            {
+                                Emote.Parse(":regional_indicator_v:"), Emote.Parse(":regional_indicator_i:"), Emote.Parse(":regional_indicator_p:"), new Emoji("🎁") // "VIP gift"
+                            });
                         }
                     }
                 }
