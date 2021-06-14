@@ -1,5 +1,4 @@
-﻿using SCMM.Steam.Data.Models.Enums;
-using SCMM.Steam.Data.Store.Types;
+﻿using SCMM.Steam.Data.Store.Types;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,27 +20,29 @@ namespace SCMM.Steam.Data.Store
         public SteamCurrency Currency { get; set; }
 
         /// <summary>
-        /// If true, the associate item store is current active and can be purchased from
+        /// The most recent price this item was sold for on the store
         /// </summary>
-        public bool IsActive { get; set; }
-
-        public long Price { get; set; }
+        public long? Price { get; set; }
 
         /// <summary>
+        /// The most recent price set this item was sold for on the store.
         /// Store prices are generally fixed and don't fluxuate with currency exhange rates.
         /// Because of this, we need to keep a list of all the fixed store prices in each currency.
         /// </summary>
         public PersistablePriceDictionary Prices { get; set; }
 
-        public ICollection<SteamStoreItemItemStore> Stores { get; set; }
-
-        public long TotalSalesMin { get; set; }
+        public long? TotalSalesMin { get; set; }
 
         public long? TotalSalesMax { get; set; }
 
         public PersistableDailyGraphDataSet TotalSalesGraph { get; set; }
 
-        public SteamStoreItemFlags Flags { get; set; }
+        /// <summary>
+        /// If true, there is at least one associated store that can be purchased from. Otherwise, this item isn't available for purchase currently.
+        /// </summary>
+        public bool IsAvailable { get; set; }
+
+        public ICollection<SteamStoreItemItemStore> Stores { get; set; }
 
         public void RecalculateTotalSales(SteamItemStore store)
         {

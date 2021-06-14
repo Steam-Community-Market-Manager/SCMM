@@ -114,6 +114,7 @@ namespace SCMM.Steam.API
                 assetDescription.TimeAccepted = timeChecked;
             }
 
+            // TODO: This is creating duplicate items, need to find and re-use any existing items before creating new ones
             var prices = GetPriceTable(asset.Prices);
             app.StoreItems.Add(dbItem = new SteamStoreItem()
             {
@@ -123,7 +124,7 @@ namespace SCMM.Steam.API
                 Prices = new PersistablePriceDictionary(prices),
                 Price = (long) prices.FirstOrDefault(x => x.Key == currency.Name).Value,
                 Currency = currency,
-                IsActive = true
+                IsAvailable = true
             });
 
             return dbItem;

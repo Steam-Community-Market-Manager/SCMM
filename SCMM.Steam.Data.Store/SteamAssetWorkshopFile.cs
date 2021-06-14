@@ -1,6 +1,4 @@
 ﻿using SCMM.Shared.Data.Store;
-using SCMM.Steam.Data.Models.Enums;
-using SCMM.Steam.Data.Store.Types;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,18 +6,13 @@ namespace SCMM.Steam.Data.Store
 {
     public class SteamAssetWorkshopFile : Entity
     {
-        public SteamAssetWorkshopFile()
-        {
-            SubscriptionsGraph = new PersistableDailyGraphDataSet();
-        }
-
-        [Required]
-        public string SteamId { get; set; }
-
         [Required]
         public Guid AppId { get; set; }
 
         public SteamApp App { get; set; }
+
+        [Required]
+        public ulong WorkshopFileId { get; set; }
 
         public string Name { get; set; }
 
@@ -35,24 +28,23 @@ namespace SCMM.Steam.Data.Store
 
         public SteamProfile Creator { get; set; }
 
-        public DateTimeOffset CreatedOn { get; set; }
+        public DateTimeOffset TimeCreated { get; set; }
 
-        public DateTimeOffset UpdatedOn { get; set; }
+        public DateTimeOffset TimeUpdated { get; set; }
 
-        public DateTimeOffset? AcceptedOn { get; set; }
+        public DateTimeOffset? TimeAccepted { get; set; }
 
-        public int Subscriptions { get; set; }
+        /// <summary>
+        /// Last time this asset workshop file was updated from Steam
+        /// </summary>
+        public DateTimeOffset? TimeRefreshed { get; set; }
 
-        public PersistableDailyGraphDataSet SubscriptionsGraph { get; set; }
+        public long Subscriptions { get; set; }
 
         public int Favourited { get; set; }
 
         public int Views { get; set; }
 
-        public SteamAssetWorkshopFileFlags Flags { get; set; }
-
         public string BanReason { get; set; }
-
-        public DateTimeOffset? LastCheckedOn { get; set; }
     }
 }

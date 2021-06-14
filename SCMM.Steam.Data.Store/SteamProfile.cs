@@ -15,7 +15,7 @@ namespace SCMM.Steam.Data.Store
             InventoryItems = new Collection<SteamProfileInventoryItem>();
             InventorySnapshots = new Collection<SteamProfileInventorySnapshot>();
             MarketItems = new Collection<SteamProfileMarketItem>();
-            WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
+            AssetDescriptions = new Collection<SteamAssetDescription>();
         }
 
         public string SteamId { get; set; }
@@ -74,7 +74,7 @@ namespace SCMM.Steam.Data.Store
 
         public ICollection<SteamProfileMarketItem> MarketItems { get; set; }
 
-        public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }
+        public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
 
         protected override IEnumerable<ConfigurationDefinition> ConfigurationDefinitions
             => SteamProfileConfiguration.Definitions;

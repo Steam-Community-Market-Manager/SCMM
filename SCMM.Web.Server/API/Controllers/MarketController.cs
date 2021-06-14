@@ -563,14 +563,14 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var query = _db.SteamProfiles
                 .AsNoTracking()
-                .Where(x => x.WorkshopFiles.Count > 0)
-                .OrderByDescending(x => x.WorkshopFiles.Count)
+                .Where(x => x.AssetDescriptions.Count(y => y.TimeAccepted != null) > 0)
+                .OrderByDescending(x => x.AssetDescriptions.Count(y => y.TimeAccepted != null))
                 .Select(x => new DashboardProfileWorkshopValueDTO()
                 {
                     SteamId = x.SteamId,
                     Name = x.Name,
                     AvatarUrl = x.AvatarUrl,
-                    Items = x.WorkshopFiles.Count,
+                    Items = x.AssetDescriptions.Count(y => y.TimeAccepted != null),
                 });
 
             return Ok(

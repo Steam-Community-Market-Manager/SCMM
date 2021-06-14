@@ -26,6 +26,11 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? End { get; set; }
 
+        /// <summary>
+        /// If true, this store can be purchased from. Otherwise, it is no longer available.
+        /// </summary>
+        public bool IsAvailable => (End == null || End < DateTimeOffset.Now);
+
         public ICollection<SteamStoreItemItemStore> Items { get; set; }
 
         public Guid? ItemsThumbnailId { get; set; }

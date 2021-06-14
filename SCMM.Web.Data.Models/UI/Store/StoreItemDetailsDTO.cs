@@ -39,11 +39,11 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public CurrencyDTO Currency { get; set; }
         
-        public long StorePrice { get; set; }
+        public long? StorePrice { get; set; }
 
         public int StoreIndex { get; set; }
 
-        public bool IsStillAvailableInStore { get; set; }
+        public bool IsStillAvailableFromStore { get; set; }
 
         public long? MarketPrice { get; set; }
 
@@ -53,7 +53,7 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public long? Subscriptions { get; set; }
 
-        public long SalesMinimum { get; set; }
+        public long? SalesMinimum { get; set; }
 
         public long? SalesMaximum { get; set; }
 

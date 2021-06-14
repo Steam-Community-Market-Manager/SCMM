@@ -72,8 +72,8 @@ namespace SCMM.Steam.API.Queries
                     BuyPrice = x.BuyPrice,
                     ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
-                    ItemLast1hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
-                    ItemLast24hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Last24hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price : 0)),
+                    ItemLast1hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
+                    ItemLast24hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Last24hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
                     ItemResellPrice = (x.Description.MarketItem != null ? x.Description.MarketItem.ResellPrice : 0),
                     ItemResellTax = (x.Description.MarketItem != null ? x.Description.MarketItem.ResellTax : 0),
                     ItemExchangeRateMultiplier = (x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : (x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0))

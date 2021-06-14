@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210613074216_RemoveUnusedFlagsAndCleanupStoreItems")]
+    partial class RemoveUnusedFlagsAndCleanupStoreItems
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -296,11 +298,17 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTimeOffset?>("AcceptedOn")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<Guid>("AppId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("BanReason")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatorId")
                         .HasColumnType("uniqueidentifier");
@@ -317,29 +325,24 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTimeOffset?>("LastCheckedOn")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("Subscriptions")
-                        .HasColumnType("bigint");
+                    b.Property<string>("SteamId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTimeOffset?>("TimeAccepted")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<int>("Subscriptions")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("TimeCreated")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("TimeRefreshed")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("TimeUpdated")
+                    b.Property<DateTimeOffset>("UpdatedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<int>("Views")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("WorkshopFileId")
-                        .HasColumnType("decimal(20,0)");
 
                     b.HasKey("Id");
 
@@ -349,7 +352,7 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.HasIndex("ImageId");
 
-                    b.HasIndex("WorkshopFileId")
+                    b.HasIndex("SteamId")
                         .IsUnique();
 
                     b.ToTable("SteamAssetWorkshopFiles");
@@ -1040,9 +1043,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .IsRequired();
 
                     b.HasOne("SCMM.Steam.Data.Store.SteamProfile", "Creator")
-                        .WithMany("AssetDescriptions")
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany()
+                        .HasForeignKey("CreatorId");
 
                     b.HasOne("SCMM.Shared.Data.Store.ImageData", "Icon")
                         .WithMany()
@@ -1156,18 +1158,37 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .IsRequired();
 
                     b.HasOne("SCMM.Steam.Data.Store.SteamProfile", "Creator")
-                        .WithMany()
-                        .HasForeignKey("CreatorId");
+                        .WithMany("WorkshopFiles")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SCMM.Shared.Data.Store.ImageData", "Image")
                         .WithMany()
                         .HasForeignKey("ImageId");
+
+                    b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableDailyGraphDataSet", "SubscriptionsGraph", b1 =>
+                        {
+                            b1.Property<Guid>("SteamAssetWorkshopFileId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamAssetWorkshopFileId");
+
+                            b1.ToTable("SteamAssetWorkshopFiles");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamAssetWorkshopFileId");
+                        });
 
                     b.Navigation("App");
 
                     b.Navigation("Creator");
 
                     b.Navigation("Image");
+
+                    b.Navigation("SubscriptionsGraph");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamItemStore", b =>
@@ -1560,8 +1581,6 @@ namespace SCMM.Steam.Data.Store.Migrations
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamProfile", b =>
                 {
-                    b.Navigation("AssetDescriptions");
-
                     b.Navigation("Configurations");
 
                     b.Navigation("InventoryItems");
@@ -1569,6 +1588,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Navigation("InventorySnapshots");
 
                     b.Navigation("MarketItems");
+
+                    b.Navigation("WorkshopFiles");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamStoreItem", b =>

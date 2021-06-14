@@ -64,7 +64,7 @@ namespace SCMM.Steam.API.Commands
                     .Select(x => new
                     {
                         Profile = x,
-                        IsCreator = x.WorkshopFiles.Any(x => x.AcceptedOn != null),
+                        IsCreator = x.AssetDescriptions.Any(x => x.TimeAccepted != null),
                         IsDonator = x.DonatorLevel > 0
                     })
                     .FirstOrDefaultAsync();

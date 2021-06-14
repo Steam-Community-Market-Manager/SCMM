@@ -190,8 +190,6 @@ namespace SCMM.Steam.Data.Store
 
         public TimeSpan? MarketAge => (DateTimeOffset.Now - FirstSeenOn);
 
-        public SteamMarketItemFlags Flags { get; set; }
-
         // How long since orders were last checked
         public DateTimeOffset? LastCheckedOrdersOn { get; set; }
 

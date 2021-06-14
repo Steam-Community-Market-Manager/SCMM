@@ -5,19 +5,19 @@
 
 <MudDialog DisableSidePadding="true" ClassContent="pa-0">
     <DialogContent>
-        <div class="d-flex flex-row justify-center align-start">
+        <div class="d-flex flex-row justify-center align-start" style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
             @foreach (var group in List.GroupBy(x => x.Start.Year))
             {
                 <div class="d-flex flex-column justify-center align-start">
-                    <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Primary" Class="mt-4 mx-4">@group.Key.ToString()</MudText>
-                    <MudList Clickable="true">
+                    <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Primary" Class="NoWrap mt-4 mx-4">@group.Key.ToString()</MudText>
+                    <MudList Clickable="true" Dense="true" DisablePadding="true">
                         @foreach (var item in group.OrderBy(x => x.Start))
                         {
                             <MudListItem OnClick="@(() => ViewStore(item))">
-                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@item.Start.ToString("MMMM d")@item.Start.GetDaySuffix()</MudText>
+                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" Class="NoWrap">@item.Start.ToString("MMMM d")@item.Start.GetDaySuffix()</MudText>
                                 @if(!String.IsNullOrEmpty(item.Name))
                                 {
-                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">@item.Name</MudText>
+                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap">@item.Name</MudText>
                                 }
                             </MudListItem>
                         }
@@ -41,6 +41,7 @@
     {
         Dialog.Options.NoHeader = true;
         Dialog.Options.CloseButton = false;
+        Dialog.Options.MaxWidth = MaxWidth.Large;
         Dialog.SetOptions(Dialog.Options); 
     }
 

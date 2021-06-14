@@ -106,12 +106,10 @@ namespace SCMM.Steam.Data.Store
                 .HasForeignKey<SteamMarketItem>(x => x.DescriptionId);
 
             builder.Entity<SteamAssetWorkshopFile>()
-                .HasIndex(x => x.SteamId)
+                .HasIndex(x => x.WorkshopFileId)
                 .IsUnique(true);
             builder.Entity<SteamAssetWorkshopFile>()
                 .HasOne(x => x.Image);
-            builder.Entity<SteamAssetWorkshopFile>()
-                .OwnsOne(x => x.SubscriptionsGraph);
 
             builder.Entity<SteamCurrency>()
                 .HasIndex(x => x.SteamId)
@@ -178,7 +176,7 @@ namespace SCMM.Steam.Data.Store
                 .WithOne(x => x.Profile)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamProfile>()
-                .HasMany(x => x.WorkshopFiles)
+                .HasMany(x => x.AssetDescriptions)
                 .WithOne(x => x.Creator)
                 .OnDelete(DeleteBehavior.SetNull);
             builder.Entity<SteamProfile>()

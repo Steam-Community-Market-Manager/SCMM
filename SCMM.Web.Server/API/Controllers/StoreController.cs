@@ -148,7 +148,7 @@ namespace SCMM.Web.Server.API.Controllers
                         Position = x.App.MarketItems
                             .Where(y => y.Description.IsMarketable)
                             .Where(y => y.Description.ItemType == x.Description.ItemType)
-                            .Where(y => y.BuyNowPrice < ((x.IsActive || x.Description.MarketItem == null) ? x.Price : x.Description.MarketItem.BuyNowPrice))
+                            .Where(y => y.BuyNowPrice < ((x.IsAvailable || x.Description.MarketItem == null) ? x.Price ?? 0 : x.Description.MarketItem.BuyNowPrice))
                             .Count(),
                         Total = x.App.MarketItems
                             .Where(y => y.Description.IsMarketable)

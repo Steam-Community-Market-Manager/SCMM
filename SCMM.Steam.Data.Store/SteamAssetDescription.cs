@@ -135,13 +135,13 @@ namespace SCMM.Steam.Data.Store
 
         private IEnumerable<Price> GetPrices()
         {
-            if (StoreItem != null && StoreItem.IsActive)
+            if (StoreItem != null && StoreItem.IsAvailable && StoreItem.Price != null && StoreItem.Currency != null)
             {
                 yield return new Price
                 {
                     Type = PriceType.SteamStore,
                     Currency = StoreItem.Currency,
-                    BuyPrice = StoreItem.Price,
+                    BuyPrice = StoreItem.Price.Value,
                     BuyUrl = new SteamStorePageRequest()
                     {
                         AppId = (StoreItem.App?.SteamId ?? App?.SteamId)

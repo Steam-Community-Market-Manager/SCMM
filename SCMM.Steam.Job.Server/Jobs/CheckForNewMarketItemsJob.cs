@@ -202,15 +202,15 @@ namespace SCMM.Steam.Job.Server.Jobs
                         var estimateSales = String.Empty;
                         if (storeItem.TotalSalesMax == null && storeItem.TotalSalesMin > 0)
                         {
-                            estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()} or more";
+                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} or more";
                         }
                         else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax && storeItem.TotalSalesMin > 0)
                         {
-                            estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()}";
+                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()}";
                         }
                         else if (storeItem.TotalSalesMin > 0 && storeItem.TotalSalesMax > 0)
                         {
-                            estimateSales = $"{storeItem.TotalSalesMin.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
+                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
                         }
                         if (!String.IsNullOrEmpty(estimateSales))
                         {

@@ -89,8 +89,6 @@ namespace SCMM.Web.Data.Models.Domain.MarketItems
 
         public int? Subscriptions { get; set; }
 
-        public SteamMarketItemFlags Flags { get; set; }
-
         public SteamProfileMarketItemFlags ProfileFlags { get; set; }
     }
 }

@@ -120,7 +120,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                         itemStore.End = DateTimeOffset.UtcNow;
                         foreach (var item in itemStore.Items)
                         {
-                            item.Item.IsActive = false;
+                            item.Item.IsAvailable = false;
                         }
 
                         activeItemStores.Remove(itemStore);
