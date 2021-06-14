@@ -63,7 +63,7 @@ else if (StoreList.Any())
                             </TitleContent>
                             <ChildContent>
                                 <MudTabs KeepPanelsAlive="true" Rounded="true" Centered="true" >
-                                    <MudTabPanel Text="Units Sold">
+                                    <MudTabPanel Text="Units Sold" Disabled="@(ItemSubscribersChart == null)">
                                         @if (ItemSubscribersChart != null)
                                         {
                                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Warning" Class="Centered ma-4">
@@ -73,10 +73,10 @@ else if (StoreList.Any())
                                         }
                                         else
                                         {
-                                            <Alert Title="Unavailable" SubTitle="No data yet" />
+                                            <Alert Severity="MudBlazor.Severity.Warning" Title="No data available" SubTitle="Unfortunately there is no available data for this insight" />
                                         }
                                     </MudTabPanel>
-                                    <MudTabPanel Text="Sales Revenue">
+                                    <MudTabPanel Text="Sales Revenue" Disabled="@(ItemSalesChart == null)">
                                         @if (ItemSalesChart != null)
                                         {
                                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Warning" Class="Centered ma-4">
@@ -86,12 +86,12 @@ else if (StoreList.Any())
                                         }
                                         else
                                         {
-                                            <Alert Title="Unavailable" SubTitle="No data yet" />
+                                            <Alert Severity="MudBlazor.Severity.Warning" Title="No data available" SubTitle="Unfortunately there is no available data for this insight" />
                                         }
                                     </MudTabPanel>
                                     @if (Store.Items.Any(x => x.HasMarketListing))
                                     {
-                                        <MudTabPanel Text="Profitability">
+                                        <MudTabPanel Text="Profitability" Disabled="@(ItemMarketplacePerformanceChart == null)">
                                             @if (ItemMarketplacePerformanceChart != null)
                                             {
                                                 <div class="ma-4">
@@ -100,7 +100,7 @@ else if (StoreList.Any())
                                             }
                                             else
                                             {
-                                                <Alert Title="Unavailable" SubTitle="No data yet" />
+                                                <Alert Severity="MudBlazor.Severity.Warning" Title="No data available" SubTitle="Unfortunately there is no available data for this insight" />
                                             }
                                         </MudTabPanel>
                                     }
@@ -110,7 +110,7 @@ else if (StoreList.Any())
                     </MudExpansionPanels>
                 </MudItem>
 
-                @foreach (var item in Store.Items.OrderByDescending(x => x.SalesMinimum * x.StorePrice))
+                @foreach (var item in Store.Items.OrderByDescending(x => (x.SalesMinimum ?? 0) * (x.StorePrice ?? 0)))
                 {
                     <MudItem xs="12" sm="6" md="4" xl="3">
                         <div class="Store-Item FullHeight">
@@ -164,15 +164,15 @@ else if (StoreList.Any())
                                                     <span>
                                                         @if (item.SalesMaximum == null)
                                                         {
-                                                            <span>More than <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() sold</MudLink></span>
+                                                            <span>More than <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() sold</MudLink></span>
                                                         }
                                                         else if (item.SalesMinimum == item.SalesMaximum)
                                                         {
-                                                            <span><MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() sold</MudLink></span>
+                                                            <span><MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() sold</MudLink></span>
                                                         }
                                                         else
                                                         {
-                                                            <span>Between <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink></span>
+                                                            <span>Between <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink></span>
                                                         }
                                                     </span>
                                                 </MudText>
@@ -255,19 +255,19 @@ else if (StoreList.Any())
                                                     </TooltipContent>
                                                 </MudTooltip>
                                             </div>
-                                            @if (item.IsStillAvailableInStore && item.HasMarketListing)
+                                            @if (item.IsStillAvailableFromStore && item.HasMarketListing)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
                                                     <span>This item is also available in the marketplace.</span>
                                                 </MudText>
                                             }
-                                            else if (!item.IsStillAvailableInStore && item.HasMarketListing)
+                                            else if (!item.IsStillAvailableFromStore && item.HasMarketListing)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                                                    <span>This item is no longer available on the store, grab it from the marketplace instead.</span>
+                                                    <span>This item is no longer available from the store, grab it from the marketplace instead.</span>
                                                 </MudText>
                                             }
-                                            else if (!item.IsStillAvailableInStore)
+                                            else if (!item.IsStillAvailableFromStore)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
                                                     <span>This item is no longer available.</span>
@@ -275,20 +275,23 @@ else if (StoreList.Any())
                                             }
                                         </MudItem>
                                     
-                                        <MudItem xs="5" Class="Centered">
-                                            <div class="d-flex flex-row justify-center align-center">
-                                                <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableInStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Class="NoWrap" Style="@(item.IsStillAvailableInStore ? null : "text-decoration: line-through")">
-                                                    <span>@item.Currency.ToPriceString(item.StorePrice)</span>
-                                                </MudText>
-                                            </div>
-                                        </MudItem>
-                                        <MudItem xs="7" Class="Centered d-flex align-stretch">
-                                            <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableInStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
-                                                       Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableInStore)" FullWidth>
-                                                <RustIcon />        
-                                                <strong class="ml-1">Store</strong>
-                                            </MudButton>
-                                        </MudItem>
+                                        @if (item.StorePrice > 0 && item.Currency != null)
+                                        {
+                                            <MudItem xs="5" Class="Centered">
+                                                <div class="d-flex flex-row justify-center align-center">
+                                                    <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableFromStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Class="NoWrap" Style="@(item.IsStillAvailableFromStore ? null : "text-decoration: line-through")">
+                                                        <span>@item.Currency.ToPriceString(item.StorePrice.Value)</span>
+                                                    </MudText>
+                                                </div>
+                                            </MudItem>
+                                            <MudItem xs="7" Class="Centered d-flex align-stretch">
+                                                <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableFromStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                                           Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableFromStore)" FullWidth>
+                                                    <RustIcon />        
+                                                    <strong class="ml-1">Store</strong>
+                                                </MudButton>
+                                            </MudItem>
+                                        }
 
                                         @if (item.HasMarketListing)
                                         {
@@ -297,15 +300,18 @@ else if (StoreList.Any())
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="NoWrap">
                                                         <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
                                                     </MudText>
-                                                    @if (item.MarketPrice != null && item.MarketPrice > item.StorePrice)
+                                                    @if (item.MarketPrice > 0 && item.StorePrice > 0)
                                                     {
-                                                        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice)" 
-                                                                 Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
-                                                    }
-                                                    else
-                                                    {
-                                                        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice)" 
-                                                                 Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                        @if (item.MarketPrice >= item.StorePrice)
+                                                        {
+                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
+                                                                     Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
+                                                                     Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                        }
                                                     }
                                                 </div>
                                             </MudItem>
@@ -520,9 +526,11 @@ else if (StoreList.Any())
 
     private void RedrawItemSalesChart()
     {
+        ItemSalesChart = null;
+
         var storeItems = Store.Items
-            .Where(x => x.HasWorkshopFile)
-            .OrderBy(x => x.StoreIndex)
+            .Where(x => x.StorePrice > 0 && x.Subscriptions > 0)
+            .OrderByDescending(x => (x.StorePrice * x.Subscriptions))
             .ToList();
 
         if (!storeItems.Any())
@@ -613,7 +621,7 @@ else if (StoreList.Any())
             BorderWidth = 1
         };
         authorRevenue.AddRange(
-            storeItems.Select(x => (DoubleWrapper)Math.Round((double)((x.SalesMinimum * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
+            storeItems.Select(x => (DoubleWrapper)Math.Round((double)((x.Subscriptions * x.StorePrice) * 0.25) / localScaleDivisor, State.Currency.Scale))
         );
 
         var totalRevenue = new BarDataset<DoubleWrapper>
@@ -624,7 +632,7 @@ else if (StoreList.Any())
             BorderWidth = 1
         };
         totalRevenue.AddRange(
-            storeItems.Select(x => (DoubleWrapper)Math.Round((double)(x.SalesMinimum * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
+            storeItems.Select(x => (DoubleWrapper)Math.Round((double)(x.Subscriptions * x.StorePrice) / localScaleDivisor, State.Currency.Scale))
         );
 
         ItemSalesChart.Data.Datasets.AddRange(new[] {
@@ -634,9 +642,11 @@ else if (StoreList.Any())
 
     private void RedrawItemSubscribersChart()
     {
+        ItemSubscribersChart = null;
+
         var storeItems = Store.Items
-            .Where(x => x.HasWorkshopFile)
-            .OrderBy(x => x.StoreIndex)
+            .Where(x => x.Subscriptions > 0)
+            .OrderByDescending(x => x.Subscriptions)
             .ToList();
 
         if (!storeItems.Any())
@@ -733,8 +743,10 @@ else if (StoreList.Any())
 
     private void RedrawItemMarketplacePerformanceChart()
     {
+        ItemMarketplacePerformanceChart = null;
+
         var storeItems = Store.Items
-            .Where(x => x.HasMarketListing)
+            .Where(x => x.MarketPrice != null && x.StorePrice != null)
             .OrderBy(x => x.StoreIndex)
             .ToList();
 
@@ -793,8 +805,8 @@ else if (StoreList.Any())
             BorderColor = "#1b5e20",
             BorderWidth = 1,
             Data = storeItems
-            .Select(x => (double)x.Currency.ToPrice(x.StorePrice))
-            .ToList()
+                .Select(x => (double)x.Currency.ToPrice(x.StorePrice ?? 0))
+                .ToList()
         };
 
         ItemMarketplacePerformanceChart.Data.Datasets.AddRange(new[] {

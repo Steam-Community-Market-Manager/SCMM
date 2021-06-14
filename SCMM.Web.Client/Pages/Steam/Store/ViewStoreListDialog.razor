@@ -11,7 +11,7 @@
                 <div class="d-flex flex-column justify-center align-start">
                     <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Primary" Class="NoWrap mt-4 mx-4">@group.Key.ToString()</MudText>
                     <MudList Clickable="true" Dense="true" DisablePadding="true">
-                        @foreach (var item in group.OrderBy(x => x.Start))
+                        @foreach (var item in group.OrderByDescending(x => x.Start))
                         {
                             <MudListItem OnClick="@(() => ViewStore(item))">
                                 <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" Class="NoWrap">@item.Start.ToString("MMMM d")@item.Start.GetDaySuffix()</MudText>
