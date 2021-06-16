@@ -38,6 +38,9 @@
         public const string SteamAssetClassDescriptionTypeBBCode = "bbcode";
         public const string SteamAssetClassDescriptionStripBBCodeRegex = @"\[[^\]]*\]";
 
+        public const string SteamDefaultCurrency = "USD";
+        public const string SteamDefaultLanguage = "english";
+
         #region Rust
 
         public const ulong RustAppId = 252490L;

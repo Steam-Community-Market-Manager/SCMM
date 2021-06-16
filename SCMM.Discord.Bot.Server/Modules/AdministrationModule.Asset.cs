@@ -101,63 +101,75 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("rebuild-asset-accepted-times")]
         public async Task<RuntimeResult> RebuildAssetAcceptedTimesAsync()
         {
-            var minDate = DateTimeOffset.MinValue;
             var assetDescriptions = await _db.SteamAssetDescriptions
                 .Select(x => new
                 {
                     AssetDescription = x,
                     TimeAccepted = (x.MarketItem != null 
-                        ? x.MarketItem.SalesHistory.Min(x => x.Timestamp).Subtract(TimeSpan.FromDays(7)) 
-                        : x.TimeAccepted ?? minDate
+                        ? x.MarketItem.SalesHistory.Min(x => x.Timestamp) 
+                        : x.TimeAccepted
                     )
                 })
                 .ToListAsync();
 
-            var culture = CultureInfo.InvariantCulture;
-            var groupedReleases = assetDescriptions
-                .Where(x => x.TimeAccepted > minDate)
-                .GroupBy(
-                    x => new Tuple<int, int>(
-                        x.TimeAccepted.UtcDateTime.Year,
-                        culture.Calendar.GetWeekOfYear(x.TimeAccepted.UtcDateTime, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)
-                    )
-                );
-
-            var debug = new StringBuilder();
+            // Group items in to stores where they were accepted within 3 days or less than eachother
             var stores = new Dictionary<DateTimeOffset, IList<SteamAssetDescription>>();
-            foreach (var groupedRelease in groupedReleases.OrderBy(x => x.Key.Item1).ThenBy(x => x.Key.Item2))
+            var filteredAssetDescriptions = assetDescriptions.Where(x => x.TimeAccepted != null);
+            var storeProbablyStartedOn = filteredAssetDescriptions.Min(x => x.TimeAccepted);
+            foreach (var item in filteredAssetDescriptions.OrderBy(x => x.TimeAccepted))
             {
-                var storeProbablyStartedOn = groupedRelease.Min(x => x.TimeAccepted);
-                foreach (var item in groupedRelease)
+                if ((item.TimeAccepted - storeProbablyStartedOn) > TimeSpan.FromDays(3))
                 {
-                    if ((item.TimeAccepted - storeProbablyStartedOn) >= TimeSpan.FromDays(2))
-                    {
-                        storeProbablyStartedOn = item.TimeAccepted;
-                    }
-                    if (!stores.ContainsKey(storeProbablyStartedOn))
-                    {
-                        stores[storeProbablyStartedOn] = new List<SteamAssetDescription>();
-                    }
-                    stores[storeProbablyStartedOn].Add(item.AssetDescription);
+                    storeProbablyStartedOn = item.TimeAccepted;
                 }
+                if (!stores.ContainsKey(storeProbablyStartedOn.Value))
+                {
+                    stores[storeProbablyStartedOn.Value] = new List<SteamAssetDescription>();
+                }
+                stores[storeProbablyStartedOn.Value].Add(item.AssetDescription);
             }
 
+            // Merge item stores containing less than three items in to the closest store
             foreach (var store in stores)
             {
+                //...
+            }
+            /*
+            var videos = await _googleClient.SearchVideosAsync(
+                query: String.Empty,
+                channelId: "UCvCBuwbtKRwM0qMi7rc7CUw",
+                publishedAfter: filteredAssetDescriptions.Min(x => x.TimeAccepted).Value.UtcDateTime,
+                maxResults: Int32.MaxValue
+            );
+            var filteredVideos = videos?
+                .Where(x => x.Title.Contains("Rust Skins", StringComparison.InvariantCultureIgnoreCase))
+                .OrderBy(x => x.PublishedAt);
+            */
+
+            var debug = new StringBuilder();
+            foreach (var store in stores)
+            {
+                debug.AppendLine();
                 debug.AppendLine($"{store.Key.ToString("yyyy MMM d")}: ({store.Value.Count()} items)");
+                /*
+                var storeVideo = filteredVideos?
+                    .Where(x => x.PublishedAt >= store.Key)
+                    .FirstOrDefault();
+                if (storeVideo != null)
+                {
+                    debug.AppendLine($"{storeVideo.Title} ({new DateTimeOffset(storeVideo.PublishedAt.Value)})");
+                    debug.AppendLine($"https://www.youtube.com/watch?v={storeVideo.Id}");
+                }
+                */
                 foreach (var item in store.Value)
                 {
-                    debug.AppendLine($"\t - {item.Name} ({store.Key})");
-                    if (item.TimeAccepted == null)
-                    {
-                        item.TimeAccepted = store.Key;
-                    }
+                    debug.AppendLine($"\t - {item.Name} ({assetDescriptions.FirstOrDefault(x => x.AssetDescription == item)?.TimeAccepted})");
+                    item.TimeAccepted = store.Key;
                 }
             }
-
             var debugStoreListText = debug.ToString();
 
-            await _db.SaveChangesAsync();
+            //await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
     }

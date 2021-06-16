@@ -14,6 +14,8 @@ using Microsoft.Identity.Web.UI;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Google.Client;
+using SCMM.Google.Client.Extensions;
 using SCMM.Shared.Azure.ServiceBus.Extensions;
 using SCMM.Shared.Azure.ServiceBus.Middleware;
 using SCMM.Shared.Web.Extensions;
@@ -68,8 +70,10 @@ namespace SCMM.Discord.Bot.Server
 
             // 3rd party clients
             services.AddSingleton(x => Configuration.GetDiscordConfiguration());
+            services.AddSingleton(x => Configuration.GetGoogleConfiguration());
             services.AddSingleton(x => Configuration.GetSteamConfiguration());
             services.AddSingleton<DiscordClient>();
+            services.AddSingleton<GoogleClient>();
             services.AddSingleton<SteamSession>();
             services.AddScoped<SteamWebClient>();
             services.AddScoped<SteamCommunityWebClient>();
