@@ -89,7 +89,7 @@ else if (StoreList.Any())
                                             <Alert Severity="MudBlazor.Severity.Warning" Title="No data available" SubTitle="Unfortunately there is no available data for this insight" />
                                         }
                                     </MudTabPanel>
-                                    @if (Store.Items.Any(x => x.HasMarketListing))
+                                    @if (Store?.Items?.Any(x => x.HasMarketListing) == true)
                                     {
                                         <MudTabPanel Text="Profitability" Disabled="@(ItemMarketplacePerformanceChart == null)">
                                             @if (ItemMarketplacePerformanceChart != null)

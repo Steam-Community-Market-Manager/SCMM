@@ -1,4 +1,4 @@
 ﻿
-tbody > ::deep div {
-    display: table-row;
+.Clickable:hover {
+    cursor: pointer;
 }

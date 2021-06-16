@@ -1,5 +1,5 @@
 ﻿
-<MudCard Class="FullHeight">
+<MudCard Outlined="true" Class="FullHeight d-flex flex-column">
     <MudCardHeader>
         <CardHeaderContent>
             <div class="d-flex flex-row justify-space-between"
@@ -21,8 +21,8 @@
             </div>
         </CardHeaderContent>
     </MudCardHeader>
-    <MudCardContent>
-        <div class="Content">
+    <MudCardContent Class="@($"d-flex flex-column flex-grow-1 {(Dense ? "pa-0" : null)}")">
+        <div class="Content flex-grow-1">
             @ChildContent
         </div>
     </MudCardContent>
@@ -38,6 +38,9 @@
 
     [Parameter]
     public string Subtitle { get; set; }
+    
+    [Parameter]
+    public bool Dense { get; set; }
     
     [Parameter]
     public RenderFragment ActionContent { get; set; }

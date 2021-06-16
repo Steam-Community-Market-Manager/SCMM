@@ -24,20 +24,20 @@
                         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="d-flex justify-center align-center mx-4">
                             <strong>@SalesYesterday.ToQuantityString() sales yesterday</strong>
                         </MudText>
-                        <MudDivider Vertical="true" FlexItem="true" />
+                        <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
                     }
                     <MudButton @onclick="@(() => RefreshSalesPerDay(30))" Color="MudBlazor.Color.Primary">
                         1m
                     </MudButton>
-                    <MudDivider Vertical="true" FlexItem="true" />
+                    <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
                     <MudButton @onclick="@(() => RefreshSalesPerDay(182))" Color="MudBlazor.Color.Primary">
                         6m
                     </MudButton>
-                    <MudDivider Vertical="true" FlexItem="true" />
+                    <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
                     <MudButton @onclick="@(() => RefreshSalesPerDay(365))" Color="MudBlazor.Color.Primary">
                         12m
                     </MudButton>
-                    <MudDivider Vertical="true" FlexItem="true" />
+                    <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
                     <MudButton @onclick="@(() => RefreshSalesPerDay(null))" Color="MudBlazor.Color.Primary">
                         All
                     </MudButton>
@@ -56,260 +56,353 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="Hot Right Now" Subtitle="Items with the highest number of sales in the past 24hrs.">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadHotRightNow" Context="item">
-                        <ItemContent>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">@item.Last24hrSales.ToQuantityString() sold</MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="Hot Right Now" Subtitle="Items with the highest number of sales in the past 24hrs." Dense="true">
+                <MudSimpleTable Dense="true" Hover="true">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadHotRightNow" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Class="NoWrap">@item.Last24hrSales.ToQuantityString() sold</MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
 
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="Most Recent" Subtitle="Items with the lowest market age.">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadMostRecent" Context="item">
-                        <ItemContent>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">@item.MarketAge</MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="Most Recent" Subtitle="Items with the lowest market age." Dense="true">
+                <MudSimpleTable Dense="true" Hover="true">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadMostRecent" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Class="NoWrap">@item.MarketAge</MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
 
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="📈 Stonking" Subtitle="Items currently at their all-time highest value.">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadAllTimeHigh" Context="item">
-                        <ItemContent>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="📈 Stonking" Subtitle="Items currently at their all-time highest value." Dense="true">
+                <MudSimpleTable Dense="true" Hover="true">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadAllTimeHigh" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
 
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="📉 Crashing" Subtitle="Items currently at their all-time lowest value.">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadAllTimeLow" Context="item">
-                        <ItemContent>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="📉 Crashing" Subtitle="Items currently at their all-time lowest value." Dense="true">
+                <MudSimpleTable Dense="true" Hover="true">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadAllTimeLow" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="Profitable Flips" Subtitle="Items with the largest gap in asking price vs buy now price with a upward trending average price. These items can be profitable if you are able to buy low and then sell high after the seven day market cooldown.">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadProfitableFlips" Context="item">
-                        <ItemContent>
-                            <MudItem xs="4" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</MudText>
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Color="Color.Success" Class="NoWrap">
-                                    @item.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.FeeMultiplier, 1))))
-                                </MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="4" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="Profitable Flips" Subtitle="Items with the largest gap in asking price vs buy now price with a upward trending average price. These items can be profitable if you are able to buy low and then sell high after the seven day market cooldown." Dense="true">
+                <MudSimpleTable Dense="true" Hover="true">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="NoWrap">Buy At</th>
+                            <th class="NoWrap TextRight">Potential Profit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadProfitableFlips" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</MudText>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Color="Color.Success" Class="NoWrap">
+                                            @item.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.FeeMultiplier, 1))))
+                                        </MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td>—</td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="Most Profitable" Subtitle="Items with the highest current market value.">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadMostProfitable" Context="item">
-                        <ItemContent>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="Most Profitable" Subtitle="Items with the highest current market value." Dense="true">
+                <MudSimpleTable Dense="true" Hover="true">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadMostProfitable" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.Last1hrValue)</MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="Most Popular" Subtitle="Items with them highest number of unique owners (subscribers).">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadMostPopular" Context="item">
-                        <ItemContent>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">
-                                    <i class="fas fa-fw fa-user"></i>
-                                    <span>@item.Subscriptions.ToQuantityString()</span>
-                                </MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="Most Popular" Subtitle="Items with them highest number of unique owners (subscribers)." Dense="true">
+                <MudSimpleTable Dense="true" Hover="true">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadMostPopular" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Class="NoWrap">
+                                            <i class="fas fa-fw fa-user"></i>
+                                            <span>@item.Subscriptions.ToQuantityString()</span>
+                                        </MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
 
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="Most Saturated" Subtitle="Items with the highest number of listings on the marketplace.">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadMostSaturated" Context="item">
-                        <ItemContent>
-                            <MudItem xs="4" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">@item.Supply.ToQuantityString()</MudText>
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">
-                                    @if (item.Demand > 0)
-                                    {
-                                        <span>@item.Demand.ToQuantityString() sold yesterday</span>
-                                    }
-                                    else 
-                                    {
-                                        <span>None sold yesterday</span>
-                                    }
-                                </MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="4" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                            <MudItem xs="4" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="Most Saturated" Subtitle="Items with the highest number of listings on the marketplace."Dense="true">
+                <MudSimpleTable Dense="true" Hover="true">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="NoWrap">Supply</th>
+                            <th class="NoWrap TextRight">Demand</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadMostSaturated" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <MudText Typo="Typo.body2" Class="NoWrap">@item.Supply.ToQuantityString()</MudText>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Class="NoWrap">
+                                            @if (item.Demand > 0)
+                                            {
+                                                <span>@item.Demand.ToQuantityString() sold yesterday</span>
+                                            }
+                                            else 
+                                            {
+                                                <span>None sold yesterday</span>
+                                            }
+                                        </MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td>—</td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Title="Skin Creators" Subtitle="Creators with the highest number of accepted in-game skins.">
-                <MudGrid Spacing="0">
-                    <Virtualize ItemsProvider="LoadAcceptedCreators" Context="item">
-                        <ItemContent>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <img src="@item.AvatarUrl" class="mr-1" style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2">@item.Name</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                                <MudText Typo="Typo.body2" Class="NoWrap">@item.Items.ToQuantityString() item(s)</MudText>
-                            </MudItem>
-                        </ItemContent>
-                        <Placeholder>
-                            <MudItem xs="6" Class="d-flex flex-row justify-start align-center">
-                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                            </MudItem>
-                            <MudItem xs="6" Class="d-flex flex-row justify-end align-center">
-                            </MudItem>
-                        </Placeholder>
-                    </Virtualize>
-                </MudGrid>
+            <StatisticsPanel Title="Skin Creators" Subtitle="Creators with the highest number of accepted in-game skins." Dense="true">
+                <MudSimpleTable Dense="true">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadAcceptedCreators" Context="item">
+                            <ItemContent>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.AvatarUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">
+                                        <MudText Typo="Typo.body2" Class="NoWrap">@item.Items.ToQuantityString() item(s)</MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="TextRight">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
             </StatisticsPanel>
         </MudItem>
     

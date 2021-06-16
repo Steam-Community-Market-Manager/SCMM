@@ -1,14 +1,22 @@
 ﻿
 .FullWidth {
-    width: 100%;
+    width: 100% !important;
 }
 
 .FullHeight {
-    height: 100%;
+    height: 100% !important;
 }
 
-.Centered {
-    text-align: center;
+.Centered, .TextCentered {
+    text-align: center !important;
+}
+
+.TextLeft {
+    text-align: left !important;
+}
+
+.TextRight {
+    text-align: right !important;
 }
 
 .NoWrap {
