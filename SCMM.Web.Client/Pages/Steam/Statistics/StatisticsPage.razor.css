@@ -1,4 +1,9 @@
 ﻿
+.VirtualTablePanel {
+    height: 25vh;
+    overflow-y: auto;
+}
+
 .Clickable:hover {
     cursor: pointer;
 }

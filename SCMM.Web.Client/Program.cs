@@ -5,6 +5,7 @@ using MudBlazor.Services;
 using SCMM.Web.Client.Shared;
 using SCMM.Web.Client.Shared.Navigation;
 using SCMM.Web.Client.Shared.Storage;
+using Syncfusion.Blazor;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -47,6 +48,12 @@ namespace SCMM.Web.Client
                 config.SnackbarConfiguration.ShowCloseIcon = true;
                 config.SnackbarConfiguration.RequireInteraction = true;
             });
+
+            builder.Services.AddSyncfusionBlazor();
+            
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(
+                "NDYwMDE3QDMxMzkyZTMxMmUzMFE5Y1BKKzFrd3FzbG5EbHJOZVJSVThMRUhEQnVXdUZjUzVNOWlKTDIwWE09"
+            );
 
             await builder.Build().RunAsync();
         }
