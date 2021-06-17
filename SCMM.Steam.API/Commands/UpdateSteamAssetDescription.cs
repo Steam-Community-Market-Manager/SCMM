@@ -426,53 +426,82 @@ namespace SCMM.Steam.API.Commands
             // Parse asset item collection (if missing and is a user created item)
             if (String.IsNullOrEmpty(assetDescription.ItemCollection) && assetDescription.CreatorId != null)
             {
-                // Remove all common item words from the collection name (e.g. "Box", "Pants", Door", etc)
-                // NOTE: Pattern match word boundarys to prevent replacing words within words.
-                //       e.g. "Stone" in "Stonecraft Hatchet" shouldn't end up like "craft Hatchet"
-                var itemCollection = assetDescription.Name;
-                if (!String.IsNullOrEmpty(assetDescription.ItemType))
+                // Find existing item collections we fit in to (if any)
+                var existingItemCollections = await _db.SteamAssetDescriptions
+                    .Where(x => x.CreatorId == assetDescription.CreatorId)
+                    .Where(x => !String.IsNullOrEmpty(x.ItemCollection))
+                    .Select(x => x.ItemCollection)
+                    .Distinct()
+                    .ToListAsync();
+                if (existingItemCollections.Any())
                 {
-                    foreach (var word in assetDescription.ItemType.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    foreach (var existingItemCollection in existingItemCollections.OrderByDescending(x => x.Length))
                     {
-                        itemCollection = Regex.Replace(itemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                    }
-                }
-                foreach (var tag in assetDescription.Tags)
-                {
-                    foreach (var word in tag.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                    {
-                        itemCollection = Regex.Replace(itemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                    }
-                }
-                foreach (var word in Constants.RustItemNameCommonWords)
-                {
-                    itemCollection = Regex.Replace(itemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                }
-
-                // Ensure all remaining words are longer than one character, otherwise strip them out.
-                // This fixes scenarios like "Satchelo" => "o", "Rainbow Doors" => "Rainbow s", etc
-                itemCollection = Regex.Replace(itemCollection, @"\b(\w{1,2})\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
-                // Trim any junk characters
-                itemCollection = itemCollection.Trim(' ', ',', '.', '-', '\'', ':').Trim();
-
-                // If there is anything left, we have a unique collection name, try find others with the same name
-                if (!String.IsNullOrEmpty(itemCollection))
-                {
-                    // Count the number of other assets created by the same author that also contain the remaining unique collection words.
-                    // If there is more than one item, then it must be part of a set.
-                    var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null && x.CreatorId == assetDescription.CreatorId);
-                    foreach (var word in itemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                    {
-                        query = query.Where(x => x.Name.Contains(word));
-                    }
-                    var collectionItems = await query.ToListAsync();
-                    if (collectionItems.Count > 1)
-                    {
-                        // Update all items in the collection (this helps fix old items when they become part of a new collection)
-                        foreach (var item in collectionItems)
+                        var isCollectionMatch = existingItemCollection
+                            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .All(x => assetDescription.Name.Contains(x));
+                        if (isCollectionMatch)
                         {
-                            item.ItemCollection = itemCollection;
+                            assetDescription.ItemCollection = existingItemCollection;
+                            break;
+                        }
+                    }
+                }
+
+                // If we don't have an item collection at this point, then there are no existing collections that we fit into  :(
+                // Find other skins similar to us and see if we can start a new item collection, with black jack and hookers...
+                if (String.IsNullOrEmpty(assetDescription.ItemCollection))
+                {
+                    // Remove all common item words from the collection name (e.g. "Box", "Pants", Door", etc)
+                    // NOTE: Pattern match word boundarys to prevent replacing words within words.
+                    //       e.g. "Stone" in "Stonecraft Hatchet" shouldn't end up like "craft Hatchet"
+                    var newItemCollection = assetDescription.Name;
+                    if (!String.IsNullOrEmpty(assetDescription.ItemType))
+                    {
+                        foreach (var word in assetDescription.ItemType.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        {
+                            newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+                        }
+                    }
+                    foreach (var tag in assetDescription.Tags)
+                    {
+                        foreach (var word in tag.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        {
+                            newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+                        }
+                    }
+                    foreach (var word in Constants.RustItemNameCommonWords)
+                    {
+                        newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+                    }
+
+                    // Ensure all remaining words are longer than one character, otherwise strip them out.
+                    // This fixes scenarios like "Satchelo" => "o", "Rainbow Doors" => "Rainbow s", etc
+                    newItemCollection = Regex.Replace(newItemCollection, @"\b(\w{1,2})\b", String.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+                    // Trim any junk characters
+                    newItemCollection = newItemCollection.Trim(' ', ',', '.', '-', '\'', ':').Trim();
+
+                    // If there is anything left, we have a unique collection name, try find others with the same name
+                    if (!String.IsNullOrEmpty(newItemCollection))
+                    {
+                        // Count the number of other assets created by the same author that also contain the remaining unique collection words.
+                        // If there is more than one item, then it must be part of a set.
+                        var query = _db.SteamAssetDescriptions
+                            .Where(x => x.CreatorId == assetDescription.CreatorId)
+                            .Where(x => String.IsNullOrEmpty(x.ItemCollection));
+                        foreach (var word in newItemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        {
+                            query = query.Where(x => x.Name.Contains(word));
+                        }
+                        var collectionItems = await query.ToListAsync();
+                        if (collectionItems.Count > 1)
+                        {
+                            // Update all items in the collection (this helps fix old items when they become part of a new collection)
+                            foreach (var item in collectionItems)
+                            {
+                                item.ItemCollection = newItemCollection;
+                            }
                         }
                     }
                 }

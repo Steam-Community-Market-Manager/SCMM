@@ -4,20 +4,16 @@ using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Store;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
     public partial class AdministrationModule
     {
-        [Command("import-asset")]
-        public async Task<RuntimeResult> ImportAssetAsync(params ulong[] assetClassIds)
+        [Command("import-asset-description")]
+        public async Task<RuntimeResult> ImportAssetDescriptionAsync(params ulong[] assetClassIds)
         {
             foreach (var assetClassId in assetClassIds)
             {
@@ -32,8 +28,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("create-asset-collection")]
-        public async Task<RuntimeResult> CreateAssetCollectionAsync([Remainder] string collectionName)
+        [Command("create-asset-description-collection")]
+        public async Task<RuntimeResult> CreateAssetDescriptionCollectionAsync([Remainder] string collectionName)
         {
             var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null);
             foreach (var word in collectionName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -57,8 +53,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("delete-asset-collection")]
-        public async Task<RuntimeResult> DeleteAssetCollectionAsync([Remainder] string collectionName)
+        [Command("delete-asset-description-collection")]
+        public async Task<RuntimeResult> DeleteAssetDescriptionCollectionAsync([Remainder] string collectionName)
         {
             var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => x.ItemCollection == collectionName).ToListAsync();
             foreach (var assetDescription in assetDescriptions)
@@ -70,8 +66,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("rebuild-asset-collection")]
-        public async Task<RuntimeResult> RebuildAssetCollectionAsync()
+        [Command("rebuild-asset-description-collections")]
+        public async Task<RuntimeResult> RebuildAssetDescriptionCollectionsAsync()
         {
             var assetDescriptions = await _db.SteamAssetDescriptions.ToListAsync();
 
@@ -98,8 +94,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("rebuild-asset-accepted-times")]
-        public async Task<RuntimeResult> RebuildAssetAcceptedTimesAsync()
+        [Command("rebuild-asset-description-accepted-times")]
+        public async Task<RuntimeResult> RebuildAssetDescriptionAcceptedTimesAsync()
         {
             var items = await _db.SteamAssetDescriptions
                 .Select(x => new
