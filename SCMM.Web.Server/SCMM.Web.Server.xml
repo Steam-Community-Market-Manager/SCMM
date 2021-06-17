@@ -88,19 +88,10 @@
             <response code="400">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetSalesToday">
+        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetSalesPerDay">
             <summary>
-            Get number of marketplace sales yesterday (UTC)
+            Get total marketplace sales and revenue, grouped by day (UTC)
             </summary>
-            <response code="200">Number of marketplace sales yesterday (UTC).</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetSalesPerDay(System.Nullable{System.Int32},System.Nullable{System.Int32})">
-            <summary>
-            Get marketplace sales grouped per day (UTC)
-            </summary>
-            <param name="skip"></param>
-            <param name="take"></param>
             <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
@@ -199,6 +190,16 @@
         <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardAcceptedCreators(System.Int32,System.Int32)">
             <summary>
             List profiles with accepted workshop items, sorted by highest number of items
+            </summary>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardCollections(System.Int32,System.Int32)">
+            <summary>
+            List items grouped by item collection
             </summary>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data)</param>
