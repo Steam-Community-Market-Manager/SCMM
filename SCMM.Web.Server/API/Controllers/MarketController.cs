@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
@@ -167,38 +168,15 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get number of marketplace sales yesterday (UTC)
+        /// Get total marketplace sales and revenue, grouped by day (UTC)
         /// </summary>
-        /// <response code="200">Number of marketplace sales yesterday (UTC).</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("stat/salesCountYesterday")]
-        [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSalesToday()
-        {
-            var from = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(2));
-            var to = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var salesToday = await _db.SteamMarketItemSale
-                .AsNoTracking()
-                .Where(x => x.Timestamp >= from && x.Timestamp <= to)
-                .SumAsync(x => x.Quantity);
-
-            return Ok(salesToday);
-        }
-
-        /// <summary>
-        /// Get marketplace sales grouped per day (UTC)
-        /// </summary>
-        /// <param name="skip"></param>
-        /// <param name="take"></param>
         /// <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("stat/salesPerDay")]
         [ProducesResponseType(typeof(IEnumerable<DashboardSalesDataDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSalesPerDay([FromQuery] int? skip = null, [FromQuery] int? take = null)
+        public async Task<IActionResult> GetSalesPerDay()
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItemSale
@@ -213,15 +191,6 @@ namespace SCMM.Web.Server.API.Controllers
                     Revenue = x.Sum(y => y.Quantity * y.Price)
                 });
 
-            if (skip > 0)
-            {
-                query = query.Skip(skip.Value);
-            }
-            if (take > 0)
-            {
-                query = query.Take(take.Value);
-            }
-
             var salesPerDay = (await query.ToListAsync()).Select(
                 x => new DashboardSalesDataDTO
                 {
@@ -231,18 +200,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             );
 
-            if (skip != null && take != null)
-            {
-                return Ok(new
-                {
-                    Items = salesPerDay,
-                    Count = salesPerDay.Count()
-                });
-            }
-            else
-            {
-                return Ok(salesPerDay);
-            }
+            return Ok(salesPerDay);
         }
 
         /// <summary>
@@ -295,23 +253,22 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetDashboardMostRecent([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
-            var query = _db.SteamMarketItems
+            var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
-                .Include(x => x.Description)
-                .Where(x => x.FirstSeenOn != null)
-                .OrderByDescending(x => x.FirstSeenOn);
+                .Where(x => x.TimeAccepted != null)
+                .OrderByDescending(x => x.TimeAccepted);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetAgeDTO()
                 {
-                    SteamId = x.Description.ClassId.ToString(),
+                    SteamId = x.ClassId.ToString(),
                     SteamAppId = x.App.SteamId,
-                    Name = x.Description.Name,
-                    BackgroundColour = x.Description.BackgroundColour,
-                    ForegroundColour = x.Description.ForegroundColour,
-                    IconUrl = x.Description.IconUrl,
-                    MarketAge = x.MarketAge.ToMarketAgeString()
+                    Name = x.Name,
+                    BackgroundColour = x.BackgroundColour,
+                    ForegroundColour = x.ForegroundColour,
+                    IconUrl = x.IconUrl,
+                    MarketAge = (DateTimeOffset.Now - x.TimeAccepted).ToMarketAgeString()
                 })
             );
         }
@@ -333,16 +290,16 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetDashboardAllTimeHigh([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(12));
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= 0)
-                .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
-                .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
-                .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue);
+                .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
+                .Where(x => (x.BuyNowPrice - x.AllTimeHighestValue) >= 0)
+                .OrderBy(x => Math.Abs(x.BuyNowPrice - x.AllTimeHighestValue))
+                .ThenByDescending(x => x.BuyNowPrice - x.Last24hrValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetMarketValueDTO()
@@ -354,7 +311,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
                     Currency = this.Currency(),
-                    Last1hrValue = this.Currency().CalculateExchange(x.Last1hrValue, x.Currency)
+                    Last1hrValue = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
                 })
             );
         }
@@ -376,16 +333,16 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetDashboardAllTimeLow([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(12));
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
-                .Where(x => x.SalesHistory.Max(y => y.Timestamp) >= yesterday)
-                .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
-                .ThenBy(x => x.Last1hrValue - x.Last24hrValue);
+                .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
+                .Where(x => (x.BuyNowPrice - x.AllTimeLowestValue) <= 0)
+                .OrderBy(x => Math.Abs(x.BuyNowPrice - x.AllTimeLowestValue))
+                .ThenBy(x => x.BuyNowPrice - x.Last24hrValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetMarketValueDTO()
@@ -397,7 +354,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
                     Currency = this.Currency(),
-                    Last1hrValue = this.Currency().CalculateExchange(x.Last1hrValue, x.Currency)
+                    Last1hrValue = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
                 })
             );
         }
@@ -419,6 +376,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetDashboardProfitableFlips([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(12));
             var now = DateTimeOffset.UtcNow;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -431,6 +389,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.BuyNowPrice > x.Last24hrValue)
                 .Where(x => x.BuyNowPrice < x.AllTimeHighestValue)
                 .Where(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * EconomyExtensions.FeeMultiplier)) > 0)
+                .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .OrderByDescending(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * EconomyExtensions.FeeMultiplier)));
 
             return Ok(
@@ -471,8 +430,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.Last1hrValue > 0)
-                .OrderByDescending(x => x.Last1hrValue);
+                .Where(x => x.BuyNowPrice > 0)
+                .OrderByDescending(x => x.BuyNowPrice);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new DashboardAssetMarketValueDTO()
@@ -484,7 +443,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
                     Currency = this.Currency(),
-                    Last1hrValue = this.Currency().CalculateExchange(x.Last1hrValue, x.Currency)
+                    Last1hrValue = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
                 })
             );
         }
@@ -506,7 +465,7 @@ namespace SCMM.Web.Server.API.Controllers
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
-                .Where(x => x.AssetType == Steam.Data.Models.Enums.SteamAssetDescriptionType.WorkshopItem && x.TotalSubscriptions > 0)
+                .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.TotalSubscriptions > 0)
                 .OrderByDescending(x => x.TotalSubscriptions)
                 .Select(x => new DashboardAssetSubscriptionsDTO()
                 {
