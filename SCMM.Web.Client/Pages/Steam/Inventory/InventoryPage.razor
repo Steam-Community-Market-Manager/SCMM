@@ -90,7 +90,18 @@
         
         await LoadProfileAndInventory();
     }
-
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        // If we have navigated to a different profile, reload the new profile
+        if ((Profile != null) &&
+            !String.Equals(SteamId, Profile?.SteamId, StringComparison.InvariantCultureIgnoreCase) &&
+            !String.Equals(SteamId, Profile?.ProfileId, StringComparison.InvariantCultureIgnoreCase))
+        {
+            await LoadProfileAndInventory();
+        }
+    }
+    
     private void OnSelectedPanelChanged(int index)
     {
         PanelIndex = index;
