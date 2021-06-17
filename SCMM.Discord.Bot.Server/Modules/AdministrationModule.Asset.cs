@@ -101,75 +101,27 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("rebuild-asset-accepted-times")]
         public async Task<RuntimeResult> RebuildAssetAcceptedTimesAsync()
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions
+            var items = await _db.SteamAssetDescriptions
                 .Select(x => new
                 {
                     AssetDescription = x,
                     TimeAccepted = (x.MarketItem != null 
-                        ? x.MarketItem.SalesHistory.Min(x => x.Timestamp) 
-                        : x.TimeAccepted
+                        ? x.MarketItem.SalesHistory.Min(x => x.Timestamp) // the earliest date they appeared on the market
+                        : x.TimeAccepted // the date we saw them get accepted on the workshop
                     )
                 })
                 .ToListAsync();
 
-            // Group items in to stores where they were accepted within 3 days or less than eachother
-            var stores = new Dictionary<DateTimeOffset, IList<SteamAssetDescription>>();
-            var filteredAssetDescriptions = assetDescriptions.Where(x => x.TimeAccepted != null);
-            var storeProbablyStartedOn = filteredAssetDescriptions.Min(x => x.TimeAccepted);
-            foreach (var item in filteredAssetDescriptions.OrderBy(x => x.TimeAccepted))
+            foreach (var item in items)
             {
-                if ((item.TimeAccepted - storeProbablyStartedOn) > TimeSpan.FromDays(3))
+                // Use the earliest date we know about
+                if (item.TimeAccepted < item.AssetDescription.TimeAccepted || item.AssetDescription.TimeAccepted == null)
                 {
-                    storeProbablyStartedOn = item.TimeAccepted;
-                }
-                if (!stores.ContainsKey(storeProbablyStartedOn.Value))
-                {
-                    stores[storeProbablyStartedOn.Value] = new List<SteamAssetDescription>();
-                }
-                stores[storeProbablyStartedOn.Value].Add(item.AssetDescription);
-            }
-
-            // Merge item stores containing less than three items in to the closest store
-            foreach (var store in stores)
-            {
-                //...
-            }
-            /*
-            var videos = await _googleClient.SearchVideosAsync(
-                query: String.Empty,
-                channelId: "UCvCBuwbtKRwM0qMi7rc7CUw",
-                publishedAfter: filteredAssetDescriptions.Min(x => x.TimeAccepted).Value.UtcDateTime,
-                maxResults: Int32.MaxValue
-            );
-            var filteredVideos = videos?
-                .Where(x => x.Title.Contains("Rust Skins", StringComparison.InvariantCultureIgnoreCase))
-                .OrderBy(x => x.PublishedAt);
-            */
-
-            var debug = new StringBuilder();
-            foreach (var store in stores)
-            {
-                debug.AppendLine();
-                debug.AppendLine($"{store.Key.ToString("yyyy MMM d")}: ({store.Value.Count()} items)");
-                /*
-                var storeVideo = filteredVideos?
-                    .Where(x => x.PublishedAt >= store.Key)
-                    .FirstOrDefault();
-                if (storeVideo != null)
-                {
-                    debug.AppendLine($"{storeVideo.Title} ({new DateTimeOffset(storeVideo.PublishedAt.Value)})");
-                    debug.AppendLine($"https://www.youtube.com/watch?v={storeVideo.Id}");
-                }
-                */
-                foreach (var item in store.Value)
-                {
-                    debug.AppendLine($"\t - {item.Name} ({assetDescriptions.FirstOrDefault(x => x.AssetDescription == item)?.TimeAccepted})");
-                    item.TimeAccepted = store.Key;
+                    item.AssetDescription.TimeAccepted = item.TimeAccepted;
                 }
             }
-            var debugStoreListText = debug.ToString();
-
-            //await _db.SaveChangesAsync();
+            
+            await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
     }
