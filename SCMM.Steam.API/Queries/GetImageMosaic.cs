@@ -426,7 +426,6 @@ namespace SCMM.Steam.API.Queries
                 {
                     Url = imageSource.ImageUrl,
                     UseExisting = false, // we've already checked, it doesn't exist
-                    ExpiresOn = DateTimeOffset.Now.AddDays(7) // cache for 7 days, then delete
                 });
                 if (importedImage?.Image?.Data != null)
                 {
