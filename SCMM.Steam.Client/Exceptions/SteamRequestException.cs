@@ -6,10 +6,6 @@ namespace SCMM.Steam.Client.Exceptions
 {
     public class SteamRequestException : Exception
     {
-        public ISteamError Error { get; set; }
-
-        public HttpStatusCode? StatusCode { get; set; }
-
         public SteamRequestException(HttpStatusCode? statusCode = null) : base()
         {
             StatusCode = statusCode;
@@ -20,10 +16,29 @@ namespace SCMM.Steam.Client.Exceptions
             StatusCode = statusCode;
         }
 
-        public SteamRequestException(string message, HttpStatusCode? statusCode = null, Exception innerException = null, ISteamError error = null) : base(message, innerException)
+        public SteamRequestException(string message, HttpStatusCode? statusCode = null, ISteamError error = null) : base(message)
         {
             StatusCode = statusCode;
             Error = error;
         }
+
+        public SteamRequestException(string message, HttpStatusCode? statusCode = null, Exception innerException = null) : base(message, innerException)
+        {
+            StatusCode = statusCode;
+        }
+
+        public ISteamError Error { get; set; }
+
+        public HttpStatusCode? StatusCode { get; set; }
+
+        public bool IsThrottled => (
+            StatusCode == HttpStatusCode.TooManyRequests
+        );
+
+        public bool IsSessionStale => (
+            StatusCode == HttpStatusCode.BadRequest ||
+            StatusCode == HttpStatusCode.Unauthorized ||
+            StatusCode == HttpStatusCode.Forbidden
+        );
     }
 }

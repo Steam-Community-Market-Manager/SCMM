@@ -16,7 +16,6 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
-    // TODO: Add error proper handling for StatusCode: 429, ReasonPhrase: 'Too Many Requests'
     public class SteamWebClient
     {
         private readonly ILogger<SteamWebClient> _logger;
@@ -36,148 +35,137 @@ namespace SCMM.Steam.Client
 
         public SteamSession Session => _session;
 
-        protected HttpClient BuildSteamHttpClient(Uri uri)
-        {
-            return new HttpClient(_httpHandler, false)
-            {
-                BaseAddress = uri
-            };
-        }
-
-        public async Task<Tuple<byte[], string>> GetBinary<TRequest>(TRequest request)
+        private async Task<HttpResponseMessage> Get<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
-            try
-            {
-                using var client = BuildSteamHttpClient(request.Uri);
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
-                }
-
-                return new Tuple<byte[], string>(
-                    await response.Content.ReadAsByteArrayAsync(), response.Content.Headers?.ContentType?.MediaType
-                );
-            }
-            catch (Exception ex)
-            {
-                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
-            }
-        }
-
-        public async Task<string> GetText<TRequest>(TRequest request)
-            where TRequest : SteamRequest
-        {
-            try
-            {
-                using var client = BuildSteamHttpClient(request.Uri);
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
-                }
-
-                return await response.Content.ReadAsStringAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
-            }
-        }
-
-        public async Task<XElement> GetHtml<TRequest>(TRequest request)
-            where TRequest : SteamRequest
-        {
-            try
-            {
-                using var client = BuildSteamHttpClient(request.Uri);
-                var response = await client.GetAsync(request.Uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
-                }
-
-                var html = await response.Content.ReadAsStringAsync();
-                if (String.IsNullOrEmpty(html))
-                {
-                    return null;
-                }
-
-                // Sanitise the html first to clean-up dodgy tags that may cause XML parsing to fail
-                // (e.g. <meta>, <link>, etc)
-                var htmlDocument = new HtmlDocument();
-                htmlDocument.LoadHtml(html);
-
-                var sanitisedHtml = new StringBuilder();
-                using var stringWriter = new StringWriter(sanitisedHtml);
-                var xmlWriter = new XmlTextWriter(stringWriter);
-                htmlDocument.Save(xmlWriter);
-
-                return XElement.Parse(sanitisedHtml.ToString());
-            }
-            catch (Exception ex)
-            {
-                throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
-            }
-        }
-
-        public async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request)
-            where TRequest : SteamRequest
-        {
-            var xml = await GetText(request);
-            if (!String.IsNullOrEmpty(xml))
+            using (var client = new HttpClient(_httpHandler, false))
             {
                 try
                 {
-                    var xmlSerializer = new XmlSerializer(typeof(TResponse));
-                    using var reader = new StringReader(xml);
-                    return (TResponse)xmlSerializer.Deserialize(reader);
-                }
-                catch (Exception ex)
-                {
-                    var error = (SteamErrorXmlResponse)null;
-                    try
+                    var response = await client.GetAsync(request.Uri);
+                    if (!response.IsSuccessStatusCode)
                     {
-                        // Check if the response is actually a Steam error
-                        var xmlSerializer = new XmlSerializer(typeof(SteamErrorXmlResponse));
-                        using var reader = new StringReader(xml);
-                        error = (SteamErrorXmlResponse)xmlSerializer.Deserialize(reader);
+                        throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
                     }
-                    finally
-                    {
-                        if (error != null)
-                        {
-                            throw new SteamRequestException($"GET '{request}' failed. {error.Message}", null, null, error);
-                        }
-                        else
-                        {
-                            throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", null, ex);
-                        }
-                    }
-                }
-            }
 
-            return default;
-        }
-
-        public async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request)
-            where TRequest : SteamRequest
-        {
-            var json = await GetText(request);
-            if (!String.IsNullOrEmpty(json))
-            {
-                try
-                {
-                    return JsonConvert.DeserializeObject<TResponse>(json);
+                    return response;
                 }
                 catch (Exception ex)
                 {
                     throw new SteamRequestException($"GET '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
                 }
             }
+        }
 
-            return default;
+        private async Task<HttpResponseMessage> GetWithRetry<TRequest>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            try
+            {
+                return await Get(request);
+            }
+            catch (SteamRequestException ex)
+            {
+                if (ex.IsSessionStale)
+                {
+                    _logger.LogWarning("Steam session is stale, attempting to refresh and try again...");
+                    _session.Refresh();
+                    return await Get(request);
+                }
+                else if (ex.IsThrottled)
+                {
+                    _logger.LogWarning("Steam session is throttled, need to back off...");
+                }
+
+                throw;
+            }
+        }
+
+        public async Task<Tuple<byte[], string>> GetBinary<TRequest>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            var response = await GetWithRetry(request);
+            return new Tuple<byte[], string>(
+                await response.Content.ReadAsByteArrayAsync(), response.Content.Headers?.ContentType?.MediaType
+            );
+        }
+
+        public async Task<string> GetText<TRequest>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            var response = await GetWithRetry(request);
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<XElement> GetHtml<TRequest>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            var html = await GetText(request);
+            if (String.IsNullOrEmpty(html))
+            {
+                return default;
+            }
+
+            // Sanitise the html first to clean-up dodgy tags that may cause XML parsing to fail
+            // (e.g. <meta>, <link>, etc)
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+
+            var sanitisedHtml = new StringBuilder();
+            using var stringWriter = new StringWriter(sanitisedHtml);
+            var xmlWriter = new XmlTextWriter(stringWriter);
+            htmlDocument.Save(xmlWriter);
+
+            return XElement.Parse(sanitisedHtml.ToString());
+        }
+
+        public async Task<TResponse> GetXml<TRequest, TResponse>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            var xml = await GetText(request);
+            if (String.IsNullOrEmpty(xml))
+            {
+                return default;
+            }
+
+            try
+            {
+                var xmlSerializer = new XmlSerializer(typeof(TResponse));
+                using var reader = new StringReader(xml);
+                return (TResponse)xmlSerializer.Deserialize(reader);
+            }
+            catch (Exception)
+            {
+                var steamError = (SteamErrorXmlResponse)null;
+                try
+                {
+                    // Check if the response is actually a Steam error
+                    var xmlSerializer = new XmlSerializer(typeof(SteamErrorXmlResponse));
+                    using var reader = new StringReader(xml);
+                    steamError = (SteamErrorXmlResponse)xmlSerializer.Deserialize(reader);
+                }
+                finally
+                {
+                    if (steamError != null)
+                    {
+                        throw new SteamRequestException($"GET '{request}' failed. {steamError.Message}", HttpStatusCode.OK, steamError);
+                    }
+                }
+
+                throw;
+            }
+        }
+
+        public async Task<TResponse> GetJson<TRequest, TResponse>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            var json = await GetText(request);
+            if (String.IsNullOrEmpty(json))
+            {
+                return default;
+            }
+
+            return JsonConvert.DeserializeObject<TResponse>(json);
         }
     }
 }
