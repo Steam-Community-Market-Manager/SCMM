@@ -37,7 +37,7 @@ namespace SCMM.Web.Client
 
         public CurrencyDetailedDTO Currency => Profile?.Currency;
 
-        public ProfileDetailedDTO Profile { get; set; }
+        public MyProfileDTO Profile { get; set; }
 
         public bool IsAuthenticated => (
             Profile != null && Profile.Id != Guid.Empty
@@ -132,7 +132,7 @@ namespace SCMM.Web.Client
             try
             {
                 AddHeadersTo(http);
-                Profile = await http.GetFromJsonAsync<ProfileDetailedDTO>(
+                Profile = await http.GetFromJsonAsync<MyProfileDTO>(
                     $"api/profile"
                 );
             }

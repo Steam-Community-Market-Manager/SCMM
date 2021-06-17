@@ -2,7 +2,7 @@
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.Domain.Currencies;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using SCMM.Web.Data.Models.Domain.Languages;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -15,12 +15,22 @@ namespace SCMM.Web.Server.Extensions
         public const string ContextKeyLanguage = "language";
         public const string ContextKeyCurrency = "currency";
 
-        public static void MapFromCurrency<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, CurrencyDTO> memberOptions)
+        public static void MapFromLanguage<TSource, TDestination, TLanguage>(this IMemberConfigurationExpression<TSource, TDestination, TLanguage> memberOptions) where TLanguage : LanguageDTO
+        {
+            memberOptions.MapFrom((src, dst, _, context) =>
+            {
+                return context.Items.ContainsKey(ContextKeyLanguage)
+                    ? (TLanguage)context.Options.Items[ContextKeyLanguage]
+                    : null;
+            });
+        }
+
+        public static void MapFromCurrency<TSource, TDestination, TCurrency>(this IMemberConfigurationExpression<TSource, TDestination, TCurrency> memberOptions) where TCurrency : CurrencyDTO
         {
             memberOptions.MapFrom((src, dst, _, context) =>
             {
                 return context.Items.ContainsKey(ContextKeyCurrency)
-                    ? (CurrencyDTO)context.Options.Items[ContextKeyCurrency]
+                    ? (TCurrency)context.Options.Items[ContextKeyCurrency]
                     : null;
             });
         }

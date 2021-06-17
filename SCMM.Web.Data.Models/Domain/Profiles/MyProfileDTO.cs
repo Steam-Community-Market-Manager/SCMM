@@ -4,7 +4,7 @@ using SCMM.Web.Data.Models.Domain.Languages;
 
 namespace SCMM.Web.Data.Models.Domain.Profiles
 {
-    public class ProfileDetailedDTO : ProfileDTO
+    public class MyProfileDTO : ProfileDTO
     {
         public string DiscordId { get; set; }
 

@@ -60,11 +60,11 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(typeof(ProfileDetailedDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(MyProfileDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMyProfile()
         {
-            var defaultProfile = new ProfileDetailedDTO()
+            var defaultProfile = new MyProfileDTO()
             {
                 Name = "Guest",
                 Language = this.Language(),
@@ -81,19 +81,9 @@ namespace SCMM.Web.Server.API.Controllers
                     .Include(x => x.Currency)
                     .FirstOrDefaultAsync(x => x.Id == profileId);
 
-                // Map the DB profile over top of the default profile
-                // NOTE: This is done so that the language/currency pass-through if they haven't been set yet
-                var authenticatedProfile = _mapper.Map<ProfileDetailedDTO>(profile);
-                if (authenticatedProfile != null)
-                {
-                    authenticatedProfile.Language = (authenticatedProfile.Language ?? defaultProfile.Language);
-                    authenticatedProfile.Currency = (authenticatedProfile.Currency ?? defaultProfile.Currency);
-                    return Ok(authenticatedProfile);
-                }
-                else
-                {
-                    return Ok(defaultProfile);
-                }
+                return Ok(
+                    _mapper.Map<SteamProfile, MyProfileDTO>(profile, this) ?? defaultProfile
+                );
             }
 
             // Else, use a transient guest profile

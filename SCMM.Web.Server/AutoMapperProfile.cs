@@ -44,7 +44,9 @@ namespace SCMM.Web.Server
             //
 
             CreateMap<SteamProfile, ProfileDTO>();
-            CreateMap<SteamProfile, ProfileDetailedDTO>();
+            CreateMap<SteamProfile, MyProfileDTO>()
+                .ForMember(x => x.Currency, o => o.MapFromCurrency())
+                .ForMember(x => x.Language, o => o.MapFromLanguage());
             CreateMap<SteamProfile, ProfileSummaryDTO>();
 
             CreateMap<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>()
