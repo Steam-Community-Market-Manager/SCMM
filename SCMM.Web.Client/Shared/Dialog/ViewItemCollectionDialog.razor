@@ -22,7 +22,11 @@
                 </div>
                 <div class="Collection-Description">
                     <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
-                        <span>There are <strong>@Collection.Items.Count items</strong> in this collection. Total cost: <strong>@Collection.BuyNowCurrency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                        <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
+                        @if(Collection.BuyNowCurrency != null && Collection.BuyNowPrice > 0)
+                        {
+                            <span>Total cost: <strong>@Collection.BuyNowCurrency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                        }
                     </MudText>
                 </div>
             </div>
@@ -70,6 +74,7 @@
         try
         {
             Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>(CollectionUrl);
+            Dialog.ForceRender();
         }
         catch (Exception ex)
         {

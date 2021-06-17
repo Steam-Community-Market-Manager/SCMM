@@ -4,6 +4,9 @@
 @inject NavigationManager NavigationManager
 
 <MudDialog DisableSidePadding="true" ClassContent="pa-0">
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6">Store List</MudText>
+    </TitleContent>
     <DialogContent>
         <div class="d-flex flex-row justify-center align-start" style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
             @foreach (var group in List.GroupBy(x => x.Start.Year))

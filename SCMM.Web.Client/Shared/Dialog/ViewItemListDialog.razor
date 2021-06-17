@@ -55,6 +55,7 @@
         try
         {
             List = await Http.GetFromJsonAsync<ItemDetailsDTO[]>(ListUrl);
+            Dialog.ForceRender();
             StateHasChanged();
 
             if (HighlightedItemId > 0)
