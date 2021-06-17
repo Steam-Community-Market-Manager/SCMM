@@ -355,6 +355,7 @@ else
         try 
         {
             var useStorePrice = (value == SteamProfileInventoryItemAcquisitionType.Store && item.BuyPriceStore != null);
+            item.AcquiredBy = value;
             item.Currency = (useStorePrice ? State.Currency : item.Currency);
             item.BuyPrice = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             item.BuyPriceLocal = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
@@ -362,7 +363,7 @@ else
             Logger.LogInformation($"Updating acquired from for '{item.Id}' (value: '{value}', )");
             await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
             {
-                AcquiredBy = value,
+                AcquiredBy = item.AcquiredBy,
                 CurrencyId = item.Currency.Id,
                 BuyPrice = item.BuyPrice
             });
