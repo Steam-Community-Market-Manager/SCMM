@@ -19,95 +19,86 @@
         <MudItem xs="12" xl="12">
             <StatisticsPanel Title="Market Sales" Subtitle="Total number of sales per day.">
                 <ActionContent>
-                    @if (SalesYesterday > 0)
-                    {
-                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="d-flex justify-center align-center mx-4">
-                            <strong>@SalesYesterday.ToQuantityString() sales yesterday</strong>
-                        </MudText>
-                        <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
-                    }
-                    <MudButton @onclick="@(() => RefreshSalesPerDay(30))" Color="MudBlazor.Color.Primary">
+                    <MudButton Color="MudBlazor.Color.Primary" Disabled="true">
                         1m
                     </MudButton>
                     <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
-                    <MudButton @onclick="@(() => RefreshSalesPerDay(182))" Color="MudBlazor.Color.Primary">
+                    <MudButton Color="MudBlazor.Color.Primary" Disabled="true">
                         6m
                     </MudButton>
                     <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
-                    <MudButton @onclick="@(() => RefreshSalesPerDay(365))" Color="MudBlazor.Color.Primary">
+                    <MudButton Color="MudBlazor.Color.Primary" Disabled="true">
                         12m
                     </MudButton>
                     <MudDivider Vertical="true" FlexItem="true" Class="mx-1" />
-                    <MudButton @onclick="@(() => RefreshSalesPerDay(null))" Color="MudBlazor.Color.Primary">
+                    <MudButton Color="MudBlazor.Color.Primary" Disabled="true">
                         All
                     </MudButton>
                 </ActionContent>
                 <ChildContent>
-                    @if (SalesPerDay == null)
-                    {
-                        <Loading Message="Loading sales chart..." />
-                    }
-                    else
-                    {
-                        <svg style="height: 0">
-                            <defs>
-                                <linearGradient id="gradient-chart" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0" />
-                                    <stop offset="1" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <style>
-                            #gradient-chart stop {
-                                stop-color: #388e3c;
+                    <svg style="height: 0">
+                        <defs>
+                            <linearGradient id="gradient-chart" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0" />
+                                <stop offset="1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <style>
+                        #gradient-chart stop {
+                            stop-color: #388e3c;
+                        }
+                        #gradient-chart stop[offset="0"] {
+                            stop-opacity: 0.75;
+                        }
+                        #gradient-chart stop[offset="1"] {
+                            stop-opacity: 0;
+                        }
+                        #MarketSalesPerDay_Series_0_TrendLine_0 {
+                            stroke-dasharray: 10px 10px;
+                            stroke-linejoin: round;
+                            stroke-linecap: round;
+                            -webkit-animation: dash 1s linear infinite;
+                            animation: dash 1s linear infinite;
+                        }
+                        @@-webkit-keyframes dash {
+                            100% {
+                                stroke-dashoffset: -20px;
                             }
-                            #gradient-chart stop[offset="0"] {
-                                stop-opacity: 0.75;
+                        }
+                        @@keyframes dash {
+                            100% {
+                                stroke-dashoffset: -20px;
                             }
-                            #gradient-chart stop[offset="1"] {
-                                stop-opacity: 0;
-                            }
-                            #MarketSalesPerDay_Series_0_TrendLine_0 {
-                                stroke-dasharray: 10px 10px;
-                                stroke-linejoin: round;
-                                stroke-linecap: round;
-                                -webkit-animation: dash 1s linear infinite;
-                                animation: dash 1s linear infinite;
-                            }
-                            @@-webkit-keyframes dash {
-                                100% {
-                                    stroke-dashoffset: -20px;
-                                }
-                            }
-                            @@keyframes dash {
-                                100% {
-                                    stroke-dashoffset: -20px;
-                                }
-                            }
-                        </style>
-                        <SfChart ID="MarketSalesPerDay" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
-                            <ChartArea>
-                                <ChartAreaBorder Width="0"></ChartAreaBorder>
-                            </ChartArea>
-                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                            </ChartPrimaryXAxis>
-                            <ChartPrimaryYAxis LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                            </ChartPrimaryYAxis>
-                            <ChartSeriesCollection>
-                                <ChartSeries DataSource="@SalesPerDay" XName="Timestamp" YName="Sales" Opacity="1" Name="Market Sales" Width="2" Fill="url(#gradient-chart)" Type="ChartSeriesType.Area">
-                                    <ChartSeriesBorder Width="1" Color="#1b5e20"></ChartSeriesBorder>
-                                    <ChartTrendlines>
-                                        <ChartTrendline Type="TrendlineTypes.Linear" Width="3" Name="Market Trend" Fill="#b9f6ca">
-                                        </ChartTrendline>
-                                    </ChartTrendlines>
-                                </ChartSeries>
-                            </ChartSeriesCollection>
-                            <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="true" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
-                            <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
-                            <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
-                            <ChartLegendSettings Visible="true"></ChartLegendSettings>
-                        </SfChart>
-                    }
+                        }
+                    </style>
+                    <SfChart ID="MarketSalesPerDay" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
+                        <SfDataManager Url="api/market/stat/salesPerDay" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
+                        <ChartArea>
+                            <ChartAreaBorder Width="0"></ChartAreaBorder>
+                        </ChartArea>
+                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                        </ChartPrimaryXAxis>
+                        <ChartAxes>
+                            @*<ChartAxis Name="RevenueAxis" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />*@
+                            <ChartAxis Name="SalesAxis" LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />
+                        </ChartAxes>
+                        <ChartSeriesCollection>
+                            @*<ChartSeries XName="date" YName="revenue" YAxisName="RevenueAxis" Opacity="1" Name="Market Revenue" Width="2" Fill="#66c0f4" Type="ChartSeriesType.Line">
+                            </ChartSeries>*@
+                            <ChartSeries XName="date" YName="sales" YAxisName="SalesAxis" Opacity="1" Name="Market Sales" Width="2" Fill="url(#gradient-chart)" Type="ChartSeriesType.Area">
+                                <ChartSeriesBorder Width="1" Color="#1b5e20"></ChartSeriesBorder>
+                                <ChartTrendlines>
+                                    <ChartTrendline Type="TrendlineTypes.Linear" Width="3" Name="Market Activity Trend" Fill="#b9f6ca">
+                                    </ChartTrendline>
+                                </ChartTrendlines>
+                            </ChartSeries>
+                        </ChartSeriesCollection>
+                        <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="true" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
+                        <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
+                        <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                        <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                    </SfChart>
                 </ChildContent>
             </StatisticsPanel>
         </MudItem>
@@ -487,15 +478,6 @@
 
 @code {
 
-    private int SalesYesterday { get; set; }
-
-    private IEnumerable<object> SalesPerDay { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await RefreshSalesPerDay(180); // 6 months
-    }
-
     private void ViewItem(ISteamMarketListing item)
     {
         ExternalNavigationManager.NavigateToNewTab(
@@ -513,25 +495,6 @@
     private string GetItemStyles(ISteamAssetStyles item)
     {
         return $"color: {item.ForegroundColour}";
-    }
-
-    private async Task RefreshSalesPerDay(int? maxDays = null)
-    {
-        try
-        {
-            SalesYesterday = 0;
-            SalesPerDay = null;
-            StateHasChanged();
-            SalesYesterday = await Http.GetFromJsonAsync<int>($"api/market/stat/salesCountYesterday");
-            SalesPerDay = (await Http.GetFromJsonAsync<IDictionary<string, DashboardSalesDataDTO>>($"api/market/stat/salesPerDay?maxDays={maxDays}"))
-                .Select(x => new { Timestamp = DateTime.Parse(x.Key), Sales = x.Value.Sales })
-                .ToList();
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'sales per day' market dashboard");
-        }
     }
 
     protected async ValueTask<ItemsProviderResult<DashboardAssetSalesDTO>> LoadHotRightNow(ItemsProviderRequest request)

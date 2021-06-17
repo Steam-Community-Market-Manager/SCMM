@@ -95,11 +95,12 @@
             <response code="200">Number of marketplace sales yesterday (UTC).</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetSalesPerDay(System.Nullable{System.Int32})">
+        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetSalesPerDay(System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Get marketplace sales grouped per day (UTC)
             </summary>
-            <param name="maxDays">Number of historic days from today. If <code>null</code>,all sales history is returned</param>
+            <param name="skip"></param>
+            <param name="take"></param>
             <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>

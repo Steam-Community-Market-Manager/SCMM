@@ -190,21 +190,22 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get marketplace sales grouped per day (UTC)
         /// </summary>
-        /// <param name="maxDays">Number of historic days from today. If <code>null</code>,all sales history is returned</param>
+        /// <param name="skip"></param>
+        /// <param name="take"></param>
         /// <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("stat/salesPerDay")]
-        [ProducesResponseType(typeof(IDictionary<string, DashboardSalesDataDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<DashboardSalesDataDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSalesPerDay([FromQuery] int? maxDays = 30)
+        public async Task<IActionResult> GetSalesPerDay([FromQuery] int? skip = null, [FromQuery] int? take = null)
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItemSale
                 .AsNoTracking()
                 .Where(x => x.Timestamp.Date <= yesterday.Date)
                 .GroupBy(x => x.Timestamp.Date)
-                .OrderByDescending(x => x.Key.Date)
+                .OrderBy(x => x.Key.Date)
                 .Select(x => new
                 {
                     Date = x.Key,
@@ -212,23 +213,36 @@ namespace SCMM.Web.Server.API.Controllers
                     Revenue = x.Sum(y => y.Quantity * y.Price)
                 });
 
-            if (maxDays > 0)
+            if (skip > 0)
             {
-                query = query.Take(maxDays.Value);
+                query = query.Skip(skip.Value);
+            }
+            if (take > 0)
+            {
+                query = query.Take(take.Value);
             }
 
-            var salesPerDay = await query.ToListAsync();
-            salesPerDay.Reverse(); // newest at bottom
-            return Ok(
-                salesPerDay.ToDictionary(
-                    x => x.Date.ToString("dd MMM yyyy"),
-                    x => new DashboardSalesDataDTO
-                    {
-                        Sales = x.Sales,
-                        Revenue = this.Currency().CalculateExchange(x.Revenue)
-                    }
-                )
+            var salesPerDay = (await query.ToListAsync()).Select(
+                x => new DashboardSalesDataDTO
+                {
+                    Date = x.Date,
+                    Sales = x.Sales,
+                    Revenue = this.Currency().ToPrice(this.Currency().CalculateExchange(x.Revenue))
+                }
             );
+
+            if (skip != null && take != null)
+            {
+                return Ok(new
+                {
+                    Items = salesPerDay,
+                    Count = salesPerDay.Count()
+                });
+            }
+            else
+            {
+                return Ok(salesPerDay);
+            }
         }
 
         /// <summary>
