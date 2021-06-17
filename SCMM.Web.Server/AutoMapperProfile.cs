@@ -66,6 +66,7 @@ namespace SCMM.Web.Server
                 .ForMember(x => x.AcquiredBy, o => o.MapFrom(p => p.AcquiredBy))
                 .ForMember(x => x.Currency, o => o.MapFrom(p => p.Currency))
                 .ForMember(x => x.BuyPrice, o => o.MapFrom(p => p.BuyPrice))
+                .ForMember(x => x.BuyPriceLocal, o => o.MapFromUsingCurrencyExchange(p => p.BuyPrice, p => p.Currency))
                 .ForMember(x => x.BuyPriceStore, o => o.MapFromUsingCurrencyTable(p => p.Description.StoreItem != null ? p.Description.StoreItem.Prices : null))
                 .ForMember(x => x.BuyPriceText, o => o.MapFrom(p => p.Currency != null && p.BuyPrice != null ? p.Currency.ToPriceString(p.BuyPrice.Value, true) : null))
                 .ForMember(x => x.Last1hrValue, o => o.MapFromUsingCurrencyExchange(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.Last1hrValue : null, p => p.Description.MarketItem.Currency))

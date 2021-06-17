@@ -25,10 +25,24 @@ namespace SCMM.Web.Data.Models.UI.ProfileInventory
 
         public SteamProfileInventoryItemAcquisitionType AcquiredBy { get; set; }
 
+        /// <summary>
+        /// The original user-provided buy currency
+        /// </summary>
         public CurrencyDetailedDTO Currency { get; set; }
 
+        /// <summary>
+        /// The original user-provided buy price, in the original user-provided currency
+        /// </summary>
         public long? BuyPrice { get; set; }
 
+        /// <summary>
+        /// The buy price, in the callers local currency
+        /// </summary>
+        public long? BuyPriceLocal { get; set; }
+
+        /// <summary>
+        /// The original store price, in the callers local currency
+        /// </summary>
         public long? BuyPriceStore { get; set; }
 
         public string BuyPriceText { get; set; }

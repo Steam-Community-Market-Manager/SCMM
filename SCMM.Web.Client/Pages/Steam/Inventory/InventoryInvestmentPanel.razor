@@ -177,7 +177,7 @@ else
             <MudTd>
                 @if (context.ResellPrice != null && context.ResellTax != null && (context.ResellPrice - context.ResellTax) > 0)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPrice ?? 0)) 
+                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPriceLocal ?? 0)) 
                 }
                 else
                 {
@@ -185,9 +185,9 @@ else
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPrice != null && context.BuyPrice > 0 && (context.ResellPrice - context.ResellTax) != 0)
+                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.ResellPrice - context.ResellTax) != 0)
                 {
-                    @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
+                    @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
@@ -284,7 +284,7 @@ else
             <MudTd>
                 @if (context.ResellPrice != null && context.ResellTax != null && (context.ResellPrice - context.ResellTax) > 0)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPrice ?? 0)) 
+                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPriceLocal ?? 0)) 
                 }
                 else
                 {
@@ -292,9 +292,9 @@ else
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPrice != null && context.BuyPrice > 0 && (context.ResellPrice - context.ResellTax) > 0)
+                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.ResellPrice - context.ResellTax) > 0)
                 {
-                    @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPrice.Value) * 100, 0) - 100).ToRoIString()) 
+                    @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
@@ -354,13 +354,17 @@ else
     {
         try 
         {
-            Logger.LogInformation($"Updating acquired from for '{item.Id}' (value: '{value}', )");
             var useStorePrice = (value == SteamProfileInventoryItemAcquisitionType.Store && item.BuyPriceStore != null);
+            item.Currency = (useStorePrice ? State.Currency : item.Currency);
+            item.BuyPrice = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
+            item.BuyPriceLocal = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
+
+            Logger.LogInformation($"Updating acquired from for '{item.Id}' (value: '{value}', )");
             await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = value,
-                CurrencyId = (useStorePrice ? State.Currency.Id : item.Currency?.Id),
-                BuyPrice = (useStorePrice ? item.BuyPriceStore : item.BuyPrice)
+                CurrencyId = item.Currency.Id,
+                BuyPrice = item.BuyPrice
             });
         }
         catch (Exception ex)
@@ -382,6 +386,7 @@ else
             {
                 item.Currency = State.Currency;
                 item.BuyPrice = buyPrice;
+                item.BuyPriceLocal = buyPrice;
 
                 Logger.LogInformation($"Updating buy price for '{item.Id}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}', currency: '{item.Currency.CultureName}')");
                 await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
@@ -403,11 +408,11 @@ else
     
     private string GetItemClass(InventoryInvestmentItemDTO item, int index = 0)
     {
-        if (item.BuyPrice == null || item.BuyPrice <= 0 || item.ResellPrice == null || item.ResellTax == null)
+        if (item.BuyPrice == null || item.BuyPriceLocal <= 0 || item.ResellPrice == null || item.ResellTax == null)
         {
             return null;
         }
-        var roi = ((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPrice.Value) * 100, 0));
+        var roi = ((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPriceLocal.Value) * 100, 0));
         if (roi > 100)
         {
             return "mud-success";
