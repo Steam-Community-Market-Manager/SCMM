@@ -16,7 +16,8 @@ namespace SCMM.Web.Data.Models.Extensions
                 showHours: false,
                 showMinutes: false,
                 showSeconds: false,
-                maxGranularity: 2
+                maxGranularity: 2,
+                zero: "Today"
             );
         }
     }
