@@ -7,6 +7,7 @@
 @using SCMM.Web.Data.Models.UI
 @using SCMM.Web.Data.Models.UI.MarketStatistics
 @inject ILogger<StatisticsPage> Logger
+@inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
@@ -472,6 +473,43 @@
             </StatisticsPanel>
         </MudItem>
     
+        <MudItem xs="12" md="6" xl="3">
+            <StatisticsPanel Title="Largest Item Collections" Subtitle="Collections with the highest number of items." Dense="true">
+                <div class="VirtualTablePanel flex-grow-1">
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <tbody>
+                            <Virtualize ItemsProvider="LoadItemCollections" Context="item">
+                                <ItemContent>
+                                    <tr @onclick="@((_) => ShowItemCollectionDialog(item.Name))" class="Clickable">
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                                <MudText Typo="Typo.body2">@item.Name (@item.Items.ToQuantityString())</MudText>
+                                            </div>
+                                        </td>
+                                        <td class="TextRight">
+                                            <MudText Typo="Typo.body2" Class="NoWrap">@State.Currency.ToPriceString(item.BuyNowPrice.Value)</MudText>
+                                        </td>
+                                    </tr>
+                                </ItemContent>
+                                <Placeholder>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                            </div>
+                                        </td>
+                                        <td class="TextRight">—</td>
+                                    </tr>
+                                </Placeholder>
+                            </Virtualize>
+                        </tbody>
+                    </MudSimpleTable>
+                </div>
+            </StatisticsPanel>
+        </MudItem>
+    
     </MudGrid>
 
 </PageContainer>
@@ -490,6 +528,15 @@
         ExternalNavigationManager.NavigateToNewTab(
             $"https://steamcommunity.com/profiles/{steamId}"
         );
+    }
+    
+    private void ShowItemCollectionDialog(string itemCollection)
+    {
+        Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
+        {
+            ["CollectionName"] = itemCollection,
+            ["CollectionUrl"] = $"api/item/collection/{itemCollection}"
+        });
     }
     
     private string GetItemStyles(ISteamAssetStyles item)
@@ -619,6 +666,20 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'accepted creators' market dashboard");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<DashboardAssetCollectionDTO>> LoadItemCollections(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetCollectionDTO>>($"api/market/stat/collections?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<DashboardAssetCollectionDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'item collections' market dashboard");
             throw;
         }
     }

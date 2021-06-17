@@ -591,5 +591,47 @@ namespace SCMM.Web.Server.API.Controllers
                 await query.PaginateAsync(start, count)
             );
         }
+
+        /// <summary>
+        /// List items grouped by item collection
+        /// </summary>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("stat/collections")]
+        [ProducesResponseType(typeof(PaginatedResult<DashboardAssetCollectionDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetDashboardCollections([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var query = _db.SteamAssetDescriptions
+                .AsNoTracking()
+                .Include(x => x.App)
+                .Where(x => x.ItemCollection != null)
+                .Select(x => new
+                {
+                    Name = x.ItemCollection,
+                    IconUrl = x.IconLargeUrl,
+                    Currency = x.MarketItem != null ? x.MarketItem.Currency : null,
+                    BuyNowPrice = x.MarketItem != null ? (long?) x.MarketItem.BuyNowPrice : null
+                })
+                .ToList()
+                .GroupBy(x => x.Name)
+                .OrderByDescending(x => x.Count())
+                .AsQueryable();
+
+            return Ok(
+                query.Paginate(start, count, x => new DashboardAssetCollectionDTO
+                {
+                    Name = x.Key,
+                    IconUrl = x.FirstOrDefault(y => y.BuyNowPrice == x.Max(z => z.BuyNowPrice))?.IconUrl,
+                    Items = x.Count(),
+                    BuyNowPrice = this.Currency().CalculateExchange(x.Sum(y => y.BuyNowPrice ?? 0), x.FirstOrDefault()?.Currency)
+                })
+            );
+        }
+
     }
 }
