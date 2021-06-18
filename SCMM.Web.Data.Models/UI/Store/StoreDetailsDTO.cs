@@ -6,6 +6,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 {
     public class StoreDetailsDTO : ISearchable
     {
+        public Guid Guid { get; set; }
+
         public string Id { get; set; }
 
         public string Name { get; set; }

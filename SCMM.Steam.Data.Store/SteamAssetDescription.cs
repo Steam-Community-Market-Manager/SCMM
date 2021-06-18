@@ -119,6 +119,8 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public DateTimeOffset? TimeRefreshed { get; set; }
 
+        public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
+
         #region Pricing
 
         public SteamStoreItem StoreItem { get; set; }

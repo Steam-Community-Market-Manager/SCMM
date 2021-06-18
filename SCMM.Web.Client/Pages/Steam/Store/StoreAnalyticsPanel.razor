@@ -1,0 +1,101 @@
+﻿@using SCMM.Web.Data.Models.UI.Store
+@using SCMM.Web.Data.Models
+@inject AppState State
+
+<MudExpansionPanels Dense="true" DisableGutters="true">
+    <MudExpansionPanel>
+        <TitleContent>
+            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="Centered my-n4 mx-n2">
+                <i class="fa fa-fw fa-flask mr-1" />
+                <span>Store Analytics & Insights</span>
+            </MudText>
+        </TitleContent>
+        <ChildContent>
+            <MudTabs Rounded="true" Centered="true">
+                <MudTabPanel Text="Sales" Disabled="@(Store?.Items?.Any(x => x.Subscriptions > 0) != true)">
+                    <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Class="ma-4">
+                        <span>Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of units sold per-item based on Steam workshop subscriptions. Because players can purchase multiple copies of the same item and it is viewed as only a single subscription, actual sales will always be higher than what is shown here.</span>
+                    </MudAlert>
+                    <div class="FullWidth px-4 pb-4">
+                        <SfChart ID="ItemSales" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
+                            <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemSales")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
+                            <ChartArea>
+                                <ChartAreaBorder Width="0"></ChartAreaBorder>
+                            </ChartArea>
+                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                            </ChartPrimaryXAxis>
+                            <ChartPrimaryYAxis LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                                <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
+                                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                            </ChartPrimaryYAxis>
+                            <ChartSeriesCollection>
+                                <ChartSeries XName="name" YName="subscriptions" Name="Unique Sales" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="knownInventoryDuplicates" Name="Duplicate Sales" ColumnWidth="0.5" Width="2" Fill="#8e24aa" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="estimatedOtherDuplicates" Name="Other Estimated Sales" ColumnWidth="0.5" Width="2" Fill="#fb8c00" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="total" Name="Total Sales" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                    <ChartMarker>
+                                        <ChartDataLabel Visible="true" Name="totalText" Position="LabelPosition.Top">
+                                            <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
+                                        </ChartDataLabel>
+                                    </ChartMarker>
+                                </ChartSeries>
+                            </ChartSeriesCollection>
+                            <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                            <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                        </SfChart>
+                    </div>
+                </MudTabPanel>
+                <MudTabPanel Text="Revenue" Disabled="@(Store?.Items?.Any(x => x.Subscriptions > 0) != true)">
+                    <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Class="ma-4">
+                        <span>Steam doesn't disclose exact sales figures. This is a conservative <strong>estimate</strong> of units sold per-item based on Steam workshop subscriptions. Because players can purchase multiple copies of the same item and it is viewed as only a single subscription, actual sales will always be higher than what is shown here.</span>
+                    </MudAlert>
+                    <div class="FullWidth px-4 pb-4">
+                        <SfChart ID="ItemRevenue" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
+                            <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemRevenue")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
+                            <ChartArea>
+                                <ChartAreaBorder Width="0"></ChartAreaBorder>
+                            </ChartArea>
+                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                            </ChartPrimaryXAxis>
+                            <ChartPrimaryYAxis LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                                <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
+                                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                            </ChartPrimaryYAxis>
+                            <ChartSeriesCollection>
+                                <ChartSeries XName="name" YName="authorRoyalties" Name="Item Author Revenue" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="platformFees" Name="Steam Revenue" ColumnWidth="0.5" Width="2" Fill="#171a21" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="publisherRevenue" Name="Facepunch Revenue" ColumnWidth="0.5" Width="2" Fill="#c5412b" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="total" Name="Total Revenue" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                    <ChartMarker>
+                                        <ChartDataLabel Visible="true" Position="LabelPosition.Top">
+                                            <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
+                                        </ChartDataLabel>
+                                    </ChartMarker>
+                                </ChartSeries>
+                            </ChartSeriesCollection>
+                            <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                            <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                        </SfChart>
+                    </div>
+                </MudTabPanel>
+            </MudTabs>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+
+    [Parameter]
+    public StoreDetailsDTO Store { get; set; }
+
+}

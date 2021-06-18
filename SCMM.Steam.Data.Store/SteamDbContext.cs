@@ -97,6 +97,10 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.BreaksIntoComponents);
             builder.Entity<SteamAssetDescription>()
+                .HasMany(x => x.InventoryItems)
+                .WithOne(x => x.Description)
+                .HasForeignKey(x => x.DescriptionId);
+            builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.StoreItem)
                 .WithOne(x => x.Description)
                 .HasForeignKey<SteamStoreItem>(x => x.DescriptionId);
@@ -191,7 +195,8 @@ namespace SCMM.Steam.Data.Store
                 .HasIndex(x => new { x.SteamId, x.DescriptionId, x.ProfileId })
                 .IsUnique(true);
             builder.Entity<SteamProfileInventoryItem>()
-                .HasOne(x => x.Description);
+                .HasOne(x => x.Description)
+                .WithMany(x => x.InventoryItems);
             builder.Entity<SteamProfileInventoryItem>()
                 .HasOne(x => x.Currency);
 

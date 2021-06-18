@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Store;
 using SCMM.Web.Server.Extensions;
@@ -15,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -187,5 +190,89 @@ namespace SCMM.Web.Server.API.Controllers
             var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
             return Ok(nextUpdateTime?.Timestamp);
         }
+
+        [AllowAnonymous]
+        [HttpGet("{storeId}/stats/itemSales")]
+        [ProducesResponseType(typeof(IEnumerable<StoreChartItemSalesDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid storeId)
+        {
+            var storeItems = await _db.SteamItemStores
+                .AsNoTracking()
+                .Where(x => x.Id == storeId)
+                .Take(1)
+                .SelectMany(x => x.Items)
+                .Where(x => x.Item != null && x.Item.Description != null)
+                .Select(x => new
+                {
+                    Name = x.Item.Description.Name,
+                    Subscriptions = x.Item.Description.TotalSubscriptions ?? 0,
+                    KnownInventoryDuplicates = x.Item.Description.InventoryItems
+                        .GroupBy(y => y.ProfileId)
+                        .Where(y => y.Count() > 1)
+                        .Select(y => y.Sum(z => z.Quantity))
+                        .Sum(x => x)
+                })
+                .OrderBy(x => (x.Subscriptions + x.KnownInventoryDuplicates))
+                .ToListAsync();
+
+            var storeItemSales = storeItems.Select(
+                x => new StoreChartItemSalesDTO
+                {
+                    Name = x.Name,
+                    Subscriptions = x.Subscriptions,
+                    KnownInventoryDuplicates = x.KnownInventoryDuplicates,
+                    EstimatedOtherDuplicates = 0
+                }
+            );
+
+            return Ok(storeItemSales);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{storeId}/stats/itemRevenue")]
+        [ProducesResponseType(typeof(IEnumerable<StoreChartItemRevenueDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid storeId)
+        {
+            var storeItems = await _db.SteamItemStores
+                .AsNoTracking()
+                .Where(x => x.Id == storeId)
+                .Take(1)
+                .SelectMany(x => x.Items)
+                .Where(x => x.Item != null && x.Item.Description != null)
+                .Select(x => new
+                {
+                    Name = x.Item.Description.Name,
+                    Currency = x.Item.Currency,
+                    Price = x.Item.Price ?? 0,
+                    Prices = x.Item.Prices,
+                    Subscriptions = x.Item.Description.TotalSubscriptions ?? 0,
+                    KnownInventoryDuplicates = x.Item.Description.InventoryItems
+                        .GroupBy(y => y.ProfileId)
+                        .Where(y => y.Count() > 1)
+                        .Select(y => y.Sum(z => z.Quantity))
+                        .Sum(x => x)
+                })
+                .OrderBy(x => (x.Subscriptions + x.KnownInventoryDuplicates) * x.Price)
+                .ToListAsync();
+
+            var storeItemRevenue = (
+                from storeItem in storeItems
+                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * storeItem.Prices[this.Currency().Name])
+                let authorRoyalties = EconomyExtensions.SteamFeeAuthorComponentAsInt(total)
+                let platformFees = EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
+                select new StoreChartItemRevenueDTO
+                {
+                    Name = storeItem.Name,
+                    AuthorRoyalties = this.Currency().ToPrice(authorRoyalties, storeItem.Currency),
+                    PlatformFees = this.Currency().ToPrice(platformFees, storeItem.Currency),
+                    PublisherRevenue = this.Currency().ToPrice(total - authorRoyalties - platformFees, storeItem.Currency)
+                }
+            );
+
+            return Ok(storeItemRevenue);
+        }
+
     }
 }

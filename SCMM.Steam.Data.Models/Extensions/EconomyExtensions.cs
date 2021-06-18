@@ -9,17 +9,24 @@ namespace SCMM.Steam.Data.Models.Extensions
         public const decimal FeeMultiplier = 0.1304347826071739m; // 13%
         public const decimal FeePlatformMultiplier = 0.0304347811170578m; // 3%
         public const decimal FeePublisherMultiplier = 0.100000001490116119m; // 10%
+        public const decimal FeeAuthorMultiplier = 0.25m; // 25%
 
-        public static long SteamFeePlatformComponentAsInt(this long value)
+        public static long SteamFeeAuthorComponentAsInt(this long value)
         {
-            // Minimum platform fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * FeePlatformMultiplier, 1));
+            // Minimum author fee is 0.01 units
+            return (long)Math.Floor(Math.Max(value * FeeAuthorMultiplier, 1));
         }
 
         public static long SteamFeePublisherComponentAsInt(this long value)
         {
             // Minimum publisher fee is 0.01 units
             return (long)Math.Floor(Math.Max(value * FeePublisherMultiplier, 1));
+        }
+
+        public static long SteamFeePlatformComponentAsInt(this long value)
+        {
+            // Minimum platform fee is 0.01 units
+            return (long)Math.Floor(Math.Max(value * FeePlatformMultiplier, 1));
         }
 
         public static long SteamFeeAsInt(this long value)
