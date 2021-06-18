@@ -2,10 +2,12 @@
 
 namespace SCMM.Web.Data.Models.UI.MarketStatistics
 {
-    public class DashboardAssetMarketValueDTO : DashboardAssetDTO
+    public class DashboardCraftingResourceCostDTO : DashboardAssetDTO
     {
         public CurrencyDTO Currency { get; set; }
 
         public long BuyNowPrice { get; set; }
+
+        public DashboardAssetMarketValueDTO CheapestItem { get; set; }
     }
 }

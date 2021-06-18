@@ -311,7 +311,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
                     Currency = this.Currency(),
-                    Last1hrValue = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
+                    BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
                 })
             );
         }
@@ -354,7 +354,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
                     Currency = this.Currency(),
-                    Last1hrValue = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
+                    BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
                 })
             );
         }
@@ -443,7 +443,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
                     Currency = this.Currency(),
-                    Last1hrValue = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
+                    BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
                 })
             );
         }
@@ -551,14 +551,6 @@ namespace SCMM.Web.Server.API.Controllers
             );
         }
 
-        /// <summary>
-        /// List items grouped by item collection
-        /// </summary>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
-        /// <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("stat/collections")]
         [ProducesResponseType(typeof(PaginatedResult<DashboardAssetCollectionDTO>), StatusCodes.Status200OK)]
@@ -592,5 +584,136 @@ namespace SCMM.Web.Server.API.Controllers
             );
         }
 
+        [AllowAnonymous]
+        [HttpGet("stat/craftingResources")]
+        [ProducesResponseType(typeof(PaginatedResult<DashboardCraftingResourceCostDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetDashboardCraftingResource([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var query = _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.IsCraftingComponent)
+                .Where(x => x.MarketItem != null)
+                .Select(x => new
+                {
+                    Resource = x,
+                    CheapestItem = x.App.AssetDescriptions
+                        .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
+                        .Where(y => y.MarketItem != null && y.MarketItem.BuyNowPrice > 0)
+                        .OrderBy(y => y.MarketItem.BuyNowPrice)
+                        .Select(y => new
+                        {
+                            Item = y,
+                            Currency = y.MarketItem.Currency,
+                            BuyNowPrice = y.MarketItem.BuyNowPrice,
+                        })
+                        .FirstOrDefault()
+                })
+                .OrderBy(x => x.Resource.MarketItem.BuyNowPrice);
+
+            return Ok(
+                query.Paginate(start, count, x => new DashboardCraftingResourceCostDTO
+                {
+                    SteamId = x.Resource.ClassId.ToString(),
+                    SteamAppId = x.Resource.App.SteamId,
+                    Name = x.Resource.Name,
+                    BackgroundColour = x.Resource.BackgroundColour,
+                    ForegroundColour = x.Resource.ForegroundColour,
+                    IconUrl = x.Resource.IconUrl,
+                    Currency = this.Currency(),
+                    BuyNowPrice = this.Currency().CalculateExchange(x.Resource.MarketItem.BuyNowPrice, x.Resource.MarketItem.Currency),
+                    CheapestItem = new DashboardAssetMarketValueDTO()
+                    {
+                        SteamId = x.CheapestItem.Item.ClassId.ToString(),
+                        SteamAppId = x.CheapestItem.Item.App.SteamId,
+                        Name = x.CheapestItem.Item.Name,
+                        BackgroundColour = x.CheapestItem.Item.BackgroundColour,
+                        ForegroundColour = x.CheapestItem.Item.ForegroundColour,
+                        IconUrl = x.CheapestItem.Item.IconUrl,
+                        Currency = this.Currency(),
+                        BuyNowPrice = this.Currency().CalculateExchange(x.CheapestItem.BuyNowPrice, x.CheapestItem.Currency),
+                    }
+                })
+            );
+        }
+
+        [AllowAnonymous]
+        [HttpGet("stat/craftableContainers")]
+        [ProducesResponseType(typeof(PaginatedResult<DashboardCraftableContainerCostDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetDashboardCraftableContainers([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var resources = await _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.IsCraftingComponent)
+                .Where(x => x.MarketItem != null)
+                .Select(x => new
+                {
+                    Resource = x,
+                    CheapestItem = x.App.AssetDescriptions
+                        .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
+                        .Where(y => y.MarketItem != null && y.MarketItem.BuyNowPrice > 0)
+                        .OrderBy(y => y.MarketItem.BuyNowPrice)
+                        .Select(y => new
+                        {
+                            Item = y,
+                            Currency = y.MarketItem.Currency,
+                            MarketItem = y.MarketItem,
+                        })
+                        .FirstOrDefault()
+                })
+                .OrderBy(x => x.Resource.MarketItem.BuyNowPrice)
+                .ToListAsync();
+
+            var query = _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.IsCraftable)
+                .Where(x => x.MarketItem != null)
+                .OrderBy(x => x.MarketItem.BuyNowPrice);
+
+            return Ok(
+                query.Paginate(start, count, x => new DashboardCraftableContainerCostDTO
+                {
+                    SteamId = x.ClassId.ToString(),
+                    SteamAppId = x.App.SteamId,
+                    Name = x.Name,
+                    BackgroundColour = x.BackgroundColour,
+                    ForegroundColour = x.ForegroundColour,
+                    IconUrl = x.IconUrl,
+                    Currency = this.Currency(),
+                    BuyNowPrice = this.Currency().CalculateExchange(x.MarketItem.BuyNowPrice, x.MarketItem.Currency),
+                    CraftingComponents = x.CraftingComponents
+                        .Select(y => new
+                        {
+                            Component = resources.FirstOrDefault(r => y.Key == r.Resource.Name),
+                            Quantity = y.Value
+                        })
+                        .Select(y => new
+                        {
+                            Component = y.Component,
+                            CheapestItem = y.Component.CheapestItem.MarketItem.BuyNowPrice > y.Component.Resource.BuyNowPrice ? y.Component.Resource : y.Component.CheapestItem.Item,
+                            Quantity = y.Quantity
+                        })
+                        .Select(y => new DashboardCraftableContainerComponentCostDTO()
+                        {
+                            Component = new DashboardAssetMarketValueDTO
+                            {
+                                SteamId = y.CheapestItem.ClassId.ToString(),
+                                SteamAppId = y.CheapestItem.App.SteamId,
+                                Name = y.CheapestItem.Name,
+                                BackgroundColour = y.CheapestItem.BackgroundColour,
+                                ForegroundColour = y.CheapestItem.ForegroundColour,
+                                IconUrl = y.CheapestItem.IconUrl,
+                                Currency = this.Currency(),
+                                BuyNowPrice = this.Currency().CalculateExchange(y.CheapestItem.BuyNowPrice ?? 0, y.CheapestItem.BuyNowCurrency),
+                            },
+                            Quantity = y.Quantity
+                        })
+                })
+            );
+        }
     }
 }
