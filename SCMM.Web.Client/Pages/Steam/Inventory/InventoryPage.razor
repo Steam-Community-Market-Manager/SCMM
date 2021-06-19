@@ -46,7 +46,7 @@
                             <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!State.Is(Profile?.SteamId))"/>
                         </MudPaper>
                     </MudTabPanel>
-                    <MudTabPanel Icon="fas fa-fw fa-chart-pie" Text="Statistics">
+                    <MudTabPanel Icon="fas fa-fw fa-chart-pie" Text="Statistics" Disabled="true">
                         <MudPaper Outlined="true">
                             <InventoryStatisticsPanel SteamId="@SteamId" InventoryTotals="@InventoryTotals" />
                         </MudPaper>

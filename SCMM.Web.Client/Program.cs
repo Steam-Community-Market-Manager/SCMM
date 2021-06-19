@@ -6,6 +6,7 @@ using SCMM.Web.Client.Shared;
 using SCMM.Web.Client.Shared.Navigation;
 using SCMM.Web.Client.Shared.Storage;
 using Syncfusion.Blazor;
+using Syncfusion.Licensing;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -51,7 +52,7 @@ namespace SCMM.Web.Client
 
             builder.Services.AddSyncfusionBlazor();
             
-            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(
+            SyncfusionLicenseProvider.RegisterLicense(
                 "NDYwMDE3QDMxMzkyZTMxMmUzMFE5Y1BKKzFrd3FzbG5EbHJOZVJSVThMRUhEQnVXdUZjUzVNOWlKTDIwWE09"
             );
 

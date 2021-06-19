@@ -19,7 +19,6 @@
     <PackageReference Include="MudBlazor" Version="5.0.11" />
     <PackageReference Include="Syncfusion.Blazor.Charts" Version="19.1.0.69" />
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="ChartJs.Blazor" Version="1.1.0" />
 
   </ItemGroup>
 
