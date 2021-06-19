@@ -1,11 +1,11 @@
 ﻿
-.Loading-Root {
+.loading-container {
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 16px 0px;
 }
 
-.Loading-Root > span {
+.loading-container > span {
     margin: 16px;
 }

@@ -3,13 +3,13 @@
 
 <div class="align-self-stretch">
     <MudTooltip Text="@Item.Name">
-        <div class="Item-Summary d-flex flex-wrap flex-column align-center justify-center" @onclick="@((_) => OnItemClicked(Item))">
-            <div class="Hover-Zoom">
+        <div class="item-summary d-flex flex-wrap flex-column align-center justify-center" @onclick="@((_) => OnItemClicked(Item))">
+            <div class="hover-zoom">
                 <img src="@Item.IconUrl" class="ma-1" />
             </div>
             @if (Item.Value != null)
             {
-                <MudText Typo="MudBlazor.Typo.caption" Class="Centered NoWrap ma-1">
+                <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap ma-1">
                     @Item.Currency.ToPriceString(Item.Value.Value)
                 </MudText>
             }

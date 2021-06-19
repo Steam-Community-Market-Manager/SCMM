@@ -1,26 +1,30 @@
 ﻿
-.FullWidth {
+.full-width {
     width: 100% !important;
 }
 
-.FullHeight {
+.full-height {
     height: 100% !important;
 }
 
-.Centered, .TextCentered {
-    text-align: center !important;
-}
-
-.TextLeft {
-    text-align: left !important;
-}
-
-.TextRight {
-    text-align: right !important;
-}
-
-.NoWrap {
+.no-wrap {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.text-centered {
+    text-align: center !important;
+}
+
+.text-left {
+    text-align: left !important;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.text-line-through {
+    text-decoration: line-through
 }

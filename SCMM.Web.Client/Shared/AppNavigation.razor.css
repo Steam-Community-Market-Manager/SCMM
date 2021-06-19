@@ -1,14 +1,14 @@
 ﻿
-.Profile-Root {
+.profile-container {
     margin: 1rem 1rem 0.5rem 1rem;
     text-align: center;
 }
 
-.SignIn-Root {
+.signin-container {
     margin: 1rem 1rem 0.5rem 1rem;
     text-align: center;
 }
 
-.SignIn-Button img:hover {
+.signin-button img:hover {
     cursor: pointer;
 }

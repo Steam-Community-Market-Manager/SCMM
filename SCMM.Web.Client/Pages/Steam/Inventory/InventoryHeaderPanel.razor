@@ -213,7 +213,7 @@
                 Refresh
             </MudButton>
         </MudTooltip>
-        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="ml-2 NoWrap">
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="ml-2 no-wrap">
             @if (@Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) > 0)
             {
                 <span>Last refreshed @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago</span>

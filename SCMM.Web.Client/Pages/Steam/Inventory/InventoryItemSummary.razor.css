@@ -1,28 +1,28 @@
 ﻿
-.Item-Summary {
+.item-summary {
     height: 100%;
 }
 
-.Item-Summary {
+.item-summary {
     border: 1px solid transparent;
 }
 
-.Item-Summary:hover {
+.item-summary:hover {
     background-color: var(--mud-palette-overlay-dark);
     border: 1px solid var(--mud-palette-lines-default);
     cursor: pointer;
 }
 
-.Item-Summary img {
+.item-summary img {
     width: 5rem;
     height: 5rem;
 }
 
-.Hover-Zoom img {
+.hover-zoom img {
     transition: transform .5s ease;
 }
 
-.Hover-Zoom:hover img {
+.hover-zoom:hover img {
     transform: scale(1.5);
     filter: drop-shadow(2px 4px 6px black);
 }

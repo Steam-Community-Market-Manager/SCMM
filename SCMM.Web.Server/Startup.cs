@@ -192,7 +192,7 @@ namespace SCMM.Web.Server
             {
                 config.RoutePrefix = "docs";
                 config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM v1");
-                config.InjectStylesheet("/css/swagger-theme.css");
+                config.InjectStylesheet("/css/scmm-swagger-theme.css");
                 config.OAuth2RedirectUrl("/signin");
             });
 

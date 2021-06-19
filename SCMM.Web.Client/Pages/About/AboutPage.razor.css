@@ -1,28 +1,28 @@
 ﻿
-.Donators li:nth-child(1) {
+.donators li:nth-child(1) {
     color: gold;
 }
 
-.Donators li:nth-child(2) {
+.donators li:nth-child(2) {
     color: silver;
 }
 
-.Donators li:nth-child(3) {
+.donators li:nth-child(3) {
     color: #cd7f32;
 }
 
-.Donator {
+.donator {
     display: flex;
     align-content: center;
     align-items: center;
 }
 
-.Donator > img {
+.donator > img {
     max-width: 24px;
     max-height: 24px;
 }
 
-.Donator > span {
+.donator > span {
     margin: 4px 8px;
     font-weight: bold;
 }

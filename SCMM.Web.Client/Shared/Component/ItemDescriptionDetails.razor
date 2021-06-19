@@ -2,17 +2,17 @@
 @using SCMM.Steam.Data.Models.Enums
 @inject ExternalNavigationManager ExternalNavigationManager
 
-<div class="@($"Item {GetDynamicClassNames()} mud-paper")" @onclick="@(() => BuyItem())">
-    <div class="Item-Icon Hover-Zoom">
+<div class="@($"item {GetDynamicClassNames()} mud-paper")" @onclick="@(() => BuyItem())">
+    <div class="item-icon hover-zoom">
         <img src="@Item.IconUrl" />
     </div>
-    <div class="ma-2 d-flex flex-column justify-center align-center Centered">
+    <div class="ma-2 d-flex flex-column justify-center align-center text-centered">
         <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {Item.ForegroundColour}")">
             <span>@Item.Name</span>
         </MudText>
         @if (PurchasableItem?.BuyNowPrice != null)
         {
-            <MudText Typo="MudBlazor.Typo.body2" Class="NoWrap d-flex flex-row justify-center align-center">
+            <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap d-flex flex-row justify-center align-center">
                 @switch(PurchasableItem.BuyNowFrom)
                 {
                     case PriceType.SteamStore:
@@ -50,7 +50,7 @@
         }
         @if (SubscribableItem?.Subscriptions > 0)
         {
-            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="NoWrap">
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
                 <i class="fas fa-fw fa-user"></i>
                 <span>@SubscribableItem.Subscriptions.Value.ToQuantityString()</span>
             </MudText>
@@ -75,11 +75,11 @@
         var classNames = new List<string>();
         if (PurchasableItem != null)
         {
-            classNames.Add("Purchasable");
+            classNames.Add("purchasable");
         }
         if (Highlighted)
         {
-            classNames.Add("Highlighted");
+            classNames.Add("highlighted");
         }
         return String.Join(' ', classNames);
     }

@@ -1,9 +1,9 @@
 ﻿
-.VirtualTablePanel {
+.virtual-table-panel {
     height: 30vh;
     overflow-y: auto;
 }
 
-.Clickable:hover {
+.clickable:hover {
     cursor: pointer;
 }

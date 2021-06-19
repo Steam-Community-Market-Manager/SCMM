@@ -1,43 +1,35 @@
 ﻿
-.Item {
+.item {
     border: 1px solid transparent;
 }
 
-.Item:hover {
+.item:hover {
     background-color: var(--mud-palette-overlay-dark);
     border: 1px solid var(--mud-palette-lines-default);
 }
 
-.Item-Icon img {
+.item-icon img {
     width: 100%;
 }
 
-.Item-Icon img {
+.item-icon img {
     width: 100%;
 }
 
-.Collection-Name {
-    margin-top: -4px;
-}
-
-.Collection-Description {
-    margin-top: -8px;
-}
-
-.Hover-Zoom img {
+.hover-zoom img {
     transition: transform .5s ease;
 }
 
-.Hover-Zoom:hover img {
+.hover-zoom:hover img {
     transform: scale(1.3);
     filter: drop-shadow(2px 4px 6px black);
 }
 
-.Purchasable {
+.purchasable {
     cursor: pointer;
 }
 
-.Highlighted {
+.highlighted {
     background-color: var(--mud-palette-overlay-dark);
     border: 1px solid var(--mud-palette-lines-default);
     animation: flash 1s 0.5s forwards;

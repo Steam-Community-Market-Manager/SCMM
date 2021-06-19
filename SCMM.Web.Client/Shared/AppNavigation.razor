@@ -10,7 +10,7 @@
 
 @if (State.IsAuthenticated)
 {
-    <div class="Profile-Root">
+    <div class="profile-container">
         <MudAvatar Image="@State.Profile.AvatarLargeUrl" Style="height:64px; width:64px;" />
         <MudText Typo="MudBlazor.Typo.h6">@State.Profile.Name</MudText>
         <UserFlairs Roles="@State.Profile.Roles" />
@@ -20,8 +20,8 @@
 }
 else
 {
-    <div class="SignIn-Root">
-        <MudLink Class="SignIn-Button" @onclick="async () => await ShowSignInDialog()">
+    <div class="signin-container">
+        <MudLink Class="signin-button" @onclick="async () => await ShowSignInDialog()">
             <img src="/images/sits_01.png" alt="Sign in through Steam" title="Sign in through Steam" />
         </MudLink>
     </div>

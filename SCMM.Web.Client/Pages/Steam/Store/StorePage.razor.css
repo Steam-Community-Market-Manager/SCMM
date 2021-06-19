@@ -1,20 +1,20 @@
 ﻿
-.Store-Item .Image-Root {
+.store-item .item-image {
     text-align: center;
 }
 
-.Store-Item .Image-Root img {
+.store-item .item-image img {
     width: 100%;
 }
 
-.Store-Item .Image-Root img:hover {
+.store-item .item-image img:hover {
    cursor: pointer;
 }
 
-.Store-Item .Item-Name {
+.store-item .item-name {
     margin-top: -4px;
 }
 
-.Store-Item .Item-Type {
+.store-item .item-type {
     margin-top: -8px;
 }

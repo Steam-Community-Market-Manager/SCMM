@@ -1,11 +1,11 @@
 ﻿
-.YouTube-Root {
+.youtube-container {
     position: relative;
     overflow: hidden;
     padding-top: 56.25%;
 }
 
-.YouTube-Root > iframe {
+.youtube-container > iframe {
     width: 100%;
     height: 100%;
     position: absolute;

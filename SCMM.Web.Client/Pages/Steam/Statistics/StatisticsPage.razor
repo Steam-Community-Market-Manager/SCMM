@@ -20,14 +20,6 @@
         <MudItem xs="12" xl="12">
             <StatisticsPanel Icon="fas fa-fw fa-chart-line" Title="Daily Market Sales" Subtitle="How many items are brought and sold on the market each day? How much money is traded each day? Is the market becoming more active, or less active?">
                 <ChildContent>
-                    <svg style="height: 0">
-                        <defs>
-                            <linearGradient id="gradient-chart" x1="0" x2="0" y1="0" y2="1">
-                                <stop offset="0" />
-                                <stop offset="1" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
                     <style>
                         #MarketSalesPerDay_Series_1_TrendLine_0 {
                             stroke-dasharray: 10px 10px;
@@ -80,20 +72,20 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-star" Title="Latest Items" Subtitle="What are the newest accepted in-game items?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadMostRecent" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@item.MarketAge</MudText>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.MarketAge</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -105,7 +97,7 @@
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -117,20 +109,20 @@
 
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-fire" Title="Hot Right Now" Subtitle="What items have been brought/sold the most in the past 24hrs?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadHotRightNow" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@item.Last24hrSales.ToQuantityString() sold</MudText>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Last24hrSales.ToQuantityString() sold</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -142,7 +134,7 @@
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -154,20 +146,20 @@
 
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-arrow-up" Title="Stonking" Subtitle="What items are at their all-time highest value?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadAllTimeHigh" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -179,7 +171,7 @@
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -191,20 +183,20 @@
 
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-arrow-down" Title="Crashing" Subtitle="What items are at their all-time lowest value?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadAllTimeLow" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -216,7 +208,7 @@
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -228,19 +220,19 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-dice-five" Title="Profitable Flips" Subtitle="What items have the largest gap in asking price vs buy now price, with an upward trending average price? It's a gamble, but these items can potentially be flipped for profit if you are able to buy low and then sell high after the seven day market cooldown." Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <thead>
                             <tr>
                                 <th></th>
-                                <th class="NoWrap">Buy At</th>
-                                <th class="NoWrap TextRight">Potential Profit</th>
+                                <th class="no-wrap">Buy At</th>
+                                <th class="no-wrap text-right">Potential Profit</th>
                             </tr>
                         </thead>
                         <tbody>
                             <Virtualize ItemsProvider="LoadProfitableFlips" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
@@ -248,10 +240,10 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</MudText>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Color="Color.Success" Class="NoWrap">
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Color="Color.Success" Class="no-wrap">
                                                 @item.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.FeeMultiplier, 1))))
                                             </MudText>
                                         </td>
@@ -266,7 +258,7 @@
                                             </div>
                                         </td>
                                         <td>—</td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -278,20 +270,20 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-dollar-sign" Title="Most Expensive" Subtitle="What are the most expensive items on the market?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadMostProfitable" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -303,7 +295,7 @@
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -315,20 +307,20 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Popular" Subtitle="What items have the highest number of unique owners (subscribers)?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadMostPopular" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">
                                                 <i class="fas fa-fw fa-user"></i>
                                                 <span>@item.Subscriptions.ToQuantityString()</span>
                                             </MudText>
@@ -343,7 +335,7 @@
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -355,19 +347,19 @@
 
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-balance-scale" Title="Most Saturated" Subtitle="What items have the largest supply of listings on the market?"Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <thead>
                             <tr>
                                 <th></th>
-                                <th class="NoWrap">Supply</th>
-                                <th class="NoWrap TextRight">Daily Demand</th>
+                                <th class="no-wrap">Supply</th>
+                                <th class="no-wrap text-right">Daily Demand</th>
                             </tr>
                         </thead>
                         <tbody>
                             <Virtualize ItemsProvider="LoadMostSaturated" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
@@ -375,10 +367,10 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@item.Supply.ToQuantityString()</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Supply.ToQuantityString()</MudText>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">
                                                 @if (item.Demand > 0)
                                                 {
                                                     <span>@item.Demand.ToQuantityString() sold yesterday</span>
@@ -400,7 +392,7 @@
                                             </div>
                                         </td>
                                         <td>—</td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -412,20 +404,20 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-tshirt" Title="Biggest Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemCollections" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ShowItemCollectionDialog(item.Name))" class="Clickable">
+                                    <tr @onclick="@((_) => ShowItemCollectionDialog(item.Name))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2">@item.Name (@item.Items.ToQuantityString())</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@State.Currency.ToPriceString(item.BuyNowPrice.Value)</MudText>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyNowPrice.Value)</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -437,7 +429,7 @@
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -449,7 +441,7 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-user" Title="Biggested Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadAcceptedCreators" Context="item">
@@ -461,8 +453,8 @@
                                                 <MudText Typo="Typo.body2">@item.Name</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">
-                                            <MudText Typo="Typo.body2" Class="NoWrap">@item.Items.ToQuantityString() item(s)</MudText>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Items.ToQuantityString() item(s)</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -474,7 +466,7 @@
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                             </div>
                                         </td>
-                                        <td class="TextRight">—</td>
+                                        <td class="text-right">—</td>
                                     </tr>
                                 </Placeholder>
                             </Virtualize>
@@ -486,12 +478,12 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-box-open" Title="Skin Containers" Subtitle="What is the cheapest way to buy skin containers?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadCraftableContainers" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-start">
                                                 <img src="@item.IconUrl" class="mr-2" style="width:64px; height:64px;" />
@@ -510,7 +502,7 @@
                                                         <tbody>
                                                             @foreach(var component in item.CraftingComponents)
                                                             {
-                                                                <tr @onclick="@((_) => ViewItem(component.Component))" class="Clickable">
+                                                                <tr @onclick="@((_) => ViewItem(component.Component))" class="clickable">
                                                                     <td>
                                                                         <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@(component.Quantity)x</MudText>
                                                                     </td>
@@ -551,12 +543,12 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-boxes" Title="Crafting Resources" Subtitle="What is the cheapest way to buy crafting resources?" Dense="true">
-                <div class="VirtualTablePanel flex-grow-1">
+                <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
                             <Virtualize ItemsProvider="LoadCraftingResources" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item.CheapestItem.BuyNowPrice > item.BuyNowPrice ? item : item.CheapestItem))" class="Clickable">
+                                    <tr @onclick="@((_) => ViewItem(item.CheapestItem.BuyNowPrice > item.BuyNowPrice ? item : item.CheapestItem))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-start">
                                                 <img src="@item.IconUrl" class="mr-2" style="width:64px; height:64px;" />

@@ -76,10 +76,10 @@
             An extra special thank to the following for their generous support towards this project:
         </MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-            <ul class="fa-ul Donators">
+            <ul class="fa-ul donators">
                 @foreach (var donator in Donators)
                 {
-                    <li class="Donator">
+                    <li class="donator">
                         <img class="fa-li" src="@donator.AvatarUrl" />
                         <span>@donator.Name</span>
                         @if (Donators.Take(3).Contains(donator))
