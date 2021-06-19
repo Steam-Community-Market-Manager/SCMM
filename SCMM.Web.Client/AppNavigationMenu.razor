@@ -1,7 +1,7 @@
 ﻿@using SCMM.Web.Client.Shared.Navigation.Menu
 @using SCMM.Web.Data.Models.Domain.InventoryItems
 @using SCMM.Web.Data.Models
-@inject ILogger<AppNavigation> Logger
+@inject ILogger<AppNavigationMenu> Logger
 @inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
@@ -148,8 +148,7 @@ else
                 Title = "Skins",
                 SubTitle = "Explore all item skins",
                 Path = "/skins",
-                Prefix = true,
-                Disabled = true
+                Prefix = true
             },
             new NavigationMenuItemLink
             {

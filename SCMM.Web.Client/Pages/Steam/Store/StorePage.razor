@@ -233,7 +233,7 @@ else if (StoreList.Any())
                                             <MudItem xs="7" Class="text-centered d-flex align-stretch">
                                                 <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableFromStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
                                                            Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableFromStore)" FullWidth>
-                                                    <RustIcon />        
+                                                    <RustTransparentIcon />        
                                                     <strong class="ml-1">Store</strong>
                                                 </MudButton>
                                             </MudItem>
