@@ -12,7 +12,6 @@ using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
-using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Collections.Generic;
@@ -94,14 +93,14 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
             else
             {
-                return await  SayProfileInventoryValueInternalAsync(null, steamId, currencyId);
+                return await SayProfileInventoryValueInternalAsync(null, steamId, currencyId);
             }
         }
 
         private async Task<RuntimeResult> SayProfileInventoryValueInternalAsync(IUserMessage message, string steamId, string currencyId)
         {
             message = (message ?? await Context.Message.ReplyAsync("Loading..."));
-            
+
             // Load the profile
             await message.LoadingAsync("🔍 Finding Steam profile...");
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()

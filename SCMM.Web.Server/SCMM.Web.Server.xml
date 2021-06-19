@@ -9,7 +9,7 @@
             List all supported currencies
             </summary>
             <returns>List of supported currencies</returns>
-            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.Currencies.CurrencyDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.Currencies.CurrencyListDTO"/>.</response>
+            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Currency.CurrencyDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Currency.CurrencyListDTO"/>.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ImageController.GetImage(System.Guid)">
@@ -17,24 +17,55 @@
             Get a cached image
             </summary>
             <param name="imageId">Id of a known cached image</param>
-            <remarks>Range requests are supported</remarks>
+            <remarks>Range requests are supported. If the response contains an "Expires" header, the image will be deleted on the date specified in the header value, afer which, 404 will be returned.</remarks>
             <returns>Image data</returns>
             <response code="200">If the image is valid, the response body will contain the image data, the <code>Content-Type</code> header will contain the image mime-type, and <code>Expires</code> header will contain the image UTC expiry date (if any).</response>
             <response code="404">If the image cannot be found or has expired.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByType(System.String,System.Nullable{System.UInt64})">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.String,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection)">
             <summary>
-            Get all marketable items of the specific item type
+            List all known items
             </summary>
-            <param name="itemType">The name of the item type</param>
-            <param name="compareWithItemId">The id of an item to be included in the list, for comparison</param>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="filter">Optional search filter. Matches against item GUID, ID64, name, description, author, type, collection, and tags</param>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <param name="sortBy">Sort item property name from <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemDetailedDTO"/></param>
+            <param name="sortDirection">Sort item direction</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="404">If no items match the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItem(System.String)">
+            <summary>
+            Get item details
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="id">Item GUID, ID64, or name</param>
+            <response code="200">The item details.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="404">If the request item cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemByTypeMarketPriceRanked(System.String,System.Nullable{System.UInt64})">
+            <summary>
+            Get all items of the specific type and rank them by price
+            </summary>
+            <param name="itemType">The type of item to rank</param>
+            <param name="compareWithItemId">The id of an item to be included in the list. Used to include an item for comparison against the rest of the list</param>
             <returns>The items of the specified item type</returns>
             <remarks>
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
             <response code="200">The list of item details.</response>
             <response code="400">If the item type name is missing.</response>
+            <response code="404">If the item type name doesn't exist (or doesn't contain any marketable items).</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByCollection(System.String)">
@@ -48,6 +79,7 @@
             </remarks>
             <response code="200">The item collection details.</response>
             <response code="400">If the collection name is missing.</response>
+            <response code="404">If the collection name doesn't exist (or doesn't contain any marketable items).</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.LanguageController.Get(System.Boolean)">
@@ -55,146 +87,7 @@
             List all supported languages
             </summary>
             <returns>List of supported languages</returns>
-            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.Languages.LanguageDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.Domain.Languages.LanguageListDTO"/>.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.Get(System.String,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection)">
-            <summary>
-            List market listings
-            </summary>
-            <remarks>
-            Item <code>ProfileFlags</code> will only be populated if the request is authenticated.
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="filter">Optional search filter. Matches against item name or description</param>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <param name="sortBy">Sort item property name from <see cref="T:SCMM.Web.Data.Models.Domain.MarketItems.MarketItemListDTO"/></param>
-            <param name="sortDirection">Sort item direction</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.Get(System.String)">
-            <summary>
-            Get market listing details
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="idOrName">Market item identifier or name</param>
-            <response code="200">Market item details.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
-            <response code="400">If the request item cannot be found.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetSalesPerDay">
-            <summary>
-            Get total marketplace sales and revenue, grouped by day (UTC)
-            </summary>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardHotRightNow(System.Int32,System.Int32)">
-            <summary>
-            List items sorted by highest number of sales in the last 24hrs
-            </summary>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardMostRecent(System.Int32,System.Int32)">
-            <summary>
-            List items sorted by lowest market age
-            </summary>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardAllTimeHigh(System.Int32,System.Int32)">
-            <summary>
-            List items currently at their all-time highest value, sorted by highest value
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardAllTimeLow(System.Int32,System.Int32)">
-            <summary>
-            List items current at their all-time lowest value, sorted by lowest value
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardProfitableFlips(System.Int32,System.Int32)">
-            <summary>
-            List items with largest gap between buy now and buy asking price, sorted by highest potential profit
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardMostProfitable(System.Int32,System.Int32)">
-            <summary>
-            List items sorted by highest value
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardMostPopular(System.Int32,System.Int32)">
-            <summary>
-            List items sorted by highest subscriber count
-            </summary>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardMostSaturated(System.Int32,System.Int32)">
-            <summary>
-            List items sorted by highest supply
-            </summary>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.MarketController.GetDashboardAcceptedCreators(System.Int32,System.Int32)">
-            <summary>
-            List profiles with accepted workshop items, sorted by highest number of items
-            </summary>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="200">Dictionary of total market sales per day grouped/keyed by UTC date.</response>
+            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Language.LanguageDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.Language.LanguageListDTO"/>.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetMyProfile">
@@ -208,7 +101,7 @@
             <response code="200">If the session is authentication, your Steam profile information is returned. If the session is unauthenticated, a generic guest profile is returned.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SetMyProfile(SCMM.Web.Data.Models.Domain.Profiles.UpdateProfileCommand)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SetMyProfile(SCMM.Web.Data.Models.UI.Profile.UpdateProfileCommand)">
             <summary>
             Update your profile information
             </summary>
@@ -299,39 +192,14 @@
             <param name="filter">Optional search filter. Matches against item name or description</param>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <param name="sortBy">Sort item property name from <see cref="T:SCMM.Web.Data.Models.UI.ProfileInventory.InventoryInvestmentItemDTO"/></param>
+            <param name="sortBy">Sort item property name from <see cref="T:SCMM.Web.Data.Models.UI.Profile.Inventory.InventoryInvestmentItemDTO"/></param>
             <param name="sortDirection">Sort item direction</param>
             <response code="200">Profile inventory investment information.</response>
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="401">If the request is unauthenticated (login first) or the requested inventory does not belong to the authenticated user.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryWishlist(System.String)">
-            <summary>
-            Get profile inventory wishlist information
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-            <response code="200">Profile inventory wishlist information.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryPerformance(System.String)">
-            <summary>
-            Get profile inventory performance information
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-            <response code="200">Profile inventory performance information.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
-            <response code="404">If the profile cannot be found.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SetInventoryItem(System.String,System.Guid,SCMM.Web.Data.Models.Domain.InventoryItems.UpdateInventoryItemCommand)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SetInventoryItem(System.String,System.Guid,SCMM.Web.Data.Models.UI.Profile.Inventory.UpdateInventoryItemCommand)">
             <summary>
             Update profile inventory item information
             </summary>
@@ -351,47 +219,139 @@
             <response code="404">If the inventory item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SetInventoryItemFlag(System.String,System.String,System.String,System.Boolean)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketActivity">
             <summary>
-            Update the flag value of a profile inventory item
+            Get marketplace sales and revenue chart data, grouped by day (UTC)
             </summary>
-            <remarks>This API requires authentication</remarks>
-            <param name="itemOrAssetId">
-            Either a profile inventory item identifier, or asset description identifier. 
-            If an asset description identifier is specified, all inventory items for that asset description will be updated (bulk update). 
-            The item must belong to your (currently authenticated) profile
-            </param>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-            <param name="flag">Name of a supported item flag. See <see cref="T:SCMM.Steam.Data.Models.Enums.SteamProfileInventoryItemFlags"/></param>
-            <param name="value">New value of the item flag</param>
-            <response code="200">If the item flag was updated successfully.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
-            <response code="401">If the request is unauthenticated (login first) or the requested inventory item does not belong to the authenticated user.</response>
-            <response code="404">If the inventory item cannot be found.</response>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <response code="200">List of market sales and revenue per day grouped/keyed by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SetMarketItemFlag(System.String,System.String,System.String,System.Boolean)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostRecent(System.Int32,System.Int32)">
             <summary>
-            Update the flag value of a profile market item
+            List items, sorted by most recent first
             </summary>
-            <remarks>This API requires authentication</remarks>
-            <param name="itemOrAssetId">
-            Either a profile market item identifier, or asset description identifier. 
-            If an asset description identifier is specified, all market items for that asset description will be updated (bulk update). 
-            The item must belong to your (currently authenticated) profile
-            </param>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-            <param name="flag">Name of a supported item flag. See <see cref="T:SCMM.Steam.Data.Models.Enums.SteamProfileMarketItemFlags"/></param>
-            <param name="value">New value of the item flag</param>
-            <response code="200">If the item flag was updated successfully.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
-            <response code="401">If the request is unauthenticated (login first) or the requested market item does not belong to the authenticated user.</response>
-            <response code="404">If the market item cannot be found.</response>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetDonators">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostDemanded(System.Int32,System.Int32)">
             <summary>
-            List all users who have donated
+            List items, sorted by highest number of sales in the last 24hrs
+            </summary>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostSaturated(System.Int32,System.Int32)">
+            <summary>
+            List items, sorted by highest supply
+            </summary>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsAllTimeHigh(System.Int32,System.Int32)">
+            <summary>
+            List items currently at their all-time highest value, sorted by highest value
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsAllTimeLow(System.Int32,System.Int32)">
+            <summary>
+            List items current at their all-time lowest value, sorted by lowest value
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsProfitableFlips(System.Int32,System.Int32)">
+            <summary>
+            List items with largest gap between buy now and buy asking price, sorted by highest potential profit
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostExpensive(System.Int32,System.Int32)">
+            <summary>
+            List items, sorted by highest value
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostSales(System.Int32,System.Int32)">
+            <summary>
+            List items, sorted by highest number of sales
+            </summary>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsLargestCollections(System.Int32,System.Int32)">
+            <summary>
+            List items, grouped by collection name, sorted by highest item count
+            </summary>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsCheapestResourceCosts(System.Int32,System.Int32)">
+            <summary>
+            List crafting resources/items, sorted by lowest cost
+            </summary>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsCheapestCraftingCosts(System.Int32,System.Int32)">
+            <summary>
+            List craftable containers/items, sorted by lowest cost
+            </summary>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesLargestCreators(System.Int32,System.Int32)">
+            <summary>
+            List profiles with accepted workshop items, sorted by highest number of items
+            </summary>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesDonators">
+            <summary>
+            List profiles who have the donator role, sorted by highest contribution
             </summary>
             <returns>The list of users who have donated</returns>
             <response code="200">The list of users who have donated.</response>
@@ -431,6 +391,33 @@
             <response code="200">The store details.</response>
             <response code="400">If the store date is invalid or cannot be parsed as a date time.</response>
             <response code="404">If the store cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStoreItemSalesStats(System.Guid)">
+            <summary>
+            Get store item sales chart data
+            </summary>
+            <param name="storeId">Store GUID to load item sales for.</param>
+            <remarks>Item sales data is only available for items that have an associated workshop item.</remarks>
+            <returns>The item sales chart data</returns>
+            <response code="200">The item sales chart data.</response>
+            <response code="400">If the store id is invalid.</response>
+            <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStoreItemRevenueStats(System.Guid)">
+            <summary>
+            Get store item revenue chart data
+            </summary>
+            <param name="storeId">Store GUID to load item revenue for.</param>
+            <remarks>
+            Item revenue data is only available for items that have an associated workshop item.
+            The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <returns>The item revenue chart data</returns>
+            <response code="200">The item revenue chart data.</response>
+            <response code="400">If the store id is invalid.</response>
+            <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStoreNextUpdateTime">

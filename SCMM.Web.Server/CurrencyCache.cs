@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models.Domain.Currencies;
+using SCMM.Web.Data.Models.UI.Currency;
 using System.Linq;
 
 namespace SCMM.Web.Server

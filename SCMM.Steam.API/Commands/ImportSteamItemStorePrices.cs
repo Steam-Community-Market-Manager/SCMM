@@ -89,8 +89,8 @@ namespace SCMM.Steam.API.Commands
                 if (storeItem.Price == null && !String.IsNullOrEmpty(itemPriceText))
                 {
                     var possibleCurrencies = currencies
-                        .Where(x => 
-                            (!String.IsNullOrEmpty(x.PrefixText) && itemPriceText.Contains(x.PrefixText)) || 
+                        .Where(x =>
+                            (!String.IsNullOrEmpty(x.PrefixText) && itemPriceText.Contains(x.PrefixText)) ||
                             (!String.IsNullOrEmpty(x.SuffixText) && itemPriceText.Contains(x.SuffixText))
                         )
                         .OrderBy(x => Int32.Parse(x.SteamId));
@@ -105,9 +105,9 @@ namespace SCMM.Steam.API.Commands
                         storeItem.Prices[itemPriceCurrency.Name] = itemPrice;
                         //foreach (var currency in currencies)
                         //{
-                            // Calculate exchange at date
-                            // Round to nearest $0.05 and subtract $0.01
-                            //storeItem.Prices[currency.Name] = currency.CalculateExchange(itemPrice, itemPriceCurrency);
+                        // Calculate exchange at date
+                        // Round to nearest $0.05 and subtract $0.01
+                        //storeItem.Prices[currency.Name] = currency.CalculateExchange(itemPrice, itemPriceCurrency);
                         //}
                     }
                 }

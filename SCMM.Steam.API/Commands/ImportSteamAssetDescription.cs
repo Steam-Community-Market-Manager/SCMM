@@ -159,8 +159,8 @@ namespace SCMM.Steam.API.Commands
 
             // Get item description text from asset class (if available)
             var itemDescription = assetClass.Descriptions?
-                .Where(x => 
-                    String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) || 
+                .Where(x =>
+                    String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
                     String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
                 )
                 .Select(x => x.Value)

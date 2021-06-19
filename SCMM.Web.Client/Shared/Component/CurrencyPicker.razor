@@ -1,0 +1,47 @@
+﻿@namespace SCMM.Web.Client.Shared.Component
+@inject ILogger<CurrencyPicker> Logger
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject AppState State
+@inject HttpClient Http
+
+@if (State.Currency != null && Currencies != null)
+{
+    <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.Currency.Name" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Dense="true" MaxHeight="500">
+        @foreach (var currency in Currencies)
+        {
+            <MudMenuItem OnClick="@(() => ChangeCurrency(currency))">
+                @currency.Name
+            </MudMenuItem>
+        }
+    </MudMenu>
+}
+
+@code
+{
+    private IList<CurrencyDetailedDTO> Currencies { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Currencies = await Http.GetFromJsonAsync<CurrencyDetailedDTO[]>($"api/currency?detailed=true");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading currencies");
+            Snackbar.Add($"Unable to load currency list. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task ChangeCurrency(CurrencyDetailedDTO currency)
+    {
+        Logger.LogInformation($"Currency was changed to '{currency.Name}'");
+        State.ChangeCurrency(currency);
+        StateHasChanged();
+        
+        await State.WriteToStorageAsync();
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+
+}

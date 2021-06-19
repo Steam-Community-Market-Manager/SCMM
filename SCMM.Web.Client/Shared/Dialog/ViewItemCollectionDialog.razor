@@ -1,9 +1,9 @@
 ﻿@namespace SCMM.Web.Client.Shared.Dialog
-@using SCMM.Steam.Data.Models.Enums
 @using SCMM.Web.Data.Models.UI.Item
 @inject ILogger<ViewItemCollectionDialog> Logger
 @inject ISnackbar Snackbar
 @inject HttpClient Http
+@inject AppState State
 
 <MudDialog>
     <TitleContent>
@@ -23,9 +23,9 @@
                 <div class="collection-description">
                     <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
                         <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
-                        @if(Collection.BuyNowCurrency != null && Collection.BuyNowPrice > 0)
+                        @if(Collection.BuyNowPrice > 0)
                         {
-                            <span>Total cost: <strong>@Collection.BuyNowCurrency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                            <span>Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
                         }
                     </MudText>
                 </div>

@@ -1,7 +1,4 @@
-﻿@using SCMM.Web.Data.Models.Domain.Currencies
-@using SCMM.Web.Data.Models.Domain.InventoryItems
-@using SCMM.Web.Data.Models.UI.ProfileInventory
-@using SCMM.Steam.Data.Models.Enums;
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject ILogger<InventoryInvestmentPanel> Logger
 @inject HttpClient Http
 @inject AppState State
@@ -31,11 +28,6 @@ else
             <MudTh Class="mud-primary-text">
                 @*<MudTooltip Text="The price that you paid for the item">*@
                     <MudTableSortLabel SortLabel="BuyPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Purchase Price</MudTableSortLabel>
-                @*</MudTooltip>*@
-            </MudTh>
-            <MudTh Class="mud-primary-text">
-                @*<MudTooltip Text="The price that people are actually buying the item for, which could be lower than the listing price if item price has been inflated by market manipulation, or which could be higher if the item demand has recently surged up">*@
-                    <MudTableSortLabel SortLabel="Description.MarketItem.Last1hrValue" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Current Market Value</MudTableSortLabel>
                 @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
@@ -76,9 +68,9 @@ else
                     case SteamProfileInventoryItemAcquisitionType.Store: 
                     {
                         <i class="fas fa-fw fa-shopping-cart mr-1" />
-                        @if (context.Currency != null && context.BuyPrice != null)
+                        @if (context.BuyCurrency != null && context.BuyPrice != null)
                         {
-                            @context.Currency.ToPriceString(context.BuyPrice.Value)
+                            @context.BuyCurrency.ToPriceString(context.BuyPrice.Value)
                         }
                         else
                         {
@@ -89,9 +81,9 @@ else
                     case SteamProfileInventoryItemAcquisitionType.Marketplace: 
                     {
                         <i class="fas fa-fw fa-search-dollar mr-1" />
-                        @if (context.Currency != null && context.BuyPrice != null)
+                        @if (context.BuyCurrency != null && context.BuyPrice != null)
                         {
-                            @context.Currency.ToPriceString(context.BuyPrice.Value)
+                            @context.BuyCurrency.ToPriceString(context.BuyPrice.Value)
                         }
                         else
                         {
@@ -102,9 +94,9 @@ else
                     case SteamProfileInventoryItemAcquisitionType.Trade: 
                     {
                         <i class="fa fa-fw fa-exchange-alt mr-1" />
-                        @if (context.Currency != null && context.BuyPrice != null)
+                        @if (context.BuyCurrency != null && context.BuyPrice != null)
                         {
-                            @context.Currency.ToPriceString(context.BuyPrice.Value)
+                            @context.BuyCurrency.ToPriceString(context.BuyPrice.Value)
                         }
                         else
                         {
@@ -132,9 +124,9 @@ else
                     }
                     default:
                     {
-                        @if (context.Currency != null && context.BuyPrice != null)
+                        @if (context.BuyCurrency != null && context.BuyPrice != null)
                         {
-                            @context.Currency.ToPriceString(context.BuyPrice.Value)
+                            @context.BuyCurrency.ToPriceString(context.BuyPrice.Value)
                         }
                         else
                         {
@@ -142,16 +134,6 @@ else
                         }
                         break;
                     }
-                }
-            </MudTd>
-            <MudTd>
-                @if (context.Last1hrValue != null)
-                {
-                    @State.Currency.ToPriceString(context.Last1hrValue.Value)
-                }
-                else
-                {
-                    <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
             <MudTd>
@@ -252,16 +234,6 @@ else
                 </div>
             </MudTd>
             <MudTd>
-                @if (context.Last1hrValue != null)
-                {
-                    @State.Currency.ToPriceString(context.Last1hrValue.Value)
-                }
-                else
-                {
-                    <span class="mud-secondary-text">—</span>
-                }
-            </MudTd>
-            <MudTd>
                 @if (context.ResellPrice != null)
                 {
                     @State.Currency.ToPriceString(context.ResellPrice.Value) 
@@ -356,21 +328,21 @@ else
         {
             var useStorePrice = (value == SteamProfileInventoryItemAcquisitionType.Store && item.BuyPriceStore != null);
             item.AcquiredBy = value;
-            item.Currency = (useStorePrice ? State.Currency : item.Currency);
+            item.BuyCurrency = (useStorePrice ? State.Currency : item.BuyCurrency);
             item.BuyPrice = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             item.BuyPriceLocal = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
 
-            Logger.LogInformation($"Updating acquired from for '{item.Id}' (value: '{value}', )");
-            await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
+            Logger.LogInformation($"Updating acquired from for '{item.Guid}' (value: '{value}', )");
+            await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = item.AcquiredBy,
-                CurrencyId = item.Currency.Id,
+                CurrencyId = item.BuyCurrency.Id,
                 BuyPrice = item.BuyPrice
             });
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error updating item acquired by for '{item.Id}' (value: '{value}')");
+            Logger.LogError(ex, $"Error updating item acquired by for '{item.Guid}' (value: '{value}')");
         }
         finally
         {
@@ -385,12 +357,12 @@ else
         {
             try 
             {
-                item.Currency = State.Currency;
+                item.BuyCurrency = State.Currency;
                 item.BuyPrice = buyPrice;
                 item.BuyPriceLocal = buyPrice;
 
-                Logger.LogInformation($"Updating buy price for '{item.Id}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}', currency: '{item.Currency.CultureName}')");
-                await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Id}", new UpdateInventoryItemCommand()
+                Logger.LogInformation($"Updating buy price for '{item.Guid}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
+                await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
                 {
                     CurrencyId = State.Currency.Id,
                     BuyPrice = buyPrice
@@ -398,7 +370,7 @@ else
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"Error updating item buy price for '{item.Id}' (value: '{value}')");
+                Logger.LogError(ex, $"Error updating item buy price for '{item.Guid}' (value: '{value}')");
             }
             finally
             {

@@ -8,7 +8,6 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
-using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
@@ -40,7 +39,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             var user = Context.User;
             var discordId = $"{user.Username}#{user.Discriminator}";
-           
+
             // Load the profile
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Steam.Data.Store;
-using SCMM.Web.Data.Models.Domain.Languages;
+using SCMM.Web.Data.Models.UI.Language;
 using System.Linq;
 
 namespace SCMM.Web.Server

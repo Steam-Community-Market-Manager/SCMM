@@ -1,6 +1,4 @@
-﻿@using SCMM.Web.Client.Shared.Navigation.Menu
-@using SCMM.Web.Data.Models.Domain.InventoryItems
-@using SCMM.Web.Data.Models
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject ILogger<AppNavigationMenu> Logger
 @inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
@@ -13,7 +11,7 @@
     <div class="profile-container">
         <MudAvatar Image="@State.Profile.AvatarLargeUrl" Style="height:64px; width:64px;" />
         <MudText Typo="MudBlazor.Typo.h6">@State.Profile.Name</MudText>
-        <UserFlairs Roles="@State.Profile.Roles" />
+        <RoleBadges Roles="@State.Profile.Roles" />
         <MudIconButton OnClick="NavigateSettings" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-cog" title="Your settings" />
         <MudIconButton OnClick="NavigateSignOut" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-sign-out-alt" title="Sign out" />
     </div>

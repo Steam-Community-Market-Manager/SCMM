@@ -11,8 +11,8 @@
         public const string SteamAssetTagItemType = "itemclass";
         public const string SteamAssetTagWorkshop = "workshop";
 
-        public static readonly string[] SteamIgnoredWorkshopTags = { 
-            "Skin", "Version3" 
+        public static readonly string[] SteamIgnoredWorkshopTags = {
+            "Skin", "Version3"
         };
 
         public const string SteamLoginClaimSteamIdRegex = @"\/openid\/id\/([^\/]*)";

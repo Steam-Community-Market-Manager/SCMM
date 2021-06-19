@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using SCMM.Web.Client.Shared.Storage;
-using SCMM.Web.Data.Models.Domain.Currencies;
-using SCMM.Web.Data.Models.Domain.Languages;
-using SCMM.Web.Data.Models.Domain.Profiles;
+using SCMM.Web.Data.Models.UI.Currency;
+using SCMM.Web.Data.Models.UI.Language;
+using SCMM.Web.Data.Models.UI.Profile;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -40,7 +40,7 @@ namespace SCMM.Web.Client
         public MyProfileDTO Profile { get; set; }
 
         public bool IsAuthenticated => (
-            Profile != null && Profile.Id != Guid.Empty
+            Profile != null && Profile.Guid != Guid.Empty
         );
 
         public bool IsInRole(string role)

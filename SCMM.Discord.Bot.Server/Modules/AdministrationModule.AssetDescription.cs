@@ -101,7 +101,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .Select(x => new
                 {
                     AssetDescription = x,
-                    TimeAccepted = (x.MarketItem != null 
+                    TimeAccepted = (x.MarketItem != null
                         ? x.MarketItem.SalesHistory.Min(x => x.Timestamp) // the earliest date they appeared on the market
                         : x.TimeAccepted // the date we saw them get accepted on the workshop
                     )
@@ -116,7 +116,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     item.AssetDescription.TimeAccepted = item.TimeAccepted;
                 }
             }
-            
+
             await _db.SaveChangesAsync();
             return CommandResult.Success();
         }

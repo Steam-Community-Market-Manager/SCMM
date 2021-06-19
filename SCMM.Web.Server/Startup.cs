@@ -74,13 +74,13 @@ namespace SCMM.Web.Server
                         }
                     };
                 });
-                /* TODO: Get this to work alongside Steam OpenID
-                .AddMicrosoftIdentityWebApp(
-                    openIdConnectScheme: OpenIdConnectDefaults.AuthenticationScheme,
-                    cookieScheme: $"{OpenIdConnectDefaults.AuthenticationScheme}{CookieAuthenticationDefaults.AuthenticationScheme}",
-                    configurationSection: Configuration.GetSection("AzureAd")
-                );
-                */
+            /* TODO: Get this to work alongside Steam OpenID
+            .AddMicrosoftIdentityWebApp(
+                openIdConnectScheme: OpenIdConnectDefaults.AuthenticationScheme,
+                cookieScheme: $"{OpenIdConnectDefaults.AuthenticationScheme}{CookieAuthenticationDefaults.AuthenticationScheme}",
+                configurationSection: Configuration.GetSection("AzureAd")
+            );
+            */
 
             // Authorization
             services.AddAuthorization(options =>

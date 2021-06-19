@@ -35,7 +35,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get a cached image
         /// </summary>
         /// <param name="imageId">Id of a known cached image</param>
-        /// <remarks>Range requests are supported</remarks>
+        /// <remarks>Range requests are supported. If the response contains an "Expires" header, the image will be deleted on the date specified in the header value, afer which, 404 will be returned.</remarks>
         /// <returns>Image data</returns>
         /// <response code="200">If the image is valid, the response body will contain the image data, the <code>Content-Type</code> header will contain the image mime-type, and <code>Expires</code> header will contain the image UTC expiry date (if any).</response>
         /// <response code="404">If the image cannot be found or has expired.</response>

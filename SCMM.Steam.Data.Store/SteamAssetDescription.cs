@@ -135,7 +135,7 @@ namespace SCMM.Steam.Data.Store
 
         public string BuyNowUrl => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyUrl;
 
-        private IEnumerable<Price> GetPrices()
+        public IEnumerable<Price> GetPrices()
         {
             if (StoreItem != null && StoreItem.IsAvailable && StoreItem.Price != null && StoreItem.Currency != null)
             {

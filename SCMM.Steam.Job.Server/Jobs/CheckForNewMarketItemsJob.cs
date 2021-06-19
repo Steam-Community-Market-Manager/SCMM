@@ -12,7 +12,6 @@ using SCMM.Steam.API;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
-using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using System;

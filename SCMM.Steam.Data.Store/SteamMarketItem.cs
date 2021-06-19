@@ -1,5 +1,4 @@
-﻿using SCMM.Steam.Data.Models.Enums;
-using SCMM.Steam.Data.Models.Extensions;
+﻿using SCMM.Steam.Data.Models.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

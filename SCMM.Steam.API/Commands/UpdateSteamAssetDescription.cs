@@ -2,12 +2,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Community.Models;
+using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
+using Steam.Models;
+using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Utilities;
 using System;
 using System.Collections.Generic;
@@ -15,12 +21,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using SCMM.Steam.Data.Models.Community.Requests.Blob;
-using Newtonsoft.Json;
-using Steam.Models.SteamEconomy;
-using Steam.Models;
-using SCMM.Steam.Data.Models.Community.Models;
-using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.API.Commands
 {

@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json;
-using SCMM.Web.Data.Models.Domain.Currencies;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SCMM.Web.Data.Models.UI.Item
 {
-    public class ItemCollectionDTO : ISearchable
+    public class ItemCollectionDTO
     {
         public string Name { get; set; }
 
@@ -12,13 +10,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string AuthorAvatarUrl { get; set; }
 
-        public CurrencyDTO BuyNowCurrency { get; set; }
-
         public long? BuyNowPrice { get; set; }
 
-        public IList<ItemDetailsDTO> Items { get; set; }
-
-        [JsonIgnore]
-        public object[] SearchData => new object[] { AuthorName, Name };
+        public IList<ItemDescriptionWithPriceDTO> Items { get; set; }
     }
 }

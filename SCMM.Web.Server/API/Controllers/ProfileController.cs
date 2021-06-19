@@ -13,13 +13,11 @@ using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models.Enums;
-using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Data.Models.Domain.InventoryItems;
-using SCMM.Web.Data.Models.Domain.Profiles;
 using SCMM.Web.Data.Models.Extensions;
-using SCMM.Web.Data.Models.UI.ProfileInventory;
+using SCMM.Web.Data.Models.UI.Profile;
+using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
 using System;
 using System.Collections.Generic;
@@ -164,7 +162,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{steamId}/summary")]
-        [ProducesResponseType(typeof(ProfileSummaryDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProfileDetailedDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -189,13 +187,11 @@ namespace SCMM.Web.Server.API.Controllers
 
             await _db.SaveChangesAsync();
             return Ok(
-                _mapper.Map<SteamProfile, ProfileSummaryDTO>(
+                _mapper.Map<SteamProfile, ProfileDetailedDTO>(
                     profile, this
                 )
             );
         }
-
-        #region Inventory Items
 
         /// <summary>
         /// Synchronise Steam profile inventory
@@ -335,8 +331,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Market24hrMovement = inventoryTotals.TotalMarket24hrMovement,
                     ResellValue = inventoryTotals.TotalResellValue,
                     ResellTax = inventoryTotals.TotalResellTax,
-                    ResellProfit = inventoryTotals.TotalResellProfit,
-                    Currency = this.Currency()
+                    ResellProfit = inventoryTotals.TotalResellProfit
                 }
             );
         }
@@ -392,7 +387,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{steamId}/inventory/items")]
-        [ProducesResponseType(typeof(IList<ProfileInventoryItemSummaryDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IList<ProfileInventoryItemDescriptionDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryItems([FromRoute] string steamId)
@@ -423,44 +418,26 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description.MarketItem.Currency)
                 .ToListAsync();
 
-            var profileInventoryItemsSummaries = new List<ProfileInventoryItemSummaryDTO>();
+            var profileInventoryItemsSummaries = new List<ProfileInventoryItemDescriptionDTO>();
             foreach (var item in profileInventoryItems)
             {
-                if (!profileInventoryItemsSummaries.Any(x => x.SteamId == item.Description.ClassId.ToString()))
+                if (!profileInventoryItemsSummaries.Any(x => x.Id == item.Description.ClassId))
                 {
-                    var itemSummary = _mapper.Map<SteamAssetDescription, ProfileInventoryItemSummaryDTO>(
+                    var itemSummary = _mapper.Map<SteamAssetDescription, ProfileInventoryItemDescriptionDTO>(
                         item.Description, this
                     );
-
-                    // Calculate the item's value
-                    if (item.Description.MarketItem?.Last1hrValue > 0 && item.Description.MarketItem.Currency != null)
-                    {
-                        itemSummary.Value = this.Currency().CalculateExchange(
-                            item.Description.MarketItem.Last1hrValue, item.Description.MarketItem.Currency
-                        );
-                    }
-                    else if (item.Description.StoreItem?.Prices != null)
-                    {
-                        itemSummary.Value = (long?) item.Description.StoreItem.Prices.FirstOrDefault(x => x.Key == this.Currency().Name).Value;
-                    }
 
                     // Calculate the item's quantity
                     itemSummary.Quantity = profileInventoryItems
                         .Where(x => x.Description.ClassId == item.Description.ClassId)
                         .Sum(x => x.Quantity);
 
-                    // Calculate the item's flags
-                    itemSummary.Flags = profileInventoryItems
-                        .Where(x => x.Description.ClassId == item.Description.ClassId)
-                        .Select(x => x.Flags)
-                        .Aggregate((x, y) => x | y);
-
                     profileInventoryItemsSummaries.Add(itemSummary);
                 }
             }
 
             return Ok(
-                profileInventoryItemsSummaries.OrderByDescending(x => x.Value)
+                profileInventoryItemsSummaries.OrderByDescending(x => x.BuyNowPrice)
             );
         }
 
@@ -530,192 +507,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get profile inventory wishlist information
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-        /// <response code="200">Profile inventory wishlist information.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("{steamId}/inventory/wishlist")]
-        [ProducesResponseType(typeof(IList<ProfileInventoryItemWishDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetInventoryWishlist([FromRoute] string steamId)
-        {
-            if (String.IsNullOrEmpty(steamId))
-            {
-                return BadRequest("Profile id is invalid");
-            }
-
-            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
-            {
-                Id = steamId
-            });
-            if (resolvedId?.Exists != true)
-            {
-                return NotFound("Profile not found");
-            }
-
-            var profileMarketItems = await _db.SteamProfileMarketItems
-                .AsNoTracking()
-                .Where(x => x.ProfileId == resolvedId.ProfileId)
-                .Where(x => x.Flags.HasFlag(SteamProfileMarketItemFlags.WantToBuy))
-                .Include(x => x.App)
-                .Include(x => x.Description.MarketItem)
-                .Include(x => x.Description.MarketItem.Currency)
-                .OrderBy(x => x.Description.Name)
-                .ToListAsync();
-
-            var profileInventoryItemWishes = new List<ProfileInventoryItemWishDTO>();
-            foreach (var profileMarketItem in profileMarketItems)
-            {
-                profileInventoryItemWishes.Add(
-                    _mapper.Map<SteamProfileMarketItem, ProfileInventoryItemWishDTO>(
-                        profileMarketItem, this
-                    )
-                );
-            }
-
-            return Ok(profileInventoryItemWishes);
-        }
-
-        /// <summary>
-        /// Get profile inventory performance information
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-        /// <response code="200">Profile inventory performance information.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the profile cannot be found.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("{steamId}/inventory/performance")]
-        [ProducesResponseType(typeof(ProfileInventoryPerformanceDTO), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetInventoryPerformance([FromRoute] string steamId)
-        {
-            if (String.IsNullOrEmpty(steamId))
-            {
-                return BadRequest("Profile id is invalid");
-            }
-
-            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
-            {
-                Id = steamId
-            });
-            if (resolvedId?.Exists != true)
-            {
-                return NotFound("Profile not found");
-            }
-
-            var currency = this.Currency();
-            var profileInventoryItems = await _db.SteamProfileInventoryItems
-                .AsNoTracking()
-                .Where(x => x.ProfileId == resolvedId.ProfileId)
-                .Where(x => x.Description.MarketItem != null)
-                .Select(x => new
-                {
-                    Quantity = x.Quantity,
-                    BuyPrice = x.BuyPrice,
-                    ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
-                    MarketItemLast1hrValue = x.Description.MarketItem.Last1hrValue,
-                    MarketItemLast24hrValue = x.Description.MarketItem.Last24hrValue,
-                    MarketItemLast48hrValue = x.Description.MarketItem.Last48hrValue,
-                    MarketItemLast72hrValue = x.Description.MarketItem.Last72hrValue,
-                    MarketItemLast96hrValue = x.Description.MarketItem.Last96hrValue,
-                    MarketItemLast120hrValue = x.Description.MarketItem.Last120hrValue,
-                    MarketItemLast144hrValue = x.Description.MarketItem.Last144hrValue,
-                    MarketItemLast168hrValue = x.Description.MarketItem.Last168hrValue,
-                    MarketItemExchangeRateMultiplier = (x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : 0)
-                })
-                .ToListAsync();
-
-            var profileInventory = new
-            {
-                Invested = profileInventoryItems
-                    .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0)
-                    .Sum(x => (x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
-                Last1hrValue = profileInventoryItems
-                    .Where(x => x.MarketItemLast1hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast1hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                Last24hrValue = profileInventoryItems
-                    .Where(x => x.MarketItemLast24hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast24hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                Last48hrValue = profileInventoryItems
-                    .Where(x => x.MarketItemLast48hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast48hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                Last72hrValue = profileInventoryItems
-                    .Where(x => x.MarketItemLast72hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast72hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                Last96hrValue = profileInventoryItems
-                    .Where(x => x.MarketItemLast96hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast96hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                Last120hrValue = profileInventoryItems
-                    .Where(x => x.MarketItemLast120hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast120hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                Last144hrValue = profileInventoryItems
-                    .Where(x => x.MarketItemLast144hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast144hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity),
-                Last168hrValue = profileInventoryItems
-                    .Where(x => x.MarketItemLast168hrValue != 0 && x.MarketItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.MarketItemLast168hrValue / x.MarketItemExchangeRateMultiplier) * x.Quantity)
-            };
-
-            var today = DateTimeOffset.UtcNow.Date;
-            var totalInvested = currency.CalculateExchange(profileInventory.Invested ?? 0);
-            var last168hrValue = currency.CalculateExchange(profileInventory.Last168hrValue);
-            var last144hrValue = currency.CalculateExchange(profileInventory.Last144hrValue);
-            var last120hrValue = currency.CalculateExchange(profileInventory.Last120hrValue);
-            var last96hrValue = currency.CalculateExchange(profileInventory.Last96hrValue);
-            var last72hrValue = currency.CalculateExchange(profileInventory.Last72hrValue);
-            var last48hrValue = currency.CalculateExchange(profileInventory.Last48hrValue);
-            var last24hrValue = currency.CalculateExchange(profileInventory.Last24hrValue);
-            var last1hrValue = currency.CalculateExchange(profileInventory.Last1hrValue);
-
-            var valueHistory = new Dictionary<DateTimeOffset, long>();
-            valueHistory[today.Subtract(TimeSpan.FromDays(7))] = last168hrValue;
-            valueHistory[today.Subtract(TimeSpan.FromDays(6))] = last144hrValue;
-            valueHistory[today.Subtract(TimeSpan.FromDays(5))] = last120hrValue;
-            valueHistory[today.Subtract(TimeSpan.FromDays(4))] = last96hrValue;
-            valueHistory[today.Subtract(TimeSpan.FromDays(3))] = last72hrValue;
-            valueHistory[today.Subtract(TimeSpan.FromDays(2))] = last48hrValue;
-            valueHistory[today.Subtract(TimeSpan.FromDays(1))] = last24hrValue;
-            valueHistory[today.Subtract(TimeSpan.FromDays(0))] = last1hrValue;
-
-            var profitHistory = new Dictionary<DateTimeOffset, long>();
-            profitHistory[today.Subtract(TimeSpan.FromDays(7))] = last168hrValue - last168hrValue.SteamFeeAsInt() - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(6))] = last144hrValue - last144hrValue.SteamFeeAsInt() - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(5))] = last120hrValue - last120hrValue.SteamFeeAsInt() - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(4))] = last96hrValue - last96hrValue.SteamFeeAsInt() - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(3))] = last72hrValue - last72hrValue.SteamFeeAsInt() - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(2))] = last48hrValue - last48hrValue.SteamFeeAsInt() - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(1))] = last24hrValue - last24hrValue.SteamFeeAsInt() - totalInvested;
-            profitHistory[today.Subtract(TimeSpan.FromDays(0))] = last1hrValue - last1hrValue.SteamFeeAsInt() - totalInvested;
-
-            return Ok(
-                new ProfileInventoryPerformanceDTO()
-                {
-                    ValueHistoryGraph = valueHistory.ToDictionary(
-                        x => x.Key.ToString("dd MMM yyyy"),
-                        x => x.Value
-                    ),
-                    ProfitHistoryGraph = profitHistory.ToDictionary(
-                        x => x.Key.ToString("dd MMM yyyy"),
-                        x => x.Value
-                    )
-                }
-            );
-        }
-
-        /// <summary>
         /// Update profile inventory item information
         /// </summary>
         /// <remarks>This API requires authentication</remarks>
@@ -772,11 +563,11 @@ namespace SCMM.Web.Server.API.Controllers
                     case SteamProfileInventoryItemAcquisitionType.Gambling:
                     case SteamProfileInventoryItemAcquisitionType.Gift:
                     case SteamProfileInventoryItemAcquisitionType.Drop:
-                    {
-                        inventoryItem.CurrencyId = null;
-                        inventoryItem.BuyPrice = null;
-                        break;
-                    }
+                        {
+                            inventoryItem.CurrencyId = null;
+                            inventoryItem.BuyPrice = null;
+                            break;
+                        }
                 }
             }
             if (command.CurrencyId != null)
@@ -790,184 +581,6 @@ namespace SCMM.Web.Server.API.Controllers
 
             await _db.SaveChangesAsync();
             return Ok();
-        }
-
-        /// <summary>
-        /// Update the flag value of a profile inventory item
-        /// </summary>
-        /// <remarks>This API requires authentication</remarks>
-        /// <param name="itemOrAssetId">
-        /// Either a profile inventory item identifier, or asset description identifier. 
-        /// If an asset description identifier is specified, all inventory items for that asset description will be updated (bulk update). 
-        /// The item must belong to your (currently authenticated) profile
-        /// </param>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-        /// <param name="flag">Name of a supported item flag. See <see cref="SteamProfileInventoryItemFlags"/></param>
-        /// <param name="value">New value of the item flag</param>
-        /// <response code="200">If the item flag was updated successfully.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="401">If the request is unauthenticated (login first) or the requested inventory item does not belong to the authenticated user.</response>
-        /// <response code="404">If the inventory item cannot be found.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize(AuthorizationPolicies.User)]
-        [HttpPut("{steamId}/inventory/item/{itemOrAssetId}/{flag}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SetInventoryItemFlag([FromRoute] string steamId, [FromRoute] string itemOrAssetId, [FromRoute] string flag, [FromBody] bool value)
-        {
-            SteamProfileInventoryItemFlags flagValue;
-            if (!Enum.TryParse(flag, true, out flagValue))
-            {
-                return BadRequest("Unsupported inventory item flag name");
-            }
-            if (String.IsNullOrEmpty(itemOrAssetId))
-            {
-                return NotFound("Inventory item id is invalid");
-            }
-
-            var profileId = User.Id();
-            var inventoryItems = await _db.SteamProfileInventoryItems
-                .Where(x => x.ProfileId == profileId)
-                .Where(x => x.SteamId == itemOrAssetId || x.Description.ClassId.ToString() == itemOrAssetId)
-                .ToListAsync();
-            if (!(inventoryItems?.Any() == true))
-            {
-                _logger.LogError($"No inventory item found that matches id '{itemOrAssetId}'");
-                return NotFound($"No inventory item found that matches id '{itemOrAssetId}'");
-            }
-
-            foreach (var inventoryItem in inventoryItems)
-            {
-                if (value)
-                {
-                    inventoryItem.Flags |= flagValue;
-                }
-                else
-                {
-                    inventoryItem.Flags &= ~flagValue;
-                }
-            }
-
-            await _db.SaveChangesAsync();
-            return Ok();
-        }
-
-        #endregion
-
-        #region Market Items
-
-        /// <summary>
-        /// Update the flag value of a profile market item
-        /// </summary>
-        /// <remarks>This API requires authentication</remarks>
-        /// <param name="itemOrAssetId">
-        /// Either a profile market item identifier, or asset description identifier. 
-        /// If an asset description identifier is specified, all market items for that asset description will be updated (bulk update). 
-        /// The item must belong to your (currently authenticated) profile
-        /// </param>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
-        /// <param name="flag">Name of a supported item flag. See <see cref="SteamProfileMarketItemFlags"/></param>
-        /// <param name="value">New value of the item flag</param>
-        /// <response code="200">If the item flag was updated successfully.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="401">If the request is unauthenticated (login first) or the requested market item does not belong to the authenticated user.</response>
-        /// <response code="404">If the market item cannot be found.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize(AuthorizationPolicies.User)]
-        [HttpPut("{steamId}/market/item/{itemOrAssetId}/{flag}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SetMarketItemFlag([FromRoute] string steamId, [FromRoute] string itemOrAssetId, [FromRoute] string flag, [FromBody] bool value)
-        {
-            SteamProfileMarketItemFlags flagValue;
-            if (!Enum.TryParse(flag, true, out flagValue))
-            {
-                return BadRequest("Unsupported market item flag name");
-            }
-            if (String.IsNullOrEmpty(itemOrAssetId))
-            {
-                return NotFound("Market item id is invalid");
-            }
-
-            var profileId = User.Id();
-            var marketItems = await _db.SteamProfileMarketItems
-                .Where(x => x.ProfileId == profileId)
-                .Where(x => x.SteamId == itemOrAssetId || x.Description.ClassId.ToString() == itemOrAssetId)
-                .ToListAsync();
-
-            if (!(marketItems?.Any() == true))
-            {
-                var assetDescription = await _db.SteamAssetDescriptions
-                    .Where(x => x.ClassId.ToString() == itemOrAssetId)
-                    .FirstOrDefaultAsync();
-                if (assetDescription == null)
-                {
-                    _logger.LogError($"No market item found that matches id '{itemOrAssetId}'");
-                    return NotFound($"No market item found that matches id '{itemOrAssetId}'");
-                }
-
-                var marketItem = new SteamProfileMarketItem()
-                {
-                    SteamId = assetDescription.NameId?.ToString(),
-                    AppId = assetDescription.AppId,
-                    DescriptionId = assetDescription.Id,
-                    ProfileId = profileId,
-                    Flags = flagValue
-                };
-
-                _db.SteamProfileMarketItems.Add(marketItem);
-            }
-            else
-            {
-                foreach (var marketItem in marketItems)
-                {
-                    if (value)
-                    {
-                        marketItem.Flags |= flagValue;
-                    }
-                    else
-                    {
-                        marketItem.Flags &= ~flagValue;
-                        if (marketItem.Flags == SteamProfileMarketItemFlags.None)
-                        {
-                            _db.SteamProfileMarketItems.Remove(marketItem);
-                        }
-                    }
-                }
-            }
-
-            await _db.SaveChangesAsync();
-            return Ok();
-        }
-
-        #endregion
-
-        /// <summary>
-        /// List all users who have donated
-        /// </summary>
-        /// <returns>The list of users who have donated</returns>
-        /// <response code="200">The list of users who have donated.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("donators")]
-        [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetDonators()
-        {
-            var donators = await _db.SteamProfiles
-                .AsNoTracking()
-                .Where(x => x.DonatorLevel > 0)
-                .OrderByDescending(x => x.DonatorLevel)
-                .Select(x => _mapper.Map<ProfileDTO>(x))
-                .ToListAsync();
-
-            return Ok(donators);
         }
     }
 }

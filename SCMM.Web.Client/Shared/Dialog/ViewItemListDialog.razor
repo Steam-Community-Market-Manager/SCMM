@@ -1,5 +1,4 @@
 ﻿@namespace SCMM.Web.Client.Shared.Dialog
-@using SCMM.Steam.Data.Models.Enums
 @using SCMM.Web.Data.Models.UI.Item
 @inject ILogger<ViewItemListDialog> Logger
 @inject ISnackbar Snackbar
@@ -43,7 +42,7 @@
     [Parameter]
     public ulong HighlightedItemId { get; set; }
 
-    private ItemDetailsDTO[] List { get; set; }
+    private ItemDescriptionWithPriceDTO[] List { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
@@ -54,7 +53,7 @@
 
         try
         {
-            List = await Http.GetFromJsonAsync<ItemDetailsDTO[]>(ListUrl);
+            List = await Http.GetFromJsonAsync<ItemDescriptionWithPriceDTO[]>(ListUrl);
             Dialog.ForceRender();
             StateHasChanged();
 

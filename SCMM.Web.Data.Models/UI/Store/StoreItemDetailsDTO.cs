@@ -1,11 +1,9 @@
-﻿using SCMM.Web.Data.Models.Domain.Currencies;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Store
 {
-    public class StoreItemDetailsDTO : IItemDescription, ISubscribable, ISearchable
+    public class StoreItemDetailsDTO : IItemDescription, ICanBeSubscribed
     {
         public ulong Id { get; set; }
 
@@ -25,11 +23,11 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string AuthorAvatarUrl { get; set; }
 
+        public string Name { get; set; }
+
         public string ItemType { get; set; }
 
         public string ItemCollection { get; set; }
-
-        public string Name { get; set; }
 
         public string BackgroundColour { get; set; }
 
@@ -37,11 +35,9 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string IconUrl { get; set; }
 
-        public CurrencyDTO Currency { get; set; }
-        
         public long? StorePrice { get; set; }
 
-        public int StoreIndex { get; set; }
+        public int? TopSellerIndex { get; set; }
 
         public bool IsStillAvailableFromStore { get; set; }
 
@@ -68,8 +64,5 @@ namespace SCMM.Web.Data.Models.UI.Store
         public bool IsBreakable { get; set; }
 
         public IDictionary<string, uint> BreaksIntoComponents { get; set; }
-
-        [JsonIgnore]
-        public object[] SearchData => new object[] { Id, AuthorName, Name, ItemType };
     }
 }

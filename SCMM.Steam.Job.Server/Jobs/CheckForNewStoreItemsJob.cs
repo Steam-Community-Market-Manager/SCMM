@@ -13,7 +13,6 @@ using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using SteamWebAPI2.Interfaces;

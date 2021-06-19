@@ -51,7 +51,7 @@ namespace SCMM.Web.Client
             });
 
             builder.Services.AddSyncfusionBlazor();
-            
+
             SyncfusionLicenseProvider.RegisterLicense(
                 "NDYwMDE3QDMxMzkyZTMxMmUzMFE5Y1BKKzFrd3FzbG5EbHJOZVJSVThMRUhEQnVXdUZjUzVNOWlKTDIwWE09"
             );

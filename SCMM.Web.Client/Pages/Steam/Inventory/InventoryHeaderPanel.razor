@@ -1,5 +1,4 @@
-﻿@using SCMM.Web.Data.Models.Domain.InventoryItems;
-@using SCMM.Web.Data.Models;
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject AppState State
 
 @if(!State.Is(Profile?.SteamId))
@@ -12,7 +11,7 @@
             }
             else
             {
-                <MudAvatar Image="@Profile.AvatarLargeUrl" />
+                <MudAvatar Image="@Profile.AvatarUrl" />
             }
             <div class="ml-2">
                 @if (Profile == null)
@@ -229,7 +228,7 @@
 @code {
 
     [Parameter]
-    public ProfileSummaryDTO Profile { get; set; }
+    public ProfileDetailedDTO Profile { get; set; }
     
     [Parameter]
     public ProfileInventoryTotalsDTO InventoryTotal { get; set; }

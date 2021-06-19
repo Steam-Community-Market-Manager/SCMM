@@ -1,6 +1,7 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
-@using SCMM.Steam.Data.Models.Enums
+@using SCMM.Web.Data.Models.UI.Item
 @inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
 
 <div class="@($"item {GetDynamicClassNames()} mud-paper")" @onclick="@(() => BuyItem())">
     <div class="item-icon hover-zoom">
@@ -26,7 +27,7 @@
                         break;
                     }
                 }
-                <span>@PurchasableItem.BuyNowCurrency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
+                <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
             </MudText>
         }
         @if (SubscribableItem?.Subscriptions > 0)
@@ -47,9 +48,9 @@
     [Parameter]
     public IItemDescription Item { get; set; }
 
-    private IPurchasable PurchasableItem => (Item as IPurchasable);
+    private ICanBePurchased PurchasableItem => (Item as ICanBePurchased);
     
-    private ISubscribable SubscribableItem => (Item as ISubscribable);
+    private ICanBeSubscribed SubscribableItem => (Item as ICanBeSubscribed);
 
     private string GetDynamicClassNames()
     {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Steam.Data.Models
+﻿namespace SCMM.Steam.Data.Models
 {
     public interface ISteamError
     {

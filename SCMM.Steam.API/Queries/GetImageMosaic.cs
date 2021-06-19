@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CommandQuery;
+﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Shared.Data.Models;

@@ -1,0 +1,22 @@
+﻿@namespace SCMM.Web.Client.Shared.Component
+
+<div class="loading-container" @attributes="AdditionalAttributes">
+    <MudProgressCircular Indeterminate="true" Size="@Size" />
+    <MudText Typo="@Typo" Class="ma-6">@Message</MudText>
+</div>
+
+@code {
+
+    [Parameter]
+    public string Message { set; get; } = "Loading...";
+    
+    [Parameter]
+    public MudBlazor.Size Size { get; set; } = MudBlazor.Size.Medium;
+    
+    [Parameter]
+    public MudBlazor.Typo Typo { get; set; } = MudBlazor.Typo.h6;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+    
+}

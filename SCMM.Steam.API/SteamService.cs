@@ -122,7 +122,7 @@ namespace SCMM.Steam.API
                 AppId = app.Id,
                 Description = assetDescription,
                 Prices = new PersistablePriceDictionary(prices),
-                Price = (long) prices.FirstOrDefault(x => x.Key == currency.Name).Value,
+                Price = (long)prices.FirstOrDefault(x => x.Key == currency.Name).Value,
                 Currency = currency,
                 IsAvailable = true
             });

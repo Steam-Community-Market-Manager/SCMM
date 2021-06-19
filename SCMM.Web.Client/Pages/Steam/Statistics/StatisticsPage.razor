@@ -1,11 +1,7 @@
 ﻿@page "/stats"
 @page "/steam/marketstatistics"
-@using SCMM.Steam.Data.Models
-@using SCMM.Steam.Data.Models.Enums
-@using SCMM.Web.Data.Models
-@using SCMM.Web.Data.Models.Steam
-@using SCMM.Web.Data.Models.UI
-@using SCMM.Web.Data.Models.UI.MarketStatistics
+@using SCMM.Web.Data.Models.UI.Item
+@using SCMM.Web.Data.Models.UI.Statistic
 @inject ILogger<StatisticsPage> Logger
 @inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
@@ -85,7 +81,7 @@
                                             </div>
                                         </td>
                                         <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.MarketAge</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Age</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -122,7 +118,7 @@
                                             </div>
                                         </td>
                                         <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Last24hrSales.ToQuantityString() sold</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Demand.ToQuantityString() sold</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -159,7 +155,7 @@
                                             </div>
                                         </td>
                                         <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyNowPrice)</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -196,7 +192,7 @@
                                             </div>
                                         </td>
                                         <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyNowPrice)</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -240,11 +236,11 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Currency.ToPriceString(item.BuyAskingPrice)</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyAskingPrice)</MudText>
                                         </td>
                                         <td class="text-right">
                                             <MudText Typo="Typo.body2" Color="Color.Success" Class="no-wrap">
-                                                @item.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.FeeMultiplier, 1))))
+                                                @State.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.FeeMultiplier, 1))))
                                             </MudText>
                                         </td>
                                     </tr>
@@ -283,7 +279,7 @@
                                             </div>
                                         </td>
                                         <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Currency.ToPriceString(item.BuyNowPrice)</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyNowPrice)</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -322,7 +318,7 @@
                                         <td class="text-right">
                                             <MudText Typo="Typo.body2" Class="no-wrap">
                                                 <i class="fas fa-fw fa-user"></i>
-                                                <span>@item.Subscriptions.ToQuantityString()</span>
+                                                <span>@item.Total.ToQuantityString()</span>
                                             </MudText>
                                         </td>
                                     </tr>
@@ -490,13 +486,13 @@
                                                 <div>
                                                     @if (item.CraftingCost > item.BuyNowPrice)
                                                     {
-                                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest directly from the market for <strong>@item.Currency.ToPriceString(item.BuyNowPrice)</strong>.</MudText>
-                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">It would cost <span>@item.Currency.ToPriceString(item.CraftingCost)</span> in resources to craft yourself.</MudText>
+                                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest directly from the market for <strong>@State.Currency.ToPriceString(item.BuyNowPrice)</strong>.</MudText>
+                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">It would cost <span>@State.Currency.ToPriceString(item.CraftingCost)</span> in resources to craft yourself.</MudText>
                                                     }
                                                     else
                                                     {
-                                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest if you buy the resources and craft it for a total of <strong>@item.Currency.ToPriceString(item.CraftingCost)</strong>.</MudText>
-                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">It would cost <span>@item.Currency.ToPriceString(item.BuyNowPrice)</span> to buy it from the market.</MudText>
+                                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest if you buy the resources and craft it for a total of <strong>@State.Currency.ToPriceString(item.CraftingCost)</strong>.</MudText>
+                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">It would cost <span>@State.Currency.ToPriceString(item.BuyNowPrice)</span> to buy it from the market.</MudText>
                                                     }
                                                     <MudSimpleTable Dense="true" Hover="true" Elevation="0">
                                                         <tbody>
@@ -513,7 +509,7 @@
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@component.Component.Currency.ToPriceString(component.Component.BuyNowPrice) each</MudText>
+                                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@State.Currency.ToPriceString(component.Component.BuyNowPrice) each</MudText>
                                                                     </td>
                                                                 </tr>
                                                             }
@@ -555,13 +551,13 @@
                                                 <div>
                                                     @if (item.CheapestItem.BuyNowPrice > item.BuyNowPrice)
                                                     {
-                                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest directly from the market for <strong>@item.Currency.ToPriceString(item.BuyNowPrice)</strong>.</MudText>
-                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can also buy <span>@item.CheapestItem.Name</span> for <span>@item.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</span> and break it down using the Rust in-game workshop.</MudText>
+                                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest directly from the market for <strong>@State.Currency.ToPriceString(item.BuyNowPrice)</strong>.</MudText>
+                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can also buy <span>@item.CheapestItem.Name</span> for <span>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</span> and break it down using the Rust in-game workshop.</MudText>
                                                     }
                                                     else
                                                     {
-                                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest if you buy <strong>@item.CheapestItem.Name</strong> for <strong>@item.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</strong> and break it down using the Rust in-game workshop.</MudText>
-                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">It would cost <span>@item.Currency.ToPriceString(item.BuyNowPrice)</span> to buy it from the market.</MudText>
+                                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest if you buy <strong>@item.CheapestItem.Name</strong> for <strong>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</strong> and break it down using the Rust in-game workshop.</MudText>
+                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">It would cost <span>@State.Currency.ToPriceString(item.BuyNowPrice)</span> to buy it from the market.</MudText>
                                                     }
                                                 </div>
                                             </div>
@@ -591,10 +587,10 @@
 
 @code {
 
-    private void ViewItem(ISteamMarketListing item)
+    private void ViewItem(ItemDescriptionDTO item)
     {
         ExternalNavigationManager.NavigateToNewTab(
-            $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}"
+            $"https://steamcommunity.com/market/listings/{item.AppId}/{Uri.EscapeDataString(item.Name)}"
         );
     }
     
@@ -614,17 +610,17 @@
         });
     }
     
-    private string GetItemStyles(ISteamAssetStyles item)
+    private string GetItemStyles(IItemDescription item)
     {
         return $"color: {item.ForegroundColour}";
     }
 
-    protected async ValueTask<ItemsProviderResult<DashboardAssetSalesDTO>> LoadHotRightNow(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadHotRightNow(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSalesDTO>>($"api/market/stat/hotRightNow?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardAssetSalesDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/market/stat/hotRightNow?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -633,12 +629,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardAssetAgeDTO>> LoadMostRecent(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<AssetDescriptionAgeStatisticDTO>> LoadMostRecent(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetAgeDTO>>($"api/market/stat/mostRecent?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardAssetAgeDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<AssetDescriptionAgeStatisticDTO>>($"api/market/stat/mostRecent?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<AssetDescriptionAgeStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -647,12 +643,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardAssetMarketValueDTO>> LoadAllTimeHigh(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadAllTimeHigh(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/stat/allTimeHigh?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardAssetMarketValueDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/market/stat/allTimeHigh?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -661,12 +657,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardAssetMarketValueDTO>> LoadAllTimeLow(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadAllTimeLow(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/stat/allTimeLow?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardAssetMarketValueDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/market/stat/allTimeLow?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -675,12 +671,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardAssetBuyOrderValueDTO>> LoadProfitableFlips(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemBuySellOrderStatisticDTO>> LoadProfitableFlips(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetBuyOrderValueDTO>>($"api/market/stat/profitableFlips?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardAssetBuyOrderValueDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemBuySellOrderStatisticDTO>>($"api/market/stat/profitableFlips?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemBuySellOrderStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -689,12 +685,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardAssetMarketValueDTO>> LoadMostProfitable(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadMostProfitable(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetMarketValueDTO>>($"api/market/stat/mostProfitable?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardAssetMarketValueDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/market/stat/mostProfitable?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -703,12 +699,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardAssetSubscriptionsDTO>> LoadMostPopular(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemSalesStatisticDTO>> LoadMostPopular(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSubscriptionsDTO>>($"api/market/stat/mostPopular?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardAssetSubscriptionsDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSalesStatisticDTO>>($"api/market/stat/mostPopular?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemSalesStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -717,12 +713,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardAssetSupplyDemandDTO>> LoadMostSaturated(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadMostSaturated(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetSupplyDemandDTO>>($"api/market/stat/mostSaturated?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardAssetSupplyDemandDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/market/stat/mostSaturated?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -731,12 +727,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardProfileWorkshopValueDTO>> LoadAcceptedCreators(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ProfileAcceptedItemsStatisticDTO>> LoadAcceptedCreators(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardProfileWorkshopValueDTO>>($"api/market/stat/acceptedCreators?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardProfileWorkshopValueDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ProfileAcceptedItemsStatisticDTO>>($"api/market/stat/acceptedCreators?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ProfileAcceptedItemsStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -759,12 +755,12 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardCraftingResourceCostDTO>> LoadCraftingResources(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemResourceCostStatisticDTO>> LoadCraftingResources(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardCraftingResourceCostDTO>>($"api/market/stat/craftingResources?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardCraftingResourceCostDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemResourceCostStatisticDTO>>($"api/market/stat/craftingResources?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemResourceCostStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
@@ -773,12 +769,12 @@
         }
     }
 
-    protected async ValueTask<ItemsProviderResult<DashboardCraftableContainerCostDTO>> LoadCraftableContainers(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemCraftingCostStatisticDTO>> LoadCraftableContainers(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardCraftableContainerCostDTO>>($"api/market/stat/craftableContainers?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<DashboardCraftableContainerCostDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemCraftingCostStatisticDTO>>($"api/market/stat/craftableContainers?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemCraftingCostStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {

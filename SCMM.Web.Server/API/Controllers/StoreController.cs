@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.API;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Extensions;
@@ -17,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -32,16 +30,13 @@ namespace SCMM.Web.Server.API.Controllers
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        private readonly SteamService _steam;
-
-        public StoreController(ILogger<StoreController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper, SteamService steam)
+        public StoreController(ILogger<StoreController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _mapper = mapper;
-            _steam = steam;
         }
 
         /// <summary>
@@ -175,28 +170,28 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get the next (estimated) item store release date time
+        /// Get store item sales chart data
         /// </summary>
-        /// <remarks>This is an estimate only and the exact time varies from week to week. Sometimes the store can even be late by a day or two.</remarks>
-        /// <returns>The expected store release date/time</returns>
-        /// <response code="200">The expected date/time of the next item store release.</response>
+        /// <param name="storeId">Store GUID to load item sales for.</param>
+        /// <remarks>Item sales data is only available for items that have an associated workshop item.</remarks>
+        /// <returns>The item sales chart data</returns>
+        /// <response code="200">The item sales chart data.</response>
+        /// <response code="400">If the store id is invalid.</response>
+        /// <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("nextUpdateTime")]
-        [ProducesResponseType(typeof(DateTimeOffset?), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetStoreNextUpdateTime()
-        {
-            var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
-            return Ok(nextUpdateTime?.Timestamp);
-        }
-
         [AllowAnonymous]
         [HttpGet("{storeId}/stats/itemSales")]
         [ProducesResponseType(typeof(IEnumerable<StoreChartItemSalesDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid storeId)
         {
+            if (Guid.Empty == storeId)
+            {
+                return BadRequest("Store GUID is invalid");
+            }
+
             var storeItems = await _db.SteamItemStores
                 .AsNoTracking()
                 .Where(x => x.Id == storeId)
@@ -207,6 +202,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Name = x.Item.Description.Name,
                     Subscriptions = x.Item.Description.TotalSubscriptions ?? 0,
+                    TotalSalesMin = x.Item.TotalSalesMin ?? 0,
                     KnownInventoryDuplicates = x.Item.Description.InventoryItems
                         .GroupBy(y => y.ProfileId)
                         .Where(y => y.Count() > 1)
@@ -216,25 +212,48 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderBy(x => (x.Subscriptions + x.KnownInventoryDuplicates))
                 .ToListAsync();
 
+            if (storeItems?.Any() != true)
+            {
+                return NotFound("Store not found, or doesn't contain any workshop items");
+            }
+
             var storeItemSales = storeItems.Select(
                 x => new StoreChartItemSalesDTO
                 {
                     Name = x.Name,
                     Subscriptions = x.Subscriptions,
                     KnownInventoryDuplicates = x.KnownInventoryDuplicates,
-                    EstimatedOtherDuplicates = 0
+                    EstimatedOtherDuplicates = Math.Max(0, x.TotalSalesMin - x.Subscriptions - x.KnownInventoryDuplicates)
                 }
             );
 
             return Ok(storeItemSales);
         }
 
+        /// <summary>
+        /// Get store item revenue chart data
+        /// </summary>
+        /// <param name="storeId">Store GUID to load item revenue for.</param>
+        /// <remarks>
+        /// Item revenue data is only available for items that have an associated workshop item.
+        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <returns>The item revenue chart data</returns>
+        /// <response code="200">The item revenue chart data.</response>
+        /// <response code="400">If the store id is invalid.</response>
+        /// <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{storeId}/stats/itemRevenue")]
         [ProducesResponseType(typeof(IEnumerable<StoreChartItemRevenueDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid storeId)
         {
+            if (Guid.Empty == storeId)
+            {
+                return BadRequest("Store GUID is invalid");
+            }
+
             var storeItems = await _db.SteamItemStores
                 .AsNoTracking()
                 .Where(x => x.Id == storeId)
@@ -257,6 +276,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderBy(x => (x.Subscriptions + x.KnownInventoryDuplicates) * x.Price)
                 .ToListAsync();
 
+            if (storeItems?.Any() != true)
+            {
+                return NotFound("Store not found, or doesn't contain any workshop items");
+            }
+
             var storeItemRevenue = (
                 from storeItem in storeItems
                 let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * storeItem.Prices[this.Currency().Name])
@@ -274,5 +298,21 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(storeItemRevenue);
         }
 
+        /// <summary>
+        /// Get the next (estimated) item store release date time
+        /// </summary>
+        /// <remarks>This is an estimate only and the exact time varies from week to week. Sometimes the store can even be late by a day or two.</remarks>
+        /// <returns>The expected store release date/time</returns>
+        /// <response code="200">The expected date/time of the next item store release.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("nextUpdateTime")]
+        [ProducesResponseType(typeof(DateTimeOffset?), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStoreNextUpdateTime()
+        {
+            var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+            return Ok(nextUpdateTime?.Timestamp);
+        }
     }
 }

@@ -3,7 +3,6 @@
 @page "/store/{StoreId}"
 @page "/steam/store"
 @using SCMM.Web.Data.Models.UI.Store
-@using SCMM.Web.Data.Models
 @inject ILogger<StorePage> Logger
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -221,12 +220,12 @@ else if (StoreList.Any())
                                             }
                                         </MudItem>
                                     
-                                        @if (item.StorePrice > 0 && item.Currency != null)
+                                        @if (item.StorePrice > 0)
                                         {
                                             <MudItem xs="5" Class="text-centered">
                                                 <div class="d-flex flex-row justify-center align-center">
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableFromStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Class="@($"no-wrap {(item.IsStillAvailableFromStore ? null : "text-line-through")}")">
-                                                        <span>@item.Currency.ToPriceString(item.StorePrice.Value)</span>
+                                                        <span>@State.Currency.ToPriceString(item.StorePrice.Value)</span>
                                                     </MudText>
                                                 </div>
                                             </MudItem>
@@ -244,7 +243,7 @@ else if (StoreList.Any())
                                             <MudItem xs="5" Class="text-centered">
                                                 <div class="d-flex flex-column justify-center align-center">
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">
-                                                        <span>@item.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
+                                                        <span>@State.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
                                                     </MudText>
                                                     @if (item.MarketPrice > 0 && item.StorePrice > 0)
                                                     {

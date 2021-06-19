@@ -1,0 +1,18 @@
+﻿@namespace SCMM.Web.Client.Shared.Navigation
+
+<MudNavMenu @attributes="AdditionalAttributes">
+    @foreach(var item in Items)
+    {
+        <NavigationMenuItem Item="item" />
+    }
+</MudNavMenu>
+
+@code 
+{
+    [Parameter]
+    public IEnumerable<INavigationMenuItem> Items { set; get; } = Enumerable.Empty<INavigationMenuItem>();
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+
+}

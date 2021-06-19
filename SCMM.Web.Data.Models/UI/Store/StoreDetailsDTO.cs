@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Store
 {
-    public class StoreDetailsDTO : ISearchable
+    public class StoreDetailsDTO
     {
         public Guid Guid { get; set; }
 
@@ -19,8 +18,5 @@ namespace SCMM.Web.Data.Models.UI.Store
         public IList<StoreItemDetailsDTO> Items { get; set; }
 
         public IList<string> Media { get; set; }
-
-        [JsonIgnore]
-        public object[] SearchData => new object[] { Id, Name };
     }
 }

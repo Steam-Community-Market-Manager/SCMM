@@ -1,7 +1,5 @@
-﻿@using SCMM.Web.Data.Models.Domain.InventoryItems
-@using SCMM.Web.Data.Models.UI.ProfileInventory
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject ILogger<InventorySummaryPanel> Logger
-@inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
 @inject AppState State
 
@@ -23,7 +21,7 @@ else if (!InventoryItems.Any())
 else 
 {
     <div class="d-flex flex-wrap flex-row align-start justify-start">
-        @foreach (var item in FilteredItems(InventoryItems))
+        @foreach (var item in InventoryItems)
         {
             @if (item.Quantity > 1)
             {
@@ -49,7 +47,7 @@ else
 
     public bool HideFree { get; set; }
     
-    private IList<ProfileInventoryItemSummaryDTO> InventoryItems { get; set; }
+    private IList<ProfileInventoryItemDescriptionDTO> InventoryItems { get; set; }
     
     private Exception LoadingError { get; set; }
     
@@ -63,7 +61,7 @@ else
         try
         {
             Logger.LogInformation("Fetching inventory summary...");
-            InventoryItems = await Http.GetFromJsonAsync<IList<ProfileInventoryItemSummaryDTO>>(
+            InventoryItems = await Http.GetFromJsonAsync<IList<ProfileInventoryItemDescriptionDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/items"
             );
         }
@@ -78,25 +76,6 @@ else
         {
             StateHasChanged();
         }
-    }
-    
-    private void ViewItem(InventoryInvestmentItemDTO item)
-    {
-        string url = $"https://steamcommunity.com/market/listings/{item.SteamAppId}/{Uri.EscapeDataString(item.Name)}";
-        ExternalNavigationManager.NavigateTo(url);
-    }
-    
-    private IEnumerable<T> FilteredItems<T>(IEnumerable<T> items)
-        where T : ISearchable
-    {
-        if (String.IsNullOrEmpty(Filter))
-        {
-            return items;
-        }
-
-        return items.Where(x => 
-            x.SearchData.Any(y => y?.ToString()?.Contains(Filter, StringComparison.CurrentCultureIgnoreCase) == true)
-        );
     }
     
 }
