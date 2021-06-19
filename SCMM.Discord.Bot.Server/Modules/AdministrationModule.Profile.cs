@@ -9,7 +9,7 @@ namespace SCMM.Discord.Bot.Server.Modules
     public partial class AdministrationModule
     {
         [Command("donator")]
-        public async Task<RuntimeResult> UpdateDonatorAsync(string steamId, [Remainder] int donatorLevel)
+        public async Task<RuntimeResult> UpdateDonatorAsync(string steamId, [Remainder] int? donatorLevel)
         {
             var profile = await _db.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
@@ -17,13 +17,19 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             if (profile != null)
             {
-                profile.DonatorLevel = donatorLevel;
-                await _db.SaveChangesAsync();
-                return CommandResult.Success();
+                if (donatorLevel != null)
+                {
+                    profile.DonatorLevel = donatorLevel.Value;
+                    await _db.SaveChangesAsync();
+                }
+
+                return CommandResult.Success(
+                    $"Donator level is {profile.DonatorLevel}"
+                );
             }
             else
             {
-                return CommandResult.Fail("Unable to find a profile for the SteamID");
+                return CommandResult.Fail("Unable to find a profile");
             }
         }
     }
