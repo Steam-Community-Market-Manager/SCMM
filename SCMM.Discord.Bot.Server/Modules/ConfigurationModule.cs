@@ -14,6 +14,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 {
     [Group("configuration")]
     [Alias("config", "cfg")]
+    [RequireContext(ContextType.Guild)]
     public class ConfigurationModule : ModuleBase<SocketCommandContext>
     {
         private readonly SteamDbContext _db;
