@@ -151,7 +151,7 @@
 @if (InventoryTotal == null || InventoryTotal?.TotalInvested > 0)
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
-        <MudTooltip Text="The total amount of profit/loss for this inventory. Calculated by subtracting the cost of purchasing all items (where purhcase price is known) and the sellers fees iccured by the Steam Community Market (assuming the items will be cashed-out at some point)">
+        <MudTooltip Text="The total amount of profit/loss for this inventory. Calculated by subtracting the cost of purchasing all items (where purchase price is known) and the sellers fees incurred by the Steam Community Market (assuming the items will be cashed-out at some point)">
             <div class="d-flex flex-row justify-start align-center">
                 <MudAvatar Class="@(InventoryTotal?.TotalResellProfit < 0 ? "mud-error" : "mud-success")">
                     @if (InventoryTotal == null)
