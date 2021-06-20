@@ -47,3 +47,7 @@
 .mud-link:hover {
     cursor: pointer;
 }
+
+.mud-scroll-to-top.hidden {
+    transform: scale(0) !important;
+}
