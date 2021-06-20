@@ -7,21 +7,7 @@ namespace SCMM.Shared.Data.Models.Extensions
     {
         public static string GetDaySuffix(this DateTimeOffset dateTime)
         {
-            switch (dateTime.Day)
-            {
-                case 1:
-                case 21:
-                case 31:
-                    return "st";
-                case 2:
-                case 22:
-                    return "nd";
-                case 3:
-                case 23:
-                    return "rd";
-                default:
-                    return "th";
-            }
+            return dateTime.Day.GetPositionSuffix();
         }
 
         public static string ToDurationString(this TimeSpan timeSpan, bool showYears = true, bool showMonths = true, bool showWeeks = true,

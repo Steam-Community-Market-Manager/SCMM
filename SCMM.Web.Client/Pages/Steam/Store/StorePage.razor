@@ -77,6 +77,21 @@ else if (StoreList.Any())
                                             </div>
                                         }
                                     </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        @if (item.IsStillAvailableFromStore && item.TopSellerIndex != null)
+                                        {
+                                            <div class="pa-1 text-centered">
+                                                <MudTooltip Text="@($"This item is currently {(item.TopSellerIndex.Value + 1)}{(item.TopSellerIndex.Value + 1).GetPositionSuffix()} on the store top-sellers list")">
+                                                    <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
+                                                        <i class="fas fa-fw fa-trophy"/>
+                                                    </MudText>
+                                                    <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
+                                                        <span>@(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix())</span>
+                                                    </MudText>
+                                                </MudTooltip>
+                                            </div>
+                                        }
+                                    </CardHeaderActions>
                                 </MudCardHeader>
                                 <MudCardContent>
                                     <MudGrid Spacing="1">
@@ -442,6 +457,17 @@ else if (StoreList.Any())
         });
     }
     
+    private string GetTopSellerStyles(int? topSellerIndex)
+    {
+        switch(topSellerIndex)
+        {
+            case 0: return "color: gold !important";
+            case 1: return "color: silver !important";
+            case 2: return "color: #cd7f32 !important";
+            default: return null;
+        }
+    }
+
     private string GetStoreTitle(StoreIdentiferDTO store)
     {
         var title = new StringBuilder();
