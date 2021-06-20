@@ -89,7 +89,8 @@ namespace SCMM.Web.Server.API.Controllers
                     x.ItemCollection.Contains(filter) ||
                     x.Tags.Serialised.Contains(filter)
                 )
-                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
+                .OrderByDescending(x => x.TimeAccepted)
+                .ThenByDescending(x => x.TimeCreated);
 
             // TODO: Sorting...
 

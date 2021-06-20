@@ -64,6 +64,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => new
                 {
                     Date = x.Key,
+                    // TODO: Snapshot these for faster querying
                     Sales = x.Sum(y => y.Quantity),
                     Revenue = x.Sum(y => y.Quantity * y.Price)
                 });
@@ -209,6 +210,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .Where(x => (x.BuyNowPrice - x.AllTimeHighestValue) >= 0)
+                .Where(x => x.Supply > 0)
                 .OrderBy(x => Math.Abs(x.BuyNowPrice - x.AllTimeHighestValue))
                 .ThenByDescending(x => x.BuyNowPrice - x.Last24hrValue);
 
@@ -250,6 +252,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .Where(x => (x.BuyNowPrice - x.AllTimeLowestValue) <= 0)
+                .Where(x => x.Supply > 0)
                 .OrderBy(x => Math.Abs(x.BuyNowPrice - x.AllTimeLowestValue))
                 .ThenBy(x => x.BuyNowPrice - x.Last24hrValue);
 
@@ -295,7 +298,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.BuyAskingPrice > x.AllTimeLowestValue)
                 .Where(x => x.BuyNowPrice > x.Last24hrValue)
                 .Where(x => x.BuyNowPrice < x.AllTimeHighestValue)
-                .Where(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * EconomyExtensions.FeeMultiplier)) > 0)
+                .Where(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * EconomyExtensions.FeeMultiplier)) > 300) // more than $3 profit
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .OrderByDescending(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * EconomyExtensions.FeeMultiplier)));
 
@@ -373,13 +376,14 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => new
                 {
                     Item = x,
+                    // TODO: Snapshot these for faster querying
                     Subscriptions = (x.TotalSubscriptions ?? 0),
                     TotalSalesMin = (x.StoreItem != null ? x.StoreItem.TotalSalesMin ?? 0 : 0),
-                    KnownInventoryDuplicates = x.InventoryItems
+                    KnownInventoryDuplicates = 0/*x.InventoryItems
                         .GroupBy(y => y.ProfileId)
                         .Where(y => y.Count() > 1)
                         .Select(y => y.Sum(z => z.Quantity))
-                        .Sum(x => x)
+                        .Sum(x => x)*/
                 })
                 .Select(x => new ItemSalesStatisticDTO()
                 {

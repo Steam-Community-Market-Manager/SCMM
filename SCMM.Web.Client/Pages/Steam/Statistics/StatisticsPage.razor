@@ -118,7 +118,7 @@
                                             </div>
                                         </td>
                                         <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Demand.ToQuantityString() sold</MudText>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Demand.ToQuantityString() sold today</MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>
@@ -302,7 +302,7 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Sales" Subtitle="What items have the highest (estimated) number of sales?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Sales" Subtitle="What items have the highest (estimated) number of unique sales?" Dense="true">
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
@@ -317,8 +317,7 @@
                                         </td>
                                         <td class="text-right">
                                             <MudText Typo="Typo.body2" Class="no-wrap">
-                                                <i class="fas fa-fw fa-user"></i>
-                                                <span>@item.Total.ToQuantityString()</span>
+                                                <span>@item.Total.ToQuantityString() or more sold</span>
                                             </MudText>
                                         </td>
                                     </tr>
@@ -369,7 +368,7 @@
                                             <MudText Typo="Typo.body2" Class="no-wrap">
                                                 @if (item.Demand > 0)
                                                 {
-                                                    <span>@item.Demand.ToQuantityString() sold yesterday</span>
+                                                    <span>@item.Demand.ToQuantityString() sold today</span>
                                                 }
                                                 else 
                                                 {

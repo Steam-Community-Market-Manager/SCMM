@@ -55,7 +55,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count=100"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count=300"
             );
         }
         catch (Exception ex)
