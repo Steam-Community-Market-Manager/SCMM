@@ -34,7 +34,7 @@ namespace SCMM.Web.Server
 
                 foreach (var language in languages)
                 {
-                    Cache.Set(language.Name, language, cacheOptions);
+                    Cache.Set(language.Name.Trim().ToUpper(), language, cacheOptions);
                 }
             }
         }
@@ -47,7 +47,7 @@ namespace SCMM.Web.Server
             }
 
             LanguageDetailedDTO value = null;
-            Cache.TryGetValue(name, out value);
+            Cache.TryGetValue(name.Trim().ToUpper(), out value);
             return value;
         }
     }

@@ -18,15 +18,20 @@ namespace SCMM.Web.Server.Extensions
         {
             var languageName = AppState.DefaultLanguage;
 
-            // If the user is authenticated, use their preferred language (if any)
-            if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.Language()))
+            // If the language was specified in the request query, use that
+            if (controller.Request.Query.ContainsKey(AppState.HttpHeaderLanguage))
             {
-                languageName = controller.User.Language();
+                languageName = controller.Request.Query[AppState.HttpHeaderLanguage].ToString();
             }
-            // If the language was specified in the request headers, use that
+            // Else, if the language was specified in the request headers, use that
             else if (controller.Request.Headers.ContainsKey(AppState.HttpHeaderLanguage))
             {
                 languageName = controller.Request.Headers[AppState.HttpHeaderLanguage].ToString();
+            }
+            // Else, if the user is authenticated and has a preferred language, use that
+            else if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.Language()))
+            {
+                languageName = controller.User.Language();
             }
 
             return LanguageCache.GetByName(languageName) ??
@@ -37,15 +42,20 @@ namespace SCMM.Web.Server.Extensions
         {
             var currencyName = AppState.DefaultCurrency;
 
-            // If the user is authenticated, use their preferred currency (if any)
-            if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.Currency()))
+            // If the currency was specified in the request query, use that
+            if (controller.Request.Query.ContainsKey(AppState.HttpHeaderCurrency))
             {
-                currencyName = controller.User.Currency();
+                currencyName = controller.Request.Query[AppState.HttpHeaderCurrency].ToString();
             }
-            // If the currency was specified in the request headers, use that
+            // Else, if the currency was specified in the request headers, use that
             else if (controller.Request.Headers.ContainsKey(AppState.HttpHeaderCurrency))
             {
                 currencyName = controller.Request.Headers[AppState.HttpHeaderCurrency].ToString();
+            }
+            // Else, if the user is authenticated and has a preferred currency, use that
+            else if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.Currency()))
+            {
+                currencyName = controller.User.Currency();
             }
 
             return CurrencyCache.GetByName(currencyName) ??

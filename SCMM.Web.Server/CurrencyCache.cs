@@ -34,7 +34,7 @@ namespace SCMM.Web.Server
 
                 foreach (var currency in currencies)
                 {
-                    Cache.Set(currency.Name, currency, cacheOptions);
+                    Cache.Set(currency.Name.Trim().ToUpper(), currency, cacheOptions);
                 }
             }
         }
@@ -60,7 +60,7 @@ namespace SCMM.Web.Server
             }
 
             CurrencyDetailedDTO value = null;
-            Cache.TryGetValue(name, out value);
+            Cache.TryGetValue(name.Trim().ToUpper(), out value);
             return value;
         }
     }
