@@ -120,13 +120,16 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
 
             // Load the guild
-            var guild = await _db.DiscordGuilds
-                .AsNoTracking()
-                .Include(x => x.Configurations)
-                .FirstOrDefaultAsync(x => x.DiscordId == this.Context.Guild.Id.ToString());
-            if (guild != null && String.IsNullOrEmpty(currencyId))
+            if (Context.Guild != null)
             {
-                currencyId = guild.Get(DiscordConfiguration.Currency).Value;
+                var guild = await _db.DiscordGuilds
+                    .AsNoTracking()
+                    .Include(x => x.Configurations)
+                    .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+                if (guild != null && String.IsNullOrEmpty(currencyId))
+                {
+                    currencyId = guild.Get(DiscordConfiguration.Currency).Value;
+                }
             }
 
             // Load the currency

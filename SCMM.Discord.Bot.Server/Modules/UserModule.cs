@@ -59,27 +59,30 @@ namespace SCMM.Discord.Bot.Server.Modules
             // Set the discord profile
             profile.DiscordId = discordId;
 
-            // Load the discord guild
-            var guild = await _db.DiscordGuilds
-                .AsNoTracking()
-                .Include(x => x.Configurations)
-                .FirstOrDefaultAsync(x => x.DiscordId == this.Context.Guild.Id.ToString());
-
-            // Promote donators from VIP servers to VIP role
-            if (guild?.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.DiscordGuildFlags.VIP) == true)
+            if (Context.Guild != null)
             {
-                var roles = Context.Guild.GetUser(user.Id).Roles;
-                if (roles.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)))
+                // Load the discord guild
+                var guild = await _db.DiscordGuilds
+                    .AsNoTracking()
+                    .Include(x => x.Configurations)
+                    .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+
+                // Promote donators from VIP servers to VIP role
+                if (guild?.Flags.HasFlag(SCMM.Steam.Data.Models.Enums.DiscordGuildFlags.VIP) == true)
                 {
-                    if (String.Equals(profile.DiscordId, discordId, StringComparison.InvariantCultureIgnoreCase))
+                    var roles = Context.Guild.GetUser(user.Id).Roles;
+                    if (roles.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)))
                     {
-                        if (!profile.Roles.Any(x => x == Roles.VIP))
+                        if (String.Equals(profile.DiscordId, discordId, StringComparison.InvariantCultureIgnoreCase))
                         {
-                            profile.Roles.Add(Roles.VIP);
-                            await Context.Message.AddReactionsAsync(new IEmote[]
+                            if (!profile.Roles.Any(x => x == Roles.VIP))
                             {
+                                profile.Roles.Add(Roles.VIP);
+                                await Context.Message.AddReactionsAsync(new IEmote[]
+                                {
                                 Emote.Parse(":regional_indicator_v:"), Emote.Parse(":regional_indicator_i:"), Emote.Parse(":regional_indicator_p:"), new Emoji("🎁") // "VIP gift"
-                            });
+                                });
+                            }
                         }
                     }
                 }
