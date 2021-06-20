@@ -55,7 +55,7 @@ else if (StoreList.Any())
                     <StoreAnalyticsPanel Store="@Store" />
                 </MudItem>
 
-                @foreach (var item in Store.Items.OrderByDescending(x => (x.SalesMinimum ?? 0) * (x.StorePrice ?? 0)))
+                @foreach (var item in Store.Items.OrderBy(x => (x.TopSellerIndex ?? 0)).ThenByDescending(x => (x.SalesMinimum ?? 0) * (x.StorePrice ?? 0)))
                 {
                     <MudItem xs="12" sm="6" md="4" xl="3">
                         <div class="store-item full-height">
@@ -464,7 +464,7 @@ else if (StoreList.Any())
             case 0: return "color: gold !important";
             case 1: return "color: silver !important";
             case 2: return "color: #cd7f32 !important";
-            default: return null;
+            default: return "color: #fff !important";
         }
     }
 
