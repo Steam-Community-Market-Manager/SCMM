@@ -1,68 +1,73 @@
 ﻿
 html {
-  font-size: 14px;
-  position: relative;
-  min-height: 100%;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-  margin-bottom: 60px;
-  background: #101010;
-  color: #fff;
+    margin-bottom: 60px;
+    background: #000;
+    color: #fff;
+}
+
+.bg-dark {
+    background: rgb(51, 51, 51) !important;
 }
 
 a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
 }
 
 .navbar-brand {
-  font-size: 1rem;
+    font-size: 1rem;
 }
 
 .navbar-nav {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 .nav-item {
-  text-align: right;
+    text-align: right;
 }
 
 .border-top {
-  border-top: 1px solid #424242 !important;
+    border-top: 1px solid rgb(51, 51, 51) !important;
 }
+
 .border-bottom {
-  border-bottom: 1px solid #424242 !important;
+    border-bottom: 1px solid rgb(51, 51, 51) !important;
 }
 
 .box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px
 }
 
 .footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 50px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    line-height: 50px;
 }
 
 .dl-horizontal {
-  display: grid;
-  grid-template-rows: auto auto;
-  grid-auto-columns: 1fr;
-  grid-auto-flow: column;
-  margin: 0px;
-  grid-gap: 0px 1.5rem;
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    margin: 0px;
+    grid-gap: 0px 1.5rem;
 }
 
 .dl-horizontal dd {
-  margin-bottom: 0px;
+    margin-bottom: 0px;
 }

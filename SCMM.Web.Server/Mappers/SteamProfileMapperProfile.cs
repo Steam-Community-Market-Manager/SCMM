@@ -5,7 +5,6 @@ using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Server;
 
 namespace SCMM.Web.Server.Mappers
 {
@@ -14,15 +13,14 @@ namespace SCMM.Web.Server.Mappers
         public SteamProfileMapperProfile()
         {
             CreateMap<SteamProfile, MyProfileDTO>()
+                .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
                 .ForMember(x => x.Language, o => o.MapFromLanguage());
             CreateMap<SteamProfile, ProfileDTO>();
-            CreateMap<SteamProfile, ProfileDetailedDTO>();
+            CreateMap<SteamProfile, ProfileDetailedDTO>()
+                .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id));
 
             CreateMap<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>();
-
-            CreateMap<SteamAssetDescription, ProfileInventoryItemDescriptionDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId));
 
             CreateMap<SteamProfileInventoryItem, InventoryInvestmentItemDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))

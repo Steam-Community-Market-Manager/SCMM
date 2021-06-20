@@ -9,7 +9,7 @@
 
     @if (Items == null)
     {
-        <Loading Message="Finding market items..." />
+        <Loading Message="Finding items..." />
     }
     else 
     {
@@ -55,12 +55,12 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/market?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count=100"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count=100"
             );
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing market items");
+            Logger.LogError(ex, $"Error listing items");
         }
         finally
         {

@@ -618,7 +618,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">The list of users who have donated.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("profiles/donators")]
+        [HttpGet("donators")]
         [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfilesDonators()

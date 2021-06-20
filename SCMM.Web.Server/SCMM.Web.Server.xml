@@ -16,10 +16,10 @@
             <summary>
             Get a cached image
             </summary>
-            <param name="imageId">Id of a known cached image</param>
-            <remarks>Range requests are supported. If the response contains an "Expires" header, the image will be deleted on the date specified in the header value, afer which, 404 will be returned.</remarks>
+            <param name="id">Image GUID</param>
+            <remarks>Range requests are supported.</remarks>
             <returns>Image data</returns>
-            <response code="200">If the image is valid, the response body will contain the image data, the <code>Content-Type</code> header will contain the image mime-type, and <code>Expires</code> header will contain the image UTC expiry date (if any).</response>
+            <response code="200">If the image is valid, the response body will contain the image data. The <code>Content-Type</code> header will contain the image mime-type. The <code>Expires</code> header will contain the image UTC expiry date (if any).</response>
             <response code="404">If the image cannot be found or has expired.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
@@ -42,7 +42,7 @@
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItem(System.String)">
             <summary>
-            Get item details
+            Get item information
             </summary>
             <remarks>
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -53,12 +53,12 @@
             <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemByTypeMarketPriceRanked(System.String,System.Nullable{System.UInt64})">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByType(System.String,System.Nullable{System.UInt64})">
             <summary>
-            Get all items of the specific type and rank them by price
+            Get all items of the specified type
             </summary>
-            <param name="itemType">The type of item to rank</param>
-            <param name="compareWithItemId">The id of an item to be included in the list. Used to include an item for comparison against the rest of the list</param>
+            <param name="name">The name of the item type</param>
+            <param name="compareWithItemId">The id of an unrelated item to be included in the list. Helpful when you want to compare an item to the list</param>
             <returns>The items of the specified item type</returns>
             <remarks>
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -72,7 +72,7 @@
             <summary>
             Get all items that belong to the specified collection
             </summary>
-            <param name="collectionName">The name of the item collection</param>
+            <param name="name">The name of the item collection</param>
             <returns>The items belonging to the collection</returns>
             <remarks>
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -117,9 +117,9 @@
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetProfileSummary(System.String)">
             <summary>
-            Get Steam profile information
+            Get profile information
             </summary>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
             <response code="200">Steam profile information.</response>
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="404">If the profile cannot be found or the profile is private.</response>
@@ -129,7 +129,7 @@
             <summary>
             Synchronise Steam profile inventory
             </summary>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
             <param name="force">If true, the inventory will always be fetched from Steam. If false, sync calls to Steam are cached for one hour</param>
             <response code="200">If the inventory was successfully synchronised.</response>
             <response code="400">If the request data is malformed/invalid.</response>
@@ -144,7 +144,7 @@
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             Inventory mosaic images automatically expire after 7 days; After which, the URL will return a 404 response.
             </remarks>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
             <param name="generateInventoryMosaic">If true, a mosaic image of the highest valued items will be generated in the response. If false, the mosaic will be <code>null</code>.</param>
             <param name="mosaicTileSize">The size (in pixel) to render each item within the mosaic image (if enabled)</param>
             <param name="mosaicColumns">The number of item columns to render within the mosaic image (if enabled)</param>
@@ -162,7 +162,7 @@
             <remarks>
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
             <response code="200">Profile inventory item totals.</response>
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
@@ -175,7 +175,7 @@
             <remarks>
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
             <response code="200">Profile inventory item information.</response>
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -188,7 +188,7 @@
             This API requires authentication.
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
             <param name="filter">Optional search filter. Matches against item name or description</param>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data)</param>
@@ -204,7 +204,7 @@
             Update profile inventory item information
             </summary>
             <remarks>This API requires authentication</remarks>
-            <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
             <param name="itemId">
             Inventory item identifier to be updated. 
             The item must belong to your (currently authenticated) profile
@@ -367,7 +367,7 @@
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetCurrentStore">
             <summary>
-            Get the most recent item store instance
+            Get the most recent item store information
             </summary>
             <remarks>
             There may be multiple active item stores, only the most recent is returned.
@@ -380,7 +380,7 @@
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.String)">
             <summary>
-            Get an item store instance
+            Get item store information
             </summary>
             <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
             <returns>The item store details</returns>
@@ -397,7 +397,7 @@
             <summary>
             Get store item sales chart data
             </summary>
-            <param name="storeId">Store GUID to load item sales for.</param>
+            <param name="id">Store GUID to load item sales for.</param>
             <remarks>Item sales data is only available for items that have an associated workshop item.</remarks>
             <returns>The item sales chart data</returns>
             <response code="200">The item sales chart data.</response>
@@ -409,7 +409,7 @@
             <summary>
             Get store item revenue chart data
             </summary>
-            <param name="storeId">Store GUID to load item revenue for.</param>
+            <param name="id">Store GUID to load item revenue for.</param>
             <remarks>
             Item revenue data is only available for items that have an associated workshop item.
             The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').

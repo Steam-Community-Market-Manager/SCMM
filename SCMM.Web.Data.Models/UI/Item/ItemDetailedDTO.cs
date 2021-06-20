@@ -37,15 +37,9 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string IconUrl { get; set; }
 
-        public Guid? IconId { get; set; }
-
         public string IconLargeUrl { get; set; }
 
-        public Guid? IconLargeId { get; set; }
-
         public string ImageUrl { get; set; }
-
-        public Guid? ImageId { get; set; }
 
         public long? CurrentSubscriptions { get; set; }
 

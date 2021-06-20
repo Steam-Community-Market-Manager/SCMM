@@ -2,10 +2,10 @@
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Price;
+using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
 using System.Collections.Generic;
 using System.Linq;
-using SCMM.Web.Server;
 
 namespace SCMM.Web.Server.Mappers
 {
@@ -46,6 +46,12 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId));
 
             CreateMap<SteamAssetDescription, ItemDescriptionWithPriceDTO>()
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
+                .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
+                .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyNowPrice, p => p.BuyNowCurrency))
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions));
+
+            CreateMap<SteamAssetDescription, ProfileInventoryItemDescriptionDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyNowPrice, p => p.BuyNowCurrency))

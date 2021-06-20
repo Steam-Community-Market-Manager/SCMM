@@ -5,9 +5,9 @@ namespace SCMM.Web.Data.Models.UI.Currency
 {
     public class CurrencyDetailedDTO : CurrencyDTO, IExchangeableCurrency
     {
-        public Guid Id { get; set; }
+        public Guid Guid { get; set; }
 
-        public string SteamId { get; set; }
+        public uint Id { get; set; }
 
         public string Name { get; set; }
 

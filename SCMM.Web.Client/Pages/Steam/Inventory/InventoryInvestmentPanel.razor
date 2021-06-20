@@ -336,7 +336,7 @@ else
             await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = item.AcquiredBy,
-                CurrencyId = item.BuyCurrency.Id,
+                CurrencyGuid = item.BuyCurrency.Guid,
                 BuyPrice = item.BuyPrice
             });
         }
@@ -364,7 +364,7 @@ else
                 Logger.LogInformation($"Updating buy price for '{item.Guid}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
                 await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
                 {
-                    CurrencyId = State.Currency.Id,
+                    CurrencyGuid = State.Currency.Guid,
                     BuyPrice = buyPrice
                 });
             }

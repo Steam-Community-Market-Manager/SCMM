@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using SCMM.Shared.Data.Models.Extensions;
+﻿using SCMM.Shared.Data.Models.Extensions;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Store
 {

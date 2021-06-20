@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Language;
-using SCMM.Web.Server;
 
 namespace SCMM.Web.Server.Mappers
 {
@@ -10,8 +9,11 @@ namespace SCMM.Web.Server.Mappers
         public SteamLanguageMapperProfile()
         {
             CreateMap<SteamLanguage, LanguageDTO>();
-            CreateMap<SteamLanguage, LanguageListDTO>();
-            CreateMap<SteamLanguage, LanguageDetailedDTO>();
+            CreateMap<SteamLanguage, LanguageListDTO>()
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.SteamId));
+            CreateMap<SteamLanguage, LanguageDetailedDTO>()
+                .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.SteamId));
         }
     }
 }

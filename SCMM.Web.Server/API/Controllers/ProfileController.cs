@@ -113,7 +113,7 @@ namespace SCMM.Web.Server.API.Controllers
         {
             if (command == null)
             {
-                return BadRequest($"No data was supplied to be updated");
+                return BadRequest($"No data to update");
             }
 
             var profileId = User.Id();
@@ -124,7 +124,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             if (profile == null)
             {
-                return BadRequest($"Profile {profileId} was not found");
+                return BadRequest($"Profile not found");
             }
 
             if (command.DiscordId != null)
@@ -153,30 +153,30 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get Steam profile information
+        /// Get profile information
         /// </summary>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Steam profile information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="404">If the profile cannot be found or the profile is private.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{steamId}/summary")]
+        [HttpGet("{id}/summary")]
         [ProducesResponseType(typeof(ProfileDetailedDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetProfileSummary([FromRoute] string steamId)
+        public async Task<IActionResult> GetProfileSummary([FromRoute] string id)
         {
-            if (String.IsNullOrEmpty(steamId))
+            if (String.IsNullOrEmpty(id))
             {
-                return BadRequest("Profile id is invalid");
+                return BadRequest("ID is invalid");
             }
 
             // Load the profile
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
-                ProfileId = steamId
+                ProfileId = id
             });
 
             var profile = importedProfile?.Profile;
@@ -196,40 +196,40 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Synchronise Steam profile inventory
         /// </summary>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <param name="force">If true, the inventory will always be fetched from Steam. If false, sync calls to Steam are cached for one hour</param>
         /// <response code="200">If the inventory was successfully synchronised.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="404">If the profile cannot be found or is the inventory is private.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpPost("{steamId}/inventory/sync")]
+        [HttpPost("{id}/inventory/sync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> PostInventorySync([FromRoute] string steamId, [FromQuery] bool force = false)
+        public async Task<IActionResult> PostInventorySync([FromRoute] string id, [FromQuery] bool force = false)
         {
-            if (String.IsNullOrEmpty(steamId))
+            if (String.IsNullOrEmpty(id))
             {
-                return BadRequest("Profile id is invalid");
+                return BadRequest("ID is invalid");
             }
 
             // Reload the profile's inventory
             var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
-                ProfileId = steamId,
+                ProfileId = id,
                 Force = force
             });
 
             var profile = importedInventory?.Profile;
             if (profile == null)
             {
-                return NotFound($"Profile with SteamID '{steamId}' was not found");
+                return NotFound($"Profile not found");
             }
             if (profile?.Privacy != SteamVisibilityType.Public)
             {
-                return NotFound($"Profile with SteamID '{steamId}' inventory is private");
+                return NotFound($"Profile inventory is private");
             }
 
             await _db.SaveChangesAsync();
@@ -243,7 +243,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// Inventory mosaic images automatically expire after 7 days; After which, the URL will return a 404 response.
         /// </remarks>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <param name="generateInventoryMosaic">If true, a mosaic image of the highest valued items will be generated in the response. If false, the mosaic will be <code>null</code>.</param>
         /// <param name="mosaicTileSize">The size (in pixel) to render each item within the mosaic image (if enabled)</param>
         /// <param name="mosaicColumns">The number of item columns to render within the mosaic image (if enabled)</param>
@@ -254,22 +254,22 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{steamId}/inventory/value")]
+        [HttpGet("{id}/inventory/value")]
         [ProducesResponseType(typeof(ProfileInventoryValueDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetInventoryValue([FromRoute] string steamId, [FromQuery] bool generateInventoryMosaic = false, [FromQuery] int mosaicTileSize = 128, [FromQuery] int mosaicColumns = 5, [FromQuery] int mosaicRows = 5, [FromQuery] bool force = false)
+        public async Task<IActionResult> GetInventoryValue([FromRoute] string id, [FromQuery] bool generateInventoryMosaic = false, [FromQuery] int mosaicTileSize = 128, [FromQuery] int mosaicColumns = 5, [FromQuery] int mosaicRows = 5, [FromQuery] bool force = false)
         {
-            if (String.IsNullOrEmpty(steamId))
+            if (String.IsNullOrEmpty(id))
             {
-                return BadRequest("Profile id is invalid");
+                return BadRequest("ID is invalid");
             }
 
             // Load the profile
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
             {
-                ProfileId = steamId
+                ProfileId = id
             });
 
             var profile = importedProfile?.Profile;
@@ -295,7 +295,7 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = profile.SteamId,
-                CurrencyId = this.Currency()?.SteamId,
+                CurrencyId = this.Currency().Id.ToString()
             });
             if (inventoryTotals == null)
             {
@@ -342,28 +342,28 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Profile inventory item totals.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{steamId}/inventory/total")]
+        [HttpGet("{id}/inventory/total")]
         [ProducesResponseType(typeof(ProfileInventoryTotalsDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetInventoryTotal([FromRoute] string steamId)
+        public async Task<IActionResult> GetInventoryTotal([FromRoute] string id)
         {
-            if (String.IsNullOrEmpty(steamId))
+            if (String.IsNullOrEmpty(id))
             {
-                return BadRequest("Profile id is invalid");
+                return BadRequest("ID is invalid");
             }
 
             var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
             {
-                ProfileId = steamId,
-                CurrencyId = this.Currency().SteamId
+                ProfileId = id,
+                CurrencyId = this.Currency().Id.ToString()
             });
             if (inventoryTotals == null)
             {
@@ -381,25 +381,25 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Profile inventory item information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{steamId}/inventory/items")]
+        [HttpGet("{id}/inventory/items")]
         [ProducesResponseType(typeof(IList<ProfileInventoryItemDescriptionDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetInventoryItems([FromRoute] string steamId)
+        public async Task<IActionResult> GetInventoryItems([FromRoute] string id)
         {
-            if (String.IsNullOrEmpty(steamId))
+            if (String.IsNullOrEmpty(id))
             {
-                return BadRequest("Profile id is invalid");
+                return BadRequest("ID is invalid");
             }
 
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
-                Id = steamId
+                Id = id
             });
             if (resolvedId?.Exists != true)
             {
@@ -448,7 +448,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// This API requires authentication.
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <param name="filter">Optional search filter. Matches against item name or description</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
@@ -459,21 +459,21 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="401">If the request is unauthenticated (login first) or the requested inventory does not belong to the authenticated user.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(AuthorizationPolicies.User)]
-        [HttpGet("{steamId}/inventory/investment")]
+        [HttpGet("{id}/inventory/investment")]
         [ProducesResponseType(typeof(PaginatedResult<InventoryInvestmentItemDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetInventoryInvestment([FromRoute] string steamId, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending)
+        public async Task<IActionResult> GetInventoryInvestment([FromRoute] string id, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending)
         {
-            if (String.IsNullOrEmpty(steamId))
+            if (String.IsNullOrEmpty(id))
             {
-                return BadRequest("Profile id is invalid");
+                return BadRequest("ID is invalid");
             }
 
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
             {
-                Id = steamId
+                Id = id
             });
             if (resolvedId?.Exists != true || resolvedId.ProfileId == null)
             {
@@ -510,7 +510,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Update profile inventory item information
         /// </summary>
         /// <remarks>This API requires authentication</remarks>
-        /// <param name="steamId">Valid SteamId (int64), ProfileId (string), or Steam profile page URL</param>
+        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <param name="itemId">
         /// Inventory item identifier to be updated. 
         /// The item must belong to your (currently authenticated) profile
@@ -525,33 +525,37 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the inventory item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(AuthorizationPolicies.User)]
-        [HttpPut("{steamId}/inventory/item/{itemId}")]
+        [HttpPut("{id}/inventory/item/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SetInventoryItem([FromRoute] string steamId, [FromRoute] Guid itemId, [FromBody] UpdateInventoryItemCommand command)
+        public async Task<IActionResult> SetInventoryItem([FromRoute] string id, [FromRoute] Guid itemId, [FromBody] UpdateInventoryItemCommand command)
         {
-            if (command == null)
+            if (String.IsNullOrEmpty(id))
             {
-                return BadRequest($"No data was supplied to be updated");
+                return BadRequest("ID is invalid");
             }
             if (itemId == Guid.Empty)
             {
-                return BadRequest("Inventory item id is invalid");
+                return BadRequest("Inventory item GUID is invalid");
+            }
+            if (command == null)
+            {
+                return BadRequest($"No data to update");
             }
 
             var inventoryItem = await _db.SteamProfileInventoryItems.FirstOrDefaultAsync(x => x.Id == itemId);
             if (inventoryItem == null)
             {
-                _logger.LogError($"Inventory item with id '{itemId}' was not found");
-                return NotFound($"Inventory item with id '{itemId}' was not found");
+                _logger.LogError($"Inventory item was not found");
+                return NotFound($"Inventory item  was not found");
             }
             if (!User.Is(inventoryItem.ProfileId) && !User.IsInRole(Roles.Administrator))
             {
-                _logger.LogError($"Inventory item with id '{itemId}' does not belong to you and you do not have permission to modify it");
-                return Unauthorized($"Inventory item with id '{itemId}' does not belong to you and you do not have permission to modify it");
+                _logger.LogError($"Inventory item does not belong to you and you do not have permission to modify it");
+                return Unauthorized($"Inventory item does not belong to you and you do not have permission to modify it");
             }
 
             if (command.AcquiredBy != null)
@@ -570,9 +574,9 @@ namespace SCMM.Web.Server.API.Controllers
                         }
                 }
             }
-            if (command.CurrencyId != null)
+            if (command.CurrencyGuid != null)
             {
-                inventoryItem.CurrencyId = command.CurrencyId;
+                inventoryItem.CurrencyId = command.CurrencyGuid;
             }
             if (command.BuyPrice != null)
             {

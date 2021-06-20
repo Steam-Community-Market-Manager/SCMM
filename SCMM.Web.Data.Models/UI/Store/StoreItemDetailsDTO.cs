@@ -43,9 +43,9 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public long? MarketPrice { get; set; }
 
-        public int MarketPriceRankPosition { get; set; }
+        public int MarketRankIndex { get; set; }
 
-        public int MarketPriceRankTotal { get; set; }
+        public int MarketRankTotal { get; set; }
 
         public long? Subscriptions { get; set; }
 

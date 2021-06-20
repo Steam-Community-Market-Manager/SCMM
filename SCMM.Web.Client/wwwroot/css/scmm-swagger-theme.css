@@ -1,6 +1,6 @@
 ﻿
 body {
-    background: #101010 !important;
+    background: rgb(51, 51, 51) !important;
 }
 select {
     border: none !important;
@@ -16,7 +16,7 @@ select option:hover {
     display:none;
 }
 .swagger-ui .topbar {
-    background-color: #424242;
+    background-color: #000;
 }
 .swagger-ui .info .title {
     color: #fff;
@@ -34,10 +34,16 @@ select option:hover {
     color: rgba(255, 255, 255, 0.7);
 }
 .swagger-ui .opblock .opblock-section-header {
-    background: #424242;
+    background: #000;
 }
 .swagger-ui .opblock .opblock-section-header h4 {
     color: #fff;
+}
+.swagger-ui .opblock-tag .arrow {
+    fill: #fff;
+}
+.swagger-ui .opblock-tag:hover {
+    background: rgba(0,0,0,0.2);
 }
 .swagger-ui .btn {
     border: 2px solid rgb(166, 212, 250);
@@ -90,7 +96,7 @@ select option:hover {
 }
 .swagger-ui section.models .model-container {
     background: rgba(0,0,0,.10);
-    border: 1px solid #424242;
+    border: 1px solid #000;
 }
 .swagger-ui section.models {
     border: 1px solid #fff;

@@ -14,7 +14,7 @@
     <MudGrid Spacing="2">
 
         <MudItem xs="12" xl="12">
-            <StatisticsPanel Icon="fas fa-fw fa-chart-line" Title="Daily Market Sales" Subtitle="How many items are brought and sold on the market each day? How much money is traded each day? Is the market becoming more active, or less active?">
+            <StatisticsPanel Icon="fas fa-fw fa-chart-line" Title="Daily Market Activity" Subtitle="How many items are brought and sold on the market each day? How much money is traded each day? Is the market becoming more active, or less active?">
                 <ChildContent>
                     <style>
                         #MarketSalesPerDay_Series_1_TrendLine_0 {
@@ -36,7 +36,7 @@
                         }
                     </style>
                     <SfChart ID="MarketSalesPerDay" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
-                        <SfDataManager Url="api/market/stat/salesPerDay" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
+                        <SfDataManager Url="api/stats/market/activity" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
                         <ChartArea>
                             <ChartAreaBorder Width="0"></ChartAreaBorder>
                         </ChartArea>
@@ -71,7 +71,7 @@
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadMostRecent" Context="item">
+                            <Virtualize ItemsProvider="LoadItemsMostRecent" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -108,7 +108,7 @@
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadHotRightNow" Context="item">
+                            <Virtualize ItemsProvider="LoadItemsMostDemanded" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -145,7 +145,7 @@
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadAllTimeHigh" Context="item">
+                            <Virtualize ItemsProvider="LoadItemsAllTimeHigh" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -182,7 +182,7 @@
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadAllTimeLow" Context="item">
+                            <Virtualize ItemsProvider="LoadItemsAllTimeLow" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -226,7 +226,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize ItemsProvider="LoadProfitableFlips" Context="item">
+                            <Virtualize ItemsProvider="LoadItemsProfitableFlips" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -269,7 +269,7 @@
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadMostProfitable" Context="item">
+                            <Virtualize ItemsProvider="LoadItemMostExpensive" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -302,11 +302,11 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Popular" Subtitle="What items have the highest number of unique owners (subscribers)?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Sales" Subtitle="What items have the highest (estimated) number of sales?" Dense="true">
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadMostPopular" Context="item">
+                            <Virtualize ItemsProvider="LoadItemMostSales" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -353,7 +353,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize ItemsProvider="LoadMostSaturated" Context="item">
+                            <Virtualize ItemsProvider="LoadItemsMostSaturated" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -399,11 +399,11 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-tshirt" Title="Biggest Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-tshirt" Title="Largest Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadItemCollections" Context="item">
+                            <Virtualize ItemsProvider="LoadItemsLargestCollections" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ShowItemCollectionDialog(item.Name))" class="clickable">
                                         <td>
@@ -436,11 +436,11 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-user" Title="Biggested Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-user" Title="Largest Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadAcceptedCreators" Context="item">
+                            <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -477,7 +477,7 @@
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadCraftableContainers" Context="item">
+                            <Virtualize ItemsProvider="LoadCheapestCraftingCosts" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                         <td>
@@ -498,18 +498,18 @@
                                                         <tbody>
                                                             @foreach(var component in item.CraftingComponents)
                                                             {
-                                                                <tr @onclick="@((_) => ViewItem(component.Component))" class="clickable">
+                                                                <tr @onclick="@((_) => ViewItem(component.Component))" class="clickable table-disable-borders">
                                                                     <td>
                                                                         <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@(component.Quantity)x</MudText>
                                                                     </td>
                                                                     <td>
                                                                         <div class="d-flex flex-row justify-start align-center">
                                                                             <img src="@component.Component.IconUrl" class="mr-1" style="width:24px; height:24px;" />
-                                                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@component.Component.Name</MudText>
+                                                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Default">@component.Component.Name</MudText>
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@State.Currency.ToPriceString(component.Component.BuyNowPrice) each</MudText>
+                                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Default">@State.Currency.ToPriceString(component.Component.BuyNowPrice) each</MudText>
                                                                     </td>
                                                                 </tr>
                                                             }
@@ -542,7 +542,7 @@
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
                         <tbody>
-                            <Virtualize ItemsProvider="LoadCraftingResources" Context="item">
+                            <Virtualize ItemsProvider="LoadItemCheapestResourceCosts" Context="item">
                                 <ItemContent>
                                     <tr @onclick="@((_) => ViewItem(item.CheapestItem.BuyNowPrice > item.BuyNowPrice ? item : item.CheapestItem))" class="clickable">
                                         <td>
@@ -614,172 +614,173 @@
     {
         return $"color: {item.ForegroundColour}";
     }
-
-    protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadHotRightNow(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/market/stat/hotRightNow?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'hot right now' market dashboard");
-            throw;
-        }
-    }
     
-    protected async ValueTask<ItemsProviderResult<AssetDescriptionAgeStatisticDTO>> LoadMostRecent(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<AssetDescriptionAgeStatisticDTO>> LoadItemsMostRecent(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<AssetDescriptionAgeStatisticDTO>>($"api/market/stat/mostRecent?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<AssetDescriptionAgeStatisticDTO>>($"api/stats/items/mostRecent?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<AssetDescriptionAgeStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'most recent' market dashboard");
+            Logger.LogError(ex, $"Error listing 'most recent' item statistics");
             throw;
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadAllTimeHigh(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadItemsMostDemanded(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/market/stat/allTimeHigh?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'all time high' market dashboard");
-            throw;
-        }
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadAllTimeLow(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/market/stat/allTimeLow?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'all time low' market dashboard");
-            throw;
-        }
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemBuySellOrderStatisticDTO>> LoadProfitableFlips(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemBuySellOrderStatisticDTO>>($"api/market/stat/profitableFlips?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemBuySellOrderStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'profitable flips' market dashboard");
-            throw;
-        }
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadMostProfitable(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/market/stat/mostProfitable?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'most profitable' market dashboard");
-            throw;
-        }
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemSalesStatisticDTO>> LoadMostPopular(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSalesStatisticDTO>>($"api/market/stat/mostPopular?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemSalesStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'most popular' market dashboard");
-            throw;
-        }
-    }
-    
-    protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadMostSaturated(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/market/stat/mostSaturated?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/stats/items/mostDemanded?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'most staurated' market dashboard");
+            Logger.LogError(ex, $"Error listing 'most demanded' item statistics");
             throw;
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<ProfileAcceptedItemsStatisticDTO>> LoadAcceptedCreators(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadItemsMostSaturated(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ProfileAcceptedItemsStatisticDTO>>($"api/market/stat/acceptedCreators?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ProfileAcceptedItemsStatisticDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/stats/items/mostSaturated?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'accepted creators' market dashboard");
+            Logger.LogError(ex, $"Error listing 'most staurated' item statistics");
             throw;
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<DashboardAssetCollectionDTO>> LoadItemCollections(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadItemsAllTimeHigh(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetCollectionDTO>>($"api/market/stat/collections?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/allTimeHigh?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'all time high' item statistics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadItemsAllTimeLow(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/allTimeLow?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'all time low' item statistics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ItemBuySellOrderStatisticDTO>> LoadItemsProfitableFlips(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemBuySellOrderStatisticDTO>>($"api/stats/items/profitableFlips?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemBuySellOrderStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'profitable flips' item statistics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ItemValueStatisticDTO>> LoadItemMostExpensive(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/mostExpensive?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'most expensive' item statistics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ItemSalesStatisticDTO>> LoadItemMostSales(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSalesStatisticDTO>>($"api/stats/items/mostSales?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemSalesStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'most sales' item statistics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<DashboardAssetCollectionDTO>> LoadItemsLargestCollections(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetCollectionDTO>>($"api/stats/items/largestCollections?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetCollectionDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'item collections' market dashboard");
+            Logger.LogError(ex, $"Error listing 'largest collections' item statistics");
             throw;
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<ItemResourceCostStatisticDTO>> LoadCraftingResources(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemResourceCostStatisticDTO>> LoadItemCheapestResourceCosts(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemResourceCostStatisticDTO>>($"api/market/stat/craftingResources?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemResourceCostStatisticDTO>>($"api/stats/items/cheapestResourcesCosts?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemResourceCostStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'crafting resources' market dashboard");
+            Logger.LogError(ex, $"Error listing 'cheapest resource costs' item statistics");
             throw;
         }
     }
 
-    protected async ValueTask<ItemsProviderResult<ItemCraftingCostStatisticDTO>> LoadCraftableContainers(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemCraftingCostStatisticDTO>> LoadCheapestCraftingCosts(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemCraftingCostStatisticDTO>>($"api/market/stat/craftableContainers?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemCraftingCostStatisticDTO>>($"api/stats/items/cheapestCraftingCosts?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemCraftingCostStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'craftable containers' market dashboard");
+            Logger.LogError(ex, $"Error listing 'cheapest crafting costs' item statistics");
             throw;
         }
     }
+    
+    protected async ValueTask<ItemsProviderResult<ProfileAcceptedItemsStatisticDTO>> LoadProfilesLargestCreators(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ProfileAcceptedItemsStatisticDTO>>($"api/stats/profiles/largestCreators?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ProfileAcceptedItemsStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'largest creators' profile statistics");
+            throw;
+        }
+    }
+    
 }

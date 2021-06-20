@@ -95,11 +95,11 @@ else if (StoreList.Any())
                                                     <span>This item is not from the Rust workshop, some statistics may be unavailable.</span>
                                                 </MudText>
                                             }
-                                            @if (item.MarketPriceRankTotal > 0)
+                                            @if (item.MarketRankTotal > 0)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-balance-scale-left"></i>
-                                                    <span><MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketPriceRankPosition cheaper @item.ItemType.Pluralise(item.MarketPriceRankPosition)</MudLink> in the marketplace (@item.MarketPriceRankTotal total).</span>
+                                                    <span><MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketRankIndex cheaper @item.ItemType.Pluralise(item.MarketRankTotal)</MudLink> in the marketplace (@item.MarketRankTotal total).</span>
                                                 </MudText>
                                             }
                                             @if (item.SalesMinimum > 0)
@@ -420,7 +420,7 @@ else if (StoreList.Any())
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
             ["ListName"] = item.ItemType,
-            ["ListUrl"] = $"api/item/marketPriceRank/{item.ItemType}?compareWithItemId={item.AssetDescriptionId}",
+            ["ListUrl"] = $"api/item/type/{item.ItemType}?compareWithItemId={item.AssetDescriptionId}",
             ["HighlightedItemId"] = item.AssetDescriptionId,
         });
     }

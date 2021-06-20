@@ -102,7 +102,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get item details
+        /// Get item information
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -113,7 +113,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the request item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("item/{id}")]
+        [HttpGet("{id}")]
         [ProducesResponseType(typeof(ItemDetailedDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -153,10 +153,10 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get all items of the specific type and rank them by price
+        /// Get all items of the specified type
         /// </summary>
-        /// <param name="itemType">The type of item to rank</param>
-        /// <param name="compareWithItemId">The id of an item to be included in the list. Used to include an item for comparison against the rest of the list</param>
+        /// <param name="name">The name of the item type</param>
+        /// <param name="compareWithItemId">The id of an unrelated item to be included in the list. Helpful when you want to compare an item to the list</param>
         /// <returns>The items of the specified item type</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -166,21 +166,21 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the item type name doesn't exist (or doesn't contain any marketable items).</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("type/{itemType}/marketPriceRank")]
+        [HttpGet("type/{name}")]
         [ProducesResponseType(typeof(ItemDescriptionWithPriceDTO[]), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemByTypeMarketPriceRanked([FromRoute] string itemType, ulong? compareWithItemId = null)
+        public async Task<IActionResult> GetItemsByType([FromRoute] string name, ulong? compareWithItemId = null)
         {
-            if (String.IsNullOrEmpty(itemType))
+            if (String.IsNullOrEmpty(name))
             {
                 return BadRequest("Item type name is missing");
             }
 
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x =>
-                    (x.ItemType == itemType && x.IsMarketable && x.MarketItem != null) ||
+                    (x.ItemType == name) ||
                     (compareWithItemId != null && x.ClassId == compareWithItemId)
                 )
                 .Include(x => x.App)
@@ -201,7 +201,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get all items that belong to the specified collection
         /// </summary>
-        /// <param name="collectionName">The name of the item collection</param>
+        /// <param name="name">The name of the item collection</param>
         /// <returns>The items belonging to the collection</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -211,20 +211,20 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the collection name doesn't exist (or doesn't contain any marketable items).</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("collection/{collectionName}")]
+        [HttpGet("collection/{name}")]
         [ProducesResponseType(typeof(ItemCollectionDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsByCollection([FromRoute] string collectionName)
+        public async Task<IActionResult> GetItemsByCollection([FromRoute] string name)
         {
-            if (String.IsNullOrEmpty(collectionName))
+            if (String.IsNullOrEmpty(name))
             {
                 return BadRequest("Collection name is missing");
             }
 
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
-                .Where(x => x.ItemCollection == collectionName)
+                .Where(x => x.ItemCollection == name)
                 .Include(x => x.App)
                 .Include(x => x.Creator)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)

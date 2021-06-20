@@ -126,7 +126,11 @@ namespace SCMM.Web.Server
             services.AddScoped<CurrencyCache>();
 
             // Controllers
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                // TODO: Figure out how to also enable this on client-side
+                //options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             // Views
             services.AddRazorPages(options =>

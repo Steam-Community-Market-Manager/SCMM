@@ -2,7 +2,6 @@
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
-using SCMM.Web.Server;
 
 namespace SCMM.Web.Server.Mappers
 {

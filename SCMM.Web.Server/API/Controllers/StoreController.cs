@@ -64,7 +64,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get the most recent item store instance
+        /// Get the most recent item store information
         /// </summary>
         /// <remarks>
         /// There may be multiple active item stores, only the most recent is returned.
@@ -85,7 +85,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get an item store instance
+        /// Get item store information
         /// </summary>
         /// <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
         /// <returns>The item store details</returns>
@@ -160,8 +160,8 @@ namespace SCMM.Web.Server.API.Controllers
                     var storeItem = storeItems.FirstOrDefault(x => x.Id.ToString() == marketPriceRank.ItemId);
                     if (storeItem != null)
                     {
-                        storeItem.MarketPriceRankPosition = marketPriceRank.Position;
-                        storeItem.MarketPriceRankTotal = marketPriceRank.Total;
+                        storeItem.MarketRankIndex = marketPriceRank.Position;
+                        storeItem.MarketRankTotal = marketPriceRank.Total;
                     }
                 }
             }
@@ -172,7 +172,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get store item sales chart data
         /// </summary>
-        /// <param name="storeId">Store GUID to load item sales for.</param>
+        /// <param name="id">Store GUID to load item sales for.</param>
         /// <remarks>Item sales data is only available for items that have an associated workshop item.</remarks>
         /// <returns>The item sales chart data</returns>
         /// <response code="200">The item sales chart data.</response>
@@ -180,21 +180,21 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{storeId}/stats/itemSales")]
+        [HttpGet("{id}/stats/itemSales")]
         [ProducesResponseType(typeof(IEnumerable<StoreChartItemSalesDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid storeId)
+        public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid id)
         {
-            if (Guid.Empty == storeId)
+            if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
             }
 
             var storeItems = await _db.SteamItemStores
                 .AsNoTracking()
-                .Where(x => x.Id == storeId)
+                .Where(x => x.Id == id)
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
@@ -233,7 +233,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get store item revenue chart data
         /// </summary>
-        /// <param name="storeId">Store GUID to load item revenue for.</param>
+        /// <param name="id">Store GUID to load item revenue for.</param>
         /// <remarks>
         /// Item revenue data is only available for items that have an associated workshop item.
         /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -244,19 +244,19 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{storeId}/stats/itemRevenue")]
+        [HttpGet("{id}/stats/itemRevenue")]
         [ProducesResponseType(typeof(IEnumerable<StoreChartItemRevenueDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid storeId)
+        public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid id)
         {
-            if (Guid.Empty == storeId)
+            if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
             }
 
             var storeItems = await _db.SteamItemStores
                 .AsNoTracking()
-                .Where(x => x.Id == storeId)
+                .Where(x => x.Id == id)
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
@@ -285,7 +285,7 @@ namespace SCMM.Web.Server.API.Controllers
                 from storeItem in storeItems
                 let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * storeItem.Prices[this.Currency().Name])
                 let authorRoyalties = EconomyExtensions.SteamFeeAuthorComponentAsInt(total)
-                let platformFees = EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
+                let platformFees = 0 // TODO: EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
                 select new StoreChartItemRevenueDTO
                 {
                     Name = storeItem.Name,

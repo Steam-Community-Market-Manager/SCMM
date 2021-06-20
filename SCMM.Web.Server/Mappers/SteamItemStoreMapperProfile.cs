@@ -5,7 +5,6 @@ using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Store;
 using SCMM.Web.Server.Extensions;
 using System.Linq;
-using SCMM.Web.Server;
 
 namespace SCMM.Web.Server.Mappers
 {

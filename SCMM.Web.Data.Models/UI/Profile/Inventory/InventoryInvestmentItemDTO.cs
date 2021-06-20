@@ -32,6 +32,9 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
         /// </summary>
         public long? BuyPrice { get; set; }
 
+        // TODO: Remove this, needed for client-side binding
+        public string BuyPriceText { get; set; }
+
         /// <summary>
         /// The buy price, in the callers local currency
         /// </summary>
@@ -41,8 +44,6 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
         /// The original store price, in the callers local currency
         /// </summary>
         public long? BuyPriceStore { get; set; }
-
-        public string BuyPriceText { get; set; }
 
         public int Quantity { get; set; }
 

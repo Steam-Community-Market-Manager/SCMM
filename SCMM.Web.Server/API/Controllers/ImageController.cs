@@ -34,20 +34,20 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get a cached image
         /// </summary>
-        /// <param name="imageId">Id of a known cached image</param>
-        /// <remarks>Range requests are supported. If the response contains an "Expires" header, the image will be deleted on the date specified in the header value, afer which, 404 will be returned.</remarks>
+        /// <param name="id">Image GUID</param>
+        /// <remarks>Range requests are supported.</remarks>
         /// <returns>Image data</returns>
-        /// <response code="200">If the image is valid, the response body will contain the image data, the <code>Content-Type</code> header will contain the image mime-type, and <code>Expires</code> header will contain the image UTC expiry date (if any).</response>
+        /// <response code="200">If the image is valid, the response body will contain the image data. The <code>Content-Type</code> header will contain the image mime-type. The <code>Expires</code> header will contain the image UTC expiry date (if any).</response>
         /// <response code="404">If the image cannot be found or has expired.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{imageId}")]
+        [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetImage(Guid imageId)
+        public async Task<IActionResult> GetImage(Guid id)
         {
-            var image = await _db.ImageData.FindAsync(imageId);
+            var image = await _db.ImageData.FindAsync(id);
             if (image != null && image.Data?.Length > 0)
             {
                 if (image.ExpiresOn != null)
