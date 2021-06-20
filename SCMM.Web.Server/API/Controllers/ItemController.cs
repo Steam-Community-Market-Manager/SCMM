@@ -45,7 +45,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// List all known items
         /// </summary>
         /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item GUID, ID64, name, description, author, type, collection, and tags</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
@@ -105,7 +105,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get item information
         /// </summary>
         /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="id">Item GUID, ID64, or name</param>
         /// <response code="200">The item details.</response>
@@ -159,7 +159,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="compareWithItemId">The id of an unrelated item to be included in the list. Helpful when you want to compare an item to the list</param>
         /// <returns>The items of the specified item type</returns>
         /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <response code="200">The list of item details.</response>
         /// <response code="400">If the item type name is missing.</response>
@@ -204,7 +204,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="name">The name of the item collection</param>
         /// <returns>The items belonging to the collection</returns>
         /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <response code="200">The item collection details.</response>
         /// <response code="400">If the collection name is missing.</response>

@@ -52,7 +52,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <remarks>
         /// The language used for text localisation can be changed by defining the <code>Language</code> header and setting it to a supported language identifier (e.g. 'english').
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <response code="200">If the session is authentication, your Steam profile information is returned. If the session is unauthenticated, a generic guest profile is returned.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -240,7 +240,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get Steam profile inventory and calculate the market value
         /// </summary>
         /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// Inventory mosaic images automatically expire after 7 days; After which, the URL will return a 404 response.
         /// </remarks>
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
@@ -340,7 +340,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get profile inventory item totals
         /// </summary>
         /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Profile inventory item totals.</response>
@@ -379,7 +379,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get profile inventory item information
         /// </summary>
         /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Profile inventory item information.</response>
@@ -446,7 +446,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <remarks>
         /// This API requires authentication.
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <param name="filter">Optional search filter. Matches against item name or description</param>

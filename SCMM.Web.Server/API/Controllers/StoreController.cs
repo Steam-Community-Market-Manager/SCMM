@@ -68,7 +68,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <remarks>
         /// There may be multiple active item stores, only the most recent is returned.
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <returns>The most recent item store</returns>
         /// <response code="200">The most recent item store.</response>
@@ -91,7 +91,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <returns>The item store details</returns>
         /// <remarks>
         /// If there are multiple active stores at the specified date time, only the most recent will be returned.
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <response code="200">The store details.</response>
         /// <response code="400">If the store date is invalid or cannot be parsed as a date time.</response>
@@ -236,7 +236,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="id">Store GUID to load item revenue for.</param>
         /// <remarks>
         /// Item revenue data is only available for items that have an associated workshop item.
-        /// The currency used to represent monetary values can be changed by defining the <code>Currency</code> header and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <returns>The item revenue chart data</returns>
         /// <response code="200">The item revenue chart data.</response>
