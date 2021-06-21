@@ -57,11 +57,11 @@
         var classNames = new List<string>();
         if (PurchasableItem != null)
         {
-            classNames.Add("purchasable");
+            classNames.Add("clickable");
         }
         if (Highlighted)
         {
-            classNames.Add("highlighted");
+            classNames.Add("flash highlighted");
         }
         return String.Join(' ', classNames);
     }

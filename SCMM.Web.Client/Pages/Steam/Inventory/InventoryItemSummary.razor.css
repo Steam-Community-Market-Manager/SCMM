@@ -17,12 +17,3 @@
     width: 5rem;
     height: 5rem;
 }
-
-.hover-zoom img {
-    transition: transform .5s ease;
-}
-
-.hover-zoom:hover img {
-    transform: scale(1.5);
-    filter: drop-shadow(2px 4px 6px black);
-}
