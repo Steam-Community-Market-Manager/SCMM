@@ -23,11 +23,13 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string AuthorAvatarUrl { get; set; }
 
-        public string Name { get; set; }
-
         public string ItemType { get; set; }
 
         public string ItemCollection { get; set; }
+
+        public string Name { get; set; }
+
+        public string Description { get; set; }
 
         public string BackgroundColour { get; set; }
 

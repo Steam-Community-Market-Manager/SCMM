@@ -28,3 +28,7 @@
 .text-line-through {
     text-decoration: line-through
 }
+
+.clickable:hover {
+    cursor: pointer;
+}

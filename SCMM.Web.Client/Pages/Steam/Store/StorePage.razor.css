@@ -7,10 +7,6 @@
     width: 100%;
 }
 
-.store-item .item-image img:hover {
-   cursor: pointer;
-}
-
 .store-item .item-name {
     margin-top: -4px;
 }

@@ -81,13 +81,18 @@ else if (StoreList.Any())
                                         @if (item.IsStillAvailableFromStore && item.TopSellerIndex != null)
                                         {
                                             <div class="pa-1 text-centered">
-                                                <MudTooltip Text="@($"This item is currently {(item.TopSellerIndex.Value + 1)}{(item.TopSellerIndex.Value + 1).GetPositionSuffix()} on the store top-sellers list")">
-                                                    <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
-                                                        <i class="fas fa-fw fa-trophy"/>
-                                                    </MudText>
-                                                    <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
-                                                        <span>@(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix())</span>
-                                                    </MudText>
+                                                <MudTooltip>
+                                                    <ChildContent>
+                                                        <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
+                                                            <i class="fas fa-fw fa-trophy"/>
+                                                        </MudText>
+                                                        <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
+                                                            <span>@(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix())</span>
+                                                        </MudText>
+                                                    </ChildContent>
+                                                    <TooltipContent>
+                                                        <span>This item is currently @(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix()) on the store top-sellers list</span>
+                                                    </TooltipContent>
                                                 </MudTooltip>
                                             </div>
                                         }
@@ -98,8 +103,27 @@ else if (StoreList.Any())
 
                                         <MudItem xs="5">
                                             <div class="item-image">
-                                                <MudTooltip Text="@(item.HasWorkshopFile ? "Click to view workshop page" : null)" Placement="MudBlazor.Placement.Top">
-                                                    <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" />
+                                                <MudTooltip Placement="MudBlazor.Placement.Top">
+                                                    <ChildContent>
+                                                        @if(item.HasWorkshopFile)
+                                                        {
+                                                            <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="clickable" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <img src="@item.IconUrl" />
+                                                        }
+                                                    </ChildContent>
+                                                    <TooltipContent>
+                                                        @if(!String.IsNullOrEmpty(item.Description))
+                                                        {
+                                                            <span>@item.Description</span>
+                                                        }
+                                                        @if(item.HasWorkshopFile)
+                                                        {
+                                                            <p>Click to view the items workshop page.</p>
+                                                        }
+                                                    </TooltipContent>
                                                 </MudTooltip>
                                             </div>
                                         </MudItem>
@@ -114,7 +138,10 @@ else if (StoreList.Any())
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-balance-scale-left"></i>
-                                                    <span><MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketRankIndex cheaper @item.ItemType.Pluralise(item.MarketRankTotal)</MudLink> in the marketplace (@item.MarketRankTotal total).</span>
+                                                    <span>
+                                                        <MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketRankIndex cheaper @item.ItemType.Pluralise(item.MarketRankTotal)</MudLink>
+                                                        <span> in the marketplace (@item.MarketRankTotal total).</span>
+                                                    </span>
                                                 </MudText>
                                             }
                                             @if (item.SalesMinimum > 0)
@@ -124,15 +151,17 @@ else if (StoreList.Any())
                                                     <span>
                                                         @if (item.SalesMaximum == null)
                                                         {
-                                                            <span>More than <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() sold</MudLink></span>
+                                                            <span>More than </span>
+                                                            <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() sold</MudLink>
                                                         }
                                                         else if (item.SalesMinimum == item.SalesMaximum)
                                                         {
-                                                            <span><MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() sold</MudLink></span>
+                                                            <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() sold</MudLink>
                                                         }
                                                         else
                                                         {
-                                                            <span>Between <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink></span>
+                                                            <span>Between </span>
+                                                            <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink>
                                                         }
                                                     </span>
                                                 </MudText>
@@ -152,7 +181,10 @@ else if (StoreList.Any())
                                                 {
                                                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
                                                         <i class="fas fa-fw fa-cubes"></i>
-                                                        <span>Breaks down into <MudLink @onclick="@(() => ShowItemBreakdownDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@(component.Value)x @component.Key</MudLink></span>
+                                                        <span>
+                                                            <span>Breaks down into </span>
+                                                            <MudLink @onclick="@(() => ShowItemBreakdownDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@(component.Value)x @component.Key</MudLink>
+                                                        </span>
                                                     </MudText>
                                                 }
                                             }
@@ -160,7 +192,11 @@ else if (StoreList.Any())
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-paint-roller"></i>
-                                                    <span>Part of the <MudLink @onclick="@(() => ShowItemCollectionDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink> set</span>
+                                                    <span>
+                                                        <span>Part of the </span>
+                                                        <MudLink @onclick="@(() => ShowItemCollectionDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink>
+                                                        <span> set</span>
+                                                    </span>
                                                 </MudText>
                                             }
                                             <div class="my-3">
@@ -192,7 +228,7 @@ else if (StoreList.Any())
                                                 <MudTooltip>
                                                     <ChildContent>
                                                         <MudChip Size="MudBlazor.Size.Small" Text="Marketable" Disabled="@(!item.IsMarketable)"
-                                                                 Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : "fas fa-fw fa-times")" 
+                                                                 Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : ((item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
                                                                  Variant="@(item.IsMarketable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
                                                                  Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
                                                     </ChildContent>
@@ -210,7 +246,15 @@ else if (StoreList.Any())
                                                         }
                                                         else
                                                         {
-                                                            <span>This item <strong>cannot</strong> be listed on the Steam Community Market once purchased</span>
+                                                            @if (item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0)
+                                                            {
+                                                                <span>This item <strong>cannot</strong> currently be listed on the Steam Community Market once purchased, but <strong>probably</strong> will be marketable when the next store is released in about @((Store.Start.AddDays(7) - DateTimeOffset.Now).ToDurationString(showMinutes: false, showSeconds: false, maxGranularity: 2)) from now.</span>
+                                                                <span>This is a common Steam issue with some store items and it generally fixes itself when the store changes. If you have ever noticed that some items are avilable on the market early but others are not, this is the reason why.</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>This item <strong>cannot</strong> be listed on the Steam Community Market once purchased</span>
+                                                            }
                                                         }
                                                     </TooltipContent>
                                                 </MudTooltip>
@@ -218,13 +262,13 @@ else if (StoreList.Any())
                                             @if (item.IsStillAvailableFromStore && item.HasMarketListing)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                                                    <span>This item is also available in the marketplace.</span>
+                                                    <span>This item is also available on the market.</span>
                                                 </MudText>
                                             }
                                             else if (!item.IsStillAvailableFromStore && item.HasMarketListing)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                                                    <span>This item is no longer available from the store, grab it from the marketplace instead.</span>
+                                                    <span>This item is no longer available from the store, grab it from the market instead.</span>
                                                 </MudText>
                                             }
                                             else if (!item.IsStillAvailableFromStore)
@@ -442,10 +486,12 @@ else if (StoreList.Any())
 
     private void ShowItemSalesDialog(StoreItemDetailsDTO item)
     {
+        // TODO: Add a dialog showing item sales breakdown
     }
 
     private void ShowItemBreakdownDialog(StoreItemDetailsDTO item)
     {
+        // TODO: Add a dialog showing item resource breakdown
     }
     
     private void ShowItemCollectionDialog(StoreItemDetailsDTO item)

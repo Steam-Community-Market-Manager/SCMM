@@ -4,10 +4,6 @@
     overflow-y: auto;
 }
 
-.clickable:hover {
-    cursor: pointer;
-}
-
 .table-disable-borders, .table-disable-borders tr, .table-disable-borders td {
     border: none;
 }
