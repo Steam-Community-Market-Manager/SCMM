@@ -7,13 +7,18 @@
 
 <PageContainer Title="Skins">
 
-    @if (Items == null)
-    {
-        <Loading Message="Finding items..." />
-    }
-    else 
-    {
-        <MudGrid Spacing="2">
+    <MudGrid Spacing="2">
+        <MudItem xs="12">
+            <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Type here to find an item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" />
+        </MudItem>
+        @if (Items == null)
+        {
+            <MudItem xs="12">
+                <Loading Message="Finding items..." />
+            </MudItem>
+        }
+        else 
+        {
             @foreach (var item in Items.Items)
             {
                 <MudItem xs="6" sm="4" md="3" lg="2" xl="1">
@@ -22,8 +27,8 @@
                     </MudPaper>
                 </MudItem>
             }
-        </MudGrid>
-    }
+        }
+    </MudGrid>
 
 </PageContainer>
 
@@ -32,30 +37,28 @@
     private PaginatedResult<ItemDescriptionWithPriceDTO> Items { get; set; }
 
     private string Filter { get; set; }
-    
-    [Parameter]
-    public Action<string> OnSearch { get; set; }
 
-    private string SearchText { get; set; }
+    private int Count { get; set; } = 300;
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshItems(Filter);
+        await RefreshItems();
+    }
+    
+    private void OnSearch(string text)
+    {
+        Filter = text;
+        RefreshItems();
     }
 
-    private async Task RefreshItems(string filter = null)
+    private async Task RefreshItems()
     {
         try
         {
-            if (!String.IsNullOrEmpty(filter))
-            {
-                Filter = filter;
-            }
-
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count=300"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count={Count}"
             );
         }
         catch (Exception ex)
