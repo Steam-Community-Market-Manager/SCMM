@@ -113,7 +113,8 @@ namespace SCMM.Discord.Bot.Server.Modules
                         {
                             App = assetDescriptionStoreGroup.FirstOrDefault(x => x.App != null)?.App,
                             Start = storeStart,
-                            End = storeStart.AddDays(7)
+                            End = storeStart.AddDays(7),
+                            IsDraft = true
                         }
                     );
                 }
@@ -127,7 +128,8 @@ namespace SCMM.Discord.Bot.Server.Modules
                         store.Items.Add(new SteamStoreItemItemStore()
                         {
                             Store = store,
-                            Item = assetDescription.StoreItem
+                            Item = assetDescription.StoreItem,
+                            IsDraft = true
                         });
                     }
                 }
