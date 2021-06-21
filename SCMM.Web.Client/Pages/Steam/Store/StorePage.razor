@@ -249,7 +249,7 @@ else if (StoreList.Any())
                                                             @if (item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0)
                                                             {
                                                                 <span>This item <strong>cannot</strong> currently be listed on the Steam Community Market once purchased, but <strong>probably</strong> will be marketable when the next store is released in about @((Store.Start.AddDays(7) - DateTimeOffset.Now).ToDurationString(showMinutes: false, showSeconds: false, maxGranularity: 2)) from now.</span>
-                                                                <span>This is a common Steam issue with some store items and it generally fixes itself when the store changes. If you have ever noticed that some items are avilable on the market early but others are not, this is the reason why.</span>
+                                                                <span>This is a common Steam issue with some store items and it generally fixes itself when the store changes. If you have ever noticed that some items are available on the market early but others are not, this is the reason why.</span>
                                                             }
                                                             else
                                                             {
