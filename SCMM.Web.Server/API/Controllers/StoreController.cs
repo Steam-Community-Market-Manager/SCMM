@@ -283,15 +283,15 @@ namespace SCMM.Web.Server.API.Controllers
 
             var storeItemRevenue = (
                 from storeItem in storeItems
-                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * storeItem.Prices[this.Currency().Name])
+                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(this.Currency().Name) ? storeItem.Prices[this.Currency().Name] : 0))
                 let authorRoyalties = EconomyExtensions.SteamFeeAuthorComponentAsInt(total)
                 let platformFees = 0 // TODO: EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
                 select new StoreChartItemRevenueDTO
                 {
                     Name = storeItem.Name,
-                    AuthorRoyalties = this.Currency().ToPrice(authorRoyalties, storeItem.Currency),
-                    PlatformFees = this.Currency().ToPrice(platformFees, storeItem.Currency),
-                    PublisherRevenue = this.Currency().ToPrice(total - authorRoyalties - platformFees, storeItem.Currency)
+                    AuthorRoyalties = this.Currency().ToPrice(authorRoyalties),
+                    PlatformFees = this.Currency().ToPrice(platformFees),
+                    PublisherRevenue = this.Currency().ToPrice(total - authorRoyalties - platformFees)
                 }
             );
 
