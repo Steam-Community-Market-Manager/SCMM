@@ -6,11 +6,59 @@
         <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Default" GutterBottom>Change History</MudText>
         
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-            <span>v0.12 (26/06/2021)</span>
+            <span>v0.12 (21/06/2021)</span>
         </MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
             <ul>
-                <li>Coming soon...</li>
+                <li>Completely rebuilt the front-end from the ground-up, using more modern and better supported component libraries</li>
+                <li>Refactored UI components to use CSS isolation rather than global styles</li>
+                <li>Refactored Steam asset description models to reduce table joins and duplicated data</li>
+                <li>Split the "about" page in to separate "website" and "change history" pages</li>
+                <li>Added "privacy policy" page</li>
+                <li>Added "terms of service" page</li>
+                <li>Added "scroll top top" button to all pages</li>
+                <li>Added "daily market activity" chart showing market sales and revenue per-day</li>
+                <li>Added "most sales" statistic</li>
+                <li>Added "largest item collections" statistic</li>
+                <li>Added "cheapest craftable container costs" statistic</li>
+                <li>Added "cheapest crafting resource costs" statistic</li>
+                <li>Added Steam data import job statistics to administrative page to better monitor how 'stale' our data is</li>
+                <li>Added support for setting currency and language for all APIs via query string</li>
+                <li>Added support for tagging inventory item acquisition source (e.g. store, market, trade, gift, etc) and automatically using the store price as the purchase price (if available)</li>
+                <li>Added store top-sellers position indicator next to all items</li>
+                <li>Added store item component break-down descriptions</li>
+                <li>Added store item price ranking popup dialog</li>
+                <li>Added store item collection names and a popup dialog showing all items in the collection</li>
+                <li>Added store item price profit/loss indicators (between store and market price, where available)</li>
+                <li>Added store item tradable and marketable status indicators</li>
+                <li>Added store list horizontal scroll buttons</li>
+                <li>Added additional alias to the <code>>config options</code> Discord command</li>
+                <li>Added <code>>currency [currency_id]</code> command to set default currency for a user</li>
+                <li>Added <code>>invite</code> command to provide Discord bot invite link</li>
+                <li>Discord bot now reacts with heart emoji when mentioned in messages</li>
+                <li>Discord bot now reference the original message when replying to commands</li>
+                <li>Store names are now in "month day" format, which is easier to understand than "week x"</li>
+                <li>Store pages are now routable and uses the store start date time as an id</li>
+                <li>Store items can now individually "end" rather only when the entire store changes</li>
+                <li>Inventory investment tab is now only visible to the owner, not the public</li>
+                <li>Improved Steam client error handling when being throttled or session becomes stale, reducing the number of failed import jobs</li>
+                <li>Improved API error handling for all "profile not found" and "inventory is private" scenarios</li>
+                <li>Improved refresh frequency and success rate for Steam market item sales and orders data. The average age of market data has reduced from about 18hrs behind, down to 2hrs behind</li>
+                <li>Improved Steam asset description importing to only fetch data if it is actually missing (rather than fetching all data)</li>
+                <li>Fixed various currency conversion issues with inventory investment price entry</li>
+                <li>Fixed issue where <code>>inv</code> and <code>>steamid</code> Discord commands could not be used in DMs</li>
+                <li>Fixed issue where asset description images/icons would be imported with a fixed expiry and then couldn't be deleted</li>
+                <li>Fixed issue where if a currency is set on your profile, changing the currency on the website has no effect</li>
+                <li>Fixed issue where inventory item profit and RoI% would be calculated incorrectly if the item was purchased in a currency that is different to the current currency</li>
+                <li>Fixed issue where transient user profiles were not being detected correctly when using the Discord bot</li>
+                <li>Fixed issue where new market items would have an empty SteamId and would not fetch new prices</li>
+                <li>Fixed issue where market item sales and orders job would sometimes skip items when checking for new data because it was checking the wrong timestamps</li>
+                <li>Fixed issue where workshop files would somtimes not be detected when importing asset descriptions</li>
+                <li>Fixed issue where Steam login would fail if "SessionId" was missing</li>
+                <li>Fixed issue where importing Steam asset descriptions may fail if the wrokshop</li>
+                <li>Fixed DB concurrency issues when updating multiple Steam asset descriptions at once</li>
+                <li>Fixed store next update time being calculated incorrectly</li>
+                <li>Fixed website authentication policies not being enforced correctly when trying to update inventory item prices</li>
             </ul>
         </MudText>
 
@@ -19,7 +67,24 @@
         </MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
             <ul>
-                <li>Coming soon...</li>
+                <li>Completely rebuilt the back-end from the ground-up, following a more "micro-service" style architecture</li>
+                <li>Added an administrative dashboard for the Discord bot service (for monitoring state, performance, logs)</li>
+                <li>Added an administrative dashboard for the Steam data job service (for monitoring state, performance, logs)</li>
+                <li>Added an administrative dashboard for the Web server service (for monitoring state, performance, logs)</li>
+                <li>Added Azure service bus support to replace internal message queues and pub/sub functionality</li>
+                <li>Added Azure AD authentication for administrative functionality</li>
+                <li>Added Azure Linux App Service support for reduced hosting costs</li>
+                <li>Added background job to automatically fetch store related videos from YouTube</li>
+                <li>Added <code>>steamid</code> command for linking Steam accounts via the Discord bot</li>
+                <li>Added open graph meta tags to all pages for better SEO</li>
+                <li>Added a store selector button and popup dialog to make it easier to browse to historical item stores</li>
+                <li>Optimised Steam session management to reduce number of failed data imports</li>
+                <li>Optimised Discord client event processing to reduce latency when busy with a large number of requests</li>
+                <li>Discord command error messages are now more description and use emoji reactions as success/failure indicators</li>
+                <li>Discord bot now promotes donators from VIP servers to VIP role automatically</li>
+                <li>Fixed bug where profile inventory thumbnail image would show incorrect quantity count for stacked items</li>
+                <li>Fixed bug where <code>> sometext</code> would be interpreted as a Discord  rather than a blockquote</li>
+                <li>Fixed for Discord inventory command incorrectly parsing the currency id as Steam id in some situations</li>
             </ul>
         </MudText>
 
@@ -28,7 +93,7 @@
         </MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
             <ul>
-                <li>Upgraded to .NET 6.0 (Preview 2) 🥳</li>
+                <li>Upgraded to .NET 6.0 (Preview) 🥳</li>
             </ul>
         </MudText>
 
