@@ -218,9 +218,7 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamStoreItem>()
                 .HasOne(x => x.Currency);
             builder.Entity<SteamStoreItem>()
-                .OwnsOne(x => x.Prices);
-            builder.Entity<SteamStoreItem>()
-                .OwnsOne(x => x.TotalSalesGraph);
+                .OwnsOne(x => x.Prices);;
 
             builder.Entity<SteamStoreItemItemStore>()
                 .HasKey(bc => new { bc.ItemId, bc.StoreId });
@@ -234,8 +232,6 @@ namespace SCMM.Steam.Data.Store
                 .WithMany(b => b.Items)
                 .HasForeignKey(bc => bc.StoreId)
                 .OnDelete(DeleteBehavior.Restrict);
-            builder.Entity<SteamStoreItemItemStore>()
-                .OwnsOne(x => x.IndexGraph);
         }
     }
 }

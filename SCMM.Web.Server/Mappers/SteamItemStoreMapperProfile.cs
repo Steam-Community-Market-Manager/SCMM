@@ -35,7 +35,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Item.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Item.Description.IconUrl))
                 .ForMember(x => x.StorePrice, o => o.MapFromUsingCurrencyTable(p => p.Item != null ? p.Item.Prices : null))
-                .ForMember(x => x.TopSellerIndex, o => o.MapFrom(p => p.Index))
+                .ForMember(x => x.TopSellerIndex, o => o.MapFrom(p => p.TopSellerIndex))
                 .ForMember(x => x.IsStillAvailableFromStore, o => o.MapFrom(p => p.Item != null ? p.Item.IsAvailable : false))
                 .ForMember(x => x.MarketPrice, o => o.MapFromUsingCurrencyExchange(p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.BuyNowPrice : null, p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.Currency : null))
                 .ForMember(x => x.SalesMinimum, o => o.MapFrom(p => p.Item.TotalSalesMin))

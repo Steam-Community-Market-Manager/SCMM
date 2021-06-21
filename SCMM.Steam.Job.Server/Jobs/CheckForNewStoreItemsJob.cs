@@ -167,7 +167,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 }
 
                 // Recalculate store statistics
-                var orderedStoreItems = newItemStore.Items.OrderBy(x => x.Index).ToList();
+                var orderedStoreItems = newItemStore.Items.OrderBy(x => x.TopSellerIndex).ToList();
                 foreach (var storeItem in orderedStoreItems)
                 {
                     storeItem.Item.RecalculateTotalSales(newItemStore);

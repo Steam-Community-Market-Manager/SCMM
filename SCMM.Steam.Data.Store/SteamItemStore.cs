@@ -26,11 +26,6 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? End { get; set; }
 
-        /// <summary>
-        /// If true, this store can be purchased from. Otherwise, it is no longer available.
-        /// </summary>
-        public bool IsAvailable => (End == null || End < DateTimeOffset.Now);
-
         public ICollection<SteamStoreItemItemStore> Items { get; set; }
 
         public Guid? ItemsThumbnailId { get; set; }
@@ -38,5 +33,15 @@ namespace SCMM.Steam.Data.Store
         public ImageData ItemsThumbnail { get; set; }
 
         public PersistableStringCollection Media { get; set; }
+
+        /// <summary>
+        /// If true, this store can be purchased from. Otherwise, it is no longer available.
+        /// </summary>
+        public bool IsAvailable => (End == null || End < DateTimeOffset.Now);
+
+        /// <summary>
+        /// If true, users can submit change requests for this store
+        /// </summary>
+        public bool IsDraft { get; set; }
     }
 }

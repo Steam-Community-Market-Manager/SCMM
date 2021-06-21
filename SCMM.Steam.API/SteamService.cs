@@ -66,18 +66,6 @@ namespace SCMM.Steam.API
             return newFilter;
         }
 
-        public SteamStoreItemItemStore UpdateStoreItemIndex(SteamStoreItemItemStore storeItem, int storeIndex)
-        {
-            var utcDateTime = (DateTime.UtcNow.Date + TimeSpan.FromHours(DateTime.UtcNow.TimeOfDay.Hours));
-            storeItem.Index = storeIndex;
-            storeItem.IndexGraph[utcDateTime] = storeIndex;
-            storeItem.IndexGraph = new PersistableHourlyGraphDataSet(
-                storeItem.IndexGraph
-            );
-
-            return storeItem;
-        }
-
         public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, string languageId, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems

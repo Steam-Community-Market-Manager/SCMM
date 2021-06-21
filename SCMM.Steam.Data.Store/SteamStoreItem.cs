@@ -12,7 +12,6 @@ namespace SCMM.Steam.Data.Store
         {
             Stores = new Collection<SteamStoreItemItemStore>();
             Prices = new PersistablePriceDictionary();
-            TotalSalesGraph = new PersistableDailyGraphDataSet();
         }
 
         public Guid? CurrencyId { get; set; }
@@ -35,8 +34,6 @@ namespace SCMM.Steam.Data.Store
 
         public long? TotalSalesMax { get; set; }
 
-        public PersistableDailyGraphDataSet TotalSalesGraph { get; set; }
-
         /// <summary>
         /// If true, there is at least one associated store that can be purchased from. Otherwise, this item isn't available for purchase currently.
         /// </summary>
@@ -47,7 +44,7 @@ namespace SCMM.Steam.Data.Store
         public void RecalculateTotalSales(SteamItemStore store)
         {
             var mapping = Stores.FirstOrDefault(x => x.Store == store);
-            var orderedStoreItems = mapping?.Store?.Items?.OrderBy(x => x.Index)?.Select(x => x.Item)?.ToList();
+            var orderedStoreItems = mapping?.Store?.Items?.OrderBy(x => x.TopSellerIndex)?.Select(x => x.Item)?.ToList();
             if (orderedStoreItems == null)
             {
                 return;

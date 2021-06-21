@@ -117,11 +117,11 @@ namespace SCMM.Steam.Job.Server.Jobs
             // Update the store item indecies
             foreach (var storeItem in storeItems)
             {
-                service.UpdateStoreItemIndex(storeItem, storeItemIds.IndexOf(storeItem.Item.SteamId));
+                storeItem.TopSellerIndex = storeItemIds.IndexOf(storeItem.Item.SteamId);
             }
 
             // Calculate total sales
-            var orderedStoreItems = storeItems.OrderBy(x => x.Index).ToList();
+            var orderedStoreItems = storeItems.OrderBy(x => x.TopSellerIndex).ToList();
             foreach (var storeItem in orderedStoreItems)
             {
                 storeItem.Item.RecalculateTotalSales(itemStore);
