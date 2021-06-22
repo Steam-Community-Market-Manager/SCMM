@@ -9,7 +9,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
         /// SellOrder, BuyOrder
         /// </summary>
         [JsonProperty("type")]
-        public string PurchaseId { get; set; }
+        public string Type { get; set; }
 
         public long Price { get; private set; }
 
