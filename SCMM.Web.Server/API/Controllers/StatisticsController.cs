@@ -424,8 +424,8 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Name = x.ItemCollection,
                     IconUrl = x.IconLargeUrl,
-                    Currency = x.MarketItem != null ? x.MarketItem.Currency : null,
-                    BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.BuyNowPrice : null
+                    Currency = x.MarketItem != null ? x.MarketItem.Currency : (x.StoreItem != null ? x.StoreItem.Currency : null),
+                    BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.BuyNowPrice : (x.StoreItem != null ? (long?)x.StoreItem.Price : null)
                 })
                 .ToList()
                 .GroupBy(x => x.Name)
