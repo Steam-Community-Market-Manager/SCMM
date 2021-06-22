@@ -54,7 +54,7 @@ namespace SCMM.Steam.Data.Store
             var item = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
             var itemIndex = orderedStoreItems.IndexOf(item);
             var itemUniqueSales = (Description?.TotalSubscriptions ?? 0);
-            var itemDuplicateSales = (long)Math.Floor(itemUniqueSales > 0 ? ((decimal)itemUniqueSales / Math.Max(10, 20 - itemIndex)) : 0);
+            var itemDuplicateSales = (long)Math.Floor(itemUniqueSales > 0 ? ((decimal)itemUniqueSales / Math.Max(5, 20 - (itemIndex * 2))) : 0);
             var itemTotalSales = (itemUniqueSales + itemDuplicateSales);
             TotalSalesMin = itemTotalSales;
             TotalSalesMax = null;
