@@ -54,6 +54,18 @@ else if (StoreList.Any())
                 <MudItem xs="12">
                     <StoreAnalyticsPanel Store="@Store" />
                 </MudItem>
+                
+                @if (!Store.Items.Any())
+                {
+                    <MudItem xs="12" sm="6" md="4" xl="3">
+                        <MudPaper Outlined="true" Class="d-flex flex-column justify-center align-center full-height pa-4">
+                            <TumbleWeed />
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">No items found!</MudText>
+                            <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can help by contributing a suggestion.</MudText>
+                            <MudIconButton Icon="fas fa-fw fa-plus" Size="MudBlazor.Size.Large" Class="ma-2" Disabled="true"></MudIconButton>
+                        </MudPaper>
+                    </MudItem>
+                }
 
                 @foreach (var item in Store.Items.OrderBy(x => (x.TopSellerIndex ?? 0)).ThenByDescending(x => (x.SalesMinimum ?? 0) * (x.StorePrice ?? 0)))
                 {
