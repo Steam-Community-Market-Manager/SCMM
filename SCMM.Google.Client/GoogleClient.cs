@@ -72,7 +72,7 @@ namespace SCMM.Google.Client
                         ChannelTitle = item.Snippet.ChannelTitle,
                         Description = item.Snippet.ChannelId,
                         Thumbnail = new Uri(item.Snippet.Thumbnails.Default__.Url),
-                        PublishedAt = item.Snippet.PublishedAt
+                        PublishedAt = new DateTimeOffset(item.Snippet.PublishedAt.Value, TimeZoneInfo.Local.GetUtcOffset(item.Snippet.PublishedAt.Value))
                     });
                 }
             }

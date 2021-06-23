@@ -3,11 +3,16 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -139,10 +144,90 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
+        [Command("import-tgg-stores")]
+        public async Task<RuntimeResult> ImportTGGStoresAsync()
+        {
+            var start = new DateTimeOffset(new DateTime(2017, 01, 01), TimeZoneInfo.Local.BaseUtcOffset);
+            var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == Constants.RustAppId.ToString());
+            var existingStores = await _db.SteamItemStores.ToListAsync();
+            
+            do
+            {
+                var videos = await _googleClient.SearchVideosAsync(
+                    channelId: "UCvCBuwbtKRwM0qMi7rc7CUw", // TGG
+                    query: "Rust Skins",
+                    publishedAfter: start.DateTime,
+                    publishedBefore: start.DateTime.AddDays(365),
+                    maxResults: 50
+                );
+
+                var rustSkinVideos = videos
+                    .Where(x => x.Title.Contains("Rust"))
+                    .Where(x => 
+                        !x.Title.Contains("Barrel") && !x.Title.Contains("Contest") && !x.Title.Contains("Winners") && !x.Title.Contains("Tutorials") && !x.Title.Contains("Coming") && 
+                        !Regex.IsMatch(x.Title, @"^.*Top.*\|") && !Regex.IsMatch(x.Title, @"^.*Picks.*\|") && !Regex.IsMatch(x.Title, @"^.*Twitch.*\|")
+                    )
+                    .OrderBy(x => x.PublishedAt)
+                    .ToList();
+
+                if (!rustSkinVideos.Any())
+                {
+                    break;
+                }
+
+                foreach (var video in rustSkinVideos)
+                {
+                    var nextVideo = rustSkinVideos.Skip(rustSkinVideos.IndexOf(video) + 1).FirstOrDefault();
+                    var storeName = Regex.Match(video.Title, @"\|\s([^\(]*)").Groups.OfType<Group>().Skip(1).FirstOrDefault()?.Value;
+                    var storeStart = video.PublishedAt.Value;
+                    var storeEnd = (nextVideo != null ? nextVideo.PublishedAt.Value : storeStart.AddDays(7));
+                    var store = existingStores
+                        .Where(x => storeStart >= x.Start)
+                        .OrderBy(x => x.Start)
+                        .FirstOrDefault();
+
+                    if (store != null)
+                    {
+                        if (store.Name == null)
+                        {
+                            store.Name = video.Title;
+                        }
+                        if (!store.Media.Contains(video.Id))
+                        {
+                            store.Media.Add(video.Id);
+                        }
+                    }
+                    else
+                    {
+                        _db.SteamItemStores.Add(
+                            new SteamItemStore()
+                            {
+                                App = app,
+                                Name = storeName,
+                                Start = storeStart,
+                                End = storeEnd,
+                                Media = new PersistableStringCollection()
+                                {
+                                    video.Id
+                                },
+                                IsDraft = true
+                            }
+                        );
+                    }
+                }
+
+                start = rustSkinVideos.Max(x => x.PublishedAt.Value).AddDays(1);
+
+            } while (start < DateTime.UtcNow);
+
+            await _db.SaveChangesAsync();
+            return CommandResult.Success();
+        }
+
         // store.steampowered.com/itemstore/252490/
         // store.steampowered.com/itemstore/252490/?filter=All
         [Command("import-web-archive-store-prices")]
-        public async Task<RuntimeResult> ImportStorePricesAsync(string itemStoreUrl)
+        public async Task<RuntimeResult> ImportWebArchiveStorePricesAsync(string itemStoreUrl)
         {
             var message = await Context.Message.ReplyAsync("Importing snapshots...");
 

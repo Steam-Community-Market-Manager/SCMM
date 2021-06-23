@@ -16,6 +16,6 @@ namespace SCMM.Google.Data.Models
 
         public Uri Thumbnail { get; set; }
 
-        public DateTime? PublishedAt { get; set; }
+        public DateTimeOffset? PublishedAt { get; set; }
     }
 }
