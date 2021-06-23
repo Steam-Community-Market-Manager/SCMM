@@ -12,79 +12,97 @@
         <ChildContent>
             <MudTabs Rounded="true" Centered="true" PanelClass="ma-2">
                 <MudTabPanel Text="Sales" Disabled="@(Store?.Items?.Any(x => x.Subscriptions > 0) != true)">
-                    <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
-                        <span><strong>Steam doesn't disclose exact sales figures</strong>, this is just an estimate to roughly guage how each item is performing. How is this calculated? Steam users are <MudLink Href="https://partner.steamgames.com/doc/features/workshop/implementation#item_subscription" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Target="_blank">subscribed to a workshop file</MudLink> when they purchase an item from the store and use it in-game. Using this, we can determine the approximate number of unique users that purchased at least one copy of the item.</span>
-                        <span>To account for users who buy multiple copies of items, we do two things; Firstly, use the <MudLink Href="https://store.steampowered.com/itemstore/252490/?filter=Featured" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Target="_blank">store top sellers</MudLink> ranking to add a conservative 5-20% buffer in sales depending on how well the item has been selling. Secondly, we scan Steam inventories to identify actual duplicate item purchases. Because only a small fraction of all Steam accounts are scanned, this metric is heavily skewed but does provide an insight in to what items people think are good to buy.</span>
-                    </MudAlert>
-                    <SfChart ID="ItemSales" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
-                        <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemSales")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
-                        <ChartArea>
-                            <ChartAreaBorder Width="0"></ChartAreaBorder>
-                        </ChartArea>
-                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                        </ChartPrimaryXAxis>
-                        <ChartPrimaryYAxis LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                            <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
-                            <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
-                            <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
-                            <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
-                        </ChartPrimaryYAxis>
-                        <ChartSeriesCollection>
-                            <ChartSeries XName="name" YName="subscriptions" Name="Subscribers Sales" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
-                            </ChartSeries>
-                            <ChartSeries XName="name" YName="knownInventoryDuplicates" Name="Known Duplicate Sales" ColumnWidth="0.5" Width="2" Fill="#8e24aa" Type="ChartSeriesType.StackingBar">
-                            </ChartSeries>
-                            <ChartSeries XName="name" YName="estimatedOtherDuplicates" Name="Estimated Extra Sales" ColumnWidth="0.5" Width="2" Fill="#fb8c00" Type="ChartSeriesType.StackingBar">
-                            </ChartSeries>
-                            <ChartSeries XName="name" YName="total" Name="Total Sales" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
-                                <ChartMarker>
-                                    <ChartDataLabel Visible="true" Name="totalText" Position="LabelPosition.Top">
-                                        <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
-                                    </ChartDataLabel>
-                                </ChartMarker>
-                            </ChartSeries>
-                        </ChartSeriesCollection>
-                        <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
-                        <ChartLegendSettings Visible="true"></ChartLegendSettings>
-                    </SfChart>
+                    @if ((Store?.Items?.Any(x => x.Subscriptions > 0) != true))
+                    {
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
+                            <span>No data available.</span>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
+                            <span><strong>Steam doesn't disclose exact sales figures</strong>, this is just an estimate to roughly guage how each item is performing. How is this calculated? Steam users are <MudLink Href="https://partner.steamgames.com/doc/features/workshop/implementation#item_subscription" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Target="_blank">subscribed to a workshop file</MudLink> when they purchase an item from the store and use it in-game. Using this, we can determine the approximate number of unique users that purchased at least one copy of the item.</span>
+                            <span>To account for users who buy multiple copies of items, we do two things; Firstly, use the <MudLink Href="https://store.steampowered.com/itemstore/252490/?filter=Featured" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Target="_blank">store top sellers</MudLink> ranking to add a conservative 5-20% buffer in sales depending on how well the item has been selling. Secondly, we scan Steam inventories to identify actual duplicate item purchases. Because only a small fraction of all Steam accounts are scanned, this metric is heavily skewed but does provide an insight in to what items people think are good to buy.</span>
+                        </MudAlert>
+                        <SfChart ID="ItemSales" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
+                            <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemSales")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
+                            <ChartArea>
+                                <ChartAreaBorder Width="0"></ChartAreaBorder>
+                            </ChartArea>
+                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                            </ChartPrimaryXAxis>
+                            <ChartPrimaryYAxis LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                                <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
+                                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                            </ChartPrimaryYAxis>
+                            <ChartSeriesCollection>
+                                <ChartSeries XName="name" YName="subscriptions" Name="Subscribers Sales" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="knownInventoryDuplicates" Name="Known Duplicate Sales" ColumnWidth="0.5" Width="2" Fill="#8e24aa" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="estimatedOtherDuplicates" Name="Estimated Extra Sales" ColumnWidth="0.5" Width="2" Fill="#fb8c00" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="total" Name="Total Sales" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                    <ChartMarker>
+                                        <ChartDataLabel Visible="true" Name="totalText" Position="LabelPosition.Top">
+                                            <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
+                                        </ChartDataLabel>
+                                    </ChartMarker>
+                                </ChartSeries>
+                            </ChartSeriesCollection>
+                            <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                            <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                        </SfChart>
+                    }
                 </MudTabPanel>
                 <MudTabPanel Text="Revenue" Disabled="@(Store?.Items?.Any(x => x.Subscriptions > 0) != true)">
-                    <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
-                        <span><strong>Steam doesn't disclose exact sales figures</strong>, this is just an estimate to roughly guage how each item is performing. How is this calculated? <code>(sales_count * price)</code>. See the sales tab for more on how we calculate sales numbers.</span>
-                        <span>Facepunch shares <MudLink Href="https://steamcommunity.com/workshop/about/?appid=252490" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Target="_blank">25% of item revenue</MudLink> with the item creator(s). The remaining 75% of revenue is split between Facepunch and Steam. It is not known how much of a cut Steam takes from item sales.</span>
-                        <span>Additionally, all revenue is still subject to local taxes and international banking fees (where applicable), therefore it is difficult to accuratly estimate net income.</span>
-                    </MudAlert>
-                    <SfChart ID="ItemRevenue" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
-                        <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemRevenue")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
-                        <ChartArea>
-                            <ChartAreaBorder Width="0"></ChartAreaBorder>
-                        </ChartArea>
-                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                        </ChartPrimaryXAxis>
-                        <ChartPrimaryYAxis LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                            <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
-                            <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
-                            <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
-                            <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
-                        </ChartPrimaryYAxis>
-                        <ChartSeriesCollection>
-                            <ChartSeries XName="name" YName="authorRoyalties" Name="Item Author Revenue" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
-                            </ChartSeries>
-                            <ChartSeries XName="name" YName="platformFees" Name="Steam Revenue" ColumnWidth="0.5" Width="2" Fill="#171a21" Type="ChartSeriesType.StackingBar">
-                            </ChartSeries>
-                            <ChartSeries XName="name" YName="publisherRevenue" Name="Facepunch Revenue" ColumnWidth="0.5" Width="2" Fill="#c5412b" Type="ChartSeriesType.StackingBar">
-                            </ChartSeries>
-                            <ChartSeries XName="name" YName="total" Name="Total Revenue" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
-                                <ChartMarker>
-                                    <ChartDataLabel Visible="true" Position="LabelPosition.Top">
-                                        <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
-                                    </ChartDataLabel>
-                                </ChartMarker>
-                            </ChartSeries>
-                        </ChartSeriesCollection>
-                        <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
-                        <ChartLegendSettings Visible="true"></ChartLegendSettings>
-                    </SfChart>
+                    @if ((Store?.Items?.Any(x => x.Subscriptions > 0) != true))
+                    {
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
+                            <span>No data available.</span>
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
+                            <span><strong>Steam doesn't disclose exact sales figures</strong>, this is just an estimate to roughly guage how each item is performing. How is this calculated? <code>(sales_count * price)</code>. See the sales tab for more on how we calculate sales numbers.</span>
+                            <span>Facepunch shares <MudLink Href="https://steamcommunity.com/workshop/about/?appid=252490" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Target="_blank">25% of item revenue</MudLink> with the item creator(s). The remaining 75% of revenue is split between Facepunch and Steam. It is not known how much of a cut Steam takes from item sales.</span>
+                            <span>Additionally, all revenue is still subject to local taxes and international banking fees (where applicable), therefore it is difficult to accuratly estimate net income.</span>
+                        </MudAlert>
+                        <SfChart ID="ItemRevenue" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
+                            <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemRevenue")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
+                            <ChartArea>
+                                <ChartAreaBorder Width="0"></ChartAreaBorder>
+                            </ChartArea>
+                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                            </ChartPrimaryXAxis>
+                            <ChartPrimaryYAxis LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                                <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
+                                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                            </ChartPrimaryYAxis>
+                            <ChartSeriesCollection>
+                                <ChartSeries XName="name" YName="authorRoyalties" Name="Item Author Revenue" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="platformFees" Name="Steam Revenue" ColumnWidth="0.5" Width="2" Fill="#171a21" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="publisherRevenue" Name="Facepunch Revenue" ColumnWidth="0.5" Width="2" Fill="#c5412b" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries>
+                                <ChartSeries XName="name" YName="total" Name="Total Revenue" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                    <ChartMarker>
+                                        <ChartDataLabel Visible="true" Position="LabelPosition.Top">
+                                            <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
+                                        </ChartDataLabel>
+                                    </ChartMarker>
+                                </ChartSeries>
+                            </ChartSeriesCollection>
+                            <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                            <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                        </SfChart>
+                    }
                 </MudTabPanel>
             </MudTabs>
         </ChildContent>
