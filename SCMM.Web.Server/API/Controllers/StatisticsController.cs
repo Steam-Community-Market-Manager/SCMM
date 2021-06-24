@@ -202,6 +202,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsAllTimeHigh([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var sevenDays = TimeSpan.FromDays(7);
             var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(12));
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -209,10 +210,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .Where(x => (x.BuyNowPrice - x.AllTimeHighestValue) >= 0)
+                .Where(x => (x.Last1hrValue - x.AllTimeHighestValue) >= 0)
                 .Where(x => x.Supply > 0)
-                .OrderBy(x => Math.Abs(x.BuyNowPrice - x.AllTimeHighestValue))
-                .ThenByDescending(x => x.BuyNowPrice - x.Last24hrValue);
+                .Where(x => x.AllTimeHighestValue > 0)
+                .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeHighestValue))
+                .ThenByDescending(x => x.Last1hrValue - x.Last24hrValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
@@ -251,10 +253,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .Where(x => (x.BuyNowPrice - x.AllTimeLowestValue) <= 0)
+                .Where(x => (x.Last1hrValue - x.AllTimeLowestValue) <= 0)
                 .Where(x => x.Supply > 0)
-                .OrderBy(x => Math.Abs(x.BuyNowPrice - x.AllTimeLowestValue))
-                .ThenBy(x => x.BuyNowPrice - x.Last24hrValue);
+                .Where(x => x.AllTimeLowestValue > 0)
+                .OrderBy(x => Math.Abs(x.Last1hrValue - x.AllTimeLowestValue))
+                .ThenBy(x => x.Last1hrValue - x.Last24hrValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
