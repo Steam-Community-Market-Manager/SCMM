@@ -49,7 +49,7 @@ namespace SCMM.Steam.API.Queries
             }
 
             // Store normally updates around Friday 6am NZT (Thursday 5pm UTC)
-            var nextStoreUpdateUtc = (lastItemAcceptedOn.Value.Date + new TimeSpan(5, 0, 0));
+            var nextStoreUpdateUtc = (lastItemAcceptedOn.Value.Date + new TimeSpan(17, 0, 0));
             do
             {
                 nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
