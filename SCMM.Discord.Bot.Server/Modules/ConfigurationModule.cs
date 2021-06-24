@@ -26,6 +26,24 @@ namespace SCMM.Discord.Bot.Server.Modules
             _db = db;
         }
 
+        private async Task<Steam.Data.Store.DiscordGuild> GetOrCreateGuild()
+        {
+            var guild = await _db.DiscordGuilds
+                .Include(x => x.Configurations)
+                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+
+            if (guild == null)
+            {
+                _db.DiscordGuilds.Add(guild = new Steam.Data.Store.DiscordGuild()
+                {
+                    DiscordId = Context.Guild.Id.ToString(),
+                    Name = Context.Guild.Name
+                });
+            }
+
+            return guild;
+        }
+
         [Command("options")]
         [Alias("names")]
         [Summary("Show a list of all supported configuration options you can personalise for this server")]
@@ -71,10 +89,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             [Name("option")][Summary("Supported config option name")] string option
         )
         {
-            var guild = await _db.DiscordGuilds
-                .AsNoTracking()
-                .Include(x => x.Configurations)
-                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+            var guild = await GetOrCreateGuild();
             if (guild == null)
             {
                 return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
@@ -107,9 +122,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             [Name("value")][Summary("New value to set as the config")][Remainder] string value
         )
         {
-            var guild = await _db.DiscordGuilds
-                .Include(x => x.Configurations)
-                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+            var guild = await GetOrCreateGuild();
             if (guild == null)
             {
                 return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
@@ -144,9 +157,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             [Name("values")][Summary("New value to add to the config")] params string[] values
         )
         {
-            var guild = await _db.DiscordGuilds
-                .Include(x => x.Configurations)
-                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+            var guild = await GetOrCreateGuild();
             if (guild == null)
             {
                 return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
@@ -174,9 +185,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             [Name("values")][Summary("Value to remove from the config")] params string[] values
         )
         {
-            var guild = await _db.DiscordGuilds
-                .Include(x => x.Configurations)
-                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+            var guild = await GetOrCreateGuild();
             if (guild == null)
             {
                 return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
@@ -210,9 +219,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             [Name("option")][Summary("Supported config option name")] string option
         )
         {
-            var guild = await _db.DiscordGuilds
-                .Include(x => x.Configurations)
-                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+            var guild = await GetOrCreateGuild();
             if (guild == null)
             {
                 return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
@@ -239,10 +246,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             [Name("option")][Summary("Supported config option name")] string option
         )
         {
-            var guild = await _db.DiscordGuilds
-                .AsNoTracking()
-                .Include(x => x.Configurations)
-                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+            var guild = await GetOrCreateGuild();
             if (guild == null)
             {
                 return CommandResult.Fail($"Beep boop! I'm unable to find the Discord configuration for this guild.");
