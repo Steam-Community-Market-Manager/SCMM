@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models;
@@ -296,6 +297,109 @@ namespace SCMM.Web.Server.API.Controllers
             );
 
             return Ok(storeItemRevenue);
+        }
+
+        [Authorize(Roles = Roles.Moderator)]
+        [HttpPost("{id}/linkItem")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> LinkStoreItem([FromRoute] Guid id, [FromBody] LinkStoreItemCommand command)
+        {
+            if (Guid.Empty == id)
+            {
+                return BadRequest("Store GUID is invalid");
+            }
+            if (command == null)
+            {
+                return BadRequest("Command is invalid");
+            }
+
+            var store = await _db.SteamItemStores
+                .Include(x => x.Items)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if (store == null)
+            {
+                return NotFound("Store not found");
+            }
+
+            var assetDescription = await _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.Creator)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .FirstOrDefaultAsync(x => x.ClassId == command.AssetDescriptionId);
+            if (assetDescription == null)
+            {
+                return NotFound("Asset description not found");
+            }
+
+            var storeItemLink = (SteamStoreItemItemStore)null;
+            var storeItem = assetDescription?.StoreItem;
+            if (storeItem == null)
+            {
+                _db.SteamStoreItems.Add(
+                    storeItem = assetDescription.StoreItem = new SteamStoreItem()
+                    {
+                        App = assetDescription.App,
+                        Description = assetDescription
+                    }
+                );
+            }
+
+            if (storeItem.Price == null && command.StorePrice > 0)
+            {
+                storeItem.Currency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
+                storeItem.Price = command.StorePrice;
+                // TODO: Update price list
+            }
+
+            if (!store.Items.Any(x => x.ItemId == storeItem.Id))
+            {
+                store.Items.Add(storeItemLink = new SteamStoreItemItemStore()
+                {
+                    Store = store,
+                    Item = assetDescription.StoreItem,
+                    IsDraft = true
+                });
+            }
+
+            await _db.SaveChangesAsync();
+            return Ok(
+                _mapper.Map<SteamStoreItemItemStore, StoreItemDetailsDTO>(storeItemLink, this)
+            );
+        }
+
+        [Authorize(Roles = Roles.Moderator)]
+        [HttpPost("{id}/unlinkItem")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> UnlinkStoreItem([FromRoute] Guid id, [FromBody] UnlinkStoreItemCommand command)
+        {
+            if (Guid.Empty == id)
+            {
+                return BadRequest("Store GUID is invalid");
+            }
+            if (command == null)
+            {
+                return BadRequest("Command is invalid");
+            }
+
+            var store = await _db.SteamItemStores
+                .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if (store == null)
+            {
+                return NotFound("Store not found");
+            }
+
+            var storeItemLink = store.Items.FirstOrDefault(x => x.Item.Description.ClassId == command.AssetDescriptionId);
+            if (storeItemLink == null)
+            {
+                return NotFound("Asset description not found in store");
+            }
+
+            store.Items.Remove(storeItemLink);
+            await _db.SaveChangesAsync();
+
+            return Ok();
         }
 
         /// <summary>

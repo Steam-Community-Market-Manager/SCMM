@@ -2,6 +2,7 @@
 @page "/store"
 @page "/store/{StoreId}"
 @page "/steam/store"
+@using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Store
 @inject ILogger<StorePage> Logger
 @inject IDialogService Dialogs
@@ -55,14 +56,38 @@ else if (StoreList.Any())
                     <StoreAnalyticsPanel Store="@Store" />
                 </MudItem>
                 
+                @if (Store.IsDraft && State.IsInRole(Roles.Moderator))
+                {
+                    <MudItem xs="12">
+                        <MudPaper Outlined="true" Class="d-flex flex-row justify-center align-center full-height pa-2">
+                            <MudAutocomplete T="ItemDescriptionWithPriceDTO" @bind-Value="LinkedItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" 
+                                             Placeholder="Suggest an item for this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2">
+                                <ItemTemplate Context="item">
+                                    <div class="d-flex flex-row justify-start align-center">
+                                        <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                        <MudText Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
+                                    </div>
+                                </ItemTemplate>
+                            </MudAutocomplete>
+                            <MudNumericField @bind-Value="LinkedItemStorePrice" Format="F2" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-dollar-sign" Variant="Variant.Outlined" Margin="Margin.Dense" 
+                                             HideSpinButtons="true" Class="flex-grow-0 flex-shrink-0 pl-1 pr-2" />
+                            <MudTooltip Text="Add this item to the store">
+                                <MudButton OnClick="@LinkItem" Variant="Variant.Text" Color="Color.Primary" StartIcon="fas fa-fw fa-plus" Class="flex-grow-0 flex-shrink-0 pa-2">Add</MudButton>
+                            </MudTooltip>
+                        </MudPaper>
+                    </MudItem>
+                }
+
                 @if (!Store.Items.Any())
                 {
                     <MudItem xs="12" sm="6" md="4" xl="3">
                         <MudPaper Outlined="true" Class="d-flex flex-column justify-center align-center full-height pa-4">
                             <TumbleWeed />
                             <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">No items found!</MudText>
-                            <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can help by contributing a suggestion.</MudText>
-                            <MudIconButton Icon="fas fa-fw fa-plus" Size="MudBlazor.Size.Large" Class="ma-2" Disabled="true"></MudIconButton>
+                            @if (State.IsInRole(Roles.Moderator))
+                            {
+                                <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can help by contributing a suggestion.</MudText>
+                            }
                         </MudPaper>
                     </MudItem>
                 }
@@ -90,24 +115,30 @@ else if (StoreList.Any())
                                         }
                                     </CardHeaderContent>
                                     <CardHeaderActions>
-                                        @if (item.IsStillAvailableFromStore && item.TopSellerIndex != null)
-                                        {
-                                            <div class="pa-1 text-centered">
-                                                <MudTooltip>
-                                                    <ChildContent>
-                                                        <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
-                                                            <i class="fas fa-fw fa-trophy"/>
-                                                        </MudText>
-                                                        <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
-                                                            <span>@(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix())</span>
-                                                        </MudText>
-                                                    </ChildContent>
-                                                    <TooltipContent>
-                                                        <span>This item is currently @(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix()) on the store top-sellers list</span>
-                                                    </TooltipContent>
+                                        <div class="pa-1 text-centered">
+                                            @if (item.IsStillAvailableFromStore && item.TopSellerIndex != null)
+                                            {
+                                                    <MudTooltip>
+                                                        <ChildContent>
+                                                            <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
+                                                                <i class="fas fa-fw fa-trophy"/>
+                                                            </MudText>
+                                                            <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" Style="@GetTopSellerStyles(item.TopSellerIndex)">
+                                                                <span>@(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix())</span>
+                                                            </MudText>
+                                                        </ChildContent>
+                                                        <TooltipContent>
+                                                            <span>This item is currently @(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix()) on the store top-sellers list</span>
+                                                        </TooltipContent>
+                                                    </MudTooltip>
+                                            }
+                                            @if (item.IsDraft && State.IsInRole(Roles.Moderator))
+                                            {
+                                                <MudTooltip Text="Remove this item from the store">
+                                                    <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" Icon="fas fa-fw fa-trash-alt"></MudFab>
                                                 </MudTooltip>
-                                            </div>
-                                        }
+                                            }
+                                        </div>
                                     </CardHeaderActions>
                                 </MudCardHeader>
                                 <MudCardContent>
@@ -371,6 +402,10 @@ else if (StoreList.Any())
 
     private Exception StoreException { get; set; }
     
+    private ItemDescriptionWithPriceDTO LinkedItem { get; set; }
+    
+    private double LinkedItemStorePrice { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         // Load store list
@@ -496,16 +531,6 @@ else if (StoreList.Any())
         });
     }
 
-    private void ShowItemSalesDialog(StoreItemDetailsDTO item)
-    {
-        // TODO: Add a dialog showing item sales breakdown
-    }
-
-    private void ShowItemBreakdownDialog(StoreItemDetailsDTO item)
-    {
-        // TODO: Add a dialog showing item resource breakdown
-    }
-    
     private void ShowItemCollectionDialog(StoreItemDetailsDTO item)
     {
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
@@ -536,6 +561,79 @@ else if (StoreList.Any())
         }
 
         return title.ToString().Trim();
+    }
+    
+    private async Task<IEnumerable<ItemDescriptionWithPriceDTO>> SearchItem(string value)
+    {
+        try
+        {
+            var search = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
+                $"api/item?filter={Uri.EscapeDataString(value ?? String.Empty)}&start=0&count=25"
+            );
+
+            return search.Items;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing items");
+            return null;
+        }
+    }
+    
+    private async void LinkItem()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync(
+                $"api/store/{Store.Guid}/linkItem",
+                new LinkStoreItemCommand()
+                {
+                    AssetDescriptionId = LinkedItem.Id,
+                    StorePrice = EconomyExtensions.SteamPriceAsInt($"{Math.Round(LinkedItemStorePrice, 2)}")
+                }
+            );
+
+            var item = await response.Content.ReadFromJsonAsync<StoreItemDetailsDTO>();
+            if (item != null && !Store.Items.Any(x => x.AssetDescriptionId == item.AssetDescriptionId))
+            {
+                Store.Items.Add(item);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error linking item");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+    
+    private async void UnlinkItem(StoreItemDetailsDTO item)
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync(
+                $"api/store/{Store.Guid}/unlinkItem/",
+                new UnlinkStoreItemCommand()
+                {
+                    AssetDescriptionId = (item.AssetDescriptionId ?? 0)
+                }
+            );
+
+            if (Store.Items.Contains(item))
+            {
+                Store.Items.Remove(item);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error unlinking item");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
     }
 
 }

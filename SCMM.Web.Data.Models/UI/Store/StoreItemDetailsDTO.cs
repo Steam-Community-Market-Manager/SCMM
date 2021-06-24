@@ -66,5 +66,7 @@ namespace SCMM.Web.Data.Models.UI.Store
         public bool IsBreakable { get; set; }
 
         public IDictionary<string, uint> BreaksIntoComponents { get; set; }
+
+        public bool IsDraft { get; set; }
     }
 }

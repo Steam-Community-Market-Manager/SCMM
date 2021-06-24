@@ -17,7 +17,8 @@ namespace SCMM.Web.Server.Mappers
 
             CreateMap<SteamItemStore, StoreDetailsDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)));
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)))
+                .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
 
             CreateMap<SteamStoreItemItemStore, StoreItemDetailsDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Item.SteamId))
@@ -46,7 +47,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.IsTradable, o => o.MapFrom(p => p.Item.Description.IsTradable))
                 .ForMember(x => x.TradableRestrictionDays, o => o.MapFrom(p => p.Item.Description.TradableRestrictionDays))
                 .ForMember(x => x.IsBreakable, o => o.MapFrom(p => p.Item.Description.IsBreakable))
-                .ForMember(x => x.BreaksIntoComponents, o => o.MapFrom(p => p.Item.Description.BreaksIntoComponents.ToDictionary(x => x.Key, x => x.Value)));
+                .ForMember(x => x.BreaksIntoComponents, o => o.MapFrom(p => p.Item.Description.BreaksIntoComponents.ToDictionary(x => x.Key, x => x.Value)))
+                .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
         }
     }
 }
