@@ -336,7 +336,7 @@ else
             await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = item.AcquiredBy,
-                CurrencyGuid = item.BuyCurrency.Guid,
+                CurrencyGuid = item.BuyCurrency?.Guid,
                 BuyPrice = item.BuyPrice
             });
         }
