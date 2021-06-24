@@ -420,6 +420,36 @@
             <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StoreController.LinkStoreItem(System.Guid,SCMM.Web.Data.Models.UI.Store.LinkStoreItemCommand)">
+            <summary>
+            Link an item to a store
+            </summary>
+            <remarks>This API requires authentication and the user must belong to the <code>Moderator</code> role</remarks>
+            <param name="id">Store GUID to link the item to.</param>
+            <param name="command">
+            The item ID and store price (in USD) of the item to be linked to the store
+            </param>
+            <response code="200">If the item was linked successfully.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
+            <response code="404">If the store or item cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StoreController.UnlinkStoreItem(System.Guid,SCMM.Web.Data.Models.UI.Store.UnlinkStoreItemCommand)">
+            <summary>
+            Unlink an item from a store
+            </summary>
+            <remarks>This API requires authentication and the user must belong to the <code>Moderator</code> role</remarks>
+            <param name="id">Store GUID to unlink the item from.</param>
+            <param name="command">
+            The item ID and store price (in USD) of the item to be unlinked from the store
+            </param>
+            <response code="200">If the item was unlinked successfully.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
+            <response code="404">If the store or item cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStoreNextUpdateTime">
             <summary>
             Get the next (estimated) item store release date time

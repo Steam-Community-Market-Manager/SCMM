@@ -299,9 +299,26 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(storeItemRevenue);
         }
 
+        /// <summary>
+        /// Link an item to a store
+        /// </summary>
+        /// <remarks>This API requires authentication and the user must belong to the <code>Moderator</code> role</remarks>
+        /// <param name="id">Store GUID to link the item to.</param>
+        /// <param name="command">
+        /// The item ID and store price (in USD) of the item to be linked to the store
+        /// </param>
+        /// <response code="200">If the item was linked successfully.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
+        /// <response code="404">If the store or item cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(Roles = Roles.Moderator)]
         [HttpPost("{id}/linkItem")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SteamStoreItemItemStore), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LinkStoreItem([FromRoute] Guid id, [FromBody] LinkStoreItemCommand command)
         {
             if (Guid.Empty == id)
@@ -368,9 +385,26 @@ namespace SCMM.Web.Server.API.Controllers
             );
         }
 
+        /// <summary>
+        /// Unlink an item from a store
+        /// </summary>
+        /// <remarks>This API requires authentication and the user must belong to the <code>Moderator</code> role</remarks>
+        /// <param name="id">Store GUID to unlink the item from.</param>
+        /// <param name="command">
+        /// The item ID and store price (in USD) of the item to be unlinked from the store
+        /// </param>
+        /// <response code="200">If the item was unlinked successfully.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
+        /// <response code="404">If the store or item cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(Roles = Roles.Moderator)]
         [HttpPost("{id}/unlinkItem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnlinkStoreItem([FromRoute] Guid id, [FromBody] UnlinkStoreItemCommand command)
         {
             if (Guid.Empty == id)
