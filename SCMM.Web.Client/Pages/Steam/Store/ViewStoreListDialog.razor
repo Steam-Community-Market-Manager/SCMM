@@ -7,11 +7,10 @@
         <MudText Typo="MudBlazor.Typo.h6">Store List</MudText>
     </TitleContent>
     <DialogContent>
-        <div class="d-flex flex-row justify-center align-start" style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
+        <MudExpansionPanels MultiExpansion="true" Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
             @foreach (var group in List.GroupBy(x => x.Start.Year))
             {
-                <div class="d-flex flex-column justify-center align-start">
-                    <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Primary" Class="no-wrap mt-4 mx-4">@group.Key.ToString()</MudText>
+                <MudExpansionPanel Text="@group.Key.ToString()">
                     <MudList Clickable="true" Dense="true" DisablePadding="true">
                         @foreach (var item in group.OrderByDescending(x => x.Start))
                         {
@@ -24,13 +23,9 @@
                             </MudListItem>
                         }
                     </MudList>
-                </div>
-                @if (List.Min(x => x.Start).Year != group.Key)
-                {
-                    <MudDivider Vertical="true" FlexItem="true" />
-                }
+                </MudExpansionPanel>
             }
-        </div>
+        </MudExpansionPanels>
     </DialogContent>
 </MudDialog>
 
@@ -46,7 +41,7 @@
     {
         Dialog.Options.NoHeader = true;
         Dialog.Options.CloseButton = false;
-        Dialog.Options.MaxWidth = MaxWidth.Large;
+        Dialog.Options.MaxWidth = MaxWidth.Small;
         Dialog.SetOptions(Dialog.Options); 
     }
 
