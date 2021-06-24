@@ -558,6 +558,14 @@ namespace SCMM.Web.Server.API.Controllers
                 return Unauthorized($"Inventory item does not belong to you and you do not have permission to modify it");
             }
 
+            if (command.BuyPrice != null)
+            {
+                inventoryItem.BuyPrice = (command.BuyPrice > 0 ? command.BuyPrice : null);
+            }
+            if (command.CurrencyGuid != null)
+            {
+                inventoryItem.CurrencyId = command.CurrencyGuid;
+            }
             if (command.AcquiredBy != null)
             {
                 inventoryItem.AcquiredBy = command.AcquiredBy.Value;
@@ -573,14 +581,6 @@ namespace SCMM.Web.Server.API.Controllers
                             break;
                         }
                 }
-            }
-            if (command.CurrencyGuid != null)
-            {
-                inventoryItem.CurrencyId = command.CurrencyGuid;
-            }
-            if (command.BuyPrice != null)
-            {
-                inventoryItem.BuyPrice = (command.BuyPrice > 0 ? command.BuyPrice : null);
             }
 
             await _db.SaveChangesAsync();
