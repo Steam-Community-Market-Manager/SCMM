@@ -53,7 +53,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             foreach (var app in steamApps)
             {
-                var media = new Dictionary<DateTime, string>();
+                var media = new Dictionary<DateTimeOffset, string>();
                 var itemStore = db.SteamItemStores
                     .Where(x => x.End == null)
                     .OrderByDescending(x => x.Start)

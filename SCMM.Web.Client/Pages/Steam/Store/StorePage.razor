@@ -158,10 +158,12 @@ else if (StoreList.Any())
                                                         }
                                                     </ChildContent>
                                                     <TooltipContent>
+                                                        @*
                                                         @if(!String.IsNullOrEmpty(item.Description))
                                                         {
                                                             <span>@item.Description</span>
                                                         }
+                                                        *@
                                                         @if(item.HasWorkshopFile)
                                                         {
                                                             <p>Click to view the items workshop page.</p>
@@ -179,42 +181,42 @@ else if (StoreList.Any())
                                             }
                                             @if (item.MarketRankTotal > 0)
                                             {
-                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
-                                                    <i class="fas fa-fw fa-balance-scale-left"></i>
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
                                                     <span>
                                                         <MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketRankIndex cheaper @item.ItemType.Pluralise(item.MarketRankTotal)</MudLink>
-                                                        <span> in the marketplace (@item.MarketRankTotal total).</span>
+                                                        <span class="mud-secondary-text"> in the marketplace (@item.MarketRankTotal total).</span>
                                                     </span>
                                                 </MudText>
                                             }
                                             @if (item.SalesMinimum > 0)
                                             {
-                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
-                                                    <i class="fas fa-fw fa-shopping-cart"></i>
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-shopping-cart mud-secondary-text"></i>
                                                     <span>
                                                         @if (item.SalesMaximum == null)
                                                         {
-                                                            <span>More than </span>
-                                                            <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() sold</MudLink>
+                                                            <span class="mud-secondary-text">More than </span>
+                                                            <span>@item.SalesMinimum.Value.ToQuantityString() sold</span>
                                                         }
                                                         else if (item.SalesMinimum == item.SalesMaximum)
                                                         {
-                                                            <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() sold</MudLink>
+                                                            <span>@item.SalesMinimum.Value.ToQuantityString() sold</span>
                                                         }
                                                         else
                                                         {
-                                                            <span>Between </span>
-                                                            <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.SalesMinimum.Value.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</MudLink>
+                                                            <span class="mud-secondary-text">Between </span>
+                                                            <span>@item.SalesMinimum.Value.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</span>
                                                         }
                                                     </span>
                                                 </MudText>
                                             }
                                             else if (item.Subscriptions > 0)
                                             {
-                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
-                                                    <i class="fas fa-fw fa-user"></i>
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-user mud-secondary-text"></i>
                                                     <span>
-                                                        <MudLink @onclick="@(() => ShowItemSalesDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.Subscriptions.Value.ToQuantityString() subscribers</MudLink>
+                                                        <span>@item.Subscriptions.Value.ToQuantityString() subscribers</span>
                                                     </span>
                                                 </MudText>
                                             }
@@ -222,23 +224,23 @@ else if (StoreList.Any())
                                             {
                                                 @foreach (var component in item.BreaksIntoComponents)
                                                 {
-                                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
-                                                        <i class="fas fa-fw fa-cubes"></i>
+                                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                        <i class="fas fa-fw fa-cubes mud-secondary-text"></i>
                                                         <span>
-                                                            <span>Breaks down into </span>
-                                                            <MudLink @onclick="@(() => ShowItemBreakdownDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@(component.Value)x @component.Key</MudLink>
+                                                            <span class="mud-secondary-text">Breaks down into </span>
+                                                            <span>@(component.Value)x @component.Key</span>
                                                         </span>
                                                     </MudText>
                                                 }
                                             }
                                             @if (!String.IsNullOrEmpty(item.ItemCollection))
                                             {
-                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap" GutterBottom>
-                                                    <i class="fas fa-fw fa-paint-roller"></i>
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-paint-roller mud-secondary-text"></i>
                                                     <span>
-                                                        <span>Part of the </span>
+                                                        <span class="mud-secondary-text">Part of the </span>
                                                         <MudLink @onclick="@(() => ShowItemCollectionDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink>
-                                                        <span> set</span>
+                                                        <span class="mud-secondary-text"> set</span>
                                                     </span>
                                                 </MudText>
                                             }

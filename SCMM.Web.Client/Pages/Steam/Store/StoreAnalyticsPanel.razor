@@ -38,13 +38,13 @@
                                 <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
                             </ChartPrimaryYAxis>
                             <ChartSeriesCollection>
-                                <ChartSeries XName="name" YName="subscriptions" Name="Subscribers Sales" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
+                                <ChartSeries XName="name" YName="subscriptions" Name="Subscribers Sales" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
-                                <ChartSeries XName="name" YName="knownInventoryDuplicates" Name="Known Duplicate Sales" ColumnWidth="0.5" Width="2" Fill="#8e24aa" Type="ChartSeriesType.StackingBar">
+                                <ChartSeries XName="name" YName="knownInventoryDuplicates" Name="Known Duplicate Sales" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#8e24aa" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
-                                <ChartSeries XName="name" YName="estimatedOtherDuplicates" Name="Estimated Extra Sales" ColumnWidth="0.5" Width="2" Fill="#fb8c00" Type="ChartSeriesType.StackingBar">
+                                <ChartSeries XName="name" YName="estimatedOtherDuplicates" Name="Estimated Extra Sales" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#fb8c00" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
-                                <ChartSeries XName="name" YName="total" Name="Total Sales" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                <ChartSeries XName="name" YName="total" Name="Total Sales" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
                                     <ChartMarker>
                                         <ChartDataLabel Visible="true" Name="totalText" Position="LabelPosition.Top">
                                             <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
@@ -85,13 +85,17 @@
                                 <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
                             </ChartPrimaryYAxis>
                             <ChartSeriesCollection>
-                                <ChartSeries XName="name" YName="authorRoyalties" Name="Item Author Revenue" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
+                                <ChartSeries XName="name" YName="authorRoyalties" Name="Item Author Revenue" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
-                                <ChartSeries XName="name" YName="platformFees" Name="Steam Revenue" ColumnWidth="0.5" Width="2" Fill="#171a21" Type="ChartSeriesType.StackingBar">
+                                @* 
+                                <ChartSeries XName="name" YName="platformFees" Name="Steam Revenue" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#171a21" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
-                                <ChartSeries XName="name" YName="publisherRevenue" Name="Facepunch Revenue" ColumnWidth="0.5" Width="2" Fill="#c5412b" Type="ChartSeriesType.StackingBar">
+                                <ChartSeries XName="name" YName="publisherRevenue" Name="Facepunch Revenue" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#c5412b" Type="ChartSeriesType.StackingBar">
+                                </ChartSeries
+                                *@
+                                <ChartSeries XName="name" YName="publisherRevenue" Name="Facepunch & Steam Revenue" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#171a21" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
-                                <ChartSeries XName="name" YName="total" Name="Total Revenue" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
+                                <ChartSeries XName="name" YName="total" Name="Total Revenue" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
                                     <ChartMarker>
                                         <ChartDataLabel Visible="true" Position="LabelPosition.Top">
                                             <ChartDataLabelFont FontWeight="600" Color="#eeeeee"></ChartDataLabelFont>
