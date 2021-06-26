@@ -16,23 +16,26 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("import-asset-description")]
         public async Task<RuntimeResult> ImportAssetDescriptionAsync(params ulong[] assetClassIds)
         {
+            var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
             foreach (var assetClassId in assetClassIds)
             {
-                try
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing asset description {assetClassId} ({Array.IndexOf(assetClassIds, assetClassId) + 1}/{assetClassIds.Length})..."
+                );
+
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
-                    _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
-                    {
-                        AppId = Constants.RustAppId,
-                        AssetClassId = assetClassId
-                    });
-                }
-                catch (Exception ex)
-                {
-                    await Context.Message.ReplyAsync($"{assetClassId}: {ex.Message}");
-                }
+                    AppId = Constants.RustAppId,
+                    AssetClassId = assetClassId
+                });
+
+                await _db.SaveChangesAsync();
             }
 
-            await _db.SaveChangesAsync();
+            await message.ModifyAsync(
+                x => x.Content = $"Imported {assetClassIds.Length}/{assetClassIds.Length} asset descriptions"
+            );
+
             return CommandResult.Success();
         }
 
@@ -86,16 +89,17 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
             await _db.SaveChangesAsync();
 
-            // Rebuild item collections (batch it, can take a while...)
-            foreach (var assetDescriptionBatch in assetDescriptions.Batch(100))
+            // Rebuild item collections
+            foreach (var batch in assetDescriptions.Batch(100))
             {
-                foreach (var assetDescription in assetDescriptionBatch)
+                foreach (var assetDescription in batch)
                 {
                     _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
                     {
                         AssetDescription = assetDescription
                     });
                 }
+
                 await _db.SaveChangesAsync();
             }
 
@@ -116,16 +120,21 @@ namespace SCMM.Discord.Bot.Server.Modules
                 })
                 .ToListAsync();
 
-            foreach (var item in items)
+            // Rebuild item accepted times
+            foreach (var batch in items.Batch(100))
             {
-                // Use the earliest date we know about
-                if (item.TimeAccepted < item.AssetDescription.TimeAccepted || item.AssetDescription.TimeAccepted == null)
+                foreach (var item in batch)
                 {
-                    item.AssetDescription.TimeAccepted = item.TimeAccepted;
+                    // Always use the earliest possible date that we know of
+                    if (item.TimeAccepted < item.AssetDescription.TimeAccepted || item.AssetDescription.TimeAccepted == null)
+                    {
+                        item.AssetDescription.TimeAccepted = item.TimeAccepted;
+                    }
                 }
+
+                await _db.SaveChangesAsync();
             }
 
-            await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
     }

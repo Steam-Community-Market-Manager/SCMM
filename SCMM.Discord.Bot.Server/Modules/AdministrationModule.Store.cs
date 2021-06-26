@@ -77,6 +77,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
+        /*
         [Command("rebuild-store-list")]
         public async Task<RuntimeResult> RebuildStoreListAsync()
         {
@@ -141,6 +142,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
+        */
 
         [Command("import-tgg-stores")]
         public async Task<RuntimeResult> ImportTGGStoresAsync()
@@ -148,7 +150,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var start = new DateTimeOffset(new DateTime(2017, 01, 01), TimeZoneInfo.Local.BaseUtcOffset);
             var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == Constants.RustAppId.ToString());
             var existingStores = await _db.SteamItemStores.ToListAsync();
-            
+
             do
             {
                 var videos = await _googleClient.SearchVideosAsync(
@@ -161,8 +163,8 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 var rustSkinVideos = videos
                     .Where(x => x.Title.Contains("Rust"))
-                    .Where(x => 
-                        !x.Title.Contains("Barrel") && !x.Title.Contains("Contest") && !x.Title.Contains("Winners") && !x.Title.Contains("Tutorials") && !x.Title.Contains("Coming") && 
+                    .Where(x =>
+                        !x.Title.Contains("Barrel") && !x.Title.Contains("Contest") && !x.Title.Contains("Winners") && !x.Title.Contains("Tutorials") && !x.Title.Contains("Coming") &&
                         !Regex.IsMatch(x.Title, @"^.*Top.*\|") && !Regex.IsMatch(x.Title, @"^.*Picks.*\|") && !Regex.IsMatch(x.Title, @"^.*Twitch.*\|")
                     )
                     .OrderBy(x => x.PublishedAt)
@@ -227,8 +229,6 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("import-web-archive-store-prices")]
         public async Task<RuntimeResult> ImportWebArchiveStorePricesAsync(string itemStoreUrl)
         {
-            var message = await Context.Message.ReplyAsync("Importing snapshots...");
-
             using var client = new HttpClient();
             var webArchiveSnapshotResponse = await client.GetAsync(
                 $"https://web.archive.org/cdx/search/cdx?url={Uri.EscapeUriString(itemStoreUrl)}"
@@ -242,6 +242,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 return CommandResult.Fail("No web archive snapshots found");
             }
 
+            var message = await Context.Message.ReplyAsync("Importing snapshots...");
             var webArchiveSnapshots = webArchiveSnapshotResponseText.Split('\n');
             foreach (var webArchiveSnapshot in webArchiveSnapshots)
             {
