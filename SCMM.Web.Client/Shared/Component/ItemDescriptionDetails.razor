@@ -1,5 +1,6 @@
 ﻿@namespace SCMM.Web.Client.Shared.Component
 @using SCMM.Web.Data.Models.UI.Item
+@inject IDialogService Dialogs
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
 
@@ -65,6 +66,17 @@
         }
         return String.Join(' ', classNames);
     }
+    
+    private void ViewItemDetailsDialog()
+    {
+        Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemName"] = Item.Name,
+            ["ItemUrl"] = $"api/item/{Item.Name}"
+        });
+    }
+    
+
     private void BuyItem()
     {
         if (!String.IsNullOrEmpty(PurchasableItem?.BuyNowUrl))

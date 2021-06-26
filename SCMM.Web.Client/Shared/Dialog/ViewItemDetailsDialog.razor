@@ -1,0 +1,171 @@
+﻿@namespace SCMM.Web.Client.Shared.Dialog
+@using SCMM.Web.Data.Models.UI.Item
+@inject ILogger<ViewItemDetailsDialog> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject UIState State
+
+<MudDialog>
+    <TitleContent>
+        @if (Item == null)
+        {
+            <MudText Typo="MudBlazor.Typo.h6">@ItemName</MudText>
+        } 
+        else
+        {
+            <MudAvatar Image="@Item.IconUrl" Size="MudBlazor.Size.Medium" />
+            <div class="d-inline-block ml-2">
+                <div class="collection-name">
+                    <MudText Typo="MudBlazor.Typo.h6">@Item.Name</MudText>
+                </div>
+                <div class="collection-description">
+                    <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
+                        <span>@Item.ItemType</span>
+                    </MudText>
+                </div>
+            </div>
+        }
+    </TitleContent>
+    <DialogContent>
+        @if (Item == null)
+        {
+            <Loading Message="Loading item..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+        } 
+        else
+        {
+            <MudGrid Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
+
+                <MudItem xs="6">
+                    <img src="@Item.IconLargeUrl" class="pa-4 full-width" />
+                </MudItem>
+                
+                <MudItem xs="6">
+                    <MudText Typo="MudBlazor.Typo.h5" Style="@($"color: {Item.ForegroundColour}")" GutterBottom>@Item.Name</MudText>
+                    <MudText Typo="MudBlazor.Typo.body1" GutterBottom>@Item.Description</MudText>
+                    @foreach (var component in Item.BreaksIntoComponents)
+                    {
+                        <MudText Typo="MudBlazor.Typo.body1" Class="no-wrap" GutterBottom>
+                            <span>Breaks down into @(component.Value)x @component.Key</span>
+                        </MudText>
+                    }
+                    <div class="my-3">
+                        <MudTooltip>
+                            <ChildContent>
+                                <MudChip Size="MudBlazor.Size.Small" Text="Tradable" Disabled="@(!Item.IsTradable)"
+                                         Icon="@(Item.IsTradable ? "fas fa-fw fa-exchange-alt mr-2" : "fas fa-fw fa-times")" 
+                                         Variant="@(Item.IsTradable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                         Color="@(Item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
+                            </ChildContent>
+                            <TooltipContent>
+                                @if (Item.IsTradable)
+                                {
+                                    @if (Item.TradableRestrictionDays > 0)
+                                    {
+                                        <span>This item <strong>can</strong> be traded <strong>@(Item.TradableRestrictionDays)</strong> day(s) after purchase</span>
+                                    }
+                                    else
+                                    {
+                                        <span>This item <strong>can</strong> be traded immediately after purchase</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span>This item <strong>cannot</strong> be traded once purchased</span>
+                                }
+                            </TooltipContent>
+                        </MudTooltip>
+                        <MudTooltip>
+                            <ChildContent>
+                                <MudChip Size="MudBlazor.Size.Small" Text="Marketable" Disabled="@(!Item.IsMarketable)"
+                                         Icon="@(Item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : "fas fa-fw fa-times")" 
+                                         Variant="@(Item.IsMarketable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                         Color="@(Item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
+                            </ChildContent>
+                            <TooltipContent>
+                                @if (Item.IsMarketable)
+                                {
+                                    @if (Item.MarketableRestrictionDays > 0)
+                                    {
+                                        <span>This item <strong>can</strong> be listed on the Steam Community Market after <strong>@(Item.MarketableRestrictionDays)</strong> day(s) after purchase</span>
+                                    }
+                                    else
+                                    {
+                                        <span>This item <strong>can</strong> be listed on the Steam Community Market immediately after purchase</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span>This item <strong>cannot</strong> be listed on the Steam Community Market once purchased</span>
+                                }
+                            </TooltipContent>
+                        </MudTooltip>
+                    </div>
+                    <MudButton Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Filled">View Workshop Item</MudButton>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    Collection...
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" GutterBottom>
+                        <span>@Item.MarketSellOrderCount</span>
+                        <span class="mud-secondary-text"> for sale starting at </span>
+                        <span>@State.Currency.ToPriceString(Item.MarketBuyPrice.Value)</span>
+                    </MudText>
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" GutterBottom>
+                        <span>@Item.MarketBuyOrderCount</span>
+                        <span class="mud-secondary-text"> for sale starting at </span>
+                        <span>@State.Currency.ToPriceString(Item.MarketSellPrice.Value)</span>
+                    </MudText>
+                </MudItem>
+                
+                <MudItem xs="12">
+                    Recent activity...
+                </MudItem>
+
+                <MudItem xs="12">
+                    Median sales prices...
+                </MudItem>
+
+            </MudGrid>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] 
+    public MudDialogInstance Dialog { get; set; }
+
+    [Parameter]
+    public string ItemName { get; set; }
+    
+    [Parameter]
+    public string ItemUrl { get; set; }
+
+    private ItemDetailedDTO Item { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Dialog.Options.CloseButton = true;
+        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Medium;
+        Dialog.Options.FullWidth = true; // force item images to scale equally
+        Dialog.SetOptions(Dialog.Options);
+
+        try
+        {
+            Item = await Http.GetFromJsonAsync<ItemDetailedDTO>(ItemUrl);
+            Dialog.ForceRender();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading the item details");
+            Snackbar.Add($"Unable to load item details. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+}
