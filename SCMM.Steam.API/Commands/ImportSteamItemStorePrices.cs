@@ -18,6 +18,8 @@ namespace SCMM.Steam.API.Commands
     public class ImportSteamItemStorePricesRequest : ICommand
     {
         public string ItemStoreUrl { get; set; }
+
+        public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.Now;
     }
 
     public class ImportSteamItemStorePrices : ICommandHandler<ImportSteamItemStorePricesRequest>
@@ -86,8 +88,9 @@ namespace SCMM.Steam.API.Commands
 
                 // Parse and update the store item prices
                 var itemPriceText = itemDefinitionPrice?.Value;
-                if (storeItem.Price == null && !String.IsNullOrEmpty(itemPriceText))
+                if (!storeItem.PricesAreLocked && !String.IsNullOrEmpty(itemPriceText))
                 {
+                    // NOTE: Unless specified in the prefix/suffix text, the price is assumed to be USD
                     var possibleCurrencies = currencies
                         .Where(x =>
                             (!String.IsNullOrEmpty(x.PrefixText) && itemPriceText.Contains(x.PrefixText)) ||
@@ -95,20 +98,30 @@ namespace SCMM.Steam.API.Commands
                         )
                         .OrderBy(x => Int32.Parse(x.SteamId));
 
-                    var itemPriceCurrency = possibleCurrencies.FirstOrDefault() ?? currencies.FirstOrDefault(x => x.Name == Constants.SteamDefaultCurrency);
+                    var itemPriceCurrency = (
+                        possibleCurrencies.FirstOrDefault() ?? 
+                        currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD)
+                    );
 
                     var itemPrice = itemPriceText.SteamPriceAsInt();
                     if (itemPrice > 0)
                     {
                         storeItem.Currency = itemPriceCurrency;
                         storeItem.Price = itemPrice;
-                        storeItem.Prices[itemPriceCurrency.Name] = itemPrice;
-                        //foreach (var currency in currencies)
-                        //{
-                        // Calculate exchange at date
-                        // Round to nearest $0.05 and subtract $0.01
-                        //storeItem.Prices[currency.Name] = currency.CalculateExchange(itemPrice, itemPriceCurrency);
-                        //}
+                        foreach (var currency in currencies)
+                        {
+                            var exchangeRate = await _db.SteamCurrencyExchangeRates
+                                .Where(x => x.CurrencyId == currency.Name)
+                                .Where(x => x.Timestamp > request.Timestamp)
+                                .OrderBy(x => x.Timestamp)
+                                .Take(1)
+                                .Select(x => x.ExchangeRateMultiplier)
+                                .FirstOrDefaultAsync();
+
+                            storeItem.Prices[currency.Name] = EconomyExtensions.SteamStorePriceRounded(
+                                exchangeRate.CalculateExchange(itemPrice)
+                            );
+                        }
                     }
                 }
             }

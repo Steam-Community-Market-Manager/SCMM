@@ -31,7 +31,7 @@ namespace SCMM.Web.Server.API.Controllers
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public StoreController(ILogger<StoreController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
+        public StoreController(ILogger<StoreController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mappere)
         {
             _logger = logger;
             _db = db;
@@ -362,12 +362,27 @@ namespace SCMM.Web.Server.API.Controllers
                 );
             }
 
-            if (storeItem.Price == null && command.StorePrice > 0)
+            if (!storeItem.PricesAreLocked && command.StorePrice > 0)
             {
-                storeItem.Currency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
+                // NOTE: This assumes the input price is supplied in USD
+                var currencies = await _db.SteamCurrencies.ToListAsync();
+                var storeCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+                storeItem.Currency = storeCurrency;
                 storeItem.Price = command.StorePrice;
-                // TODO: Update price list
-                storeItem.Prices[storeItem.Currency.Name] = command.StorePrice;
+                foreach (var currency in currencies)
+                {
+                    var exchangeRate = await _db.SteamCurrencyExchangeRates
+                        .Where(x => x.CurrencyId == currency.Name)
+                        .Where(x => x.Timestamp > store.Start)
+                        .OrderBy(x => x.Timestamp)
+                        .Take(1)
+                        .Select(x => x.ExchangeRateMultiplier)
+                        .FirstOrDefaultAsync();
+
+                    storeItem.Prices[currency.Name] = EconomyExtensions.SteamStorePriceRounded(
+                        exchangeRate.CalculateExchange(command.StorePrice)
+                    );
+                }
             }
 
             if (!store.Items.Any(x => x.ItemId == storeItem.Id))

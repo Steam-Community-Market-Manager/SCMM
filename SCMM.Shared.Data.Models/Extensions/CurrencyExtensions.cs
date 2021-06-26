@@ -5,41 +5,34 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class CurrencyExtensions
     {
-        public static long CalculateExchange(this IExchangeableCurrency localCurrency, long value, IExchangeableCurrency valueCurrency)
+        public static long CalculateExchange(this decimal exchangeRate, decimal value)
         {
-            if (localCurrency == null || valueCurrency == null)
+            return (long)Math.Floor(value * exchangeRate);
+        }
+
+        public static long CalculateExchange(this IExchangeableCurrency currency, decimal value)
+        {
+            return CalculateExchange((currency?.ExchangeRateMultiplier ?? 0), value);
+        }
+
+        public static long CalculateExchange(this IExchangeableCurrency sourceCurrency, long value, IExchangeableCurrency targetCurrency)
+        {
+            if (sourceCurrency == null || targetCurrency == null)
             {
                 return 0;
             }
 
-            var localValue = (decimal)value;
-            if (valueCurrency != localCurrency)
+            var targetValue = (decimal)value;
+            if (targetCurrency != sourceCurrency)
             {
                 var baseValue = value != 0
-                    ? value / valueCurrency.ExchangeRateMultiplier
+                    ? (value / targetCurrency.ExchangeRateMultiplier)
                     : 0m;
 
-                localValue = baseValue * localCurrency.ExchangeRateMultiplier;
+                targetValue = (baseValue * sourceCurrency.ExchangeRateMultiplier);
             }
 
-            return (long)Math.Floor(localValue);
-        }
-
-        public static long CalculateExchange(this IExchangeableCurrency localCurrency, decimal value)
-        {
-            if (localCurrency == null)
-            {
-                return 0;
-            }
-
-            var localValue = value * localCurrency.ExchangeRateMultiplier;
-            return (long)Math.Floor(localValue);
-        }
-
-        public static decimal ToPrice<T>(this T currency, long price, IExchangeableCurrency priceCurrency)
-            where T : ICurrency, IExchangeableCurrency
-        {
-            return currency?.ToPrice(currency.CalculateExchange(price, priceCurrency)) ?? 0;
+            return (long)Math.Floor(targetValue);
         }
 
         public static decimal ToPrice(this ICurrency currency, long price)
@@ -55,10 +48,10 @@ namespace SCMM.Shared.Data.Models.Extensions
             return localPrice;
         }
 
-        public static string ToPriceString<T>(this T currency, long price, IExchangeableCurrency priceCurrency, bool dense = false)
+        public static decimal ToPrice<T>(this T currency, long price, IExchangeableCurrency priceCurrency)
             where T : ICurrency, IExchangeableCurrency
         {
-            return currency?.ToPriceString(currency.CalculateExchange(price, priceCurrency), dense: dense);
+            return currency?.ToPrice(currency.CalculateExchange(price, priceCurrency)) ?? 0;
         }
 
         public static string ToPriceString(this ICurrency currency, long price, bool dense = false)
@@ -79,6 +72,12 @@ namespace SCMM.Shared.Data.Models.Extensions
                 localPriceString = $"{currency.PrefixText}{localPriceString}{currency.SuffixText}";
             }
             return localPriceString.Trim();
+        }
+
+        public static string ToPriceString<T>(this T currency, long price, IExchangeableCurrency priceCurrency, bool dense = false)
+            where T : ICurrency, IExchangeableCurrency
+        {
+            return currency?.ToPriceString(currency.CalculateExchange(price, priceCurrency), dense: dense);
         }
     }
 }

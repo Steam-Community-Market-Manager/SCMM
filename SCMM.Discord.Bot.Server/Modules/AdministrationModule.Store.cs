@@ -8,6 +8,7 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -256,7 +257,11 @@ namespace SCMM.Discord.Bot.Server.Modules
                 {
                     await _commandProcessor.ProcessAsync(new ImportSteamItemStorePricesRequest()
                     {
-                        ItemStoreUrl = $"http://web.archive.org/web/{snapshot}/{Uri.EscapeUriString(itemStoreUrl)}"
+                        ItemStoreUrl = $"http://web.archive.org/web/{snapshot}/{Uri.EscapeUriString(itemStoreUrl)}",
+                        Timestamp = new DateTimeOffset(
+                            DateTime.ParseExact(snapshot, "yyyyMMddHHmmss", CultureInfo.InvariantCulture), 
+                            TimeZoneInfo.Utc.BaseUtcOffset
+                        )
                     });
 
                     await _db.SaveChangesAsync();

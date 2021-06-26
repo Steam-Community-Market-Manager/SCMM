@@ -113,5 +113,24 @@ namespace SCMM.Steam.Data.Models.Extensions
             nAmount = Math.Max(nAmount, 0);
             return nAmount;
         }
+
+        public static long SteamStorePriceRounded(this long value)
+        {
+            if (value <= 0)
+            {
+                return value;
+            }
+
+            // Round to the nearest $0.05.
+            var roundedValue = (long)(Math.Round(value / 5.0) * 5);
+
+            // If the price is a multiple of $0.10, subtract $0.01 physiologically pricing.
+            if ((roundedValue % 10) == 0)
+            {
+                roundedValue -= 1;
+            }
+
+            return roundedValue;
+        }
     }
 }
