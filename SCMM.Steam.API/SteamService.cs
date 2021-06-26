@@ -109,9 +109,10 @@ namespace SCMM.Steam.API
                 SteamId = asset.Name,
                 AppId = app.Id,
                 Description = assetDescription,
-                Prices = new PersistablePriceDictionary(prices),
-                Price = (long)prices.FirstOrDefault(x => x.Key == currency.Name).Value,
                 Currency = currency,
+                Price = (long)prices.FirstOrDefault(x => x.Key == currency.Name).Value,
+                Prices = new PersistablePriceDictionary(prices),
+                PricesAreLocked = true, // we are 100% confident that these are correct
                 IsAvailable = true
             });
 

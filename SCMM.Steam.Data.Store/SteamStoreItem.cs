@@ -30,6 +30,11 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public PersistablePriceDictionary Prices { get; set; }
 
+        /// <summary>
+        /// If true, the price are locked and have been confirmed as 100% accurate
+        /// </summary>
+        public bool PricesAreLocked { get; set; }
+
         public long? TotalSalesMin { get; set; }
 
         public long? TotalSalesMax { get; set; }
