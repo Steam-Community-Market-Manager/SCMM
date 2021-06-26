@@ -137,18 +137,36 @@ namespace SCMM.Steam.Data.Store
 
         public IEnumerable<Price> GetPrices()
         {
-            if (StoreItem != null && StoreItem.IsAvailable && StoreItem.Price != null && StoreItem.Currency != null)
+            if (StoreItem != null && StoreItem.IsAvailable)
             {
-                yield return new Price
+                // TODO: If currency is available, we should return the price in the local currency rather than converting it
+                /* if (StoreItem.Prices != null && AppState.Currency != null)
                 {
-                    Type = PriceType.SteamStore,
-                    Currency = StoreItem.Currency,
-                    BuyPrice = StoreItem.Price.Value,
-                    BuyUrl = new SteamStorePageRequest()
+                    yield return new Price
                     {
-                        AppId = (StoreItem.App?.SteamId ?? App?.SteamId)
-                    }
-                };
+                        Type = PriceType.SteamStore,
+                        Currency = AppState.Currency,
+                        BuyPrice = StoreItem.Prices[AppState.Currency],
+                        BuyUrl = new SteamStorePageRequest()
+                        {
+                            AppId = (StoreItem.App?.SteamId ?? App?.SteamId)
+                        }
+                    };
+                }
+                else */
+                if (StoreItem.Price != null && StoreItem.Currency != null)
+                {
+                    yield return new Price
+                    {
+                        Type = PriceType.SteamStore,
+                        Currency = StoreItem.Currency,
+                        BuyPrice = StoreItem.Price.Value,
+                        BuyUrl = new SteamStorePageRequest()
+                        {
+                            AppId = (StoreItem.App?.SteamId ?? App?.SteamId)
+                        }
+                    };
+                }
             }
             if (MarketItem != null)
             {
