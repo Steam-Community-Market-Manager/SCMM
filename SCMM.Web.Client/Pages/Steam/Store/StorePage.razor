@@ -96,7 +96,7 @@ else if (StoreList.Any())
                 {
                     <MudItem xs="12" sm="6" md="4" xl="3">
                         <div class="store-item full-height">
-                            <MudCard Outlined="true" Class="full-height">
+                            <MudCard Outlined="true" Class="full-height d-flex flex-column">
                                 <MudCardHeader>
                                     <CardHeaderAvatar>
                                         <MudTooltip Text="@item.AuthorName">
@@ -141,8 +141,8 @@ else if (StoreList.Any())
                                         </div>
                                     </CardHeaderActions>
                                 </MudCardHeader>
-                                <MudCardContent>
-                                    <MudGrid Spacing="1">
+                                <MudCardContent Class="d-flex flex-column flex-grow-1">
+                                    <MudGrid Spacing="1" Class="flex-grow-1">
 
                                         <MudItem xs="5">
                                             <div class="item-image">
@@ -324,23 +324,29 @@ else if (StoreList.Any())
                                             }
                                         </MudItem>
                                     
-                                        @if (item.StorePrice > 0)
-                                        {
-                                            <MudItem xs="5" Class="text-centered">
-                                                <div class="d-flex flex-row justify-center align-center">
+                                        <MudItem xs="5" Class="text-centered">
+                                            <div class="d-flex flex-row justify-center align-center">
+                                                @if (item.StorePrice > 0)
+                                                {
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableFromStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Class="@($"no-wrap {(item.IsStillAvailableFromStore ? null : "text-line-through")}")">
                                                         <span>@State.Currency.ToPriceString(item.StorePrice.Value)</span>
                                                     </MudText>
-                                                </div>
-                                            </MudItem>
-                                            <MudItem xs="7" Class="text-centered d-flex align-stretch">
-                                                <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableFromStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
-                                                           Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableFromStore)" FullWidth>
-                                                    <RustTransparentIcon />        
-                                                    <strong class="ml-1">Store</strong>
-                                                </MudButton>
-                                            </MudItem>
-                                        }
+                                                }
+                                                else
+                                                {
+                                                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="px-4">
+                                                        <span>Store price is not available in your currency</span>
+                                                    </MudText>
+                                                }
+                                            </div>
+                                        </MudItem>
+                                        <MudItem xs="7" Class="text-centered d-flex align-stretch">
+                                            <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableFromStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                                        Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableFromStore)" FullWidth>
+                                                <RustTransparentIcon />        
+                                                <strong class="ml-1">Store</strong>
+                                            </MudButton>
+                                        </MudItem>
 
                                         @if (item.HasMarketListing)
                                         {

@@ -7,22 +7,30 @@
         <MudText Typo="MudBlazor.Typo.h6">Store List</MudText>
     </TitleContent>
     <DialogContent>
-        <MudExpansionPanels MultiExpansion="true" Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
+        <MudExpansionPanels Elevation="0" DisableBorders="true" Dense="true" Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
             @foreach (var group in List.GroupBy(x => x.Start.Year))
             {
-                <MudExpansionPanel Text="@group.Key.ToString()">
-                    <MudList Clickable="true" Dense="true" DisablePadding="true">
-                        @foreach (var item in group.OrderByDescending(x => x.Start))
-                        {
-                            <MudListItem OnClick="@(() => ViewStore(item))">
-                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" Class="no-wrap">@item.Start.ToString("MMMM d")@item.Start.GetDaySuffix()</MudText>
-                                @if(!String.IsNullOrEmpty(item.Name))
-                                {
-                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="">@item.Name</MudText>
-                                }
-                            </MudListItem>
-                        }
-                    </MudList>
+                <MudExpansionPanel>
+                    <TitleContent>
+                        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Primary">
+                            <i class="fas fa-fw fa-calendar mr-1"></i>
+                            <span>@group.Key.ToString()</span>
+                        </MudText>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudList Clickable="true" Dense="true" DisablePadding="true">
+                            @foreach (var item in group.OrderByDescending(x => x.Start))
+                            {
+                                <MudListItem OnClick="@(() => ViewStore(item))">
+                                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" Class="no-wrap">@item.Start.ToString("MMMM d")@item.Start.GetDaySuffix()</MudText>
+                                    @if(!String.IsNullOrEmpty(item.Name))
+                                    {
+                                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="">@item.Name</MudText>
+                                    }
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </ChildContent>
                 </MudExpansionPanel>
             }
         </MudExpansionPanels>
