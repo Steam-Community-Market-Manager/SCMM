@@ -2,7 +2,7 @@
 @using SCMM.Web.Data.Models.UI.Item
 @inject IDialogService Dialogs
 @inject ExternalNavigationManager ExternalNavigationManager
-@inject UIState State
+@inject AppState State
 
 <div class="@($"item {GetDynamicClassNames()} mud-paper")" @onclick="@(() => BuyItem())">
     <div class="item-icon hover-zoom">
