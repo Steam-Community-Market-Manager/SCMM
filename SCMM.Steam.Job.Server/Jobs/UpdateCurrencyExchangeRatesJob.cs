@@ -7,11 +7,14 @@ using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +40,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             var commnityClient = scope.ServiceProvider.GetService<SteamCommunityWebClient>();
             var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+            var timeChecked = DateTimeOffset.UtcNow;
 
             var mostExpensiveItem = db.SteamMarketItems
                 .Include(x => x.App)
@@ -68,49 +72,81 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return;
             }
 
-            await using var messageSender = serviceBusClient.CreateSender<CurrencyExchangeRateUpdateMessage>();
-            using var messageBatch = await messageSender.CreateMessageBatchAsync();
+            // Update exchange rates for currencies
+            var currencyPrices = new Dictionary<SteamCurrency, SteamMarketPriceOverviewJsonResponse>();
             foreach (var currency in currencies.OrderByDescending(x => x.IsDefault))
             {
-                var response = await commnityClient.GetMarketPriceOverview(new SteamMarketPriceOverviewJsonRequest()
-                {
-                    AppId = mostExpensiveItem.App.SteamId,
-                    MarketHashName = mostExpensiveItem.Description.Name,
-                    Language = language.SteamId,
-                    CurrencyId = currency.SteamId,
-                    NoRender = true
-                });
+                var response = await commnityClient.GetMarketPriceOverview(
+                    new SteamMarketPriceOverviewJsonRequest()
+                    {
+                        AppId = mostExpensiveItem.App.SteamId,
+                        MarketHashName = mostExpensiveItem.Description.Name,
+                        Language = language.SteamId,
+                        CurrencyId = currency.SteamId,
+                        NoRender = true
+                    }
+                );
+
                 if (response?.Success != true)
                 {
                     continue;
                 }
 
-                var localPrice = response.LowestPrice.SteamPriceAsInt();
+                currencyPrices[currency] = response;
+                var currencyPrice = response.LowestPrice.SteamPriceAsInt();
                 if (currency == systemCurrency)
                 {
-                    systemCurrencyPrice = localPrice;
+                    systemCurrencyPrice = currencyPrice;
                 }
-                if (localPrice > 0 && systemCurrencyPrice > 0)
+                if (currencyPrice > 0 && systemCurrencyPrice > 0)
                 {
-                    currency.ExchangeRateMultiplier = ((decimal)localPrice / systemCurrencyPrice);
+                    currency.ExchangeRateMultiplier = ((decimal)currencyPrice / systemCurrencyPrice);
                 }
 
+                // TODO: Find a better way to deal with Steam's rate limiting.
+                Thread.Sleep(3000);
+            }
+
+            // Add a historical record for each currency exchange rate change
+            var basePrice = currencyPrices.FirstOrDefault(x => x.Key.Name == Constants.SteamDefaultCurrency);
+            if (basePrice.Value?.Success == true)
+            {
+                foreach (var currencyPrice in currencyPrices)
+                {
+                    var baseLowestPrice = basePrice.Value.LowestPrice.SteamPriceAsInt();
+                    var currencyLowestPrice = currencyPrice.Value.LowestPrice.SteamPriceAsInt();
+                    var exchangeRateMultiplier = (baseLowestPrice > 0 && currencyLowestPrice > 0)
+                        ? ((decimal)currencyLowestPrice / (decimal)baseLowestPrice)
+                        : (0);
+
+                    db.SteamCurrencyExchangeRates.Add(
+                        new SteamCurrencyExchangeRate()
+                        {
+                            CurrencyId = currencyPrice.Key.Name,
+                            Timestamp = timeChecked,
+                            ExchangeRateMultiplier = exchangeRateMultiplier
+                        }
+                    );
+                }
+            }
+
+            db.SaveChanges();
+            
+            await using var messageSender = serviceBusClient.CreateSender<CurrencyExchangeRateUpdateMessage>();
+            using var messageBatch = await messageSender.CreateMessageBatchAsync();
+            foreach (var currencyPrice in currencyPrices)
+            {
                 messageBatch.TryAddMessage(
                     new ServiceBusMessage(BinaryData.FromObjectAsJson(
                         new CurrencyExchangeRateUpdateMessage()
                         {
                             Timestamp = DateTime.UtcNow,
-                            Currency = currency.Name,
-                            ExchangeRateMultiplier = currency.ExchangeRateMultiplier
+                            Currency = currencyPrice.Key.Name,
+                            ExchangeRateMultiplier = currencyPrice.Key.ExchangeRateMultiplier
                         }
                     ))
                 );
-
-                // TODO: Find a better way to bypass rate limiting.
-                Thread.Sleep(3000);
             }
-
-            db.SaveChanges();
 
             await messageSender.SendMessagesAsync(messageBatch);
         }
