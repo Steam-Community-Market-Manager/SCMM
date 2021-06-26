@@ -9,6 +9,7 @@ namespace SCMM.Steam.Data.Store
 
         public DbSet<SteamLanguage> SteamLanguages { get; set; }
         public DbSet<SteamCurrency> SteamCurrencies { get; set; }
+        public DbSet<SteamCurrencyExchangeRate> SteamCurrencyExchangeRates { get; set; }
         public DbSet<SteamApp> SteamApps { get; set; }
         public DbSet<SteamItemStore> SteamItemStores { get; set; }
         public DbSet<SteamStoreItem> SteamStoreItems { get; set; }
@@ -118,6 +119,9 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamCurrency>()
                 .HasIndex(x => x.SteamId)
                 .IsUnique(true);
+
+            builder.Entity<SteamCurrencyExchangeRate>()
+                .HasKey(x => new { x.CurrencyId, x.Timestamp });
 
             builder.Entity<SteamItemStore>()
                 .HasIndex(x => new { x.AppId, x.Start, x.End })
