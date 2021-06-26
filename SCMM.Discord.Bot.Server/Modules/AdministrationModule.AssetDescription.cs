@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models.Extensions;
@@ -17,11 +18,18 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             foreach (var assetClassId in assetClassIds)
             {
-                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                try
                 {
-                    AppId = Constants.RustAppId,
-                    AssetClassId = assetClassId
-                });
+                    _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                    {
+                        AppId = Constants.RustAppId,
+                        AssetClassId = assetClassId
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await Context.Message.ReplyAsync($"{assetClassId}: {ex.Message}");
+                }
             }
 
             await _db.SaveChangesAsync();
