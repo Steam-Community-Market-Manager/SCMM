@@ -31,7 +31,7 @@ namespace SCMM.Web.Server.API.Controllers
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public StoreController(ILogger<StoreController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mappere)
+        public StoreController(ILogger<StoreController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
