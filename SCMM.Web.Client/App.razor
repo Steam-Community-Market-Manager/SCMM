@@ -1,6 +1,6 @@
 @inject ILogger<App> Logger
 @inject ISnackbar Snackbar
-@inject AppState AppState
+@inject UIState UIState
 @inject HttpClient Http
 
 <AppProviders />
@@ -22,25 +22,25 @@
 
 @code {
 
-    private AppState State { get; set; }
+    private UIState State { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (!(await AppState.ReadFromStorageAsync()))
+            if (!(await UIState.ReadFromStorageAsync()))
             {
-                await AppState.TryGuessLocalityAsync();
-                await AppState.WriteToStorageAsync();
+                await UIState.TryGuessLocalityAsync();
+                await UIState.WriteToStorageAsync();
             }
-            await AppState.RefreshAsync(Http);
+            await UIState.RefreshAsync(Http);
 
-            State = AppState;
+            State = UIState;
             State.Changed += (s, e) => StateHasChanged();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to initialise app state");
+            Logger.LogError(ex, "Failed to initialise application state");
             Snackbar.Add($"Unable to load application state. {ex.Message}", MudBlazor.Severity.Error);
         }
     }

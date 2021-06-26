@@ -21,7 +21,7 @@ namespace SCMM.Web.Client
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddSingleton<AppState>();
+            builder.Services.AddSingleton<UIState>();
             builder.Services.AddSingleton<LocalStorageService>();
             builder.Services.AddSingleton<ExternalNavigationManager>();
             builder.Services.AddSingleton<DocumentManager>();
@@ -29,7 +29,7 @@ namespace SCMM.Web.Client
             builder.Services.AddHttpClient("default", (serviceProvider, client) =>
             {
                 client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
-                var state = serviceProvider.GetService<AppState>();
+                var state = serviceProvider.GetService<UIState>();
                 if (state != null)
                 {
                     state.AddHeadersTo(client);

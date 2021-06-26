@@ -5,7 +5,7 @@
 @inject ILogger<InventoryPage> Logger
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
-@inject AppState State
+@inject UIState State
 
 <PageContainer Title="@(Profile != null ? $"Inventory - {Profile.Name}" : "Inventory")">
     <MudGrid Spacing="2">
