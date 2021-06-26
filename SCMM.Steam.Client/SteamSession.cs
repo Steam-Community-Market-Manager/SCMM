@@ -39,7 +39,6 @@ namespace SCMM.Steam.Client
                     else
                     {
                         _logger.LogError($"Steam login was unsuccessful (result: {result})");
-                        Reset();
                     }
 
                     // Refresh cookies
@@ -51,21 +50,7 @@ namespace SCMM.Steam.Client
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Steam login was unsuccessful");
-                    Reset();
                 }
-            }
-        }
-
-        public void Reset()
-        {
-            lock (_lock)
-            {
-                // Clear cookies
-                var steamCommunityCookies = _cookies.GetCookies(new Uri(Constants.SteamCommunityUrl));
-                steamCommunityCookies?.Clear();
-
-                // Clear session
-                _session = null;
             }
         }
 
