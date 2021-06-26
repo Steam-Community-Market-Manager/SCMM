@@ -367,6 +367,7 @@ namespace SCMM.Web.Server.API.Controllers
                 storeItem.Currency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
                 storeItem.Price = command.StorePrice;
                 // TODO: Update price list
+                storeItem.Prices[storeItem.Currency.Name] = command.StorePrice;
             }
 
             if (!store.Items.Any(x => x.ItemId == storeItem.Id))
