@@ -4,7 +4,7 @@
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
 
-<div class="@($"item {GetDynamicClassNames()} mud-paper")" @onclick="@(() => BuyItem())">
+<div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => BuyItem())">
     <div class="item-icon hover-zoom">
         <img src="@Item.IconUrl" />
     </div>
