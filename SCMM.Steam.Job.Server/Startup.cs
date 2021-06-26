@@ -84,17 +84,15 @@ namespace SCMM.Steam.Job.Server
             services.AddScoped<SteamService>();
 
             // Jobs
-            services.AddHostedService<DeleteExpiredImageDataJob>();
-            services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
-            services.AddHostedService<RepairMissingAppFiltersJob>();
-            services.AddHostedService<UpdateAssetDescriptionsJob>();
-            services.AddHostedService<CheckForNewMarketItemsJob>();
             services.AddHostedService<CheckForNewStoreItemsJob>();
-            services.AddHostedService<CheckYouTubeForNewStoreVideosJobs>();
-            services.AddHostedService<UpdateMarketItemOrdersJob>();
             services.AddHostedService<UpdateMarketItemSalesJob>();
+            services.AddHostedService<UpdateMarketItemOrdersJob>();
+            services.AddHostedService<DeleteExpiredImageDataJob>();
             services.AddHostedService<UpdateCurrentStoreStatisticsJob>();
-            services.AddHostedService<RecalculateMarketItemSnapshotsJob>();
+            services.AddHostedService<UpdateAssetDescriptionsJob>();
+            services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
+            services.AddHostedService<CheckForNewMarketItemsJob>();
+            services.AddHostedService<CheckYouTubeForNewStoreVideosJobs>();
 
             // Controllers
             services.AddControllersWithViews(options =>
