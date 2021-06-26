@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Azure.ServiceBus.Extensions;
+using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;

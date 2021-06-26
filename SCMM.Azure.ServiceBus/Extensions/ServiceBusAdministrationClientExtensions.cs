@@ -1,10 +1,10 @@
 ﻿using Azure.Messaging.ServiceBus.Administration;
-using SCMM.Shared.Azure.ServiceBus.Attributes;
+using SCMM.Azure.ServiceBus.Attributes;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace SCMM.Shared.Azure.ServiceBus.Extensions
+namespace SCMM.Azure.ServiceBus.Extensions
 {
     public static class ServiceBusAdministrationClientExtensions
     {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using SCMM.Steam.Data.Models;
 using SteamAuth;
 using System;
 using System.Net;

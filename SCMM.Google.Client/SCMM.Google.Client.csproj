@@ -17,8 +17,4 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-preview.5.21301.5" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SCMM.Google.Data.Models\SCMM.Google.Data.Models.csproj" />
-  </ItemGroup>
-
 </Project>

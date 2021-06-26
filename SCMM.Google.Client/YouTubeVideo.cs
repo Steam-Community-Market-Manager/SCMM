@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Google.Data.Models
+namespace SCMM.Google.Client
 {
     public class YouTubeVideo
     {

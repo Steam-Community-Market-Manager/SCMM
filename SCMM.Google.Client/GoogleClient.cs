@@ -2,7 +2,6 @@
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using Microsoft.Extensions.Logging;
-using SCMM.Google.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

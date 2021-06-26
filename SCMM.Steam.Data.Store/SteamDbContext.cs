@@ -222,7 +222,7 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamStoreItem>()
                 .HasOne(x => x.Currency);
             builder.Entity<SteamStoreItem>()
-                .OwnsOne(x => x.Prices);;
+                .OwnsOne(x => x.Prices);
 
             builder.Entity<SteamStoreItemItemStore>()
                 .HasKey(bc => new { bc.ItemId, bc.StoreId });

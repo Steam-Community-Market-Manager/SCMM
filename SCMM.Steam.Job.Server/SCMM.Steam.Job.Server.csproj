@@ -25,7 +25,6 @@
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
     <ProjectReference Include="..\SCMM.Google.Client\SCMM.Google.Client.csproj" />
-    <ProjectReference Include="..\SCMM.Shared.Azure.ServiceBus\SCMM.Shared.Azure.ServiceBus.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Web\SCMM.Shared.Web.csproj" />
     <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />

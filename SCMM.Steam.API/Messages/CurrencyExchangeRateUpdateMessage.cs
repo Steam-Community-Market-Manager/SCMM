@@ -1,5 +1,5 @@
-﻿using SCMM.Shared.Azure.ServiceBus;
-using SCMM.Shared.Azure.ServiceBus.Attributes;
+﻿using SCMM.Azure.ServiceBus;
+using SCMM.Azure.ServiceBus.Attributes;
 using System;
 
 namespace SCMM.Steam.API.Messages

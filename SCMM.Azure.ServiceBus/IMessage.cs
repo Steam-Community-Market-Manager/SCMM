@@ -1,4 +1,4 @@
-﻿namespace SCMM.Shared.Azure.ServiceBus
+﻿namespace SCMM.Azure.ServiceBus
 {
     public interface IMessage
     {

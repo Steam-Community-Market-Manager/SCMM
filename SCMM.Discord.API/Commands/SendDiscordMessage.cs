@@ -1,7 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using CommandQuery;
+using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Discord.API.Messages;
-using SCMM.Shared.Azure.ServiceBus.Extensions;
 using System;
 using System.Threading.Tasks;
 

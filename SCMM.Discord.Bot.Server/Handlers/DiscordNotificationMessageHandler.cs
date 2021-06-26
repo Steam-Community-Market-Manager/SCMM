@@ -1,7 +1,7 @@
-﻿using SCMM.Discord.API.Messages;
+﻿using SCMM.Azure.ServiceBus;
+using SCMM.Azure.ServiceBus.Attributes;
+using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
-using SCMM.Shared.Azure.ServiceBus;
-using SCMM.Shared.Azure.ServiceBus.Attributes;
 using System.Drawing;
 using System.Threading.Tasks;
 

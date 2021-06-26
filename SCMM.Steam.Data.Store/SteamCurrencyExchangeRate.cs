@@ -1,6 +1,4 @@
-﻿using SCMM.Shared.Data.Models;
-using SCMM.Shared.Data.Store;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

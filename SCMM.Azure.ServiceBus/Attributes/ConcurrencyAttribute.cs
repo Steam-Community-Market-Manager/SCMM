@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SCMM.Shared.Azure.ServiceBus.Attributes
+namespace SCMM.Azure.ServiceBus.Attributes
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class ConcurrencyAttribute : Attribute

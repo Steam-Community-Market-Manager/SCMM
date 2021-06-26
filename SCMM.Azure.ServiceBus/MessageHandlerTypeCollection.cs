@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace SCMM.Shared.Azure.ServiceBus
+namespace SCMM.Azure.ServiceBus
 {
     public class MessageHandlerTypeCollection
     {

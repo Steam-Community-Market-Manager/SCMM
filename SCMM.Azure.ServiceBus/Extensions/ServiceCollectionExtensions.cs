@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SCMM.Shared.Data.Models.Extensions;
 using System.Reflection;
 
-namespace SCMM.Shared.Azure.ServiceBus.Extensions
+namespace SCMM.Azure.ServiceBus.Extensions
 {
     public static class ServiceCollectionExtensions
     {

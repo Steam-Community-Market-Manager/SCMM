@@ -1,5 +1,6 @@
 ﻿using CommandQuery;
 using Discord.Commands;
+using SCMM.Fixer.Client;
 using SCMM.Google.Client;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Store;
@@ -17,14 +18,16 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly SteamWebClient _steamWebClient;
+        private readonly FixerWebClient _fixerWebClient;
         private readonly GoogleClient _googleClient;
 
-        public AdministrationModule(SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamWebClient steamWebClient, GoogleClient googleClient)
+        public AdministrationModule(SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamWebClient steamWebClient, FixerWebClient fixerWebClient, GoogleClient googleClient)
         {
             _db = db;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _steamWebClient = steamWebClient;
+            _fixerWebClient = fixerWebClient;
             _googleClient = googleClient;
         }
     }

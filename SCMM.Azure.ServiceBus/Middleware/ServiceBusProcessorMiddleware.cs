@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Azure.ServiceBus.Attributes;
-using SCMM.Shared.Azure.ServiceBus.Extensions;
+using SCMM.Azure.ServiceBus.Attributes;
+using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using System;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace SCMM.Shared.Azure.ServiceBus.Middleware
+namespace SCMM.Azure.ServiceBus.Middleware
 {
     public class ServiceBusProcessorMiddleware : IAsyncDisposable
     {
