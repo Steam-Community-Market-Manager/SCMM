@@ -353,7 +353,7 @@ else
     private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, string value)
     {
         var oldBuyPrice = item.BuyPrice;
-        var buyPrice = value.SteamPriceAsInt(useDecimalShortCircuit: false);
+        var buyPrice = value.SteamPriceAsInt(culture: CultureInfo.InvariantCulture, useDecimalShortCircuit: false);
         if (buyPrice != oldBuyPrice)
         {
             try 

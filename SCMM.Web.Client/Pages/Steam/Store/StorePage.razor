@@ -598,12 +598,13 @@ else if (StoreList.Any())
     {
         try
         {
+            var storePriceText = Math.Round(LinkedItemStorePrice, 2).ToString();
             var response = await Http.PostAsJsonAsync(
                 $"api/store/{Store.Guid}/linkItem",
                 new LinkStoreItemCommand()
                 {
                     AssetDescriptionId = LinkedItem.Id,
-                    StorePrice = EconomyExtensions.SteamPriceAsInt($"{Math.Round(LinkedItemStorePrice, 2)}")
+                    StorePrice = storePriceText.SteamPriceAsInt(culture: CultureInfo.InvariantCulture, useDecimalShortCircuit: false)
                 }
             );
 
