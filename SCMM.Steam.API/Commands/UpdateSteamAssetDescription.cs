@@ -126,9 +126,15 @@ namespace SCMM.Steam.API.Commands
                 var publishedFile = request.PublishedFile;
                 assetDescription.AssetType = SteamAssetDescriptionType.WorkshopItem;
                 assetDescription.WorkshopFileId = publishedFile.PublishedFileId;
+                assetDescription.NameWorkshop = publishedFile.Title;
+                assetDescription.DescriptionWorkshop = publishedFile.Description;
                 assetDescription.PreviewUrl = publishedFile.PreviewUrl?.ToString();
+                assetDescription.PreviewContentId = publishedFile.PreviewContentHandle;
                 assetDescription.CurrentSubscriptions = (long?)publishedFile.Subscriptions;
-                assetDescription.TotalSubscriptions = (long?)publishedFile.LifetimeSubscriptions;
+                assetDescription.LifetimeSubscriptions = (long?)publishedFile.LifetimeSubscriptions;
+                assetDescription.CurrentFavourited = (long?)publishedFile.Favorited;
+                assetDescription.LifetimeFavourited = (long?)publishedFile.LifetimeFavorited;
+                assetDescription.Views = (long?)publishedFile.Views;
                 assetDescription.IsBanned = publishedFile.Banned;
                 assetDescription.BanReason = publishedFile.BanReason;
                 assetDescription.TimeCreated = publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null;
@@ -246,7 +252,7 @@ namespace SCMM.Steam.API.Commands
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, $"Unable to import asset description image. {ex.Message}");
+                    _logger.LogWarning(ex, $"Unable to import asset description preview image. {ex.Message}");
                 }
             }
 
@@ -503,6 +509,24 @@ namespace SCMM.Steam.API.Commands
                                 item.ItemCollection = newItemCollection;
                             }
                         }
+                    }
+                }
+            }
+
+            // Parse name and description to determine if this item glows
+            if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
+            {
+                var descriptionText = String.Join(' ',
+                    assetDescription.Name, assetDescription.NameWorkshop, assetDescription.Description, assetDescription.DescriptionWorkshop
+                );
+
+                // If the words "not glow" or "no glow" appear anywhere in the description, it probably doesn't glow
+                if (!Regex.IsMatch(descriptionText, @"no[t]* glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                {
+                    // If the word "glow" appears, it probably is a glowing item
+                    if (Regex.IsMatch(descriptionText, @"glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                    {
+                        assetDescription.Tags[Constants.RustAssetTagGlow] = (Char.ToUpper(Constants.RustAssetTagGlow[0]) + Constants.RustAssetTagGlow.Substring(1));
                     }
                 }
             }

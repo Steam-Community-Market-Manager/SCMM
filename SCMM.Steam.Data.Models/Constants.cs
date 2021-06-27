@@ -58,6 +58,9 @@
 
         public const string RustItemTypeLR300 = "LR300";
 
+        public const string RustAssetTagGlow = "glow";
+        public const string RustAssetTagGlowSights = "glowsight";
+
         #endregion
 
         #region SCMM
