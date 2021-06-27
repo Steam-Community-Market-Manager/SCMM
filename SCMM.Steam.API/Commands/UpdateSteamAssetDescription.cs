@@ -531,9 +531,9 @@ namespace SCMM.Steam.API.Commands
                 if (!nonGlowingItemTypes.Contains(assetDescription.ItemType))
                 {
                     // Check that phrases like "no glow", "not glowing", "doesn't glow", "don't glow", "non-glow", etc don't appear anywhere in the description. If they do, then it probably doesn't glow
-                    if (!(Regex.IsMatch(descriptionText, @"\bno[t]*\b[^\.\n]*\bglow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) ||
-                        Regex.IsMatch(descriptionText, @"\bdo[es]*n't*\b[^\.\n]*\bglow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) ||
-                        Regex.IsMatch(descriptionText, @"\bnon[-]*glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)))
+                    if (!Regex.IsMatch(descriptionText, @"\bno[t]*\b[^\.\n]*\bglow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
+                        !Regex.IsMatch(descriptionText, @"\bdo[es]*n't*\b[^\.\n]*\bglow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
+                        !Regex.IsMatch(descriptionText, @"\bnon[-]*glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                     {
                         // Now check if the words "glow" or "glowing" appear. If so, then it is probably a glowing item
                         if (Regex.IsMatch(descriptionText, @"\bglow[ing]*\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
