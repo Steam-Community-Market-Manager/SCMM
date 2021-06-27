@@ -6,6 +6,30 @@
         <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Default" GutterBottom>Change History</MudText>
         
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+            <span>v0.13 (27/06/2021)</span>
+        </MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+            <ul>
+                <li>Imported historical item stores from TGGs YouTube videos (still work-in-progress)</li>I
+                <li>Imported historical currency exchange rates to allow for more accurate currency conversions (still work-in-progress)</li>
+                <li>Imported store items will automatically fill in missing prices using historical currency exchange rates based on USD item price</li>
+                <li>Added UI for moderators to add/remove items from draft item stores</li>
+                <li>Added better explainations to the store analytic charts</li>
+                <li>Item store list dialog is now easier to to view on mobile devices</li>
+                <li>Item store will now show "price not available" if there is no price in their selected currency</li>
+                <li>Item store page now shows a "no items found" message when the store is empty</li>
+                <li>Item store analytics shows a "no data" message if there is no data, rather than nothing</li>
+                <li>Improved accurate of "next store estimated update time"" based on recent store times</li>
+                <li>Fixed issue with stonking/crashing statistics showing items that shouldn't be there</li>
+                <li>Fixed issue where items that are not yet marketable would cause the "largest collections" price show as zero</li>
+                <li>Fixed issue where item "is available on store" flag was being incorrectly reported</li>
+                <li>Fixed issue where immediately inviting the Discord bot to a new server and using ">cfg" commands will fail</li>
+                <li>Fixed inventory item list not showing prices for store items</li>
+                <li>Fixed inventory item price updates error when tagging items as anything other than "store"</li>
+            </ul>
+        </MudText>
+
+        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
             <span>v0.12 (21/06/2021)</span>
         </MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
