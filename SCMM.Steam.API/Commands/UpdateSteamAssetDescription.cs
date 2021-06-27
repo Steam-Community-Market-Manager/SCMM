@@ -77,8 +77,8 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.NameHash = assetClass.MarketHashName;
                 assetDescription.IconUrl = new SteamEconomyImageBlobRequest(assetClass.IconUrl);
                 assetDescription.IconLargeUrl = new SteamEconomyImageBlobRequest(assetClass.IconUrlLarge ?? assetClass.IconUrl);
-                assetDescription.BackgroundColour = assetClass.BackgroundColor?.SteamColourToHexString();
-                assetDescription.ForegroundColour = assetClass.NameColor?.SteamColourToHexString();
+                assetDescription.BackgroundColour = assetClass.BackgroundColor?.SteamColourToWebHexString();
+                assetDescription.ForegroundColour = assetClass.NameColor?.SteamColourToWebHexString();
                 assetDescription.IsCommodity = String.Equals(assetClass.Commodity, "1", StringComparison.InvariantCultureIgnoreCase);
                 assetDescription.IsMarketable = String.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
                 assetDescription.MarketableRestrictionDays = String.IsNullOrEmpty(assetClass.MarketMarketableRestriction) ? (int?)null : Int32.Parse(assetClass.MarketMarketableRestriction);
