@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
@@ -111,8 +112,9 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse asset tags (if any)
-                if (assetClass.Tags != null)
+                if (assetClass.Tags != null && assetDescription.Tags.Any())
                 {
+                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
                     foreach (var tag in assetClass.Tags)
                     {
                         assetDescription.Tags[tag.Category] = tag.Name;
@@ -167,11 +169,15 @@ namespace SCMM.Steam.API.Commands
                 if (publishedFile.Tags != null)
                 {
                     var interestingTags = publishedFile.Tags.Where(x => !Constants.SteamIgnoredWorkshopTags.Any(y => x == y));
-                    foreach (var tag in interestingTags)
+                    if (interestingTags.Any())
                     {
-                        var tagTrimmed = tag.Replace(" ", String.Empty).Trim();
-                        var tagKey = $"{Constants.SteamAssetTagWorkshop}.{Char.ToLowerInvariant(tagTrimmed[0]) + tagTrimmed.Substring(1)}";
-                        assetDescription.Tags[tagKey] = tag;
+                        assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                        foreach (var tag in interestingTags)
+                        {
+                            var tagTrimmed = tag.Replace(" ", String.Empty).Trim();
+                            var tagKey = $"{Constants.SteamAssetTagWorkshop}.{Char.ToLowerInvariant(tagTrimmed[0]) + tagTrimmed.Substring(1)}";
+                            assetDescription.Tags[tagKey] = tag;
+                        }
                     }
                 }
 
@@ -526,6 +532,7 @@ namespace SCMM.Steam.API.Commands
                     // If the word "glow" appears, it probably is a glowing item
                     if (Regex.IsMatch(descriptionText, @"glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                     {
+                        assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
                         assetDescription.Tags[Constants.RustAssetTagGlow] = (Char.ToUpper(Constants.RustAssetTagGlow[0]) + Constants.RustAssetTagGlow.Substring(1));
                     }
                 }
