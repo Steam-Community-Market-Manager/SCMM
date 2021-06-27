@@ -31,6 +31,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string Description { get; set; }
 
+        public IDictionary<string, string> Tags { get; set; }
+
         public string BackgroundColour { get; set; }
 
         public string ForegroundColour { get; set; }

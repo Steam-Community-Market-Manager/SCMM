@@ -32,6 +32,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.ItemCollection, o => o.MapFrom(p => p.Item.Description.ItemCollection))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Item.Description.Name))
                 .ForMember(x => x.Description, o => o.MapFrom(p => p.Item.Description.Description))
+                .ForMember(x => x.Tags, o => o.MapFrom(p => p.Item.Description.Tags))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Item.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Item.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Item.Description.IconUrl))

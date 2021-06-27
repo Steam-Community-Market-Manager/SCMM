@@ -150,11 +150,11 @@ else if (StoreList.Any())
                                                     <ChildContent>
                                                         @if(item.HasWorkshopFile)
                                                         {
-                                                            <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="clickable" />
+                                                            <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="@($"{(item.Tags.ContainsKey(Constants.RustAssetTagGlow) ? "glow" : null)} clickable")" />
                                                         }
                                                         else
                                                         {
-                                                            <img src="@item.IconUrl" />
+                                                            <img src="@item.IconUrl" class="@(item.Tags.ContainsKey(Constants.RustAssetTagGlow) ? "glow" : null)" />
                                                         }
                                                     </ChildContent>
                                                     <TooltipContent>
@@ -303,6 +303,12 @@ else if (StoreList.Any())
                                                         }
                                                     </TooltipContent>
                                                 </MudTooltip>
+                                                @if (item.Tags.ContainsKey(Constants.RustAssetTagGlow))
+                                                {
+                                                    <MudTooltip Text="This item glows in the dark">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Glowing" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                    </MudTooltip>
+                                                }
                                             </div>
                                             @if (item.IsStillAvailableFromStore && item.HasMarketListing)
                                             {
