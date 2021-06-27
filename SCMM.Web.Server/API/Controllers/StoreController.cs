@@ -282,17 +282,19 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Store not found, or doesn't contain any workshop items");
             }
 
+            // NOTE: Steam revenue will always be collected in USD. Convert to the user local currency after calculating the final result
+            var steamCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
             var storeItemRevenue = (
                 from storeItem in storeItems
-                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(this.Currency().Name) ? storeItem.Prices[this.Currency().Name] : 0))
+                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(steamCurrency.Name) ? storeItem.Prices[steamCurrency.Name] : 0))
                 let authorRoyalties = EconomyExtensions.SteamFeeAuthorComponentAsInt(total)
                 let platformFees = 0 // TODO: EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
                 select new StoreChartItemRevenueDTO
                 {
                     Name = storeItem.Name,
-                    AuthorRoyalties = this.Currency().ToPrice(authorRoyalties),
-                    PlatformFees = this.Currency().ToPrice(platformFees),
-                    PublisherRevenue = this.Currency().ToPrice(total - authorRoyalties - platformFees)
+                    AuthorRoyalties = this.Currency().ToPrice(this.Currency().CalculateExchange(authorRoyalties, steamCurrency)),
+                    PlatformFees = this.Currency().ToPrice(this.Currency().CalculateExchange(platformFees, steamCurrency)),
+                    PublisherRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(total - authorRoyalties - platformFees, steamCurrency))
                 }
             );
 
