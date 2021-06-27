@@ -73,22 +73,28 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("Item count must be greater than zero");
             }
 
+            var query = _db.SteamAssetDescriptions.AsNoTracking();
+
             filter = Uri.UnescapeDataString(filter?.Trim() ?? String.Empty);
-            var query = _db.SteamAssetDescriptions
-                .AsNoTracking()
+            var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var filterWord in filterWords)
+            {
+                query = query.Where(x =>
+                    x.Id.ToString() == filterWord ||
+                    x.ClassId.ToString() == filterWord ||
+                    x.Name.Contains(filterWord) ||
+                    x.Description.Contains(filterWord) ||
+                    (x.Creator != null && x.Creator.Name.Contains(filterWord)) ||
+                    x.ItemType.Contains(filterWord) ||
+                    x.ItemCollection.Contains(filterWord) ||
+                    x.Tags.Serialised.Contains(filterWord)
+                );
+            }
+
+            query = query
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .Where(x => String.IsNullOrEmpty(filter) ||
-                    x.Id.ToString() == filter ||
-                    x.ClassId.ToString() == filter ||
-                    x.Name.Contains(filter) ||
-                    x.Description.Contains(filter) ||
-                    (x.Creator != null && x.Creator.Name.Contains(filter)) ||
-                    x.ItemType.Contains(filter) ||
-                    x.ItemCollection.Contains(filter) ||
-                    x.Tags.Serialised.Contains(filter)
-                )
                 .OrderByDescending(x => x.TimeAccepted)
                 .ThenByDescending(x => x.TimeCreated);
 
