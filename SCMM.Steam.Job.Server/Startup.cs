@@ -87,6 +87,7 @@ namespace SCMM.Steam.Job.Server
             services.AddHostedService<CheckForNewStoreItemsJob>();
             services.AddHostedService<UpdateMarketItemSalesJob>();
             services.AddHostedService<UpdateMarketItemOrdersJob>();
+            services.AddHostedService<UpdateMarketItemActivityJob>();
             services.AddHostedService<DeleteExpiredImageDataJob>();
             services.AddHostedService<UpdateCurrentStoreStatisticsJob>();
             services.AddHostedService<UpdateAssetDescriptionsJob>();

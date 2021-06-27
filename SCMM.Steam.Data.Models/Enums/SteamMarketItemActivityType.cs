@@ -3,8 +3,9 @@
     public enum SteamMarketItemActivityType
     {
         Other = 0,
-        CreatedListing,
-        CancelledListing,
-        PurchasedListing
+        CreatedSellOrder,
+        CancelledSellOrder,
+        CreatedBuyOrder,
+        CancelledBuyOrder
     }
 }
