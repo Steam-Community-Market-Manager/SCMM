@@ -352,8 +352,9 @@ else
     
     private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, string value)
     {
+        var oldBuyPrice = item.BuyPrice;
         var buyPrice = value.SteamPriceAsInt(useDecimalShortCircuit: false);
-        if (buyPrice != item.BuyPrice)
+        if (buyPrice != oldBuyPrice)
         {
             try 
             {
@@ -361,7 +362,7 @@ else
                 item.BuyPrice = buyPrice;
                 item.BuyPriceLocal = buyPrice;
 
-                Logger.LogInformation($"Updating buy price for '{item.Guid}' (raw: '{value}', old: '{item.BuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
+                Logger.LogInformation($"Updating buy price for '{item.Guid}' (raw: '{value}', old: '{oldBuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
                 await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
                 {
                     CurrencyGuid = State.Currency.Guid,
