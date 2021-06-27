@@ -18,8 +18,8 @@ namespace SCMM.Discord.Bot.Server.Modules
 {
     public partial class AdministrationModule
     {
-        [Command("update-store-name")]
-        public async Task<RuntimeResult> UpdateStoreNameAsync(DateTime storeDate, [Remainder] string storeName)
+        [Command("set-store-name")]
+        public async Task<RuntimeResult> SetStoreNameAsync(DateTime storeDate, [Remainder] string storeName)
         {
             var itemStore = await _db.SteamItemStores
                 .OrderByDescending(x => x.Start)
@@ -39,7 +39,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("add-store-media")]
-        public async Task<RuntimeResult> AddStoreMediaAsync(DateTime storeDate, [Remainder] string media)
+        public async Task<RuntimeResult> AddStoreMediaAsync(DateTime storeDate, params string[] media)
         {
             var itemStore = await _db.SteamItemStores
                 .OrderByDescending(x => x.Start)
@@ -48,7 +48,15 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             if (itemStore != null)
             {
-                itemStore.Media.Add(media);
+                itemStore.Media = new PersistableStringCollection(itemStore.Media);
+                foreach (var item in media)
+                {
+                    if (!itemStore.Media.Contains(item))
+                    {
+                        itemStore.Media.Add(item);
+                    }
+                }
+
                 await _db.SaveChangesAsync();
                 return CommandResult.Success();
             }
@@ -59,7 +67,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("remove-store-media")]
-        public async Task<RuntimeResult> RemoveStoreMediaAsync(DateTime storeDate, [Remainder] string media)
+        public async Task<RuntimeResult> RemoveStoreMediaAsync(DateTime storeDate, params string[] media)
         {
             var itemStore = await _db.SteamItemStores
                 .OrderByDescending(x => x.Start)
@@ -68,7 +76,15 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             if (itemStore != null)
             {
-                itemStore.Media.Remove(media);
+                itemStore.Media = new PersistableStringCollection(itemStore.Media);
+                foreach (var item in media)
+                {
+                    if (itemStore.Media.Contains(item))
+                    {
+                        itemStore.Media.Remove(item);
+                    }
+                }
+
                 await _db.SaveChangesAsync();
                 return CommandResult.Success();
             }

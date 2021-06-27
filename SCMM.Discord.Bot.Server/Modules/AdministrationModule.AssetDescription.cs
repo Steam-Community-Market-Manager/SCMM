@@ -3,6 +3,7 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
 using System;
@@ -14,26 +15,26 @@ namespace SCMM.Discord.Bot.Server.Modules
     public partial class AdministrationModule
     {
         [Command("import-asset-description")]
-        public async Task<RuntimeResult> ImportAssetDescriptionAsync(params ulong[] assetClassIds)
+        public async Task<RuntimeResult> ImportAssetDescriptionAsync(params ulong[] classIds)
         {
             var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
-            foreach (var assetClassId in assetClassIds)
+            foreach (var classId in classIds)
             {
                 await message.ModifyAsync(
-                    x => x.Content = $"Importing asset description {assetClassId} ({Array.IndexOf(assetClassIds, assetClassId) + 1}/{assetClassIds.Length})..."
+                    x => x.Content = $"Importing asset description {classId} ({Array.IndexOf(classIds, classId) + 1}/{classIds.Length})..."
                 );
 
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = Constants.RustAppId,
-                    AssetClassId = assetClassId
+                    AssetClassId = classId
                 });
 
                 await _db.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
-                x => x.Content = $"Imported {assetClassIds.Length}/{assetClassIds.Length} asset descriptions"
+                x => x.Content = $"Imported {classIds.Length}/{classIds.Length} asset descriptions"
             );
 
             return CommandResult.Success();

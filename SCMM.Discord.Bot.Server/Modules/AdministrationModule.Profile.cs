@@ -28,7 +28,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("role add")]
-        public async Task<RuntimeResult> AddRoleAsync(string steamId, [Remainder] string role)
+        public async Task<RuntimeResult> AddRoleAsync(string steamId, params string[] roles)
         {
             var profile = await _db.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
@@ -36,12 +36,15 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             if (profile != null)
             {
-                if (!profile.Roles.Contains(role))
+                foreach (var role in roles)
                 {
-                    profile.Roles.Add(role);
-                    await _db.SaveChangesAsync();
+                    if (!profile.Roles.Contains(role))
+                    {
+                        profile.Roles.Add(role);
+                    }
                 }
 
+                await _db.SaveChangesAsync();
                 return CommandResult.Success(String.Join(", ", profile.Roles));
             }
             else
@@ -51,7 +54,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("role remove")]
-        public async Task<RuntimeResult> RemoveRoleAsync(string steamId, [Remainder] string role)
+        public async Task<RuntimeResult> RemoveRoleAsync(string steamId, params string[] roles)
         {
             var profile = await _db.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
@@ -59,12 +62,15 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             if (profile != null)
             {
-                if (profile.Roles.Contains(role))
+                foreach (var role in roles)
                 {
-                    profile.Roles.Remove(role);
-                    await _db.SaveChangesAsync();
+                    if (profile.Roles.Contains(role))
+                    {
+                        profile.Roles.Remove(role);
+                    }
                 }
 
+                await _db.SaveChangesAsync();
                 return CommandResult.Success(String.Join(", ", profile.Roles));
             }
             else
