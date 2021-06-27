@@ -526,14 +526,19 @@ namespace SCMM.Steam.API.Commands
                     assetDescription.Name, assetDescription.NameWorkshop, assetDescription.Description, assetDescription.DescriptionWorkshop
                 );
 
-                // If the words "not glow" or "no glow" appear anywhere in the description, it probably doesn't glow
-                if (!Regex.IsMatch(descriptionText, @"no[t]* glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                // Ignore certain item types that are expected to glow or only glow conditionally (e.g. furances)
+                var nonGlowingItemTypes = new string[] { "Furnace" };
+                if (!nonGlowingItemTypes.Contains(assetDescription.ItemType))
                 {
-                    // If the word "glow" appears, it probably is a glowing item
-                    if (Regex.IsMatch(descriptionText, @"glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                    // Check that phrases like "no glow", "not glowing", etc don't appear anywhere in the description. If they do, then it probably doesn't glow
+                    if (!Regex.IsMatch(descriptionText, @"\bno[t]*\b[^\.\n]*\bglow[ing]*\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                     {
-                        assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                        assetDescription.Tags[Constants.RustAssetTagGlow] = (Char.ToUpper(Constants.RustAssetTagGlow[0]) + Constants.RustAssetTagGlow.Substring(1));
+                        // Now check if the words "glow" or "glowing" appear. If so, then it is probably a glowing item
+                        if (Regex.IsMatch(descriptionText, @"\bglow[ing]*\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                        {
+                            assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                            assetDescription.Tags[Constants.RustAssetTagGlow] = (Char.ToUpper(Constants.RustAssetTagGlow[0]) + Constants.RustAssetTagGlow.Substring(1));
+                        }
                     }
                 }
             }
