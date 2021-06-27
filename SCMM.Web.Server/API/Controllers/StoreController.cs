@@ -202,7 +202,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
-                    Subscriptions = x.Item.Description.TotalSubscriptions ?? 0,
+                    Subscriptions = x.Item.Description.LifetimeSubscriptions ?? 0,
                     TotalSalesMin = x.Item.TotalSalesMin ?? 0,
                     KnownInventoryDuplicates = x.Item.Description.InventoryItems
                         .GroupBy(y => y.ProfileId)
@@ -267,7 +267,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Currency = x.Item.Currency,
                     Price = x.Item.Price ?? 0,
                     Prices = x.Item.Prices,
-                    Subscriptions = x.Item.Description.TotalSubscriptions ?? 0,
+                    Subscriptions = x.Item.Description.LifetimeSubscriptions ?? 0,
                     KnownInventoryDuplicates = x.Item.Description.InventoryItems
                         .GroupBy(y => y.ProfileId)
                         .Where(y => y.Count() > 1)

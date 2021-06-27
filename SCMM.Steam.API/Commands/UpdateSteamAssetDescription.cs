@@ -126,7 +126,7 @@ namespace SCMM.Steam.API.Commands
                 var publishedFile = request.PublishedFile;
                 assetDescription.AssetType = SteamAssetDescriptionType.WorkshopItem;
                 assetDescription.WorkshopFileId = publishedFile.PublishedFileId;
-                assetDescription.ImageUrl = publishedFile.PreviewUrl?.ToString();
+                assetDescription.PreviewUrl = publishedFile.PreviewUrl?.ToString();
                 assetDescription.CurrentSubscriptions = (long?)publishedFile.Subscriptions;
                 assetDescription.TotalSubscriptions = (long?)publishedFile.LifetimeSubscriptions;
                 assetDescription.IsBanned = publishedFile.Banned;
@@ -229,19 +229,19 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogWarning(ex, $"Unable to import asset description large icon. {ex.Message}");
                 }
             }
-            if (assetDescription.ImageId == null && !String.IsNullOrEmpty(assetDescription.ImageUrl))
+            if (assetDescription.PreviewId == null && !String.IsNullOrEmpty(assetDescription.PreviewUrl))
             {
                 try
                 {
                     var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
                     {
-                        Url = assetDescription.ImageUrl,
+                        Url = assetDescription.PreviewUrl,
                         UseExisting = true
                     });
                     if (importedImage?.Image != null)
                     {
-                        assetDescription.Image = importedImage.Image;
-                        assetDescription.ImageId = importedImage.Image.Id;
+                        assetDescription.Preview = importedImage.Image;
+                        assetDescription.PreviewId = importedImage.Image.Id;
                     }
                 }
                 catch (Exception ex)

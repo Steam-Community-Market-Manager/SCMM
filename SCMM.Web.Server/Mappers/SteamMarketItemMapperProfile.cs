@@ -18,7 +18,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyNowFrom, o => o.MapFrom(p => p.Description.BuyNowFrom))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.Description.BuyNowPrice, p => p.Description.BuyNowCurrency))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFrom(p => p.Description.BuyNowUrl))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.TotalSubscriptions));
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.LifetimeSubscriptions));
         }
     }
 }

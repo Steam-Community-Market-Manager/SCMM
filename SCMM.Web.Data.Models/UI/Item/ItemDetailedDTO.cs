@@ -25,9 +25,15 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string Name { get; set; }
 
+        public string NameHash { get; set; }
+
+        public string NameWorkshop { get; set; }
+
         public ulong? NameId { get; set; }
 
         public string Description { get; set; }
+
+        public string DescriptionWorkshop { get; set; }
 
         public IDictionary<string, string> Tags { get; set; }
 
@@ -39,11 +45,19 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string IconLargeUrl { get; set; }
 
-        public string ImageUrl { get; set; }
+        public string PreviewUrl { get; set; }
+
+        public ulong? PreviewContentId { get; set; }
 
         public long? CurrentSubscriptions { get; set; }
 
-        public long? TotalSubscriptions { get; set; }
+        public long? LifetimeSubscriptions { get; set; }
+
+        public long? CurrentFavourited { get; set; }
+
+        public long? LifetimeFavourited { get; set; }
+
+        public long? Views { get; set; }
 
         public bool IsCommodity { get; set; }
 

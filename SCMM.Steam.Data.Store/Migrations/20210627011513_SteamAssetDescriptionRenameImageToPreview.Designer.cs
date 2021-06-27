@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210627011513_SteamAssetDescriptionRenameImageToPreview")]
+    partial class SteamAssetDescriptionRenameImageToPreview
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -218,9 +220,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<long?>("LifetimeFavourited")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("LifetimeSubscriptions")
-                        .HasColumnType("bigint");
-
                     b.Property<int?>("MarketableRestrictionDays")
                         .HasColumnType("int");
 
@@ -236,8 +235,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("NameWorkshop")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("PreviewContentId")
-                        .HasColumnType("decimal(20,0)");
+                    b.Property<string>("PreviewContentId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("PreviewId")
                         .HasColumnType("uniqueidentifier");
@@ -256,6 +255,9 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<DateTimeOffset?>("TimeUpdated")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("TotalSubscriptions")
+                        .HasColumnType("bigint");
 
                     b.Property<int?>("TradableRestrictionDays")
                         .HasColumnType("int");

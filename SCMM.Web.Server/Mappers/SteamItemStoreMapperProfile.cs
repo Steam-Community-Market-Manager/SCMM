@@ -41,7 +41,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.MarketPrice, o => o.MapFromUsingCurrencyExchange(p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.BuyNowPrice : null, p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.Currency : null))
                 .ForMember(x => x.SalesMinimum, o => o.MapFrom(p => p.Item.TotalSalesMin))
                 .ForMember(x => x.SalesMaximum, o => o.MapFrom(p => p.Item.TotalSalesMax))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Item.Description.TotalSubscriptions != null ? p.Item.Description.TotalSubscriptions : null))
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Item.Description.LifetimeSubscriptions))
                 .ForMember(x => x.IsMarketable, o => o.MapFrom(p => p.Item.Description.IsMarketable))
                 .ForMember(x => x.MarketableRestrictionDays, o => o.MapFrom(p => p.Item.Description.MarketableRestrictionDays))
                 .ForMember(x => x.IsTradable, o => o.MapFrom(p => p.Item.Description.IsTradable))

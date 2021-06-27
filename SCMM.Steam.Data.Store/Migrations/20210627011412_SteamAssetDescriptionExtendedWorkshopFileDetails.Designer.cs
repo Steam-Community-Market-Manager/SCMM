@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210627011412_SteamAssetDescriptionExtendedWorkshopFileDetails")]
+    partial class SteamAssetDescriptionExtendedWorkshopFileDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -188,6 +190,12 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("IconUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("ImageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsBanned")
                         .HasColumnType("bit");
 
@@ -218,9 +226,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<long?>("LifetimeFavourited")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("LifetimeSubscriptions")
-                        .HasColumnType("bigint");
-
                     b.Property<int?>("MarketableRestrictionDays")
                         .HasColumnType("int");
 
@@ -236,13 +241,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("NameWorkshop")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("PreviewContentId")
-                        .HasColumnType("decimal(20,0)");
-
-                    b.Property<Guid?>("PreviewId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PreviewUrl")
+                    b.Property<string>("PreviewContentId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("TimeAccepted")
@@ -256,6 +255,9 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<DateTimeOffset?>("TimeUpdated")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("TotalSubscriptions")
+                        .HasColumnType("bigint");
 
                     b.Property<int?>("TradableRestrictionDays")
                         .HasColumnType("int");
@@ -279,7 +281,7 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.HasIndex("IconLargeId");
 
-                    b.HasIndex("PreviewId");
+                    b.HasIndex("ImageId");
 
                     b.ToTable("SteamAssetDescriptions");
                 });
@@ -1096,9 +1098,9 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .WithMany()
                         .HasForeignKey("IconLargeId");
 
-                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "Preview")
+                    b.HasOne("SCMM.Shared.Data.Store.ImageData", "Image")
                         .WithMany()
-                        .HasForeignKey("PreviewId");
+                        .HasForeignKey("ImageId");
 
                     b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableAssetQuantityDictionary", "BreaksIntoComponents", b1 =>
                         {
@@ -1160,7 +1162,7 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Navigation("IconLarge");
 
-                    b.Navigation("Preview");
+                    b.Navigation("Image");
 
                     b.Navigation("Tags");
                 });

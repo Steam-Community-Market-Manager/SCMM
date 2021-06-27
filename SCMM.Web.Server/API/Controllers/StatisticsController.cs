@@ -374,13 +374,13 @@ namespace SCMM.Web.Server.API.Controllers
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
-                .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.TotalSubscriptions > 0)
-                .OrderByDescending(x => x.TotalSubscriptions)
+                .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.LifetimeSubscriptions > 0)
+                .OrderByDescending(x => x.LifetimeSubscriptions)
                 .Select(x => new
                 {
                     Item = x,
                     // TODO: Snapshot these for faster querying
-                    Subscriptions = (x.TotalSubscriptions ?? 0),
+                    Subscriptions = (x.LifetimeSubscriptions ?? 0),
                     TotalSalesMin = (x.StoreItem != null ? x.StoreItem.TotalSalesMin ?? 0 : 0),
                     KnownInventoryDuplicates = 0/*x.InventoryItems
                         .GroupBy(y => y.ProfileId)

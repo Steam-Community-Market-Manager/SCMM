@@ -92,7 +92,7 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.IconLarge);
             builder.Entity<SteamAssetDescription>()
-                .HasOne(x => x.Image);
+                .HasOne(x => x.Preview);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.CraftingComponents);
             builder.Entity<SteamAssetDescription>()

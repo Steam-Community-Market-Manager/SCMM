@@ -52,9 +52,13 @@ namespace SCMM.Steam.Data.Store
 
         public string NameHash { get; set; }
 
+        public string NameWorkshop { get; set; }
+
         public ulong? NameId { get; set; }
 
         public string Description { get; set; }
+
+        public string DescriptionWorkshop { get; set; }
 
         public PersistableStringDictionary Tags { get; set; }
 
@@ -74,15 +78,23 @@ namespace SCMM.Steam.Data.Store
 
         public ImageData IconLarge { get; set; }
 
-        public string ImageUrl { get; set; }
+        public string PreviewUrl { get; set; }
 
-        public Guid? ImageId { get; set; }
+        public Guid? PreviewId { get; set; }
 
-        public ImageData Image { get; set; }
+        public ImageData Preview { get; set; }
+
+        public ulong? PreviewContentId { get; set; }
 
         public long? CurrentSubscriptions { get; set; }
 
-        public long? TotalSubscriptions { get; set; }
+        public long? LifetimeSubscriptions { get; set; }
+
+        public long? CurrentFavourited { get; set; }
+
+        public long? LifetimeFavourited { get; set; }
+
+        public long ? Views { get; set; }
 
         public bool IsCommodity { get; set; }
 
