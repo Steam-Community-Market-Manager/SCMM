@@ -612,6 +612,9 @@ else if (StoreList.Any())
             {
                 Store.Items.Add(item);
             }
+
+            // Reset the selected item
+            LinkedItem = null;
         }
         catch (Exception ex)
         {
