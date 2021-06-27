@@ -2,29 +2,25 @@
 @using SCMM.Steam.Data.Store
 @inject SteamDbContext DB
 @{
-    var cutOff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(6));
+    var assetsNewest = DB.SteamAssetDescriptions.Max(x => x.TimeRefreshed) ?? DateTimeOffset.UtcNow;
     var assetsOldest = DB.SteamAssetDescriptions.Min(x => x.TimeRefreshed) ?? DateTimeOffset.UtcNow;
-    var assetsOutdated = DB.SteamAssetDescriptions.Count(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutOff);
+    var salesNewest = DB.SteamMarketItems.Max(x => x.LastCheckedSalesOn) ?? DateTimeOffset.UtcNow;
     var salesOldest = DB.SteamMarketItems.Min(x => x.LastCheckedSalesOn) ?? DateTimeOffset.UtcNow;
-    var salesOutdated = DB.SteamMarketItems.Count(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutOff);
+    var ordersNewest = DB.SteamMarketItems.Max(x => x.LastCheckedOrdersOn) ?? DateTimeOffset.UtcNow;
     var ordersOldest = DB.SteamMarketItems.Min(x => x.LastCheckedOrdersOn) ?? DateTimeOffset.UtcNow;
-    var ordersOutdated = DB.SteamMarketItems.Count(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutOff);
 
 }
 <dl class="dl-horizontal">
     <dt><i class="fas fa-paint-roller fa-fw"></i> Asset Descriptions</dt>
     <dd>
-        <span>@((DateTime.UtcNow - assetsOldest).ToDurationString(showYears: false, showMonths: false, showWeeks: false, showDays: false, showHours: true, showMinutes: true, showSeconds: false, suffix: "old", maxGranularity: 1))</span><br />
-        <span><i>(@assetsOutdated)</i></span>
+        <span>@Math.Round((DateTime.UtcNow - assetsNewest).TotalMinutes) - @Math.Round((DateTime.UtcNow - assetsOldest).TotalMinutes) minutes old</span><br />
     </dd>
     <dt><i class="fas fa-tag fa-fw"></i> Price History</dt>
     <dd>
-        <span>@((DateTimeOffset.UtcNow - salesOldest).ToDurationString(showYears: false, showMonths: false, showWeeks: false, showDays: false, showHours: true, showMinutes: true, showSeconds: false, suffix: "old", maxGranularity: 1))</span><br />
-        <span><i>(@salesOutdated)</i></span>
+        <span>@Math.Round((DateTime.UtcNow - salesNewest).TotalMinutes) - @Math.Round((DateTime.UtcNow - salesOldest).TotalMinutes) minutes old</span><br />
     </dd>
     <dt><i class="fas fa-list fa-fw"></i> Order History</dt>
     <dd>
-        <span>@((DateTime.UtcNow - ordersOldest).ToDurationString(showYears: false, showMonths: false, showWeeks: false, showDays: false, showHours: true, showMinutes: true, showSeconds: false, suffix: "old", maxGranularity: 1))</span><br />
-        <span><i>(@ordersOutdated)</i></span>
+        <span>@Math.Round((DateTime.UtcNow - ordersNewest).TotalMinutes) - @Math.Round((DateTime.UtcNow - ordersOldest).TotalMinutes) minutes old</span><br />
     </dd>
 </dl>
