@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.5.21301.17" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0-preview.5.21301.5" />
-    <PackageReference Include="MudBlazor" Version="5.0.13" />
+    <PackageReference Include="MudBlazor" Version="5.0.14" />
     <PackageReference Include="Syncfusion.Blazor.Charts" Version="19.1.0.69" />
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.5.21301.5" />
 
