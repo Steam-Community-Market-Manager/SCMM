@@ -22,14 +22,14 @@ namespace SCMM.Discord.Bot.Server.Modules
             var requiredTimestamps = await _db.SteamMarketItemSale
                 .GroupBy(x => x.Timestamp.Date)
                 .Select(x => x.Key)
-                .OrderBy(x => x)
                 .ToListAsync();
             var existingTimestamps = await _db.SteamCurrencyExchangeRates
-                .Select(x => x.Timestamp.Date)
+                .GroupBy(x => x.Timestamp.Date)
+                .Select(x => x.Key)
                 .ToListAsync();
 
             var message = await Context.Message.ReplyAsync("Importing currency exchange rates...");
-            var missingTimestamps = requiredTimestamps.Except(existingTimestamps).ToArray();
+            var missingTimestamps = requiredTimestamps.Except(existingTimestamps).OrderBy(x => x).ToArray();
             foreach (var batch in missingTimestamps.Batch(100))
             {
                 foreach (var timestamp in batch)
