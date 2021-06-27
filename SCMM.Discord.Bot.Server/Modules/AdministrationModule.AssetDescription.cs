@@ -137,5 +137,39 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             return CommandResult.Success();
         }
+
+        [Command("tag-asset-description")]
+        public async Task<RuntimeResult> TagAssetDescriptionsAsync(string tagKey, string tagValue, params ulong[] classIds)
+        {
+            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
+            foreach (var assetDescription in assetDescriptions)
+            {
+                if (!assetDescription.Tags.ContainsKey(tagKey))
+                {
+                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                    assetDescription.Tags[tagKey] = tagValue;
+                }
+            }
+
+            await _db.SaveChangesAsync();
+            return CommandResult.Success();
+        }
+
+        [Command("untag-asset-description")]
+        public async Task<RuntimeResult> UntagAssetDescriptionsAsync(string tagKey, params ulong[] classIds)
+        {
+            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
+            foreach (var assetDescription in assetDescriptions)
+            {
+                if (assetDescription.Tags.ContainsKey(tagKey))
+                {
+                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                    assetDescription.Tags.Remove(tagKey);
+                }
+            }
+
+            await _db.SaveChangesAsync();
+            return CommandResult.Success();
+        }
     }
 }
