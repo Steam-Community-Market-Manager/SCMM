@@ -110,18 +110,6 @@ namespace SCMM.Steam.Data.Store
         // What was the average price from the last 168hrs (7 days)
         public long Last168hrValue { get; set; }
 
-        // What was the total number of sales from the last 336hrs (14 days)
-        public long Last336hrSales { get; set; }
-
-        // What was the average price from the last 336hrs (14 days)
-        public long Last336hrValue { get; set; }
-
-        // What was the total number of sales from the last 504hrs (21 days)
-        public long Last504hrSales { get; set; }
-
-        // What was the average price from the last 504hrs (21 days)
-        public long Last504hrValue { get; set; }
-
         // What is the difference between current and 120hr sale prices
         [NotMapped]
         public long MovementLast24hrValue => (Last1hrValue - Last24hrValue);
@@ -149,14 +137,6 @@ namespace SCMM.Steam.Data.Store
         // What is the difference between current and 168hr sale prices
         [NotMapped]
         public long MovementLast168hrValue => (Last1hrValue - Last168hrValue);
-
-        // What is the difference between current and 336hr sale prices
-        [NotMapped]
-        public long MovementLast336hrValue => (Last1hrValue - Last336hrValue);
-
-        // What is the difference between current and 504hr sale prices
-        [NotMapped]
-        public long MovementLast504hrValue => (Last1hrValue - Last504hrValue);
 
         // What is the difference between current and original sale prices
         [NotMapped]
@@ -301,13 +281,6 @@ namespace SCMM.Steam.Data.Store
             var last168hrSales = last168hrs.Sum(x => x.Quantity);
             var last168hrValue = (long)Math.Round(last168hrs.Length > 0 ? last168hrs.Average(x => x.Price) : 0, 0);
 
-            var last336hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(336))).ToArray();
-            var last336hrSales = last336hrs.Sum(x => x.Quantity);
-            var last336hrValue = (long)Math.Round(last336hrs.Length > 0 ? last336hrs.Average(x => x.Price) : 0, 0);
-            var last504hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(504))).ToArray();
-            var last504hrSales = last504hrs.Sum(x => x.Quantity);
-            var last504hrValue = (long)Math.Round(last504hrs.Length > 0 ? last504hrs.Average(x => x.Price) : 0, 0);
-
             FirstSeenOn = salesSorted.FirstOrDefault()?.Timestamp;
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
@@ -326,10 +299,6 @@ namespace SCMM.Steam.Data.Store
             Last144hrValue = last144hrValue;
             Last168hrSales = last168hrSales;
             Last168hrValue = last168hrValue;
-            Last336hrSales = last336hrSales;
-            Last336hrValue = last336hrValue;
-            Last504hrSales = last504hrSales;
-            Last504hrValue = last504hrValue;
 
             // The first three days sees alot of extreme price spikes, filter these out of the overall averages
             var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
@@ -345,52 +314,12 @@ namespace SCMM.Steam.Data.Store
                 AllTimeLowestValueOn = allTimeLow?.Timestamp;
             }
 
-            var mostRecentSales = salesSorted.Reverse().Take(10).ToArray();
-            if (mostRecentSales != null && mostRecentSales.Any())
-            {
-                RecalculateActivity(mostRecentSales);
-            }
-
             if (sales != null)
             {
                 SalesHistory.Clear();
                 foreach (var sale in salesSorted)
                 {
                     SalesHistory.Add(sale);
-                }
-            }
-        }
-
-        public void RecalculateActivity(SteamMarketItemSale[] sales)
-        {
-            var salesSorted = sales?.OrderBy(y => y.Timestamp)?.ToArray();
-            if (salesSorted == null)
-            {
-                return;
-            }
-
-            Activity.Clear();
-            if (salesSorted.Any())
-            {
-                var previousPrice = (salesSorted.FirstOrDefault()?.Price ?? 0);
-                foreach (var sale in salesSorted.Skip(1).ToArray())
-                {
-                    var movement = (sale.Price - previousPrice);
-                    previousPrice = sale.Price;
-                    if (movement == 0)
-                    {
-                        continue;
-                    }
-
-                    Activity.Add(
-                        new SteamMarketItemActivity()
-                        {
-                            Timestamp = sale.Timestamp,
-                            Movement = movement,
-                            ItemId = Id,
-                            Item = this
-                        }
-                    );
                 }
             }
         }

@@ -15,6 +15,7 @@ namespace SCMM.Steam.Data.Store
         public DbSet<SteamStoreItem> SteamStoreItems { get; set; }
         public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
         public DbSet<SteamMarketItemSale> SteamMarketItemSale { get; set; }
+        public DbSet<SteamMarketItemActivity> SteamMarketItemActivity { get; set; }
         public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
         public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
         public DbSet<SteamProfile> SteamProfiles { get; set; }
@@ -156,6 +157,16 @@ namespace SCMM.Steam.Data.Store
                 .HasMany(x => x.Activity)
                 .WithOne(x => x.Item)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<SteamMarketItemActivity>()
+                .HasIndex(x => new { x.Timestamp, x.DescriptionId, x.Type, x.Price, x.Quantity, x.BuyerName, x.SellerName })
+                .IsUnique(true);
+            builder.Entity<SteamMarketItemActivity>()
+                .HasOne(x => x.Description);
+            builder.Entity<SteamMarketItemActivity>()
+                .HasOne(x => x.Item);
+            builder.Entity<SteamMarketItemActivity>()
+                .HasOne(x => x.Currency);
 
             builder.Entity<SteamProfile>()
                 .HasIndex(x => x.SteamId)
