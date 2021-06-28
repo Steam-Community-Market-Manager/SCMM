@@ -287,14 +287,18 @@ namespace SCMM.Web.Server.API.Controllers
             var storeItemRevenue = (
                 from storeItem in storeItems
                 let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(steamCurrency.Name) ? storeItem.Prices[steamCurrency.Name] : 0))
-                let authorRoyalties = EconomyExtensions.SteamFeeAuthorComponentAsInt(total)
-                let platformFees = 0 // TODO: EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
+                let salesTax = (long) Math.Round(total * 0.20)
+                let totalAfterTax = (total - salesTax)
+                let authorRevenue = EconomyExtensions.SteamFeeAuthorComponentAsInt(totalAfterTax)
+                let platformRevenue = 0 // TODO: EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
+                let publisherRevenue = (totalAfterTax - platformRevenue - authorRevenue)
                 select new StoreChartItemRevenueDTO
                 {
                     Name = storeItem.Name,
-                    AuthorRoyalties = this.Currency().ToPrice(this.Currency().CalculateExchange(authorRoyalties, steamCurrency)),
-                    PlatformFees = this.Currency().ToPrice(this.Currency().CalculateExchange(platformFees, steamCurrency)),
-                    PublisherRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(total - authorRoyalties - platformFees, steamCurrency))
+                    SalesTax = this.Currency().ToPrice(this.Currency().CalculateExchange(authorRevenue, steamCurrency)),
+                    AuthorRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(authorRevenue, steamCurrency)),
+                    PlatformRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(platformRevenue, steamCurrency)),
+                    PublisherRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(publisherRevenue, steamCurrency))
                 }
             );
 

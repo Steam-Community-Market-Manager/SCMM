@@ -5,12 +5,14 @@ namespace SCMM.Web.Data.Models.UI.Store
     {
         public string Name { get; set; }
 
-        public decimal AuthorRoyalties { get; set; }
+        public decimal SalesTax { get; set; }
 
-        public decimal PlatformFees { get; set; }
+        public decimal AuthorRevenue { get; set; }
+
+        public decimal PlatformRevenue { get; set; }
 
         public decimal PublisherRevenue { get; set; }
 
-        public decimal Total => (AuthorRoyalties + PlatformFees + PublisherRevenue);
+        public decimal Total => (SalesTax + AuthorRevenue + PlatformRevenue + PublisherRevenue);
     }
 }
