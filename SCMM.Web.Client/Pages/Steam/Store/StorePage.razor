@@ -209,6 +209,9 @@ else if (StoreList.Any())
                                                             <span>@item.SalesMinimum.Value.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</span>
                                                         }
                                                     </span>
+                                                    <span>
+                                                        <i class="fas fa-fw fa-question-circle" title="Steam doesn't disclose exact sales figures, this is just an estimate. See the store analytics & insights for more details." />
+                                                    </span>
                                                 </MudText>
                                             }
                                             else if (item.Subscriptions > 0)
