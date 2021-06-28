@@ -25,7 +25,11 @@ else
     </div>
 }
 
-<NavigationMenu Items="@NavigationMenuItems" />
+<NavigationMenu Items="@NavigationMenuItems" Class="flex-grow-1" />
+
+<MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" Class="pa-4">
+    <span><MudLink Href="/about" Typo="MudBlazor.Typo.caption">SCMM is fanmade</MudLink> and not affilated with Steam or Facepunch.</span>
+</MudText>
 
 @code {
 
