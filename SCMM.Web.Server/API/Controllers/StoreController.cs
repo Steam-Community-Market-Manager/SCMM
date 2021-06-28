@@ -295,7 +295,7 @@ namespace SCMM.Web.Server.API.Controllers
                 select new StoreChartItemRevenueDTO
                 {
                     Name = storeItem.Name,
-                    SalesTax = this.Currency().ToPrice(this.Currency().CalculateExchange(authorRevenue, steamCurrency)),
+                    SalesTax = this.Currency().ToPrice(this.Currency().CalculateExchange(salesTax, steamCurrency)),
                     AuthorRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(authorRevenue, steamCurrency)),
                     PlatformRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(platformRevenue, steamCurrency)),
                     PublisherRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(publisherRevenue, steamCurrency))
