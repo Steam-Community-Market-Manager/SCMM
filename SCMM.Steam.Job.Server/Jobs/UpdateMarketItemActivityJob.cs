@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
@@ -35,6 +36,20 @@ namespace SCMM.Steam.Job.Server.Jobs
             var commnityClient = scope.ServiceProvider.GetService<SteamCommunityWebClient>();
             var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+
+            // Delete all market activity older than 24hrs
+            var yesterday = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(1));
+            var expiredActivity = await db.SteamMarketItemActivity
+                .Where(x => x.Timestamp < yesterday)
+                .ToListAsync();
+            if (expiredActivity.Any())
+            {
+                foreach (var batch in expiredActivity.Batch(100))
+                {
+                    db.SteamMarketItemActivity.RemoveRange(batch);
+                    db.SaveChanges();
+                }
+            }
 
             var assetDescriptions = await db.SteamAssetDescriptions
                 .Where(x => x.NameId != null && x.MarketItem != null)
