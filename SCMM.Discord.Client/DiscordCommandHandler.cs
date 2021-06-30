@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Discord.Client.Extensions;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -59,7 +60,7 @@ namespace SCMM.Discord.Client
             // If we are mentioned, show some love
             if (message.Content.Contains(_client.CurrentUser.Username, StringComparison.InvariantCultureIgnoreCase))
             {
-                _ = message.AddReactionAsync(new Emoji("❤️"));
+                _ = message.AddReactionSafeAsync(new Emoji("❤️"));
             }
 
             // Determine if the message is a command based on the prefix and make sure other bots don't trigger our commands
@@ -105,7 +106,7 @@ namespace SCMM.Discord.Client
 
                 if (commandResult?.Reaction != null)
                 {
-                    await context.Message.AddReactionAsync(commandResult.Reaction);
+                    await context.Message.AddReactionSafeAsync(commandResult.Reaction);
                 }
                 if (commandResult?.Reason != null || commandResult?.Embed != null)
                 {
@@ -125,7 +126,7 @@ namespace SCMM.Discord.Client
 
                 if (commandResult?.Reaction != null)
                 {
-                    await context.Message.AddReactionAsync(commandResult.Reaction);
+                    await context.Message.AddReactionSafeAsync(commandResult.Reaction);
                 }
                 if (commandResult?.Reason != null || commandResult?.Explaination != null)
                 {
@@ -196,7 +197,7 @@ namespace SCMM.Discord.Client
                     $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}. The original message was \"{context.Message.Content}\""
                 );
 
-                await context.Message.AddReactionAsync(reactionEmoji);
+                await context.Message.AddReactionSafeAsync(reactionEmoji);
                 await responseMessage;
             }
         }

@@ -1,4 +1,5 @@
 ﻿using Discord;
+using System;
 using System.Threading.Tasks;
 
 namespace SCMM.Discord.Client.Extensions
@@ -11,6 +12,19 @@ namespace SCMM.Discord.Client.Extensions
             {
                 x.Content = text;
             });
+        }
+
+        public static async Task AddReactionSafeAsync(this IUserMessage message, IEmote emote)
+        {
+            try
+            {
+                // TODO: Check if "Add Reaction" permission is available first
+                await message.AddReactionAsync(emote);
+            }
+            catch (Exception)
+            {
+                // Ignore...
+            }
         }
     }
 }
