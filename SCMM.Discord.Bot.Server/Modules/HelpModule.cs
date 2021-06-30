@@ -26,7 +26,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             var embed = new EmbedBuilder();
             var modules = _commandService.Modules
-                .Where(x => !x.Preconditions.Any(a => a is RequireOwnerAttribute || a is RequireContextAttribute))
+                .Where(x => !x.Preconditions.Any(a => a is RequireOwnerAttribute))
                 .ToList();
 
             foreach (var module in modules)
@@ -92,6 +92,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                         commandSummary.Append(string.Join(' ', commandParamSummaries));
                     }
                     commandSummary.Append("`");
+                    if (command.Preconditions.Any(x => x is RequireContextAttribute))
+                    {
+                        commandSummary.Append($" [{command.Preconditions.OfType<RequireContextAttribute>().FirstOrDefault().Contexts}] ");
+                    }
                     if (command.Preconditions.Any(x => x is RequireUserPermissionAttribute))
                     {
                         commandSummary.Append(" 🔒 ");
