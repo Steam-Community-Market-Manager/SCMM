@@ -42,7 +42,9 @@ namespace SCMM.Azure.ServiceBus
             await messageSender.SendMessagesAsync(messageBatch, cancellationToken);
         }
 
-        public async Task<T> SendMessageAndAwaitReplyAsync<T>(T message, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IMessage
+        public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken = default(CancellationToken)) 
+            where TRequest : class, IMessage
+            where TResponse : class, IMessage
         {
             var temporaryQueueName = Guid.NewGuid().ToString();
             var messageTimeout = TimeSpan.FromMinutes(5); // minimum allowed time for AutoDeleteOnIdle is 5 minutes
@@ -57,7 +59,7 @@ namespace SCMM.Azure.ServiceBus
                     cancellationToken
                 );
 
-                var requestClient = _client.CreateSender<T>();
+                var requestClient = _client.CreateSender<TRequest>();
                 var receiverClient = _client.CreateReceiver(
                     temporaryQueueName,
                     new ServiceBusReceiverOptions()
@@ -75,7 +77,7 @@ namespace SCMM.Azure.ServiceBus
                 );
 
                 var reply = await receiverClient.ReceiveMessageAsync(messageTimeout, cancellationToken);
-                return reply?.Body?.ToObjectFromJson<T>();
+                return reply?.Body?.ToObjectFromJson<TResponse>();
             }
             finally
             {

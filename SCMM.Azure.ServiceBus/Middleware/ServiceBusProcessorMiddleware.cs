@@ -126,9 +126,15 @@ namespace SCMM.Azure.ServiceBus.Middleware
                     {
                         using var scope = _scopeFactory.CreateScope();
                         var message = JsonSerializer.Deserialize(x.Message.Body.ToArray(), messageType);
+                        var context = new MessageContext(_serviceBusClient)
+                        {
+                            MessageId = x.Message.MessageId,
+                            ReplyTo = x.Message.ReplyTo
+                        };
+
                         var handler = scope.ServiceProvider.GetRequiredService(handlerInterface);
                         var handleMethod = handler.GetType().GetMethod("HandleAsync");
-                        var task = (Task)handleMethod.Invoke(handler, new object[] { message });
+                        var task = (Task)handleMethod.Invoke(handler, new object[] { message, context });
                         await task;
                     };
 

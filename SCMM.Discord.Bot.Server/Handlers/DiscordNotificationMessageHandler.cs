@@ -17,7 +17,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             _client = client;
         }
 
-        public Task HandleAsync(DiscordNotificationMessage message)
+        public Task HandleAsync(DiscordNotificationMessage message, MessageContext context)
         {
             return _client.SendMessageAsync(
                 guildPattern: message.GuildPattern,

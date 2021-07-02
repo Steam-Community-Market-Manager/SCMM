@@ -18,7 +18,7 @@ namespace SCMM.Web.Server.Handlers
             _currencyCache = currencyCache;
         }
 
-        public Task HandleAsync(CurrencyExchangeRateUpdateMessage message)
+        public Task HandleAsync(CurrencyExchangeRateUpdateMessage message, MessageContext context)
         {
             _currencyCache.UpdateExchangeRate(message.Currency, message.ExchangeRateMultiplier);
             _logger.LogInformation($"Currency {message.Currency} exchange rate multiple has been updated to {message.ExchangeRateMultiplier}");
