@@ -2,6 +2,8 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
+using SCMM.Discord.Client.Extensions;
+using SCMM.Shared.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -151,13 +153,50 @@ namespace SCMM.Discord.Client
             );
         }
 
-        public async Task SendMessageAsync(string guildPattern, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
             WaitUntilClientIsConnected();
 
+
+        public async Task<ulong> SendMessageAsync(ulong guildId, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        {
+            WaitUntilClientIsConnected();
+
+            // Find the guilds that match our pattern
+            var guild = _client.Guilds.FirstOrDefault(x => x.Id == guildId);
+            if (guild == null)
+            {
+                throw new Exception($"Unable to find guild (id: {guildId})");
+            }
+
+            // Find best channel that match our pattern (and that we have permission to post in)
+            // NOTE: We only want to send one message per guild
+            var channel = guild.TextChannels
+                .OrderBy(x => x.Name)
+                .Where(x => String.Equals($"<#{x.Id}>", channelPattern, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, channelPattern))
+                .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
+                .FirstOrDefault();
+
+            if (channel == null)
+            {
+                _logger.LogWarning($"Unable to find any suitable channels to post message (guild: {guild.Name} #{guild.Id}, channel pattern: {channelPattern})");
+            }
+
+            // Send the message
+            _logger.LogInformation($"Sending messsage \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
+            var embed = BuildEmbed(title, description, fields, fieldsInline, url, thumbnailUrl, imageUrl, color);
+            var msg = await channel.SendMessageAsync(text: message, embed: embed);
+            if (msg == null)
+            {
+                throw new Exception($"Unable to send message \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
+            }
+
+            return msg.Id;
+        }
+
+        private Embed BuildEmbed(string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        {
             // Pre-build the embed content (so we can share it across all messages)
             // If the title is not null, we assume the message has emdeded content
-            var embed = (Embed)null;
             if (!String.IsNullOrEmpty(title))
             {
                 var fieldBuilders = new List<EmbedFieldBuilder>();
@@ -170,7 +209,7 @@ namespace SCMM.Discord.Client
                     ).ToList();
                 }
 
-                embed = new EmbedBuilder()
+                return new EmbedBuilder()
                     .WithTitle(title)
                     .WithDescription(description)
                     .WithFields(fieldBuilders)
@@ -182,41 +221,7 @@ namespace SCMM.Discord.Client
                     .Build();
             }
 
-            // Find the guilds that match our pattern
-            var guilds = _client.Guilds
-                .OrderBy(x => x.Name)
-                .Where(x => String.Equals(x.Id.ToString(), guildPattern, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, guildPattern))
-                .ToList();
-
-            if (!guilds.Any())
-            {
-                _logger.LogWarning($"Unable to find any suitable guilds to message (guild pattern: {guildPattern})");
-                return;
-            }
-
-            foreach (var guild in guilds)
-            {
-                // Find best channel that match our pattern (and that we have permission to post in)
-                // NOTE: We only want to send one message per guild
-                var channel = guild.TextChannels
-                    .OrderBy(x => x.Name)
-                    .Where(x => String.Equals($"<#{x.Id}>", channelPattern, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, channelPattern))
-                    .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
-                    .FirstOrDefault();
-
-                if (channel == null)
-                {
-                    _logger.LogWarning($"Unable to find any suitable channels to message (guild: {guild.Name}, channel pattern: {channelPattern})");
-                    continue;
-                }
-
-                // Send the message
-                _logger.LogInformation($"Sending messsage \"{message ?? title}\" (guild: {guild.Name}, channel: {channel.Name})");
-                await channel.SendMessageAsync(
-                    text: message,
-                    embed: embed
-                );
-            }
+            return null;
         }
 
         public IEnumerable<DiscordShard> Shards => _client.Shards.Select(x => new DiscordShard(x));

@@ -225,7 +225,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                 await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
-                    GuildPattern = guild.DiscordId,
+                    GuidId = ulong.Parse(guild.DiscordId),
                     ChannelPattern = guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|market|skin|{app.Name}").Value,
                     Message = null,
                     Title = $"{app.Name} Market - New Listings",

@@ -72,13 +72,13 @@ namespace SCMM.Discord.Bot.Server.Middleware
         private void OnGuildJoined(Client.DiscordGuild guild)
         {
             // Add new guild to our database
-            _logger.LogInformation($"New guild was joined: {guild.Name}");
+            _logger.LogInformation($"New guild was joined: {guild.Name} #{guild.Id}");
             _ = AddGuildsToDatabaseIfMissing(guild);
         }
 
         private void OnGuildLeft(Client.DiscordGuild guild)
         {
-            _logger.LogInformation($"Guild was left: {guild.Name}");
+            _logger.LogInformation($"Guild was left: {guild.Name} #{guild.Id}");
         }
 
         private async void OnStatusUpdate(object state)
@@ -128,7 +128,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 {
                     foreach (var guild in missingGuilds)
                     {
-                        _logger.LogInformation($"New guild was joined: {guild.Name}");
+                        _logger.LogInformation($"New guild was joined: {guild.Name} #{guild.Id}");
                         db.DiscordGuilds.Add(new Steam.Data.Store.DiscordGuild()
                         {
                             DiscordId = guild.Id.ToString(),
