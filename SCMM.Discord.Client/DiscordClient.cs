@@ -153,9 +153,77 @@ namespace SCMM.Discord.Client
             );
         }
 
+        public IDisposable SubscribeToReplies(ulong messageId, Func<string, Task> onReply)
+        {
+            var replyCallback = (Func<SocketMessage, Task>)(
+                (msg) =>
+                {
+                    if (msg.Reference != null && msg.Reference.MessageId.IsSpecified && msg.Reference.MessageId.Value == messageId)
+                    {
+                        return onReply(msg?.Content);
+                    }
+                    return Task.CompletedTask;
+                }
+            );
+
+            _client.MessageReceived += replyCallback;
+            return new DisposableDelegate(
+                () => _client.MessageReceived -= replyCallback
+            );
+        }
+
+        public IDisposable SubscribeToReactions(ulong messageId, Func<string, Task> onReaction)
+        {
+            var reactionCallback = (Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task>)(
+                (msg, channel, reaction) =>
+                {
+                    return onReaction(reaction?.Emote?.Name);
+                }
+            );
+
+            _client.ReactionAdded += reactionCallback;
+            return new DisposableDelegate(
+                () => _client.ReactionAdded -= reactionCallback
+            );
+        }
+
+        public async Task<ulong> SendMessageAsync(string username, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null, string[] reactions = null)
         {
             WaitUntilClientIsConnected();
 
+            // Find the user
+            var usernameParts = username.Split("#", StringSplitOptions.TrimEntries);
+            var user = _client.GetUser(usernameParts.FirstOrDefault(), usernameParts.LastOrDefault());
+            if (user == null)
+            {
+                throw new Exception($"Unable to find user for message \"{message ?? title}\" (username: {username})");
+            }
+
+            // Create a DM channel with the user
+            var dm = await user.GetOrCreateDMChannelAsync();
+            if (dm == null)
+            {
+                throw new Exception($"Unable to create DM channel for message \"{message ?? title}\" (username: {username})");
+            }
+
+            // Send the message
+            var embed = BuildEmbed(title, description, fields, fieldsInline, url, thumbnailUrl, imageUrl, color);
+            var msg = await dm.SendMessageAsync(text: message, embed: embed);
+            if (msg == null)
+            {
+                throw new Exception($"Unable to send message \"{message ?? title}\" (username: {username})");
+            }
+
+            if (reactions?.Any() == true)
+            {
+                foreach (var reaction in reactions)
+                {
+                    await msg.AddReactionSafeAsync(new Emoji(reaction));
+                }
+            }
+
+            return msg.Id;
+        }
 
         public async Task<ulong> SendMessageAsync(ulong guildId, string channelPattern, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
         {
