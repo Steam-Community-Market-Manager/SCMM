@@ -7,12 +7,12 @@ namespace SCMM.Azure.ServiceBus.Extensions
 {
     public static class ServiceBusClientExtensions
     {
-        public static ServiceBusSender CreateSender<T>(this ServiceBusClient client) where T : IMessage
+        public static ServiceBusSender CreateSender<T>(this global::Azure.Messaging.ServiceBus.ServiceBusClient client) where T : IMessage
         {
             return CreateSender(client, typeof(T));
         }
 
-        public static ServiceBusSender CreateSender(this ServiceBusClient client, Type messageType)
+        public static ServiceBusSender CreateSender(this global::Azure.Messaging.ServiceBus.ServiceBusClient client, Type messageType)
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
             var queueName = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
@@ -24,12 +24,12 @@ namespace SCMM.Azure.ServiceBus.Extensions
             throw new ArgumentException(nameof(messageType), "Message type must have a [Queue] or [Topic] attribute declaration");
         }
 
-        public static ServiceBusProcessor CreateProcessor<T>(this ServiceBusClient client, ServiceBusProcessorOptions options) where T : IMessage
+        public static ServiceBusProcessor CreateProcessor<T>(this global::Azure.Messaging.ServiceBus.ServiceBusClient client, ServiceBusProcessorOptions options) where T : IMessage
         {
             return CreateProcessor(client, typeof(T), options);
         }
 
-        public static ServiceBusProcessor CreateProcessor(this ServiceBusClient client, Type messageType, ServiceBusProcessorOptions options)
+        public static ServiceBusProcessor CreateProcessor(this global::Azure.Messaging.ServiceBus.ServiceBusClient client, Type messageType, ServiceBusProcessorOptions options)
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
             if (!String.IsNullOrEmpty(topicName))

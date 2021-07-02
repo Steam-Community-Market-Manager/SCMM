@@ -21,19 +21,21 @@ namespace SCMM.Azure.ServiceBus.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<ServiceBusProcessorMiddleware> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ServiceBusAdministrationClient _serviceBusAdministrationClient;
-        private readonly ServiceBusClient _serviceBusClient;
         private readonly List<ServiceBusProcessor> _serviceBusProcessors;
+        private readonly global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient _serviceBusAdministrationClient;
+        private readonly global::Azure.Messaging.ServiceBus.ServiceBusClient _serviceBusClient;
         private bool disposedValue;
 
-        public ServiceBusProcessorMiddleware(RequestDelegate next, ILogger<ServiceBusProcessorMiddleware> logger, IServiceScopeFactory scopeFactory, ServiceBusAdministrationClient serviceBusAdministrationClient, ServiceBusClient serviceBusClient, MessageHandlerTypeCollection messageHandlerTypeCollection)
+        public ServiceBusProcessorMiddleware(RequestDelegate next, ILogger<ServiceBusProcessorMiddleware> logger, IServiceScopeFactory scopeFactory, 
+            global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient serviceBusAdministrationClient, global::Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient, 
+            MessageHandlerTypeCollection messageHandlerTypeCollection)
         {
             _next = next;
             _logger = logger;
             _scopeFactory = scopeFactory;
+            _serviceBusProcessors = new List<ServiceBusProcessor>();
             _serviceBusAdministrationClient = serviceBusAdministrationClient;
             _serviceBusClient = serviceBusClient;
-            _serviceBusProcessors = new List<ServiceBusProcessor>();
             _ = CreateMissingTopicSubscriptions(messageHandlerTypeCollection).ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)

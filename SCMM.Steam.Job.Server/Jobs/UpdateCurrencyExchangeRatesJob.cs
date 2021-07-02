@@ -1,9 +1,8 @@
-﻿using Azure.Messaging.ServiceBus;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus.Extensions;
+using SCMM.Azure.ServiceBus;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
@@ -132,23 +131,20 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             db.SaveChanges();
             
-            await using var messageSender = serviceBusClient.CreateSender<CurrencyExchangeRateUpdateMessage>();
-            using var messageBatch = await messageSender.CreateMessageBatchAsync();
+            var currencyExchangeRateUpdatedMessages = new List<CurrencyExchangeRateUpdateMessage>();
             foreach (var currencyPrice in currencyPrices)
             {
-                messageBatch.TryAddMessage(
-                    new ServiceBusMessage(BinaryData.FromObjectAsJson(
-                        new CurrencyExchangeRateUpdateMessage()
-                        {
-                            Timestamp = DateTime.UtcNow,
-                            Currency = currencyPrice.Key.Name,
-                            ExchangeRateMultiplier = currencyPrice.Key.ExchangeRateMultiplier
-                        }
-                    ))
+                currencyExchangeRateUpdatedMessages.Add(
+                    new CurrencyExchangeRateUpdateMessage()
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        Currency = currencyPrice.Key.Name,
+                        ExchangeRateMultiplier = currencyPrice.Key.ExchangeRateMultiplier
+                    }
                 );
             }
 
-            await messageSender.SendMessagesAsync(messageBatch);
+            await serviceBusClient.SendMessagesAsync(currencyExchangeRateUpdatedMessages);
         }
     }
 }

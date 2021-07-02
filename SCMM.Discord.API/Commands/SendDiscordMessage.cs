@@ -1,8 +1,6 @@
-﻿using Azure.Messaging.ServiceBus;
-using CommandQuery;
-using SCMM.Azure.ServiceBus.Extensions;
+﻿using CommandQuery;
+using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Messages;
-using System;
 using System.Threading.Tasks;
 
 namespace SCMM.Discord.API.Commands
@@ -22,10 +20,7 @@ namespace SCMM.Discord.API.Commands
 
         public async Task HandleAsync(SendDiscordMessageRequest request)
         {
-            await using var sender = _client.CreateSender<SendDiscordMessageRequest>();
-            await sender.SendMessageAsync(
-                new ServiceBusMessage(BinaryData.FromObjectAsJson(request))
-            );
+            await _client.SendMessageAsync(request);
         }
     }
 }

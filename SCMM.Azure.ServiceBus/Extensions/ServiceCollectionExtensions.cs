@@ -1,6 +1,4 @@
-﻿using Azure.Messaging.ServiceBus;
-using Azure.Messaging.ServiceBus.Administration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using SCMM.Shared.Data.Models.Extensions;
 using System.Reflection;
 
@@ -10,8 +8,9 @@ namespace SCMM.Azure.ServiceBus.Extensions
     {
         public static IServiceCollection AddAzureServiceBus(this IServiceCollection serviceCollection, string connectionString)
         {
-            serviceCollection.AddSingleton(new ServiceBusAdministrationClient(connectionString));
-            serviceCollection.AddSingleton(new ServiceBusClient(connectionString));
+            serviceCollection.AddSingleton(new global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient(connectionString));
+            serviceCollection.AddSingleton(new global::Azure.Messaging.ServiceBus.ServiceBusClient(connectionString));
+            serviceCollection.AddSingleton<ServiceBusClient>();
             return serviceCollection;
         }
 
