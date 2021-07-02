@@ -94,7 +94,7 @@ namespace SCMM.Discord.Client
             var commandResult = (result as CommandResult);
             var commandName = command.IsSpecified ? ($"{command.Value?.Module?.Name} {command.Value?.Name}").Trim() : "unspecified";
             var userName = $"{context.User.Username} #{context.User.Discriminator}";
-            var guildName = context.Guild?.Name;
+            var guildName = (context.Guild != null ? $"{context.Guild.Name} #{context.Guild.Id}" : "n/a");
             var channelName = context.Channel.Name;
 
             // Success
@@ -210,7 +210,7 @@ namespace SCMM.Discord.Client
                 var command = commandException.Command;
                 var commandName = ($"{command?.Module?.Name} {command?.Name}").Trim();
                 var userName = $"{context.User.Username} #{context.User.Discriminator}";
-                var guildName = context.Guild?.Name;
+                var guildName = (context.Guild != null ? $"{context.Guild.Name} #{context.Guild.Id}" : "n/a");
                 var channelName = context.Channel.Name;
                 _logger.LogError(
                     commandException,
