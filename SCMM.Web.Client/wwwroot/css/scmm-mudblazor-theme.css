@@ -7,6 +7,10 @@
     max-width: 33vw;
 }
 
+.mud-snackbar {
+    flex-wrap: nowrap !important;
+}
+
 .mud-chip-size-small > .mud-icon-size-small {
     font-size: inherit;
     margin-right: 8px;

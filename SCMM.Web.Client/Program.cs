@@ -42,12 +42,14 @@ namespace SCMM.Web.Client
 
             builder.Services.AddMudServices(config =>
             {
-                config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
                 config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
-                config.SnackbarConfiguration.PreventDuplicates = true;
+                config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+                config.SnackbarConfiguration.MaximumOpacity = 90;
                 config.SnackbarConfiguration.NewestOnTop = true;
                 config.SnackbarConfiguration.ShowCloseIcon = true;
                 config.SnackbarConfiguration.RequireInteraction = true;
+                config.SnackbarConfiguration.ClearAfterNavigation = true;
+                config.SnackbarConfiguration.PreventDuplicates = true;
             });
 
             builder.Services.AddSyncfusionBlazor();

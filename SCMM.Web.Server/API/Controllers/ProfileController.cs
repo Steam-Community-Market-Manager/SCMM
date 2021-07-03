@@ -200,12 +200,14 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="force">If true, the inventory will always be fetched from Steam. If false, sync calls to Steam are cached for one hour</param>
         /// <response code="200">If the inventory was successfully synchronised.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the profile cannot be found or is the inventory is private.</response>
+        /// <response code="401">If the profile inventory is private.</response>
+        /// <response code="404">If the profile cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpPost("{id}/inventory/sync")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> PostInventorySync([FromRoute] string id, [FromQuery] bool force = false)
@@ -229,7 +231,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (profile?.Privacy != SteamVisibilityType.Public)
             {
-                return NotFound($"Profile inventory is private");
+                return Unauthorized($"Profile inventory is private");
             }
 
             await _db.SaveChangesAsync();
@@ -251,12 +253,14 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="force">If true, the inventory will always be fetched from Steam. If false, calls to Steam are cached for one hour</param>
         /// <response code="200">Profile inventory value.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
+        /// <response code="401">If the profile inventory is private/empty.</response>
+        /// <response code="404">If the profile cannot be found or the inventory contains no (marketable) items.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/inventory/value")]
         [ProducesResponseType(typeof(ProfileInventoryValueDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryValue([FromRoute] string id, [FromQuery] bool generateInventoryMosaic = false, [FromQuery] int mosaicTileSize = 128, [FromQuery] int mosaicColumns = 5, [FromQuery] int mosaicRows = 5, [FromQuery] bool force = false)
@@ -286,7 +290,7 @@ namespace SCMM.Web.Server.API.Controllers
             });
             if (importedInventory?.Profile?.Privacy != SteamVisibilityType.Public)
             {
-                return NotFound("Profile inventory is private");
+                return Unauthorized("Profile inventory is private");
             }
 
             await _db.SaveChangesAsync();
@@ -367,7 +371,7 @@ namespace SCMM.Web.Server.API.Controllers
             });
             if (inventoryTotals == null)
             {
-                return NotFound("Profile inventory is empty (no marketable items)");
+                return NotFound("Profile inventory is empty (private, or no marketable items)");
             }
 
             return Ok(

@@ -3,7 +3,9 @@
 @page "/steam/inventory/{SteamId}"
 @using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject ILogger<InventoryPage> Logger
+@inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
 @inject AppState State
 
@@ -179,14 +181,54 @@
         try
         {
             Logger.LogInformation("Synchronising inventory items...");
-            await Http.PostAsync(
+            var response = await Http.PostAsync(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/sync?force={force}", null
             );
+
+            response?.EnsureSuccessStatusCode();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error synchronising inventory items for '{SteamId}'");
-            throw;
+            var httpErrorCode = (ex as HttpRequestException)?.StatusCode;
+            if (httpErrorCode == HttpStatusCode.Unauthorized)
+            {
+                var snackBarMessage = (
+                    $"<strong>This inventory is currently private.</strong><br/>You are viewing an old snapshot from {Profile?.LastUpdatedInventoryOn.Value.ToString("g")} as we are unable to show you the latest information at this time. "
+                );
+
+                var thisIsMyInventory = State.Is(Profile?.SteamId);
+                if (thisIsMyInventory)
+                {
+                    snackBarMessage += (
+                        $"To resolve this, click the action button to update your Steam inventory privacy settings to 'Public', then refresh this page after a few minutes. "
+                    );
+                }
+
+                Logger.LogWarning(ex, $"Inventory is currently private for '{SteamId}', unable to synchronise at this time");
+                Snackbar.Add(
+				    snackBarMessage,
+                    Severity.Warning,
+                    options =>
+                    {
+                        options.Icon = "fas fa-fw fa-eye-slash ma-2";
+                        if (thisIsMyInventory)
+                        {
+                            options.Action = "Privacy Settings";
+                            options.Onclick = async (x) =>
+                            {
+                                ExternalNavigationManager.NavigateToNewTab(
+                                    $"https://steamcommunity.com/profiles/{Profile?.SteamId}/edit/settings"
+                                );
+                            };
+                        }
+                    }
+                );
+            }
+            else
+            {
+                Logger.LogError(ex, $"Error synchronising inventory items for '{SteamId}'");
+                throw;
+            }
         }
     }
 
