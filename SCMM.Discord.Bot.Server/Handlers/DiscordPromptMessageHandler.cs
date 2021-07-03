@@ -58,7 +58,10 @@ namespace SCMM.Discord.Bot.Server.Handlers
                         async (msg, reaction) =>
                         {
                             waitForReplySubscription?.Dispose();
-                            await msg?.AddReactionAsync(new Emoji("👌"));
+                            if (msg != null)
+                            {
+                                await msg.AddReactionAsync(new Emoji("👌"));
+                            }
                             await context.ReplyAsync(new DiscordPromptReplyMessage()
                             {
                                 Reply = reaction.Emote?.Name
