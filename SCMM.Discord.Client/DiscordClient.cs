@@ -153,40 +153,6 @@ namespace SCMM.Discord.Client
             );
         }
 
-        public IDisposable SubscribeToReplies(ulong messageId, Func<string, Task> onReply)
-        {
-            var replyCallback = (Func<SocketMessage, Task>)(
-                (msg) =>
-                {
-                    if (msg.Reference != null && msg.Reference.MessageId.IsSpecified && msg.Reference.MessageId.Value == messageId)
-                    {
-                        return onReply(msg?.Content);
-                    }
-                    return Task.CompletedTask;
-                }
-            );
-
-            _client.MessageReceived += replyCallback;
-            return new DisposableDelegate(
-                () => _client.MessageReceived -= replyCallback
-            );
-        }
-
-        public IDisposable SubscribeToReactions(ulong messageId, Func<string, Task> onReaction)
-        {
-            var reactionCallback = (Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task>)(
-                (msg, channel, reaction) =>
-                {
-                    return onReaction(reaction?.Emote?.Name);
-                }
-            );
-
-            _client.ReactionAdded += reactionCallback;
-            return new DisposableDelegate(
-                () => _client.ReactionAdded -= reactionCallback
-            );
-        }
-
         public async Task<ulong> SendMessageAsync(string username, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null, string[] reactions = null)
         {
             WaitUntilClientIsConnected();
@@ -259,6 +225,52 @@ namespace SCMM.Discord.Client
             }
 
             return msg.Id;
+        }
+
+        public IDisposable SubscribeToReplies(ulong messageId, Func<IMessage, bool> filter, Func<IMessage, Task> onReply)
+        {
+            var replyCallback = (Func<SocketMessage, Task>)(
+                (msg) =>
+                {
+                    if (msg.Reference != null && msg.Reference.MessageId.IsSpecified && msg.Reference.MessageId.Value == messageId)
+                    {
+                        if (filter?.Invoke(msg) != false)
+                        {
+                            return onReply(msg);
+                        }
+                    }
+
+                    return Task.CompletedTask;
+                }
+            );
+
+            _client.MessageReceived += replyCallback;
+            return new DisposableDelegate(
+                () => _client.MessageReceived -= replyCallback
+            );
+        }
+
+        public IDisposable SubscribeToReactions(ulong messageId, Func<IUser, IReaction, bool> filter, Func<IMessage, IReaction, Task> onReaction)
+        {
+            var reactionCallback = (Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task>)(
+                (msg, channel, reaction) =>
+                {
+                    if (reaction.MessageId == messageId)
+                    {
+                        if (filter?.Invoke(reaction.User.IsSpecified ? reaction.User.Value : null, reaction) != false)
+                        {
+                            return onReaction(reaction.Message.IsSpecified ? reaction.Message.Value : null, reaction);
+                        }
+                    }
+
+                    return Task.CompletedTask;
+                }
+            );
+
+            _client.ReactionAdded += reactionCallback;
+            return new DisposableDelegate(
+                () => _client.ReactionAdded -= reactionCallback
+            );
         }
 
         private Embed BuildEmbed(string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)

@@ -56,7 +56,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             await message.LoadingAsync("🔍 Finding Steam profile...");
 
             // Load the profile using the discord id
-            var discordId = $"{user.Username}#{user.Discriminator}";
+            var discordId = user.GetFullUsername();
             var profile = _db.SteamProfiles
                 .AsNoTracking()
                 .Include(x => x.Currency)

@@ -1,6 +1,8 @@
-﻿using SCMM.Azure.ServiceBus;
+﻿using Discord;
+using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
+using SCMM.Discord.Client.Extensions;
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -32,29 +34,37 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 reactions: message.Reactions
             );
 
-            var replySubscription = (IDisposable)null;
+            var waitForReplySubscription = (IDisposable)null;
             switch (message.Type)
             {
                 case DiscordPromptMessageType.Reply:
-                    replySubscription = _client.SubscribeToReplies(messageId, async x =>
-                    {
-                        await context.ReplyAsync(new DiscordPromptReplyMessage()
+                    waitForReplySubscription = _client.SubscribeToReplies(messageId, 
+                        (msg) => String.Equals(message.Username, msg.Author.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
+                        async (msg) =>
                         {
-                            Reply = x
-                        });
-                        replySubscription.Dispose();
-                    });
+                            waitForReplySubscription?.Dispose();
+                            await msg.AddReactionAsync(new Emoji("👌"));
+                            await context.ReplyAsync(new DiscordPromptReplyMessage()
+                            {
+                                Reply = msg.Content
+                            });
+                        }
+                    );
                     break;
 
                 case DiscordPromptMessageType.React:
-                    replySubscription = _client.SubscribeToReactions(messageId, async x =>
-                    {
-                        await context.ReplyAsync(new DiscordPromptReplyMessage()
+                    waitForReplySubscription = _client.SubscribeToReactions(messageId,
+                        (user, reaction) => String.Equals(message.Username, user.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
+                        async (msg, reaction) =>
                         {
-                            Reply = x
-                        });
-                        replySubscription.Dispose();
-                    });
+                            waitForReplySubscription?.Dispose();
+                            await msg?.AddReactionAsync(new Emoji("👌"));
+                            await context.ReplyAsync(new DiscordPromptReplyMessage()
+                            {
+                                Reply = reaction.Emote?.Name
+                            });
+                        }
+                    );
                     break;
             }
         }

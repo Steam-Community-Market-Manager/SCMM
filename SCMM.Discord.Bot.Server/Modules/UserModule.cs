@@ -4,6 +4,7 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SCMM.Discord.Client;
+using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.API.Commands;
@@ -38,7 +39,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         )
         {
             var user = Context.User;
-            var discordId = $"{user.Username}#{user.Discriminator}";
+            var discordId = user.GetFullUsername();
 
             // Load the profile
             var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
@@ -100,7 +101,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         )
         {
             var user = Context.User;
-            var discordId = $"{user.Username}#{user.Discriminator}";
+            var discordId = user.GetFullUsername();
 
             // Load the profile
             var profile = await _db.SteamProfiles
