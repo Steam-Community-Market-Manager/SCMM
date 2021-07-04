@@ -1,6 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
@@ -69,6 +70,7 @@ namespace SCMM.Steam.API.Queries
                 .Select(x => new
                 {
                     Quantity = x.Quantity,
+                    AcquiredBy = x.AcquiredBy,
                     BuyPrice = x.BuyPrice,
                     ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
@@ -88,7 +90,7 @@ namespace SCMM.Steam.API.Queries
             var profileInventory = new
             {
                 ItemCount = profileInventoryItems.Count,
-                ItemCountWithBuyPrices = profileInventoryItems.Count(x => x.BuyPrice != null),
+                ItemCountWithBuyPrices = profileInventoryItems.Count(x => x.AcquiredBy != SteamProfileInventoryItemAcquisitionType.Other || x.BuyPrice != null),
                 TotalItems = profileInventoryItems
                     .Sum(x => x.Quantity),
                 TotalInvested = profileInventoryItems
