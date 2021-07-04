@@ -110,25 +110,34 @@ namespace SCMM.Steam.Job.Server.Jobs
                     .Include(x => x.Items).ThenInclude(x => x.Item.Description)
                     .ToList();
 
-                // End any stores that have items which are no longer available
+                // End any items and stores that are no longer available
                 foreach (var itemStore in activeItemStores.ToList())
                 {
                     var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
-                    if (thisStoreItemIds.Any(x => !theirStoreItemIds.Contains(x)))
+                    var missingStoreItemIds = thisStoreItemIds.Where(x => !theirStoreItemIds.Contains(x));
+                    if (missingStoreItemIds.Any())
                     {
-                        itemStore.End = DateTimeOffset.UtcNow;
-                        foreach (var item in itemStore.Items)
+                        foreach (var missingStoreItemId in missingStoreItemIds)
                         {
-                            item.Item.IsAvailable = false;
+                            var missingStoreItem = itemStore.Items.FirstOrDefault(x => x.Item.SteamId == missingStoreItemId);
+                            if (missingStoreItem != null)
+                            {
+                                missingStoreItem.Item.IsAvailable = false;
+                            }
                         }
 
-                        activeItemStores.Remove(itemStore);
+                        if (itemStore.Items.All(x => !x.Item.IsAvailable))
+                        {
+                            itemStore.End = DateTimeOffset.UtcNow;
+                            activeItemStores.Remove(itemStore);
+                        }
                     }
                 }
 
-                // If there are no active item stores or they are older than 24hrs, create a new store
+                // If there are no active item stores or some items were removed from the store, create a new store
+                var storeItemsWereRemoved = (ourStoreItemIds != null && ourStoreItemIds.Any(x => !theirStoreItemIds.Contains(x)));
                 var newItemStore = activeItemStores.FirstOrDefault();
-                if (newItemStore == null || (DateTimeOffset.UtcNow - newItemStore.Start) > TimeSpan.FromDays(1))
+                if (newItemStore == null || storeItemsWereRemoved)
                 {
                     db.SteamItemStores.Add(
                         newItemStore = new SteamItemStore()
