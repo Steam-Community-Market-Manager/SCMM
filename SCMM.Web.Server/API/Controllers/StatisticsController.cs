@@ -50,10 +50,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">List of market sales and revenue per day grouped/keyed by UTC date.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("market/activity")]
+        [HttpGet("market/activityTimeline")]
         [ProducesResponseType(typeof(IEnumerable<MarketActivityChartStatisticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketActivity()
+        public async Task<IActionResult> GetMarketActivityTimeline()
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var query = _db.SteamMarketItemSale
