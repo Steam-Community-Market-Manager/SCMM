@@ -116,7 +116,7 @@ else if (StoreList.Any())
                                     </CardHeaderContent>
                                     <CardHeaderActions>
                                         <div class="pa-1 text-centered">
-                                            @if (item.IsStillAvailableFromStore && item.TopSellerIndex != null)
+                                            @if (Store.End == null && item.IsStillAvailableFromStore && item.TopSellerIndex != null)
                                             {
                                                     <MudTooltip>
                                                         <ChildContent>

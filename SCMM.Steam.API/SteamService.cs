@@ -66,7 +66,7 @@ namespace SCMM.Steam.API
             return newFilter;
         }
 
-        public async Task<SteamStoreItem> AddOrUpdateAppStoreItem(SteamApp app, SteamCurrency currency, string languageId, AssetModel asset, DateTimeOffset timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateAppStoreItemAsAvailable(SteamApp app, SteamCurrency currency, string languageId, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Stores)
@@ -76,6 +76,8 @@ namespace SCMM.Steam.API
 
             if (dbItem != null)
             {
+                // Item is now available again
+                dbItem.IsAvailable = true;
                 // Update prices
                 // TODO: Move this to a seperate job (to avoid spam?)
                 //if (asset.Prices != null)
@@ -83,7 +85,6 @@ namespace SCMM.Steam.API
                 //    dbItem.Prices = new PersistablePriceDictionary(GetPriceTable(asset.Prices));
                 //    dbItem.Price = dbItem.Prices.FirstOrDefault(x => x.Key == currency.Name).Value;
                 //}
-                dbItem.IsAvailable = true;
                 return dbItem;
             }
 
