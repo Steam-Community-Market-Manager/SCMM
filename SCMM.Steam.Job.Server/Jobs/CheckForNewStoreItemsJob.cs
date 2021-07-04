@@ -154,7 +154,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 foreach (var asset in response.Data.Assets)
                 {
                     activeStoreItems.Add(
-                        await steamService.AddOrUpdateAppStoreItem(
+                        await steamService.AddOrUpdateAppStoreItemAsAvailable(
                             app, currency, language.SteamId, asset, DateTimeOffset.Now
                         )
                     );

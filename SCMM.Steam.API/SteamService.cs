@@ -83,6 +83,7 @@ namespace SCMM.Steam.API
                 //    dbItem.Prices = new PersistablePriceDictionary(GetPriceTable(asset.Prices));
                 //    dbItem.Price = dbItem.Prices.FirstOrDefault(x => x.Key == currency.Name).Value;
                 //}
+                dbItem.IsAvailable = true;
                 return dbItem;
             }
 
