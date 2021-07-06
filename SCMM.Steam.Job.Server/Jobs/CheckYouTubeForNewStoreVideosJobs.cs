@@ -4,12 +4,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Google.Client;
 using SCMM.Shared.Data.Store.Types;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,27 +68,25 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                 foreach (var channel in Configuration.Channels)
                 {
-                    var videos = await googleClient.SearchVideosAsync(
-                        query: channel.Query,
-                        channelId: channel.ChannelId,
-                        publishedBefore: itemStore.End?.UtcDateTime,
-                        publishedAfter: itemStore.Start.UtcDateTime
-                    );
-                    if (videos?.Any() == true)
+                    var videos = await googleClient.ListChannelVideosAsync(channel.ChannelId, GoogleClient.PageMaxResults);
+                    var releventVideos = videos
+                        .Where(x => Regex.IsMatch(x.Title, channel.Query, RegexOptions.IgnoreCase))
+                        .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.UtcDateTime)
+                        .OrderByDescending(x => x.PublishedAt.Value);
+
+                    foreach (var video in releventVideos)
                     {
-                        foreach (var video in videos.Where(x => x.PublishedAt != null))
+                        media[video.PublishedAt.Value] = video.Id;
+                        try
                         {
-                            if (video.Title.Contains(channel.Query.Trim('\"'), StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                media[video.PublishedAt.Value] = video.Id;
-                                /*
-                                googleClient.CommentVideoAsync(
-                                    video.ChannelId,
-                                    video.Id,
-                                    $"thank you for showcasing this weeks Rust skins, your video has been featured on https://scmm.app/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
-                                );
-                                */
-                            }
+                            await googleClient.LikeVideoAsync(video.Id);
+                            await googleClient.CommentOnVideoAsync(video.ChannelId, video.Id,
+                                $"thank you for showcasing this weeks Rust skins, your video has been featured on https://scmm.app/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, $"Failed to like and comment on new store video (channelId: {video.ChannelId}, videoId: {video.Id})");
                         }
                     }
                 }

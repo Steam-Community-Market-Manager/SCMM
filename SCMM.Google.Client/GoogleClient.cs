@@ -100,7 +100,6 @@ namespace SCMM.Google.Client
             return videos;
         }
 
-        public async Task CommentVideoAsync(string channelId, string videoId, string comment)
         /// <remarks>
         /// A call to this method has a quota cost of 100 units for every page of videos returned (see PageMaxResults).
         /// </remarks>
@@ -143,6 +142,11 @@ namespace SCMM.Google.Client
 
             return videos;
         }
+
+        /// <remarks>
+        /// A call to this method has a quota cost of 50 units.
+        /// </remarks>
+        public async Task CommentOnVideoAsync(string channelId, string videoId, string comment)
         {
             var commentThread = new CommentThread()
             {
@@ -160,9 +164,17 @@ namespace SCMM.Google.Client
                 }
             };
 
-            var request = _service.CommentThreads.Insert(commentThread, Snippet);
-            var response = await request.ExecuteAsync();
-            return;
+            var request = _service.CommentThreads.Insert(commentThread, Snippet); // Quota cost: 50 units
+            await request.ExecuteAsync();
+        }
+
+        /// <remarks>
+        /// A call to this method has a quota cost of 50 units.
+        /// </remarks>
+        public async Task LikeVideoAsync(string videoId)
+        {
+            var request = _service.Videos.Rate(videoId, VideosResource.RateRequest.RatingEnum.Like); // Quota cost: 50 units
+            await request.ExecuteAsync();
         }
     }
 }
