@@ -41,6 +41,30 @@ namespace SCMM.Steam.Job.Server.Jobs
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
             var timeChecked = DateTimeOffset.UtcNow;
 
+            // TODO: Make this work
+            /*
+            var consolidationCutOff = DateTimeOffset.UtcNow.Date.Subtract(TimeSpan.FromDays(7));
+            var ratesToConsolidate = await db.SteamCurrencyExchangeRates
+                .GroupBy(x => new { x.CurrencyId, x.Timestamp })
+                .Where(x => x.Key.Timestamp < consolidationCutOff)
+                .Where(x => x.Count() > 1)
+                .ToListAsync();
+
+            foreach (var rateToConsolidate in ratesToConsolidate)
+            {
+                var consolidatedRate = rateToConsolidate.Average(x => x.ExchangeRateMultiplier);
+                db.SteamCurrencyExchangeRates.RemoveRange(rateToConsolidate);
+                db.SteamCurrencyExchangeRates.Add(new SteamCurrencyExchangeRate()
+                {
+                    CurrencyId = rateToConsolidate.Key.CurrencyId,
+                    Timestamp = rateToConsolidate.Key.Timestamp.Date,
+                    ExchangeRateMultiplier = consolidatedRate
+                });
+
+                db.SaveChanges();
+            }
+            */
+
             var mostExpensiveItem = db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Description)
