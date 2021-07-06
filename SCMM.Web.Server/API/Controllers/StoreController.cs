@@ -199,6 +199,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
+                .Where(x => x.Item.Description.LifetimeSubscriptions > 0)
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
@@ -261,6 +262,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
+                .Where(x => x.Item.Description.LifetimeSubscriptions > 0)
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
