@@ -35,11 +35,6 @@ namespace SCMM.Steam.Data.Store
         public PersistableStringCollection Media { get; set; }
 
         /// <summary>
-        /// If true, this store can be purchased from. Otherwise, it is no longer available.
-        /// </summary>
-        public bool IsAvailable => (End == null || End < DateTimeOffset.Now);
-
-        /// <summary>
         /// If true, users can submit change requests for this store
         /// </summary>
         public bool IsDraft { get; set; }

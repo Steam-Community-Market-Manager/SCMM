@@ -2,15 +2,18 @@
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
+using SCMM.Google.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -167,75 +170,92 @@ namespace SCMM.Discord.Bot.Server.Modules
             var start = new DateTimeOffset(new DateTime(2017, 01, 01), TimeZoneInfo.Local.BaseUtcOffset);
             var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == Constants.RustAppId.ToString());
             var existingStores = await _db.SteamItemStores.ToListAsync();
+            
+            // Get all videos by ThatGermanGuy
+            var videos = await _googleClient.ListChannelVideosAsync("UCvCBuwbtKRwM0qMi7rc7CUw");
 
-            do
-            {
-                var videos = await _googleClient.SearchVideosAsync(
-                    channelId: "UCvCBuwbtKRwM0qMi7rc7CUw", // TGG
-                    query: "Rust Skins",
-                    publishedAfter: start.DateTime,
-                    publishedBefore: start.DateTime.AddDays(365),
-                    maxResults: 50
-                );
+            // Adjustment for videos that don't follow the naming convention...
+            var whitelistedVideoIds = new string[] {
+                "AC2OwYiTbio", // Rust Trick or Treat | Halloween 2020 Week 2 Candy Hunter, Little Nightmare, Woodenstein #192
+            };
+            var blacklistedVideoIds = new string[] {
+                "pbLCjiOZw6s", //Rust Skins | Charitable Rust 2019 Skin Contest, Pencils of Promise Charity 
+            };
 
-                var rustSkinVideos = videos
-                    .Where(x => x.Title.Contains("Rust"))
-                    .Where(x =>
-                        !x.Title.Contains("Barrel") && !x.Title.Contains("Contest") && !x.Title.Contains("Winners") && !x.Title.Contains("Tutorials") && !x.Title.Contains("Coming") &&
-                        !Regex.IsMatch(x.Title, @"^.*Top.*\|") && !Regex.IsMatch(x.Title, @"^.*Picks.*\|") && !Regex.IsMatch(x.Title, @"^.*Twitch.*\|")
+            // Find store videos following the naming convention
+            var rustStoreVideos = videos
+                .Where(x => Regex.IsMatch(x.Title, @"^.*Rust.*\|", RegexOptions.IgnoreCase))
+                .Where(x => Regex.IsMatch(x.Title, @"^.*Skins.*\|", RegexOptions.IgnoreCase))
+                .Where(x =>
+                    (
+                        x.Title.Contains("Preview", StringComparison.InvariantCultureIgnoreCase) &&
+                        !x.Title.Contains("Top Skins", StringComparison.InvariantCultureIgnoreCase)
                     )
-                    .OrderBy(x => x.PublishedAt)
-                    .ToList();
+                    ||
+                    (
+                        !Regex.IsMatch(x.Title, @"^.*Top.*\|", RegexOptions.IgnoreCase) &&  // Rust Top Skin | Lunar New Year 2020 Edition #77 (Rust Skin Picks)
+                        !Regex.IsMatch(x.Title, @"^.*Picks.*\|", RegexOptions.IgnoreCase) && // Rust Skin Picks | July Week 2 | Cajun & Night Assassin Sets, The Beast & Mimic #2 (Rust Skin Picks)
+                        !x.Title.Contains("Coming", StringComparison.InvariantCultureIgnoreCase) && // Rust What's Coming | Multiple Riders in Ch47 & Sedan, Vehicle Progress, New Hair #119 (Rust Updates)
+                        !x.Title.Contains("Barrel", StringComparison.InvariantCultureIgnoreCase) && // Rust Skins | Unboxing Weapon Barrels and Box! Halloween Loot #4 (Rust Skins & Unboxings)
+                        !x.Title.Contains("Tutorials", StringComparison.InvariantCultureIgnoreCase) && //  Rust | All Red Key Card Monument Puzzles, How to Get Mega Loot (Rust Tutorials)
+                        !x.Title.Contains("Twitch Drops", StringComparison.InvariantCultureIgnoreCase) && // Rust Skins | Twitch Drops March 4th 2021 Round 6 (Rust Twitch Drops)
+                        !x.Title.Contains("Skin Picks", StringComparison.InvariantCultureIgnoreCase) // Rust Skins | Most Wanted 2020 Top Picks #108 (Skin Picks)
+                    )
+                )
+                .Union(videos.Where(x => whitelistedVideoIds.Contains(x.Id)))
+                .Except(videos.Where(x => blacklistedVideoIds.Contains(x.Id)))
+                .OrderBy(x => x.PublishedAt)
+                .ToList();
 
-                if (!rustSkinVideos.Any())
+            var videoList = new StringBuilder();
+            foreach (var video in rustStoreVideos.OrderBy(x => x.PublishedAt))
+            {
+                var nextVideo = rustStoreVideos.Skip(rustStoreVideos.IndexOf(video) + 1).FirstOrDefault();
+                var storeDateText = Regex.Match(video.Title, @"\d{1,2}/\d{1,2}/\d{1,2}").Groups.OfType<Group>().Skip(1).FirstOrDefault()?.Value;
+                var storeDateStart = !String.IsNullOrEmpty(storeDateText)
+                    ? new DateTimeOffset(DateTime.ParseExact(storeDateText, "MM/dd/yy", CultureInfo.InvariantCulture) + new TimeSpan(17, 0, 0), TimeZoneInfo.Utc.BaseUtcOffset)
+                    : video.PublishedAt.Value;
+                var storeDateEnd = (nextVideo != null ? nextVideo.PublishedAt.Value : storeDateStart.AddDays(7));
+                var store = existingStores
+                    .Where(x => storeDateStart.Date == x.Start.Date || x.Media.Serialised.Contains(video.Id))
+                    .OrderBy(x => x.Start)
+                    .FirstOrDefault();
+
+                // Use the earliest start time available
+                //storeDateStart = (store != null && store.Start < storeDateStart ? store.Start : storeDateStart);
+
+                if (store != null)
                 {
-                    break;
+                    // Update store details
+                    if (store.Start != storeDateStart)
+                    {
+                        //store.Start = storeDateStart;
+                    }
+                    if (!store.Media.Contains(video.Id))
+                    {
+                        store.Media.Add(video.Id);
+                    }
                 }
-
-                foreach (var video in rustSkinVideos)
+                else
                 {
-                    var nextVideo = rustSkinVideos.Skip(rustSkinVideos.IndexOf(video) + 1).FirstOrDefault();
+                    // Create new store
                     var storeName = Regex.Match(video.Title, @"\|\s([^\(]*)").Groups.OfType<Group>().Skip(1).FirstOrDefault()?.Value;
-                    var storeStart = video.PublishedAt.Value;
-                    var storeEnd = (nextVideo != null ? nextVideo.PublishedAt.Value : storeStart.AddDays(7));
-                    var store = existingStores
-                        .Where(x => storeStart >= x.Start)
-                        .OrderBy(x => x.Start)
-                        .FirstOrDefault();
-
-                    if (store != null)
-                    {
-                        if (store.Name == null)
+                    _db.SteamItemStores.Add(
+                        new SteamItemStore()
                         {
-                            store.Name = video.Title;
-                        }
-                        if (!store.Media.Contains(video.Id))
-                        {
-                            store.Media.Add(video.Id);
-                        }
-                    }
-                    else
-                    {
-                        _db.SteamItemStores.Add(
-                            new SteamItemStore()
+                            App = app,
+                            Name = storeName,
+                            Start = storeDateStart,
+                            End = storeDateEnd,
+                            Media = new PersistableStringCollection()
                             {
-                                App = app,
-                                Name = storeName,
-                                Start = storeStart,
-                                End = storeEnd,
-                                Media = new PersistableStringCollection()
-                                {
-                                    video.Id
-                                },
-                                IsDraft = true
-                            }
-                        );
-                    }
+                                video.Id
+                            },
+                            IsDraft = true
+                        }
+                    );
                 }
-
-                start = rustSkinVideos.Max(x => x.PublishedAt.Value).AddDays(1);
-
-            } while (start < DateTime.UtcNow);
+            }
 
             await _db.SaveChangesAsync();
             return CommandResult.Success();

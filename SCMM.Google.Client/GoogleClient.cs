@@ -4,6 +4,7 @@ using Google.Apis.YouTube.v3.Data;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -11,6 +12,9 @@ namespace SCMM.Google.Client
 {
     public class GoogleClient : IDisposable
     {
+        public const int PageMaxResults = 50;
+
+        private const string ContentDetails = "contentDetails";
         private const string Snippet = "snippet";
 
         private readonly ILogger<GoogleClient> _logger;
@@ -47,39 +51,98 @@ namespace SCMM.Google.Client
             GC.SuppressFinalize(this);
         }
 
-        public async Task<IEnumerable<YouTubeVideo>> SearchVideosAsync(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int maxResults = 30)
+        /// <remarks>
+        /// A call to this method has a quota cost of 1 unit + an additional 1 unit for every page of videos returned (see PageMaxResults).
+        /// </remarks>
+        public async Task<IEnumerable<YouTubeVideo>> ListChannelVideosAsync(string channelId, int? maxResults = null)
         {
-            var videos = new List<YouTubeVideo>();
-            var request = _service.Search.List(Snippet);
-            request.Q = query;
-            request.ChannelId = channelId;
-            request.PublishedBefore = publishedBefore;
-            request.PublishedAfter = publishedAfter;
-            request.Order = SearchResource.ListRequest.OrderEnum.Relevance;
-            request.MaxResults = Math.Max(1, maxResults);
+            var channelDetailsRequest = _service.Channels.List(ContentDetails);
+            channelDetailsRequest.Id = channelId;
 
-            var response = await request.ExecuteAsync();
-            foreach (var item in response.Items)
+            var channelDetailsResponse = await channelDetailsRequest.ExecuteAsync(); // Quota cost: 1 unit
+            var uploadPlaylistId = channelDetailsResponse?.Items.FirstOrDefault()?.ContentDetails?.RelatedPlaylists?.Uploads;
+            if (String.IsNullOrEmpty(uploadPlaylistId))
             {
-                if (!String.IsNullOrEmpty(item.Id.VideoId))
-                {
-                    videos.Add(new YouTubeVideo()
-                    {
-                        Id = item.Id.VideoId,
-                        ChannelId = item.Snippet.ChannelId,
-                        Title = item.Snippet.Title,
-                        ChannelTitle = item.Snippet.ChannelTitle,
-                        Description = item.Snippet.ChannelId,
-                        Thumbnail = new Uri(item.Snippet.Thumbnails.Default__.Url),
-                        PublishedAt = new DateTimeOffset(item.Snippet.PublishedAt.Value, TimeZoneInfo.Local.GetUtcOffset(item.Snippet.PublishedAt.Value))
-                    });
-                }
+                throw new Exception($"Unable to locate upload playlist for channel: {channelId}");
             }
+
+            var videos = new List<YouTubeVideo>();
+            var nextPageToken = (string)null;
+            do
+            {
+                var videosListRequest = _service.PlaylistItems.List(Snippet); // Quota cost: 1 unit
+                videosListRequest.PlaylistId = uploadPlaylistId;
+                videosListRequest.MaxResults = PageMaxResults;
+                videosListRequest.PageToken = nextPageToken;
+
+                var videosListResponse = await videosListRequest.ExecuteAsync();
+                foreach (var item in videosListResponse.Items)
+                {
+                    var videoId = item.Snippet?.ResourceId?.VideoId;
+                    if (!String.IsNullOrEmpty(videoId) && !videos.Any(x => x.Id == videoId))
+                    {
+                        videos.Add(new YouTubeVideo()
+                        {
+                            Id = videoId,
+                            ChannelId = item.Snippet.ChannelId,
+                            Title = item.Snippet.Title,
+                            ChannelTitle = item.Snippet.ChannelTitle,
+                            Description = item.Snippet.Description,
+                            Thumbnail = new Uri(item.Snippet.Thumbnails.Default__.Url),
+                            PublishedAt = new DateTimeOffset(item.Snippet.PublishedAt.Value, TimeZoneInfo.Local.GetUtcOffset(item.Snippet.PublishedAt.Value))
+                        });
+                    }
+                }
+
+                nextPageToken = videosListResponse?.NextPageToken;
+            } while (!String.IsNullOrEmpty(nextPageToken) || (maxResults > 0 && videos.Count >= maxResults));
 
             return videos;
         }
 
         public async Task CommentVideoAsync(string channelId, string videoId, string comment)
+        /// <remarks>
+        /// A call to this method has a quota cost of 100 units for every page of videos returned (see PageMaxResults).
+        /// </remarks>
+        public async Task<IEnumerable<YouTubeVideo>> SearchForVideosAsync(string query, string channelId = null, DateTime? publishedBefore = null, DateTime? publishedAfter = null, int? maxResults = PageMaxResults)
+        {
+            var videos = new List<YouTubeVideo>();
+            var nextPageToken = (string)null;
+            do
+            {
+                var videosListRequest = _service.Search.List(Snippet);
+                videosListRequest.Q = query;
+                videosListRequest.ChannelId = channelId;
+                videosListRequest.PublishedBefore = publishedBefore;
+                videosListRequest.PublishedAfter = publishedAfter;
+                videosListRequest.Order = SearchResource.ListRequest.OrderEnum.Relevance;
+                videosListRequest.MaxResults = PageMaxResults;
+                videosListRequest.PageToken = nextPageToken;
+
+                var videosListResponse = await videosListRequest.ExecuteAsync(); // Quota cost: 100 units
+                foreach (var item in videosListResponse.Items)
+                {
+                    var videoId = item.Id.VideoId;
+                    if (!String.IsNullOrEmpty(videoId) && !videos.Any(x => x.Id == videoId))
+                    {
+                        videos.Add(new YouTubeVideo()
+                        {
+                            Id = videoId,
+                            ChannelId = item.Snippet.ChannelId,
+                            Title = item.Snippet.Title,
+                            ChannelTitle = item.Snippet.ChannelTitle,
+                            Description = item.Snippet.Description,
+                            Thumbnail = new Uri(item.Snippet.Thumbnails.Default__.Url),
+                            PublishedAt = new DateTimeOffset(item.Snippet.PublishedAt.Value, TimeZoneInfo.Local.GetUtcOffset(item.Snippet.PublishedAt.Value))
+                        });
+                    }
+                }
+
+                nextPageToken = videosListResponse?.NextPageToken;
+            } while (!String.IsNullOrEmpty(nextPageToken) || (maxResults > 0 && videos.Count >= maxResults));
+
+            return videos;
+        }
         {
             var commentThread = new CommentThread()
             {
