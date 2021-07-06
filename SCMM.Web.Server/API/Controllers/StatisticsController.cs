@@ -44,49 +44,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get items with the highest amount of market listing activity in the last 24hrs
-        /// </summary>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("market/activityTopItems")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemDescriptionDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketActivityTopItems([FromQuery] int start = 0, [FromQuery] int count = 10)
-        {
-            var topAssetDescriptionIds = await _db.SteamMarketItemActivity
-                .AsNoTracking()
-                .GroupBy(x => x.DescriptionId)
-                .OrderByDescending(x => x.Count())
-                .Select(x => x.Key)
-                .Take(30)
-                .ToArrayAsync();
-
-            var query = _db.SteamAssetDescriptions
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Where(x => topAssetDescriptionIds.Contains(x.Id))
-                .ToList()
-                .OrderBy(x => topAssetDescriptionIds.IndexOf(x.Id))
-                .Select(x => new ItemDescriptionDTO()
-                {
-                    Id = x.ClassId,
-                    AppId = UInt64.Parse(x.App.SteamId),
-                    Name = x.Name,
-                    BackgroundColour = x.BackgroundColour,
-                    ForegroundColour = x.ForegroundColour,
-                    IconUrl = x.IconUrl
-                })
-                .AsQueryable();
-
-            return Ok(
-                query.Paginate(start, count)
-            );
-        }
-
-        /// <summary>
         /// Get marketplace listing activity from the last 24hrs
         /// </summary>
         /// <param name="filter">Optional filter, matches against the item name</param>
@@ -125,6 +82,51 @@ namespace SCMM.Web.Server.API.Controllers
                     BuyerName = x.BuyerName,
                     BuyerAvatarUrl = x.BuyerAvatarUrl
                 })
+            );
+        }
+
+
+        /// <summary>
+        /// Get items with the highest amount of market listing activity in the last 24hrs
+        /// </summary>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("market/activityTopItems")]
+        [ProducesResponseType(typeof(PaginatedResult<ItemDescriptionDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketActivityTopItems([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var topAssetDescriptionIds = await _db.SteamMarketItemActivity
+                .AsNoTracking()
+                .Where(x => !String.IsNullOrEmpty(x.SellerName) && !String.IsNullOrEmpty(x.BuyerName))
+                .GroupBy(x => x.DescriptionId)
+                .OrderByDescending(x => x.Count())
+                .Select(x => x.Key)
+                .Take(30)
+                .ToArrayAsync();
+
+            var query = _db.SteamAssetDescriptions
+                .AsNoTracking()
+                .Include(x => x.App)
+                .Where(x => topAssetDescriptionIds.Contains(x.Id))
+                .ToList()
+                .OrderBy(x => topAssetDescriptionIds.IndexOf(x.Id))
+                .Select(x => new ItemDescriptionDTO()
+                {
+                    Id = x.ClassId,
+                    AppId = UInt64.Parse(x.App.SteamId),
+                    Name = x.Name,
+                    BackgroundColour = x.BackgroundColour,
+                    ForegroundColour = x.ForegroundColour,
+                    IconUrl = x.IconUrl
+                })
+                .AsQueryable();
+
+            return Ok(
+                query.Paginate(start, count)
             );
         }
 

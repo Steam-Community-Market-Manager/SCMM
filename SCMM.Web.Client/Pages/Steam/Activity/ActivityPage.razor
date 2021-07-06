@@ -30,7 +30,7 @@
         <MudItem xs="12">
             <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item">
                 <ItemContent>
-                    <div class="@(item.Type == SteamMarketItemActivityType.CreatedBuyOrder ? "mud-paper mud-paper-square" : null)">
+                    <div class="@(item.IsSale ? "mud-paper mud-paper-square" : null)">
                         <div class="d-flex flex-row justify-start align-center">
                             @if (!String.IsNullOrEmpty(item.BuyerName))
                             {
@@ -128,11 +128,15 @@
     
     private string GetActivityDescription(ItemActivityStatisticDTO activity)
     {
+        if (activity.IsSale)
+        {
+            return "purchased";
+        }
         switch (activity.Type)
         {
             case SteamMarketItemActivityType.CreatedSellOrder: return $"created a listing of";
             case SteamMarketItemActivityType.CancelledSellOrder: return $"cancelled their listing of";
-            case SteamMarketItemActivityType.CreatedBuyOrder: return $"purchased";
+            case SteamMarketItemActivityType.CreatedBuyOrder: return $"created a buy order of";
             case SteamMarketItemActivityType.CancelledBuyOrder: return $"cancelled their buy order of";
             default: return "did something";
         }

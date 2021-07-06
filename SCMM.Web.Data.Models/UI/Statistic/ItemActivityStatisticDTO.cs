@@ -21,5 +21,7 @@ namespace SCMM.Web.Data.Models.UI.Statistic
         public string BuyerName { get; set; }
 
         public string BuyerAvatarUrl { get; set; }
+
+        public bool IsSale => (!String.IsNullOrEmpty(BuyerName) && !String.IsNullOrEmpty(SellerName));
     }
 }
