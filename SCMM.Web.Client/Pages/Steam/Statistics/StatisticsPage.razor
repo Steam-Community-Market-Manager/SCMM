@@ -265,6 +265,54 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
+            <StatisticsPanel Icon="fas fa-fw fa-wheelchair" Title="Manipulated" Subtitle="What items have the largest gap in average market value vs buy now price? These items are probably (but not always) suffering from price manipulation, where a group of people buy out a majority of the supply and re-list them at a much higher price in an attempt to drive up the items value." Dense="true">
+                <div class="virtual-table-panel flex-grow-1">
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="no-wrap">Average Market Value</th>
+                                <th class="no-wrap text-right">Buy Now Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <Virtualize ItemsProvider="LoadItemsManipulated" Context="item">
+                                <ItemContent>
+                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.AverageMarketValue)</MudText>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyNowPrice)</MudText>
+                                        </td>
+                                    </tr>
+                                </ItemContent>
+                                <Placeholder>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                            </div>
+                                        </td>
+                                        <td>—</td>
+                                        <td class="text-right">—</td>
+                                    </tr>
+                                </Placeholder>
+                            </Virtualize>
+                        </tbody>
+                    </MudSimpleTable>
+                </div>
+            </StatisticsPanel>
+        </MudItem>
+    
+        <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-dollar-sign" Title="Most Expensive" Subtitle="What are the most expensive items on the market?" Dense="true">
                 <div class="virtual-table-panel flex-grow-1">
                     <MudSimpleTable Dense="true" Hover="true">
@@ -694,6 +742,20 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing 'profitable flips' item statistics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ItemManipulationStatisticDTO>> LoadItemsManipulated(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemManipulationStatisticDTO>>($"api/stats/items/manipulated?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemManipulationStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'manipulated' item statistics");
             throw;
         }
     }

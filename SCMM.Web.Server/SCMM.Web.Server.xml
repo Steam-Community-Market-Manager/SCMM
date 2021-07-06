@@ -313,6 +313,18 @@
             <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsManipulated(System.Int32,System.Int32)">
+            <summary>
+            List items with largest gap between buy now price and average market value
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostExpensive(System.Int32,System.Int32)">
             <summary>
             List items, sorted by highest value
