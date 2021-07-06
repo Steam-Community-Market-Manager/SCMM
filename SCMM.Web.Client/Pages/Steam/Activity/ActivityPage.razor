@@ -1,0 +1,141 @@
+﻿@page "/activity"
+@using SCMM.Web.Data.Models.UI.Item
+@using SCMM.Web.Data.Models.UI.Statistic
+@inject ILogger<ActivityPage> Logger
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+@inject AppState State
+
+<PageContainer Title="Market Activity">
+
+    <MudGrid Spacing="2">
+
+        <MudItem xs="12">
+            <div class="d-flex flex-row justify-start align-center">
+                <Virtualize ItemsProvider="LoadMarketActivityTopItems" Context="item">
+                    <ItemContent>
+                        <div class="@(Filter == item.Name ? "mud-paper mud-paper-outlined" : null)">
+                            <MudTooltip Text="@item.Name">
+                                <div class="d-flex flex-column justify-start align-center ma-2 clickable hover-zoom hover-zoom-extra" @onclick="@(() => ToggleItemFilter(item))">
+                                    <img src="@item.IconUrl" style="width:96px; height:96px;" />
+                                </div>
+                            </MudTooltip>
+                        </div>
+                    </ItemContent>
+                </Virtualize>
+            </div>
+        </MudItem>
+    
+        <MudItem xs="12">
+            <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item">
+                <ItemContent>
+                    <div class="@(item.Type == SteamMarketItemActivityType.CreatedBuyOrder ? "mud-paper mud-paper-square" : null)">
+                        <div class="d-flex flex-row justify-start align-center">
+                            @if (!String.IsNullOrEmpty(item.BuyerName))
+                            {
+                                <img src="@item.BuyerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
+                                <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.BuyerName</MudText>
+                            }
+                            else if (!String.IsNullOrEmpty(item.SellerName))
+                            {
+                                <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
+                                <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
+                            }
+                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">@GetActivityDescription(item)</MudText>
+                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.Quantity.ToQuantityString()x</MudText>
+                            <img src="@item.IconUrl" class="mx-1 clickable" style="width:32px; height:32px;" @onclick="@(() => ViewItem(item))" />
+                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap clickable" Style="@($"color: {item.ForegroundColour}")" @onclick="@(() => ViewItem(item))">@item.Name</MudText>
+                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">for</MudText>
+                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
+                            @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
+                            {
+                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">from</MudText>
+                                <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
+                                <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
+                            }
+                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 text-right mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
+                        </div>
+                    </div>
+                </ItemContent>
+                <Placeholder>
+                    <div class="d-flex flex-row justify-start align-center">
+                        <MudProgressCircular Indeterminate="true" Class="mx-1" Style="width:32px; height:32px;" />
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mx-1">Loading...</MudText>
+                    </div>
+                </Placeholder>
+            </Virtualize>
+        </MudItem>
+
+    </MudGrid>
+
+</PageContainer>
+
+@code {
+
+    private Virtualize<ItemActivityStatisticDTO> MarketActivityTable { get; set; }
+
+    private string Filter { get; set; }
+
+    private void ViewItem(ItemDescriptionDTO item)
+    {
+        ExternalNavigationManager.NavigateToNewTab(
+            $"https://steamcommunity.com/market/listings/{item.AppId}/{Uri.EscapeDataString(item.Name)}"
+        );
+    }
+    
+    private async void ToggleItemFilter(ItemDescriptionDTO item)
+    {
+        if (Filter != item.Name)
+        {
+            Filter = item.Name;
+        }
+        else
+        {
+            Filter = null;
+        }
+        await MarketActivityTable.RefreshDataAsync();
+        StateHasChanged();
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ItemDescriptionDTO>> LoadMarketActivityTopItems(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionDTO>>($"api/stats/market/activityTopItems?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemDescriptionDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'activity top items' market statistics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ItemActivityStatisticDTO>> LoadMarketActivity(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemActivityStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'activity' market statistics");
+            throw;
+        }
+    }
+    
+    private string GetActivityDescription(ItemActivityStatisticDTO activity)
+    {
+        switch (activity.Type)
+        {
+            case SteamMarketItemActivityType.CreatedSellOrder: return $"created a listing of";
+            case SteamMarketItemActivityType.CancelledSellOrder: return $"cancelled their listing of";
+            case SteamMarketItemActivityType.CreatedBuyOrder: return $"purchased";
+            case SteamMarketItemActivityType.CancelledBuyOrder: return $"cancelled their buy order of";
+            default: return "did something";
+        }
+    }
+
+}
