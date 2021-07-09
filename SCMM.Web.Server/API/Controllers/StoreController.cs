@@ -289,7 +289,7 @@ namespace SCMM.Web.Server.API.Controllers
             var storeItemRevenue = (
                 from storeItem in storeItems
                 let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(steamCurrency.Name) ? storeItem.Prices[steamCurrency.Name] : 0))
-                let salesTax = (long) Math.Round(total * 0.20)
+                let salesTax = (long)Math.Round(total * 0.20)
                 let totalAfterTax = (total - salesTax)
                 let authorRevenue = EconomyExtensions.SteamFeeAuthorComponentAsInt(totalAfterTax)
                 let platformRevenue = 0 // TODO: EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)

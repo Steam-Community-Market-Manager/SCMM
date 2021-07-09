@@ -42,7 +42,7 @@ namespace SCMM.Azure.ServiceBus
             await messageSender.SendMessagesAsync(messageBatch, cancellationToken);
         }
 
-        public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken = default(CancellationToken)) 
+        public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken = default(CancellationToken))
             where TRequest : class, IMessage
             where TResponse : class, IMessage
         {
@@ -55,7 +55,7 @@ namespace SCMM.Azure.ServiceBus
                     new CreateQueueOptions(temporaryQueueName)
                     {
                         AutoDeleteOnIdle = (messageTimeout * 2)
-                    }, 
+                    },
                     cancellationToken
                 );
 
@@ -72,7 +72,7 @@ namespace SCMM.Azure.ServiceBus
                     new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
                     {
                         ReplyTo = temporaryQueueName
-                    }, 
+                    },
                     cancellationToken
                 );
 

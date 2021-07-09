@@ -1,6 +1,4 @@
 ﻿using Discord;
-using System;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Client.Extensions
 {

@@ -99,7 +99,7 @@ namespace SCMM.Steam.API.Commands
                         .OrderBy(x => Int32.Parse(x.SteamId));
 
                     var itemPriceCurrency = (
-                        possibleCurrencies.FirstOrDefault() ?? 
+                        possibleCurrencies.FirstOrDefault() ??
                         currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD)
                     );
 

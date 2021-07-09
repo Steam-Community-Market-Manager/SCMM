@@ -130,12 +130,12 @@ namespace SCMM.Steam.Job.Server.Jobs
                         };
 
                         var activityAlreadyExists = db.SteamMarketItemActivity.Any(x =>
-                            x.Timestamp == newActivity.Timestamp && 
-                            x.DescriptionId == newActivity.DescriptionId && 
-                            x.Type == newActivity.Type && 
-                            x.Price == newActivity.Price && 
+                            x.Timestamp == newActivity.Timestamp &&
+                            x.DescriptionId == newActivity.DescriptionId &&
+                            x.Type == newActivity.Type &&
+                            x.Price == newActivity.Price &&
                             x.Quantity == newActivity.Quantity &&
-                            x.SellerName == newActivity.SellerName && 
+                            x.SellerName == newActivity.SellerName &&
                             x.BuyerName == newActivity.BuyerName
                         );
 

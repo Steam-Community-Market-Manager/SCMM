@@ -94,7 +94,7 @@ namespace SCMM.Steam.Data.Store
 
         public long? LifetimeFavourited { get; set; }
 
-        public long ? Views { get; set; }
+        public long? Views { get; set; }
 
         public bool IsCommodity { get; set; }
 

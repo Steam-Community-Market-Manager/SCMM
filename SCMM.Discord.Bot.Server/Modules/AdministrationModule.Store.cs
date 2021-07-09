@@ -2,14 +2,12 @@
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
-using SCMM.Google.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -170,7 +168,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var start = new DateTimeOffset(new DateTime(2017, 01, 01), TimeZoneInfo.Local.BaseUtcOffset);
             var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == Constants.RustAppId.ToString());
             var existingStores = await _db.SteamItemStores.ToListAsync();
-            
+
             // Get all videos by ThatGermanGuy
             var videos = await _googleClient.ListChannelVideosAsync("UCvCBuwbtKRwM0qMi7rc7CUw");
 
@@ -295,7 +293,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     {
                         ItemStoreUrl = $"http://web.archive.org/web/{snapshot}/{Uri.EscapeUriString(itemStoreUrl)}",
                         Timestamp = new DateTimeOffset(
-                            DateTime.ParseExact(snapshot, "yyyyMMddHHmmss", CultureInfo.InvariantCulture), 
+                            DateTime.ParseExact(snapshot, "yyyyMMddHHmmss", CultureInfo.InvariantCulture),
                             TimeZoneInfo.Utc.BaseUtcOffset
                         )
                     });

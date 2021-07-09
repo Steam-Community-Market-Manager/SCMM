@@ -1,5 +1,4 @@
 ﻿using Azure.Messaging.ServiceBus;
-using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,8 +25,8 @@ namespace SCMM.Azure.ServiceBus.Middleware
         private readonly global::Azure.Messaging.ServiceBus.ServiceBusClient _serviceBusClient;
         private bool disposedValue;
 
-        public ServiceBusProcessorMiddleware(RequestDelegate next, ILogger<ServiceBusProcessorMiddleware> logger, IServiceScopeFactory scopeFactory, 
-            global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient serviceBusAdministrationClient, global::Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient, 
+        public ServiceBusProcessorMiddleware(RequestDelegate next, ILogger<ServiceBusProcessorMiddleware> logger, IServiceScopeFactory scopeFactory,
+            global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient serviceBusAdministrationClient, global::Azure.Messaging.ServiceBus.ServiceBusClient serviceBusClient,
             MessageHandlerTypeCollection messageHandlerTypeCollection)
         {
             _next = next;

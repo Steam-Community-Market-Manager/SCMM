@@ -154,7 +154,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             }
 
             db.SaveChanges();
-            
+
             var currencyExchangeRateUpdatedMessages = new List<CurrencyExchangeRateUpdateMessage>();
             foreach (var currencyPrice in currencyPrices)
             {

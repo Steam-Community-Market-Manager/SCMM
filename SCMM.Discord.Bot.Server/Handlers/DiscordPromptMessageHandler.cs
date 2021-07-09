@@ -38,7 +38,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             switch (message.Type)
             {
                 case DiscordPromptMessageType.Reply:
-                    waitForReplySubscription = _client.SubscribeToReplies(messageId, 
+                    waitForReplySubscription = _client.SubscribeToReplies(messageId,
                         (msg) => String.Equals(message.Username, msg.Author.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
                         async (msg) =>
                         {
