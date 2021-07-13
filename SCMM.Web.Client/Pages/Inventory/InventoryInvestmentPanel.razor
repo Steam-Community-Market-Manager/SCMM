@@ -10,19 +10,19 @@
 else
 {
     <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@ReadOnly" Class="mud-table-dense-extra"
-              ServerData="@LoadItems" RowsPerPage="25" CommitEditTooltip="Save Changes" SortLabel="Description.MarketItem.Last1hrValue" AllowUnsorted="false">
+              ServerData="@LoadItems" RowsPerPage="25" CommitEditTooltip="Save Changes" AllowUnsorted="false">
         <ToolBarContent>
-            <MudText Typo="MudBlazor.Typo.body2">
+            <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
                 <span>Track your investment performance by clicking on an item and entering the price you paid for it.</span><br/>
                 <span class="mud-secondary-text">Your return on investment (RoI) is calculated by deducting the purchase price and Steam market seller fees from the list price of each item.</span>
             </MudText>
             <MudToolBarSpacer />
-            <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Class="mt-n4" />
+            <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Class="mt-n2 mx-2" />
         </ToolBarContent>
         <HeaderContent>
             <MudTh Class="mud-primary-text">
                 @*<MudTooltip Text="The name of the item. These are a 1:1 mirror of your inventory items; If you have a stack of items, they'll show as a stack here too">*@
-                    <MudTableSortLabel SortLabel="Description.Name" T="InventoryInvestmentItemDTO">Item</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="Name" T="InventoryInvestmentItemDTO">Item</MudTableSortLabel>
                 @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
@@ -32,22 +32,22 @@ else
             </MudTh>
             <MudTh Class="mud-primary-text">
                 @*<MudTooltip Text="The price you could reasonably expect to sell the item for right now by undercutting the lowest 'buy now' price">*@
-                    <MudTableSortLabel SortLabel="Description.MarketItem.ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">List Price</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">List Price</MudTableSortLabel>
                 @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
                 @*<MudTooltip Text="The fees Steam charge when selling items on the Steam Community Market (~12% of sale price)">*@
-                    <MudTableSortLabel SortLabel="Description.MarketItem.ResellTax" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="ResellTax" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
                 @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
                 @*<MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and Steam seller fees">*@
-                    <span>Profit / Loss</span>
+                    <MudTableSortLabel SortLabel="ResellProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Profit / Loss</MudTableSortLabel>
                 @*</MudTooltip>*@
             </MudTh>
             <MudTh Class="mud-primary-text">
                 @*<MudTooltip Text="Your return on investment, as a percentage. 0% is break-even, a positive number is profit, negative is a loss">*@
-                    <span>RoI %</span>
+                    <MudTableSortLabel SortLabel="ResellProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">RoI %</MudTableSortLabel>
                 @*</MudTooltip>*@
             </MudTh>
         </HeaderContent>

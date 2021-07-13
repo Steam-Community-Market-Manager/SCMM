@@ -501,7 +501,29 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description.MarketItem.Currency)
                 .Include(x => x.Description.StoreItem)
                 .Include(x => x.Description.StoreItem.Currency)
-                .OrderBy(sortBy, sortDirection);
+                .AsQueryable();
+
+            switch (sortBy)
+            {
+                case nameof(InventoryInvestmentItemDTO.Name):
+                    query = query.OrderBy(x => x.Description.Name, sortDirection);
+                    break;
+                case nameof(InventoryInvestmentItemDTO.BuyPrice):
+                    query = query.OrderBy(x => x.BuyPrice, sortDirection);
+                    break;
+                case nameof(InventoryInvestmentItemDTO.ResellPrice):
+                    query = query.OrderBy(x => x.Description.MarketItem.ResellPrice, sortDirection);
+                    break;
+                case nameof(InventoryInvestmentItemDTO.ResellTax):
+                    query = query.OrderBy(x => x.Description.MarketItem.ResellTax, sortDirection);
+                    break;
+                case nameof(InventoryInvestmentItemDTO.ResellProfit):
+                    query = query.OrderBy(x => 
+                        ((x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) * x.Description.MarketItem.Currency.ExchangeRateMultiplier) -
+                        ((x.BuyPrice ?? 0) * (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0))
+                        , sortDirection);
+                    break;
+            }
 
             var results = await query.PaginateAsync(start, count,
                 x => _mapper.Map<SteamProfileInventoryItem, InventoryInvestmentItemDTO>(x, this)
