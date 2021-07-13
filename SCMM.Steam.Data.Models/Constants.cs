@@ -60,6 +60,7 @@
 
         public const string RustAssetTagGlow = "glow";
         public const string RustAssetTagGlowSights = "glowsight";
+        public const string RustAssetTagCutout = "cutout";
 
         #endregion
 
