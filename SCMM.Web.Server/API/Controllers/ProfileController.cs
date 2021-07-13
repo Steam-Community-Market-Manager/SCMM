@@ -523,6 +523,13 @@ namespace SCMM.Web.Server.API.Controllers
                         ((x.BuyPrice ?? 0) * (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0))
                         , sortDirection);
                     break;
+                case "ResellRoI":
+                    query = query.OrderBy(x =>
+                        (x.Description.MarketItem.ResellPrice <= 0 || x.Description.MarketItem.ResellTax <= 0 || x.Description.MarketItem.Currency == null || x.BuyPrice <= 0 || x.Currency == null) ? 0 :
+                        ((x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) * x.Description.MarketItem.Currency.ExchangeRateMultiplier) /
+                        ((x.BuyPrice ?? 0) * (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0))
+                        , sortDirection);
+                    break;
             }
 
             var results = await query.PaginateAsync(start, count,
