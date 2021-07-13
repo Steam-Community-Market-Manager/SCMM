@@ -146,7 +146,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .FirstOrDefaultAsync(x =>
                     (guid != Guid.Empty && x.Id == guid) ||
                     (id64 > 0 && x.ClassId == id64) ||
-                    x.Name.Contains(id)
+                    (x.Name == id)
                 );
 
             if (item == null)
