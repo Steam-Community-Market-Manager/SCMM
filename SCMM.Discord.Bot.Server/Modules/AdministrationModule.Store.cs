@@ -260,7 +260,20 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         // store.steampowered.com/itemstore/252490/
-        // store.steampowered.com/itemstore/252490/?filter=All
+        // store.steampowered.com/itemstore/252490/?filter=Featured
+        // store.steampowered.com/itemstore/252490/browse/
+        // store.steampowered.com/itemstore/252490/browse/?filter=All
+        // store.steampowered.com/itemstore/252490/browse/?filter=Weapon
+        // store.steampowered.com/itemstore/252490/browse/?filter=Weapons
+        // store.steampowered.com/itemstore/252490/browse/?filter=Armor
+        // store.steampowered.com/itemstore/252490/browse/?filter=Clothing
+        // store.steampowered.com/itemstore/252490/browse/?filter=Shirts
+        // store.steampowered.com/itemstore/252490/browse/?filter=Pants
+        // store.steampowered.com/itemstore/252490/browse/?filter=Jackets
+        // store.steampowered.com/itemstore/252490/browse/?filter=Hats
+        // store.steampowered.com/itemstore/252490/browse/?filter=Masks
+        // store.steampowered.com/itemstore/252490/browse/?filter=Footwear
+        // store.steampowered.com/itemstore/252490/browse/?filter=Misc
         [Command("import-web-archive-store-prices")]
         public async Task<RuntimeResult> ImportWebArchiveStorePricesAsync(string itemStoreUrl)
         {

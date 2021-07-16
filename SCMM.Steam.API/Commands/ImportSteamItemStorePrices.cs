@@ -70,10 +70,25 @@ namespace SCMM.Steam.API.Commands
 
                 // Find the associated asset description for this item definition
                 var itemName = itemDefinitionName?.Value;
-                var storeItem = _db.SteamStoreItems.FirstOrDefault(x => x.Description.Name == itemName);
+                var storeItem = _db.SteamStoreItems.FirstOrDefault(x => x.Description.Name == itemName) ??
+                                _db.SteamStoreItems.Local.FirstOrDefault(x => x.Description?.Name == itemName);
                 if (storeItem == null)
                 {
-                    continue;
+                    var assetDescription = _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefault(x => x.Name == itemName);
+                    if (assetDescription == null)
+                    {
+                        continue;
+                    }
+                    else 
+                    {
+                        _db.SteamStoreItems.Add(
+                            storeItem = new SteamStoreItem()
+                            {
+                                App = assetDescription.App,
+                                Description = assetDescription
+                            }
+                        );
+                    }
                 }
 
                 // Parse and update the store item id
@@ -106,6 +121,7 @@ namespace SCMM.Steam.API.Commands
                     var itemPrice = itemPriceText.SteamPriceAsInt();
                     if (itemPrice > 0)
                     {
+                        //storeItem.PricesAreLocked = true; // we are 100% confident that these are correct
                         storeItem.Currency = itemPriceCurrency;
                         storeItem.Price = itemPrice;
                         foreach (var currency in currencies)
