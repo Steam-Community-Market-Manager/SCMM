@@ -6,8 +6,12 @@ namespace SCMM.Web.Data.Models.UI
     {
         public PriceType? BuyNowFrom { get; }
 
+        public string BuyNowUrl { get; }
+
         public long? BuyNowPrice { get; }
 
-        public string BuyNowUrl { get; }
+        public long? OriginalPrice { get; }
+
+        public long? Supply { get; }
     }
 }

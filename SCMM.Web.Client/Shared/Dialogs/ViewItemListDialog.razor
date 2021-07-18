@@ -19,7 +19,7 @@
             <MudGrid Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
                 @foreach (var item in List.OrderBy(x => x.BuyNowPrice))
                 {
-                    <MudItem xs="6" sm="3" md="2">
+                    <MudItem xs="12" sm="6" md="4" lg="3" xl="2">
                         <ItemDescriptionDetails Item="@item" Highlighted="@(item.Id == HighlightedItemId)" />
                     </MudItem>
                 }
@@ -47,7 +47,7 @@
     protected override async Task OnInitializedAsync()
     {
         Dialog.Options.CloseButton = true;
-        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Medium;
+        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Large;
         Dialog.Options.FullWidth = true; // force item images to scale equally
         Dialog.SetOptions(Dialog.Options);
 

@@ -49,12 +49,16 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyNowPrice, p => p.BuyNowCurrency))
+                .ForMember(x => x.OriginalPrice, o => o.MapFromUsingCurrencyTable(p => (p.StoreItem != null ? p.StoreItem.Prices : null)))
+                .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?) p.MarketItem.Supply : null)))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions));
 
             CreateMap<SteamAssetDescription, ProfileInventoryItemDescriptionDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyNowPrice, p => p.BuyNowCurrency))
+                .ForMember(x => x.OriginalPrice, o => o.MapFromUsingCurrencyTable(p => (p.StoreItem != null ? p.StoreItem.Prices : null)))
+                .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Supply : null)))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions));
         }
     }

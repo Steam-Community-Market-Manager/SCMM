@@ -35,6 +35,16 @@
     margin-bottom: -16px !important;
 }
 
+.mud-badge-center .mud-badge-wrapper {
+    text-align: center;
+}
+
+.mud-badge-center .mud-badge-badge {
+    left: auto !important;
+    right: auto !important;
+    position: relative !important;
+}
+
 .mud-table-dense-extra * .mud-table-row .mud-table-cell {
     padding-top: 0px !important;
     padding-bottom: 0px !important;
