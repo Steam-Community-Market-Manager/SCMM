@@ -572,6 +572,10 @@ else if (StoreList.Any())
     {
         var title = new StringBuilder();
         title.Append(store.Start.ToString("MMMM d"));
+        if (store.Id == StoreId)
+        {
+            title.Append(store.Start.ToString(" yyyy"));
+        }
         if (!String.IsNullOrEmpty(store.Name))
         {
             title.Append($" - {store.Name}");
