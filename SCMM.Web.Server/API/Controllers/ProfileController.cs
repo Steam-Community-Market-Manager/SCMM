@@ -414,6 +414,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
+                .Where(x => !x.Description.IsTwitchDrop)
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
                 .Include(x => x.Description.StoreItem)
@@ -494,6 +495,8 @@ namespace SCMM.Web.Server.API.Controllers
             var query = _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => x.Description != null)
+                .Where(x => !x.Description.IsTwitchDrop)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.ToLower().Contains(filter.ToLower()))
                 .Include(x => x.App)
                 .Include(x => x.Currency)

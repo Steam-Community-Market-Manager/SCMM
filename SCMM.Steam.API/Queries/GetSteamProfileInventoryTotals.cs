@@ -67,6 +67,7 @@ namespace SCMM.Steam.API.Queries
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
+                .Where(x => !x.Description.IsTwitchDrop)
                 .Select(x => new
                 {
                     Quantity = x.Quantity,

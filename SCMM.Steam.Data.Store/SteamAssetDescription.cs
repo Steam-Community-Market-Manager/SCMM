@@ -106,6 +106,8 @@ namespace SCMM.Steam.Data.Store
 
         public int? TradableRestrictionDays { get; set; }
 
+        public bool IsTwitchDrop { get; set; }
+
         public bool IsCraftingComponent { get; set; }
 
         public bool IsCraftable { get; set; }

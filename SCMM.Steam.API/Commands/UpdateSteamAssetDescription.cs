@@ -545,6 +545,21 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
+            // Check if this is a twitch drop item
+            if (!assetDescription.IsTwitchDrop)
+            {
+                // Does this look like a streamer commissioned twitch drop?
+                if (assetDescription.WorkshopFileId != null && assetDescription.TimeCreated > new DateTime(2020, 01, 01) && !assetDescription.IsMarketable && (assetDescription.LifetimeSubscriptions == null || assetDescription.LifetimeSubscriptions == 0))
+                {
+                    assetDescription.IsTwitchDrop = true;
+                }
+                // Does this look like a publisher item twitch drop?
+                else if (assetDescription.WorkshopFileId == null && Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                {
+                    assetDescription.IsTwitchDrop = true;
+                }
+            }
+
             // Update last checked on
             assetDescription.TimeRefreshed = DateTimeOffset.Now;
 

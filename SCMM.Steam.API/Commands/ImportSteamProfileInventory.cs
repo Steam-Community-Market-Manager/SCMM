@@ -5,6 +5,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
@@ -171,6 +172,12 @@ namespace SCMM.Steam.API.Commands
                         DescriptionId = assetDescription.Id,
                         Quantity = (int)asset.Amount
                     };
+
+                    // If this item is a twitch drop, automatically mark it as a drop
+                    if (assetDescription.IsTwitchDrop)
+                    {
+                        inventoryItem.AcquiredBy = SteamProfileInventoryItemAcquisitionType.Drop;
+                    }
 
                     profile.InventoryItems.Add(inventoryItem);
                 }
