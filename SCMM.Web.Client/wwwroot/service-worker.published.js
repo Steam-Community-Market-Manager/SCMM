@@ -33,6 +33,13 @@ async function onActivate(event) {
 }
 
 async function onFetch(event) {
+    if (event.request.url.match('\/signin') ||
+        event.request.url.match('\/signout') ||
+        event.request.url.match('\/admin') ||
+        event.request.url.match('\/docs')) {
+        return fetch(event.request);
+    }
+
     let cachedResponse = null;
     if (event.request.method === 'GET') {
         // For all navigation requests, try to serve index.html from cache
