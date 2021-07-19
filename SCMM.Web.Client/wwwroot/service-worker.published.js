@@ -36,7 +36,8 @@ async function onFetch(event) {
     if (event.request.url.match('\/signin') ||
         event.request.url.match('\/signout') ||
         event.request.url.match('\/admin') ||
-        event.request.url.match('\/docs')) {
+        event.request.url.match('\/docs') ||
+        event.request.url.match('\/api')) {
         return fetch(event.request);
     }
 
