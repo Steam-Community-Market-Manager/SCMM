@@ -67,7 +67,6 @@ namespace SCMM.Steam.API.Queries
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
-                .Where(x => !x.Description.IsTwitchDrop)
                 .Select(x => new
                 {
                     Quantity = x.Quantity,
@@ -111,7 +110,11 @@ namespace SCMM.Steam.API.Queries
                     .Sum(x => (x.ItemResellTax / x.ItemExchangeRateMultiplier) * x.Quantity)
             };
 
-            var hasSetupInvestment = ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 50); // if more than 50% have buy prices set
+            // if more than 50% have buy prices set
+            var hasSetupInvestment = (profileInventory.ItemCount > 0 && profileInventory.ItemCountWithBuyPrices > 0)
+                ? ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 50) 
+                : false;
+            
             return new GetSteamProfileInventoryTotalsResponse()
             {
                 TotalItems = profileInventory.TotalItems,
