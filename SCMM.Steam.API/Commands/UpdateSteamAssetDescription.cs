@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -522,6 +523,7 @@ namespace SCMM.Steam.API.Commands
             // Parse name and description to determine if this item glows
             if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
             {
+                var glowing = false;
                 var descriptionText = String.Join(' ',
                     assetDescription.Name, assetDescription.NameWorkshop, assetDescription.Description, assetDescription.DescriptionWorkshop
                 );
@@ -538,11 +540,13 @@ namespace SCMM.Steam.API.Commands
                         // Now check if the words "glow" or "glowing" appear. If so, then it is probably a glowing item
                         if (Regex.IsMatch(descriptionText, @"\bglow[ing]*\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                         {
-                            assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                            assetDescription.Tags[Constants.RustAssetTagGlow] = (Char.ToUpper(Constants.RustAssetTagGlow[0]) + Constants.RustAssetTagGlow.Substring(1));
+                            glowing = true;
                         }
                     }
                 }
+
+                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow, glowing);
             }
 
             // Check if this is a twitch drop item

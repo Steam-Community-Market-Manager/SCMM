@@ -145,11 +145,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
-                if (!assetDescription.Tags.ContainsKey(tagKey))
-                {
-                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                    assetDescription.Tags[tagKey] = tagValue;
-                }
+                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                assetDescription.Tags[tagKey] = tagValue;
             }
 
             await _db.SaveChangesAsync();
@@ -162,11 +159,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
-                if (assetDescription.Tags.ContainsKey(tagKey))
-                {
-                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                    assetDescription.Tags.Remove(tagKey);
-                }
+                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                assetDescription.Tags.Remove(tagKey);
             }
 
             await _db.SaveChangesAsync();
