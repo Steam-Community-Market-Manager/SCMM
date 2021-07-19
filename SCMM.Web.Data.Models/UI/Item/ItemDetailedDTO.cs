@@ -69,6 +69,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public int? TradableRestrictionDays { get; set; }
 
+        public bool IsTwitchDrop { get; set; }
+
         public bool IsCraftingComponent { get; set; }
 
         public bool IsCraftable { get; set; }
