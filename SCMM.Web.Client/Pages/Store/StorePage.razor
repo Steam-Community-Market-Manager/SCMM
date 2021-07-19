@@ -543,7 +543,7 @@ else if (StoreList.Any())
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
             ["ListName"] = item.ItemType,
-            ["ListUrl"] = $"api/item/type/{item.ItemType}?compareWithItemId={item.AssetDescriptionId}",
+            ["ListUrl"] = $"api/item/type/{item.ItemType}?compareWithItemId={item.AssetDescriptionId}&marketableItemsOnly=true",
             ["HighlightedItemId"] = item.AssetDescriptionId,
         });
     }

@@ -164,6 +164,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="name">The name of the item type</param>
         /// <param name="compareWithItemId">The id of an unrelated item to be included in the list. Helpful when you want to compare an item to the list</param>
+        /// <param name="marketableItemsOnly">If true, only marketable items are returned. If false, all items are returned</param>
         /// <returns>The items of the specified item type</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -178,7 +179,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsByType([FromRoute] string name, ulong? compareWithItemId = null)
+        public async Task<IActionResult> GetItemsByType([FromRoute] string name, [FromQuery] ulong? compareWithItemId = null, [FromQuery] bool marketableItemsOnly = false)
         {
             if (String.IsNullOrEmpty(name))
             {
@@ -190,6 +191,7 @@ namespace SCMM.Web.Server.API.Controllers
                     (x.ItemType == name) ||
                     (compareWithItemId != null && x.ClassId == compareWithItemId)
                 )
+                .Where(x => !marketableItemsOnly || x.IsMarketable)
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
@@ -209,6 +211,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get all items that belong to the specified collection
         /// </summary>
         /// <param name="name">The name of the item collection</param>
+        /// <param name="marketableItemsOnly">If true, only marketable items are returned. If false, all items are returned</param>
         /// <returns>The items belonging to the collection</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -223,7 +226,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsByCollection([FromRoute] string name)
+        public async Task<IActionResult> GetItemsByCollection([FromRoute] string name, [FromQuery] bool marketableItemsOnly = false)
         {
             if (String.IsNullOrEmpty(name))
             {
@@ -232,6 +235,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.ItemCollection == name)
+                .Where(x => !marketableItemsOnly || x.IsMarketable)
                 .Include(x => x.App)
                 .Include(x => x.Creator)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
