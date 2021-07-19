@@ -63,8 +63,8 @@
             <ul class="fa-ul">
                 <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="https://steamcommunity.com/" Target="_blank">Steam Community</MudLink> and <MudLink Typo="MudBlazor.Typo.body2" Href="https://partner.steamgames.com/doc/webapi" Target="_blank">Steam WebAPI</MudLink> for providing much of the source data.</li>
                 <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="http://web.archive.org/web/20150415000000*/http://store.steampowered.com/itemstore/252490/" Target="_blank">Internet Archive's Wayback Machine</MudLink> for preserving Rust store information since 2015.</li>
-                <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="https://www.youtube.com/channel/UCvCBuwbtKRwM0qMi7rc7CUw" Target="_blank">ThatGermanGuy</MudLink> for documenting the weekly Rust skins and prices since 2017.</li>
-                <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="https://discord.gg/CRMf95Z" Target="_blank">OMIGHTY Youtube Community</MudLink> for all their feedback and support towards the project.</li>
+                <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="https://www.youtube.com/channel/UCvCBuwbtKRwM0qMi7rc7CUw" Target="_blank">ThatGermanGuy YouTube</MudLink> for documenting the weekly Rust skins and prices since 2017.</li>
+                <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="https://discord.gg/CRMf95Z" Target="_blank">OMIGHTY YouTube + Community</MudLink> for all their help, feedback, and support with the project.</li>
             </ul>
         </MudText>
         
@@ -74,10 +74,10 @@
                 Thank you to the following people for contributing data towards this project:
             </MudText>
             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                <ul class="fa-ul contributors">
+                <ul class="fa-ul contributors d-flex flex-row flex-wrap">
                     @foreach (var contributor in Contributors)
                     {
-                        <li class="contributor">
+                        <li class="contributor mx-1">
                             @if (contributor != null)
                             {
                                 <img src="@contributor.AvatarUrl" />
@@ -99,10 +99,10 @@
                 An extra special thank you goes out to the following people for their generous support and donations towards this project:
             </MudText>
             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                <ul class="fa-ul donators">
+                <ul class="fa-ul donators d-flex flex-row flex-wrap">
                     @foreach (var donator in Donators)
                     {
-                        <li class="donator">
+                        <li class="donator mx-1">
                             @if (donator != null)
                             {
                                 <img src="@donator.AvatarUrl" />
