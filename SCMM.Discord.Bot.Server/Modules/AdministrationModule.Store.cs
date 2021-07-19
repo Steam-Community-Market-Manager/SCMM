@@ -2,9 +2,12 @@
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
+using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using System;
@@ -93,6 +96,65 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 return CommandResult.Fail("Unable to find a store for the specific date");
             }
+        }
+
+        [Command("rebuild-store-item-mosaics")]
+        public async Task<RuntimeResult> RebuildStoreItemMosaicsAsync()
+        {
+            var itemStores = await _db.SteamItemStores
+                .Where(x => x.ItemsThumbnailId == null)
+                .Where(x => x.Items.Any())
+                .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
+                .ToArrayAsync();
+
+            var message = await Context.Message.ReplyAsync("Rebuilding store item mosaics...");
+            foreach (var itemStore in itemStores)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Rebuilding item mosaic for store {itemStore.Start.ToString("d")} ({Array.IndexOf(itemStores, itemStore) + 1}/{itemStores.Length})..."
+                );
+
+                // Generate store thumbnail
+                var items = itemStore.Items.Select(x => x.Item).OrderBy(x => x.Description?.Name);
+                var itemImageSources = items
+                    .Where(x => x.Description != null)
+                    .Select(x => new ImageSource()
+                    {
+                        Title = x.Description.Name,
+                        ImageUrl = x.Description.IconUrl,
+                        ImageData = x.Description.Icon?.Data,
+                    })
+                    .ToList();
+                if (!itemImageSources.Any())
+                {
+                    continue;
+                }
+
+                var thumbnail = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+                {
+                    ImageSources = itemImageSources,
+                    TileSize = 256,
+                    Columns = 3
+                });
+                if (thumbnail == null)
+                {
+                    continue;
+                }
+
+                itemStore.ItemsThumbnail = new ImageData()
+                {
+                    Data = thumbnail.Data,
+                    MimeType = thumbnail.MimeType
+                };
+
+                await _db.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Rebuilt {itemStores.Where(x => x.ItemsThumbnailId != null).Count()}/{itemStores.Length} snapshots item mosaics"
+            );
+
+            return CommandResult.Success();
         }
 
         /*
