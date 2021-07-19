@@ -17,6 +17,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public IList<StoreItemDetailsDTO> Items { get; set; }
 
+        public string ItemsMosaicUrl { get; set; }
+
         public IList<string> Media { get; set; }
 
         public bool IsDraft { get; set; }

@@ -26,12 +26,12 @@ namespace SCMM.Web.Server
 {
     public class Startup
     {
+        public static IConfiguration Configuration { get; private set; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {

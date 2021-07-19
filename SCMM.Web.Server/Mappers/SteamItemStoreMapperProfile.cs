@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Common;
 using AutoMapper;
+using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Store;
@@ -18,6 +19,7 @@ namespace SCMM.Web.Server.Mappers
             CreateMap<SteamItemStore, StoreDetailsDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)))
+                .ForMember(x => x.ItemsMosaicUrl, o => o.MapFrom(p => p.ItemsThumbnailId != null ? $"{Startup.Configuration.GetWebsiteUrl()}/api/image/{p.ItemsThumbnailId}" : null))
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
 
             CreateMap<SteamStoreItemItemStore, StoreItemDetailsDTO>()
