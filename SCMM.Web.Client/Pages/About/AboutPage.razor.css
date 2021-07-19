@@ -11,18 +11,18 @@
     color: #cd7f32;
 }
 
-.donator {
+.donator, .contributor {
     display: flex;
     align-content: center;
     align-items: center;
 }
 
-.donator > img {
+.donator > img, .contributor > img {
     max-width: 24px;
     max-height: 24px;
 }
 
-.donator > span {
+.donator > span, .contributor> span {
     margin: 4px 8px;
     font-weight: bold;
 }

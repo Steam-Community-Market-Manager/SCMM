@@ -390,6 +390,14 @@
             <response code="200">The list of users who have donated.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetProfilesContributors">
+            <summary>
+            List profiles who have the controbitor role
+            </summary>
+            <returns>The list of users who have contributed</returns>
+            <response code="200">The list of users who have contributed.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetStores">
             <summary>
             List all known item store instances
@@ -457,7 +465,7 @@
             <summary>
             Link an item to a store
             </summary>
-            <remarks>This API requires authentication and the user must belong to the <code>Moderator</code> role</remarks>
+            <remarks>This API requires authentication and the user must belong to the <code>Contributor</code> role</remarks>
             <param name="id">Store GUID to link the item to.</param>
             <param name="command">
             The item ID and store price (in USD) of the item to be linked to the store
@@ -472,7 +480,7 @@
             <summary>
             Unlink an item from a store
             </summary>
-            <remarks>This API requires authentication and the user must belong to the <code>Moderator</code> role</remarks>
+            <remarks>This API requires authentication and the user must belong to the <code>Contributor</code> role</remarks>
             <param name="id">Store GUID to unlink the item from.</param>
             <param name="command">
             The item ID and store price (in USD) of the item to be unlinked from the store

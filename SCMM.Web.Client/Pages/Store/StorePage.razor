@@ -56,7 +56,7 @@ else if (StoreList.Any())
                     <StoreAnalyticsPanel Store="@Store" />
                 </MudItem>
                 
-                @if (Store.IsDraft && State.IsInRole(Roles.Moderator))
+                @if (Store.IsDraft && State.IsInRole(Roles.Contributor))
                 {
                     <MudItem xs="12">
                         <MudPaper Outlined="true" Class="d-flex flex-row justify-center align-center full-height pa-2">
@@ -84,7 +84,7 @@ else if (StoreList.Any())
                         <MudPaper Outlined="true" Class="d-flex flex-column justify-center align-center full-height pa-4">
                             <TumbleWeed />
                             <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">No items found!</MudText>
-                            @if (State.IsInRole(Roles.Moderator))
+                            @if (State.IsInRole(Roles.Contributor))
                             {
                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can help by contributing a suggestion.</MudText>
                             }
@@ -132,7 +132,7 @@ else if (StoreList.Any())
                                                         </TooltipContent>
                                                     </MudTooltip>
                                             }
-                                            @if (item.IsDraft && State.IsInRole(Roles.Moderator))
+                                            @if (item.IsDraft && State.IsInRole(Roles.Contributor))
                                             {
                                                 <MudTooltip Text="Remove this item from the store">
                                                     <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" Icon="fas fa-fw fa-trash-alt"></MudFab>

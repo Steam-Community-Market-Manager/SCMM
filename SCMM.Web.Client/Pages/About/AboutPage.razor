@@ -67,42 +67,81 @@
                 <li><span class="fa-li">-</span><MudLink Typo="MudBlazor.Typo.body2" Href="https://discord.gg/CRMf95Z" Target="_blank">OMIGHTY Youtube Community</MudLink> for all their feedback and support towards the project.</li>
             </ul>
         </MudText>
-
-        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-            An extra special thank you goes out to the following people for their generous support towards this project:
-        </MudText>
-        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-            <ul class="fa-ul donators">
-                @foreach (var donator in Donators)
-                {
-                    <li class="donator">
-                        @if (donator != null)
-                        {
-                            <img src="@donator.AvatarUrl" />
-                            <span>@donator.Name</span>
-                            @if (Donators.Take(3).Contains(donator))
+        
+        @if (Contributors != null && Contributors.Any())
+        {
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                Thank you to the following people for contributing data towards this project:
+            </MudText>
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                <ul class="fa-ul contributors">
+                    @foreach (var contributor in Contributors)
+                    {
+                        <li class="contributor">
+                            @if (contributor != null)
                             {
-                                <i class="fas fa-fw fa-trophy"></i>
+                                <img src="@contributor.AvatarUrl" />
+                                <span>@contributor.Name</span>
                             }
-                        }
-                        else
-                        {
-                            <MudSkeleton Width="@Skeleton.Width(0.3)" />
-                        }
-                    </li>
-                }
-            </ul>
-        </MudText>
+                            else
+                            {
+                                <MudSkeleton Width="@Skeleton.Width(0.3)" />
+                            }
+                        </li>
+                    }
+                </ul>
+            </MudText>
+        }
+        
+        @if (Donators != null && Donators.Any())
+        {
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                An extra special thank you goes out to the following people for their generous support and donations towards this project:
+            </MudText>
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                <ul class="fa-ul donators">
+                    @foreach (var donator in Donators)
+                    {
+                        <li class="donator">
+                            @if (donator != null)
+                            {
+                                <img src="@donator.AvatarUrl" />
+                                <span>@donator.Name</span>
+                                @if (Donators.Take(3).Contains(donator))
+                                {
+                                    <i class="fas fa-fw fa-trophy"></i>
+                                }
+                            }
+                            else
+                            {
+                                <MudSkeleton Width="@Skeleton.Width(0.3)" />
+                            }
+                        </li>
+                    }
+                </ul>
+            </MudText>
+        }
 
     </MudPaper>
 </PageContainer>
 
 @code {
 
+    private IList<ProfileDTO> Contributors { get; set; } = Skeleton.List<ProfileDTO>();
+    
     private IList<ProfileDTO> Donators { get; set; } = Skeleton.List<ProfileDTO>();
 
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            Contributors = await Http.GetFromJsonAsync<ProfileDTO[]>($"api/stats/contributors");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading contributors");
+            Snackbar.Add($"Unable to load contributor list. {ex.Message}", MudBlazor.Severity.Error);
+        }
         try
         {
             Donators = await Http.GetFromJsonAsync<ProfileDTO[]>($"api/stats/donators");

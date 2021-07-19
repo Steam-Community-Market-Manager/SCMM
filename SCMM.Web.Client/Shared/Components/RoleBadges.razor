@@ -5,9 +5,9 @@
         <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-user" Text="@SCMM.Shared.Data.Models.Roles.Administrator" Variant="MudBlazor.Variant.Outlined" 
                  Color="MudBlazor.Color.Secondary" />
     }
-    @if (IsInRole(SCMM.Shared.Data.Models.Roles.Moderator))
+    @if (IsInRole(SCMM.Shared.Data.Models.Roles.Contributor))
     {
-        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-user" Text="@SCMM.Shared.Data.Models.Roles.Moderator" Variant="MudBlazor.Variant.Outlined" 
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-user" Text="@SCMM.Shared.Data.Models.Roles.Contributor" Variant="MudBlazor.Variant.Outlined" 
                  Color="MudBlazor.Color.Secondary" />
     }
     @if (IsInRole(SCMM.Shared.Data.Models.Roles.Creator))

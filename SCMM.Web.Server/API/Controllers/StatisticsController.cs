@@ -771,5 +771,27 @@ namespace SCMM.Web.Server.API.Controllers
 
             return Ok(donators);
         }
+
+        /// <summary>
+        /// List profiles who have the controbitor role
+        /// </summary>
+        /// <returns>The list of users who have contributed</returns>
+        /// <response code="200">The list of users who have contributed.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("contributors")]
+        [ProducesResponseType(typeof(IEnumerable<ProfileDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProfilesContributors()
+        {
+            var donators = await _db.SteamProfiles
+                .AsNoTracking()
+                .Where(x => x.Roles.Serialised.Contains(Roles.Contributor))
+                .OrderByDescending(x => x.SteamId)
+                .Select(x => _mapper.Map<ProfileDTO>(x))
+                .ToListAsync();
+
+            return Ok(donators);
+        }
     }
 }
