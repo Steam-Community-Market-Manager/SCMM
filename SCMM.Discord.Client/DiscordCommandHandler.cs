@@ -91,6 +91,11 @@ namespace SCMM.Discord.Client
 
         public async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
+            if (result == null)
+            {
+                return;
+            }
+
             var commandResult = (result as CommandResult);
             var commandName = command.IsSpecified ? ($"{command.Value?.Module?.Name} {command.Value?.Name}").Trim() : "unspecified";
             var userName = context.User.GetFullUsername();
