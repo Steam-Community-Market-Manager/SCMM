@@ -5,6 +5,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 {
     public class StoreItemDetailsDTO : IItemDescription, ICanBeSubscribed
     {
+        public Guid Guid { get; set; }
+
         public ulong Id { get; set; }
 
         public ulong AppId { get; set; }

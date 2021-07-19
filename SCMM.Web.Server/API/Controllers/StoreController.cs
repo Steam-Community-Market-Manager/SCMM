@@ -138,12 +138,12 @@ namespace SCMM.Web.Server.API.Controllers
             var storeItems = itemStoreDetail.Items.Where(x => !String.IsNullOrEmpty(x.ItemType));
             if (storeItems.Any())
             {
-                var storeItemIds = storeItems.Select(x => x.Id.ToString()).ToArray();
+                var storeItemIds = storeItems.Select(x => x.Guid.ToString()).ToArray();
                 var marketPriceRanks = await _db.SteamStoreItems
-                    .Where(x => storeItemIds.Contains(x.SteamId))
+                    .Where(x => storeItemIds.Contains(x.Id.ToString()))
                     .Select(x => new
                     {
-                        ItemId = x.SteamId,
+                        ItemId = x.Id,
                         Position = x.App.MarketItems
                             .Where(y => y.Description.IsMarketable)
                             .Where(y => y.Description.ItemType == x.Description.ItemType)
@@ -158,7 +158,7 @@ namespace SCMM.Web.Server.API.Controllers
 
                 foreach (var marketPriceRank in marketPriceRanks)
                 {
-                    var storeItem = storeItems.FirstOrDefault(x => x.Id.ToString() == marketPriceRank.ItemId);
+                    var storeItem = storeItems.FirstOrDefault(x => x.Guid == marketPriceRank.ItemId);
                     if (storeItem != null)
                     {
                         storeItem.MarketRankIndex = marketPriceRank.Position;

@@ -23,6 +23,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
 
             CreateMap<SteamStoreItemItemStore, StoreItemDetailsDTO>()
+                .ForMember(x => x.Guid, o => o.MapFrom(p => p.Item.Id))
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Item.SteamId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.Item.App.SteamId))
                 .ForMember(x => x.AssetDescriptionId, o => o.MapFrom(p => p.Item.Description.ClassId))
