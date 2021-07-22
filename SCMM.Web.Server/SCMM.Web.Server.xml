@@ -53,13 +53,13 @@
             <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByType(System.String,System.Nullable{System.UInt64},System.Boolean)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByType(System.String,System.Boolean,System.Nullable{System.UInt64})">
             <summary>
             Get all items of the specified type
             </summary>
             <param name="name">The name of the item type</param>
-            <param name="compareWithItemId">The id of an unrelated item to be included in the list. Helpful when you want to compare an item to the list</param>
             <param name="marketableItemsOnly">If true, only marketable items are returned. If false, all items are returned</param>
+            <param name="compareWithItemId">The id of an unrelated item to be included in the list. Helpful when you want to compare an item to the list</param>
             <returns>The items of the specified item type</returns>
             <remarks>
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
