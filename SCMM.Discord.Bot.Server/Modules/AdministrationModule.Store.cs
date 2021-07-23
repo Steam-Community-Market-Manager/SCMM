@@ -237,6 +237,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             // Adjustment for videos that don't follow the naming convention...
             var whitelistedVideoIds = new string[] {
                 "AC2OwYiTbio", // Rust Trick or Treat | Halloween 2020 Week 2 Candy Hunter, Little Nightmare, Woodenstein #192
+                "dHjMxTY-UAg", // Rust Top Skins | Complete Sets Week, Tactical, Apoc Knight, Loot Leader #146 (Rust Skin Preview)
+                "9jjo9TMMpnI" // Rust Top Skins | No Mercy Lr, Metal Beast, Doodle, Sun Praiser, & Looter Sets #74 (Rust Skin Picks)
             };
             var blacklistedVideoIds = new string[] {
                 "pbLCjiOZw6s", //Rust Skins | Charitable Rust 2019 Skin Contest, Pencils of Promise Charity 
