@@ -1,6 +1,8 @@
-﻿namespace SCMM.Shared.Data.Models
+﻿using System.Collections;
+
+namespace SCMM.Shared.Data.Models
 {
-    public class PaginatedResult<T>
+    public class PaginatedResult<T> : IEnumerable
     {
         /// <summary>
         /// The requested items
@@ -21,5 +23,10 @@
         /// Number of total available items
         /// </summary>
         public int Total { get; set; }
+
+        public IEnumerator GetEnumerator()
+        {
+            return Items?.GetEnumerator();
+        }
     }
 }

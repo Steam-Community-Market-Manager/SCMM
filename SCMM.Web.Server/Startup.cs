@@ -4,6 +4,7 @@ using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Shared.Web.Extensions;
+using SCMM.Shared.Web.Formatters;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
@@ -126,11 +128,18 @@ namespace SCMM.Web.Server
             services.AddScoped<CurrencyCache>();
 
             // Controllers
-            services.AddControllers().AddJsonOptions(options =>
-            {
-                // TODO: Figure out how to also enable this on client-side
-                //options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+            services.AddControllers(options => 
+                {
+                    options.Filters.Add<FormatFilter>();
+                })
+                .AddJsonOptions(options =>
+                {
+                    // TODO: Figure out how to also enable this on client-side
+                    //options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                })
+                .AddXmlSerializerFormatters()
+                .AddXlsxSerializerFormatters()
+                .AddCsvSerializerFormatters();
 
             // Views
             services.AddRazorPages(options =>
