@@ -68,26 +68,29 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                 foreach (var channel in Configuration.Channels)
                 {
+                    // Find the most recent video that matches our store data period.
+                    // NOTE: We only accept one video per-channel, per-store
                     var videos = await googleClient.ListChannelVideosAsync(channel.ChannelId, GoogleClient.PageMaxResults);
-                    var releventVideos = videos
+                    var storeVideo = videos
                         .Where(x => Regex.IsMatch(x.Title, channel.Query, RegexOptions.IgnoreCase))
-                        .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.UtcDateTime)
-                        .OrderByDescending(x => x.PublishedAt.Value);
+                        .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.UtcDateTime && x.PublishedAt.Value.UtcDateTime <= itemStore.Start.UtcDateTime.AddDays(7))
+                        .OrderBy(x => x.PublishedAt.Value)
+                        .FirstOrDefault();
 
-                    foreach (var video in releventVideos)
+                    if (storeVideo != null)
                     {
-                        media[video.PublishedAt.Value] = video.Id;
+                        media[storeVideo.PublishedAt.Value] = storeVideo.Id;
                         /*
                         try
                         {
-                            await googleClient.LikeVideoAsync(video.Id);
-                            await googleClient.CommentOnVideoAsync(video.ChannelId, video.Id,
+                            await googleClient.LikeVideoAsync(storeVideo.Id);
+                            await googleClient.CommentOnVideoAsync(storeVideo.ChannelId, storeVideo.Id,
                                 $"thank you for showcasing this weeks Rust skins, your video has been featured on https://scmm.app/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
                             );
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogWarning(ex, $"Failed to like and comment on new store video (channelId: {video.ChannelId}, videoId: {video.Id})");
+                            _logger.LogWarning(ex, $"Failed to like and comment on new store video (channelId: {storeVideo.ChannelId}, videoId: {storeVideo.Id})");
                         }
                         */
                     }
