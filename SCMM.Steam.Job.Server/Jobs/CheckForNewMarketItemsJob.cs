@@ -12,12 +12,14 @@ using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,6 +78,8 @@ namespace SCMM.Steam.Job.Server.Jobs
             {
                 try
                 {
+                    // TODO: Find a better way to deal with Steam's rate limiting.
+                    Thread.Sleep(3000);
 
                     var marketPriceOverviewRequest = new SteamMarketPriceOverviewJsonRequest()
                     {
@@ -96,9 +100,17 @@ namespace SCMM.Steam.Job.Server.Jobs
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (SteamRequestException ex)
                 {
-                    _logger.LogError(ex, $"Failed to check new market item (classId: {assetDescription.ClassId})");
+                    if (ex.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        // This means the item doesn't have a price summary (isn't yet marketable).
+                        // We can sliently ignore this error...
+                    }
+                    else
+                    {
+                        _logger.LogError(ex, $"Failed to check new market item (classId: {assetDescription.ClassId}). {ex.Message}");
+                    }
                 }
             }
 

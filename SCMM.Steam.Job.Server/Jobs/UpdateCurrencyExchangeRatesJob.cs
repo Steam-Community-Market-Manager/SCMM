@@ -99,6 +99,9 @@ namespace SCMM.Steam.Job.Server.Jobs
             var currencyPrices = new Dictionary<SteamCurrency, SteamMarketPriceOverviewJsonResponse>();
             foreach (var currency in currencies.OrderByDescending(x => x.IsDefault))
             {
+                // TODO: Find a better way to deal with Steam's rate limiting.
+                Thread.Sleep(3000);
+
                 var response = await commnityClient.GetMarketPriceOverview(
                     new SteamMarketPriceOverviewJsonRequest()
                     {
@@ -125,9 +128,6 @@ namespace SCMM.Steam.Job.Server.Jobs
                 {
                     currency.ExchangeRateMultiplier = ((decimal)currencyPrice / systemCurrencyPrice);
                 }
-
-                // TODO: Find a better way to deal with Steam's rate limiting.
-                Thread.Sleep(3000);
             }
 
             // Add a historical record for each currency exchange rate change
