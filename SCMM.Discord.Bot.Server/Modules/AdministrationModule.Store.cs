@@ -232,7 +232,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var existingStores = await _db.SteamItemStores.ToListAsync();
 
             // Get all videos by ThatGermanGuy
-            var videos = await _googleClient.ListChannelVideosAsync("UCvCBuwbtKRwM0qMi7rc7CUw");
+            var videos = await _googleClient.ListChannelVideosAsync("UCvCBuwbtKRwM0qMi7rc7CUw", maxResults: null);
 
             // Adjustment for videos that don't follow the naming convention...
             var whitelistedVideoIds = new string[] {

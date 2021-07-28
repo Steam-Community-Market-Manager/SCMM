@@ -54,7 +54,7 @@ namespace SCMM.Google.Client
         /// <remarks>
         /// A call to this method has a quota cost of 1 unit + an additional 1 unit for every page of videos returned (see PageMaxResults).
         /// </remarks>
-        public async Task<IEnumerable<YouTubeVideo>> ListChannelVideosAsync(string channelId, int? maxResults = null)
+        public async Task<IEnumerable<YouTubeVideo>> ListChannelVideosAsync(string channelId, int? maxResults = PageMaxResults)
         {
             var channelDetailsRequest = _service.Channels.List(ContentDetails);
             channelDetailsRequest.Id = channelId;
@@ -95,9 +95,11 @@ namespace SCMM.Google.Client
                 }
 
                 nextPageToken = videosListResponse?.NextPageToken;
-            } while (!String.IsNullOrEmpty(nextPageToken) || (maxResults > 0 && videos.Count >= maxResults));
+            } while (!String.IsNullOrEmpty(nextPageToken) && (maxResults == null || videos.Count < maxResults));
 
-            return videos;
+            return (maxResults > 0 && videos.Count > maxResults)
+                ? videos.Take(maxResults.Value)
+                : videos;
         }
 
         /// <remarks>
@@ -138,9 +140,11 @@ namespace SCMM.Google.Client
                 }
 
                 nextPageToken = videosListResponse?.NextPageToken;
-            } while (!String.IsNullOrEmpty(nextPageToken) || (maxResults > 0 && videos.Count >= maxResults));
+            } while (!String.IsNullOrEmpty(nextPageToken) && (maxResults == null || videos.Count < maxResults));
 
-            return videos;
+            return (maxResults > 0 && videos.Count > maxResults)
+                ? videos.Take(maxResults.Value)
+                : videos;
         }
 
         /// <remarks>
