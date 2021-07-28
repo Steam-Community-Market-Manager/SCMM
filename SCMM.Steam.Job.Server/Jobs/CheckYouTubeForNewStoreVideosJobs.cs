@@ -77,6 +77,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     foreach (var video in releventVideos)
                     {
                         media[video.PublishedAt.Value] = video.Id;
+                        /*
                         try
                         {
                             await googleClient.LikeVideoAsync(video.Id);
@@ -88,6 +89,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                         {
                             _logger.LogWarning(ex, $"Failed to like and comment on new store video (channelId: {video.ChannelId}, videoId: {video.Id})");
                         }
+                        */
                     }
                 }
 
