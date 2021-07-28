@@ -3,6 +3,7 @@ using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
@@ -58,7 +59,7 @@ namespace SCMM.Shared.Web.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            using (var stream = await CreateCsvFileAsync(context.Object as IEnumerable))
+            using (var stream = await CreateCsvFileAsync((context.Object as IEnumerable).OfType<object>()))
             {
                 var response = context.HttpContext.Response;
                 response.ContentLength = stream.Length;
@@ -66,24 +67,27 @@ namespace SCMM.Shared.Web.Formatters
             }
         }
 
-        private async Task<MemoryStream> CreateCsvFileAsync(IEnumerable data)
+        private async Task<MemoryStream> CreateCsvFileAsync(IEnumerable<object> data)
         {
             var ms = new MemoryStream();
-            var first = data.GetEnumerator().Current;
+            var first = data.FirstOrDefault();
             if (first == null)
             {
                 return null;
             }
 
-            Type type = first.GetType();
-            Type itemType;
-            if (type.GetGenericArguments().Length > 0)
+            Type type = data.GetType();
+            Type itemType = first?.GetType();
+            if (itemType == null)
             {
-                itemType = type.GetGenericArguments()[0];
-            }
-            else
-            {
-                itemType = type.GetElementType();
+                if (type.GetGenericArguments().Length > 0)
+                {
+                    itemType = type.GetGenericArguments()[0];
+                }
+                else
+                {
+                    itemType = type.GetElementType();
+                }
             }
 
             var streamWriter = new StreamWriter(ms, _options.Encoding);

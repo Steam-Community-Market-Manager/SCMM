@@ -60,7 +60,7 @@ namespace SCMM.Shared.Web.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            using (var stream = CreateSpreadsheetFile(context.Object as IEnumerable))
+            using (var stream = CreateSpreadsheetFile((context.Object as IEnumerable).OfType<object>()))
             {
                 var response = context.HttpContext.Response;
                 response.ContentLength = stream.Length;
@@ -68,10 +68,10 @@ namespace SCMM.Shared.Web.Formatters
             }
         }
 
-        private MemoryStream CreateSpreadsheetFile(IEnumerable data)
+        private MemoryStream CreateSpreadsheetFile(IEnumerable<object> data)
         {
             var ms = new MemoryStream();
-            var first = data.GetEnumerator().Current;
+            var first = data.FirstOrDefault();
             if (first == null)
             {
                 return null;
@@ -113,7 +113,7 @@ namespace SCMM.Shared.Web.Formatters
                     var row = new Row();
                     foreach (var prop in props)
                     {
-                        var propValue = prop.GetValue(record, null).ToString();
+                        var propValue = prop.GetValue(record, null)?.ToString();
                         row.AppendChild(
                             GetCell(propValue)
                         );

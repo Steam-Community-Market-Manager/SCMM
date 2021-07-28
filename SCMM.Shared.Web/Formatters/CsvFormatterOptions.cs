@@ -6,7 +6,7 @@ namespace SCMM.Shared.Web.Formatters
     {
         public Encoding Encoding { get; set; } = Encoding.Default;
 
-        public bool UseJsonAttributes { get; set; } = true;
+        public bool UseJsonAttributes { get; set; } = false;
 
         public bool UseSingleLineHeader { get; set; } = true;
 
