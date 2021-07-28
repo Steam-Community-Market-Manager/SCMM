@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
+using SCMM.Shared.Data.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,7 +34,8 @@ namespace SCMM.Shared.Web.Formatters
                 throw new ArgumentNullException(nameof(type));
             }
 
-            return typeof(IEnumerable).IsAssignableFrom(type);
+            return typeof(IEnumerable).IsAssignableFrom(type) ||
+                   typeof(IPaginated).IsAssignableFrom(type);
         }
 
         public override void WriteResponseHeaders(OutputFormatterWriteContext context)
@@ -60,7 +62,9 @@ namespace SCMM.Shared.Web.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            using (var stream = CreateSpreadsheetFile((context.Object as IEnumerable).OfType<object>()))
+            var enumerableData = (context.Object as IEnumerable);
+            var paginatedData = (context.Object as IPaginated);
+            using (var stream = CreateSpreadsheetFile((enumerableData ?? paginatedData?.Items).OfType<object>()))
             {
                 var response = context.HttpContext.Response;
                 response.ContentLength = stream.Length;
