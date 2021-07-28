@@ -79,7 +79,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                         }
                     );
 
-                    await steamService.UpdateSteamMarketItemSalesHistory(
+                    await steamService.UpdateMarketItemSalesHistory(
                         item,
                         currency.Id,
                         response

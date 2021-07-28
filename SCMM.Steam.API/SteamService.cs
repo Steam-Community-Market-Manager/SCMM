@@ -6,6 +6,7 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models.Community.Models;
+using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
@@ -40,33 +41,7 @@ namespace SCMM.Steam.API
             _queryProcessor = queryProcessor;
         }
 
-        public Steam.Data.Store.SteamAssetFilter AddOrUpdateAppAssetFilter(SteamApp app, SCMM.Steam.Data.Models.Community.Models.SteamAppFilter filter)
-        {
-            var existingFilter = app.Filters.FirstOrDefault(x => x.SteamId == filter.Name);
-            if (existingFilter != null)
-            {
-                // Nothing to update
-                return existingFilter;
-            }
-
-            var newFilter = new Steam.Data.Store.SteamAssetFilter()
-            {
-                SteamId = filter.Name,
-                Name = filter.Localized_Name,
-                Options = new PersistableStringDictionary(
-                    filter.Tags.ToDictionary(
-                        x => x.Key,
-                        x => x.Value.Localized_Name
-                    )
-                )
-            };
-
-            app.Filters.Add(newFilter);
-            _db.SaveChanges();
-            return newFilter;
-        }
-
-        public async Task<SteamStoreItem> AddOrUpdateAppStoreItemAsAvailable(SteamApp app, SteamCurrency currency, string languageId, AssetModel asset, DateTimeOffset timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamCurrency currency, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Stores)
@@ -105,7 +80,7 @@ namespace SCMM.Steam.API
             }
 
             // TODO: This is creating duplicate items, need to find and re-use any existing items before creating new ones
-            var prices = GetPriceTable(asset.Prices);
+            var prices = ParseStoreItemPriceTable(asset.Prices);
             app.StoreItems.Add(dbItem = new SteamStoreItem()
             {
                 SteamId = asset.Name,
@@ -121,17 +96,45 @@ namespace SCMM.Steam.API
             return dbItem;
         }
 
-        public IDictionary<string, long> GetPriceTable(AssetPricesModel prices)
+        public async Task<SteamMarketItem> AddOrUpdateMarketItem(SteamApp app, SteamCurrency currency, SteamMarketPriceOverviewJsonResponse marketPriceOverview, SteamAssetDescription asset)
         {
-            return prices.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary(
-                    k => k.Name,
-                    prop => (long)((uint)prop.GetValue(prices, null))
-                );
+            var dbItem = await _db.SteamMarketItems
+                .Include(x => x.App)
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .Where(x => x.AppId == app.Id)
+                .FirstOrDefaultAsync(x => x.Description.ClassId == asset.ClassId);
+
+            if (dbItem != null)
+            {
+                return dbItem;
+            }
+
+            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+            {
+                AppId = ulong.Parse(app.SteamId),
+                AssetClassId = asset.ClassId
+            });
+            var assetDescription = importAssetDescription.AssetDescription;
+            if (assetDescription == null)
+            {
+                return null;
+            }
+
+            app.MarketItems.Add(dbItem = new SteamMarketItem()
+            {
+                SteamId = assetDescription.NameId?.ToString(),
+                AppId = app.Id,
+                Description = assetDescription,
+                Currency = currency,
+                Supply = marketPriceOverview.Volume.SteamQuantityValueAsInt(),
+                BuyNowPrice = marketPriceOverview.LowestPrice.SteamPriceAsInt()
+            });
+
+            return dbItem;
         }
 
-        public async Task<SteamMarketItem> UpdateSteamMarketItemOrders(SteamMarketItem item, Guid currencyId, SteamMarketItemOrdersHistogramJsonResponse histogram)
+        public async Task<SteamMarketItem> UpdateMarketItemOrders(SteamMarketItem item, Guid currencyId, SteamMarketItemOrdersHistogramJsonResponse histogram)
         {
             if (item == null || histogram?.Success != true)
             {
@@ -150,16 +153,16 @@ namespace SCMM.Steam.API
             item.LastCheckedOrdersOn = DateTimeOffset.Now;
             item.CurrencyId = currencyId;
             item.RecalculateOrders(
-                ParseSteamMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
+                ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
                 histogram.BuyOrderCount.SteamQuantityValueAsInt(),
-                ParseSteamMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(histogram.SellOrderGraph),
+                ParseMarketItemOrdersFromGraph<SteamMarketItemSellOrder>(histogram.SellOrderGraph),
                 histogram.SellOrderCount.SteamQuantityValueAsInt()
             );
 
             return item;
         }
 
-        public async Task<SteamMarketItem> UpdateSteamMarketItemSalesHistory(SteamMarketItem item, Guid currencyId, SteamMarketPriceHistoryJsonResponse sales)
+        public async Task<SteamMarketItem> UpdateMarketItemSalesHistory(SteamMarketItem item, Guid currencyId, SteamMarketPriceHistoryJsonResponse sales)
         {
             if (item == null || sales?.Success != true)
             {
@@ -178,13 +181,23 @@ namespace SCMM.Steam.API
             item.LastCheckedSalesOn = DateTimeOffset.Now;
             item.CurrencyId = currencyId;
             item.RecalculateSales(
-                ParseSteamMarketItemSalesFromGraph(sales.Prices)
+                ParseMarketItemSalesFromGraph(sales.Prices)
             );
 
             return item;
         }
 
-        private T[] ParseSteamMarketItemOrdersFromGraph<T>(string[][] orderGraph)
+        private IDictionary<string, long> ParseStoreItemPriceTable(AssetPricesModel prices)
+        {
+            return prices.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .ToDictionary(
+                    k => k.Name,
+                    prop => (long)((uint)prop.GetValue(prices, null))
+                );
+        }
+
+        private T[] ParseMarketItemOrdersFromGraph<T>(string[][] orderGraph)
             where T : Steam.Data.Store.SteamMarketItemOrder, new()
         {
             var orders = new List<T>();
@@ -209,7 +222,7 @@ namespace SCMM.Steam.API
             return orders.ToArray();
         }
 
-        private SteamMarketItemSale[] ParseSteamMarketItemSalesFromGraph(string[][] salesGraph)
+        private SteamMarketItemSale[] ParseMarketItemSalesFromGraph(string[][] salesGraph)
         {
             var sales = new List<SteamMarketItemSale>();
             if (salesGraph == null)
@@ -233,70 +246,6 @@ namespace SCMM.Steam.API
             }
 
             return sales.ToArray();
-        }
-
-        public async Task<IEnumerable<SteamMarketItem>> FindOrAddSteamMarketItems(IEnumerable<SteamMarketSearchItem> items, SteamCurrency currency)
-        {
-            var dbItems = new List<SteamMarketItem>();
-            foreach (var item in items)
-            {
-                dbItems.Add(await FindOrAddSteamMarketItem(item, currency));
-            }
-            return dbItems;
-        }
-
-        public async Task<SteamMarketItem> FindOrAddSteamMarketItem(SteamMarketSearchItem item, SteamCurrency currency)
-        {
-            if (item?.AssetDescription?.AppId == null)
-            {
-                return null;
-            }
-
-            var dbApp = _db.SteamApps.FirstOrDefault(x => x.SteamId == item.AssetDescription.AppId.ToString());
-            if (dbApp == null)
-            {
-                return null;
-            }
-
-            var dbItem = _db.SteamMarketItems
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Include(x => x.Description.Icon)
-                .FirstOrDefault(x => x.Description != null && x.Description.ClassId == item.AssetDescription.ClassId);
-
-            if (dbItem != null)
-            {
-                return dbItem;
-            }
-
-            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
-            {
-                AppId = ulong.Parse(dbApp.SteamId),
-                AssetClassId = item.AssetDescription.ClassId,
-                // TODO: Test this more. It seems there is missing data sometimes so we'll fetch the full details from Steam instead
-                //AssetClass = item.AssetDescription 
-            });
-            var assetDescription = importAssetDescription.AssetDescription;
-            if (assetDescription == null)
-            {
-                return null;
-            }
-
-            dbApp.MarketItems.Add(dbItem = new SteamMarketItem()
-            {
-                SteamId = assetDescription.NameId?.ToString(),
-                App = dbApp,
-                AppId = dbApp.Id,
-                Description = assetDescription,
-                DescriptionId = assetDescription.Id,
-                Currency = currency,
-                CurrencyId = currency.Id,
-                Supply = item.SellListings,
-                BuyNowPrice = item.SellPrice
-            });
-
-            return dbItem;
         }
     }
 }

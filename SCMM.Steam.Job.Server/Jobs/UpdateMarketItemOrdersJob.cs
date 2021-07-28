@@ -73,7 +73,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                 try
                 {
-                    await steamService.UpdateSteamMarketItemOrders(
+                    await steamService.UpdateMarketItemOrders(
                         item,
                         currency.Id,
                         response
