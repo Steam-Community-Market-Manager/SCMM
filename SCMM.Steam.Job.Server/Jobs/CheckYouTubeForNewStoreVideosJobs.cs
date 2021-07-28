@@ -74,7 +74,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     var storeVideo = videos
                         .Where(x => Regex.IsMatch(x.Title, channel.Query, RegexOptions.IgnoreCase))
                         .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.UtcDateTime && x.PublishedAt.Value.UtcDateTime <= itemStore.Start.UtcDateTime.AddDays(7))
-                        .OrderBy(x => x.PublishedAt.Value)
+                        .OrderByDescending(x => x.PublishedAt.Value)
                         .FirstOrDefault();
 
                     if (storeVideo != null)
