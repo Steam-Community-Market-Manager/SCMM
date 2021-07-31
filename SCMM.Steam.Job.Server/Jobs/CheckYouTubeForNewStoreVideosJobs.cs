@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Google.Client;
 using SCMM.Shared.Data.Store.Types;
-using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using System;

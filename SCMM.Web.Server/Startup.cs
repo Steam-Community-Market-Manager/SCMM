@@ -128,7 +128,7 @@ namespace SCMM.Web.Server
             services.AddScoped<CurrencyCache>();
 
             // Controllers
-            services.AddControllers(options => 
+            services.AddControllers(options =>
                 {
                     options.Filters.Add<FormatFilter>();
                 })

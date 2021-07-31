@@ -1,4 +1,3 @@
-using Azure.AI.TextAnalytics;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;

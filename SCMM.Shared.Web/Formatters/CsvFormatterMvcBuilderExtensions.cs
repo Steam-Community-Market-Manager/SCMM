@@ -33,7 +33,7 @@ namespace SCMM.Shared.Web.Formatters
                 throw new ArgumentException("Delimiter cannot be empty");
             }
 
-            builder.AddMvcOptions(options => 
+            builder.AddMvcOptions(options =>
                 options.OutputFormatters.Add(new CsvFormatter(formatterOptions))
             );
 

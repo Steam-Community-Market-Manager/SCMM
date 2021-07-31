@@ -112,9 +112,9 @@ namespace SCMM.Steam.API.Queries
 
             // if more than 50% have buy prices set
             var hasSetupInvestment = (profileInventory.ItemCount > 0 && profileInventory.ItemCountWithBuyPrices > 0)
-                ? ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 50) 
+                ? ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 50)
                 : false;
-            
+
             return new GetSteamProfileInventoryTotalsResponse()
             {
                 TotalItems = profileInventory.TotalItems,

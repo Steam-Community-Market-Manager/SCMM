@@ -1,12 +1,9 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
-using SCMM.Steam.Data.Models.Community.Models;
-using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;

@@ -79,7 +79,7 @@ namespace SCMM.Steam.API.Commands
                     {
                         continue;
                     }
-                    else 
+                    else
                     {
                         _db.SteamStoreItems.Add(
                             storeItem = new SteamStoreItem()
