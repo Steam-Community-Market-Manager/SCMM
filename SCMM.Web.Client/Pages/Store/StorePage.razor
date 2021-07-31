@@ -25,15 +25,23 @@
 }
 else if (StoreList.Any())
 {
-    <div class="d-flex">
-        <MudTabs Elevation="0" Position="MudBlazor.Position.Bottom" ActivePanelIndex="StoreIndex" ActivePanelIndexChanged="OnSelectedStoreChanged" Class="mud-transparent-tabs" Style="width: calc(100% - 48px)">
-            @foreach (var store in StoreList)
+    <MudTabs Elevation="0" Position="MudBlazor.Position.Bottom" ActivePanelIndex="StoreIndex" ActivePanelIndexChanged="OnSelectedStoreChanged" Class="mud-transparent-tabs">
+        <ChildContent>
+		    @foreach (var store in StoreList)
             {
-                <MudTabPanel ID="@store.Id.ToString()" Text="@GetStoreTitle(store)" />
+                <MudTabPanel ID="@store.Id" Tag="@store" Text="@GetStoreTitle(store)" />
             }
-        </MudTabs>
-        <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" />
-    </div>
+	    </ChildContent>
+	    <TabPanelHeader>
+            @if (!String.IsNullOrEmpty((context.Tag as StoreIdentifierDTO).Name))
+            {
+                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pl-2">@((context.Tag as StoreIdentifierDTO).Name)</MudText>
+            }
+        </TabPanelHeader>
+	    <Header>
+            <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" Class="pa-2" />
+	    </Header>
+    </MudTabs>
     <PageContainer Title="Store" Class="mb-6 ml-6 mr-6">
 
         <MudGrid Spacing="2">
@@ -158,12 +166,10 @@ else if (StoreList.Any())
                                                         }
                                                     </ChildContent>
                                                     <TooltipContent>
-                                                        @*
                                                         @if(!String.IsNullOrEmpty(item.Description))
                                                         {
                                                             <span>@item.Description</span>
                                                         }
-                                                        *@
                                                         @if(item.HasWorkshopFile)
                                                         {
                                                             <p>Click to view the items workshop page.</p>
@@ -408,7 +414,7 @@ else if (StoreList.Any())
 
 @code {
 
-    private StoreIdentiferDTO[] StoreList { get; set; }
+    private StoreIdentifierDTO[] StoreList { get; set; }
     
     private StoreDetailsDTO Store { get; set; }
     
@@ -467,7 +473,7 @@ else if (StoreList.Any())
             StateHasChanged();
 
             // Load the store list
-            StoreList = await Http.GetFromJsonAsync<StoreIdentiferDTO[]>($"api/store");
+            StoreList = await Http.GetFromJsonAsync<StoreIdentifierDTO[]>($"api/store");
    
             StateHasChanged();
         }
@@ -530,7 +536,7 @@ else if (StoreList.Any())
         );
     }
     
-    private void ShowStoreListDialog(StoreIdentiferDTO[] stores)
+    private void ShowStoreListDialog(StoreIdentifierDTO[] stores)
     {
         Dialogs.Show<ViewStoreListDialog>(null, parameters: new DialogParameters()
         {
@@ -568,17 +574,13 @@ else if (StoreList.Any())
         }
     }
 
-    private string GetStoreTitle(StoreIdentiferDTO store)
+    private string GetStoreTitle(StoreIdentifierDTO store)
     {
         var title = new StringBuilder();
         title.Append(store.Start.ToString("MMMM d"));
         if (store.Id == StoreId)
         {
             title.Append(store.Start.ToString(" yyyy"));
-        }
-        if (!String.IsNullOrEmpty(store.Name))
-        {
-            title.Append($" - {store.Name}");
         }
 
         return title.ToString().Trim();

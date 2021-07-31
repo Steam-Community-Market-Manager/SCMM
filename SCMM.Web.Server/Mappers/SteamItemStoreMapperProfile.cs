@@ -13,7 +13,7 @@ namespace SCMM.Web.Server.Mappers
     {
         public SteamItemStoreMapperProfile()
         {
-            CreateMap<SteamItemStore, StoreIdentiferDTO>()
+            CreateMap<SteamItemStore, StoreIdentifierDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)));
 
             CreateMap<SteamItemStore, StoreDetailsDTO>()

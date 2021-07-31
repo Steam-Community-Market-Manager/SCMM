@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Data.Models.UI.Store
 {
-    public class StoreIdentiferDTO
+    public class StoreIdentifierDTO
     {
         public string Id { get; set; }
 

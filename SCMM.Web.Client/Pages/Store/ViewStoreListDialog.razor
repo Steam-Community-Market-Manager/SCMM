@@ -43,7 +43,7 @@
     public MudDialogInstance Dialog { get; set; }
     
     [Parameter]
-    public StoreIdentiferDTO[] List { get; set; }
+    public StoreIdentifierDTO[] List { get; set; }
 
     protected override void OnInitialized()
     {
@@ -53,7 +53,7 @@
         Dialog.SetOptions(Dialog.Options); 
     }
 
-    private void ViewStore(StoreIdentiferDTO store)
+    private void ViewStore(StoreIdentifierDTO store)
     {
         NavigationManager.NavigateTo($"/store/{store.Id}");  
     }

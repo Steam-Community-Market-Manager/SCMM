@@ -48,7 +48,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<StoreIdentiferDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<StoreIdentifierDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStores()
         {
@@ -60,7 +60,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             return Ok(
-                itemStores.Select(x => _mapper.Map<SteamItemStore, StoreIdentiferDTO>(x, this)).ToList()
+                itemStores.Select(x => _mapper.Map<SteamItemStore, StoreIdentifierDTO>(x, this)).ToList()
             );
         }
 
