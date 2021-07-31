@@ -1,3 +1,4 @@
+using Azure.AI.TextAnalytics;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using SCMM.Azure.AI;
+using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Discord.Bot.Server.Middleware;
@@ -74,10 +77,12 @@ namespace SCMM.Discord.Bot.Server
             services.AddSingleton(x => Configuration.GetGoogleConfiguration());
             services.AddSingleton(x => Configuration.GetSteamConfiguration());
             services.AddSingleton(x => Configuration.GetFixerConfiguration());
+            services.AddSingleton(x => Configuration.GetAzureAiConfiguration());
             services.AddSingleton<DiscordClient>();
             services.AddSingleton<GoogleClient>();
             services.AddSingleton<SteamSession>();
             services.AddSingleton<FixerWebClient>();
+            services.AddSingleton<AzureAiClient>();
             services.AddScoped<SteamWebClient>();
             services.AddScoped<SteamCommunityWebClient>();
 

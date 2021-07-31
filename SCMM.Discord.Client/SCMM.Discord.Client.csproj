@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
     <ProjectReference Include="..\SCMM.Discord.Data.Models\SCMM.Discord.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Shared.Client\SCMM.Shared.Client.csproj" />
   </ItemGroup>

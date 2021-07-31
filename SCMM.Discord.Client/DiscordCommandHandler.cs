@@ -1,10 +1,13 @@
-﻿using Discord;
+﻿using Azure.AI.TextAnalytics;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.AI;
 using SCMM.Discord.Client.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -56,35 +59,36 @@ namespace SCMM.Discord.Client
             {
                 return Task.CompletedTask;
             }
-
-            // If we are mentioned, show some love
-            if (message.Content.Contains(_client.CurrentUser.Username, StringComparison.InvariantCultureIgnoreCase))
-            {
-                _ = message.AddReactionSafeAsync(new Emoji("❤️"));
-            }
-
-            // Determine if the message is a command based on the prefix and make sure other bots don't trigger our commands
-            // Commands should start with the prefix character followed by a non-white-space character (i.e. ">cmd", not "> cmd")
-            int commandArgPos = 0;
-            if (!(message.HasCharPrefix(_configuration.CommandPrefix.FirstOrDefault(), ref commandArgPos) ||
-                message.HasStringPrefix($"{_configuration.CommandPrefix} ", ref commandArgPos, StringComparison.InvariantCultureIgnoreCase) ||
-                message.HasMentionPrefix(_client.CurrentUser, ref commandArgPos)) ||
-                message.Author.IsBot)
+            // Ignore messages from other robots
+            if (message.Author.IsBot || message.Author.IsWebhook)
             {
                 return Task.CompletedTask;
             }
 
-            // Execute the command in a background thread to avoid clogging the gateway thread
-            _ = Task.Run(async () =>
+            // If we are mentioned, react to the message before handling it
+            if (message.Content.Contains(_client.CurrentUser.Username, StringComparison.InvariantCultureIgnoreCase) ||
+                message.MentionedUsers.Contains(_client.CurrentUser))
             {
-                using var scope = _services.CreateScope();
-                var context = new ShardedCommandContext(_client, message);
-                var result = await _commands.ExecuteAsync(
-                    context: context,
-                    argPos: commandArgPos,
-                    services: scope.ServiceProvider
-                );
-            });
+                _ = ReactToMessage(message);
+            }
+
+            // If a command is detected, execute it
+            int commandArgPos = 0;
+            if (message.HasCharPrefix(_configuration.CommandPrefix.FirstOrDefault(), ref commandArgPos) ||
+                message.HasMentionPrefix(_client.CurrentUser, ref commandArgPos))
+            {
+                // Execute the command in a background thread to avoid clogging the gateway thread
+                _ = Task.Run(async () =>
+                {
+                    using var scope = _services.CreateScope();
+                    var context = new ShardedCommandContext(_client, message);
+                    var result = await _commands.ExecuteAsync(
+                        context: context,
+                        argPos: commandArgPos,
+                        services: scope.ServiceProvider
+                    );
+                });
+            }
 
             return Task.CompletedTask;
         }
@@ -224,6 +228,53 @@ namespace SCMM.Discord.Client
             }
 
             return Task.CompletedTask;
+        }
+
+        private async Task ReactToMessage(SocketUserMessage message)
+        {
+            try
+            {
+                using var scope = _services.CreateScope();
+                var azureAiClient = _services.GetRequiredService<AzureAiClient>();
+                var sentiment = await azureAiClient.GetTextSentimentAsync(message.Content);
+                var reactions = new List<Emoji>();
+                switch (sentiment)
+                {
+                    case TextSentiment.Positive:
+                        reactions.Add(new Emoji("🥰"));
+                        reactions.Add(new Emoji("😘"));
+                        reactions.Add(new Emoji("💋"));
+                        reactions.Add(new Emoji("❤️"));
+                        break;
+                    case TextSentiment.Neutral:
+                        reactions.Add(new Emoji("👋"));
+                        reactions.Add(new Emoji("👍"));
+                        reactions.Add(new Emoji("👊"));
+                        reactions.Add(new Emoji("🤙"));
+                        reactions.Add(new Emoji("👌"));
+                        break;
+                    case TextSentiment.Negative:
+                        reactions.Add(new Emoji("🖕"));
+                        reactions.Add(new Emoji("💩"));
+                        reactions.Add(new Emoji("😠"));
+                        reactions.Add(new Emoji("🤡"));
+                        break;
+                    case TextSentiment.Mixed:
+                        reactions.Add(new Emoji("😞"));
+                        reactions.Add(new Emoji("😟"));
+                        reactions.Add(new Emoji("😢"));
+                        reactions.Add(new Emoji("😭"));
+                        reactions.Add(new Emoji("💔"));
+                        break;
+                }
+                _ = message.AddReactionSafeAsync(
+                    reactions.ElementAt(Random.Shared.Next(reactions.Count))
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to react to message");
+            }
         }
     }
 }
