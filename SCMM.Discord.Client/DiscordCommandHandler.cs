@@ -249,21 +249,16 @@ namespace SCMM.Discord.Client
                     case TextSentiment.Neutral:
                         reactions.Add(new Emoji("👋"));
                         reactions.Add(new Emoji("👍"));
-                        reactions.Add(new Emoji("👊"));
-                        reactions.Add(new Emoji("🤙"));
                         reactions.Add(new Emoji("👌"));
                         break;
                     case TextSentiment.Negative:
                         reactions.Add(new Emoji("🖕"));
                         reactions.Add(new Emoji("💩"));
                         reactions.Add(new Emoji("😠"));
-                        reactions.Add(new Emoji("🤡"));
                         break;
                     case TextSentiment.Mixed:
                         reactions.Add(new Emoji("😞"));
                         reactions.Add(new Emoji("😟"));
-                        reactions.Add(new Emoji("😢"));
-                        reactions.Add(new Emoji("😭"));
                         reactions.Add(new Emoji("💔"));
                         break;
                 }

@@ -343,7 +343,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             using var client = new HttpClient();
             var webArchiveSnapshotResponse = await client.GetAsync(
-                $"https://web.archive.org/cdx/search/cdx?url={Uri.EscapeUriString(itemStoreUrl)}"
+                $"https://web.archive.org/cdx/search/cdx?url={Uri.EscapeDataString(itemStoreUrl)}"
             );
 
             webArchiveSnapshotResponse?.EnsureSuccessStatusCode();
@@ -368,7 +368,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 {
                     await _commandProcessor.ProcessAsync(new ImportSteamItemStorePricesRequest()
                     {
-                        ItemStoreUrl = $"http://web.archive.org/web/{snapshot}/{Uri.EscapeUriString(itemStoreUrl)}",
+                        ItemStoreUrl = $"http://web.archive.org/web/{snapshot}/{Uri.EscapeDataString(itemStoreUrl)}",
                         Timestamp = new DateTimeOffset(
                             DateTime.ParseExact(snapshot, "yyyyMMddHHmmss", CultureInfo.InvariantCulture),
                             TimeZoneInfo.Utc.BaseUtcOffset
