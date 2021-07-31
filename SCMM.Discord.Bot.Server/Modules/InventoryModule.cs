@@ -226,15 +226,18 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .WithAuthor(author)
                 .WithDescription($"Inventory of **{inventoryTotals.TotalItems.ToQuantityString()} item(s)**.")
                 .WithFields(fields)
-                .WithImageUrl($"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail?.Image?.Id}")
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
-                .WithFooter(x => x.Text = _configuration.GetWebsiteUrl())
-                .Build();
+                .WithFooter(x => x.Text = _configuration.GetWebsiteUrl());
+
+            if (inventoryThumbnail?.Image?.Id != null)
+            {
+                embed = embed.WithImageUrl($"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image.Id}");
+            }
 
             await message.DeleteAsync();
             return CommandResult.Success(
-                embed: embed
+                embed: embed.Build()
             );
         }
     }

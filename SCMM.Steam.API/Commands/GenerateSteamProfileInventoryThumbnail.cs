@@ -99,6 +99,10 @@ namespace SCMM.Steam.API.Commands
                 Columns = request.Columns,
                 Rows = request.Rows
             });
+            if (inventoryImageMosaic?.Data == null)
+            {
+                return null;
+            }
 
             var imageData = new ImageData()
             {
