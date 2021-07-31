@@ -4,7 +4,6 @@ using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
@@ -36,7 +35,7 @@ namespace SCMM.Steam.API.Queries
             _db = db;
         }
 
-        public async Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request, CancellationToken cancellationToken)
+        public async Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request)
         {
             SteamProfile profile = null;
             Guid profileId = Guid.Empty;

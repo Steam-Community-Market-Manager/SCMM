@@ -60,7 +60,7 @@ namespace SCMM.Steam.API
                 return dbItem;
             }
 
-            var importAssetDescription = await _commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
+            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
             {
                 AppId = ulong.Parse(app.SteamId),
                 AssetClassId = asset.ClassId
@@ -107,7 +107,7 @@ namespace SCMM.Steam.API
                 return dbItem;
             }
 
-            var importAssetDescription = await _commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
+            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
             {
                 AppId = ulong.Parse(app.SteamId),
                 AssetClassId = asset.ClassId

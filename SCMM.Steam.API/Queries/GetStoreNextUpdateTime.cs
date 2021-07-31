@@ -5,7 +5,6 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
@@ -36,7 +35,7 @@ namespace SCMM.Steam.API.Queries
             _mapper = mapper;
         }
 
-        public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request, CancellationToken cancellationToken)
+        public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request)
         {
             var lastItemAcceptedOnQuery = await _db.SteamAssetDescriptions
                 .AsNoTracking()

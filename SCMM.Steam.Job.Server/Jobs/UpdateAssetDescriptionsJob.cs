@@ -54,7 +54,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             {
                 try
                 {
-                    await commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
+                    await commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                     {
                         AppId = ulong.Parse(assetDescription.AppId),
                         AssetClassId = assetDescription.ClassId

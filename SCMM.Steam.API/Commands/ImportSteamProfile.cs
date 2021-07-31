@@ -13,7 +13,6 @@ using SteamWebAPI2.Utilities;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
@@ -48,7 +47,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<ImportSteamProfileResponse> HandleAsync(ImportSteamProfileRequest request, CancellationToken cancellationToken)
+        public async Task<ImportSteamProfileResponse> HandleAsync(ImportSteamProfileRequest request)
         {
             // Resolve the id
             var profile = (SteamProfile)null;

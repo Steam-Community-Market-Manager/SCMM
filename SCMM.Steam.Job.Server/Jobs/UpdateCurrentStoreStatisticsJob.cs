@@ -170,7 +170,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             foreach (var item in assetWorkshopJoined)
             {
-                _ = await commandProcessor.ProcessAsync(new UpdateSteamAssetDescriptionRequest()
+                _ = await commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
                 {
                     AssetDescription = item.AssetDescription,
                     PublishedFile = item.PublishedFile

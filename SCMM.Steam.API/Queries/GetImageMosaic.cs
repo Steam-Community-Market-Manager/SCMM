@@ -12,7 +12,6 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
@@ -61,7 +60,7 @@ namespace SCMM.Steam.API.Queries
             _commandProcessor = commandProcessor;
         }
 
-        public async Task<GetImageMosaicResponse> HandleAsync(GetImageMosaicRequest request, CancellationToken cancellationToken)
+        public async Task<GetImageMosaicResponse> HandleAsync(GetImageMosaicRequest request)
         {
             var imageSources = request.ImageSources.ToList();
             var tileCount = imageSources.Count;
@@ -258,7 +257,7 @@ namespace SCMM.Steam.API.Queries
             };
         }
 
-        public async Task<GetImageMosaicResponse> HandleAsync(GetTradeImageMosaicRequest request, CancellationToken cancellationToken)
+        public async Task<GetImageMosaicResponse> HandleAsync(GetTradeImageMosaicRequest request)
         {
             var haveImageSources = request.HaveImageSources.ToList();
             var haveTileCount = haveImageSources.Count();
@@ -422,7 +421,7 @@ namespace SCMM.Steam.API.Queries
             // Fetch all remaining images directly from their source
             foreach (var imageSource in missingImages)
             {
-                var importedImage = await _commandProcessor.ProcessAsync(new ImportImageDataRequest()
+                var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
                 {
                     Url = imageSource.ImageUrl,
                     UseExisting = false, // we've already checked, it doesn't exist

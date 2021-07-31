@@ -24,7 +24,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     x => x.Content = $"Importing asset description {classId} ({Array.IndexOf(classIds, classId) + 1}/{classIds.Length})..."
                 );
 
-                _ = await _commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = Constants.RustAppId,
                     AssetClassId = classId
@@ -95,7 +95,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 foreach (var assetDescription in batch)
                 {
-                    _ = await _commandProcessor.ProcessAsync(new UpdateSteamAssetDescriptionRequest()
+                    _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
                     {
                         AssetDescription = assetDescription
                     });
