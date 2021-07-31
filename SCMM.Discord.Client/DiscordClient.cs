@@ -99,11 +99,18 @@ namespace SCMM.Discord.Client
             return Task.CompletedTask;
         }
 
-        private Task OnJoinedGuildSayHello(SocketGuild guild)
+        private async Task OnJoinedGuildSayHello(SocketGuild guild)
         {
-            return guild.DefaultChannel.SendMessageAsync(
-                $"Hello! Thanks for adding me. To learn more about my commands, type `{_configuration.CommandPrefix}help`."
-            );
+            if (guild.CurrentUser.GetPermissions(guild.DefaultChannel).SendMessages)
+            {
+                await guild.DefaultChannel.SendMessageAsync(
+                    $"Hello! Thanks for adding me. To learn more about my commands, type `{_configuration.CommandPrefix}help`."
+                );
+            }
+            else
+            {
+                _logger.LogWarning($"Unable to send welcome message after joining new guild due to insufficent permissions (guild: {guild.Name} #{guild.Id})");
+            }
         }
 
         protected virtual void Dispose(bool disposing)
