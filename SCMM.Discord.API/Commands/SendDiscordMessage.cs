@@ -1,6 +1,7 @@
 ﻿using CommandQuery;
 using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Messages;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Discord.API.Commands
@@ -18,7 +19,7 @@ namespace SCMM.Discord.API.Commands
             _client = client;
         }
 
-        public async Task HandleAsync(SendDiscordMessageRequest request)
+        public async Task HandleAsync(SendDiscordMessageRequest request, CancellationToken cancellationToken)
         {
             await _client.SendMessageAsync(request);
         }

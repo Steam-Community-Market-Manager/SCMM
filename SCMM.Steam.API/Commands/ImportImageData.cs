@@ -5,6 +5,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Store;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
@@ -37,7 +38,7 @@ namespace SCMM.Steam.API.Commands
             _communityClient = communityClient;
         }
 
-        public async Task<ImportImageDataResponse> HandleAsync(ImportImageDataRequest request)
+        public async Task<ImportImageDataResponse> HandleAsync(ImportImageDataRequest request, CancellationToken cancellationToken)
         {
             // If we have already fetched this image source before, return the existing copy
             if (request.UseExisting)

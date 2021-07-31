@@ -5,6 +5,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
@@ -44,7 +45,7 @@ namespace SCMM.Steam.API.Queries
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<GetSteamProfileInventoryTotalsResponse> HandleAsync(GetSteamProfileInventoryTotalsRequest request)
+        public async Task<GetSteamProfileInventoryTotalsResponse> HandleAsync(GetSteamProfileInventoryTotalsRequest request, CancellationToken cancellationToken)
         {
             // Resolve the id
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()

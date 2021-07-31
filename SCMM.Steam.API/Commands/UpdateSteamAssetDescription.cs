@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -61,7 +62,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<UpdateSteamAssetDescriptionResponse> HandleAsync(UpdateSteamAssetDescriptionRequest request)
+        public async Task<UpdateSteamAssetDescriptionResponse> HandleAsync(UpdateSteamAssetDescriptionRequest request, CancellationToken cancellationToken)
         {
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
             var assetDescription = request.AssetDescription;
@@ -148,7 +149,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     try
                     {
-                        var importedProfile = await _commandProcessor.ProcessWithResultAsync(
+                        var importedProfile = await _commandProcessor.ProcessAsync(
                             new ImportSteamProfileRequest()
                             {
                                 ProfileId = publishedFile.Creator.ToString()
@@ -206,7 +207,7 @@ namespace SCMM.Steam.API.Commands
             {
                 try
                 {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    var importedImage = await _commandProcessor.ProcessAsync(new ImportImageDataRequest()
                     {
                         Url = assetDescription.IconUrl,
                         UseExisting = true
@@ -226,7 +227,7 @@ namespace SCMM.Steam.API.Commands
             {
                 try
                 {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    var importedImage = await _commandProcessor.ProcessAsync(new ImportImageDataRequest()
                     {
                         Url = assetDescription.IconLargeUrl,
                         UseExisting = true
@@ -246,7 +247,7 @@ namespace SCMM.Steam.API.Commands
             {
                 try
                 {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    var importedImage = await _commandProcessor.ProcessAsync(new ImportImageDataRequest()
                     {
                         Url = assetDescription.PreviewUrl,
                         UseExisting = true

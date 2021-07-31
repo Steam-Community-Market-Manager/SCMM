@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -39,7 +40,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task HandleAsync(ImportSteamItemStorePricesRequest request)
+        public async Task HandleAsync(ImportSteamItemStorePricesRequest request, CancellationToken cancellationToken)
         {
             var currencies = await _db.SteamCurrencies.ToListAsync();
             var storePageHtml = await _client.GetHtml(new SteamBlobRequest(request.ItemStoreUrl));

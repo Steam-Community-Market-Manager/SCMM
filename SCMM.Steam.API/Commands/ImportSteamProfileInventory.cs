@@ -9,6 +9,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
@@ -45,7 +46,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<ImportSteamProfileInventoryResponse> HandleAsync(ImportSteamProfileInventoryRequest request)
+        public async Task<ImportSteamProfileInventoryResponse> HandleAsync(ImportSteamProfileInventoryRequest request, CancellationToken cancellationToken)
         {
             // Resolve the id
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
@@ -56,7 +57,7 @@ namespace SCMM.Steam.API.Commands
             // If the profile id does not yet exist, fetch it now
             if (!resolvedId.Exists)
             {
-                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+                _ = await _commandProcessor.ProcessAsync(new ImportSteamProfileRequest()
                 {
                     ProfileId = request.ProfileId
                 });
@@ -148,7 +149,7 @@ namespace SCMM.Steam.API.Commands
                     var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => x.ClassId == asset.ClassId);
                     if (assetDescription == null)
                     {
-                        var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                        var importAssetDescription = await _commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
                         {
                             AppId = ulong.Parse(app.SteamId),
                             AssetClassId = asset.ClassId,

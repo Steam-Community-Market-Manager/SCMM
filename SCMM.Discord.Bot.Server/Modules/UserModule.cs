@@ -42,7 +42,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var discordId = user.GetFullUsername();
 
             // Load the profile
-            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = steamId
             });

@@ -4,6 +4,7 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
@@ -27,7 +28,7 @@ namespace SCMM.Steam.API.Queries
             _db = db;
         }
 
-        public async Task<GetCurrencyByNameResponse> HandleAsync(GetCurrencyByNameRequest request)
+        public async Task<GetCurrencyByNameResponse> HandleAsync(GetCurrencyByNameRequest request, CancellationToken cancellationToken)
         {
             var currency = (SteamCurrency)null;
             var currencies = await _db.SteamCurrencies.AsNoTracking().ToListAsync();

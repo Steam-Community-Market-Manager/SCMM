@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using ClaimTypes = SCMM.Shared.Data.Models.ClaimTypes;
 
@@ -36,7 +37,7 @@ namespace SCMM.Steam.API.Commands
             _commandProcessor = commandProcessor;
         }
 
-        public async Task<LoginSteamProfileResponse> HandleAsync(LoginSteamProfileRequest request)
+        public async Task<LoginSteamProfileResponse> HandleAsync(LoginSteamProfileRequest request, CancellationToken cancellationToken)
         {
             // Obtain the actual steam id from the login claim
             // e.g. https://steamcommunity.com/openid/id/<steamid>
@@ -47,7 +48,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Fetch the profile from steam
-            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = steamId
             });

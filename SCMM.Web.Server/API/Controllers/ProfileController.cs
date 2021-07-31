@@ -174,7 +174,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Load the profile
-            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = id
             });
@@ -218,7 +218,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Reload the profile's inventory
-            var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
+            var importedInventory = await _commandProcessor.ProcessAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = id,
                 Force = force
@@ -271,7 +271,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Load the profile
-            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = id
             });
@@ -283,7 +283,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Reload the profiles inventory
-            var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
+            var importedInventory = await _commandProcessor.ProcessAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString(),
                 Force = force
@@ -310,7 +310,7 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryThumbnail = (GenerateSteamProfileInventoryThumbnailResponse)null;
             if (generateInventoryMosaic)
             {
-                inventoryThumbnail = await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
+                inventoryThumbnail = await _commandProcessor.ProcessAsync(new GenerateSteamProfileInventoryThumbnailRequest()
                 {
                     ProfileId = profile.SteamId,
                     TileSize = mosaicTileSize,
