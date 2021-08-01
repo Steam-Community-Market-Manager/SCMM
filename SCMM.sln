@@ -55,7 +55,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Azure.ServiceBus", "SC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Fixer.Client", "SCMM.Fixer.Client\SCMM.Fixer.Client.csproj", "{543ED5DA-EFA9-4F07-96E8-ADD3D3F37056}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCMM.Azure.AI", "SCMM.Azure.AI\SCMM.Azure.AI.csproj", "{1F1E9B6D-681E-4607-9049-F054F823232D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Azure.AI", "SCMM.Azure.AI\SCMM.Azure.AI.csproj", "{1F1E9B6D-681E-4607-9049-F054F823232D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

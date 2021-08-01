@@ -1,0 +1,27 @@
+﻿@using Markdig
+@MarkupContent
+
+@code {
+
+    [Parameter]
+    public string Content {get; set;}
+
+    public MarkupString MarkupContent { get; private set; }
+
+    protected override void OnInitialized()
+    {
+        if (!String.IsNullOrWhiteSpace(Content))
+        {
+            MarkupContent = new MarkupString(
+                Markdown.ToHtml(Content, new MarkdownPipelineBuilder().UseAdvancedExtensions().Build())
+            );
+        }
+        else 
+        {
+            MarkupContent = new MarkupString();
+        }
+    }
+
+    protected override bool ShouldRender() => false;
+
+}

@@ -1,14 +1,18 @@
 ﻿
-<MudAlert Severity="@Severity" Variant="@Variant" Elevation="@Elevation" Icon="@Icon" UserAttributes="@AdditionalAttributes">
+<MudAlert Severity="@Severity" Variant="@Variant" Elevation="@Elevation" Icon="@Icon" Dense="@Dense" UserAttributes="@AdditionalAttributes">
     @if (Exception == null)
     {
         @if (!String.IsNullOrEmpty(Title))
         {
-            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@Title</MudText>
+            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
+                <MarkdownView Content="@Title" />
+            </MudText>
         }
         @if(!String.IsNullOrEmpty(SubTitle))
         {
-            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">@SubTitle</MudText>
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
+                <MarkdownView Content="@SubTitle" />
+            </MudText>
         }
     }
     else
@@ -16,7 +20,7 @@
         <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
             @if (!String.IsNullOrEmpty(Title))
             {
-                <span>@Title</span>
+                <MarkdownView Content="@Title" />
             }
             else
             {
@@ -26,7 +30,7 @@
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
             @if (!String.IsNullOrEmpty(SubTitle))
             {
-                <span>@SubTitle</span>
+                <MarkdownView Content="@SubTitle" />
             }
             else
             {
@@ -51,6 +55,9 @@
     
     [Parameter]
     public int Elevation { get; set; } = 0;
+    
+    [Parameter]
+    public bool Dense { get; set; } = false;
     
     [Parameter]
     public string Icon { set; get; } = "fas fa-fw fa-exclamation-circle";
