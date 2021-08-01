@@ -98,6 +98,50 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
+        [Command("add-store-note")]
+        public async Task<RuntimeResult> AddStoreNoteAsync(DateTime storeDate, [Remainder] string note)
+        {
+            var itemStore = await _db.SteamItemStores
+                .OrderByDescending(x => x.Start)
+                .Where(x => storeDate >= x.Start)
+                .FirstOrDefaultAsync();
+
+            if (itemStore != null)
+            {
+                itemStore.Notes = new PersistableStringCollection(itemStore.Notes);
+                itemStore.Notes.Add(note);
+
+                await _db.SaveChangesAsync();
+                return CommandResult.Success();
+            }
+            else
+            {
+                return CommandResult.Fail("Unable to find a store for the specific date");
+            }
+        }
+
+        [Command("remove-store-note")]
+        public async Task<RuntimeResult> RemoveStoreNoteAsync(DateTime storeDate, int index = 0)
+        {
+            var itemStore = await _db.SteamItemStores
+                .OrderByDescending(x => x.Start)
+                .Where(x => storeDate >= x.Start)
+                .FirstOrDefaultAsync();
+
+            if (itemStore != null)
+            {
+                itemStore.Notes = new PersistableStringCollection(itemStore.Notes);
+                itemStore.Notes.Remove(itemStore.Notes.ElementAt(index));
+
+                await _db.SaveChangesAsync();
+                return CommandResult.Success();
+            }
+            else
+            {
+                return CommandResult.Fail("Unable to find a store for the specific date");
+            }
+        }
+
         [Command("rebuild-store-item-mosaics")]
         public async Task<RuntimeResult> RebuildStoreItemMosaicsAsync()
         {

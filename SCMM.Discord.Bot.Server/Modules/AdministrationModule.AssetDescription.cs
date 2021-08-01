@@ -166,5 +166,42 @@ namespace SCMM.Discord.Bot.Server.Modules
             await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
+
+        [Command("add-asset-description-note")]
+        public async Task<RuntimeResult> AddAssetDescriptionNoteAsync(ulong classId, [Remainder] string note)
+        {
+            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
+            if (assetDescription != null)
+            {
+                assetDescription.Notes = new PersistableStringCollection(assetDescription.Notes);
+                assetDescription.Notes.Add(note);
+
+                await _db.SaveChangesAsync();
+                return CommandResult.Success();
+            }
+            else
+            {
+                return CommandResult.Fail("Unable to find asset description with the specific class id");
+            }
+        }
+
+        [Command("remove-asset-description-note")]
+        public async Task<RuntimeResult> RemoveAssetDescriptionNoteAsync(ulong classId, int index = 0)
+        {
+            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
+            if (assetDescription != null)
+            {
+                assetDescription.Notes = new PersistableStringCollection(assetDescription.Notes);
+                assetDescription.Notes.Remove(assetDescription.Notes.ElementAt(index));
+
+                await _db.SaveChangesAsync();
+                return CommandResult.Success();
+            }
+            else
+            {
+                return CommandResult.Fail("Unable to find asset description with the specific class id");
+            }
+        }
+
     }
 }
