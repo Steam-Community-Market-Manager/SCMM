@@ -47,10 +47,9 @@ namespace SCMM.Steam.Job.Server.Jobs
             var steamService = scope.ServiceProvider.GetService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
-            var sixDaysAgo = DateTimeOffset.UtcNow.AddDays(-6);
             var assetDescriptions = db.SteamAssetDescriptions
                 .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0))
-                .Where(x => x.TimeAccepted != null && sixDaysAgo >= x.TimeAccepted)
+                .Where(x => x.TimeAccepted != null)
                 .Include(x => x.App)
                 .ToList();
             if (!assetDescriptions.Any())
