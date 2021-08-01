@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace SCMM.Shared.Data.Store.Types
@@ -30,6 +31,7 @@ namespace SCMM.Shared.Data.Store.Types
             get => DefaultValueSeperator;
         }
 
+        [Required]
         public virtual string Serialised
         {
             get
