@@ -65,3 +65,7 @@
 .mud-scroll-to-top.hidden {
     transform: scale(0) !important;
 }
+
+.mud-tabs-panel-header {
+    flex: none !important;
+}

@@ -68,8 +68,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-star" Title="Latest Items" Subtitle="What are the newest accepted in-game items?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemsMostRecent" Context="item">
                                 <ItemContent>
@@ -105,8 +105,8 @@
 
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-fire" Title="Hot Right Now" Subtitle="What items have been bought/sold the most in the past 24hrs?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemsMostDemanded" Context="item">
                                 <ItemContent>
@@ -142,8 +142,8 @@
 
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-arrow-up" Title="Stonking" Subtitle="What items recently reached their all-time highest value?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemsAllTimeHigh" Context="item">
                                 <ItemContent>
@@ -179,8 +179,8 @@
 
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-arrow-down" Title="Crashing" Subtitle="What items recently reached their all-time lowest value?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemsAllTimeLow" Context="item">
                                 <ItemContent>
@@ -216,8 +216,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-dice-five" Title="Profitable Flips" Subtitle="What items have the largest gap in asking price vs buy now price, with an upward trending average price? It's a gamble, but these items can potentially be flipped for profit if you are able to buy low and then sell high after the seven day market cooldown." Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -266,8 +266,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-wheelchair" Title="Manipulated" Subtitle="What items have the largest gap in average market value vs buy now price? These items are probably (but not always) suffering from price manipulation, where a group of people buy out a majority of the supply and re-list them at a much higher price in an attempt to drive up the items value." Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -314,8 +314,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-dollar-sign" Title="Most Expensive" Subtitle="What are the most expensive items on the market?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemMostExpensive" Context="item">
                                 <ItemContent>
@@ -351,8 +351,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Sales" Subtitle="What items have the highest (estimated) number of sales?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemMostSales" Context="item">
                                 <ItemContent>
@@ -390,8 +390,8 @@
 
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-balance-scale" Title="Most Saturated" Subtitle="What items have the largest supply of listings on the market?"Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -447,8 +447,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-tshirt" Title="Largest Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemsLargestCollections" Context="item">
                                 <ItemContent>
@@ -484,8 +484,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-user" Title="Largest Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item">
                                 <ItemContent>
@@ -521,8 +521,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-box-open" Title="Skin Containers" Subtitle="What is the cheapest way to buy skin containers?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadCheapestCraftingCosts" Context="item">
                                 <ItemContent>
@@ -586,8 +586,8 @@
     
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-boxes" Title="Crafting Resources" Subtitle="What is the cheapest way to buy crafting resources?" Dense="true">
-                <div class="virtual-table-panel flex-grow-1">
-                    <MudSimpleTable Dense="true" Hover="true">
+                <div class="">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemCheapestResourceCosts" Context="item">
                                 <ItemContent>

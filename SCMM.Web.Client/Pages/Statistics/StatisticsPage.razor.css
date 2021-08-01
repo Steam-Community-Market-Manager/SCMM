@@ -1,9 +1,4 @@
 ﻿
-.virtual-table-panel {
-    height: 30vh;
-    overflow-y: auto;
-}
-
 .table-disable-borders, .table-disable-borders tr, .table-disable-borders td {
     border: none;
 }
