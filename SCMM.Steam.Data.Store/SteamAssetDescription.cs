@@ -17,6 +17,7 @@ namespace SCMM.Steam.Data.Store
             Tags = new PersistableStringDictionary();
             CraftingComponents = new PersistableAssetQuantityDictionary();
             BreaksIntoComponents = new PersistableAssetQuantityDictionary();
+            Notes = new PersistableStringCollection();
         }
 
         [Required]
@@ -121,6 +122,8 @@ namespace SCMM.Steam.Data.Store
         public bool IsBanned { get; set; }
 
         public string BanReason { get; set; }
+
+        public PersistableStringCollection Notes { get; set; }
 
         public DateTimeOffset? TimeCreated { get; set; }
 

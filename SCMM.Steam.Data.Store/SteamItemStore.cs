@@ -13,6 +13,7 @@ namespace SCMM.Steam.Data.Store
         {
             Items = new Collection<SteamStoreItemItemStore>();
             Media = new PersistableStringCollection();
+            Notes = new PersistableStringCollection();
         }
 
         [Required]
@@ -33,6 +34,8 @@ namespace SCMM.Steam.Data.Store
         public ImageData ItemsThumbnail { get; set; }
 
         public PersistableStringCollection Media { get; set; }
+
+        public PersistableStringCollection Notes { get; set; }
 
         /// <summary>
         /// If true, users can submit change requests for this store

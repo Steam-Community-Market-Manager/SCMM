@@ -21,6 +21,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public IList<string> Media { get; set; }
 
+        public IList<string> Notes { get; set; }
+
         public bool IsDraft { get; set; }
     }
 }

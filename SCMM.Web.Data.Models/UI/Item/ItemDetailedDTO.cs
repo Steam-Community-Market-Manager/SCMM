@@ -85,6 +85,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string BanReason { get; set; }
 
+        public IList<string> Notes { get; set; }
+
         public DateTimeOffset? TimeCreated { get; set; }
 
         public DateTimeOffset? TimeUpdated { get; set; }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210801064803_AddSteamStoreAndAssetDescriptionNotes")]
+    partial class AddSteamStoreAndAssetDescriptionNotes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1155,6 +1157,22 @@ namespace SCMM.Steam.Data.Store.Migrations
                                 .HasForeignKey("SteamAssetDescriptionId");
                         });
 
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "Notes", b1 =>
+                        {
+                            b1.Property<Guid>("SteamAssetDescriptionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamAssetDescriptionId");
+
+                            b1.ToTable("SteamAssetDescriptions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamAssetDescriptionId");
+                        });
+
                     b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringDictionary", "Tags", b1 =>
                         {
                             b1.Property<Guid>("SteamAssetDescriptionId")
@@ -1252,6 +1270,22 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasForeignKey("ItemsThumbnailId");
 
                     b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "Media", b1 =>
+                        {
+                            b1.Property<Guid>("SteamItemStoreId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamItemStoreId");
+
+                            b1.ToTable("SteamItemStores");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamItemStoreId");
+                        });
+
+                    b.OwnsOne("SCMM.Shared.Data.Store.Types.PersistableStringCollection", "Notes", b1 =>
                         {
                             b1.Property<Guid>("SteamItemStoreId")
                                 .HasColumnType("uniqueidentifier");

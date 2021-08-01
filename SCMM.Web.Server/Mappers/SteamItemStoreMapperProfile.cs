@@ -52,6 +52,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.TradableRestrictionDays, o => o.MapFrom(p => p.Item.Description.TradableRestrictionDays))
                 .ForMember(x => x.IsBreakable, o => o.MapFrom(p => p.Item.Description.IsBreakable))
                 .ForMember(x => x.BreaksIntoComponents, o => o.MapFrom(p => p.Item.Description.BreaksIntoComponents.ToDictionary(x => x.Key, x => x.Value)))
+                .ForMember(x => x.Notes, o => o.MapFrom(p => p.Item.Description.Notes))
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
         }
     }
