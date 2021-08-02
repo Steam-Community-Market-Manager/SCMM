@@ -106,8 +106,8 @@ namespace SCMM.Steam.API.Commands
 
             var imageData = new FileData()
             {
-                Data = inventoryImageMosaic.Data,
                 MimeType = inventoryImageMosaic.MimeType,
+                Data = inventoryImageMosaic.Data,
                 ExpiresOn = request.ExpiresOn
             };
 

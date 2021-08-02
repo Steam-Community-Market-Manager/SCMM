@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -12,6 +14,7 @@ using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Workshop.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using Steam.Models;
@@ -19,6 +22,8 @@ using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -33,6 +38,8 @@ namespace SCMM.Steam.API.Commands
         public AssetClassInfoModel AssetClass { get; set; }
 
         public PublishedFileDetailsModel PublishedFile { get; set; }
+
+        public WebFileData PublishedFileData { get; set; }
 
         public string MarketListingPageHtml { get; set; }
 
@@ -201,20 +208,58 @@ namespace SCMM.Steam.API.Commands
                 */
             }
 
+            if (assetDescription.WorkshopFileDataId == null && request.PublishedFileData?.Data != null)
+            {
+                // Parse asset workshop file details
+                var workshopFileData = assetDescription.WorkshopFileData = (assetDescription.WorkshopFileData ?? new FileData());
+                workshopFileData.Name = request.PublishedFileData.Name;
+                workshopFileData.MimeType = request.PublishedFileData.MimeType;
+                workshopFileData.Data = request.PublishedFileData.Data;
+                workshopFileData.ExpiresOn = null;
+
+                // Inspect the contents of the workshop file
+                using var workshopFileDataStream = new MemoryStream(workshopFileData.Data);
+                using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
+                {
+                    foreach (var entry in workshopFileZip.Entries)
+                    {
+                        // Inspect the mainfest file (if present)
+                        if (String.Equals(entry.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            using var entryStream = new StreamReader(entry.Open());
+                            var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(entryStream.ReadToEnd());
+                            if (manifest != null)
+                            {
+                                //if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
+                                //{
+                                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                                    assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow,
+                                        manifest.Groups.Any(x =>
+                                            (!String.IsNullOrEmpty(x.Textures.EmissionMap) && workshopFileZip.Entries.Any(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase))) &&
+                                            (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0)
+                                        )
+                                    );
+                                //}
+                            }
+                        }
+                    }
+                }
+            }
+
             // Parse asset icon and image data
             if (assetDescription.IconId == null && !String.IsNullOrEmpty(assetDescription.IconUrl))
             {
                 try
                 {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportFileDataRequest()
                     {
                         Url = assetDescription.IconUrl,
                         UseExisting = true
                     });
-                    if (importedImage?.Image != null)
+                    if (importedImage?.File != null)
                     {
-                        assetDescription.Icon = importedImage.Image;
-                        assetDescription.IconId = importedImage.Image.Id;
+                        assetDescription.Icon = importedImage.File;
+                        assetDescription.IconId = importedImage.File.Id;
                     }
                 }
                 catch (Exception ex)
@@ -226,15 +271,15 @@ namespace SCMM.Steam.API.Commands
             {
                 try
                 {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportFileDataRequest()
                     {
                         Url = assetDescription.IconLargeUrl,
                         UseExisting = true
                     });
-                    if (importedImage?.Image != null)
+                    if (importedImage?.File != null)
                     {
-                        assetDescription.IconLarge = importedImage.Image;
-                        assetDescription.IconLargeId = importedImage.Image.Id;
+                        assetDescription.IconLarge = importedImage.File;
+                        assetDescription.IconLargeId = importedImage.File.Id;
                     }
                 }
                 catch (Exception ex)
@@ -246,15 +291,15 @@ namespace SCMM.Steam.API.Commands
             {
                 try
                 {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportImageDataRequest()
+                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportFileDataRequest()
                     {
                         Url = assetDescription.PreviewUrl,
                         UseExisting = true
                     });
-                    if (importedImage?.Image != null)
+                    if (importedImage?.File != null)
                     {
-                        assetDescription.Preview = importedImage.Image;
-                        assetDescription.PreviewId = importedImage.Image.Id;
+                        assetDescription.Preview = importedImage.File;
+                        assetDescription.PreviewId = importedImage.File.Id;
                     }
                 }
                 catch (Exception ex)
@@ -521,6 +566,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Parse name and description to determine if this item glows
+            // NOTE: This is just a fallback incase we can't determi9ne this from the workshop file emission map check above
             if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
             {
                 var glowing = false;
@@ -528,25 +574,28 @@ namespace SCMM.Steam.API.Commands
                     assetDescription.Name, assetDescription.NameWorkshop, assetDescription.Description, assetDescription.DescriptionWorkshop
                 );
 
-                // Ignore certain item types that are expected to glow or only glow conditionally (e.g. furances)
-                var nonGlowingItemTypes = new string[] { "Furnace" };
-                if (!nonGlowingItemTypes.Contains(assetDescription.ItemType))
+                // Check that phrases like "no glow", "not glowing", "doesn't glow", "don't glow", "non-glow", etc don't appear anywhere in the description. If they do, then it probably doesn't glow
+                if (!Regex.IsMatch(descriptionText, @"\bno[t]*\b[^\.\n]*\bglow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
+                    !Regex.IsMatch(descriptionText, @"\bdo[es]*n't*\b[^\.\n]*\bglow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
+                    !Regex.IsMatch(descriptionText, @"\bnon[-]*glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                 {
-                    // Check that phrases like "no glow", "not glowing", "doesn't glow", "don't glow", "non-glow", etc don't appear anywhere in the description. If they do, then it probably doesn't glow
-                    if (!Regex.IsMatch(descriptionText, @"\bno[t]*\b[^\.\n]*\bglow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
-                        !Regex.IsMatch(descriptionText, @"\bdo[es]*n't*\b[^\.\n]*\bglow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase) &&
-                        !Regex.IsMatch(descriptionText, @"\bnon[-]*glow", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                    // Now check if the words "glow" or "glowing" appear. If so, then it is probably a glowing item
+                    if (Regex.IsMatch(descriptionText, @"\bglow[ing]*\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                     {
-                        // Now check if the words "glow" or "glowing" appear. If so, then it is probably a glowing item
-                        if (Regex.IsMatch(descriptionText, @"\bglow[ing]*\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
-                        {
-                            glowing = true;
-                        }
+                        glowing = true;
                     }
                 }
 
                 assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
                 assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow, glowing);
+            }
+
+            // HACK: It is normal for furnaces to be auto-tagged as glowing items, since technically all furnaces should glow.
+            //       However, because they only glow when turned on, we don't consider them the same as a normal/passive glow item
+            if (assetDescription.ItemType == "Furnace" && assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
+            {
+                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow, false);
             }
 
             // Check if this is a twitch drop item

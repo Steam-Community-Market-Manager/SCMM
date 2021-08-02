@@ -113,6 +113,7 @@ namespace SCMM.Web.Server
             services.AddSingleton(x => Configuration.GetSteamConfiguration());
             services.AddSingleton<SteamSession>();
             services.AddScoped<SteamCommunityWebClient>();
+            services.AddScoped<SteamWorkshopDownloaderWebClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));

@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
-    public class DeleteExpiredImageDataJob : CronJobService
+    public class DeleteExpiredFileDataJob : CronJobService
     {
-        private readonly ILogger<DeleteExpiredImageDataJob> _logger;
+        private readonly ILogger<DeleteExpiredFileDataJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public DeleteExpiredImageDataJob(IConfiguration configuration, ILogger<DeleteExpiredImageDataJob> logger, IServiceScopeFactory scopeFactory)
-            : base(logger, configuration.GetJobConfiguration<DeleteExpiredImageDataJob>())
+        public DeleteExpiredFileDataJob(IConfiguration configuration, ILogger<DeleteExpiredFileDataJob> logger, IServiceScopeFactory scopeFactory)
+            : base(logger, configuration.GetJobConfiguration<DeleteExpiredFileDataJob>())
         {
             _logger = logger;
             _scopeFactory = scopeFactory;
@@ -29,17 +29,17 @@ namespace SCMM.Steam.Job.Server.Jobs
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
-            // Delete all images that have expired
+            // Delete all files that have expired
             var now = DateTimeOffset.Now;
-            var expiredImageData = await db.FileData
+            var expiredFileData = await db.FileData
                 .Where(x => x.ExpiresOn != null && x.ExpiresOn <= now)
                 .OrderByDescending(x => x.ExpiresOn)
                 .Take(100) // batch 100 at a time to avoid timing out
                 .ToListAsync();
 
-            if (expiredImageData?.Any() == true)
+            if (expiredFileData?.Any() == true)
             {
-                foreach (var batch in expiredImageData.Batch(10))
+                foreach (var batch in expiredFileData.Batch(10))
                 {
                     db.FileData.RemoveRange(batch);
                     db.SaveChanges();

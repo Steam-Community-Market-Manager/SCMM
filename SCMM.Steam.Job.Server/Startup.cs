@@ -71,6 +71,7 @@ namespace SCMM.Steam.Job.Server
             services.AddSingleton<SteamSession>();
             services.AddSingleton<GoogleClient>();
             services.AddScoped<SteamCommunityWebClient>();
+            services.AddScoped<SteamWorkshopDownloaderWebClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));
@@ -88,7 +89,7 @@ namespace SCMM.Steam.Job.Server
             services.AddHostedService<UpdateMarketItemSalesJob>();
             services.AddHostedService<UpdateMarketItemOrdersJob>();
             services.AddHostedService<UpdateMarketItemActivityJob>();
-            services.AddHostedService<DeleteExpiredImageDataJob>();
+            services.AddHostedService<DeleteExpiredFileDataJob>();
             services.AddHostedService<UpdateCurrentStoreStatisticsJob>();
             services.AddHostedService<UpdateAssetDescriptionsJob>();
             services.AddHostedService<UpdateCurrencyExchangeRatesJob>();

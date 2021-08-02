@@ -54,7 +54,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Response.Headers.Add(HeaderNames.Expires, new StringValues(image.ExpiresOn.Value.UtcDateTime.Ticks.ToString()));
                 }
-                return File(image.Data, image.MimeType);
+                return File(image.Data, image.MimeType, image.Name, true);
             }
             else
             {

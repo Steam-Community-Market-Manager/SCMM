@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SCMM.Shared.Data.Models;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
@@ -81,13 +82,16 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public async Task<Tuple<byte[], string>> GetBinary<TRequest>(TRequest request)
+        public async Task<WebFileData> GetBinary<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
             var response = await GetWithRetry(request);
-            return new Tuple<byte[], string>(
-                await response.Content.ReadAsByteArrayAsync(), response.Content.Headers?.ContentType?.MediaType
-            );
+            return new WebFileData()
+            {
+                Name = response.Content.Headers?.ContentDisposition?.FileName,
+                MimeType = response.Content.Headers?.ContentType?.MediaType,
+                Data = await response.Content.ReadAsByteArrayAsync()
+            };
         }
 
         public async Task<string> GetText<TRequest>(TRequest request)

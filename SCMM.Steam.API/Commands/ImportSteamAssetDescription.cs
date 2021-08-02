@@ -2,12 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.Data.Models;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.Workshop.Requests;
 using SCMM.Steam.Data.Store;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
@@ -48,16 +50,18 @@ namespace SCMM.Steam.API.Commands
         private readonly ILogger<ImportSteamAssetDescription> _logger;
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
-        private readonly SteamCommunityWebClient _client;
+        private readonly SteamCommunityWebClient _communityClient;
+        private readonly SteamWorkshopDownloaderWebClient _workshopDownloaderClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient client, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, SteamWorkshopDownloaderWebClient workshopDownloaderClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
-            _client = client;
+            _communityClient = communityClient;
+            _workshopDownloaderClient = workshopDownloaderClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }
@@ -169,6 +173,7 @@ namespace SCMM.Steam.API.Commands
             // Get published file details from Steam (if workshopfileid is available)
             var publishedFile = (PublishedFileDetailsModel)null;
             var publishedFileId = (ulong)0;
+            var publishedFileData = (WebFileData) null;
             var viewWorkshopAction = assetClass.Actions?.FirstOrDefault(x =>
                 String.Equals(x.Name, Constants.SteamActionViewWorkshopItemId, StringComparison.InvariantCultureIgnoreCase) ||
                 String.Equals(x.Name, Constants.SteamActionViewWorkshopItem, StringComparison.InvariantCultureIgnoreCase)
@@ -188,6 +193,17 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 publishedFile = publishedFileDetails.Data;
+
+                if (assetDescription.WorkshopFileDataId == null)
+                {
+                    publishedFileData = await _workshopDownloaderClient.DownloadWorkshopFile(
+                        new SteamWorkshopDownloaderJsonRequest()
+                        {
+                            PublishedFileId = publishedFileId,
+                            Extract = false
+                        }
+                    );
+                }
             }
 
             // Get community market details from Steam (if item description or nameid is missing and it is a marketable item)
@@ -195,7 +211,7 @@ namespace SCMM.Steam.API.Commands
             var assetIsMarketable = String.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
             if ((String.IsNullOrEmpty(itemDescription) || assetDescription.NameId == null) && assetIsMarketable)
             {
-                marketListingPageHtml = await _client.GetText(new SteamMarketListingPageRequest()
+                marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
                 {
                     AppId = request.AppId.ToString(),
                     MarketHashName = assetClass.MarketHashName,
@@ -207,7 +223,7 @@ namespace SCMM.Steam.API.Commands
             var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
             if (String.IsNullOrEmpty(itemDescription) && assetIsRecentlyAccepted)
             {
-                var storeItems = await _client.GetStorePaginated(new SteamStorePaginatedJsonRequest()
+                var storeItems = await _communityClient.GetStorePaginated(new SteamStorePaginatedJsonRequest()
                 {
                     AppId = request.AppId.ToString(),
                     Filter = SteamStorePaginatedJsonRequest.FilterAll,
@@ -223,7 +239,7 @@ namespace SCMM.Steam.API.Commands
                             ? itemIdMatchGroup[1].Value.Trim()
                             : null;
 
-                        storeItemPageHtml = await _client.GetHtml(new SteamStoreItemPageRequest()
+                        storeItemPageHtml = await _communityClient.GetHtml(new SteamStoreItemPageRequest()
                         {
                             AppId = request.AppId.ToString(),
                             ItemId = itemId,
@@ -238,6 +254,7 @@ namespace SCMM.Steam.API.Commands
                 AssetDescription = assetDescription,
                 AssetClass = assetClass,
                 PublishedFile = publishedFile,
+                PublishedFileData = publishedFileData,
                 MarketListingPageHtml = marketListingPageHtml,
                 StoreItemPageHtml = storeItemPageHtml
             });

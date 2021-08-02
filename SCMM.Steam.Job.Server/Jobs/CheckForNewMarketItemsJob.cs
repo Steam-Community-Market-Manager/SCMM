@@ -153,8 +153,8 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             return new FileData()
             {
-                Data = thumbnail.Data,
                 MimeType = thumbnail.MimeType,
+                Data = thumbnail.Data,
                 ExpiresOn = expiresOn
             };
         }
