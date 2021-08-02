@@ -60,6 +60,16 @@ else if (StoreList.Any())
             }
             else
             {
+                @if (Store.Notes != null)
+                {
+                    @foreach (var note in Store.Notes)
+                    {
+                        <MudItem xs="12">
+                            <Alert Variant="MudBlazor.Variant.Filled" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" Title="@note" />
+                        </MudItem>
+                    }
+                }
+                
                 <MudItem xs="12">
                     <StoreAnalyticsPanel Store="@Store" />
                 </MudItem>
