@@ -1,4 +1,5 @@
 ﻿@page "/skins"
+@page "/skins/{Filter}"
 @page "/items"
 @using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
@@ -10,7 +11,7 @@
 
     <MudGrid Spacing="2">
         <MudItem xs="12">
-            <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Type here to find an item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" />
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Type here to find an item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" />
         </MudItem>
         @if (Items == null)
         {
@@ -37,7 +38,8 @@
 
     private PaginatedResult<ItemDescriptionWithPriceDTO> Items { get; set; }
 
-    private string Filter { get; set; }
+    [Parameter]
+    public string Filter { get; set; }
 
     private int Count { get; set; } = 300;
 
