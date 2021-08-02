@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SCMM.Shared.Data.Models;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Workshop.Requests;
@@ -38,7 +39,13 @@ namespace SCMM.Steam.Client
                         throw new HttpRequestException($"{downloadResponse.StatusCode}: {downloadResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
                     }
 
-                    var downloadId = await downloadResponse.Content.ReadFromJsonAsync<SteamWorkshopDownloaderJsonResponse>();
+                    var downloadResponseJson = await downloadResponse.Content.ReadAsStringAsync();
+                    if (String.IsNullOrEmpty(downloadResponseJson))
+                    {
+                        return null; // workshop file probably does not exist anymore
+                    }
+
+                    var downloadId = JsonConvert.DeserializeObject<SteamWorkshopDownloaderJsonResponse>(downloadResponseJson);
                     if (downloadId.Uuid == Guid.Empty)
                     {
                         throw new Exception("No download request UUID was returned, unable to download file");
