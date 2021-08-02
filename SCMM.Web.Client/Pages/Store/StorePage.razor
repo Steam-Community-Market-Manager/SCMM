@@ -324,8 +324,20 @@ else if (StoreList.Any())
                                                 </MudTooltip>
                                                 @if (item.Tags.GetFlag(Constants.RustAssetTagGlow))
                                                 {
-                                                    <MudTooltip Text="This item glows in the dark">
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Glowing" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                    <MudTooltip Text="This item glows in the dark, making it much easier to see at night">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Glow" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                    </MudTooltip>
+                                                }
+                                                @if (item.Tags.GetFlag(Constants.RustAssetTagGlowSights))
+                                                {
+                                                    <MudTooltip Text="This items iron sights glow in the dark, making it much easier to aim at night">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Glow Sight" Icon="fas fa-fw fa-crosshairs mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                    </MudTooltip>
+                                                }
+                                                @if (item.Tags.GetFlag(Constants.RustAssetTagCutout))
+                                                {
+                                                    <MudTooltip Text="Some parts of this item have been cutout (i.e. made transparent), which alter the shape of the item">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Cutout" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
                                             </div>
