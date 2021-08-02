@@ -76,8 +76,8 @@ namespace SCMM.Steam.API.Commands
                 var assetClass = request.AssetClass;
                 assetDescription.Name = assetClass.MarketName;
                 assetDescription.NameHash = assetClass.MarketHashName;
-                assetDescription.IconUrl = new SteamEconomyImageBlobRequest(assetClass.IconUrl);
-                assetDescription.IconLargeUrl = new SteamEconomyImageBlobRequest(assetClass.IconUrlLarge ?? assetClass.IconUrl);
+                assetDescription.IconUrl = !String.IsNullOrEmpty(assetClass.IconUrl) ? new SteamEconomyImageBlobRequest(assetClass.IconUrl) : null;
+                assetDescription.IconLargeUrl = !String.IsNullOrEmpty(assetClass.IconUrlLarge) ? new SteamEconomyImageBlobRequest(assetClass.IconUrlLarge ?? assetClass.IconUrl) : null;
                 assetDescription.BackgroundColour = assetClass.BackgroundColor?.SteamColourToWebHexString();
                 assetDescription.ForegroundColour = assetClass.NameColor?.SteamColourToWebHexString();
                 assetDescription.IsCommodity = String.Equals(assetClass.Commodity, "1", StringComparison.InvariantCultureIgnoreCase);
@@ -558,7 +558,7 @@ namespace SCMM.Steam.API.Commands
                     assetDescription.IsTwitchDrop = true;
                 }
                 // Does this look like a publisher item twitch drop?
-                else if (assetDescription.WorkshopFileId == null && Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                else if (assetDescription.WorkshopFileId == null && !String.IsNullOrEmpty(assetDescription.Description) && Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                 {
                     assetDescription.IsTwitchDrop = true;
                 }
