@@ -7,6 +7,7 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
+using SCMM.Steam.API.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
@@ -22,6 +23,7 @@ using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -217,31 +219,6 @@ namespace SCMM.Steam.API.Commands
                 workshopFileData.MimeType = request.PublishedFileData.MimeType;
                 workshopFileData.Data = request.PublishedFileData.Data;
                 workshopFileData.ExpiresOn = null;
-
-                // Inspect the contents of the workshop file
-                using var workshopFileDataStream = new MemoryStream(workshopFileData.Data);
-                using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
-                {
-                    foreach (var entry in workshopFileZip.Entries)
-                    {
-                        // Inspect the mainfest file (if present)
-                        if (String.Equals(entry.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            using var entryStream = new StreamReader(entry.Open());
-                            var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(entryStream.ReadToEnd());
-                            if (manifest != null)
-                            {
-                                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                                assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow,
-                                    manifest.Groups.Any(x =>
-                                        (!String.IsNullOrEmpty(x.Textures.EmissionMap) && workshopFileZip.Entries.Any(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase))) &&
-                                        (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0)
-                                    )
-                                );
-                            }
-                        }
-                    }
-                }
             }
 
             // Parse asset icon and image data
@@ -563,9 +540,70 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            // Parse name and description to determine if this item glows
+            // Parse item tags from the workshop file data (if present)
+            if ((assetDescription.WorkshopFileDataId != null || assetDescription.WorkshopFileData != null) && (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow) || !assetDescription.Tags.ContainsKey(Constants.RustAssetTagCutout)))
+            {
+                // Lazy-load workshop file data (if not already loaded)
+                if (assetDescription.WorkshopFileData == null)
+                {
+                    assetDescription.WorkshopFileData = await _db.FileData.FindAsync(assetDescription.WorkshopFileDataId);
+                }
+
+                // Inspect the contents of the workshop file
+                using var workshopFileDataStream = new MemoryStream(assetDescription.WorkshopFileData?.Data ?? new byte[0]);
+                using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
+                {
+                    foreach (var entry in workshopFileZip.Entries)
+                    {
+                        // Inspect the mainfest file
+                        if (String.Equals(entry.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            using var entryStream = new StreamReader(entry.Open());
+                            var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(entryStream.ReadToEnd());
+                            if (manifest != null)
+                            {
+                                // Check if the item glows (i.e. has an emission map)
+                                if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
+                                {
+                                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                                    assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow,
+                                        manifest.Groups.Any(x =>
+                                            (!String.IsNullOrEmpty(x.Textures.EmissionMap) && workshopFileZip.Entries.Any(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase))) &&
+                                            (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0)
+                                        )
+                                    );
+                                }
+
+                                // Check if the item has a cutout (i.e. main textures contain transparency)
+                                if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagCutout))
+                                {
+                                    var textures = manifest.Groups.Where(x => !String.IsNullOrEmpty(x.Textures.MainTex))
+                                        .Select(x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)));
+
+                                    var texturesContainTransparency = false;
+                                    foreach (var texture in textures)
+                                    {
+                                        using var textureStream = texture.Open();
+                                        using var textureImage = Image.FromStream(textureStream);
+                                        if (textureImage.HasTransparency(alphaCutoff: 255, transparencyRatio: 0.01m)) // at least 1% must be transparent
+                                        {
+                                            texturesContainTransparency = true;
+                                            break;
+                                        }
+                                    }
+
+                                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                                    assetDescription.Tags.SetFlag(Constants.RustAssetTagCutout, texturesContainTransparency);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Parse item tags from the item name and description
             // NOTE: This is just a fallback incase we can't determi9ne this from the workshop file emission map check above
-            if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
+            if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow) && !String.IsNullOrEmpty(assetDescription.NameWorkshop) && !String.IsNullOrEmpty(assetDescription.DescriptionWorkshop))
             {
                 var glowing = false;
                 var descriptionText = String.Join(' ',
@@ -590,7 +628,7 @@ namespace SCMM.Steam.API.Commands
 
             // HACK: It is normal for furnaces to be auto-tagged as glowing items, since technically all furnaces should glow.
             //       However, because they only glow when turned on, we don't consider them the same as a normal/passive glow item
-            if (assetDescription.ItemType == "Furnace" && assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
+            if (assetDescription.ItemType == Constants.RustItemTypeFurnace && assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
             {
                 assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
                 assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow, false);

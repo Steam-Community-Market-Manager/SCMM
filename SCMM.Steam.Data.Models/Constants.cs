@@ -57,6 +57,7 @@
         public const string RustItemTypeUnderwear = "Underwear Item";
 
         public const string RustItemTypeLR300 = "LR300";
+        public const string RustItemTypeFurnace = "Furnace";
 
         public const string RustAssetTagGlow = "glow";
         public const string RustAssetTagGlowSights = "glowsight";
