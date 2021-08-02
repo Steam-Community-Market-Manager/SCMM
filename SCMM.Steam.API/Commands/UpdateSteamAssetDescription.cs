@@ -230,16 +230,13 @@ namespace SCMM.Steam.API.Commands
                             var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(entryStream.ReadToEnd());
                             if (manifest != null)
                             {
-                                //if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
-                                //{
-                                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                                    assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow,
-                                        manifest.Groups.Any(x =>
-                                            (!String.IsNullOrEmpty(x.Textures.EmissionMap) && workshopFileZip.Entries.Any(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase))) &&
-                                            (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0)
-                                        )
-                                    );
-                                //}
+                                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                                assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow,
+                                    manifest.Groups.Any(x =>
+                                        (!String.IsNullOrEmpty(x.Textures.EmissionMap) && workshopFileZip.Entries.Any(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase))) &&
+                                        (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0)
+                                    )
+                                );
                             }
                         }
                     }

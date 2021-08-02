@@ -35,6 +35,9 @@ namespace SCMM.Steam.Data.Store
 
         public ulong? WorkshopFileId { get; set; }
 
+        public Guid? WorkshopFileDataId { get; set; }
+
+        public FileData WorkshopFileData { get; set; }
         public Guid? CreatorId { get; set; }
 
         public SteamProfile Creator { get; set; }
