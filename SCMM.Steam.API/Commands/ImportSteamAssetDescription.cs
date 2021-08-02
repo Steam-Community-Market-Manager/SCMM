@@ -35,6 +35,11 @@ namespace SCMM.Steam.API.Commands
         /// Optional, removes the need to lookup AssetClassId if supplied
         /// </summary>
         public SteamAssetClass AssetClass { get; set; }
+
+        /// <summary>
+        /// If true, we'll try download the workshop file data. If false, we won't.
+        /// </summary>
+        public bool ImportWorkshopFileData { get; set; } = false;
     }
 
     public class ImportSteamAssetDescriptionResponse
@@ -194,7 +199,7 @@ namespace SCMM.Steam.API.Commands
 
                 publishedFile = publishedFileDetails.Data;
 
-                if (assetDescription.WorkshopFileDataId == null)
+                if (assetDescription.WorkshopFileDataId == null && request.ImportWorkshopFileData)
                 {
                     publishedFileData = await _workshopDownloaderClient.DownloadWorkshopFile(
                         new SteamWorkshopDownloaderJsonRequest()

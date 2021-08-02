@@ -40,7 +40,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     AppId = x.App.SteamId,
                     ClassId = x.ClassId
                 })
-                .Take(100) // batch 100 at a time
+                .Take(30) // batch 30 at a time
                 .ToList();
 
             if (!assetDescriptions.Any())

@@ -301,7 +301,7 @@ else if (StoreList.Any())
                                                         {
                                                             @if (item.MarketableRestrictionDays > 0)
                                                             {
-                                                                <span>This item <strong>can</strong> be listed on the Steam Community Market after <strong>@(item.MarketableRestrictionDays)</strong> day(s) after purchase</span>
+                                                                <span>This item <strong>can</strong> be listed on the Steam Community Market <strong>@(item.MarketableRestrictionDays)</strong> day(s) after purchase</span>
                                                             }
                                                             else
                                                             {
@@ -324,19 +324,19 @@ else if (StoreList.Any())
                                                 </MudTooltip>
                                                 @if (item.Tags.GetFlag(Constants.RustAssetTagGlow))
                                                 {
-                                                    <MudTooltip Text="This item glows in the dark, making it much easier to see at night">
+                                                    <MudTooltip Text="Parts of this item glow in the dark, making it much easier to see at night">
                                                         <MudChip Size="MudBlazor.Size.Small" Text="Glow" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
                                                 @if (item.Tags.GetFlag(Constants.RustAssetTagGlowSights))
                                                 {
-                                                    <MudTooltip Text="This items iron sights glow in the dark, making it much easier to aim at night">
+                                                    <MudTooltip Text="The iron sights of this weapon glow in the dark, making it much easier to aim at night">
                                                         <MudChip Size="MudBlazor.Size.Small" Text="Glow Sight" Icon="fas fa-fw fa-crosshairs mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
                                                 @if (item.Tags.GetFlag(Constants.RustAssetTagCutout))
                                                 {
-                                                    <MudTooltip Text="Some parts of this item have been cutout (i.e. made transparent), which alter the shape of the item">
+                                                    <MudTooltip Text="Parts of this item are transparent. The shape may have been altered from the default model">
                                                         <MudChip Size="MudBlazor.Size.Small" Text="Cutout" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }

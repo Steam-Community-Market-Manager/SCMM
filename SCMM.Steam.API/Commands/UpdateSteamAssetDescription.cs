@@ -539,7 +539,7 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
             }
-
+            /*
             // Parse item tags from the workshop file data (if present)
             if ((assetDescription.WorkshopFileDataId != null || assetDescription.WorkshopFileData != null) && (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow) || !assetDescription.Tags.ContainsKey(Constants.RustAssetTagCutout)))
             {
@@ -563,44 +563,65 @@ namespace SCMM.Steam.API.Commands
                             if (manifest != null)
                             {
                                 // Check if the item glows (i.e. has an emission map)
-                                if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
-                                {
+                                //if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
+                                //{
+                                    var emissionMaps = manifest.Groups.Where(x => !String.IsNullOrEmpty(x.Textures.EmissionMap))
+                                        .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
+                                        .Select(x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)));
+
+                                    var emissionMapsGlow = new List<decimal>();
+                                    foreach (var emissionMap in emissionMaps)
+                                    {
+                                        using var emissionMapStream = emissionMap.Open();
+                                        using var emissionMapImage = Image.FromStream(emissionMapStream);
+                                        emissionMapsGlow.Add(
+                                            emissionMapImage.GetEmissionRatio()
+                                        );
+                                    }
+
                                     assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                                    assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow,
-                                        manifest.Groups.Any(x =>
-                                            (!String.IsNullOrEmpty(x.Textures.EmissionMap) && workshopFileZip.Entries.Any(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase))) &&
-                                            (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0)
-                                        )
-                                    );
-                                }
+                                    if (emissionMapsGlow.Any() && emissionMapsGlow.Average() > 0m)
+                                    {
+                                        assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow, emissionMapsGlow.Average());
+                                    }
+                                    else
+                                    {
+                                        assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow, false);
+                                    }
+                                //}
 
                                 // Check if the item has a cutout (i.e. main textures contain transparency)
-                                if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagCutout))
-                                {
+                                //if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagCutout))
+                                //{
                                     var textures = manifest.Groups.Where(x => !String.IsNullOrEmpty(x.Textures.MainTex))
                                         .Select(x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)));
 
-                                    var texturesContainTransparency = false;
+                                    var texturesCutout = new List<decimal>();
                                     foreach (var texture in textures)
                                     {
                                         using var textureStream = texture.Open();
                                         using var textureImage = Image.FromStream(textureStream);
-                                        if (textureImage.HasTransparency(alphaCutoff: 255, transparencyRatio: 0.01m)) // at least 1% must be transparent
-                                        {
-                                            texturesContainTransparency = true;
-                                            break;
-                                        }
+                                        texturesCutout.Add(
+                                            textureImage.GetTransparencyRatio(alphaCutoff: 128) // 50% transparent
+                                        );
                                     }
 
                                     assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                                    assetDescription.Tags.SetFlag(Constants.RustAssetTagCutout, texturesContainTransparency);
-                                }
+                                    if (texturesCutout.Any() && texturesCutout.Average() > 0m)
+                                    {
+                                        assetDescription.Tags.SetFlag(Constants.RustAssetTagCutout, texturesCutout.Average());
+                                    }
+                                    else
+                                    {
+                                        assetDescription.Tags.SetFlag(Constants.RustAssetTagCutout, false);
+                                    }
+                                //}
                             }
                         }
                     }
                 }
             }
-
+            */
             // Parse item tags from the item name and description
             // NOTE: This is just a fallback incase we can't determi9ne this from the workshop file emission map check above
             if (!assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow) && !String.IsNullOrEmpty(assetDescription.NameWorkshop) && !String.IsNullOrEmpty(assetDescription.DescriptionWorkshop))
@@ -628,11 +649,11 @@ namespace SCMM.Steam.API.Commands
 
             // HACK: It is normal for furnaces to be auto-tagged as glowing items, since technically all furnaces should glow.
             //       However, because they only glow when turned on, we don't consider them the same as a normal/passive glow item
-            if (assetDescription.ItemType == Constants.RustItemTypeFurnace && assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
-            {
-                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow, false);
-            }
+            //if (assetDescription.ItemType == Constants.RustItemTypeFurnace && assetDescription.Tags.ContainsKey(Constants.RustAssetTagGlow))
+            //{
+            //    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+            //    assetDescription.Tags.SetFlag(Constants.RustAssetTagGlow, false);
+            //}
 
             // Check if this is a twitch drop item
             if (!assetDescription.IsTwitchDrop)

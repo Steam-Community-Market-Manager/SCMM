@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SCMM.Shared.Data.Models.Extensions
 {
@@ -7,9 +8,22 @@ namespace SCMM.Shared.Data.Models.Extensions
         public static bool GetFlag<T>(this T dictionary, string key) where T : IDictionary<string, string>
         {
             var value = false;
-            if (dictionary.ContainsKey(key) && bool.TryParse(dictionary[key], out value))
+            var decimalValue = 0m;
+            var integerValue = 0;
+            if (dictionary.ContainsKey(key))
             {
-                return value;
+                if (bool.TryParse(dictionary[key], out value))
+                {
+                    return value;
+                }
+                else if (decimal.TryParse(dictionary[key], out decimalValue))
+                {
+                    return decimalValue > 0m;
+                }
+                else if (int.TryParse(dictionary[key], out integerValue))
+                {
+                    return integerValue > 0;
+                }
             }
             return value;
         }
@@ -17,6 +31,12 @@ namespace SCMM.Shared.Data.Models.Extensions
         public static T SetFlag<T>(this T dictionary, string key, bool value) where T : IDictionary<string, string>
         {
             dictionary[key] = value.ToString().ToLower();
+            return dictionary;
+        }
+
+        public static T SetFlag<T>(this T dictionary, string key, decimal value) where T : IDictionary<string, string>
+        {
+            dictionary[key] = Math.Round(value, 4).ToString();
             return dictionary;
         }
     }

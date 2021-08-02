@@ -151,7 +151,7 @@ namespace SCMM.Steam.API.Commands
                         var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                         {
                             AppId = ulong.Parse(app.SteamId),
-                            AssetClassId = asset.ClassId,
+                            AssetClassId = asset.ClassId
                             // TODO: Test this more. It seems there is missing data sometimes so we'll fetch the full details from Steam instead
                             //AssetClass = inventory.Descriptions.FirstOrDefault(x => x.ClassId == asset.ClassId)
                         });
