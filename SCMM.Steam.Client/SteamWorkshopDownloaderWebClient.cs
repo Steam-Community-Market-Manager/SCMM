@@ -75,7 +75,8 @@ namespace SCMM.Steam.Client
                         {
                             case "dequeued":
                             case "retrieving":
-                            case "retrieved": Thread.Sleep(3000); break; // avoid spamming the server
+                            case "retrieved":
+                            case "preparing": Thread.Sleep(3000); break; // avoid spamming the server
                             case "prepared": downloadIsPrepared = true;  break;
                             case "transmitted": downloadIsPrepared = true; break;
                             default: throw new Exception($"Unexpected status '{downloadStatus?.Status}' {downloadStatus.DownloadError}");
