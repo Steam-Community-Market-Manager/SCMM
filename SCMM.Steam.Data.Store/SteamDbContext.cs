@@ -23,7 +23,7 @@ namespace SCMM.Steam.Data.Store
         public DbSet<SteamProfileInventorySnapshot> SteamProfileInventorySnapshots { get; set; }
         public DbSet<SteamProfileMarketItem> SteamProfileMarketItems { get; set; }
 
-        public DbSet<ImageData> ImageData { get; set; }
+        public DbSet<FileData> FileData { get; set; }
 
         public SteamDbContext(DbContextOptions<SteamDbContext> options)
             : base(options)
@@ -86,6 +86,8 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamAssetDescription>()
                 .HasIndex(x => x.ClassId)
                 .IsUnique(true);
+            builder.Entity<SteamAssetDescription>()
+                .HasOne(x => x.WorkshopFileData);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Tags);
             builder.Entity<SteamAssetDescription>()

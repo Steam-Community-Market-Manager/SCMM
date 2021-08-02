@@ -185,7 +185,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 // Regenerate store thumbnail (if missing)
                 if (newItemStore.ItemsThumbnail == null)
                 {
-                    var thumbnail = await GenerateStoreItemsThumbnail(queryProcessor, newItemStore.Items.Select(x => x.Item));
+                    var thumbnail = await GenerateStoreItemsThumbnailImage(queryProcessor, newItemStore.Items.Select(x => x.Item));
                     if (thumbnail != null)
                     {
                         newItemStore.ItemsThumbnail = thumbnail;
@@ -199,7 +199,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             }
         }
 
-        private async Task<ImageData> GenerateStoreItemsThumbnail(IQueryProcessor queryProcessor, IEnumerable<SteamStoreItem> storeItems)
+        private async Task<FileData> GenerateStoreItemsThumbnailImage(IQueryProcessor queryProcessor, IEnumerable<SteamStoreItem> storeItems)
         {
             // Generate store thumbnail
             var items = storeItems.OrderBy(x => x.Description?.Name);
@@ -225,7 +225,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return null;
             }
 
-            return new ImageData()
+            return new FileData()
             {
                 Data = thumbnail.Data,
                 MimeType = thumbnail.MimeType

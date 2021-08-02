@@ -399,7 +399,7 @@ namespace SCMM.Steam.API.Queries
 
             // Check the second-level cache (database) for missing image data
             var missingImageUrls = missingImages.Select(x => x.ImageUrl).ToList();
-            var missingImageData = await _db.ImageData.AsNoTracking().Where(x => missingImageUrls.Contains(x.Source)).ToListAsync();
+            var missingImageData = await _db.FileData.AsNoTracking().Where(x => missingImageUrls.Contains(x.Source)).ToListAsync();
             if (missingImageData.Any())
             {
                 foreach (var imageSource in missingImages.ToList())

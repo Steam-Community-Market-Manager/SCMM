@@ -22,7 +22,7 @@ namespace SCMM.Steam.Data.Store
 
         public Guid? ImageId { get; set; }
 
-        public ImageData Image { get; set; }
+        public FileData Image { get; set; }
 
         public Guid? CreatorId { get; set; }
 

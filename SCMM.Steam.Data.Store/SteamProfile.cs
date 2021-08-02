@@ -30,13 +30,13 @@ namespace SCMM.Steam.Data.Store
 
         public Guid? AvatarId { get; set; }
 
-        public ImageData Avatar { get; set; }
+        public FileData Avatar { get; set; }
 
         public string AvatarLargeUrl { get; set; }
 
         public Guid? AvatarLargeId { get; set; }
 
-        public ImageData AvatarLarge { get; set; }
+        public FileData AvatarLarge { get; set; }
 
         public string TradeUrl { get; set; }
 

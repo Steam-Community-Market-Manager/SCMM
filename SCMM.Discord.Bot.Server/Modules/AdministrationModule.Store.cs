@@ -185,7 +185,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     continue;
                 }
 
-                itemStore.ItemsThumbnail = new ImageData()
+                itemStore.ItemsThumbnail = new FileData()
                 {
                     Data = thumbnail.Data,
                     MimeType = thumbnail.MimeType

@@ -31,7 +31,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             // Delete all images that have expired
             var now = DateTimeOffset.Now;
-            var expiredImageData = await db.ImageData
+            var expiredImageData = await db.FileData
                 .Where(x => x.ExpiresOn != null && x.ExpiresOn <= now)
                 .OrderByDescending(x => x.ExpiresOn)
                 .Take(100) // batch 100 at a time to avoid timing out
@@ -41,7 +41,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             {
                 foreach (var batch in expiredImageData.Batch(10))
                 {
-                    db.ImageData.RemoveRange(batch);
+                    db.FileData.RemoveRange(batch);
                     db.SaveChanges();
                 }
             }

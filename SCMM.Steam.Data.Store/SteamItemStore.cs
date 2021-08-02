@@ -31,7 +31,7 @@ namespace SCMM.Steam.Data.Store
 
         public Guid? ItemsThumbnailId { get; set; }
 
-        public ImageData ItemsThumbnail { get; set; }
+        public FileData ItemsThumbnail { get; set; }
 
         public PersistableStringCollection Media { get; set; }
 

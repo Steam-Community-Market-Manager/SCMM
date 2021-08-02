@@ -23,7 +23,7 @@ namespace SCMM.Steam.API.Commands
 
     public class ImportImageDataResponse
     {
-        public ImageData Image { get; set; }
+        public FileData Image { get; set; }
     }
 
     public class ImportImageData : ICommandHandler<ImportImageDataRequest, ImportImageDataResponse>
@@ -42,7 +42,7 @@ namespace SCMM.Steam.API.Commands
             // If we have already fetched this image source before, return the existing copy
             if (request.UseExisting)
             {
-                var existingImageData = await _db.ImageData.FirstOrDefaultAsync(x => x.Source == request.Url);
+                var existingImageData = await _db.FileData.FirstOrDefaultAsync(x => x.Source == request.Url);
                 if (existingImageData != null)
                 {
                     return new ImportImageDataResponse
@@ -59,7 +59,7 @@ namespace SCMM.Steam.API.Commands
                 return null;
             }
 
-            var imageData = new ImageData()
+            var imageData = new FileData()
             {
                 Source = request.Url,
                 MimeType = imageResponse.Item2,
@@ -68,7 +68,7 @@ namespace SCMM.Steam.API.Commands
             };
 
             // Save the new image data to the database
-            _db.ImageData.Add(imageData);
+            _db.FileData.Add(imageData);
 
             return new ImportImageDataResponse
             {

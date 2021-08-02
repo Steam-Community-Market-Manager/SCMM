@@ -26,7 +26,7 @@ namespace SCMM.Steam.API.Commands
 
     public class GenerateSteamProfileInventoryThumbnailResponse
     {
-        public ImageData Image { get; set; }
+        public FileData Image { get; set; }
     }
 
     public class GenerateSteamProfileInventoryThumbnail : ICommandHandler<GenerateSteamProfileInventoryThumbnailRequest, GenerateSteamProfileInventoryThumbnailResponse>
@@ -104,14 +104,14 @@ namespace SCMM.Steam.API.Commands
                 return null;
             }
 
-            var imageData = new ImageData()
+            var imageData = new FileData()
             {
                 Data = inventoryImageMosaic.Data,
                 MimeType = inventoryImageMosaic.MimeType,
                 ExpiresOn = request.ExpiresOn
             };
 
-            _db.ImageData.Add(imageData);
+            _db.FileData.Add(imageData);
 
             return new GenerateSteamProfileInventoryThumbnailResponse()
             {

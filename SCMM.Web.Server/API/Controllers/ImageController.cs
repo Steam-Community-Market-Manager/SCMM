@@ -47,7 +47,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetImage(Guid id)
         {
-            var image = await _db.ImageData.FindAsync(id);
+            var image = await _db.FileData.FindAsync(id);
             if (image != null && image.Data?.Length > 0)
             {
                 if (image.ExpiresOn != null)

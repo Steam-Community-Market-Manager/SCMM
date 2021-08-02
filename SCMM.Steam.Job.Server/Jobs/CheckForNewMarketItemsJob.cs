@@ -114,10 +114,10 @@ namespace SCMM.Steam.Job.Server.Jobs
             if (newMarketItems.Any())
             {
                 var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
-                var thumbnail = await GenerateMarketItemsThumbnail(queryProcessor, newMarketItems, thumbnailExpiry);
+                var thumbnail = await GenerateMarketItemsThumbnailImage(queryProcessor, newMarketItems, thumbnailExpiry);
                 if (thumbnail != null)
                 {
-                    db.ImageData.Add(thumbnail);
+                    db.FileData.Add(thumbnail);
                 }
 
                 db.SaveChanges();
@@ -126,7 +126,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             }
         }
 
-        private async Task<ImageData> GenerateMarketItemsThumbnail(IQueryProcessor queryProcessor, IEnumerable<SteamMarketItem> marketItems, DateTimeOffset expiresOn)
+        private async Task<FileData> GenerateMarketItemsThumbnailImage(IQueryProcessor queryProcessor, IEnumerable<SteamMarketItem> marketItems, DateTimeOffset expiresOn)
         {
             var items = marketItems.OrderBy(x => x.Description?.Name);
             var itemImageSources = items
@@ -151,7 +151,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return null;
             }
 
-            return new ImageData()
+            return new FileData()
             {
                 Data = thumbnail.Data,
                 MimeType = thumbnail.MimeType,
@@ -159,7 +159,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             };
         }
 
-        private async Task BroadcastNewMarketItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, IEnumerable<SteamMarketItem> newMarketItems, ImageData thumbnail)
+        private async Task BroadcastNewMarketItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, IEnumerable<SteamMarketItem> newMarketItems, FileData thumbnailImage)
         {
             newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name);
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
@@ -218,7 +218,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     FieldsInline = true,
                     Url = $"{_configuration.GetWebsiteUrl()}/items",
                     ThumbnailUrl = app?.IconUrl,
-                    ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnail?.Id}",
+                    ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnailImage?.Id}",
                     Colour = app?.PrimaryColor
                 });
             }

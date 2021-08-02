@@ -2,7 +2,7 @@
 
 namespace SCMM.Shared.Data.Store
 {
-    public class ImageData : Entity
+    public class FileData : Entity
     {
         public string Source { get; set; }
 

@@ -71,19 +71,19 @@ namespace SCMM.Steam.Data.Store
 
         public Guid? IconId { get; set; }
 
-        public ImageData Icon { get; set; }
+        public FileData Icon { get; set; }
 
         public string IconLargeUrl { get; set; }
 
         public Guid? IconLargeId { get; set; }
 
-        public ImageData IconLarge { get; set; }
+        public FileData IconLarge { get; set; }
 
         public string PreviewUrl { get; set; }
 
         public Guid? PreviewId { get; set; }
 
-        public ImageData Preview { get; set; }
+        public FileData Preview { get; set; }
 
         public ulong? PreviewContentId { get; set; }
 
