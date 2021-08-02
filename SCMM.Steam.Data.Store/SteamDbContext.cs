@@ -202,7 +202,7 @@ namespace SCMM.Steam.Data.Store
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.AssetDescriptions)
-                .WithOne(x => x.Creator)
+                .WithOne(x => x.CreatorProfile)
                 .OnDelete(DeleteBehavior.SetNull);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.Configurations)

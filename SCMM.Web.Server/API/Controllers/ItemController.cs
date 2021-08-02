@@ -84,7 +84,7 @@ namespace SCMM.Web.Server.API.Controllers
                     x.ClassId.ToString() == filterWord ||
                     x.Name.Contains(filterWord) ||
                     x.Description.Contains(filterWord) ||
-                    (x.Creator != null && x.Creator.Name.Contains(filterWord)) ||
+                    (x.CreatorProfile != null && x.CreatorProfile.Name.Contains(filterWord)) ||
                     x.ItemType.Contains(filterWord) ||
                     x.ItemCollection.Contains(filterWord) ||
                     x.Tags.Serialised.Contains(filterWord)
@@ -140,7 +140,7 @@ namespace SCMM.Web.Server.API.Controllers
             var item = await _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
-                .Include(x => x.Creator)
+                .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .FirstOrDefaultAsync(x =>
@@ -236,7 +236,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.ItemCollection == name)
                 .Where(x => !marketableItemsOnly || x.IsMarketable)
                 .Include(x => x.App)
-                .Include(x => x.Creator)
+                .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)

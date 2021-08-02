@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210802084349_RenameAssetDescriptionCreatorAsCreatorProfile")]
+    partial class RenameAssetDescriptionCreatorAsCreatorProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,9 +161,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("ClassId")
-                        .HasColumnType("decimal(20,0)");
-
-                    b.Property<decimal?>("CreatorId")
                         .HasColumnType("decimal(20,0)");
 
                     b.Property<Guid?>("CreatorProfileId")

@@ -38,9 +38,12 @@ namespace SCMM.Steam.Data.Store
         public Guid? WorkshopFileDataId { get; set; }
 
         public FileData WorkshopFileData { get; set; }
-        public Guid? CreatorId { get; set; }
 
-        public SteamProfile Creator { get; set; }
+        public ulong? CreatorId { get; set; }
+
+        public Guid? CreatorProfileId { get; set; }
+
+        public SteamProfile CreatorProfile { get; set; }
 
         /// <summary>
         /// e.g. Large Wood Box, Sheet Metal Door, etc

@@ -21,9 +21,9 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public bool HasMarketListing => !String.IsNullOrEmpty(MarketListingId);
 
-        public string AuthorName { get; set; }
+        public string CreatorName { get; set; }
 
-        public string AuthorAvatarUrl { get; set; }
+        public string CreatorAvatarUrl { get; set; }
 
         public string ItemType { get; set; }
 

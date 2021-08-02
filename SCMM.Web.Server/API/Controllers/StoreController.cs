@@ -123,7 +123,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.App)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description)
-                .Include(x => x.Items).ThenInclude(x => x.Item.Description.Creator)
+                .Include(x => x.Items).ThenInclude(x => x.Item.Description.CreatorProfile)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description.MarketItem.Currency)
                 .FirstOrDefaultAsync();
@@ -348,7 +348,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var assetDescription = await _db.SteamAssetDescriptions
                 .Include(x => x.App)
-                .Include(x => x.Creator)
+                .Include(x => x.CreatorProfile)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .FirstOrDefaultAsync(x => x.ClassId == command.AssetDescriptionId);

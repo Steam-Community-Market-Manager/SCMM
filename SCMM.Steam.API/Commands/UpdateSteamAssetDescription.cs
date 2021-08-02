@@ -136,6 +136,7 @@ namespace SCMM.Steam.API.Commands
                 var publishedFile = request.PublishedFile;
                 assetDescription.AssetType = SteamAssetDescriptionType.WorkshopItem;
                 assetDescription.WorkshopFileId = publishedFile.PublishedFileId;
+                assetDescription.CreatorId = (publishedFile.Creator > 0 ? publishedFile.Creator : null);
                 assetDescription.NameWorkshop = publishedFile.Title;
                 assetDescription.DescriptionWorkshop = publishedFile.Description;
                 assetDescription.PreviewUrl = publishedFile.PreviewUrl?.ToString();
@@ -151,7 +152,7 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.TimeUpdated = publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null;
 
                 // Parse asset workshop creator
-                if (assetDescription.CreatorId == null && publishedFile.Creator > 0)
+                if (assetDescription.CreatorProfileId == null && publishedFile.Creator > 0)
                 {
                     try
                     {
@@ -163,8 +164,8 @@ namespace SCMM.Steam.API.Commands
                         );
                         if (importedProfile?.Profile != null)
                         {
-                            assetDescription.Creator = importedProfile.Profile;
-                            assetDescription.CreatorId = importedProfile.Profile.Id;
+                            assetDescription.CreatorProfile = importedProfile.Profile;
+                            assetDescription.CreatorProfileId = importedProfile.Profile.Id;
                         }
                     }
                     catch (Exception)
