@@ -71,7 +71,7 @@ namespace SCMM.Steam.Functions
             }
 
             // Update all asset descriptions that reference this workshop file with the blob url
-            var workshopFileUrl = blob.Uri.AbsoluteUri.ToString();
+            var workshopFileUrl = blob.Uri.GetLeftPart(UriPartial.Path);
             var assetDescriptions = await _db.SteamAssetDescriptions
                 .Where(x => x.WorkshopFileId == message.PublishedFileId)
                 .Where(x => x.WorkshopFileUrl != workshopFileUrl)
