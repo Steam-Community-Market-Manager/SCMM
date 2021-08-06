@@ -28,6 +28,29 @@ namespace SCMM.Shared.Data.Models.Extensions
             return value;
         }
 
+        public static int GetFlagAsPercentage<T>(this T dictionary, string key) where T : IDictionary<string, string>
+        {
+            var value = false;
+            var decimalValue = 0m;
+            var integerValue = 0;
+            if (dictionary.ContainsKey(key))
+            {
+                if (bool.TryParse(dictionary[key], out value))
+                {
+                    return value ? 100 : 0;
+                }
+                else if (decimal.TryParse(dictionary[key], out decimalValue))
+                {
+                    return (int) Math.Round(decimalValue * 100, 0);
+                }
+                else if (int.TryParse(dictionary[key], out integerValue))
+                {
+                    return integerValue;
+                }
+            }
+            return 0;
+        }
+
         public static T SetFlag<T>(this T dictionary, string key, bool value) where T : IDictionary<string, string>
         {
             dictionary[key] = value.ToString().ToLower();

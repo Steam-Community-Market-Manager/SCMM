@@ -324,8 +324,20 @@ else if (StoreList.Any())
                                                 </MudTooltip>
                                                 @if (item.Tags.GetFlag(Constants.RustAssetTagGlow))
                                                 {
-                                                    <MudTooltip Text="Parts of this item glow in the dark, making it much easier to see at night">
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Glow" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                    <MudTooltip>
+                                                        <ChildContent>
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"{@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow)}% Glow")" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                        </ChildContent>
+                                                        <TooltipContent>
+                                                            @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow) > 0)
+                                                            {
+                                                                <span>@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow)% of this item glows in the dark, making it much easier to see at night</span>
+                                                            }
+                                                            else 
+                                                            {
+                                                                <span>Some parts of this item glow in the dark, making it much easier to see at night</span>
+                                                            }
+                                                        </TooltipContent>
                                                     </MudTooltip>
                                                 }
                                                 @if (item.Tags.GetFlag(Constants.RustAssetTagGlowSights))
@@ -336,8 +348,20 @@ else if (StoreList.Any())
                                                 }
                                                 @if (item.Tags.GetFlag(Constants.RustAssetTagCutout))
                                                 {
-                                                    <MudTooltip Text="Parts of this item are transparent. The shape may have been altered from the default model">
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Cutout" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                    <MudTooltip>
+                                                        <ChildContent>
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"{@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout)}% Cutout")" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                        </ChildContent>
+                                                        <TooltipContent>
+                                                            @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout) > 0)
+                                                            {
+                                                                <span>@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout)% of this items material has been removed. The shape may appeared altered when compared against the default item</span>
+                                                            }
+                                                            else 
+                                                            {
+                                                                <span>Parts of this items material has been removed. The shape may appeared altered when compared against the default item</span>
+                                                            }
+                                                        </TooltipContent>
                                                     </MudTooltip>
                                                 }
                                             </div>
