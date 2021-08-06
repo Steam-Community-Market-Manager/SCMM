@@ -2,14 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SCMM.Shared.Data.Models;
+using SCMM.Azure.ServiceBus;
+using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
-using SCMM.Steam.Data.Models.Workshop.Requests;
 using SCMM.Steam.Data.Store;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
@@ -35,11 +35,6 @@ namespace SCMM.Steam.API.Commands
         /// Optional, removes the need to lookup AssetClassId if supplied
         /// </summary>
         public SteamAssetClass AssetClass { get; set; }
-
-        /// <summary>
-        /// If true, we'll try download the workshop file data. If false, we won't.
-        /// </summary>
-        public bool ImportWorkshopFileData { get; set; } = false;
     }
 
     public class ImportSteamAssetDescriptionResponse
@@ -56,17 +51,17 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
         private readonly SteamCommunityWebClient _communityClient;
-        private readonly SteamWorkshopDownloaderWebClient _workshopDownloaderClient;
+        private readonly ServiceBusClient _serviceBusClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, SteamWorkshopDownloaderWebClient workshopDownloaderClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, ServiceBusClient serviceBusClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _communityClient = communityClient;
-            _workshopDownloaderClient = workshopDownloaderClient;
+            _serviceBusClient = serviceBusClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }
@@ -178,7 +173,6 @@ namespace SCMM.Steam.API.Commands
             // Get published file details from Steam (if workshopfileid is available)
             var publishedFile = (PublishedFileDetailsModel)null;
             var publishedFileId = (ulong)0;
-            var publishedFileData = (WebFileData) null;
             var viewWorkshopAction = assetClass.Actions?.FirstOrDefault(x =>
                 String.Equals(x.Name, Constants.SteamActionViewWorkshopItemId, StringComparison.InvariantCultureIgnoreCase) ||
                 String.Equals(x.Name, Constants.SteamActionViewWorkshopItem, StringComparison.InvariantCultureIgnoreCase)
@@ -199,15 +193,13 @@ namespace SCMM.Steam.API.Commands
 
                 publishedFile = publishedFileDetails.Data;
 
-                if (assetDescription.WorkshopFileDataId == null && request.ImportWorkshopFileData)
+                // Queue a download of the workshop file data for analyse (if missing)
+                if (String.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
                 {
-                    publishedFileData = await _workshopDownloaderClient.DownloadWorkshopFile(
-                        new SteamWorkshopDownloaderJsonRequest()
-                        {
-                            PublishedFileId = publishedFileId,
-                            Extract = false
-                        }
-                    );
+                    await _serviceBusClient.SendMessageAsync(new DownloadSteamWorkshopFileMessage()
+                    {
+                        PublishedFileId = publishedFileId
+                    });
                 }
             }
 
@@ -259,7 +251,6 @@ namespace SCMM.Steam.API.Commands
                 AssetDescription = assetDescription,
                 AssetClass = assetClass,
                 PublishedFile = publishedFile,
-                PublishedFileData = publishedFileData,
                 MarketListingPageHtml = marketListingPageHtml,
                 StoreItemPageHtml = storeItemPageHtml
             });

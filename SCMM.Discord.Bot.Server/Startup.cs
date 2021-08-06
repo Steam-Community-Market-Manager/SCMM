@@ -84,7 +84,6 @@ namespace SCMM.Discord.Bot.Server
             services.AddSingleton<AzureAiClient>();
             services.AddScoped<SteamWebClient>();
             services.AddScoped<SteamCommunityWebClient>();
-            services.AddScoped<SteamWorkshopDownloaderWebClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));

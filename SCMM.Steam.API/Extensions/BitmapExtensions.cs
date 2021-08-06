@@ -1,6 +1,5 @@
-﻿using System.Drawing.Imaging;
-using System.Drawing;
-using System;
+﻿using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace SCMM.Steam.API.Extensions
 {
@@ -24,7 +23,7 @@ namespace SCMM.Steam.API.Extensions
             var bitmapBounds = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
             var bitmapData = bitmap.LockBits(bitmapBounds, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var totalPixelCount = (bitmap.Width * bitmap.Height);
-            var transparentPixelCount = 0l;
+            var transparentPixelCount = 0L;
             unsafe
             {
                 var p = (byte*)bitmapData.Scan0;
@@ -41,7 +40,7 @@ namespace SCMM.Steam.API.Extensions
                 bitmap.UnlockBits(bitmapData);
             }
 
-            return (transparentPixelCount > 0 && totalPixelCount > 0) 
+            return (transparentPixelCount > 0 && totalPixelCount > 0)
                 ? ((decimal)transparentPixelCount / (decimal)totalPixelCount)
                 : (transparentPixelCount > 0 ? 1 : 0);
         }
@@ -64,7 +63,7 @@ namespace SCMM.Steam.API.Extensions
             var bitmapBounds = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
             var bitmapData = bitmap.LockBits(bitmapBounds, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var totalPixelCount = (bitmap.Width * bitmap.Height);
-            var nonBlackPixelCount = 0l;
+            var nonBlackPixelCount = 0L;
             unsafe
             {
                 var p = (byte*)bitmapData.Scan0;

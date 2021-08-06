@@ -71,7 +71,6 @@ namespace SCMM.Steam.Job.Server
             services.AddSingleton<SteamSession>();
             services.AddSingleton<GoogleClient>();
             services.AddScoped<SteamCommunityWebClient>();
-            services.AddScoped<SteamWorkshopDownloaderWebClient>();
 
             // Auto-mapper
             services.AddAutoMapper(typeof(Startup));

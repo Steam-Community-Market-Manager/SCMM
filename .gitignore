@@ -351,3 +351,6 @@ MigrationBackup/
 
 # User rules
 **/*.Development.json
+
+# Azure Functions localsettings file
+local.settings.json

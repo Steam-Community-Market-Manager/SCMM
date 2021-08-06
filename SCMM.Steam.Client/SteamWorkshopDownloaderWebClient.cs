@@ -53,14 +53,14 @@ namespace SCMM.Steam.Client
 
                     // Poll until the file is ready
                     var downloadIsPrepared = false;
-                    while(!downloadIsPrepared)
+                    while (!downloadIsPrepared)
                     {
                         const string statusUrl = $"https://backend-02-prd.steamworkshopdownloader.io/api/download/status";
                         var statusRequest = new SteamWorkshopDownloaderStatusJsonRequest()
                         {
                             Uuids = new Guid[]
-                            { 
-                                downloadId.Uuid 
+                            {
+                                downloadId.Uuid
                             }
                         };
                         var statusResponse = await client.PostAsJsonAsync(statusUrl, statusRequest);
@@ -77,7 +77,7 @@ namespace SCMM.Steam.Client
                             case "retrieving":
                             case "retrieved":
                             case "preparing": Thread.Sleep(3000); break; // avoid spamming the server
-                            case "prepared": downloadIsPrepared = true;  break;
+                            case "prepared": downloadIsPrepared = true; break;
                             case "transmitted": downloadIsPrepared = true; break;
                             default: throw new Exception($"Unexpected status '{downloadStatus?.Status}' {downloadStatus.DownloadError}");
                         }
