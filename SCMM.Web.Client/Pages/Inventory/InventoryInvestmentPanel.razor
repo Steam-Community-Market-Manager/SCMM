@@ -190,7 +190,7 @@ else
             </MudTd>
             <MudTd>
                 <div class="d-flex flex-row justify-space-between align-baseline">
-                    <MudSelect T="SteamProfileInventoryItemAcquisitionType" @bind-Value="@context.AcquiredBy" SelectedValuesChanged="@((e) => UpdateItemAcquired(context, context.AcquiredBy))">
+                    <MudSelect T="SteamProfileInventoryItemAcquisitionType" Value="@context.AcquiredBy" ValueChanged="@((x) => UpdateItemAcquired(context, x))">
                         <MudSelectItem Value="@SteamProfileInventoryItemAcquisitionType.Store">
                             <i class="fas fa-fw fa-shopping-cart" />
                             <span>Store</span>
@@ -329,13 +329,13 @@ else
     {
         try 
         {
-            var useStorePrice = (value == SteamProfileInventoryItemAcquisitionType.Store && item.BuyPriceStore != null);
             item.AcquiredBy = value;
+            var useStorePrice = (item.AcquiredBy == SteamProfileInventoryItemAcquisitionType.Store && item.BuyPriceStore != null);
             item.BuyCurrency = (useStorePrice ? State.Currency : item.BuyCurrency);
             item.BuyPrice = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             item.BuyPriceLocal = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
-
-            Logger.LogInformation($"Updating acquired from for '{item.Guid}' (value: '{value}', )");
+            
+            Logger.LogInformation($"Updating buy price for '{item.Guid}' (aquired: '{item.AcquiredBy}', price: '{item.BuyPrice}', currency: '{item.BuyCurrency?.CultureName}')");
             await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = item.AcquiredBy,
@@ -345,7 +345,7 @@ else
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error updating item acquired by for '{item.Guid}' (value: '{value}')");
+            Logger.LogError(ex, $"Error updating item acquired by for '{item.Guid}' (aquired: '{value}')");
         }
         finally
         {
