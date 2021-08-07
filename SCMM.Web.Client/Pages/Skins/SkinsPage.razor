@@ -10,8 +10,119 @@
 <PageContainer Title="Skins">
 
     <MudGrid Spacing="2">
-        <MudItem xs="12">
-            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Type here to find an item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="ma-0" />
+        <MudItem xs="12" lg="4">
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Type here to find an item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
+        </MudItem>
+        <MudItem xs="12" lg="4">
+            <MudSelect T="string" Value="@FilterItemType" ValueChanged="@(async (x) => { FilterItemType = x; OnSearch(Filter); })" Label="Item Type" Clearable="true" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" >
+                <MudSelectItem Value="@("Acoustic Guitar")" />
+                <MudSelectItem Value="@("Armored Door")" />
+                <MudSelectItem Value="@("Armored Double Door")" />
+                <MudSelectItem Value="@("Assault Rifle")" />
+                <MudSelectItem Value="@("Bandana Mask")" />
+                <MudSelectItem Value="@("Baseball Cap")" />
+                <MudSelectItem Value="@("Beenie Hat")" />
+                <MudSelectItem Value="@("Bolt Action Rifle")" />
+                <MudSelectItem Value="@("Bone Club")" />
+                <MudSelectItem Value="@("Bone Helmet")" />
+                <MudSelectItem Value="@("Bone Knife")" />
+                <MudSelectItem Value="@("Boonie Hat")" />
+                <MudSelectItem Value="@("Boots")" />
+                <MudSelectItem Value="@("Bucket Helmet")" />
+                <MudSelectItem Value="@("Burlap Headwrap")" />
+                <MudSelectItem Value="@("Burlap Shirt")" />
+                <MudSelectItem Value="@("Burlap Shoes")" />
+                <MudSelectItem Value="@("Burlap Trousers")" />
+                <MudSelectItem Value="@("Chair")" />
+                <MudSelectItem Value="@("Coffee Can Helmet")" />
+                <MudSelectItem Value="@("Combat Knife")" />
+                <MudSelectItem Value="@("Concrete Barricade")" />
+                <MudSelectItem Value="@("Container")" />
+                <MudSelectItem Value="@("Crossbow")" />
+                <MudSelectItem Value="@("Custom SMG")" />
+                <MudSelectItem Value="@("Double Barrel Shotgun")" />
+                <MudSelectItem Value="@("Eoka Pistol")" />
+                <MudSelectItem Value="@("F1 Grenade")" />
+                <MudSelectItem Value="@("Festive Window Garland")" />
+                <MudSelectItem Value="@("Fridge")" />
+                <MudSelectItem Value="@("Furnace")" />
+                <MudSelectItem Value="@("Garage Door")" />
+                <MudSelectItem Value="@("Hammer")" />
+                <MudSelectItem Value="@("Hatchet")" />
+                <MudSelectItem Value="@("Hazmat Suit")" />
+                <MudSelectItem Value="@("Hide Boots")" />
+                <MudSelectItem Value="@("Hide Halterneck")" />
+                <MudSelectItem Value="@("Hide Pants")" />
+                <MudSelectItem Value="@("Hide Poncho")" />
+                <MudSelectItem Value="@("Hide Skirt")" />
+                <MudSelectItem Value="@("Hide Vest")" />
+                <MudSelectItem Value="@("Hoodie")" />
+                <MudSelectItem Value="@("Hunting Bow")" />
+                <MudSelectItem Value="@("Improvised Balaclava")" />
+                <MudSelectItem Value="@("Jacket")" />
+                <MudSelectItem Value="@("Jackhammer")" />
+                <MudSelectItem Value="@("L96 Rifle")" />
+                <MudSelectItem Value="@("Large Wood Box")" />
+                <MudSelectItem Value="@("Leather Gloves")" />
+                <MudSelectItem Value="@("Locker")" />
+                <MudSelectItem Value="@("Longsleeve T-Shirt")" />
+                <MudSelectItem Value="@("Longsword")" />
+                <MudSelectItem Value="@("LR300")" />
+                <MudSelectItem Value="@("M249")" />
+                <MudSelectItem Value="@("M39 Rifle")" />
+                <MudSelectItem Value="@("Metal Chest Plate")" />
+                <MudSelectItem Value="@("Metal Facemask")" />
+                <MudSelectItem Value="@("Miners Hat")" />
+                <MudSelectItem Value="@("MP5A4")" />
+                <MudSelectItem Value="@("Pants")" />
+                <MudSelectItem Value="@("Pickaxe")" />
+                <MudSelectItem Value="@("Pump Shotgun")" />
+                <MudSelectItem Value="@("Python Revolver")" />
+                <MudSelectItem Value="@("Reactive Target")" />
+                <MudSelectItem Value="@("Resource")" />
+                <MudSelectItem Value="@("Revolver")" />
+                <MudSelectItem Value="@("Riot Helmet")" />
+                <MudSelectItem Value="@("Road Sign Jacket")" />
+                <MudSelectItem Value="@("Road Sign Kilt")" />
+                <MudSelectItem Value="@("Roadsign Gloves")" />
+                <MudSelectItem Value="@("Rock")" />
+                <MudSelectItem Value="@("Rocket Launcher")" />
+                <MudSelectItem Value="@("Rug")" />
+                <MudSelectItem Value="@("Rug Bear Skin")" />
+                <MudSelectItem Value="@("Salvaged Icepick")" />
+                <MudSelectItem Value="@("Salvaged Sword")" />
+                <MudSelectItem Value="@("Sandbag Barricade")" />
+                <MudSelectItem Value="@("Satchel Charge")" />
+                <MudSelectItem Value="@("Semi-Automatic Pistol")" />
+                <MudSelectItem Value="@("Semi-Automatic Rifle")" />
+                <MudSelectItem Value="@("Sheet Metal Door")" />
+                <MudSelectItem Value="@("Sheet Metal Double Door")" />
+                <MudSelectItem Value="@("Shirt")" />
+                <MudSelectItem Value="@("Shorts")" />
+                <MudSelectItem Value="@("Sleeping Bag")" />
+                <MudSelectItem Value="@("Snow Jacket")" />
+                <MudSelectItem Value="@("Stone Hatchet")" />
+                <MudSelectItem Value="@("Stone Pickaxe")" />
+                <MudSelectItem Value="@("Table")" />
+                <MudSelectItem Value="@("Tank Top")" />
+                <MudSelectItem Value="@("Thompson")" />
+                <MudSelectItem Value="@("T-Shirt")" />
+                <MudSelectItem Value="@("Underwear Item")" />
+                <MudSelectItem Value="@("Unique Item")" />
+                <MudSelectItem Value="@("Vending Machine")" />
+                <MudSelectItem Value="@("Water Purifier")" />
+                <MudSelectItem Value="@("Waterpipe Shotgun")" />
+                <MudSelectItem Value="@("Wood Double Door")" />
+                <MudSelectItem Value="@("Wood Storage Box")" />
+                <MudSelectItem Value="@("Wooden Door")" />
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" lg="4">
+            <MudPaper Outlined="true" Class="pa-2 px-4">
+                <MudSwitch T="bool" Checked="@FilterGlow" CheckedChanged="@(async (x) => { FilterGlow = x; OnSearch(Filter); })" Label="Glow" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@FilterGlowsight" CheckedChanged="@(async (x) => { FilterGlowsight = x; OnSearch(Filter); })" Label="Glowsight" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@FilterCutout" CheckedChanged="@(async (x) => { FilterCutout = x; OnSearch(Filter); })" Label="Cutout" Color="Color.Info" />
+            </MudPaper>
         </MudItem>
         @if (Items == null)
         {
@@ -40,6 +151,14 @@
 
     [Parameter]
     public string Filter { get; set; }
+    
+    public string FilterItemType { get; set; }
+
+    public bool FilterGlow { get; set; }
+
+    public bool FilterGlowsight { get; set; }
+
+    public bool FilterCutout { get; set; }
 
     private int Count { get; set; } = 300;
 
@@ -50,7 +169,7 @@
     
     private void OnSearch(string text)
     {
-        Filter = text;
+        Filter = (text ?? Filter);
         RefreshItems();
     }
 
@@ -61,7 +180,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count={Count}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count={Count}&itemType={FilterItemType}&glow={FilterGlow}&glowsight={FilterGlowsight}&cutout={FilterCutout}"
             );
         }
         catch (Exception ex)

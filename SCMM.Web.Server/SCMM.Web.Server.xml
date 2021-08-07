@@ -23,7 +23,7 @@
             <response code="404">If the image cannot be found or has expired.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.String,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.String,System.String,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
             <summary>
             List all known items
             </summary>

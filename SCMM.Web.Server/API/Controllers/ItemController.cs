@@ -10,6 +10,7 @@ using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
+using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
 using System;
@@ -59,10 +60,12 @@ namespace SCMM.Web.Server.API.Controllers
         [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedResult<ItemDescriptionWithPriceDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedResult<ItemDetailedDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItems([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending)
+        public async Task<IActionResult> GetItems([FromQuery] string filter = null, [FromQuery] string itemType = null, [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false,
+                                                  [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
             if (start < 0)
             {
@@ -91,6 +94,23 @@ namespace SCMM.Web.Server.API.Controllers
                 );
             }
 
+            if (!String.IsNullOrEmpty(itemType))
+            {
+                query = query.Where(x => x.ItemType == itemType);
+            }
+            if (glow)
+            {
+                query = query.Where(x => x.Tags.Serialised.Contains("glow=") && !x.Tags.Serialised.Contains("glow=false"));
+            }
+            if (glowsight)
+            {
+                query = query.Where(x => x.Tags.Serialised.Contains("glowsight=") && !x.Tags.Serialised.Contains("glowsight=false"));
+            }
+            if (cutout)
+            {
+                query = query.Where(x => x.Tags.Serialised.Contains("cutout=") && !x.Tags.Serialised.Contains("cutout=false"));
+            }
+
             query = query
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
@@ -101,11 +121,10 @@ namespace SCMM.Web.Server.API.Controllers
             // TODO: Sorting...
 
             // Paginate and return
-            var results = await query.PaginateAsync(start, count,
-                x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this)
+            return Ok(!detailed
+                ? await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this))
+                : await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(x, this))
             );
-
-            return Ok(results);
         }
 
         /// <summary>
