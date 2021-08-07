@@ -5,8 +5,10 @@ using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
+using SCMM.Steam.API.Messages;
 using SCMM.Steam.Data.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -201,6 +203,28 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 return CommandResult.Fail("Unable to find asset description with the specific class id");
             }
+        }
+
+        [Command("reanalyse-asset-description-workshop-files")]
+        public async Task<RuntimeResult> ReanalyseAssetDescriptionWorkshopFiles(params ulong[] classIds)
+        {
+            var workshopFileUrls = await _db.SteamAssetDescriptions
+                .Where(x => classIds.Length == 0 || classIds.Contains(x.ClassId))
+                .Where(x => x.WorkshopFileId != null && !String.IsNullOrEmpty(x.WorkshopFileUrl))
+                .Select(x => x.WorkshopFileUrl)
+                .ToListAsync();
+
+            var messages = new List<AnalyseSteamWorkshopFileMessage>();
+            foreach (var workshopFileUrl in workshopFileUrls)
+            {
+                messages.Add(new AnalyseSteamWorkshopFileMessage()
+                {
+                    BlobName = workshopFileUrl.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault()
+                });
+            }
+
+            await _serviceBusClient.SendMessagesAsync(messages);
+            return CommandResult.Success();
         }
 
     }
