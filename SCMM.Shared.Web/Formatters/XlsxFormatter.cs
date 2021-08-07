@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SCMM.Shared.Web.Formatters
@@ -117,7 +118,7 @@ namespace SCMM.Shared.Web.Formatters
                     var row = new Row();
                     foreach (var prop in props)
                     {
-                        var propValue = prop.GetValue(record, null)?.ToString();
+                        var propValue = GetValue(prop.GetValue(record, null));
                         row.AppendChild(
                             GetCell(propValue)
                         );
@@ -129,6 +130,25 @@ namespace SCMM.Shared.Web.Formatters
             }
 
             return ms;
+        }
+
+        private string GetValue(object obj)
+        {
+            if (obj is IDictionary dictionary)
+            {
+                return String.Join(", ",
+                    dictionary.Keys.OfType<object>().Select(x => $"{x.ToString()} = {dictionary[x]?.ToString()}")
+                );
+            }
+
+            if (obj is IEnumerable list)
+            {
+                return String.Join(", ",
+                    list.OfType<object>().Select(x => x?.ToString())
+                );
+            }
+
+            return obj?.ToString();
         }
 
         private Cell GetCell(string text)
