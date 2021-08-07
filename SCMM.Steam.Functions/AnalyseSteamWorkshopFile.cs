@@ -61,12 +61,13 @@ namespace SCMM.Steam.Functions
                             // Check if the item glows (i.e. has an emission map)
                             var emissionMaps = manifest.Groups.Where(x => !String.IsNullOrEmpty(x.Textures.EmissionMap))
                                 .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
-                                .Select(x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)));
+                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
+                                .Where(x => x.Value != null);
 
                             var emissionMapsGlow = new List<decimal>();
                             foreach (var emissionMap in emissionMaps)
                             {
-                                using var emissionMapStream = emissionMap.Open();
+                                using var emissionMapStream = emissionMap.Value.Open();
                                 using var emissionMapImage = Image.FromStream(emissionMapStream);
                                 emissionMapsGlow.Add(
                                     emissionMapImage.GetEmissionRatio()
@@ -84,16 +85,17 @@ namespace SCMM.Steam.Functions
 
                             // Check if the item has a cutout (i.e. main textures contain transparency)
                             var textures = manifest.Groups.Where(x => !String.IsNullOrEmpty(x.Textures.MainTex))
-                                .Select(x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)));
+                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)))
+                                .Where(x => x.Value != null);
 
                             var texturesCutout = new List<decimal>();
                             foreach (var texture in textures)
                             {
-                                using var textureStream = texture.Open();
+                                using var textureStream = texture.Value.Open();
                                 using var textureImage = Image.FromStream(textureStream);
                                 texturesCutout.Add(
-                                    textureImage.GetTransparencyRatio(
-                                        alphaCutoff: 128 // pixel must be at least 50% transparent to count
+                                    textureImage.GetAlphaCuttoffRatio(
+                                        alphaCutoff: texture.Key.Floats.Cutoff
                                     )
                                 );
                             }
@@ -115,8 +117,11 @@ namespace SCMM.Steam.Functions
             logger.LogInformation($"Analyse complete");
 
             // Update workshop file metadata
-            var newBlobMetadata = publishedFileTags.Union(blobMetadata).ToDictionary(x => x.Key, x => x.Value);
-            await blob.SetMetadataAsync(newBlobMetadata);
+            foreach (var tag in publishedFileTags)
+            {
+                blobMetadata[tag.Key] = tag.Value;
+            }
+            await blob.SetMetadataAsync(blobMetadata);
             logger.LogInformation($"Blob metadata updated");
 
             // Update asset descriptions tags

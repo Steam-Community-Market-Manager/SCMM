@@ -1,27 +1,29 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 
 namespace SCMM.Steam.API.Extensions
 {
     public static class BitmapExtensions
     {
-        public static decimal GetTransparencyRatio(this Image image, uint alphaCutoff = 255)
+        public static decimal GetAlphaCuttoffRatio(this Image image, decimal alphaCutoff = 1)
         {
             var bitmap = image as Bitmap;
             if (bitmap != null)
             {
-                return GetTransparencyRatio(bitmap, alphaCutoff);
+                return GetAlphaCuttoffRatio(bitmap, alphaCutoff);
             }
             using (bitmap = new Bitmap(image))
             {
-                return GetTransparencyRatio(bitmap, alphaCutoff);
+                return GetAlphaCuttoffRatio(bitmap, alphaCutoff);
             }
         }
 
-        public static decimal GetTransparencyRatio(this Bitmap bitmap, uint alphaCutoff = 255)
+        public static decimal GetAlphaCuttoffRatio(this Bitmap bitmap, decimal alphaCutoff = 1)
         {
             var bitmapBounds = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
             var bitmapData = bitmap.LockBits(bitmapBounds, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            var alphaCutoffValue = (uint)Math.Round(alphaCutoff * 255, 0);
             var totalPixelCount = (bitmap.Width * bitmap.Height);
             var transparentPixelCount = 0L;
             unsafe
@@ -31,7 +33,7 @@ namespace SCMM.Steam.API.Extensions
                 {
                     for (var y = 0; y < bitmap.Height; y++)
                     {
-                        if (p[x + y * bitmapData.Stride + 3] < alphaCutoff)
+                        if (p[(x * 4) + (y * bitmapData.Stride) + 3] < alphaCutoffValue) // A
                         {
                             transparentPixelCount++;
                         }
@@ -71,7 +73,9 @@ namespace SCMM.Steam.API.Extensions
                 {
                     for (var y = 0; y < bitmap.Height; y++)
                     {
-                        if (p[x + y * bitmapData.Stride + 0] != 0 || p[x + y * bitmapData.Stride + 1] != 0 || p[x + y * bitmapData.Stride + 2] != 0)
+                        if (p[(x * 4) + (y * bitmapData.Stride) + 0] != 0 || // B
+                            p[(x * 4) + (y * bitmapData.Stride) + 1] != 0 || // G
+                            p[(x * 4) + (y * bitmapData.Stride) + 2] != 0) // R
                         {
                             nonBlackPixelCount++;
                         }

@@ -5,7 +5,7 @@ namespace SCMM.Steam.Data.Models.Workshop.Models
     public class SteamWorkshopFileManifestGroupFloats
     {
         [JsonProperty("_Cutoff")]
-        public decimal _Cutoff { get; set; }
+        public decimal Cutoff { get; set; }
 
         [JsonProperty("_BumpScale")]
         public decimal BumpScale { get; set; }
