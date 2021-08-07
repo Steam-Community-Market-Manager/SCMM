@@ -322,14 +322,14 @@ else if (StoreList.Any())
                                                         }
                                                     </TooltipContent>
                                                 </MudTooltip>
-                                                @if (item.Tags.GetFlag(Constants.RustAssetTagGlow))
+                                                @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow) > 0)
                                                 {
                                                     <MudTooltip>
                                                         <ChildContent>
                                                             <MudChip Size="MudBlazor.Size.Small" Text="@($"{@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow)}% Glow")" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                         </ChildContent>
                                                         <TooltipContent>
-                                                            @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow) > 0)
+                                                            @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow) < 100)
                                                             {
                                                                 <span>@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow)% of this item glows in the dark, making it much easier to see at night</span>
                                                             }
@@ -346,14 +346,14 @@ else if (StoreList.Any())
                                                         <MudChip Size="MudBlazor.Size.Small" Text="Glow Sight" Icon="fas fa-fw fa-crosshairs mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
-                                                @if (item.Tags.GetFlag(Constants.RustAssetTagCutout))
+                                                @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout) > 0)
                                                 {
                                                     <MudTooltip>
                                                         <ChildContent>
                                                             <MudChip Size="MudBlazor.Size.Small" Text="@($"{@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout)}% Cutout")" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                         </ChildContent>
                                                         <TooltipContent>
-                                                            @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout) > 0)
+                                                            @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout) < 100)
                                                             {
                                                                 <span>@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout)% of this items material has been removed. The shape may appeared altered when compared against the default item</span>
                                                             }
