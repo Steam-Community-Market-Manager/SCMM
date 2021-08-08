@@ -49,10 +49,15 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item GUID, ID64, name, description, author, type, collection, and tags</param>
+        /// <param name="itemType">If specified, only items matching the supplied item type are returned</param>
+        /// <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
+        /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
+        /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <param name="sortBy">Sort item property name from <see cref="ItemDetailedDTO"/></param>
         /// <param name="sortDirection">Sort item direction</param>
+        /// <param name="detailed">If <code>true</code>, the response will be a paginated list of <see cref="ItemDetailedDTO"/>. If <code>false</code>, the response will be a paginated list of <see cref="ItemDescriptionWithPriceDTO"/></param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="404">If no items match the request parameters.</response>
