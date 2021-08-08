@@ -177,20 +177,21 @@ namespace SCMM.Steam.Data.Store
                 else */
                 if (StoreItem.Price != null && StoreItem.Currency != null)
                 {
+                    var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
                     yield return new Price
                     {
                         Type = PriceType.SteamStore,
                         Currency = StoreItem.Currency,
                         BuyPrice = StoreItem.Price.Value,
-                        BuyUrl = new SteamStorePageRequest()
-                        {
-                            AppId = (StoreItem.App?.SteamId ?? App?.SteamId)
-                        }
+                        BuyUrl = !String.IsNullOrEmpty(StoreItem.SteamId) 
+                            ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
+                            : new SteamStorePageRequest() { AppId = appId }
                     };
                 }
             }
             if (MarketItem != null)
             {
+                var appId = (MarketItem.App?.SteamId ?? App?.SteamId);
                 yield return new Price
                 {
                     Type = PriceType.SteamCommunityMarket,
@@ -198,7 +199,7 @@ namespace SCMM.Steam.Data.Store
                     BuyPrice = MarketItem.BuyNowPrice,
                     BuyUrl = new SteamMarketListingPageRequest()
                     {
-                        AppId = (MarketItem.App?.SteamId ?? App?.SteamId),
+                        AppId = appId,
                         MarketHashName = NameHash
                     }
                 };
