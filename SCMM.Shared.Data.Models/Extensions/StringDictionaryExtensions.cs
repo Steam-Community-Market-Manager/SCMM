@@ -25,10 +25,11 @@ namespace SCMM.Shared.Data.Models.Extensions
                     return integerValue > 0;
                 }
             }
+
             return value;
         }
 
-        public static int GetFlagAsPercentage<T>(this T dictionary, string key) where T : IDictionary<string, string>
+        public static int? GetFlagAsPercentage<T>(this T dictionary, string key) where T : IDictionary<string, string>
         {
             var value = false;
             var decimalValue = 0m;
@@ -48,7 +49,22 @@ namespace SCMM.Shared.Data.Models.Extensions
                     return integerValue;
                 }
             }
-            return 0;
+
+            return null;
+        }
+
+        public static decimal? GetFlagAsDecimal<T>(this T dictionary, string key) where T : IDictionary<string, string>
+        {
+            var decimalValue = 0m;
+            if (dictionary.ContainsKey(key))
+            {
+                if (decimal.TryParse(dictionary[key], out decimalValue))
+                {
+                    return decimalValue;
+                }
+            }
+
+            return null;
         }
 
         public static T SetFlag<T>(this T dictionary, string key, bool value) where T : IDictionary<string, string>
@@ -59,7 +75,7 @@ namespace SCMM.Shared.Data.Models.Extensions
 
         public static T SetFlag<T>(this T dictionary, string key, decimal value) where T : IDictionary<string, string>
         {
-            dictionary[key] = Math.Round(value, 4).ToString();
+            dictionary[key] = value.ToString();
             return dictionary;
         }
     }

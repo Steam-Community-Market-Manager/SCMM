@@ -1,4 +1,6 @@
-﻿using SCMM.Steam.Data.Models.Enums;
+﻿using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Web.Data.Models.UI.Profile;
 using System;
 using System.Collections.Generic;
@@ -36,6 +38,16 @@ namespace SCMM.Web.Data.Models.UI.Item
         public string DescriptionWorkshop { get; set; }
 
         public IDictionary<string, string> Tags { get; set; }
+
+        public bool HasGlow => Tags.GetFlag(Constants.RustAssetTagGlow);
+
+        public bool HasGlowSights => Tags.GetFlag(Constants.RustAssetTagGlowSights);
+
+        public decimal? GlowRatio => Tags.GetFlagAsDecimal(Constants.RustAssetTagGlow);
+
+        public bool HasCutout => Tags.GetFlag(Constants.RustAssetTagCutout);
+
+        public decimal? CutoutRatio => Tags.GetFlagAsDecimal(Constants.RustAssetTagCutout);
 
         public string BackgroundColour { get; set; }
 
@@ -105,6 +117,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         #region Market Item
 
+        public bool IsAvailableOnMarket { get; set; }
+
         public string MarketId { get; set; }
 
         public int? MarketBuyOrderCount { get; set; }
@@ -125,17 +139,15 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? Market24hrValue { get; set; }
 
-        public bool IsAvailableOnMarket { get; set; }
-
         #endregion
 
         #region Store Item 
 
+        public bool IsAvailableOnStore { get; set; }
+
         public long? StoreId { get; set; }
 
         public long? StorePrice { get; set; }
-
-        public bool IsAvailableOnStore { get; set; }
 
         #endregion
     }
