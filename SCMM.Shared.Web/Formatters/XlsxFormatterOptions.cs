@@ -6,6 +6,6 @@ namespace SCMM.Shared.Web.Formatters
     {
         public Encoding Encoding { get; set; } = Encoding.Default;
 
-        public bool UseJsonAttributes { get; set; } = false;
+        public string ListDelimiter { get; set; } = ",";
     }
 }

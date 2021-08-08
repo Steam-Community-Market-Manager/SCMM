@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SCMM.Shared.Web.Formatters
@@ -75,92 +74,179 @@ namespace SCMM.Shared.Web.Formatters
 
         private MemoryStream CreateSpreadsheetFile(IEnumerable<object> data)
         {
-            var ms = new MemoryStream();
-            var first = data.FirstOrDefault();
-            if (first == null)
+            var memoryStream = new MemoryStream();
+            using (var spreadsheetDocument = SpreadsheetDocument.Create(memoryStream, SpreadsheetDocumentType.Workbook))
             {
-                return null;
-            }
-
-            using (var spreedDoc = SpreadsheetDocument.Create(ms, SpreadsheetDocumentType.Workbook))
-            {
-                //openxml stuff
-                var wbPart = spreedDoc.AddWorkbookPart();
-                wbPart.Workbook = new Workbook();
-                var worksheetPart = wbPart.AddNewPart<WorksheetPart>();
                 var sheetData = new SheetData();
-                worksheetPart.Worksheet = new Worksheet(sheetData);
-                wbPart.Workbook.AppendChild(new Sheets());
-                var sheet = new Sheet()
+                var dataType = data.FirstOrDefault()?.GetType();
+                if (dataType == null)
                 {
-                    Id = wbPart.GetIdOfPart(worksheetPart),
-                    SheetId = 1,
-                    Name = "Sheet1"
-                };
-                var workingSheet = ((WorksheetPart)wbPart.GetPartById(sheet.Id)).Worksheet;
-
-                //get model properties
-                var props = new List<PropertyInfo>(first.GetType().GetProperties());
-
-                //header
-                var headerRow = new Row();
-                foreach (var prop in props)
-                {
-                    headerRow.AppendChild(
-                        GetCell(prop.Name)
-                    );
-                }
-                sheetData.AppendChild(headerRow);
-
-                //body
-                foreach (var record in data)
-                {
-                    var row = new Row();
-                    foreach (var prop in props)
+                    if (data.GetType().GetGenericArguments().Length > 0)
                     {
-                        var propValue = GetValue(prop.GetValue(record, null));
-                        row.AppendChild(
-                            GetCell(propValue)
+                        dataType = data.GetType().GetGenericArguments()[0];
+                    }
+                    else
+                    {
+                        dataType = data.GetType().GetElementType();
+                    }
+                }
+
+                // Prepare the data
+                var dataProperties = dataType?.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
+                if (dataProperties.Any())
+                {
+                    // Write header row
+                    var headerRow = new Row();
+                    foreach (var property in dataProperties)
+                    {
+                        headerRow.AppendChild(
+                            CreateCellFrom(property.Name)
                         );
                     }
-                    sheetData.AppendChild(row);
+                    sheetData.AppendChild(headerRow);
+
+                    // Write data rows
+                    foreach (var record in data)
+                    {
+                        var dataRow = new Row();
+                        foreach (var property in dataProperties)
+                        {
+                            dataRow.AppendChild(
+                                CreateCellFrom(property.GetValue(record))
+                            );
+                        }
+                        sheetData.AppendChild(dataRow);
+                    }
                 }
-                wbPart.Workbook.Sheets.AppendChild(sheet);
-                wbPart.Workbook.Save();
+
+                // Prepare the document
+                var workbookPart = spreadsheetDocument.AddWorkbookPart();
+                var worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                var worksheet = worksheetPart.Worksheet = new Worksheet(sheetData);
+                var workbook = workbookPart.Workbook = new Workbook(
+                    new Sheets(
+                        new Sheet()
+                        {
+                            Id = workbookPart.GetIdOfPart(worksheetPart),
+                            SheetId = 1,
+                            Name = "Data"
+                        }
+                    )
+                );
+
+                workbook.Save();
             }
 
-            return ms;
+            return memoryStream;
         }
 
-        private string GetValue(object obj)
+        private Cell CreateCellFrom(object value)
         {
-            if (obj is IDictionary dictionary)
+            var dataType = CellValues.InlineString;
+            var dataValue = (OpenXmlElement) null;
+            switch (value)
             {
-                return String.Join(", ",
-                    dictionary.Keys.OfType<object>().Select(x => $"{x.ToString()} = {dictionary[x]?.ToString()}")
-                );
+                case string stringValue:
+                    dataType = CellValues.InlineString;
+                    dataValue = new InlineString(
+                        new Text(stringValue)
+                    );
+                    break;
+
+                /*
+                case bool boolValue:
+                    dataType = CellValues.Boolean;
+                    dataValue = new BooleanItem(
+                        new BooleanValue(boolValue)
+                    );
+                    break;
+
+                case int int32Value:
+                    dataType = CellValues.Number;
+                    dataValue = new NumberItem(
+                        new Int32Value(int32Value)
+                    );
+                    break;
+
+                case uint uint32Value:
+                    dataType = CellValues.Number;
+                    dataValue = new NumberItem(
+                        new UInt32Value(uint32Value)
+                    );
+                    break;
+
+                case long int64Value:
+                    dataType = CellValues.Number;
+                    dataValue = new NumberItem(
+                        new Int64Value(int64Value)
+                    );
+                    break;
+
+                case float floatValue:
+                case double decimalValue:
+                    dataType = CellValues.Number;
+                    dataValue = new NumberItem(
+                        new DoubleValue((double)value)
+                    );
+                    break;
+
+                case decimal decimalValue:
+                    dataType = CellValues.Number;
+                    dataValue = new NumberItem(
+                        new DecimalValue(decimalValue)
+                    );
+                    break; 
+
+                case DateTime dateTimeValue:
+                    dataType = CellValues.Date;
+                    dataValue = new DateTimeItem(
+                        new DateTimeValue(dateTimeValue)
+                    );
+                    break;
+
+                case DateTimeOffset dateTimeOffsetValue:
+                    dataType = CellValues.Date;
+                    dataValue = new DateTimeItem(
+                        new DateTimeValue(dateTimeOffsetValue.UtcDateTime)
+                    );
+                    break;
+                */
+
+                case IDictionary dictionaryValue:
+                    dataType = CellValues.InlineString;
+                    dataValue = new InlineString(
+                        new Text(
+                            String.Join($"{_options.ListDelimiter} ",
+                                dictionaryValue.Keys.OfType<object>().Select(x => $"{x} = {dictionaryValue[x]?.ToString()}")
+                            )
+                        )
+                    );
+                    break;
+
+                case IEnumerable enumerableValue:
+                    dataType = CellValues.InlineString;
+                    dataValue = new InlineString(
+                        new Text(
+                            String.Join($"{_options.ListDelimiter} ",
+                                enumerableValue.OfType<object>().Select(x => x?.ToString())
+                            )
+                        )
+                    );
+                    break;
+
+                // Everything else (including null values)
+                default:
+                    dataType = CellValues.InlineString;
+                    dataValue = new InlineString(
+                        new Text(value?.ToString() ?? String.Empty)
+                    );
+                    break;
             }
 
-            if (obj is IEnumerable list)
+            return new Cell(dataValue)
             {
-                return String.Join(", ",
-                    list.OfType<object>().Select(x => x?.ToString())
-                );
-            }
-
-            return obj?.ToString();
-        }
-
-        private Cell GetCell(string text)
-        {
-            var cell = new Cell()
-            {
-                DataType = CellValues.InlineString
+                DataType = dataType
             };
-            var inlineString = new InlineString();
-            inlineString.AppendChild(new Text(text));
-            cell.AppendChild(inlineString);
-            return cell;
         }
     }
 }

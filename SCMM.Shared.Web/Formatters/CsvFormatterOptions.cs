@@ -6,14 +6,15 @@ namespace SCMM.Shared.Web.Formatters
     {
         public Encoding Encoding { get; set; } = Encoding.Default;
 
-        public bool UseJsonAttributes { get; set; } = false;
+        public string Delimiter { get; set; } = ",";
 
-        public bool UseSingleLineHeader { get; set; } = true;
+        public string ListDelimiter { get; set; } = ";";
 
-        public bool IncludeExcelDelimiterHeader { get; set; } = false;
+        public bool IncludeExcelDelimiterHeader { get; set; } = true;
+
+        public bool IncludeColumnNameHeader { get; set; } = true;
 
         public bool ReplaceLineBreakCharacters { get; set; } = true;
 
-        public string Delimiter { get; set; } = ",";
     }
 }
