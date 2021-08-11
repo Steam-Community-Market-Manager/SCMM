@@ -257,7 +257,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuidId = ulong.Parse(guild.DiscordId),
-                    ChannelPattern = guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel, $"announcement|store|skin|{app.Name}").Value,
+                    ChannelPattern = String.Join("|", guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel).Value, "announcement", "store", "skin", app.Name, "general", "chat", "bot"),
                     Message = null,
                     Title = $"{app.Name} Store - {store.Start.ToString("yyyy MMMM d")}{store.Start.GetDaySuffix()}",
                     Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",

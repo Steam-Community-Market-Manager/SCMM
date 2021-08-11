@@ -56,10 +56,21 @@ namespace SCMM.Shared.Data.Store
         {
             name = AssertValidConfigurationName(name);
             var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
-            return new KeyValuePair<T, string>(
-                config,
-                config?.Value ?? config?.List?.FirstOrDefault() ?? defaultValue
-            );
+            var result = String.Empty;
+            if (!String.IsNullOrEmpty(config?.Value))
+            {
+                result = config?.Value;
+            }
+            else if (config?.List?.Any() == true)
+            {
+                result = String.Join(", ", config?.List);
+            }
+            else
+            {
+                result = defaultValue;
+            }
+
+            return new KeyValuePair<T, string>(config, result);
         }
 
         public bool IsSet(string name)
