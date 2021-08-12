@@ -113,7 +113,7 @@ namespace SCMM.Steam.API
                 AssetClassId = asset.ClassId
             });
             var assetDescription = importAssetDescription.AssetDescription;
-            if (assetDescription == null)
+            if (assetDescription == null || assetDescription.NameId == null)
             {
                 return null;
             }
