@@ -33,6 +33,15 @@ namespace SCMM.Steam.Functions
             var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), "workshop-files");
             await blobContainer.CreateIfNotExistsAsync();
 
+            // If this workshop file is known to be missing, skip over it
+            var blobMissingName = $"{message.PublishedFileId}.missing";
+            var blobMissing = blobContainer.GetBlobClient(blobMissingName);
+            if (blobMissing.Exists()?.Value == true)
+            {
+                return null;
+            }
+
+            // Download the workshop file
             var blobName = $"{message.PublishedFileId}.zip";
             var blob = blobContainer.GetBlobClient(blobName);
             if (blob.Exists()?.Value != true)
@@ -48,9 +57,20 @@ namespace SCMM.Steam.Functions
                 );
                 if (publishedFileData?.Data == null)
                 {
-                    throw new Exception("Failed to download file, no data");
+                    // This file likely has been removed from steam, tag it as missing so we don't try again in the future
+                    await blobMissing.UploadAsync(
+                        new BinaryData(new byte[0])
+                    );
+                    await blobMissing.SetMetadataAsync(new Dictionary<string, string>()
+                    {
+                        { "PublishedFileId", message.PublishedFileId.ToString() }
+                    });
+                    throw new Exception("Failed to download file, no data, will ignore next time");
                 }
-                logger.LogInformation($"Download complete, '{publishedFileData.Name}'");
+                else
+                {
+                    logger.LogInformation($"Download complete, '{publishedFileData.Name}'");
+                }
 
                 // Upload the workshop file to blob storage
                 logger.LogInformation($"Uploading workshop file {message.PublishedFileId} to blob storage");
