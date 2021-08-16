@@ -14,7 +14,7 @@
             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Type here to find an item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
         </MudItem>
         <MudItem xs="12" lg="4">
-            <MudSelect T="string" Value="@FilterItemType" ValueChanged="@(async (x) => { FilterItemType = x; OnSearch(Filter); })" Label="Item Type" Clearable="true" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" >
+            <MudSelect T="string" Value="@ItemType" ValueChanged="@(async (x) => { ItemType = x; OnSearch(Filter); })" Label="Item Type" Clearable="true" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" >
                 <MudSelectItem Value="@("Acoustic Guitar")" />
                 <MudSelectItem Value="@("Armored Door")" />
                 <MudSelectItem Value="@("Armored Double Door")" />
@@ -119,9 +119,9 @@
         </MudItem>
         <MudItem xs="12" lg="4">
             <MudPaper Outlined="true" Class="pa-2 px-4">
-                <MudSwitch T="bool" Checked="@FilterGlow" CheckedChanged="@(async (x) => { FilterGlow = x; OnSearch(Filter); })" Label="Glow" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@FilterGlowsight" CheckedChanged="@(async (x) => { FilterGlowsight = x; OnSearch(Filter); })" Label="Glowsight" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@FilterCutout" CheckedChanged="@(async (x) => { FilterCutout = x; OnSearch(Filter); })" Label="Cutout" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@(async (x) => { Glow = x; OnSearch(Filter); })" Label="Glow" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@(async (x) => { Glowsight = x; OnSearch(Filter); })" Label="Glowsight" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@(async (x) => { Cutout = x; OnSearch(Filter); })" Label="Cutout" Color="Color.Info" />
             </MudPaper>
         </MudItem>
         @if (Items == null)
@@ -150,20 +150,36 @@
     private PaginatedResult<ItemDescriptionWithPriceDTO> Items { get; set; }
 
     [Parameter]
+    [SupplyParameterFromQuery]
     public string Filter { get; set; }
     
-    public string FilterItemType { get; set; }
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string ItemType { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Glow { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Glowsight { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Cutout { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Start { get; set; }
 
-    public bool FilterGlow { get; set; }
-
-    public bool FilterGlowsight { get; set; }
-
-    public bool FilterCutout { get; set; }
-
-    private int Count { get; set; } = 300;
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Count { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        Count = (Count > 0) ? Count : 300;
         await RefreshItems();
     }
     
@@ -180,7 +196,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start=0&count={Count}&itemType={FilterItemType}&glow={FilterGlow}&glowsight={FilterGlowsight}&cutout={FilterCutout}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start}&count={Count}&itemType={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}"
             );
         }
         catch (Exception ex)

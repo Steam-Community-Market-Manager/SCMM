@@ -74,8 +74,10 @@
 @code {
 
     private Virtualize<ItemActivityStatisticDTO> MarketActivityTable { get; set; }
-
-    private string Filter { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; }
 
     private void ViewItem(ItemDescriptionDTO item)
     {
