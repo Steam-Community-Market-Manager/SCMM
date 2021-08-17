@@ -767,7 +767,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List profiles who have the controbitor role
+        /// List profiles who have the contributor role
         /// </summary>
         /// <returns>The list of users who have contributed</returns>
         /// <response code="200">The list of users who have contributed.</response>
