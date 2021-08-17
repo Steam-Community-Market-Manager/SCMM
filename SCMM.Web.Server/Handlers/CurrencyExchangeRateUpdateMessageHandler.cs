@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using SCMM.Azure.ServiceBus;
+﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
 using SCMM.Steam.API.Messages;
-using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.Handlers
 {

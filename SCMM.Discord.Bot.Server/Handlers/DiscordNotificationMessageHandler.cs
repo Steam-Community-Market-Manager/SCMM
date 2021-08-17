@@ -3,7 +3,6 @@ using SCMM.Azure.ServiceBus.Attributes;
 using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
 using System.Drawing;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Handlers
 {

@@ -1,6 +1,4 @@
 ﻿using SCMM.Web.Data.Models.UI.Item;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SCMM.Web.Data.Models.UI.Statistic
 {

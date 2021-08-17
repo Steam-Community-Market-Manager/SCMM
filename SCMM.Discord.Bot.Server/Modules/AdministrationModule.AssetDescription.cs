@@ -7,10 +7,6 @@ using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Data.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -147,8 +143,10 @@ namespace SCMM.Discord.Bot.Server.Modules
             var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
-                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                assetDescription.Tags[tagKey] = tagValue;
+                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags)
+                {
+                    [tagKey] = tagValue
+                };
             }
 
             await _db.SaveChangesAsync();
@@ -175,8 +173,10 @@ namespace SCMM.Discord.Bot.Server.Modules
             var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
             if (assetDescription != null)
             {
-                assetDescription.Notes = new PersistableStringCollection(assetDescription.Notes);
-                assetDescription.Notes.Add(note);
+                assetDescription.Notes = new PersistableStringCollection(assetDescription.Notes)
+                {
+                    note
+                };
 
                 await _db.SaveChangesAsync();
                 return CommandResult.Success();
@@ -210,7 +210,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             var workshopFileUrls = await _db.SteamAssetDescriptions
                 .Where(x => classIds.Length == 0 || classIds.Contains(x.ClassId))
-                .Where(x => x.WorkshopFileId != null && !String.IsNullOrEmpty(x.WorkshopFileUrl))
+                .Where(x => x.WorkshopFileId != null && !string.IsNullOrEmpty(x.WorkshopFileUrl))
                 .Select(x => x.WorkshopFileUrl)
                 .ToListAsync();
 

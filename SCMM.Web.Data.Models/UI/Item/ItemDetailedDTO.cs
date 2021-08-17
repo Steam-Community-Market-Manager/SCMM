@@ -2,8 +2,6 @@
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Web.Data.Models.UI.Profile;
-using System;
-using System.Collections.Generic;
 
 namespace SCMM.Web.Data.Models.UI.Item
 {

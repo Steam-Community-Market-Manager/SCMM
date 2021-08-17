@@ -9,12 +9,8 @@ using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using Steam.Models.SteamEconomy;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API
 {
@@ -204,7 +200,7 @@ namespace SCMM.Steam.API
             }
 
             var totalQuantity = 0;
-            for (int i = 0; i < orderGraph.Length; i++)
+            for (var i = 0; i < orderGraph.Length; i++)
             {
                 var price = orderGraph[i][0].SteamPriceAsInt();
                 var quantity = (orderGraph[i][1].SteamQuantityValueAsInt() - totalQuantity);
@@ -228,7 +224,7 @@ namespace SCMM.Steam.API
             }
 
             var totalQuantity = 0;
-            for (int i = 0; i < salesGraph.Length; i++)
+            for (var i = 0; i < salesGraph.Length; i++)
             {
                 var timeStamp = DateTime.ParseExact(salesGraph[i][0], "MMM dd yyyy HH: z", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
                 var price = salesGraph[i][1].SteamPriceAsInt();

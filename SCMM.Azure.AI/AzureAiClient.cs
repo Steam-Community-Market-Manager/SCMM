@@ -1,7 +1,5 @@
 ﻿using Azure;
 using Azure.AI.TextAnalytics;
-using System;
-using System.Threading.Tasks;
 
 namespace SCMM.Azure.AI
 {

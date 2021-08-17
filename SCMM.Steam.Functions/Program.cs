@@ -8,7 +8,6 @@ using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
-using System;
 using System.Reflection;
 
 namespace SCMM.Steam.Functions

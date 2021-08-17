@@ -3,7 +3,6 @@ using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace SCMM.Steam.Client

@@ -10,13 +10,9 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using System;
 using System.Globalization;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -108,8 +104,10 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             if (itemStore != null)
             {
-                itemStore.Notes = new PersistableStringCollection(itemStore.Notes);
-                itemStore.Notes.Add(note);
+                itemStore.Notes = new PersistableStringCollection(itemStore.Notes)
+                {
+                    note
+                };
 
                 await _db.SaveChangesAsync();
                 return CommandResult.Success();
@@ -318,7 +316,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 var nextVideo = rustStoreVideos.Skip(rustStoreVideos.IndexOf(video) + 1).FirstOrDefault();
                 var storeDateText = Regex.Match(video.Title, @"\d{1,2}/\d{1,2}/\d{1,2}").Groups.OfType<Group>().Skip(1).FirstOrDefault()?.Value;
-                var storeDateStart = !String.IsNullOrEmpty(storeDateText)
+                var storeDateStart = !string.IsNullOrEmpty(storeDateText)
                     ? new DateTimeOffset(DateTime.ParseExact(storeDateText, "MM/dd/yy", CultureInfo.InvariantCulture) + new TimeSpan(17, 0, 0), TimeZoneInfo.Utc.BaseUtcOffset)
                     : video.PublishedAt.Value;
                 var storeDateEnd = (nextVideo != null ? nextVideo.PublishedAt.Value : storeDateStart.AddDays(7));
@@ -393,7 +391,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             webArchiveSnapshotResponse?.EnsureSuccessStatusCode();
 
             var webArchiveSnapshotResponseText = await webArchiveSnapshotResponse?.Content?.ReadAsStringAsync();
-            if (String.IsNullOrEmpty(webArchiveSnapshotResponseText))
+            if (string.IsNullOrEmpty(webArchiveSnapshotResponseText))
             {
                 return CommandResult.Fail("No web archive snapshots found");
             }

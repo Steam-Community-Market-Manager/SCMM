@@ -1,7 +1,6 @@
 ﻿using CommandQuery;
 using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Messages;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.API.Commands
 {

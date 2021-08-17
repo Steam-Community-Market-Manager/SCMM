@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
 namespace SCMM.Shared.Data.Models.Extensions
 {

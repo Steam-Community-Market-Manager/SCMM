@@ -1,7 +1,4 @@
 ﻿using Azure.Messaging.ServiceBus;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Azure.ServiceBus
 {
@@ -20,7 +17,7 @@ namespace SCMM.Azure.ServiceBus
 
         public async Task ReplyAsync<T>(T message, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IMessage
         {
-            if (String.IsNullOrEmpty(ReplyTo))
+            if (string.IsNullOrEmpty(ReplyTo))
             {
                 throw new ArgumentNullException(nameof(ReplyTo));
             }

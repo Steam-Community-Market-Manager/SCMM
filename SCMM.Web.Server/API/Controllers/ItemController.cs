@@ -1,22 +1,15 @@
 ﻿using AutoMapper;
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
-using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -83,7 +76,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var query = _db.SteamAssetDescriptions.AsNoTracking();
 
-            filter = Uri.UnescapeDataString(filter?.Trim() ?? String.Empty);
+            filter = Uri.UnescapeDataString(filter?.Trim() ?? string.Empty);
             var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             foreach (var filterWord in filterWords)
             {
@@ -99,7 +92,7 @@ namespace SCMM.Web.Server.API.Controllers
                 );
             }
 
-            if (!String.IsNullOrEmpty(itemType))
+            if (!string.IsNullOrEmpty(itemType))
             {
                 query = query.Where(x => x.ItemType == itemType);
             }
@@ -151,7 +144,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItem([FromRoute] string id)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("Item id is invalid");
             }
@@ -159,7 +152,7 @@ namespace SCMM.Web.Server.API.Controllers
             var guid = Guid.Empty;
             var id64 = (ulong)0;
             Guid.TryParse(id, out guid);
-            UInt64.TryParse(id, out id64);
+            ulong.TryParse(id, out id64);
 
             var item = await _db.SteamAssetDescriptions
                 .AsNoTracking()
@@ -205,7 +198,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsByType([FromRoute] string name, [FromQuery] bool marketableItemsOnly = false, [FromQuery] ulong? compareWithItemId = null)
         {
-            if (String.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name))
             {
                 return BadRequest("Item type name is missing");
             }
@@ -251,7 +244,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsByCollection([FromRoute] string name, [FromQuery] bool marketableItemsOnly = false)
         {
-            if (String.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name))
             {
                 return BadRequest("Collection name is missing");
             }

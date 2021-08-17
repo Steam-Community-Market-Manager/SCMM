@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace SCMM.Web.Data.Models.UI.Store
+﻿namespace SCMM.Web.Data.Models.UI.Store
 {
     public class StoreDetailsDTO
     {

@@ -1,15 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using SCMM.Steam.API;
+﻿using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
@@ -34,7 +27,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
             var items = db.SteamMarketItems
-                .Where(x => !String.IsNullOrEmpty(x.SteamId))
+                .Where(x => !string.IsNullOrEmpty(x.SteamId))
                 .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
                 .OrderBy(x => x.LastCheckedOrdersOn)
                 .Take(100) // batch 100 at a time

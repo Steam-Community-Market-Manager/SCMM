@@ -2,7 +2,6 @@
 using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.Data.Models;
@@ -10,9 +9,6 @@ using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -74,7 +70,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     var roles = Context.Guild.GetUser(user.Id).Roles;
                     if (roles.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)))
                     {
-                        if (String.Equals(profile.DiscordId, discordId, StringComparison.InvariantCultureIgnoreCase))
+                        if (string.Equals(profile.DiscordId, discordId, StringComparison.InvariantCultureIgnoreCase))
                         {
                             if (!profile.Roles.Any(x => x == Roles.VIP))
                             {

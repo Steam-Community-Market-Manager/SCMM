@@ -1,15 +1,10 @@
 ﻿using AutoMapper;
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Language;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {

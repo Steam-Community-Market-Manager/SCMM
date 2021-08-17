@@ -1,9 +1,6 @@
 ﻿using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -19,7 +16,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             if (profile != null)
             {
-                return CommandResult.Success(String.Join(", ", profile.Roles));
+                return CommandResult.Success(string.Join(", ", profile.Roles));
             }
             else
             {
@@ -45,7 +42,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
 
                 await _db.SaveChangesAsync();
-                return CommandResult.Success(String.Join(", ", profile.Roles));
+                return CommandResult.Success(string.Join(", ", profile.Roles));
             }
             else
             {
@@ -71,7 +68,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
 
                 await _db.SaveChangesAsync();
-                return CommandResult.Success(String.Join(", ", profile.Roles));
+                return CommandResult.Success(string.Join(", ", profile.Roles));
             }
             else
             {

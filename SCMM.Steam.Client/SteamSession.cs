@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using SteamAuth;
-using System;
 using System.Net;
 
 namespace SCMM.Steam.Client
@@ -69,6 +68,6 @@ namespace SCMM.Steam.Client
             }
         }
 
-        public bool IsLoggedIn => !String.IsNullOrEmpty(_session?.SteamLoginSecure);
+        public bool IsLoggedIn => !string.IsNullOrEmpty(_session?.SteamLoginSecure);
     }
 }

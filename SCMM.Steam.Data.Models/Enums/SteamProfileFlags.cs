@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Steam.Data.Models.Enums
+﻿namespace SCMM.Steam.Data.Models.Enums
 {
     [Flags]
     public enum SteamProfileFlags : byte

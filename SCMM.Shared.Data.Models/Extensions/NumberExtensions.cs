@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Shared.Data.Models.Extensions
+﻿namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class NumberExtensions
     {

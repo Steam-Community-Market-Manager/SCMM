@@ -1,7 +1,4 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SCMM.Shared.Data.Models.Extensions
 {
@@ -21,9 +18,9 @@ namespace SCMM.Shared.Data.Models.Extensions
         public static int LevenshteinDistanceFrom(this string a, string b)
         {
             // https://www.dotnetperls.com/levenshtein
-            int n = a.Length;
-            int m = b.Length;
-            int[,] d = new int[n + 1, m + 1];
+            var n = a.Length;
+            var m = b.Length;
+            var d = new int[n + 1, m + 1];
 
             // Step 1
             if (n == 0)
@@ -37,21 +34,21 @@ namespace SCMM.Shared.Data.Models.Extensions
             }
 
             // Step 2
-            for (int i = 0; i <= n; d[i, 0] = i++)
+            for (var i = 0; i <= n; d[i, 0] = i++)
             {
             }
-            for (int j = 0; j <= m; d[0, j] = j++)
+            for (var j = 0; j <= m; d[0, j] = j++)
             {
             }
 
             // Step 3
-            for (int i = 1; i <= n; i++)
+            for (var i = 1; i <= n; i++)
             {
                 //Step 4
-                for (int j = 1; j <= m; j++)
+                for (var j = 1; j <= m; j++)
                 {
                     // Step 5
-                    int cost = b[j - 1] == a[i - 1] ? 0 : 1;
+                    var cost = b[j - 1] == a[i - 1] ? 0 : 1;
 
                     // Step 6
                     d[i, j] = Math.Min(

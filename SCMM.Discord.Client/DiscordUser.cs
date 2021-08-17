@@ -4,7 +4,7 @@ namespace SCMM.Discord.Client
 {
     public class DiscordUser
     {
-        private SocketUser _user;
+        private readonly SocketUser _user;
 
         public DiscordUser(SocketUser user)
         {

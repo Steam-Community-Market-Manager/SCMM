@@ -1,6 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
-using System;
 using System.Reflection;
 
 namespace SCMM.Azure.ServiceBus.Extensions
@@ -16,7 +15,7 @@ namespace SCMM.Azure.ServiceBus.Extensions
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
             var queueName = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
-            if (!String.IsNullOrEmpty(topicName) || !String.IsNullOrEmpty(queueName))
+            if (!string.IsNullOrEmpty(topicName) || !string.IsNullOrEmpty(queueName))
             {
                 return client.CreateSender(topicName ?? queueName);
             }
@@ -32,13 +31,13 @@ namespace SCMM.Azure.ServiceBus.Extensions
         public static ServiceBusProcessor CreateProcessor(this global::Azure.Messaging.ServiceBus.ServiceBusClient client, Type messageType, ServiceBusProcessorOptions options)
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
-            if (!String.IsNullOrEmpty(topicName))
+            if (!string.IsNullOrEmpty(topicName))
             {
                 return client.CreateProcessor(topicName, Assembly.GetEntryAssembly().GetName().Name, options);
             }
 
             var queueName = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
-            if (!String.IsNullOrEmpty(queueName))
+            if (!string.IsNullOrEmpty(queueName))
             {
                 return client.CreateProcessor(queueName, options);
             }

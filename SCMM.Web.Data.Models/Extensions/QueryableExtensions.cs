@@ -1,7 +1,5 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Web.Data.Models.Extensions;
-using System;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace SCMM.Web.Data.Models.Extensions

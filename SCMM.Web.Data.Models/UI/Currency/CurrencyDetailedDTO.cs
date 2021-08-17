@@ -1,5 +1,4 @@
 ﻿using SCMM.Shared.Data.Models;
-using System;
 
 namespace SCMM.Web.Data.Models.UI.Currency
 {

@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Shared.Data.Store.Extensions
 {

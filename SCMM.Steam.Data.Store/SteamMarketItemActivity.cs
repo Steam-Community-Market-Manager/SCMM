@@ -1,6 +1,5 @@
 ﻿using SCMM.Shared.Data.Store;
 using SCMM.Steam.Data.Models.Enums;
-using System;
 
 namespace SCMM.Steam.Data.Store
 {

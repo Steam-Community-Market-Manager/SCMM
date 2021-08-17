@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace SCMM.Shared.Data.Store.Types
 {
@@ -26,18 +23,12 @@ namespace SCMM.Shared.Data.Store.Types
 
         protected abstract string ConvertSingleValueToPersistable(T value);
 
-        protected virtual string ValueSeperator
-        {
-            get => DefaultValueSeperator;
-        }
+        protected virtual string ValueSeperator => DefaultValueSeperator;
 
         [Required]
         public virtual string Serialised
         {
-            get
-            {
-                return string.Join(ValueSeperator, _data.Select(x => ConvertSingleValueToPersistable(x)));
-            }
+            get => string.Join(ValueSeperator, _data.Select(x => ConvertSingleValueToPersistable(x)));
             set
             {
                 _data.Clear();
@@ -79,15 +70,9 @@ namespace SCMM.Shared.Data.Store.Types
             return _data.Remove(item);
         }
 
-        public int Count
-        {
-            get { return _data.Count; }
-        }
+        public int Count => _data.Count;
 
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         #endregion
 

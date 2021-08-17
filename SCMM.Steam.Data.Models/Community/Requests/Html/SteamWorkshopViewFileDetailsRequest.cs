@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Steam.Data.Models.Community.Requests.Html
+﻿namespace SCMM.Steam.Data.Models.Community.Requests.Html
 {
     public class SteamWorkshopViewFileDetailsRequest : SteamRequest
     {

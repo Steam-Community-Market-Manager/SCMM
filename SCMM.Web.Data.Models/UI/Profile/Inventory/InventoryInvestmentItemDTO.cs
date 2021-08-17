@@ -1,6 +1,5 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
 using SCMM.Web.Data.Models.UI.Currency;
-using System;
 
 namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {

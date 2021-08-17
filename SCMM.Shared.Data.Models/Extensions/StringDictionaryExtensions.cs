@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace SCMM.Shared.Data.Models.Extensions
+﻿namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class StringDictionaryExtensions
     {
@@ -42,7 +39,7 @@ namespace SCMM.Shared.Data.Models.Extensions
                 }
                 else if (decimal.TryParse(dictionary[key], out decimalValue))
                 {
-                    return (int) Math.Round(decimalValue * 100, 0);
+                    return (int)Math.Round(decimalValue * 100, 0);
                 }
                 else if (int.TryParse(dictionary[key], out integerValue))
                 {

@@ -1,5 +1,4 @@
 ﻿using SCMM.Shared.Data.Store;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Store

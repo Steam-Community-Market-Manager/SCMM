@@ -1,10 +1,8 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Specialized;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 
 namespace SteamAuth
 {
@@ -31,12 +29,12 @@ namespace SteamAuth
         public SessionData Session = null;
         public bool LoggedIn = false;
 
-        private CookieContainer _cookies = new CookieContainer();
+        private readonly CookieContainer _cookies = new CookieContainer();
 
         public UserLogin(string username, string password)
         {
-            this.Username = username;
-            this.Password = password;
+            Username = username;
+            Password = password;
         }
 
         public LoginResult DoLogin()
@@ -52,16 +50,21 @@ namespace SteamAuth
                 cookies.Add(new Cookie("mobileClient", "android", "/", ".steamcommunity.com"));
                 cookies.Add(new Cookie("Steam_Language", "english", "/", ".steamcommunity.com"));
 
-                NameValueCollection headers = new NameValueCollection();
-                headers.Add("X-Requested-With", "com.valvesoftware.android.steam.community");
+                var headers = new NameValueCollection
+                {
+                    { "X-Requested-With", "com.valvesoftware.android.steam.community" }
+                };
 
                 SteamWeb.MobileLoginRequest("https://steamcommunity.com/login?oauth_client_id=DE45CD61&oauth_scope=read_profile%20write_profile%20read_client%20write_client", "GET", null, cookies, headers);
             }
 
             postData.Add("donotcache", (TimeAligner.GetSteamTime() * 1000).ToString());
-            postData.Add("username", this.Username);
+            postData.Add("username", Username);
             response = SteamWeb.MobileLoginRequest(APIEndpoints.COMMUNITY_BASE + "/login/getrsakey", "POST", postData, cookies);
-            if (response == null || response.Contains("<BODY>\nAn error occurred while processing your request.")) return LoginResult.GeneralFailure;
+            if (response == null || response.Contains("<BODY>\nAn error occurred while processing your request."))
+            {
+                return LoginResult.GeneralFailure;
+            }
 
             var rsaResponse = JsonConvert.DeserializeObject<RSAResponse>(response);
 
@@ -72,11 +75,11 @@ namespace SteamAuth
 
             Thread.Sleep(350); //Sleep for a bit to give Steam a chance to catch up??
 
-            RNGCryptoServiceProvider secureRandom = new RNGCryptoServiceProvider();
+            var secureRandom = new RNGCryptoServiceProvider();
             byte[] encryptedPasswordBytes;
             using (var rsaEncryptor = new RSACryptoServiceProvider())
             {
-                var passwordBytes = Encoding.ASCII.GetBytes(this.Password);
+                var passwordBytes = Encoding.ASCII.GetBytes(Password);
                 var rsaParameters = rsaEncryptor.ExportParameters(false);
                 rsaParameters.Exponent = Util.HexStringToByteArray(rsaResponse.Exponent);
                 rsaParameters.Modulus = Util.HexStringToByteArray(rsaResponse.Modulus);
@@ -84,20 +87,20 @@ namespace SteamAuth
                 encryptedPasswordBytes = rsaEncryptor.Encrypt(passwordBytes, false);
             }
 
-            string encryptedPassword = Convert.ToBase64String(encryptedPasswordBytes);
+            var encryptedPassword = Convert.ToBase64String(encryptedPasswordBytes);
 
             postData.Clear();
             postData.Add("donotcache", (TimeAligner.GetSteamTime() * 1000).ToString());
 
             postData.Add("password", encryptedPassword);
-            postData.Add("username", this.Username);
-            postData.Add("twofactorcode", this.TwoFactorCode ?? "");
+            postData.Add("username", Username);
+            postData.Add("twofactorcode", TwoFactorCode ?? "");
 
-            postData.Add("emailauth", this.RequiresEmail ? this.EmailCode : "");
+            postData.Add("emailauth", RequiresEmail ? EmailCode : "");
             postData.Add("loginfriendlyname", "");
-            postData.Add("captchagid", this.RequiresCaptcha ? this.CaptchaGID : "-1");
-            postData.Add("captcha_text", this.RequiresCaptcha ? this.CaptchaText : "");
-            postData.Add("emailsteamid", (this.Requires2FA || this.RequiresEmail) ? this.SteamID.ToString() : "");
+            postData.Add("captchagid", RequiresCaptcha ? CaptchaGID : "-1");
+            postData.Add("captcha_text", RequiresCaptcha ? CaptchaText : "");
+            postData.Add("emailsteamid", (Requires2FA || RequiresEmail) ? SteamID.ToString() : "");
 
             postData.Add("rsatimestamp", rsaResponse.Timestamp);
             postData.Add("remember_login", "true");
@@ -105,36 +108,43 @@ namespace SteamAuth
             postData.Add("oauth_scope", "read_profile write_profile read_client write_client");
 
             response = SteamWeb.MobileLoginRequest(APIEndpoints.COMMUNITY_BASE + "/login/dologin", "POST", postData, cookies);
-            if (response == null) return LoginResult.GeneralFailure;
+            if (response == null)
+            {
+                return LoginResult.GeneralFailure;
+            }
 
             var loginResponse = JsonConvert.DeserializeObject<LoginResponse>(response);
 
             if (loginResponse.Message != null)
             {
                 if (loginResponse.Message.Contains("There have been too many login failures"))
+                {
                     return LoginResult.TooManyFailedLogins;
+                }
 
                 if (loginResponse.Message.Contains("Incorrect login"))
+                {
                     return LoginResult.BadCredentials;
+                }
             }
 
             if (loginResponse.CaptchaNeeded)
             {
-                this.RequiresCaptcha = true;
-                this.CaptchaGID = loginResponse.CaptchaGID;
+                RequiresCaptcha = true;
+                CaptchaGID = loginResponse.CaptchaGID;
                 return LoginResult.NeedCaptcha;
             }
 
             if (loginResponse.EmailAuthNeeded)
             {
-                this.RequiresEmail = true;
-                this.SteamID = loginResponse.EmailSteamID;
+                RequiresEmail = true;
+                SteamID = loginResponse.EmailSteamID;
                 return LoginResult.NeedEmail;
             }
 
             if (loginResponse.TwoFactorNeeded && !loginResponse.Success)
             {
-                this.Requires2FA = true;
+                Requires2FA = true;
                 return LoginResult.Need2FA;
             }
 
@@ -152,9 +162,11 @@ namespace SteamAuth
                 var readableCookies = cookies.GetCookies(new Uri("https://steamcommunity.com"));
                 var oAuthData = loginResponse.OAuthData;
 
-                SessionData session = new SessionData();
-                session.OAuthToken = oAuthData.OAuthToken;
-                session.SteamID = oAuthData.SteamID;
+                var session = new SessionData
+                {
+                    OAuthToken = oAuthData.OAuthToken,
+                    SteamID = oAuthData.SteamID
+                };
                 session.SteamLogin = session.SteamID + "%7C%7C" + oAuthData.SteamLogin;
                 session.SteamLoginSecure = session.SteamID + "%7C%7C" + oAuthData.SteamLoginSecure;
                 session.WebCookie = oAuthData.Webcookie;
@@ -166,8 +178,8 @@ namespace SteamAuth
                 {
 
                 }
-                this.Session = session;
-                this.LoggedIn = true;
+                Session = session;
+                LoggedIn = true;
                 return LoginResult.LoginOkay;
             }
         }
@@ -183,13 +195,7 @@ namespace SteamAuth
             [JsonProperty("oauth")]
             public string OAuthDataString { get; set; }
 
-            public OAuth OAuthData
-            {
-                get
-                {
-                    return OAuthDataString != null ? JsonConvert.DeserializeObject<OAuth>(OAuthDataString) : null;
-                }
-            }
+            public OAuth OAuthData => OAuthDataString != null ? JsonConvert.DeserializeObject<OAuth>(OAuthDataString) : null;
 
             [JsonProperty("captcha_needed")]
             public bool CaptchaNeeded { get; set; }

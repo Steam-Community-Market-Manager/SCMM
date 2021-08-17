@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
@@ -11,10 +8,6 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
@@ -82,8 +75,8 @@ namespace SCMM.Steam.Job.Server.Jobs
             _logger.LogInformation($"Updating market item activity information (id: {id}, count: {assetDescriptions.Count()})");
             foreach (var assetDescription in assetDescriptions)
             {
-                int progress = assetDescriptions.IndexOf(assetDescription);
-                int total = assetDescriptions.Count;
+                var progress = assetDescriptions.IndexOf(assetDescription);
+                var total = assetDescriptions.Count;
                 try
                 {
                     var response = await commnityClient.GetMarketItemOrdersActivity(

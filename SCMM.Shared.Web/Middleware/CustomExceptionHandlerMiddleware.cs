@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using SCMM.Shared.Data.Models;
-using System;
 using System.Diagnostics;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace SCMM.Shared.Web.Middleware
 {
@@ -23,10 +21,14 @@ namespace SCMM.Shared.Web.Middleware
         }
 
         private static Task WriteDevelopmentExceptionResponse(HttpContext httpContext, Func<Task> next)
-            => WriteExceptionResponse(httpContext, includeDetails: true);
+        {
+            return WriteExceptionResponse(httpContext, includeDetails: true);
+        }
 
         private static Task WriteProductionExceptionResponse(HttpContext httpContext, Func<Task> next)
-            => WriteExceptionResponse(httpContext, includeDetails: false);
+        {
+            return WriteExceptionResponse(httpContext, includeDetails: false);
+        }
 
         private static async Task WriteExceptionResponse(HttpContext httpContext, bool includeDetails)
         {

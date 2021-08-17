@@ -4,12 +4,7 @@ using SCMM.Shared.Data.Models;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Workshop.Requests;
 using SCMM.Steam.Data.Models.Workshop.Responses;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Client
 {
@@ -40,7 +35,7 @@ namespace SCMM.Steam.Client
                     }
 
                     var downloadResponseJson = await downloadResponse.Content.ReadAsStringAsync();
-                    if (String.IsNullOrEmpty(downloadResponseJson))
+                    if (string.IsNullOrEmpty(downloadResponseJson))
                     {
                         return null; // workshop file probably does not exist anymore
                     }

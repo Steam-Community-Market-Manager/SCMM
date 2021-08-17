@@ -3,7 +3,6 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.Data.Models;
@@ -13,10 +12,6 @@ using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using DiscordConfiguration = SCMM.Steam.Data.Store.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -126,7 +121,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     .AsNoTracking()
                     .Include(x => x.Configurations)
                     .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
-                if (guild != null && String.IsNullOrEmpty(currencyId))
+                if (guild != null && string.IsNullOrEmpty(currencyId))
                 {
                     currencyId = guild.Get(DiscordConfiguration.Currency).Value;
                 }
@@ -202,12 +197,13 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .WithIconUrl(profile.AvatarUrl)
                 .WithUrl($"{_configuration.GetWebsiteUrl()}/inventory/{profile.SteamId}");
 
-            var fields = new List<EmbedFieldBuilder>();
-            fields.Add(new EmbedFieldBuilder()
+            var fields = new List<EmbedFieldBuilder>
+            {
+                new EmbedFieldBuilder()
                 .WithName("📈 Market Value")
                 .WithValue(currency.ToPriceString(inventoryTotals.TotalMarketValue))
                 .WithIsInline(false)
-            );
+            };
             if (inventoryTotals.TotalInvested != null && inventoryTotals.TotalInvested > 0)
             {
                 fields.Add(new EmbedFieldBuilder()

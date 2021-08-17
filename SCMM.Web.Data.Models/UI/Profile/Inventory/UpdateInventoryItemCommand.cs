@@ -1,5 +1,4 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
-using System;
 
 namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {

@@ -15,12 +15,8 @@ using Steam.Models;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace SCMM.Steam.API.Commands
@@ -164,8 +160,8 @@ namespace SCMM.Steam.API.Commands
             // Get item description text from asset class (if available)
             var itemDescription = assetClass.Descriptions?
                 .Where(x =>
-                    String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
-                    String.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
+                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
+                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
                 )
                 .Select(x => x.Value)
                 .FirstOrDefault();
@@ -174,13 +170,13 @@ namespace SCMM.Steam.API.Commands
             var publishedFile = (PublishedFileDetailsModel)null;
             var publishedFileId = (ulong)0;
             var viewWorkshopAction = assetClass.Actions?.FirstOrDefault(x =>
-                String.Equals(x.Name, Constants.SteamActionViewWorkshopItemId, StringComparison.InvariantCultureIgnoreCase) ||
-                String.Equals(x.Name, Constants.SteamActionViewWorkshopItem, StringComparison.InvariantCultureIgnoreCase)
+                string.Equals(x.Name, Constants.SteamActionViewWorkshopItemId, StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(x.Name, Constants.SteamActionViewWorkshopItem, StringComparison.InvariantCultureIgnoreCase)
             );
             if (viewWorkshopAction != null)
             {
                 var workshopFileIdGroups = Regex.Match(viewWorkshopAction.Link, Constants.SteamActionViewWorkshopItemRegex).Groups;
-                publishedFileId = (workshopFileIdGroups.Count > 1) ? UInt64.Parse(workshopFileIdGroups[1].Value) : 0;
+                publishedFileId = (workshopFileIdGroups.Count > 1) ? ulong.Parse(workshopFileIdGroups[1].Value) : 0;
             }
             if (publishedFileId > 0)
             {
@@ -194,7 +190,7 @@ namespace SCMM.Steam.API.Commands
                 publishedFile = publishedFileDetails.Data;
 
                 // Queue a download of the workshop file data for analyse (if missing)
-                if (String.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
+                if (string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
                 {
                     await _serviceBusClient.SendMessageAsync(new DownloadSteamWorkshopFileMessage()
                     {
@@ -205,8 +201,8 @@ namespace SCMM.Steam.API.Commands
 
             // Get community market details from Steam (if item description or nameid is missing and it is a marketable item)
             var marketListingPageHtml = (string)null;
-            var assetIsMarketable = String.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
-            if ((String.IsNullOrEmpty(itemDescription) || assetDescription.NameId == null) && assetIsMarketable)
+            var assetIsMarketable = string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
+            if ((string.IsNullOrEmpty(itemDescription) || assetDescription.NameId == null) && assetIsMarketable)
             {
                 marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
                 {
@@ -218,7 +214,7 @@ namespace SCMM.Steam.API.Commands
             // Get store details from Steam (if item description is missing and it is a recently accepted store item)
             var storeItemPageHtml = (XElement)null;
             var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
-            if (String.IsNullOrEmpty(itemDescription) && assetIsRecentlyAccepted)
+            if (string.IsNullOrEmpty(itemDescription) && assetIsRecentlyAccepted)
             {
                 var storeItems = await _communityClient.GetStorePaginated(new SteamStorePaginatedJsonRequest()
                 {
@@ -227,7 +223,7 @@ namespace SCMM.Steam.API.Commands
                     SearchText = assetClass.MarketHashName,
                     Count = 1
                 });
-                if (storeItems?.Success == true && !String.IsNullOrEmpty(storeItems?.ResultsHtml))
+                if (storeItems?.Success == true && !string.IsNullOrEmpty(storeItems?.ResultsHtml))
                 {
                     if (storeItems.ResultsHtml.Contains(assetClass.MarketHashName, StringComparison.InvariantCultureIgnoreCase))
                     {

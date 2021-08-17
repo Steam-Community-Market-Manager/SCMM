@@ -1,14 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.ApplicationInsights;
+﻿using Microsoft.Extensions.Logging.ApplicationInsights;
 using SCMM.Shared.Web;
-using System;
-using System.Threading.Tasks;
 
 namespace SCMM.Web.Server
 {
-    class Program
+    internal class Program
     {
         public static async Task Main(string[] args)
         {
@@ -16,8 +11,9 @@ namespace SCMM.Web.Server
             await host.RunAsync();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
@@ -25,11 +21,12 @@ namespace SCMM.Web.Server
                     logging.AddConsole();
                     logging.AddHtmlLogger();
                     logging.AddApplicationInsights();
-                    logging.AddFilter<ApplicationInsightsLoggerProvider>(String.Empty, LogLevel.Warning);
+                    logging.AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
                 })
                 .ConfigureWebHostDefaults(builder =>
                 {
                     builder.UseStartup<Startup>();
                 });
+        }
     }
 }

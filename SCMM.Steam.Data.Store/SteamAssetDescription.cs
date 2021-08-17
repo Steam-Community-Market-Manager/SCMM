@@ -3,10 +3,7 @@ using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store.Types;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -183,7 +180,7 @@ namespace SCMM.Steam.Data.Store
                         Type = PriceType.SteamStore,
                         Currency = StoreItem.Currency,
                         BuyPrice = StoreItem.Price.Value,
-                        BuyUrl = !String.IsNullOrEmpty(StoreItem.SteamId) 
+                        BuyUrl = !string.IsNullOrEmpty(StoreItem.SteamId)
                             ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
                             : new SteamStorePageRequest() { AppId = appId }
                     };

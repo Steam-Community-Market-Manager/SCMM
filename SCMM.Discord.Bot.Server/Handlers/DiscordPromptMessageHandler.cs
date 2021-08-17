@@ -3,9 +3,7 @@ using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
-using System;
 using System.Drawing;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Handlers
 {
@@ -39,7 +37,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             {
                 case DiscordPromptMessageType.Reply:
                     waitForReplySubscription = _client.SubscribeToReplies(messageId,
-                        (msg) => String.Equals(message.Username, msg.Author.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
+                        (msg) => string.Equals(message.Username, msg.Author.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
                         async (msg) =>
                         {
                             waitForReplySubscription?.Dispose();
@@ -54,7 +52,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
                 case DiscordPromptMessageType.React:
                     waitForReplySubscription = _client.SubscribeToReactions(messageId,
-                        (user, reaction) => String.Equals(message.Username, user.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
+                        (user, reaction) => string.Equals(message.Username, user.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
                         async (msg, reaction) =>
                         {
                             waitForReplySubscription?.Dispose();

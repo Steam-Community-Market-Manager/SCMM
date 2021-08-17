@@ -24,10 +24,14 @@ namespace SCMM.Discord.Client
 
         public string HelpImageUrl { get; set; }
 
-        public static CommandResult Success(string message = null, Embed embed = null, Emoji reaction = null) =>
-            new CommandResult(reaction: (reaction ?? new Emoji("👌") /* ok */), message: message, embed: embed);
+        public static CommandResult Success(string message = null, Embed embed = null, Emoji reaction = null)
+        {
+            return new CommandResult(reaction: (reaction ?? new Emoji("👌") /* ok */), message: message, embed: embed);
+        }
 
-        public static CommandResult Fail(string reason, string explaination = null, string helpUrl = null, string helpImageUrl = null, Emoji reaction = null) =>
-            new CommandResult(error: CommandError.Unsuccessful, reaction: (reaction ?? new Emoji("😢") /* cry */), message: reason, explaination: explaination, helpUrl: helpUrl, helpImageUrl: helpImageUrl);
+        public static CommandResult Fail(string reason, string explaination = null, string helpUrl = null, string helpImageUrl = null, Emoji reaction = null)
+        {
+            return new CommandResult(error: CommandError.Unsuccessful, reaction: (reaction ?? new Emoji("😢") /* cry */), message: reason, explaination: explaination, helpUrl: helpUrl, helpImageUrl: helpImageUrl);
+        }
     }
 }

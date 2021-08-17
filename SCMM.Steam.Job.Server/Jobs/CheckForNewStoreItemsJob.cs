@@ -1,8 +1,5 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SCMM.Discord.API.Commands;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -17,11 +14,6 @@ using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
@@ -74,7 +66,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 _logger.LogInformation($"Checking for new store items (appId: {app.SteamId})");
                 var currency = currencies.FirstOrDefault(x => x.IsDefault);
                 var response = await steamEconomy.GetAssetPricesAsync(
-                    UInt32.Parse(app.SteamId), String.Empty, language.SteamId
+                    uint.Parse(app.SteamId), string.Empty, language.SteamId
                 );
                 if (response?.Data?.Success != true)
                 {
@@ -257,7 +249,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuidId = ulong.Parse(guild.DiscordId),
-                    ChannelPattern = String.Join("|", guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel).Value, "announcement", "store", "skin", app.Name, "general", "chat", "bot"),
+                    ChannelPattern = string.Join("|", guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel).Value, "announcement", "store", "skin", app.Name, "general", "chat", "bot"),
                     Message = null,
                     Title = $"{app.Name} Store - {store.Start.ToString("yyyy MMMM d")}{store.Start.GetDaySuffix()}",
                     Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
@@ -276,21 +268,21 @@ namespace SCMM.Steam.Job.Server.Jobs
 
         private string GenerateStoreItemPriceList(SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
         {
-            var prices = new List<String>();
+            var prices = new List<string>();
             foreach (var currency in currencies.OrderBy(x => x.Name))
             {
                 var price = storeItem.Prices.FirstOrDefault(x => x.Key == currency.Name);
                 if (price.Value > 0)
                 {
                     var priceString = currency.ToPriceString(price.Value)?.Trim();
-                    if (!String.IsNullOrEmpty(priceString))
+                    if (!string.IsNullOrEmpty(priceString))
                     {
                         prices.Add(priceString);
                     }
                 }
             }
 
-            return String.Join("  •  ", prices).Trim(' ', '•');
+            return string.Join("  •  ", prices).Trim(' ', '•');
         }
     }
 }

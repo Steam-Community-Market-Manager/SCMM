@@ -1,8 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace SCMM.Fixer.Client
 {
@@ -21,7 +17,7 @@ namespace SCMM.Fixer.Client
         {
             using (var client = new HttpClient())
             {
-                var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_cfg.ApiKey}&base={from}&symbols={String.Join(',', to)}";
+                var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_cfg.ApiKey}&base={from}&symbols={string.Join(',', to)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 

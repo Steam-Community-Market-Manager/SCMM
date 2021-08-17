@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Shared.Client
+﻿namespace SCMM.Shared.Client
 {
     public class DisposableDelegate : IDisposable
     {

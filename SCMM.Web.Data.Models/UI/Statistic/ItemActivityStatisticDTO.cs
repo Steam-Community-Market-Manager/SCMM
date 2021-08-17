@@ -1,6 +1,5 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
 using SCMM.Web.Data.Models.UI.Item;
-using System;
 
 namespace SCMM.Web.Data.Models.UI.Statistic
 {
@@ -22,6 +21,6 @@ namespace SCMM.Web.Data.Models.UI.Statistic
 
         public string BuyerAvatarUrl { get; set; }
 
-        public bool IsSale => (!String.IsNullOrEmpty(BuyerName) && !String.IsNullOrEmpty(SellerName));
+        public bool IsSale => (!string.IsNullOrEmpty(BuyerName) && !string.IsNullOrEmpty(SellerName));
     }
 }

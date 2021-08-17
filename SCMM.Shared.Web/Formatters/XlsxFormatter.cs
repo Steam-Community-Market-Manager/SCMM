@@ -4,13 +4,8 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 using SCMM.Shared.Data.Models;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace SCMM.Shared.Web.Formatters
 {
@@ -143,7 +138,7 @@ namespace SCMM.Shared.Web.Formatters
         private Cell CreateCellFrom(object value)
         {
             var dataType = CellValues.InlineString;
-            var dataValue = (OpenXmlElement) null;
+            var dataValue = (OpenXmlElement)null;
             switch (value)
             {
                 case string stringValue:
@@ -216,7 +211,7 @@ namespace SCMM.Shared.Web.Formatters
                     dataType = CellValues.InlineString;
                     dataValue = new InlineString(
                         new Text(
-                            String.Join($"{_options.ListDelimiter} ",
+                            string.Join($"{_options.ListDelimiter} ",
                                 dictionaryValue.Keys.OfType<object>().Select(x => $"{x} = {dictionaryValue[x]?.ToString()}")
                             )
                         )
@@ -227,7 +222,7 @@ namespace SCMM.Shared.Web.Formatters
                     dataType = CellValues.InlineString;
                     dataValue = new InlineString(
                         new Text(
-                            String.Join($"{_options.ListDelimiter} ",
+                            string.Join($"{_options.ListDelimiter} ",
                                 enumerableValue.OfType<object>().Select(x => x?.ToString())
                             )
                         )
@@ -238,7 +233,7 @@ namespace SCMM.Shared.Web.Formatters
                 default:
                     dataType = CellValues.InlineString;
                     dataValue = new InlineString(
-                        new Text(value?.ToString() ?? String.Empty)
+                        new Text(value?.ToString() ?? string.Empty)
                     );
                     break;
             }

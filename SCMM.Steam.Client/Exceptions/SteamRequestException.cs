@@ -1,5 +1,4 @@
 ﻿using SCMM.Steam.Data.Models;
-using System;
 using System.Net;
 
 namespace SCMM.Steam.Client.Exceptions

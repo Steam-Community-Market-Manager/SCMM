@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Steam.Data.Models.Extensions
+﻿namespace SCMM.Steam.Data.Models.Extensions
 {
     public static class SteamFormatExtensions
     {

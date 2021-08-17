@@ -4,7 +4,7 @@ namespace SCMM.Discord.Client
 {
     public class DiscordGuild
     {
-        private SocketGuild _guild;
+        private readonly SocketGuild _guild;
 
         public DiscordGuild(SocketGuild guild)
         {

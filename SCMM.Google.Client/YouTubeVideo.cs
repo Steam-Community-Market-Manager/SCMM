@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Google.Client
+﻿namespace SCMM.Google.Client
 {
     public class YouTubeVideo
     {

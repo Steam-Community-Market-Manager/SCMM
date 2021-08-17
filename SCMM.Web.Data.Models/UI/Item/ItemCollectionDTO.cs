@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SCMM.Web.Data.Models.UI.Item
+﻿namespace SCMM.Web.Data.Models.UI.Item
 {
     public class ItemCollectionDTO
     {

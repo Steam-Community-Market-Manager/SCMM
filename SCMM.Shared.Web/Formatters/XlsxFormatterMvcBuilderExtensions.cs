@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
-using System;
 
 namespace SCMM.Shared.Web.Formatters
 {

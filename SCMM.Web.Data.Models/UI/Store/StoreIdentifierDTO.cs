@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Data.Models.UI.Store
+﻿namespace SCMM.Web.Data.Models.UI.Store
 {
     public class StoreIdentifierDTO
     {

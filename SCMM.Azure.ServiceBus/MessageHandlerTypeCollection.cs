@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace SCMM.Azure.ServiceBus
 {
     public class MessageHandlerTypeCollection
     {
-        private Assembly[] _assemblies;
+        private readonly Assembly[] _assemblies;
 
         public MessageHandlerTypeCollection(params Assembly[] assemblies)
         {

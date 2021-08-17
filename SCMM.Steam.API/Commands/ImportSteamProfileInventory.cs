@@ -7,9 +7,6 @@ using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
 {

@@ -1,5 +1,4 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Store

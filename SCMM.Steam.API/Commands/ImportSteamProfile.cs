@@ -10,10 +10,7 @@ using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Store;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
-using System;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -70,7 +67,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     var profileId = response.Data.ProfileUrl;
-                    if (String.IsNullOrEmpty(profileId))
+                    if (string.IsNullOrEmpty(profileId))
                     {
                         throw new ArgumentException(nameof(request), "ProfileID is invalid");
                     }
@@ -98,7 +95,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Else, if we know the custom profile id, fetch using the legacy XML API
-                else if (!String.IsNullOrEmpty(resolvedId.CustomUrl))
+                else if (!string.IsNullOrEmpty(resolvedId.CustomUrl))
                 {
                     var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
                     {
@@ -111,7 +108,7 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     var steamId = response.SteamID64.ToString();
-                    if (String.IsNullOrEmpty(steamId))
+                    if (string.IsNullOrEmpty(steamId))
                     {
                         throw new ArgumentException(nameof(request), "SteamID is invalid");
                     }

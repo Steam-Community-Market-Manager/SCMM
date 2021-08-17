@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 
 namespace SCMM.Shared.Web
 {
@@ -42,7 +40,7 @@ namespace SCMM.Shared.Web
             }
 
             var log = $"<span style=\"color:{gray}\">[{DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss")}]</span> <strong><samp>{logLevel.ToString().ToUpper()}</samp></strong> <span>{formatter(state, exception)}</span>";
-            if (!String.IsNullOrEmpty(exception?.StackTrace))
+            if (!string.IsNullOrEmpty(exception?.StackTrace))
             {
                 log += $"<pre style=\"color: {gray}; margin:0px\">{exception.StackTrace}</pre>";
             }
@@ -65,7 +63,7 @@ namespace SCMM.Shared.Web
             {
                 var inverseLogs = new List<string>(Logs);
                 inverseLogs.Reverse();
-                return String.Join('\n', inverseLogs);
+                return string.Join('\n', inverseLogs);
             }
         }
     }

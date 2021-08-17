@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace SCMM.Shared.Data.Models
+﻿namespace SCMM.Shared.Data.Models
 {
     public class PaginatedResult<T> : IPaginated
     {

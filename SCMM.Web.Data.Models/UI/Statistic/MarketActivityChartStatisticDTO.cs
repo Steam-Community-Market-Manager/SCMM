@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Data.Models.UI.Statistic
+﻿namespace SCMM.Web.Data.Models.UI.Statistic
 {
     public class MarketActivityChartStatisticDTO
     {

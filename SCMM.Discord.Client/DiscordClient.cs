@@ -4,12 +4,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Client
 {
@@ -213,7 +208,7 @@ namespace SCMM.Discord.Client
             // NOTE: We only want to send one message per guild
             var channel = guild.TextChannels
                 .OrderBy(x => x.Name)
-                .Where(x => String.Equals($"<#{x.Id}>", channelPattern, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, channelPattern))
+                .Where(x => string.Equals($"<#{x.Id}>", channelPattern, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, channelPattern))
                 .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
                 .FirstOrDefault();
 
@@ -284,14 +279,14 @@ namespace SCMM.Discord.Client
         {
             // Pre-build the embed content (so we can share it across all messages)
             // If the title is not null, we assume the message has emdeded content
-            if (!String.IsNullOrEmpty(title))
+            if (!string.IsNullOrEmpty(title))
             {
                 var fieldBuilders = new List<EmbedFieldBuilder>();
                 if (fields != null)
                 {
                     fieldBuilders = fields.Select(x => new EmbedFieldBuilder()
                         .WithName(x.Key)
-                        .WithValue(String.IsNullOrEmpty(x.Value) ? "-" : x.Value)
+                        .WithValue(string.IsNullOrEmpty(x.Value) ? "-" : x.Value)
                         .WithIsInline(fieldsInline)
                     ).ToList();
                 }

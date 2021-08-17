@@ -2,8 +2,6 @@
 using Discord.Commands;
 using SCMM.Discord.Client;
 using SCMM.Steam.API.Queries;
-using System;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -23,7 +21,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> SayStoreNextUpdateExpectedOnAsync()
         {
             var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
-            if (nextUpdateTime == null || String.IsNullOrEmpty(nextUpdateTime.TimeDescription))
+            if (nextUpdateTime == null || string.IsNullOrEmpty(nextUpdateTime.TimeDescription))
             {
                 return CommandResult.Fail(
                     $"I have no idea, something went wrong trying to figure it out."

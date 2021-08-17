@@ -4,8 +4,6 @@ using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Price;
 using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SCMM.Web.Server.Mappers
 {

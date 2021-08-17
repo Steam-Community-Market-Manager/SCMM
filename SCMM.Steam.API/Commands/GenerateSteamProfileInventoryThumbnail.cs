@@ -4,10 +4,6 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
 {

@@ -3,13 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Currency;
-using System.Linq;
 
 namespace SCMM.Web.Server
 {
     public class CurrencyCache
     {
-        private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         private readonly SteamDbContext _db;
         private readonly IMapper _mapper;
@@ -59,8 +58,8 @@ namespace SCMM.Web.Server
                 return null;
             }
 
-            CurrencyDetailedDTO value = null;
-            Cache.TryGetValue(name.Trim().ToUpper(), out value);
+            Cache.TryGetValue(name.Trim().ToUpper(), out
+            CurrencyDetailedDTO value);
             return value;
         }
     }

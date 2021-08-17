@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using SCMM.Steam.Data.Models.Community.Models;
-using System.Collections.Generic;
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {

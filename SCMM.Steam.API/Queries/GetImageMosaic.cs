@@ -4,15 +4,10 @@ using Microsoft.Extensions.Caching.Memory;
 using SCMM.Shared.Data.Models;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
 {
@@ -49,7 +44,7 @@ namespace SCMM.Steam.API.Queries
         IQueryHandler<GetImageMosaicRequest, GetImageMosaicResponse>,
         IQueryHandler<GetTradeImageMosaicRequest, GetImageMosaicResponse>
     {
-        private static IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
         private readonly SteamDbContext _db;
         private readonly ICommandProcessor _commandProcessor;
@@ -70,7 +65,7 @@ namespace SCMM.Steam.API.Queries
             }
 
             var columns = Math.Max(1, request.Columns);
-            var rows = Math.Max(1, request.Rows ?? Int32.MaxValue);
+            var rows = Math.Max(1, request.Rows ?? int.MaxValue);
             var tileSize = Math.Max(8, request.TileSize);
 
             var x = 0;
@@ -89,7 +84,7 @@ namespace SCMM.Steam.API.Queries
             var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
             var imageSize = tileSize;
 
-            var renderTitles = imageSources.Any(x => !String.IsNullOrEmpty(x.Title));
+            var renderTitles = imageSources.Any(x => !string.IsNullOrEmpty(x.Title));
             if (renderTitles)
             {
                 tileSize += fontLineHeight;
@@ -112,10 +107,10 @@ namespace SCMM.Steam.API.Queries
             graphics.CompositingQuality = CompositingQuality.HighQuality;
 
             y = 0;
-            for (int r = 0; r < rows; r++)
+            for (var r = 0; r < rows; r++)
             {
                 x = 0;
-                for (int c = 0; c < columns; c++)
+                for (var c = 0; c < columns; c++)
                 {
                     var imageSource = (imageSourceQueue.Any() ? imageSourceQueue.Dequeue() : null);
                     if (imageSource?.ImageData == null)
@@ -290,8 +285,10 @@ namespace SCMM.Steam.API.Queries
             var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
             var gradientTop = Color.FromArgb(133, 133, 133);
             var gradientBottom = Color.FromArgb(99, 99, 99);
-            var bluePen = new Pen(Color.FromArgb(66, 66, 66), 3);
-            bluePen.LineJoin = LineJoin.Round;
+            var bluePen = new Pen(Color.FromArgb(66, 66, 66), 3)
+            {
+                LineJoin = LineJoin.Round
+            };
 
             var x = 0;
             var y = 0;
@@ -310,9 +307,9 @@ namespace SCMM.Steam.API.Queries
 
                 y += (fontSize + (textPadding * 2));
                 var haveImageQueue = new Queue<ImageSource>(haveImageSources);
-                for (int r = 0; r < rows; r++)
+                for (var r = 0; r < rows; r++)
                 {
-                    for (int c = 0; c < columns; c++)
+                    for (var c = 0; c < columns; c++)
                     {
                         var imageSource = (haveImageQueue.Any() ? haveImageQueue.Dequeue() : null);
                         if (imageSource?.ImageData == null)
@@ -342,9 +339,9 @@ namespace SCMM.Steam.API.Queries
 
                 y += (fontSize + (textPadding * 2));
                 var wantImageQueue = new Queue<ImageSource>(wantImageSources);
-                for (int r = 0; r < rows; r++)
+                for (var r = 0; r < rows; r++)
                 {
-                    for (int c = 0; c < columns; c++)
+                    for (var c = 0; c < columns; c++)
                     {
                         var imageSource = (wantImageQueue.Any() ? wantImageQueue.Dequeue() : null);
                         if (imageSource?.ImageData == null)
@@ -374,7 +371,7 @@ namespace SCMM.Steam.API.Queries
         {
             // Check only images that are missing image data
             var missingImages = imageSources
-                .Where(x => !String.IsNullOrEmpty(x.ImageUrl))
+                .Where(x => !string.IsNullOrEmpty(x.ImageUrl))
                 .Where(x => x.ImageData == null)
                 .ToList();
             if (!missingImages.Any())
@@ -385,8 +382,7 @@ namespace SCMM.Steam.API.Queries
             // Check the first-level cache (memory) for missing image data
             foreach (var imageSource in missingImages.ToList())
             {
-                byte[] imageSourceData;
-                if (Cache.TryGetValue(imageSource.ImageUrl, out imageSourceData))
+                if (Cache.TryGetValue(imageSource.ImageUrl, out byte[] imageSourceData))
                 {
                     imageSource.ImageData = imageSourceData;
                     missingImages.Remove(imageSource);

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace SCMM.Web.Data.Models.UI.Store
+﻿namespace SCMM.Web.Data.Models.UI.Store
 {
     public class StoreItemDetailsDTO : IItemDescription, ICanBeSubscribed
     {
@@ -19,7 +16,7 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string MarketListingId { get; set; }
 
-        public bool HasMarketListing => !String.IsNullOrEmpty(MarketListingId);
+        public bool HasMarketListing => !string.IsNullOrEmpty(MarketListingId);
 
         public string CreatorName { get; set; }
 

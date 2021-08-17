@@ -14,7 +14,7 @@ builder.Services.AddSingleton<AppState>();
 builder.Services.AddSingleton<LocalStorageService>();
 builder.Services.AddSingleton<ExternalNavigationManager>();
 builder.Services.AddSingleton<DocumentManager>();
-            
+
 builder.Services.AddHttpClient("default", (serviceProvider, client) =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);

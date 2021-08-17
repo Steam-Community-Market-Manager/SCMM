@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Shared.Web.Extensions
+﻿namespace SCMM.Shared.Web.Extensions
 {
     public static class AppDomainExtensions
     {

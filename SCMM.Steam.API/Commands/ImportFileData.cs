@@ -4,8 +4,6 @@ using SCMM.Shared.Data.Store;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Commands
 {

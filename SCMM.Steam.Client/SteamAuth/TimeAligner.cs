@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace SteamAuth
 {
@@ -34,13 +32,13 @@ namespace SteamAuth
 
         public static void AlignTime()
         {
-            long currentTime = Util.GetSystemUnixTime();
-            using (WebClient client = new WebClient())
+            var currentTime = Util.GetSystemUnixTime();
+            using (var client = new WebClient())
             {
                 try
                 {
-                    string response = client.UploadString(APIEndpoints.TWO_FACTOR_TIME_QUERY, "steamid=0");
-                    TimeQuery query = JsonConvert.DeserializeObject<TimeQuery>(response);
+                    var response = client.UploadString(APIEndpoints.TWO_FACTOR_TIME_QUERY, "steamid=0");
+                    var query = JsonConvert.DeserializeObject<TimeQuery>(response);
                     TimeAligner._timeDifference = (int)(query.Response.ServerTime - currentTime);
                     TimeAligner._aligned = true;
                 }
@@ -53,12 +51,12 @@ namespace SteamAuth
 
         public static async Task AlignTimeAsync()
         {
-            long currentTime = Util.GetSystemUnixTime();
-            WebClient client = new WebClient();
+            var currentTime = Util.GetSystemUnixTime();
+            var client = new WebClient();
             try
             {
-                string response = await client.UploadStringTaskAsync(new Uri(APIEndpoints.TWO_FACTOR_TIME_QUERY), "steamid=0");
-                TimeQuery query = JsonConvert.DeserializeObject<TimeQuery>(response);
+                var response = await client.UploadStringTaskAsync(new Uri(APIEndpoints.TWO_FACTOR_TIME_QUERY), "steamid=0");
+                var query = JsonConvert.DeserializeObject<TimeQuery>(response);
                 TimeAligner._timeDifference = (int)(query.Response.ServerTime - currentTime);
                 TimeAligner._aligned = true;
             }

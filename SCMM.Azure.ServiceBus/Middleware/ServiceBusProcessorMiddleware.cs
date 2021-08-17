@@ -6,12 +6,8 @@ using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus.Attributes;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace SCMM.Azure.ServiceBus.Middleware
 {

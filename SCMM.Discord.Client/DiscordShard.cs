@@ -4,7 +4,7 @@ namespace SCMM.Discord.Client
 {
     public class DiscordShard
     {
-        private DiscordSocketClient _client;
+        private readonly DiscordSocketClient _client;
 
         public DiscordShard(DiscordSocketClient client)
         {

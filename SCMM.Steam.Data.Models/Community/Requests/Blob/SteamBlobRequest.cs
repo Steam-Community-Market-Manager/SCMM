@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Steam.Data.Models.Community.Requests.Blob
+﻿namespace SCMM.Steam.Data.Models.Community.Requests.Blob
 {
     public class SteamBlobRequest : SteamRequest
     {

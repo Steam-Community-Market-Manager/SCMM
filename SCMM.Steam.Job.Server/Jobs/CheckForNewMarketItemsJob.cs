@@ -1,8 +1,5 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SCMM.Discord.API.Commands;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -15,12 +12,7 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
@@ -175,13 +167,13 @@ namespace SCMM.Steam.Job.Server.Jobs
                 {
                     var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
                     var description = marketItem.Description?.ItemType;
-                    if (String.IsNullOrEmpty(description))
+                    if (string.IsNullOrEmpty(description))
                     {
                         description = marketItem.Description?.Description ?? marketItem.SteamId;
                     }
                     if (storeItem != null)
                     {
-                        var estimateSales = String.Empty;
+                        var estimateSales = string.Empty;
                         if (storeItem.TotalSalesMax == null && storeItem.TotalSalesMin > 0)
                         {
                             estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} or more";
@@ -194,7 +186,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                         {
                             estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
                         }
-                        if (!String.IsNullOrEmpty(estimateSales))
+                        if (!string.IsNullOrEmpty(estimateSales))
                         {
                             description = $"{estimateSales} estimated sales";
                         }
@@ -210,7 +202,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuidId = ulong.Parse(guild.DiscordId),
-                    ChannelPattern = String.Join("|", guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel).Value, "announcement", "market", "skin", app.Name, "general", "chat", "bot"),
+                    ChannelPattern = string.Join("|", guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel).Value, "announcement", "market", "skin", app.Name, "general", "chat", "bot"),
                     Message = null,
                     Title = $"{app?.Name} Market - New Listings",
                     Description = $"{newMarketItems.Count()} new item(s) have just appeared in the {app?.Name} marketplace.",

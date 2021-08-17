@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 using SCMM.Shared.Data.Models;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace SCMM.Shared.Web.Formatters
 {
@@ -100,7 +95,7 @@ namespace SCMM.Shared.Web.Formatters
                 if (_options.IncludeColumnNameHeader)
                 {
                     await streamWriter.WriteLineAsync(
-                        String.Join(_options.Delimiter, dataProperties.Select(x => x.Name))
+                        string.Join(_options.Delimiter, dataProperties.Select(x => x.Name))
                     );
                 }
 
@@ -108,7 +103,7 @@ namespace SCMM.Shared.Web.Formatters
                 foreach (var record in data)
                 {
                     await streamWriter.WriteLineAsync(
-                        String.Join(_options.Delimiter, dataProperties.Select(x => GetCsvValue(x.GetValue(record))))
+                        string.Join(_options.Delimiter, dataProperties.Select(x => GetCsvValue(x.GetValue(record))))
                     );
                 }
             }
@@ -120,28 +115,28 @@ namespace SCMM.Shared.Web.Formatters
 
         private string GetCsvValue(object value)
         {
-            var result = String.Empty;
+            var result = string.Empty;
             switch (value)
             {
                 case string stringValue:
-                    result = (value?.ToString() ?? String.Empty);
+                    result = (value?.ToString() ?? string.Empty);
                     break;
 
                 case IDictionary dictionaryValue:
-                    result = String.Join($"{_options.ListDelimiter} ",
+                    result = string.Join($"{_options.ListDelimiter} ",
                         dictionaryValue.Keys.OfType<object>().Select(x => $"{x} = {dictionaryValue[x]?.ToString()}")
                     );
                     break;
 
                 case IEnumerable enumerableValue:
-                    result = String.Join($"{_options.ListDelimiter} ",
+                    result = string.Join($"{_options.ListDelimiter} ",
                         enumerableValue.OfType<object>().Select(x => x?.ToString())
                     );
                     break;
 
                 // Everything else (including null values)
                 default:
-                    result = (value?.ToString() ?? String.Empty);
+                    result = (value?.ToString() ?? string.Empty);
                     break;
             }
 
@@ -167,7 +162,7 @@ namespace SCMM.Shared.Web.Formatters
             // Check if the value contains a delimiter/quote/newline and place it in quotes if so
             if (result.Contains(_options.Delimiter) || result.Contains("\"") || result.Contains("\r") || result.Contains("\n"))
             {
-                result = String.Concat("\"", result, "\"");
+                result = string.Concat("\"", result, "\"");
             }
 
             return result;

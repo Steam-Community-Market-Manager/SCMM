@@ -1,8 +1,5 @@
 ﻿using SCMM.Steam.Data.Store.Types;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace SCMM.Steam.Data.Store
 {

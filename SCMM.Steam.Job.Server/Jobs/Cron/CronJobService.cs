@@ -1,9 +1,4 @@
 ﻿using Cronos;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Job.Server.Jobs.Cron
 {
@@ -28,7 +23,7 @@ namespace SCMM.Steam.Job.Server.Jobs.Cron
             _logger = logger;
             _configuration = configuration;
             _startImmediately = (_configuration?.StartImmediately ?? false);
-            _expression = !String.IsNullOrEmpty(_configuration?.CronExpression)
+            _expression = !string.IsNullOrEmpty(_configuration?.CronExpression)
                 ? CronExpression.Parse(_configuration?.CronExpression)
                 : null;
         }

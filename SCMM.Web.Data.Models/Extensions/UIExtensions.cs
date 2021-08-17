@@ -1,5 +1,4 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
-using System;
 
 namespace SCMM.Web.Data.Models.Extensions
 {

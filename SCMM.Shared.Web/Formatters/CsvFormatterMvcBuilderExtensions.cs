@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
-using System;
 
 namespace SCMM.Shared.Web.Formatters
 {
@@ -28,7 +27,7 @@ namespace SCMM.Shared.Web.Formatters
                 formatterOptions = new CsvFormatterOptions();
             }
 
-            if (String.IsNullOrWhiteSpace(formatterOptions.Delimiter))
+            if (string.IsNullOrWhiteSpace(formatterOptions.Delimiter))
             {
                 throw new ArgumentException("Delimiter cannot be empty");
             }

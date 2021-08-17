@@ -2,9 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
 {
@@ -31,7 +28,7 @@ namespace SCMM.Steam.API.Queries
         {
             var currency = (SteamCurrency)null;
             var currencies = await _db.SteamCurrencies.AsNoTracking().ToListAsync();
-            if (!String.IsNullOrEmpty(request.Name))
+            if (!string.IsNullOrEmpty(request.Name))
             {
                 currency = currencies.Closest(x => x.Name, request.Name);
             }

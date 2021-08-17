@@ -29,25 +29,25 @@
 
         public Confirmation(ulong id, ulong key, int type, ulong creator)
         {
-            this.ID = id;
-            this.Key = key;
-            this.IntType = type;
-            this.Creator = creator;
+            ID = id;
+            Key = key;
+            IntType = type;
+            Creator = creator;
 
             //Do a switch simply because we're not 100% certain of all the possible types.
             switch (type)
             {
                 case 1:
-                    this.ConfType = ConfirmationType.GenericConfirmation;
+                    ConfType = ConfirmationType.GenericConfirmation;
                     break;
                 case 2:
-                    this.ConfType = ConfirmationType.Trade;
+                    ConfType = ConfirmationType.Trade;
                     break;
                 case 3:
-                    this.ConfType = ConfirmationType.MarketSellTransaction;
+                    ConfType = ConfirmationType.MarketSellTransaction;
                     break;
                 default:
-                    this.ConfType = ConfirmationType.Unknown;
+                    ConfType = ConfirmationType.Unknown;
                     break;
             }
         }

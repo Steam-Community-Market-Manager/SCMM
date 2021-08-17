@@ -10,13 +10,8 @@ using SCMM.Steam.API.Messages;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Workshop.Models;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Functions
 {
@@ -52,16 +47,16 @@ namespace SCMM.Steam.Functions
                 foreach (var entry in workshopFileZip.Entries)
                 {
                     // Inspect the mainfest file
-                    if (String.Equals(entry.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(entry.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase))
                     {
                         using var entryStream = new StreamReader(entry.Open());
                         var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(entryStream.ReadToEnd());
                         if (manifest != null)
                         {
                             // Check if the item glows (i.e. has an emission map)
-                            var emissionMaps = manifest.Groups.Where(x => !String.IsNullOrEmpty(x.Textures.EmissionMap))
+                            var emissionMaps = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.EmissionMap))
                                 .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
-                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
+                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
                                 .Where(x => x.Value != null);
 
                             var emissionMapsGlow = new List<decimal>();
@@ -84,8 +79,8 @@ namespace SCMM.Steam.Functions
                             }
 
                             // Check if the item has a cutout (i.e. main textures contain transparency)
-                            var textures = manifest.Groups.Where(x => !String.IsNullOrEmpty(x.Textures.MainTex))
-                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => String.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)))
+                            var textures = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))
+                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)))
                                 .Where(x => x.Value != null);
 
                             var texturesCutout = new List<decimal>();
@@ -113,7 +108,7 @@ namespace SCMM.Steam.Functions
                 }
             }
 
-            logger.LogInformation(String.Join("\n", publishedFileTags.Select(x => $"{x.Key} = {x.Value}")));
+            logger.LogInformation(string.Join("\n", publishedFileTags.Select(x => $"{x.Key} = {x.Value}")));
             logger.LogInformation($"Analyse complete");
 
             // Update workshop file metadata

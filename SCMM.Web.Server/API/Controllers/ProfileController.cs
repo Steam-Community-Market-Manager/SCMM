@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
 using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
@@ -19,10 +16,6 @@ using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -168,7 +161,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfileSummary([FromRoute] string id)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("ID is invalid");
             }
@@ -212,7 +205,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> PostInventorySync([FromRoute] string id, [FromQuery] bool force = false)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("ID is invalid");
             }
@@ -265,7 +258,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryValue([FromRoute] string id, [FromQuery] bool generateInventoryMosaic = false, [FromQuery] int mosaicTileSize = 128, [FromQuery] int mosaicColumns = 5, [FromQuery] int mosaicRows = 5, [FromQuery] bool force = false)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("ID is invalid");
             }
@@ -359,7 +352,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryTotal([FromRoute] string id)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("ID is invalid");
             }
@@ -396,7 +389,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryItems([FromRoute] string id)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("ID is invalid");
             }
@@ -471,7 +464,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryInvestment([FromRoute] string id, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("ID is invalid");
             }
@@ -491,13 +484,13 @@ namespace SCMM.Web.Server.API.Controllers
                 return Unauthorized($"Inventory does not belong to you and you do not have permission to view it");
             }
 
-            filter = Uri.UnescapeDataString(filter?.Trim() ?? String.Empty);
+            filter = Uri.UnescapeDataString(filter?.Trim() ?? string.Empty);
             var query = _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
                 .Where(x => !x.Description.IsTwitchDrop)
-                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.ToLower().Contains(filter.ToLower()))
+                .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name.ToLower().Contains(filter.ToLower()))
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description.MarketItem)
@@ -569,7 +562,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SetInventoryItem([FromRoute] string id, [FromRoute] Guid itemId, [FromBody] UpdateInventoryItemCommand command)
         {
-            if (String.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("ID is invalid");
             }

@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.Linq;
-
-namespace SCMM.Steam.Job.Server.Jobs.Cron
+﻿namespace SCMM.Steam.Job.Server.Jobs.Cron
 {
     public static class ConfigurationExtensions
     {

@@ -15,8 +15,8 @@ public class AppState
 
     public AppState(ILogger<AppState> logger, LocalStorageService storage)
     {
-        this.Logger = logger;
-        this.Storage = storage;
+        Logger = logger;
+        Storage = storage;
     }
 
     public event EventHandler Changed;
@@ -37,7 +37,7 @@ public class AppState
 
     public bool IsInRole(string role)
     {
-        return Profile?.Roles?.Any(x => String.Equals(x, role, StringComparison.OrdinalIgnoreCase)) == true;
+        return Profile?.Roles?.Any(x => string.Equals(x, role, StringComparison.OrdinalIgnoreCase)) == true;
     }
 
     public bool Is(string steamId)
@@ -47,12 +47,12 @@ public class AppState
 
     public void AddHeadersTo(HttpClient client)
     {
-        if (!String.IsNullOrEmpty(LanguageId))
+        if (!string.IsNullOrEmpty(LanguageId))
         {
             client.DefaultRequestHeaders.Remove(HttpHeaderLanguage);
             client.DefaultRequestHeaders.Add(HttpHeaderLanguage, LanguageId);
         }
-        if (!String.IsNullOrEmpty(CurrencyId))
+        if (!string.IsNullOrEmpty(CurrencyId))
         {
             client.DefaultRequestHeaders.Remove(HttpHeaderCurrency);
             client.DefaultRequestHeaders.Add(HttpHeaderCurrency, CurrencyId);
@@ -66,7 +66,7 @@ public class AppState
         {
             LanguageId = await Storage.GetAsync<string>(nameof(LanguageId));
             CurrencyId = await Storage.GetAsync<string>(nameof(CurrencyId));
-            return (!String.IsNullOrEmpty(LanguageId) && !String.IsNullOrEmpty(CurrencyId));
+            return (!string.IsNullOrEmpty(LanguageId) && !string.IsNullOrEmpty(CurrencyId));
         }
         catch (Exception ex)
         {
@@ -80,7 +80,7 @@ public class AppState
     {
         try
         {
-            if (!String.IsNullOrEmpty(LanguageId))
+            if (!string.IsNullOrEmpty(LanguageId))
             {
                 await Storage.SetAsync<string>(nameof(LanguageId), LanguageId);
             }
@@ -88,7 +88,7 @@ public class AppState
             {
                 await Storage.RemoveAsync(nameof(LanguageId));
             }
-            if (!String.IsNullOrEmpty(CurrencyId))
+            if (!string.IsNullOrEmpty(CurrencyId))
             {
                 await Storage.SetAsync<string>(nameof(CurrencyId), CurrencyId);
             }

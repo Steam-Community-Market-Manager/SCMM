@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
 {

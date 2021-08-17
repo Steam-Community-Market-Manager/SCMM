@@ -1,9 +1,6 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace SCMM.Shared.Data.Store
 {
@@ -34,7 +31,7 @@ namespace SCMM.Shared.Data.Store
             var definition = ConfigurationDefinitions.Closest(x => x.Name, name, maxDistance: 3);
             if (definition.AllowedValues?.Length > 0 && values != null)
             {
-                for (int i = 0; i < values.Length; i++)
+                for (var i = 0; i < values.Length; i++)
                 {
                     var value = definition.AllowedValues.Closest(x => x, values[i]);
                     if (string.IsNullOrEmpty(value))
@@ -56,14 +53,14 @@ namespace SCMM.Shared.Data.Store
         {
             name = AssertValidConfigurationName(name);
             var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
-            var result = String.Empty;
-            if (!String.IsNullOrEmpty(config?.Value))
+            var result = string.Empty;
+            if (!string.IsNullOrEmpty(config?.Value))
             {
                 result = config?.Value;
             }
             else if (config?.List?.Any() == true)
             {
-                result = String.Join(", ", config?.List);
+                result = string.Join(", ", config?.List);
             }
             else
             {

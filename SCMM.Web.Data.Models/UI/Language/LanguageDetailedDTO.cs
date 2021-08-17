@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Web.Data.Models.UI.Language
+﻿namespace SCMM.Web.Data.Models.UI.Language
 {
     public class LanguageDetailedDTO : LanguageDTO
     {

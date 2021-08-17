@@ -1,8 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus.Administration;
 using SCMM.Azure.ServiceBus.Attributes;
-using System;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace SCMM.Azure.ServiceBus.Extensions
 {
@@ -16,7 +14,7 @@ namespace SCMM.Azure.ServiceBus.Extensions
         public static async Task<bool> SubscriptionExistsAsync(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client, Type messageType)
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
-            if (!String.IsNullOrEmpty(topicName))
+            if (!string.IsNullOrEmpty(topicName))
             {
                 var subscriptionExists = await client.SubscriptionExistsAsync(topicName, Assembly.GetEntryAssembly().GetName().Name);
                 return subscriptionExists.Value;
@@ -33,7 +31,7 @@ namespace SCMM.Azure.ServiceBus.Extensions
         public static async Task<SubscriptionProperties> CreateSubscriptionAsync(this global::Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient client, Type messageType, Action<CreateSubscriptionOptions> optionsAction = null)
         {
             var topicName = messageType.GetCustomAttribute<TopicAttribute>()?.Name;
-            if (!String.IsNullOrEmpty(topicName))
+            if (!string.IsNullOrEmpty(topicName))
             {
                 var options = new CreateSubscriptionOptions(topicName, Assembly.GetEntryAssembly().GetName().Name);
                 optionsAction?.Invoke(options);

@@ -5,12 +5,8 @@ using SCMM.Shared.Data.Models;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
-using System;
-using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -105,7 +101,7 @@ namespace SCMM.Steam.Client
             where TRequest : SteamRequest
         {
             var html = await GetText(request);
-            if (String.IsNullOrEmpty(html))
+            if (string.IsNullOrEmpty(html))
             {
                 return default;
             }
@@ -127,7 +123,7 @@ namespace SCMM.Steam.Client
             where TRequest : SteamRequest
         {
             var xml = await GetText(request);
-            if (String.IsNullOrEmpty(xml))
+            if (string.IsNullOrEmpty(xml))
             {
                 return default;
             }
@@ -164,7 +160,7 @@ namespace SCMM.Steam.Client
             where TRequest : SteamRequest
         {
             var json = await GetText(request);
-            if (String.IsNullOrEmpty(json))
+            if (string.IsNullOrEmpty(json))
             {
                 return default;
             }

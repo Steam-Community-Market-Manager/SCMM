@@ -6,10 +6,6 @@ using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Workshop.Requests;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Functions
 {

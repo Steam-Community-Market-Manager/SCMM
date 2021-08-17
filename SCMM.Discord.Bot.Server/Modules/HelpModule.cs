@@ -1,10 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using SCMM.Discord.Client;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {

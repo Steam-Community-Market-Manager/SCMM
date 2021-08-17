@@ -3,11 +3,7 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using DiscordConfiguration = SCMM.Steam.Data.Store.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -19,7 +15,7 @@ namespace SCMM.Discord.Bot.Server.Modules
     {
         private readonly SteamDbContext _db;
 
-        private static char[] ValueSeparators = new[] { ' ', ',', '+', '&', '|', ';' };
+        private static readonly char[] ValueSeparators = new[] { ' ', ',', '+', '&', '|', ';' };
 
         public ConfigurationModule(SteamDbContext db)
         {
@@ -60,7 +56,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     description.Append($" Accepted values are:");
                     description.AppendLine();
                     description.Append(
-                        String.Join(',', definition.AllowedValues.Select(x => $"`{x}`"))
+                        string.Join(',', definition.AllowedValues.Select(x => $"`{x}`"))
                     );
                 }
 
@@ -98,7 +94,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             try
             {
                 var config = guild.Get(option);
-                if (!String.IsNullOrEmpty(config.Value))
+                if (!string.IsNullOrEmpty(config.Value))
                 {
                     return CommandResult.Success($"'{config.Key?.Name ?? option}' is '{config.Value}'");
                 }
@@ -133,7 +129,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var config = guild.Set(option, value);
                 await _db.SaveChangesAsync();
 
-                if (config != null && !String.IsNullOrEmpty(config.Value))
+                if (config != null && !string.IsNullOrEmpty(config.Value))
                 {
                     return CommandResult.Success($"Ok. '{config?.Name ?? option}' is now '{config.Value}'.");
                 }
@@ -168,7 +164,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var config = guild.Add(option, values?.SelectMany(x => x.Split(ValueSeparators, StringSplitOptions.RemoveEmptyEntries))?.ToArray());
                 await _db.SaveChangesAsync();
 
-                return CommandResult.Success($"Ok. '{config?.Name ?? option}' is now '{String.Join(", ", config.List)}'.");
+                return CommandResult.Success($"Ok. '{config?.Name ?? option}' is now '{string.Join(", ", config.List)}'.");
             }
             catch (ArgumentException ex)
             {
@@ -198,7 +194,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
                 if (config != null && config.List?.Any() == true)
                 {
-                    return CommandResult.Success($"Ok. '{config?.Name ?? option}' is now '{String.Join(", ", config.List)}'.");
+                    return CommandResult.Success($"Ok. '{config?.Name ?? option}' is now '{string.Join(", ", config.List)}'.");
                 }
                 else
                 {
@@ -257,7 +253,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var config = guild.List(option);
                 if (config.Value?.Any() == true)
                 {
-                    return CommandResult.Success($"'{config.Key?.Name ?? option}' is '{String.Join(", ", config.Value)}'.");
+                    return CommandResult.Success($"'{config.Key?.Name ?? option}' is '{string.Join(", ", config.Value)}'.");
                 }
                 else
                 {

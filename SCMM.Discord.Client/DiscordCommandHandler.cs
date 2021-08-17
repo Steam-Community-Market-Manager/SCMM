@@ -6,11 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.AI;
 using SCMM.Discord.Client.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Client
 {
@@ -73,7 +69,7 @@ namespace SCMM.Discord.Client
             }
 
             // If a command is detected, execute it
-            int commandArgPos = 0;
+            var commandArgPos = 0;
             if (message.HasCharPrefix(_configuration.CommandPrefix.FirstOrDefault(), ref commandArgPos) ||
                 message.HasMentionPrefix(_client.CurrentUser, ref commandArgPos))
             {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Steam.Data.Models.Workshop.Models
+﻿namespace SCMM.Steam.Data.Models.Workshop.Models
 {
     public class SteamWorkshopFileManifest
     {

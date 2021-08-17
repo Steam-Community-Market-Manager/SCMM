@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Steam.Data.Models.Community.Requests.Html
+﻿namespace SCMM.Steam.Data.Models.Community.Requests.Html
 {
     public class SteamStorePageRequest : SteamRequest
     {
@@ -20,7 +18,7 @@ namespace SCMM.Steam.Data.Models.Community.Requests.Html
         public string SearchText { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{Constants.SteamStoreUrl}/itemstore/{Uri.EscapeDataString(AppId)}/?start={(Start > 0 ? Start.ToString() : String.Empty)}&count={(Count > 0 ? Count.ToString() : String.Empty)}&filter={Uri.EscapeDataString(Filter ?? String.Empty)}&searchtext={Uri.EscapeDataString(SearchText ?? String.Empty)}"
+            $"{Constants.SteamStoreUrl}/itemstore/{Uri.EscapeDataString(AppId)}/?start={(Start > 0 ? Start.ToString() : string.Empty)}&count={(Count > 0 ? Count.ToString() : string.Empty)}&filter={Uri.EscapeDataString(Filter ?? string.Empty)}&searchtext={Uri.EscapeDataString(SearchText ?? string.Empty)}"
         );
     }
 }

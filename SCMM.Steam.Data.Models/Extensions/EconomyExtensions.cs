@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 
 namespace SCMM.Steam.Data.Models.Extensions
 {
@@ -65,8 +63,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             // Custom work around for strings that have more than 2 decimal places (e.g. "12.34.56"), round down
             if (useDecimalShortCircuit)
             {
-                var decAmount = 0m;
-                if (decimal.TryParse(strAmount, NumberStyles.Any, culture?.NumberFormat, out decAmount))
+                if (decimal.TryParse(strAmount, NumberStyles.Any, culture?.NumberFormat, out var decAmount))
                 {
                     decAmount = Math.Round(decAmount, 2);
                     strAmount = decAmount.ToString();

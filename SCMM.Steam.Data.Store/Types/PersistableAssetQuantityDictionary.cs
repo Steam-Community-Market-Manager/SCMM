@@ -1,6 +1,4 @@
 ﻿using SCMM.Shared.Data.Store.Types;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SCMM.Steam.Data.Store.Types

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace SCMM.Shared.Data.Store.Types
 {
@@ -29,15 +26,9 @@ namespace SCMM.Shared.Data.Store.Types
         protected abstract string ConvertSingleKeyToPersistable(TKey key);
         protected abstract string ConvertSingleValueToPersistable(TValue value);
 
-        protected virtual string KeyValueSeperator
-        {
-            get { return DefaultKeyValueSeperator; }
-        }
+        protected virtual string KeyValueSeperator => DefaultKeyValueSeperator;
 
-        protected virtual string ItemSeperator
-        {
-            get { return DefaultItemSeperator; }
-        }
+        protected virtual string ItemSeperator => DefaultItemSeperator;
 
         [Required]
         public virtual string Serialised
@@ -90,19 +81,13 @@ namespace SCMM.Shared.Data.Store.Types
 
         public TValue this[TKey key]
         {
-            get { return _data[key]; }
-            set { _data[key] = value; }
+            get => _data[key];
+            set => _data[key] = value;
         }
 
-        public ICollection<TKey> Keys
-        {
-            get { return _data.Keys; }
-        }
+        public ICollection<TKey> Keys => _data.Keys;
 
-        public ICollection<TValue> Values
-        {
-            get { return _data.Values; }
-        }
+        public ICollection<TValue> Values => _data.Values;
 
         #endregion
 
@@ -133,15 +118,9 @@ namespace SCMM.Shared.Data.Store.Types
             return _data.Remove(item);
         }
 
-        public int Count
-        {
-            get { return _data.Count; }
-        }
+        public int Count => _data.Count;
 
-        public bool IsReadOnly
-        {
-            get { return _data.IsReadOnly; }
-        }
+        public bool IsReadOnly => _data.IsReadOnly;
 
         #endregion
 

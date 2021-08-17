@@ -1,8 +1,5 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
@@ -13,12 +10,7 @@ using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {
@@ -90,13 +82,13 @@ namespace SCMM.Steam.Job.Server.Jobs
                         .Where(x => x.Name.LocalName == "a")
                         .Select(x => x.Attribute("href"))
                         .FirstOrDefault();
-                    if (!String.IsNullOrEmpty(storeItemLink?.Value))
+                    if (!string.IsNullOrEmpty(storeItemLink?.Value))
                     {
                         var storeItemIdMatchGroup = Regex.Match(storeItemLink.Value, Constants.SteamStoreItemDefLinkRegex).Groups;
                         var storeItemId = (storeItemIdMatchGroup.Count > 1)
                             ? storeItemIdMatchGroup[1].Value.Trim()
                             : null;
-                        if (!String.IsNullOrEmpty(storeItemId))
+                        if (!string.IsNullOrEmpty(storeItemId))
                         {
                             storeItemIds.Add(storeItemId);
                         }

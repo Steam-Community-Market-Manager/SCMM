@@ -1,5 +1,4 @@
 ﻿using SCMM.Steam.Data.Store;
-using System;
 using System.Security.Claims;
 
 namespace SCMM.Web.Server.Extensions
@@ -18,8 +17,7 @@ namespace SCMM.Web.Server.Extensions
 
         public static Guid Id(this ClaimsPrincipal user)
         {
-            Guid id;
-            Guid.TryParse(user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Id)?.Value, out id);
+            Guid.TryParse(user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Id)?.Value, out var id);
             return id;
         }
 

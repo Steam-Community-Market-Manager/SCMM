@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace SCMM.Web.Data.Models
+﻿namespace SCMM.Web.Data.Models
 {
     public static class Skeleton
     {
@@ -14,7 +11,7 @@ namespace SCMM.Web.Data.Models
         {
             var list = new TList();
             var count = new Random().Next(min, max);
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 list.Add(default(T));
             }

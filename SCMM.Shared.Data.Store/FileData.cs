@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SCMM.Shared.Data.Store
+﻿namespace SCMM.Shared.Data.Store
 {
     public class FileData : Entity
     {

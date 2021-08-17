@@ -1,10 +1,7 @@
 ﻿using CommandQuery;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SCMM.Steam.API.Queries
 {
@@ -38,7 +35,7 @@ namespace SCMM.Steam.API.Queries
         public async Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request)
         {
             SteamProfile profile = null;
-            Guid profileId = Guid.Empty;
+            var profileId = Guid.Empty;
             ulong steamId64 = 0;
             string customUrl = null;
             if (string.IsNullOrEmpty(request.Id))

@@ -2,11 +2,7 @@
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace SCMM.Google.Client
 {
@@ -61,7 +57,7 @@ namespace SCMM.Google.Client
 
             var channelDetailsResponse = await channelDetailsRequest.ExecuteAsync(); // Quota cost: 1 unit
             var uploadPlaylistId = channelDetailsResponse?.Items.FirstOrDefault()?.ContentDetails?.RelatedPlaylists?.Uploads;
-            if (String.IsNullOrEmpty(uploadPlaylistId))
+            if (string.IsNullOrEmpty(uploadPlaylistId))
             {
                 throw new Exception($"Unable to locate upload playlist for channel: {channelId}");
             }
@@ -79,7 +75,7 @@ namespace SCMM.Google.Client
                 foreach (var item in videosListResponse.Items)
                 {
                     var videoId = item.Snippet?.ResourceId?.VideoId;
-                    if (!String.IsNullOrEmpty(videoId) && !videos.Any(x => x.Id == videoId))
+                    if (!string.IsNullOrEmpty(videoId) && !videos.Any(x => x.Id == videoId))
                     {
                         videos.Add(new YouTubeVideo()
                         {
@@ -95,7 +91,7 @@ namespace SCMM.Google.Client
                 }
 
                 nextPageToken = videosListResponse?.NextPageToken;
-            } while (!String.IsNullOrEmpty(nextPageToken) && (maxResults == null || videos.Count < maxResults));
+            } while (!string.IsNullOrEmpty(nextPageToken) && (maxResults == null || videos.Count < maxResults));
 
             return (maxResults > 0 && videos.Count > maxResults)
                 ? videos.Take(maxResults.Value)
@@ -124,7 +120,7 @@ namespace SCMM.Google.Client
                 foreach (var item in videosListResponse.Items)
                 {
                     var videoId = item.Id.VideoId;
-                    if (!String.IsNullOrEmpty(videoId) && !videos.Any(x => x.Id == videoId))
+                    if (!string.IsNullOrEmpty(videoId) && !videos.Any(x => x.Id == videoId))
                     {
                         videos.Add(new YouTubeVideo()
                         {
@@ -140,7 +136,7 @@ namespace SCMM.Google.Client
                 }
 
                 nextPageToken = videosListResponse?.NextPageToken;
-            } while (!String.IsNullOrEmpty(nextPageToken) && (maxResults == null || videos.Count < maxResults));
+            } while (!string.IsNullOrEmpty(nextPageToken) && (maxResults == null || videos.Count < maxResults));
 
             return (maxResults > 0 && videos.Count > maxResults)
                 ? videos.Take(maxResults.Value)

@@ -7,10 +7,7 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace SCMM.Steam.API.Commands
@@ -93,7 +90,7 @@ namespace SCMM.Steam.API.Commands
 
                 // Parse and update the store item id
                 var itemDetailsUrl = itemDefinitionDetailsLink?.Attribute("href")?.Value;
-                if (String.IsNullOrEmpty(storeItem.SteamId) && !String.IsNullOrEmpty(itemDetailsUrl))
+                if (string.IsNullOrEmpty(storeItem.SteamId) && !string.IsNullOrEmpty(itemDetailsUrl))
                 {
                     var steamIdMatchGroup = Regex.Match(itemDetailsUrl, Constants.SteamStoreItemDefLinkRegex).Groups;
                     storeItem.SteamId = (steamIdMatchGroup.Count > 1)
@@ -103,15 +100,15 @@ namespace SCMM.Steam.API.Commands
 
                 // Parse and update the store item prices
                 var itemPriceText = itemDefinitionPrice?.Value;
-                if (!storeItem.PricesAreLocked && !String.IsNullOrEmpty(itemPriceText))
+                if (!storeItem.PricesAreLocked && !string.IsNullOrEmpty(itemPriceText))
                 {
                     // NOTE: Unless specified in the prefix/suffix text, the price is assumed to be USD
                     var possibleCurrencies = currencies
                         .Where(x =>
-                            (!String.IsNullOrEmpty(x.PrefixText) && itemPriceText.Contains(x.PrefixText)) ||
-                            (!String.IsNullOrEmpty(x.SuffixText) && itemPriceText.Contains(x.SuffixText))
+                            (!string.IsNullOrEmpty(x.PrefixText) && itemPriceText.Contains(x.PrefixText)) ||
+                            (!string.IsNullOrEmpty(x.SuffixText) && itemPriceText.Contains(x.SuffixText))
                         )
-                        .OrderBy(x => Int32.Parse(x.SteamId));
+                        .OrderBy(x => int.Parse(x.SteamId));
 
                     var itemPriceCurrency = (
                         possibleCurrencies.FirstOrDefault() ??

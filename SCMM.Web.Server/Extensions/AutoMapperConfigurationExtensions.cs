@@ -3,8 +3,6 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace SCMM.Web.Server.Extensions

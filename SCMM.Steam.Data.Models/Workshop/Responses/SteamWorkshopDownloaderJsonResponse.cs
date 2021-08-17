@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
 
 namespace SCMM.Steam.Data.Models.Workshop.Responses
 {

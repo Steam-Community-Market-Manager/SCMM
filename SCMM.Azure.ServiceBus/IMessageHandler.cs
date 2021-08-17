@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace SCMM.Azure.ServiceBus
+﻿namespace SCMM.Azure.ServiceBus
 {
     public interface IMessageHandler<T> : IMessageHandler where T : IMessage
     {

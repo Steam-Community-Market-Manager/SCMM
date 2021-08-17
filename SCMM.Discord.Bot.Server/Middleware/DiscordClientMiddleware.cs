@@ -1,18 +1,9 @@
 ﻿using CommandQuery;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SCMM.Discord.Bot.Server.Middleware
 {
