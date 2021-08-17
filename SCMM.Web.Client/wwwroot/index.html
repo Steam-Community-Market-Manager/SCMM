@@ -105,32 +105,33 @@
 
             var resourceIndex = 0;
             var resourcesLoaded = [];
+            var progressBarElement = document.getElementById('progress-bar');
+            var progressElement = document.getElementById('progress');
             Blazor.start({
                 loadBootResource: function (type, name, defaultUri, integrity) {
                     if (type == "dotnetjs") {
                         return defaultUri;
                     }
 
-                    var fetchResources = fetch(defaultUri, {
+                    var fetchResource = fetch(defaultUri, {
                         cache: 'no-cache',
                         integrity: integrity
                     });
 
-                    var resourcesTotal = resourcesLoaded.length;
-                    var progressBarElement = document.getElementById('progress-bar');
-                    var progressElement = document.getElementById('progress');
-
-                    resourcesLoaded.push(fetchResources);
-                    fetchResources.then((r) => {
+                    resourcesLoaded.push(fetchResource);
+                    fetchResource.then((r) => {
                         resourceIndex++;
+                        var resourcesTotal = resourcesLoaded.length;
                         var progressValue = parseInt((resourceIndex * 100.0) / resourcesTotal);
                         var progressText = progressValue + '%';
-                        progressBarElement.style.display = 'block';
-                        progressElement.style.width = progressText;
-                        progressElement.innerText = progressText;
+                        if (progressValue > 0 && progressValue <= 100) {
+                            progressBarElement.style.display = 'block';
+                            progressElement.style.width = progressText;
+                            progressElement.innerText = progressText;
+                        }
                     });
 
-                    return fetchResources;
+                    return fetchResource;
                 }
             });
 
