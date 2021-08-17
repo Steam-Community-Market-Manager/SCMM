@@ -40,16 +40,17 @@
         </script>
     </head>
     <body>
+
         <div id="app">
             <div class="preloader">
-                <div id="wasm-unsupported" class="wasm-unsupported-root">
+                <div id="wasm-unsupported" class="wasm-unsupported-root hidden">
                     <img src="images/webassembly.png" />
                     <p>
-                        <span class="preloader-text">Your browser does not support WebAssembly (WASM)</span><br />
-                        <span class="preloader-subtext">https://caniuse.com/wasm</span>
+                        <span class="preloader-text">Sorry, your web browser does not support Web Assembly (WASM).</span><br />
+                        <span>See: <a href="https://caniuse.com/wasm" class="preloader-subtext">https://caniuse.com/wasm</a>.</span>
                     </p>
                 </div>
-                <div id="wasm-loading" class="wasm-loading-root">
+                <div id="wasm-loading" class="wasm-loading-root hidden">
                     <p class="preloader-text loading-text">
                         <span class="letter">L</span>
                         <span class="letter">o</span>
@@ -59,40 +60,80 @@
                         <span class="letter">n</span>
                         <span class="letter">g</span>
                     </p>
+                    <div id="progress-bar" class="progress-bar-root hidden">
+                        <div id="progress" style="width:0%"></div>
+                    </div>
                     <p class="preloader-subtext">
                         <span>Initialising Blazor, please wait...</span>
                     </p>
                 </div>
+                <script type="text/javascript">
+
+                    function wasmIsSupported() {
+                        try {
+                            if (typeof WebAssembly === "object" &&
+                                typeof WebAssembly.instantiate === "function") {
+                                const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+                                if (module instanceof WebAssembly.Module) {
+                                    return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
+                                }
+                            }
+                        } catch (e) {
+                        }
+                        return false;
+                    }
+
+                    if (wasmIsSupported()) {
+                        document.getElementById("wasm-loading").style.display = "flex";
+                    }
+                    else {
+                        document.getElementById("wasm-unsupported").style.display = "flex";
+                    }
+
+                </script>
             </div>
         </div>
-        <script type="text/javascript">
-            function wasmIsSupported() {
-                try {
-                    if (typeof WebAssembly === "object" &&
-                        typeof WebAssembly.instantiate === "function") {
-                        const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
-                        if (module instanceof WebAssembly.Module) {
-                            return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
-                        }
-                    }
-                } catch (e) {
-                }
-                return false;
-            }
-            if (wasmIsSupported()) {
-                document.getElementById("wasm-loading").style.display = "flex";
-            }
-            else {
-                document.getElementById("wasm-unsupported").style.display = "flex";
-            }
-        </script>
-        <script src="_framework/blazor.webassembly.js"></script>
+
+        <script src="_framework/blazor.webassembly.js" autostart="false"></script>
         <script src="_content/MudBlazor/MudBlazor.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js" integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww==" crossorigin="anonymous"></script>
         <script src="https://cdn.syncfusion.com/blazor/syncfusion-blazor-base.min.js"></script>
         <script src="/js/interops.js"></script>
         <script type="text/javascript">
+
             navigator.serviceWorker.register('service-worker.js');
+
+            var resourceIndex = 0;
+            var resourcesLoaded = [];
+            Blazor.start({
+                loadBootResource: function (type, name, defaultUri, integrity) {
+                    if (type == "dotnetjs") {
+                        return defaultUri;
+                    }
+
+                    var fetchResources = fetch(defaultUri, {
+                        cache: 'no-cache',
+                        integrity: integrity
+                    });
+
+                    var resourcesTotal = resourcesLoaded.length;
+                    var progressBarElement = document.getElementById('progress-bar');
+                    var progressElement = document.getElementById('progress');
+
+                    resourcesLoaded.push(fetchResources);
+                    fetchResources.then((r) => {
+                        resourceIndex++;
+                        var progressValue = parseInt((resourceIndex * 100.0) / resourcesTotal);
+                        var progressText = progressValue + '%';
+                        progressBarElement.style.display = 'block';
+                        progressElement.style.width = progressText;
+                        progressElement.innerText = progressText;
+                    });
+
+                    return fetchResources;
+                }
+            });
+
         </script>
     </body>
 </html>

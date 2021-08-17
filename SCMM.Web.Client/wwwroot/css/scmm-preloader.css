@@ -4,6 +4,7 @@
     font-size: 1rem;
     line-height: 1.5;
     margin: 0;
+    padding: 20vh 20vw;
     min-height: 100vh;
     background: #121212;
     text-align: center;
@@ -16,11 +17,6 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-}
-
-.wasm-unsupported-root, .wasm-loading-root {
-    display: none;
-    position: relative;
 }
 
 .preloader-text {
@@ -49,7 +45,7 @@
     height: 6px;
     background: #fff;
     border-radius: 50%;
-    animation: dotMove 1800ms cubic-bezier(0.25, 0.25, 0.75, 0.75) infinite;
+    animation: dot-move 1800ms cubic-bezier(0.25, 0.25, 0.75, 0.75) infinite;
 }
 
 .loading-text .letter {
@@ -73,12 +69,12 @@
     height: 36px;
     background: #121212;
     transform-origin: 100% 0;
-    animation: lineStretch 1800ms cubic-bezier(0.25, 0.25, 0.75, 0.75) infinite;
+    animation: line-stretch 1800ms cubic-bezier(0.25, 0.25, 0.75, 0.75) infinite;
 }
 
 .loading-text .letter:nth-child(5) {
     transform-origin: 100% 70%;
-    animation: letterStretch 1800ms cubic-bezier(0.25, 0.23, 0.73, 0.75) infinite;
+    animation: letter-stretch 1800ms cubic-bezier(0.25, 0.23, 0.73, 0.75) infinite;
 }
 
 .loading-text .letter:nth-child(5)::before {
@@ -91,7 +87,24 @@
     background: #121212;
 }
 
-@keyframes dotMove {
+.progress-bar-root {
+    width: 100%;
+    margin: 8px 0px;
+    border: 2px solid #c7c7c7;
+    border-radius: 8px;
+}
+
+.progress-bar > div {
+    color: #121212;
+    background: #c7c7c7;
+    padding: 2px 4px;
+    border-radius: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    animation: progress-bar 2s;
+}
+
+@keyframes dot-move {
 
     0%, 100% {
         transform: rotate(180deg) translate(-110px, -10px) rotate(-180deg);
@@ -103,7 +116,7 @@
 
 }
 
-@keyframes letterStretch {
+@keyframes letter-stretch {
 
     0%, 100% {
         transform: scale(1, 0.35);
@@ -132,7 +145,7 @@
 
 }
 
-@keyframes lineStretch {
+@keyframes line-stretch {
 
     0%, 45%, 70%, 100% {
         transform: scaleY(0.125);
@@ -156,6 +169,14 @@
 
     68% {
         transform: scaleY(0.18);
+    }
+
+}
+
+@keyframes progress-bar {
+
+    0% {
+        width: 0;
     }
 
 }
