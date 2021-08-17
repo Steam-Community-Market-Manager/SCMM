@@ -40,7 +40,7 @@
         StateHasChanged();
         
         await State.WriteToStorageAsync();
-        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
     }
 
 }

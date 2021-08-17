@@ -179,7 +179,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Count = (Count > 0) ? Count : 300;
+        Count = (Count != default) ? Count : 300;
         await RefreshItems();
     }
     

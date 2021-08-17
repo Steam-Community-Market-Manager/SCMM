@@ -7,6 +7,7 @@ using Syncfusion.Blazor;
 using Syncfusion.Licensing;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
@@ -47,4 +48,5 @@ SyncfusionLicenseProvider.RegisterLicense(
     "NDYwMDE3QDMxMzkyZTMxMmUzMFE5Y1BKKzFrd3FzbG5EbHJOZVJSVThMRUhEQnVXdUZjUzVNOWlKTDIwWE09"
 );
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+await app.RunAsync();
