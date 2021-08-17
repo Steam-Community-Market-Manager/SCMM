@@ -1,3 +1,4 @@
+using BlazorApplicationInsights;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
@@ -23,6 +24,8 @@ public static class WebAssemblyHostExtensions
 
     public static WebAssemblyHostBuilder ConfigureServices(this WebAssemblyHostBuilder builder)
     {
+        builder.Services.AddBlazorApplicationInsights();
+
         builder.Services.AddSingleton<AppState>();
         builder.Services.AddSingleton<LocalStorageService>();
         builder.Services.AddSingleton<ExternalNavigationManager>();
