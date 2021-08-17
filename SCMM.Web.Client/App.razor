@@ -4,12 +4,13 @@
 @inject HttpClient Http
 
 <AppProviders />
-<Router AppAssembly="@typeof(Program).Assembly">
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         @if (State != null)
         {
             <CascadingValue Value="@routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)" />
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
             </CascadingValue>
         }
     </Found>

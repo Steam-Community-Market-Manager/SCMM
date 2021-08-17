@@ -1,35 +1,30 @@
 ﻿using Microsoft.JSInterop;
-using System;
-using System.Threading;
 
-namespace SCMM.Web.Client.Shared
+public class DocumentManager
 {
-    public class DocumentManager
+    private readonly IJSRuntime _jsRuntime;
+
+    public DocumentManager(IJSRuntime jsRuntime)
     {
-        private readonly IJSRuntime _jsRuntime;
+        _jsRuntime = jsRuntime;
+    }
 
-        public DocumentManager(IJSRuntime jsRuntime)
+    public void ScrollElementIntoView(string selector, TimeSpan? delay = null)
+    {
+        if (delay != null)
         {
-            _jsRuntime = jsRuntime;
+            _ = new Timer(async x =>
+            {
+                await _jsRuntime.InvokeVoidAsync("WindowInterop.scrollElementIntoView", selector);
+            },
+                null,
+                ((int?)delay?.TotalMilliseconds) ?? 0,
+                Timeout.Infinite
+            );
         }
-
-        public void ScrollElementIntoView(string selector, TimeSpan? delay = null)
+        else
         {
-            if (delay != null)
-            {
-                _ = new Timer(async x =>
-                {
-                    await _jsRuntime.InvokeVoidAsync("WindowInterop.scrollElementIntoView", selector);
-                },
-                    null,
-                    ((int?)delay?.TotalMilliseconds) ?? 0,
-                    Timeout.Infinite
-                );
-            }
-            else
-            {
-                _jsRuntime.InvokeVoidAsync("WindowInterop.scrollElementIntoView", selector);
-            }
+            _jsRuntime.InvokeVoidAsync("WindowInterop.scrollElementIntoView", selector);
         }
     }
 }
