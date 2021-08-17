@@ -12,7 +12,6 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
-using System.Reactive.Linq;
 
 namespace SCMM.Steam.Job.Server.Jobs
 {

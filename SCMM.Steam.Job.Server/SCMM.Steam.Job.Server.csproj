@@ -18,7 +18,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.0-preview.7.21378.6" />
     <PackageReference Include="Cronos" Version="0.7.1" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.15.2" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

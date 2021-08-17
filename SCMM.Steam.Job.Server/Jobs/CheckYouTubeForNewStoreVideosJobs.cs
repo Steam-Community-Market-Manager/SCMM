@@ -3,7 +3,6 @@ using SCMM.Google.Client;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
-using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Job.Server.Jobs
