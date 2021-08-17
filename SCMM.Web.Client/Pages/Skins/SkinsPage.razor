@@ -171,15 +171,14 @@
     
     [Parameter]
     [SupplyParameterFromQuery]
-    public int Start { get; set; }
+    public Nullable<int> Start { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public int Count { get; set; }
+    public Nullable<int> Count { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        Count = (Count != default) ? Count : 300;
         await RefreshItems();
     }
     
@@ -196,7 +195,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start}&count={Count}&itemType={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start.GetValueOrDefault(0)}&count={Count.GetValueOrDefault(300)}&itemType={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}"
             );
         }
         catch (Exception ex)
