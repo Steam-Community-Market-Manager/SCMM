@@ -168,11 +168,11 @@ else if (StoreList.Any())
                                                     <ChildContent>
                                                         @if(item.HasWorkshopFile)
                                                         {
-                                                            <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="@($"{(item.HasGlow == true ? "glow" : null)} clickable")" />
+                                                            <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="@($"{GetGlowClass(item)} clickable")" style="@GetGlowStyles(item)" />
                                                         }
                                                         else
                                                         {
-                                                            <img src="@item.IconUrl" class="@(item.HasGlow == true ? "glow" : null)" />
+                                                            <img src="@item.IconUrl" class="@GetGlowClass(item)" style="@GetGlowStyles(item)" />
                                                         }
                                                     </ChildContent>
                                                     <TooltipContent>
@@ -609,7 +609,30 @@ else if (StoreList.Any())
         });
     }
     
-    private string GetTopSellerStyles(int? topSellerIndex)
+    private string GetGlowClass(StoreItemDetailsDTO item)
+    {
+        if (item.HasGlow == true)
+        {
+            if (!String.IsNullOrEmpty(item.DominantColour))
+            {
+                return $"glow-transparent";
+            }
+            else
+            {
+                return $"glow";
+            }
+        }
+        return null;    }
+    private string GetGlowStyles(StoreItemDetailsDTO item)
+    {
+        if (item.HasGlow == true)
+        {
+            if (!String.IsNullOrEmpty(item.DominantColour))
+            {
+                return $"filter: drop-shadow(0px 0px 16px {item.DominantColour});";
+            }
+        }
+        return null;    }    private string GetTopSellerStyles(int? topSellerIndex)
     {
         switch(topSellerIndex)
         {

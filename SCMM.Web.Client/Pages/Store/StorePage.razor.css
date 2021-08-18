@@ -14,17 +14,3 @@
 .store-item .item-type {
     margin-top: -8px;
 }
-
-.glow {
-    animation: glow 3s 0s linear infinite;
-}
-
-@keyframes glow {
-    0% {
-        filter: drop-shadow(0px 0px 0px #666);
-    }
-
-    50% {
-        filter: drop-shadow(0px 0px 16px #666);
-    }
-}
