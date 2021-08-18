@@ -5,7 +5,7 @@ namespace SCMM.Shared.Web
     public class HtmlLogger : ILoggerProvider, ILogger
     {
         private static readonly List<string> Logs = new List<string>();
-        private const int MaxLogCount = 300;
+        private const int MaxLogCount = 1000;
 
         public ILogger CreateLogger(string categoryName)
         {
@@ -39,14 +39,24 @@ namespace SCMM.Shared.Web
                 case LogLevel.Critical: background = "darkred"; break;
             }
 
-            var log = $"<span style=\"color:{gray}\">[{DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss")}]</span> <strong><samp>{logLevel.ToString().ToUpper()}</samp></strong> <span>{formatter(state, exception)}</span>";
-            if (!string.IsNullOrEmpty(exception?.StackTrace))
+            var timestamp = DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            var log = $"<span style=\"color:{gray}\">[{timestamp}]</span> <strong><samp>{logLevel.ToString().ToUpper()}</samp></strong> <span>{formatter(state, exception)}</span><br/>";
+            if (exception != null)
             {
-                log += $"<pre style=\"color: {gray}; margin:0px\">{exception.StackTrace}</pre>";
-            }
-            else
-            {
-                log += $"<br/>";
+                var innerException = exception;
+                while(innerException != null)
+                {
+                    log += $"<span style=\"color:{gray}\">[{timestamp}]</span> <strong><samp>{exception.GetType().Name}</samp></strong><span> @ {innerException.Source ?? "Unknown"}:</span> <span>{innerException.Message}</span>";
+                    if (!string.IsNullOrEmpty(innerException?.StackTrace))
+                    {
+                        log += $"<pre style=\"color: {gray}; margin:0px\">{innerException.StackTrace}</pre>";
+                    }
+                    else
+                    {
+                        log += $"<br/>";
+                    }
+                    innerException = innerException.InnerException;
+                }
             }
 
             Logs.Add($"<div style=\"background-color:{background};color:{foreground}\">{log}</div>");
