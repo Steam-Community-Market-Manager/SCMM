@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CommandQuery;
+﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
@@ -24,12 +23,10 @@ namespace SCMM.Steam.API.Queries
     public class GetStoreNextUpdateTime : IQueryHandler<GetStoreNextUpdateTimeRequest, GetStoreNextUpdateTimeResponse>
     {
         private readonly SteamDbContext _db;
-        private readonly IMapper _mapper;
 
-        public GetStoreNextUpdateTime(SteamDbContext db, IMapper mapper)
+        public GetStoreNextUpdateTime(SteamDbContext db)
         {
             _db = db;
-            _mapper = mapper;
         }
 
         public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request)
