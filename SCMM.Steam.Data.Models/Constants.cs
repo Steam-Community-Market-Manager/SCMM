@@ -59,14 +59,21 @@
         public const string RustItemTypeLR300 = "LR300";
         public const string RustItemTypeFurnace = "Furnace";
 
-        public const string RustAssetTagAiTag = "ai.tag";
-        public const string RustAssetTagAiCaption = "ai.caption";
-
         #endregion
 
         #region SCMM
 
         public const string SCMMStoreIdDateFormat = "yyyy-MM-dd-HHmm";
+
+        public const string BlobContainerWorkshopFiles = "workshop-files";
+        public const string BlobContainerImages = "images";
+
+        public const string BlobMetadataPublishedFileId = "PublishedFileId";
+        public const string BlobMetadataPublishedFileName = "PublishedFileName";
+        public const string BlobMetadataIconAnalysed = "IconAnalysed";
+
+        public const string AssetTagAiTag = "ai.tag";
+        public const string AssetTagAiCaption = "ai.caption";
 
         #endregion
     }

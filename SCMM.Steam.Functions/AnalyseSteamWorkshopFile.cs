@@ -41,7 +41,7 @@ namespace SCMM.Steam.Functions
 
             // Get the workshop file from blob storage
             logger.LogInformation($"Reading workshop file '{message.BlobName}' from blob storage");
-            var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), "workshop-files");
+            var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), Constants.BlobContainerWorkshopFiles);
             await blobContainer.CreateIfNotExistsAsync();
             var blob = blobContainer.GetBlobClient(message.BlobName);
             var blobProperties = await blob.GetPropertiesAsync();
@@ -131,7 +131,8 @@ namespace SCMM.Steam.Functions
                             }
 
                             // Analyse the item icon to determine its dominant colour and key words that describe what it looks like
-                            if (icon != null)
+                            var iconAlreadyAnalysed = (blobMetadata.ContainsKey(Constants.BlobMetadataIconAnalysed) && !message.Force);
+                            if (icon != null && !iconAlreadyAnalysed)
                             {
                                 try
                                 {
@@ -146,8 +147,8 @@ namespace SCMM.Steam.Functions
                                         var captionIndex = 0;
                                         foreach (var caption in iconAnalysis.Description.Captions)
                                         {
-                                            var tagName = $"{Constants.RustAssetTagAiCaption}.{(char)('a' + captionIndex++)}";
-                                            tags[tagName] = caption.Text.FirstCharToUpper();
+                                            var tagName = $"{Constants.AssetTagAiCaption}.{(char)('a' + captionIndex++)}";
+                                            tags[tagName] = $"{caption.Text.FirstCharToUpper()} ({Math.Round(caption.Confidence * 100, 0)}%)";
                                         }
                                     }
                                     if (iconAnalysis?.Description?.Tags?.Any() == true)
@@ -155,10 +156,12 @@ namespace SCMM.Steam.Functions
                                         var tagIndex = 0;
                                         foreach (var tag in iconAnalysis.Description.Tags)
                                         {
-                                            var tagName = $"{Constants.RustAssetTagAiTag}.{(char)('a' + tagIndex++)}";
+                                            var tagName = $"{Constants.AssetTagAiTag}.{(char)('a' + tagIndex++)}";
                                             tags[tagName] = tag.FirstCharToUpper();
                                         }
                                     }
+
+                                    blobMetadata[Constants.BlobMetadataIconAnalysed] = Boolean.TrueString;
                                 }
                                 catch (Exception ex)
                                 {
@@ -183,7 +186,7 @@ namespace SCMM.Steam.Functions
             }
 
             // Update asset descriptions details
-            var publishedFileId = ulong.Parse(blobMetadata["PublishedFileId"]);
+            var publishedFileId = ulong.Parse(blobMetadata[Constants.BlobMetadataPublishedFileId]);
             var assetDescriptions = await _db.SteamAssetDescriptions
                 .Where(x => x.WorkshopFileId == publishedFileId)
                 .ToListAsync();
@@ -210,13 +213,17 @@ namespace SCMM.Steam.Functions
                 {
                     assetDescription.DominantColour = dominantColour;
                 }
+                if (assetDescription.Tags.Serialised.Contains("glowsight=true", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    assetDescription.HasGlowSights = true;
+                }
+                assetDescription.Tags = new PersistableStringDictionary(
+                    assetDescription.Tags
+                        .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.AssetTagAiCaption) || x.Key.StartsWith(Constants.AssetTagAiTag) || x.Key.StartsWith("glow") || x.Key.StartsWith("glowsight") || x.Key.StartsWith("cutout")))
+                        .ToDictionary(x => x.Key, x => x.Value)
+                );
                 if (tags.Any())
                 {
-                    assetDescription.Tags = new PersistableStringDictionary(
-                        assetDescription.Tags
-                            .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.RustAssetTagAiCaption) || x.Key.StartsWith(Constants.RustAssetTagAiTag)))
-                            .ToDictionary(x => x.Key, x => x.Value)
-                    );
                     foreach (var tag in tags)
                     {
                         assetDescription.Tags[tag.Key] = tag.Value;
@@ -226,6 +233,10 @@ namespace SCMM.Steam.Functions
 
             await _db.SaveChangesAsync();
             logger.LogInformation($"Asset descriptions updated");
+
+            // Update workshop file metadata
+            await blob.SetMetadataAsync(blobMetadata);
+            logger.LogInformation($"Blob metadata updated");
         }
     }
 }

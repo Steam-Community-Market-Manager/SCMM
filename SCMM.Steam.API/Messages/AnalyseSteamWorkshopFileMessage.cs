@@ -7,5 +7,7 @@ namespace SCMM.Steam.API.Messages
     public class AnalyseSteamWorkshopFileMessage : IMessage
     {
         public string BlobName { get; set; }
+
+        public bool Force { get; set; }
     }
 }

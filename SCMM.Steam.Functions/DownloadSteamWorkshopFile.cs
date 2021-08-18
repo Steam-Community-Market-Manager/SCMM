@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Workshop.Requests;
 using SCMM.Steam.Data.Store;
 
@@ -26,7 +27,7 @@ namespace SCMM.Steam.Functions
         {
             var logger = context.GetLogger("Download-Steam-Workshop-File");
 
-            var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), "workshop-files");
+            var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), Constants.BlobContainerWorkshopFiles);
             await blobContainer.CreateIfNotExistsAsync();
 
             // If this workshop file is known to be missing, skip over it
@@ -34,7 +35,14 @@ namespace SCMM.Steam.Functions
             var blobMissing = blobContainer.GetBlobClient(blobMissingName);
             if (blobMissing.Exists()?.Value == true)
             {
-                return null;
+                if (message.Force)
+                {
+                    await blobMissing.DeleteAsync();
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             // Download the workshop file
@@ -59,7 +67,7 @@ namespace SCMM.Steam.Functions
                     );
                     await blobMissing.SetMetadataAsync(new Dictionary<string, string>()
                     {
-                        { "PublishedFileId", message.PublishedFileId.ToString() }
+                        { Constants.BlobMetadataPublishedFileId, message.PublishedFileId.ToString() }
                     });
                     throw new Exception("Failed to download file, no data, will ignore next time");
                 }
@@ -75,8 +83,8 @@ namespace SCMM.Steam.Functions
                 );
                 await blob.SetMetadataAsync(new Dictionary<string, string>()
                 {
-                    { "PublishedFileId", message.PublishedFileId.ToString() },
-                    { "PublishedFileName", publishedFileData.Name }
+                    { Constants.BlobMetadataPublishedFileId, message.PublishedFileId.ToString() },
+                    { Constants.BlobMetadataPublishedFileName, publishedFileData.Name }
                 });
 
                 logger.LogInformation($"Upload complete, '{blob.Name}'");
@@ -103,7 +111,8 @@ namespace SCMM.Steam.Functions
             // Queue analyse of the workfshop file
             return new AnalyseSteamWorkshopFileMessage()
             {
-                BlobName = blob.Name
+                BlobName = blob.Name,
+                Force = message.Force
             };
         }
     }

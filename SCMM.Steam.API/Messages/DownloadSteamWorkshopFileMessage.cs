@@ -7,5 +7,7 @@ namespace SCMM.Steam.API.Messages
     public class DownloadSteamWorkshopFileMessage : IMessage
     {
         public ulong PublishedFileId { get; set; }
+
+        public bool Force { get; set; }
     }
 }
