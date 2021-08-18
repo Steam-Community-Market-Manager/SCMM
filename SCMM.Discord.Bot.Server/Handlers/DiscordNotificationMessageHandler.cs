@@ -20,7 +20,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
         {
             return _client.SendMessageAsync(
                 guildId: message.GuidId,
-                channelPattern: message.ChannelPattern,
+                channelPatterns: message.ChannelPatterns,
                 message: message.Message,
                 title: message.Title,
                 description: message.Description,

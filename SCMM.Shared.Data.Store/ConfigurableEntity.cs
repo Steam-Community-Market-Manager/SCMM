@@ -53,7 +53,7 @@ namespace SCMM.Shared.Data.Store
         {
             name = AssertValidConfigurationName(name);
             var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
-            var result = string.Empty;
+            var result = defaultValue;
             if (!string.IsNullOrEmpty(config?.Value))
             {
                 result = config?.Value;
@@ -61,10 +61,6 @@ namespace SCMM.Shared.Data.Store
             else if (config?.List?.Any() == true)
             {
                 result = string.Join(", ", config?.List);
-            }
-            else
-            {
-                result = defaultValue;
             }
 
             return new KeyValuePair<T, string>(config, result);
@@ -169,10 +165,17 @@ namespace SCMM.Shared.Data.Store
         {
             name = AssertValidConfigurationName(name);
             var config = Configurations.Closest(x => x.Name, name, maxDistance: 3);
-            return new KeyValuePair<T, IEnumerable<string>>(
-                config,
-                config?.List
-            );
+            var result = new List<string>();
+            if (config?.List?.Any() == true)
+            {
+                result.AddRange(config.List);
+            }
+            else if (!string.IsNullOrEmpty(config?.Value))
+            {
+                result.Add(config.Value);
+            }
+
+            return new KeyValuePair<T, IEnumerable<string>>(config, result);
         }
 
         public T Clear(string name)

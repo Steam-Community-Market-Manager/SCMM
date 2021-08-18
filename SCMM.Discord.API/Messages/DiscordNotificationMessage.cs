@@ -8,7 +8,7 @@ namespace SCMM.Discord.API.Messages
     {
         public ulong GuidId { get; set; }
 
-        public string ChannelPattern { get; set; }
+        public string[] ChannelPatterns { get; set; }
 
         public string Message { get; set; }
 
