@@ -168,11 +168,11 @@ else if (StoreList.Any())
                                                     <ChildContent>
                                                         @if(item.HasWorkshopFile)
                                                         {
-                                                            <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="@($"{(item.Tags.GetFlag(Constants.RustAssetTagGlow) ? "glow" : null)} clickable")" />
+                                                            <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="@($"{(item.HasGlow == true ? "glow" : null)} clickable")" />
                                                         }
                                                         else
                                                         {
-                                                            <img src="@item.IconUrl" class="@(item.Tags.GetFlag(Constants.RustAssetTagGlow) ? "glow" : null)" />
+                                                            <img src="@item.IconUrl" class="@(item.HasGlow == true ? "glow" : null)" />
                                                         }
                                                     </ChildContent>
                                                     <TooltipContent>
@@ -322,16 +322,16 @@ else if (StoreList.Any())
                                                         }
                                                     </TooltipContent>
                                                 </MudTooltip>
-                                                @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow) > 0)
+                                                @if (item.HasGlow == true)
                                                 {
                                                     <MudTooltip>
                                                         <ChildContent>
-                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"{@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow)}% Glow")" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"{(item.GlowRatio > 0 ? item.GlowRatio + "% " : String.Empty)}Glow")" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                         </ChildContent>
                                                         <TooltipContent>
-                                                            @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow) < 100)
+                                                            @if (item.GlowRatio > 0)
                                                             {
-                                                                <span>@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagGlow)% of this item glows in the dark, making it much easier to see at night</span>
+                                                                <span>@item.GlowRatio% of this item glows in the dark, making it much easier to see at night</span>
                                                             }
                                                             else 
                                                             {
@@ -340,22 +340,22 @@ else if (StoreList.Any())
                                                         </TooltipContent>
                                                     </MudTooltip>
                                                 }
-                                                @if (item.Tags.GetFlag(Constants.RustAssetTagGlowSights))
+                                                @if (item.HasGlowSights == true)
                                                 {
                                                     <MudTooltip Text="The iron sights of this weapon glow in the dark, making it much easier to aim at night">
                                                         <MudChip Size="MudBlazor.Size.Small" Text="Glow Sight" Icon="fas fa-fw fa-crosshairs mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
-                                                @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout) > 0)
+                                                @if (item.HasCutout == true)
                                                 {
                                                     <MudTooltip>
                                                         <ChildContent>
-                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"{@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout)}% Cutout")" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"{(item.CutoutRatio > 0 ? item.CutoutRatio + "% " : String.Empty)}Cutout")" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                         </ChildContent>
                                                         <TooltipContent>
-                                                            @if (item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout) < 100)
+                                                            @if (item.CutoutRatio > 0)
                                                             {
-                                                                <span>@item.Tags.GetFlagAsPercentage(Constants.RustAssetTagCutout)% of this items material has been removed. The shape may appeared altered when compared against the default item</span>
+                                                                <span>@item.CutoutRatio% of this items material has been removed. The shape may appeared altered when compared against the default item</span>
                                                             }
                                                             else 
                                                             {

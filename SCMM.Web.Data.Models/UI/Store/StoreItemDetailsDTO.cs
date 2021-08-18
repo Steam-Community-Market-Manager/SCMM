@@ -30,7 +30,17 @@
 
         public string Description { get; set; }
 
-        public IDictionary<string, string> Tags { get; set; }
+        public bool? HasGlow { get; set; }
+
+        public bool? HasGlowSights { get; set; }
+
+        public decimal? GlowRatio { get; set; }
+
+        public bool? HasCutout { get; set; }
+
+        public decimal? CutoutRatio { get; set; }
+
+        public string DominantColour { get; set; }
 
         public string BackgroundColour { get; set; }
 

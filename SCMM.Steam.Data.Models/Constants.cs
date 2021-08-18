@@ -59,10 +59,6 @@
         public const string RustItemTypeLR300 = "LR300";
         public const string RustItemTypeFurnace = "Furnace";
 
-        public const string RustAssetTagGlow = "glow";
-        public const string RustAssetTagGlowSights = "glowsight";
-        public const string RustAssetTagCutout = "cutout";
-        public const string RustAssetTagDominantColour = "color.dominant";
         public const string RustAssetTagAiTag = "ai.tag";
         public const string RustAssetTagAiCaption = "ai.caption";
 
