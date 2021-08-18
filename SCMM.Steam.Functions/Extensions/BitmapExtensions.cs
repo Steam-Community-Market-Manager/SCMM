@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace SCMM.Steam.API.Extensions
+namespace SCMM.Steam.Functions.Extensions
 {
     public static class BitmapExtensions
     {

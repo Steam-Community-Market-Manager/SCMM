@@ -5,11 +5,11 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
-using SCMM.Steam.API.Extensions;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Workshop.Models;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Functions.Extensions;
 using System.Drawing;
 using System.IO.Compression;
 
