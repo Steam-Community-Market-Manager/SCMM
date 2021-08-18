@@ -37,15 +37,17 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public IDictionary<string, string> Tags { get; set; }
 
-        public bool HasGlow => Tags.GetFlag(Constants.RustAssetTagGlow);
+        public bool? HasGlow { get; set; }
 
-        public bool HasGlowSights => Tags.GetFlag(Constants.RustAssetTagGlowSights);
+        public bool? HasGlowSights { get; set; }
 
-        public decimal? GlowRatio => Tags.GetFlagAsDecimal(Constants.RustAssetTagGlow);
+        public decimal? GlowRatio { get; set; }
 
-        public bool HasCutout => Tags.GetFlag(Constants.RustAssetTagCutout);
+        public bool? HasCutout { get; set; }
 
-        public decimal? CutoutRatio => Tags.GetFlagAsDecimal(Constants.RustAssetTagCutout);
+        public decimal? CutoutRatio { get; set; }
+
+        public string DominantColour { get; set; }
 
         public string BackgroundColour { get; set; }
 

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210818061958_AddSteamAssetDescriptionWorkshopFileAnalyticProperties")]
+    partial class AddSteamAssetDescriptionWorkshopFileAnalyticProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,8 +176,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal?>("CutoutRatio")
-                        .HasPrecision(20, 20)
-                        .HasColumnType("decimal(20,20)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -190,8 +191,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("GlowRatio")
-                        .HasPrecision(20, 20)
-                        .HasColumnType("decimal(20,20)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool?>("HasCutout")
                         .HasColumnType("bit");

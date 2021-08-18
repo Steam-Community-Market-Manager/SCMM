@@ -1,4 +1,5 @@
-﻿using SCMM.Shared.Data.Store;
+﻿using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
@@ -63,9 +64,35 @@ namespace SCMM.Steam.Data.Store
         public string DescriptionWorkshop { get; set; }
 
         public PersistableStringDictionary Tags { get; set; }
+        
+        public bool? HasGlow { get; set; }
 
+        /// <summary>
+        /// Only applies to guns, will be null for all other item types
+        /// </summary>
+        public bool? HasGlowSights { get; set; }
+
+        [Precision(20, 20)]
+        public decimal? GlowRatio { get; set; }
+
+        public bool? HasCutout { get; set; }
+
+        [Precision(20, 20)]
+        public decimal? CutoutRatio { get; set; }
+
+        /// <summary>
+        /// The most dominant colour of the item
+        /// </summary>
+        public string DominantColour { get; set; }
+
+        /// <summary>
+        /// Steam item type background colour
+        /// </summary>
         public string BackgroundColour { get; set; }
 
+        /// <summary>
+        /// Steam item type foreground colour
+        /// </summary>
         public string ForegroundColour { get; set; }
 
         public string IconUrl { get; set; }

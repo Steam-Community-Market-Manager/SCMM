@@ -32,6 +32,12 @@ namespace SCMM.Steam.Functions
         public async Task Run([ServiceBusTrigger("steam-workshop-file-analyse", Connection = "ServiceBusConnection")] AnalyseSteamWorkshopFileMessage message, FunctionContext context)
         {
             var logger = context.GetLogger("Analyse-Steam-Workshop-File");
+            var hasGlow = (bool?)null;
+            var glowRatio = (decimal?)null;
+            var hasCutout = (bool?)null;
+            var cutoutRatio = (decimal?)null;
+            var dominantColour = (string)null;
+            var tags = new Dictionary<string, string>();
 
             // Get the workshop file from blob storage
             logger.LogInformation($"Reading workshop file '{message.BlobName}' from blob storage");
@@ -43,8 +49,6 @@ namespace SCMM.Steam.Functions
 
             // Inspect the contents of the workshop file
             logger.LogInformation($"Analysing workshop file contents");
-            var publishedFileId = ulong.Parse(blobMetadata["PublishedFileId"]);
-            var publishedFileTags = new Dictionary<string, string>();
             using var workshopFileDataStream = await blob.OpenReadAsync();
             using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
             {
@@ -87,11 +91,12 @@ namespace SCMM.Steam.Functions
 
                             if (emissionMapsGlow.Any() && emissionMapsGlow.Average() > 0m)
                             {
-                                publishedFileTags.SetFlag(Constants.RustAssetTagGlow, emissionMapsGlow.Average());
+                                hasGlow = true;
+                                glowRatio = emissionMapsGlow.Average();
                             }
                             else
                             {
-                                publishedFileTags.SetFlag(Constants.RustAssetTagGlow, false);
+                                hasGlow = false;
                             }
 
                             // Check if the item has a cutout (i.e. main textures contain transparency)
@@ -117,11 +122,12 @@ namespace SCMM.Steam.Functions
 
                             if (texturesCutout.Any() && texturesCutout.Average() > 0m)
                             {
-                                publishedFileTags.SetFlag(Constants.RustAssetTagCutout, texturesCutout.Average());
+                                hasCutout = true;
+                                cutoutRatio = texturesCutout.Average();
                             }
                             else
                             {
-                                publishedFileTags.SetFlag(Constants.RustAssetTagCutout, false);
+                                hasCutout = false;
                             }
 
                             // Analyse the item icon to determine its dominant colour and key words that describe what it looks like
@@ -133,15 +139,15 @@ namespace SCMM.Steam.Functions
                                     var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
                                     if (!String.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
                                     {
-                                        publishedFileTags[Constants.RustAssetTagDominantColour] = $"#{iconAnalysis.Color.AccentColor}";
+                                        dominantColour = $"#{iconAnalysis.Color.AccentColor}";
                                     }
                                     if (iconAnalysis?.Description?.Captions?.Any() == true)
                                     {
                                         var captionIndex = 0;
                                         foreach (var caption in iconAnalysis.Description.Captions)
                                         {
-                                            var tagName = $"{Constants.RustAssetTagAiCaption}.{captionIndex++}";
-                                            publishedFileTags[tagName] = caption.Text.FirstCharToUpper();
+                                            var tagName = $"{Constants.RustAssetTagAiCaption}.{(char)('a' + captionIndex++)}";
+                                            tags[tagName] = caption.Text.FirstCharToUpper();
                                         }
                                     }
                                     if (iconAnalysis?.Description?.Tags?.Any() == true)
@@ -149,8 +155,8 @@ namespace SCMM.Steam.Functions
                                         var tagIndex = 0;
                                         foreach (var tag in iconAnalysis.Description.Tags)
                                         {
-                                            var tagName = $"{Constants.RustAssetTagAiTag}.{tagIndex++}";
-                                            publishedFileTags[tagName] = tag.FirstCharToUpper();
+                                            var tagName = $"{Constants.RustAssetTagAiTag}.{(char)('a' + tagIndex++)}";
+                                            tags[tagName] = tag.FirstCharToUpper();
                                         }
                                     }
                                 }
@@ -165,32 +171,61 @@ namespace SCMM.Steam.Functions
                 }
             }
 
-            logger.LogInformation(string.Join("\n", publishedFileTags.Select(x => $"{x.Key} = {x.Value}")));
             logger.LogInformation($"Analyse complete");
-
-            // Update workshop file metadata
-            foreach (var tag in publishedFileTags)
+            logger.LogInformation($"hasGlow = {hasGlow}");
+            logger.LogInformation($"glowRatio = {glowRatio}");
+            logger.LogInformation($"hasCutout = {hasCutout}");
+            logger.LogInformation($"cutoutRatio = {cutoutRatio}");
+            logger.LogInformation($"dominantColour = {dominantColour}");
+            foreach (var tag in tags)
             {
-                blobMetadata[tag.Key] = tag.Value;
+                logger.LogInformation($"{tag.Key} = {tag.Value}");
             }
-            await blob.SetMetadataAsync(blobMetadata);
-            logger.LogInformation($"Blob metadata updated");
 
-            // Update asset descriptions tags
+            // Update asset descriptions details
+            var publishedFileId = ulong.Parse(blobMetadata["PublishedFileId"]);
             var assetDescriptions = await _db.SteamAssetDescriptions
                 .Where(x => x.WorkshopFileId == publishedFileId)
                 .ToListAsync();
+
             foreach (var assetDescription in assetDescriptions)
             {
-                assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
-                foreach (var tag in publishedFileTags)
+                if (hasGlow != null)
                 {
-                    assetDescription.Tags[tag.Key] = tag.Value;
+                    assetDescription.HasGlow = hasGlow;
+                }
+                if (glowRatio != null)
+                {
+                    assetDescription.GlowRatio = glowRatio;
+                }
+                if (hasCutout != null)
+                {
+                    assetDescription.HasCutout = hasCutout;
+                }
+                if (cutoutRatio != null)
+                {
+                    assetDescription.CutoutRatio = cutoutRatio;
+                }
+                if (dominantColour != null)
+                {
+                    assetDescription.DominantColour = dominantColour;
+                }
+                if (tags.Any())
+                {
+                    assetDescription.Tags = new PersistableStringDictionary(
+                        assetDescription.Tags
+                            .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.RustAssetTagAiCaption) || x.Key.StartsWith(Constants.RustAssetTagAiTag)))
+                            .ToDictionary(x => x.Key, x => x.Value)
+                    );
+                    foreach (var tag in tags)
+                    {
+                        assetDescription.Tags[tag.Key] = tag.Value;
+                    }
                 }
             }
 
             await _db.SaveChangesAsync();
-            logger.LogInformation($"Asset description tags updated");
+            logger.LogInformation($"Asset descriptions updated");
         }
     }
 }
