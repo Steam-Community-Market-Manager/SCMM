@@ -14,6 +14,7 @@ using SCMM.Steam.Data.Store;
 using SCMM.Steam.Functions.Extensions;
 using System.Drawing;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions
 {
@@ -52,125 +53,146 @@ namespace SCMM.Steam.Functions
             using var workshopFileDataStream = await blob.OpenReadAsync();
             using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
             {
-                foreach (var entry in workshopFileZip.Entries)
+                var mainTextureFiles = new Dictionary<ZipArchiveEntry, decimal>();
+                var emissionMapFiles = new List<ZipArchiveEntry>();
+
+                // Analyse the icon file (if present)
+                var iconFile = workshopFileZip.Entries.FirstOrDefault(
+                    x => Regex.IsMatch(x.Name, @"(icon[^\.]*|thumb|thumbnail|template|preview|[0-9])\s*[0-9]*\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase)
+                );
+                if (iconFile != null)
                 {
-                    // Inspect the mainfest file
-                    if (string.Equals(entry.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase))
+                    var iconAlreadyAnalysed = (blobMetadata.ContainsKey(Constants.BlobMetadataIconAnalysed) && !message.Force);
+                    if (!iconAlreadyAnalysed)
                     {
-                        using var entryStream = new StreamReader(entry.Open());
-                        var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(entryStream.ReadToEnd());
-                        if (manifest != null)
+                        try
                         {
-                            var icon = workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, "icon.png", StringComparison.InvariantCultureIgnoreCase));
-                            var mainTextures = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))
-                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)))
-                                .Where(x => x.Value != null);
-                            var emissionMaps = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.EmissionMap))
-                                .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
-                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
-                                .Where(x => x.Value != null);
-
-                            // Check if the item glows (i.e. has an emission map)
-                            var emissionMapsGlow = new List<decimal>();
-                            foreach (var emissionMap in emissionMaps)
+                            // Determine the icons dominant colour and any captions/tags that help describe the image
+                            using var iconStream = iconFile.Open();
+                            var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
+                            if (!String.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
                             {
-                                try
+                                dominantColour = $"#{iconAnalysis.Color.AccentColor}";
+                            }
+                            if (iconAnalysis?.Description?.Captions?.Any() == true)
+                            {
+                                var captionIndex = 0;
+                                foreach (var caption in iconAnalysis.Description.Captions)
                                 {
-                                    using var emissionMapStream = emissionMap.Value.Open();
-                                    using var emissionMapImage = Image.FromStream(emissionMapStream);
-                                    emissionMapsGlow.Add(
-                                        emissionMapImage.GetEmissionRatio()
-                                    );
+                                    var tagName = $"{Constants.AssetTagAiCaption}.{(char)('a' + captionIndex++)}";
+                                    tags[tagName] = $"{caption.Text.FirstCharToUpper()} ({Math.Round(caption.Confidence * 100, 0)}%)";
                                 }
-                                catch(Exception ex)
+                            }
+                            if (iconAnalysis?.Description?.Tags?.Any() == true)
+                            {
+                                var tagIndex = 0;
+                                foreach (var tag in iconAnalysis.Description.Tags)
                                 {
-                                    logger.LogWarning(ex, $"Failed to detect glow: {emissionMap.Value?.Name}. {ex.Message}");
-                                    continue;
+                                    var tagName = $"{Constants.AssetTagAiTag}.{(char)('a' + tagIndex++)}";
+                                    tags[tagName] = tag.FirstCharToUpper();
                                 }
                             }
 
-                            if (emissionMapsGlow.Any() && emissionMapsGlow.Average() > 0m)
-                            {
-                                hasGlow = true;
-                                glowRatio = emissionMapsGlow.Average();
-                            }
-                            else
-                            {
-                                hasGlow = false;
-                            }
-
-                            // Check if the item has a cutout (i.e. main textures contain transparency)
-                            var texturesCutout = new List<decimal>();
-                            foreach (var mainTexture in mainTextures)
-                            {
-                                try
-                                {
-                                    using var textureStream = mainTexture.Value.Open();
-                                    using var textureImage = Image.FromStream(textureStream);
-                                    texturesCutout.Add(
-                                        textureImage.GetAlphaCuttoffRatio(
-                                            alphaCutoff: mainTexture.Key.Floats.Cutoff
-                                        )
-                                    );
-                                }
-                                catch (Exception ex)
-                                {
-                                    logger.LogWarning(ex, $"Failed to detect cutout: {mainTexture.Value?.Name}. {ex.Message}");
-                                    continue;
-                                }
-                            }
-
-                            if (texturesCutout.Any() && texturesCutout.Average() > 0m)
-                            {
-                                hasCutout = true;
-                                cutoutRatio = texturesCutout.Average();
-                            }
-                            else
-                            {
-                                hasCutout = false;
-                            }
-
-                            // Analyse the item icon to determine its dominant colour and key words that describe what it looks like
-                            var iconAlreadyAnalysed = (blobMetadata.ContainsKey(Constants.BlobMetadataIconAnalysed) && !message.Force);
-                            if (icon != null && !iconAlreadyAnalysed)
-                            {
-                                try
-                                {
-                                    using var iconStream = icon.Open();
-                                    var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
-                                    if (!String.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
-                                    {
-                                        dominantColour = $"#{iconAnalysis.Color.AccentColor}";
-                                    }
-                                    if (iconAnalysis?.Description?.Captions?.Any() == true)
-                                    {
-                                        var captionIndex = 0;
-                                        foreach (var caption in iconAnalysis.Description.Captions)
-                                        {
-                                            var tagName = $"{Constants.AssetTagAiCaption}.{(char)('a' + captionIndex++)}";
-                                            tags[tagName] = $"{caption.Text.FirstCharToUpper()} ({Math.Round(caption.Confidence * 100, 0)}%)";
-                                        }
-                                    }
-                                    if (iconAnalysis?.Description?.Tags?.Any() == true)
-                                    {
-                                        var tagIndex = 0;
-                                        foreach (var tag in iconAnalysis.Description.Tags)
-                                        {
-                                            var tagName = $"{Constants.AssetTagAiTag}.{(char)('a' + tagIndex++)}";
-                                            tags[tagName] = tag.FirstCharToUpper();
-                                        }
-                                    }
-
-                                    blobMetadata[Constants.BlobMetadataIconAnalysed] = Boolean.TrueString;
-                                }
-                                catch (Exception ex)
-                                {
-                                    logger.LogWarning(ex, $"Failed to analyse icon: {icon.Name}. {ex.Message}");
-                                    continue;
-                                }
-                            }
+                            blobMetadata[Constants.BlobMetadataIconAnalysed] = Boolean.TrueString;
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogWarning(ex, $"Failed to analyse icon: {iconFile.Name}. {ex.Message}");
                         }
                     }
+                }
+                else
+                {
+                    logger.LogWarning("No icon file present");
+                }
+
+                // Analyse the mainfest file (if present) to locate texture files
+                var manifestFile = workshopFileZip.Entries.FirstOrDefault(
+                    x => string.Equals(x.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase)
+                );
+                if (manifestFile != null)
+                {
+                    using var manifestStream = new StreamReader(manifestFile.Open());
+                    var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(manifestStream.ReadToEnd());
+                    if (manifest != null)
+                    {
+                        mainTextureFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))
+                            .ToDictionary(x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)), x => x.Floats.Cutoff);
+                        emissionMapFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.EmissionMap))
+                            .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
+                            .Select(x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
+                            .Where(x => x != null)
+                            .ToList();
+                    }
+                }
+                else
+                {
+                    // No manifest present, try manually locate texture files
+                    logger.LogWarning("No manifest file present");
+                    mainTextureFiles = workshopFileZip.Entries
+                        .Where(x => Regex.IsMatch(x.Name, @"(diffuse|albedo|color|colour)\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase))
+                        .ToDictionary(x => x, x => 1m);
+                    emissionMapFiles = workshopFileZip.Entries
+                        .Where(x => Regex.IsMatch(x.Name, @"(emission)\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase))
+                        .ToList();
+                }
+
+                // Check main textures to see if the item has a cutout (i.e. contain transparent pixels)
+                var texturesCutout = new List<decimal>();
+                foreach (var textureFile in mainTextureFiles)
+                {
+                    try
+                    {
+                        using var textureStream = textureFile.Key.Open();
+                        using var textureImage = Image.FromStream(textureStream);
+                        texturesCutout.Add(
+                            textureImage.GetAlphaCuttoffRatio(
+                                alphaCutoff: textureFile.Value
+                            )
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, $"Failed to detect cutout: {textureFile.Key.Name}. {ex.Message}");
+                        continue;
+                    }
+                }
+                if (texturesCutout.Any() && texturesCutout.Average() > 0m)
+                {
+                    hasCutout = true;
+                    cutoutRatio = texturesCutout.Average();
+                }
+                else
+                {
+                    hasCutout = false;
+                }
+
+                // Check emission map textures to see if the item glows (i.e. contains non-black pixels)
+                var emissionMapsGlow = new List<decimal>();
+                foreach (var emissionMapFile in emissionMapFiles)
+                {
+                    try
+                    {
+                        using var emissionMapStream = emissionMapFile.Open();
+                        using var emissionMapImage = Image.FromStream(emissionMapStream);
+                        emissionMapsGlow.Add(
+                            emissionMapImage.GetEmissionRatio()
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, $"Failed to detect glow: {emissionMapFile.Name}. {ex.Message}");
+                        continue;
+                    }
+                }
+                if (emissionMapsGlow.Any() && emissionMapsGlow.Average() > 0m)
+                {
+                    hasGlow = true;
+                    glowRatio = emissionMapsGlow.Average();
+                }
+                else
+                {
+                    hasGlow = false;
                 }
             }
 
@@ -213,17 +235,13 @@ namespace SCMM.Steam.Functions
                 {
                     assetDescription.DominantColour = dominantColour;
                 }
-                if (assetDescription.Tags.Serialised.Contains("glowsight=true", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    assetDescription.HasGlowSights = true;
-                }
-                assetDescription.Tags = new PersistableStringDictionary(
-                    assetDescription.Tags
-                        .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.AssetTagAiCaption) || x.Key.StartsWith(Constants.AssetTagAiTag) || x.Key.StartsWith("glow") || x.Key.StartsWith("glowsight") || x.Key.StartsWith("cutout")))
-                        .ToDictionary(x => x.Key, x => x.Value)
-                );
                 if (tags.Any())
                 {
+                    assetDescription.Tags = new PersistableStringDictionary(
+                        assetDescription.Tags
+                            .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.AssetTagAiCaption) || x.Key.StartsWith(Constants.AssetTagAiTag)))
+                            .ToDictionary(x => x.Key, x => x.Value)
+                    );
                     foreach (var tag in tags)
                     {
                         assetDescription.Tags[tag.Key] = tag.Value;
