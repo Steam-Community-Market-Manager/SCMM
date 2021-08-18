@@ -473,13 +473,6 @@ namespace SCMM.Steam.API.Commands
                             newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
                         }
                     }
-                    foreach (var tag in assetDescription.Tags)
-                    {
-                        foreach (var word in tag.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                        {
-                            newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                        }
-                    }
                     foreach (var word in Constants.RustItemNameCommonWords)
                     {
                         newItemCollection = Regex.Replace(newItemCollection, $@"\b{word}\b", string.Empty, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
