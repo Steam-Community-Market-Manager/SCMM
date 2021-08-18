@@ -1,8 +1,10 @@
 using Azure.Storage.Blobs;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SCMM.Azure.AI;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Messages;
@@ -18,10 +20,12 @@ namespace SCMM.Steam.Functions
     public class AnalyseSteamWorkshopFile
     {
         private readonly SteamDbContext _db;
+        private readonly AzureAiClient _azureAiClient;
 
-        public AnalyseSteamWorkshopFile(SteamDbContext db)
+        public AnalyseSteamWorkshopFile(SteamDbContext db, AzureAiClient azureAiClient)
         {
             _db = db;
+            _azureAiClient = azureAiClient;
         }
 
         [Function("Analyse-Steam-Workshop-File")]
@@ -53,20 +57,32 @@ namespace SCMM.Steam.Functions
                         var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(entryStream.ReadToEnd());
                         if (manifest != null)
                         {
-                            // Check if the item glows (i.e. has an emission map)
+                            var icon = workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, "icon.png", StringComparison.InvariantCultureIgnoreCase));
+                            var mainTextures = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))
+                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)))
+                                .Where(x => x.Value != null);
                             var emissionMaps = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.EmissionMap))
                                 .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
                                 .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
                                 .Where(x => x.Value != null);
 
+                            // Check if the item glows (i.e. has an emission map)
                             var emissionMapsGlow = new List<decimal>();
                             foreach (var emissionMap in emissionMaps)
                             {
-                                using var emissionMapStream = emissionMap.Value.Open();
-                                using var emissionMapImage = Image.FromStream(emissionMapStream);
-                                emissionMapsGlow.Add(
-                                    emissionMapImage.GetEmissionRatio()
-                                );
+                                try
+                                {
+                                    using var emissionMapStream = emissionMap.Value.Open();
+                                    using var emissionMapImage = Image.FromStream(emissionMapStream);
+                                    emissionMapsGlow.Add(
+                                        emissionMapImage.GetEmissionRatio()
+                                    );
+                                }
+                                catch(Exception ex)
+                                {
+                                    logger.LogWarning(ex, $"Failed to detect glow: {emissionMap.Value?.Name}. {ex.Message}");
+                                    continue;
+                                }
                             }
 
                             if (emissionMapsGlow.Any() && emissionMapsGlow.Average() > 0m)
@@ -79,20 +95,24 @@ namespace SCMM.Steam.Functions
                             }
 
                             // Check if the item has a cutout (i.e. main textures contain transparency)
-                            var textures = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))
-                                .ToDictionary(x => x, x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)))
-                                .Where(x => x.Value != null);
-
                             var texturesCutout = new List<decimal>();
-                            foreach (var texture in textures)
+                            foreach (var mainTexture in mainTextures)
                             {
-                                using var textureStream = texture.Value.Open();
-                                using var textureImage = Image.FromStream(textureStream);
-                                texturesCutout.Add(
-                                    textureImage.GetAlphaCuttoffRatio(
-                                        alphaCutoff: texture.Key.Floats.Cutoff
-                                    )
-                                );
+                                try
+                                {
+                                    using var textureStream = mainTexture.Value.Open();
+                                    using var textureImage = Image.FromStream(textureStream);
+                                    texturesCutout.Add(
+                                        textureImage.GetAlphaCuttoffRatio(
+                                            alphaCutoff: mainTexture.Key.Floats.Cutoff
+                                        )
+                                    );
+                                }
+                                catch (Exception ex)
+                                {
+                                    logger.LogWarning(ex, $"Failed to detect cutout: {mainTexture.Value?.Name}. {ex.Message}");
+                                    continue;
+                                }
                             }
 
                             if (texturesCutout.Any() && texturesCutout.Average() > 0m)
@@ -102,6 +122,43 @@ namespace SCMM.Steam.Functions
                             else
                             {
                                 publishedFileTags.SetFlag(Constants.RustAssetTagCutout, false);
+                            }
+
+                            // Analyse the item icon to determine its dominant colour and key words that describe what it looks like
+                            if (icon != null)
+                            {
+                                try
+                                {
+                                    using var iconStream = icon.Open();
+                                    var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
+                                    if (!String.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
+                                    {
+                                        publishedFileTags[Constants.RustAssetTagDominantColour] = $"#{iconAnalysis.Color.AccentColor}";
+                                    }
+                                    if (iconAnalysis?.Description?.Captions?.Any() == true)
+                                    {
+                                        var captionIndex = 0;
+                                        foreach (var caption in iconAnalysis.Description.Captions)
+                                        {
+                                            var tagName = $"{Constants.RustAssetTagAiCaption}.{captionIndex++}";
+                                            publishedFileTags[tagName] = caption.Text.FirstCharToUpper();
+                                        }
+                                    }
+                                    if (iconAnalysis?.Description?.Tags?.Any() == true)
+                                    {
+                                        var tagIndex = 0;
+                                        foreach (var tag in iconAnalysis.Description.Tags)
+                                        {
+                                            var tagName = $"{Constants.RustAssetTagAiTag}.{tagIndex++}";
+                                            publishedFileTags[tagName] = tag.FirstCharToUpper();
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    logger.LogWarning(ex, $"Failed to analyse icon: {icon.Name}. {ex.Message}");
+                                    continue;
+                                }
                             }
                         }
                     }

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SCMM.Azure.AI;
+using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
@@ -38,7 +40,13 @@ public static class HostExtensions
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetSteamConfiguration();
             });
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetAzureAiConfiguration();
+            });
             services.AddSingleton<SteamSession>();
+            services.AddSingleton<AzureAiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<SteamWorkshopDownloaderWebClient>();
 
