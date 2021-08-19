@@ -205,6 +205,7 @@ namespace SCMM.Discord.Client
             }
 
             // Find channels that match our pattern (and that we have permission to post in)
+            channelPatterns = channelPatterns?.Where(x => !String.IsNullOrEmpty(x))?.ToArray();
             var channels = guild.TextChannels
                 .OrderBy(x => x.Name)
                 .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
