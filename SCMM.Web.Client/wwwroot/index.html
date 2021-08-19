@@ -101,6 +101,8 @@
         <script src="/js/interops.js"></script>
         <script type="text/javascript">
 
+            /* Start Blazor and report loading progress back to the UI */
+
             let resourceIndex = 0;
             let resourcesLoaded = [];
             let progressBarElement = document.getElementById('progress-bar');
@@ -138,21 +140,25 @@
         </script>
         <script type="text/javascript">
 
+            /* Register PWA service worker and send update notifications to Blazor */
+
             let refreshing = false;
             if ('serviceWorker' in navigator) {
+
                 navigator.serviceWorker.register('service-worker.js').then(worker => {
                     UpdateInterop.worker = worker;
 
-                    // When a new update is available, activate it immediately
+                    // When a new update is ready, notify the user
                     worker.addEventListener('updatefound', () => {
-                        var newWorker = UpdateInterop.worker = worker.installing;
+                        var newWorker = worker.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state == 'installed') {
                                 if (navigator.serviceWorker.controller) {
+                                    UpdateInterop.worker = newWorker;
                                     if (UpdateInterop.instance) {
                                         UpdateInterop.instance.invokeMethodAsync('ShowUpdateNotification');
                                     } else {
-                                        UpdateInterop.applyUpdate();
+                                        UpdateInterop.applyPendingUpdate();
                                     }
                                 }
                             }
@@ -161,7 +167,7 @@
 
                 });
 
-                // When a new update has been activated, reload the page so that it takes effect
+                // When a new update has been activated, reload the page so that the user sees the changes
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
                     if (!refreshing) {
                         window.location.reload();

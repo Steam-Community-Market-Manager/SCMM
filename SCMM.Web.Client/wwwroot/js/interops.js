@@ -18,8 +18,17 @@ var UpdateInterop = UpdateInterop || {};
 UpdateInterop.setInstance = (dotNetHelper) => {
     UpdateInterop.instance = dotNetHelper;
 };
-UpdateInterop.applyUpdate = () => {
-    UpdateInterop.worker.postMessage({
-        action: 'skipWaiting'
-    });
+UpdateInterop.isUpdatePending = () => {
+    return (UpdateInterop.worker && UpdateInterop.worker.waiting);
+}
+UpdateInterop.applyPendingUpdate = () => {
+    var worker = UpdateInterop.worker;
+    if (worker && worker.waiting) {
+        worker = worker.waiting;
+    }
+    if (worker) {
+        worker.postMessage({
+            action: 'skipWaiting'
+        });
+    }
 }

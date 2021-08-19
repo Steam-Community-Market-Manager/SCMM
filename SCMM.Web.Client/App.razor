@@ -1,6 +1,7 @@
 @inject ILogger<App> Logger
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
+@inject UpdateManager UpdateManager
 @inject AppState AppState
 @inject HttpClient Http
 
@@ -26,15 +27,27 @@
 
     private AppState State { get; set; }
 
-    private DotNetObjectReference<App> Instance {get; set;}
+    private DotNetObjectReference<App> Instance { get; set; } = DotNetObjectReference.Create(this);
 
     protected override async Task OnInitializedAsync()
     {
-        Instance = DotNetObjectReference.Create(this);
-        await JS.InvokeVoidAsync("UpdateInterop.setInstance", Instance);
+        try 
+        {
+            // Check if there are pending updates
+            await UpdateManager.SetInstanceAsync(Instance);
+            if (await UpdateManager.IsUpdatePendingAsync())
+            {
+                ShowUpdateNotification();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to check for app updates");
+        }
 
         try
         {
+            // Load the application state
             if (!(await AppState.ReadFromStorageAsync()))
             {
                 await AppState.TryGuessLocalityAsync();
@@ -66,7 +79,7 @@
             config.ActionVariant = MudBlazor.Variant.Outlined;
             config.Onclick = async snackbar =>
             {
-                await JS.InvokeVoidAsync("UpdateInterop.applyUpdate");
+                await UpdateManager.ApplyPendingUpdateAsync();
             };
         });
     }

@@ -30,6 +30,7 @@ public static class WebAssemblyHostExtensions
         builder.Services.AddSingleton<LocalStorageService>();
         builder.Services.AddSingleton<ExternalNavigationManager>();
         builder.Services.AddSingleton<DocumentManager>();
+        builder.Services.AddSingleton<UpdateManager>();
 
         builder.Services.AddHttpClient("default", (serviceProvider, client) =>
         {
@@ -53,8 +54,8 @@ public static class WebAssemblyHostExtensions
             config.SnackbarConfiguration.NewestOnTop = true;
             config.SnackbarConfiguration.ShowCloseIcon = true;
             config.SnackbarConfiguration.RequireInteraction = true;
-            config.SnackbarConfiguration.ClearAfterNavigation = true;
             config.SnackbarConfiguration.PreventDuplicates = true;
+            config.SnackbarConfiguration.ClearAfterNavigation = false;
         });
 
         builder.Services.AddSyncfusionBlazor();
