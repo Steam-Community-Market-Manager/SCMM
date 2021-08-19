@@ -98,15 +98,15 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (glow)
             {
-                query = query.Where(x => x.Tags.Serialised.Contains("glow=") && !x.Tags.Serialised.Contains("glow=false"));
+                query = query.Where(x => x.HasGlow == true);
             }
             if (glowsight)
             {
-                query = query.Where(x => x.Tags.Serialised.Contains("glowsight=") && !x.Tags.Serialised.Contains("glowsight=false"));
+                query = query.Where(x => x.HasGlowSights == true);
             }
             if (cutout)
             {
-                query = query.Where(x => x.Tags.Serialised.Contains("cutout=") && !x.Tags.Serialised.Contains("cutout=false"));
+                query = query.Where(x => x.HasCutout == true);
             }
 
             query = query
