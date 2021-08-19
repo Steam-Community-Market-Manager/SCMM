@@ -58,7 +58,7 @@ namespace SCMM.Steam.Functions
 
                 // Analyse the icon file (if present)
                 var iconFile = workshopFileZip.Entries.FirstOrDefault(
-                    x => Regex.IsMatch(x.Name, @"(icon[^\.]*|thumb|thumbnail|template|preview|[0-9])\s*[0-9]*\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase)
+                    x => Regex.IsMatch(x.Name, @"(icon[^\.]*|thumb|thumbnail|template|preview)\s*[0-9]*\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase)
                 );
                 if (iconFile != null)
                 {
@@ -74,6 +74,10 @@ namespace SCMM.Steam.Functions
                             {
                                 dominantColour = $"#{iconAnalysis.Color.AccentColor}";
                             }
+                            else
+                            {
+                                logger.LogWarning("Icon analyse failed to identify the dominant colour");
+                            }
                             if (iconAnalysis?.Description?.Captions?.Any() == true)
                             {
                                 var captionIndex = 0;
@@ -82,6 +86,10 @@ namespace SCMM.Steam.Functions
                                     var tagName = $"{Constants.AssetTagAiCaption}.{(char)('a' + captionIndex++)}";
                                     tags[tagName] = $"{caption.Text.FirstCharToUpper()} ({Math.Round(caption.Confidence * 100, 0)}%)";
                                 }
+                            }
+                            else
+                            {
+                                logger.LogWarning("Icon analyse failed to identify any captions");
                             }
                             if (iconAnalysis?.Description?.Tags?.Any() == true)
                             {
@@ -92,6 +100,10 @@ namespace SCMM.Steam.Functions
                                     tags[tagName] = tag.FirstCharToUpper();
                                 }
                             }
+                            else
+                            {
+                                logger.LogWarning("Icon analyse failed to identify any tags");
+                            }
 
                             blobMetadata[Constants.BlobMetadataIconAnalysed] = Boolean.TrueString;
                         }
@@ -99,6 +111,10 @@ namespace SCMM.Steam.Functions
                         {
                             logger.LogWarning(ex, $"Failed to analyse icon: {iconFile.Name}. {ex.Message}");
                         }
+                    }
+                    else
+                    {
+                        logger.LogWarning("Icon analyse was skipped, already completed and force was not specified");
                     }
                 }
                 else
@@ -250,7 +266,7 @@ namespace SCMM.Steam.Functions
             }
 
             await _db.SaveChangesAsync();
-            logger.LogInformation($"Asset descriptions updated");
+            logger.LogInformation($"Asset descriptions updated (count: {assetDescriptions.Count})");
 
             // Update workshop file metadata
             await blob.SetMetadataAsync(blobMetadata);

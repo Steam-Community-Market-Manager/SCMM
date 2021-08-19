@@ -68,6 +68,7 @@ namespace SCMM.Steam.Client
                         var downloadStatus = status[downloadId.Uuid.ToString()];
                         switch (downloadStatus?.Status)
                         {
+                            case "queued":
                             case "dequeued":
                             case "retrieving":
                             case "retrieved":

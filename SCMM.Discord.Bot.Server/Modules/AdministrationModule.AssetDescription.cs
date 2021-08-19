@@ -219,7 +219,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 messages.Add(new AnalyseSteamWorkshopFileMessage()
                 {
-                    BlobName = workshopFileUrl.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault()
+                    BlobName = workshopFileUrl.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault(),
+                    Force = true
                 });
             }
 

@@ -106,7 +106,7 @@ namespace SCMM.Steam.Functions
             }
 
             await _db.SaveChangesAsync();
-            logger.LogInformation($"Asset description workshop data urls updated");
+            logger.LogInformation($"Asset description workshop data urls updated (count: {assetDescriptions.Count})");
 
             // Queue analyse of the workfshop file
             return new AnalyseSteamWorkshopFileMessage()
