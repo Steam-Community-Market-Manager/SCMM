@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
@@ -172,48 +173,51 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public PriceType? BuyNowFrom => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.Type;
+        public PriceType? BuyNowFrom => 
+            GetPrices().Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault()?.Type;
 
-        public SteamCurrency BuyNowCurrency => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.Currency;
+        public IExchangeableCurrency BuyNowCurrency => 
+            GetPrices().Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault()?.Currency;
 
-        public long? BuyNowPrice => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyPrice;
+        public long? BuyNowPrice => 
+            GetPrices().Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyPrice;
 
-        public string BuyNowUrl => GetPrices().OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyUrl;
+        public string BuyNowUrl => 
+            GetPrices().Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyUrl;
 
-        public IEnumerable<Price> GetPrices()
+        public IEnumerable<Price> GetPrices(IExchangeableCurrency currency = null)
         {
-            if (StoreItem != null && StoreItem.IsAvailable)
+            // Steam store
+            if (StoreItem != null)
             {
-                // TODO: If currency is available, we should return the price in the local currency rather than converting it
-                /* if (StoreItem.Prices != null && AppState.Currency != null)
+                var buyPrice = (long?)null;
+                if (StoreItem.Prices != null && currency != null)
                 {
-                    yield return new Price
-                    {
-                        Type = PriceType.SteamStore,
-                        Currency = AppState.Currency,
-                        BuyPrice = StoreItem.Prices[AppState.Currency],
-                        BuyUrl = new SteamStorePageRequest()
-                        {
-                            AppId = (StoreItem.App?.SteamId ?? App?.SteamId)
-                        }
-                    };
+                    buyPrice = StoreItem.Prices[currency.Name];
                 }
-                else */
-                if (StoreItem.Price != null && StoreItem.Currency != null)
+                else if (StoreItem.Price != null && StoreItem.Currency != null)
+                {
+                    currency = StoreItem.Currency;
+                    buyPrice = StoreItem.Price.Value;
+                }
+                if (buyPrice != null && currency != null)
                 {
                     var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
                     yield return new Price
                     {
                         Type = PriceType.SteamStore,
-                        Currency = StoreItem.Currency,
-                        BuyPrice = StoreItem.Price.Value,
+                        Currency = currency,
+                        BuyPrice = buyPrice.Value,
                         BuyUrl = !string.IsNullOrEmpty(StoreItem.SteamId)
                             ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
-                            : new SteamStorePageRequest() { AppId = appId }
+                            : new SteamStorePageRequest() { AppId = appId },
+                        IsAvailable = StoreItem.IsAvailable
                     };
                 }
             }
-            if (MarketItem != null)
+
+            // Steam community market
+            if (MarketItem != null && MarketItem.Currency != null)
             {
                 var appId = (MarketItem.App?.SteamId ?? App?.SteamId);
                 yield return new Price
@@ -225,7 +229,8 @@ namespace SCMM.Steam.Data.Store
                     {
                         AppId = appId,
                         MarketHashName = NameHash
-                    }
+                    },
+                    IsAvailable = (MarketItem.Supply > 0)
                 };
             }
         }

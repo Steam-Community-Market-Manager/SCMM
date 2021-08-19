@@ -2,6 +2,8 @@
 {
     public interface ICurrency
     {
+        public string Name { get; set; }
+
         public string PrefixText { get; set; }
 
         public string SuffixText { get; set; }
@@ -11,7 +13,7 @@
         public int Scale { get; set; }
     }
 
-    public interface IExchangeableCurrency
+    public interface IExchangeableCurrency : ICurrency
     {
         public decimal ExchangeRateMultiplier { get; set; }
     }

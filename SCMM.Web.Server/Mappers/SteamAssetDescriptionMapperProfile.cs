@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Item;
-using SCMM.Web.Data.Models.UI.Price;
 using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
 
@@ -11,8 +10,6 @@ namespace SCMM.Web.Server.Mappers
     {
         public SteamAssetDescriptionMapperProfile()
         {
-            CreateMap<Price, PriceDTO>();
-
             CreateMap<SteamAssetDescription, ItemDetailedDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
@@ -58,6 +55,9 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.OriginalPrice, o => o.MapFromUsingCurrencyTable(p => (p.StoreItem != null ? p.StoreItem.Prices : null)))
                 .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Supply : null)))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions));
+
+            CreateMap<Price, ItemPriceDTO>()
+                .ForMember(x => x.BuyPrice, o => o.MapFromUsingCurrencyExchange(p => p.BuyPrice, p => p.Currency));
         }
     }
 }

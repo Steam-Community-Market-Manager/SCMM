@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Currency;
@@ -33,7 +34,7 @@ namespace SCMM.Web.Server.Extensions
             });
         }
 
-        public static void MapFromUsingCurrencyExchange<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, long> memberOptions, Expression<Func<TSource, long>> valueExpression, Expression<Func<TSource, SteamCurrency>> currencyExpression)
+        public static void MapFromUsingCurrencyExchange<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, long> memberOptions, Expression<Func<TSource, long>> valueExpression, Expression<Func<TSource, IExchangeableCurrency>> currencyExpression)
         {
             memberOptions.MapFrom((src, dst, _, context) =>
             {
@@ -66,7 +67,7 @@ namespace SCMM.Web.Server.Extensions
             });
         }
 
-        public static void MapFromUsingCurrencyExchange<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, long?> memberOptions, Expression<Func<TSource, long?>> valueExpression, Expression<Func<TSource, SteamCurrency>> currencyExpression)
+        public static void MapFromUsingCurrencyExchange<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, long?> memberOptions, Expression<Func<TSource, long?>> valueExpression, Expression<Func<TSource, IExchangeableCurrency>> currencyExpression)
         {
             memberOptions.MapFrom((src, dst, _, context) =>
             {
