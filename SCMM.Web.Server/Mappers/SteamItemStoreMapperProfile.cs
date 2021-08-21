@@ -30,6 +30,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.AssetDescriptionId, o => o.MapFrom(p => p.Item.Description.ClassId))
                 .ForMember(x => x.WorkshopFileId, o => o.MapFrom(p => p.Item.Description.WorkshopFileId))
                 .ForMember(x => x.MarketListingId, o => o.MapFrom(p => p.Item.Description.MarketItem != null ? p.Item.Description.MarketItem.SteamId : null))
+                .ForMember(x => x.CreatorId, o => o.MapFrom(p => p.Item.Description.CreatorProfile != null ? p.Item.Description.CreatorProfile.SteamId : p.Item.App.SteamId))
                 .ForMember(x => x.CreatorName, o => o.MapFrom(p => p.Item.Description.CreatorProfile != null ? p.Item.Description.CreatorProfile.Name : p.Item.App.Name))
                 .ForMember(x => x.CreatorAvatarUrl, o => o.MapFrom(p => p.Item.Description.CreatorProfile != null ? p.Item.Description.CreatorProfile.AvatarUrl : p.Item.App.IconUrl))
                 .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Item.Description.ItemType))

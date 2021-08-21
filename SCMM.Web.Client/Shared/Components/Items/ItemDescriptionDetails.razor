@@ -746,7 +746,7 @@
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
         {
             ["CollectionName"] = Item.ItemCollection,
-            ["CollectionUrl"] = $"api/item/collection/{Item.ItemCollection}"
+            ["CollectionUrl"] = $"api/item/collection/{Item.ItemCollection}?creatorId={Item.CreatorId}"
         });
     }
     

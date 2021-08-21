@@ -452,7 +452,7 @@
                         <tbody>
                             <Virtualize ItemsProvider="LoadItemsLargestCollections" Context="item">
                                 <ItemContent>
-                                    <tr @onclick="@((_) => ShowItemCollectionDialog(item.Name))" class="clickable">
+                                    <tr @onclick="@((_) => ShowItemCollectionDialog(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
@@ -657,12 +657,12 @@
         });
     }
 
-    private void ShowItemCollectionDialog(string itemCollection)
+    private void ShowItemCollectionDialog(DashboardAssetCollectionDTO collection)
     {
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
         {
-            ["CollectionName"] = itemCollection,
-            ["CollectionUrl"] = $"api/item/collection/{itemCollection}"
+            ["CollectionName"] = collection.Name,
+            ["CollectionUrl"] = $"api/item/collection/{collection.Name}?creatorId={collection.CreatorId}"
         });
     }
     

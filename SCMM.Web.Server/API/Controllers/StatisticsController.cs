@@ -550,20 +550,26 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.ItemCollection != null)
                 .Select(x => new
                 {
+                    CreatorId = x.CreatorId,
                     Name = x.ItemCollection,
                     IconUrl = x.IconLargeUrl,
                     Currency = x.MarketItem != null ? x.MarketItem.Currency : (x.StoreItem != null ? x.StoreItem.Currency : null),
                     BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.BuyNowPrice : (x.StoreItem != null ? (long?)x.StoreItem.Price : null)
                 })
                 .ToList()
-                .GroupBy(x => x.Name)
+                .GroupBy(x => new 
+                { 
+                    CreatorId = x.CreatorId, 
+                    Name = x.Name 
+                })
                 .OrderByDescending(x => x.Count())
                 .AsQueryable();
 
             return Ok(
                 query.Paginate(start, count, x => new DashboardAssetCollectionDTO
                 {
-                    Name = x.Key,
+                    CreatorId = x.Key.CreatorId,
+                    Name = x.Key.Name,
                     IconUrl = x.FirstOrDefault(y => y.BuyNowPrice == x.Max(z => z.BuyNowPrice))?.IconUrl,
                     Items = x.Count(),
                     BuyNowPrice = this.Currency().CalculateExchange(x.Sum(y => y.BuyNowPrice ?? 0), x.FirstOrDefault()?.Currency)

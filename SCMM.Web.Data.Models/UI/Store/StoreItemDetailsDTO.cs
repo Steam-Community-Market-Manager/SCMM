@@ -18,6 +18,8 @@
 
         public bool HasMarketListing => !string.IsNullOrEmpty(MarketListingId);
 
+        public ulong? CreatorId { get; set; }
+
         public string CreatorName { get; set; }
 
         public string CreatorAvatarUrl { get; set; }

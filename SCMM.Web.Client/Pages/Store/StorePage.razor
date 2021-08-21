@@ -610,7 +610,7 @@ else if (StoreList.Any())
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
         {
             ["CollectionName"] = item.ItemCollection,
-            ["CollectionUrl"] = $"api/item/collection/{item.ItemCollection}"
+            ["CollectionUrl"] = $"api/item/collection/{item.ItemCollection}?creatorId={item.CreatorId}"
         });
     }
     

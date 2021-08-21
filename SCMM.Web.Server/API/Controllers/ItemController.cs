@@ -395,6 +395,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get all items that belong to the specified collection
         /// </summary>
         /// <param name="name">The name of the item collection</param>
+        /// <param name="creatorId">Optional creator id to filter against. Useful when there are multiple collections of the same name by different creators</param>
         /// <returns>The items belonging to the collection</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -409,7 +410,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsByCollection([FromRoute] string name)
+        public async Task<IActionResult> GetItemsByCollection([FromRoute] string name, [FromQuery] ulong? creatorId = null)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -418,6 +419,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.ItemCollection == name)
+                .Where(x => x.CreatorId == creatorId || creatorId == null)
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)

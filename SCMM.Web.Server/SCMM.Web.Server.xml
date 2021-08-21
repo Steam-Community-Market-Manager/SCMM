@@ -107,11 +107,12 @@
             <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByCollection(System.String)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByCollection(System.String,System.Nullable{System.UInt64})">
             <summary>
             Get all items that belong to the specified collection
             </summary>
             <param name="name">The name of the item collection</param>
+            <param name="creatorId">Optional creator id to filter against. Useful when there are multiple collections of the same name by different creators</param>
             <returns>The items belonging to the collection</returns>
             <remarks>
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').

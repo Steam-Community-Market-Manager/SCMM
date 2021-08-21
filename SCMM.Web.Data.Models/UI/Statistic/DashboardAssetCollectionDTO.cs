@@ -2,6 +2,8 @@
 {
     public class DashboardAssetCollectionDTO
     {
+        public ulong? CreatorId { get; set; }
+
         public string Name { get; set; }
 
         public string IconUrl { get; set; }
