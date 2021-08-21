@@ -80,7 +80,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get item store information
+        /// Get item store information at a specific date
         /// </summary>
         /// <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
         /// <returns>The item store details</returns>

@@ -1,13 +1,19 @@
 ﻿@using Markdig
-@MarkupContent
+
+<div class="markdown-container" @attributes="AdditionalAttributes">
+    @MarkupContent
+</div>
 
 @code {
 
     [Parameter]
     public string Content {get; set;}
-
+    
     public MarkupString MarkupContent { get; private set; }
-
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+    
     protected override void OnInitialized()
     {
         if (!String.IsNullOrWhiteSpace(Content))

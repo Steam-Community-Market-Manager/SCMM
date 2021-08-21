@@ -23,20 +23,24 @@
             <response code="404">If the image cannot be found or has expired.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.String,System.String,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.Nullable{System.UInt64}[],System.String,System.String,System.String,System.Nullable{System.UInt64},System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
             <summary>
             List all known items
             </summary>
             <remarks>
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
+            <param name="id">Optional array of ids to be included in the list. Helpful when you want search for items and compare against a known (but unrelated) item</param>
             <param name="filter">Optional search filter. Matches against item GUID, ID64, name, description, author, type, collection, and tags</param>
-            <param name="itemType">If specified, only items matching the supplied item type are returned</param>
+            <param name="type">If specified, only items matching the supplied item type are returned</param>
+            <param name="collection">If specified, only items matching the supplied item collection are returned</param>
+            <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
             <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
             <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
             <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
+            <param name="marketable">If <code>true</code>, only marketable items are returned</param>
             <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <param name="count">Number items to be returned (can be less if not enough data). Use -1 to return all items</param>
             <param name="sortBy">Sort item property name from <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemDetailedDTO"/></param>
             <param name="sortDirection">Sort item direction</param>
             <param name="detailed">If <code>true</code>, the response will be a paginated list of <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemDetailedDTO"/>. If <code>false</code>, the response will be a paginated list of <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemDescriptionWithPriceDTO"/></param>
@@ -58,28 +62,56 @@
             <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByType(System.String,System.Boolean,System.Nullable{System.UInt64})">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemPrices(System.String)">
             <summary>
-            Get all items of the specified type
+            Get item price list
             </summary>
-            <param name="name">The name of the item type</param>
-            <param name="marketableItemsOnly">If true, only marketable items are returned. If false, all items are returned</param>
-            <param name="compareWithItemId">The id of an unrelated item to be included in the list. Helpful when you want to compare an item to the list</param>
-            <returns>The items of the specified item type</returns>
             <remarks>
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
-            <response code="200">The list of item details.</response>
-            <response code="400">If the item type name is missing.</response>
-            <response code="404">If the item type name doesn't exist (or doesn't contain any marketable items).</response>
+            <param name="id">Item GUID, ID64, or name</param>
+            <response code="200">The item price list.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByCollection(System.String,System.Boolean)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSellOrders(System.String,System.Int32,System.Int32)">
+            <summary>
+            List item sell orders
+            </summary>
+            <param name="start">Return item sell orders starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="404">If the request item cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemBuyOrders(System.String,System.Int32,System.Int32)">
+            <summary>
+            List item buy orders
+            </summary>
+            <param name="start">Return item buy orders starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="404">If the request item cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSalesTimeline(System.String)">
+            <summary>
+            Get item sales chart data, grouped by day (UTC)
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByCollection(System.String)">
             <summary>
             Get all items that belong to the specified collection
             </summary>
             <param name="name">The name of the item collection</param>
-            <param name="marketableItemsOnly">If true, only marketable items are returned. If false, all items are returned</param>
             <returns>The items belonging to the collection</returns>
             <remarks>
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').

@@ -72,6 +72,7 @@
         public const string BlobMetadataPublishedFileName = "PublishedFileName";
         public const string BlobMetadataIconAnalysed = "IconAnalysed";
 
+        public const string AssetTagAi = "ai";
         public const string AssetTagAiTag = "ai.tag";
         public const string AssetTagAiCaption = "ai.caption";
 

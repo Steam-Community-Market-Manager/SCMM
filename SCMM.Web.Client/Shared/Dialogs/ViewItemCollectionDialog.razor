@@ -7,14 +7,14 @@
 
 <MudDialog>
     <TitleContent>
-        @if (Collection == null)
+        @if (Collection == null || String.IsNullOrEmpty(Collection.Name))
         {
             <MudText Typo="MudBlazor.Typo.h6">@CollectionName</MudText>
         } 
         else
         {
-            <MudTooltip Text="@Collection.AuthorName">
-                <MudAvatar Image="@Collection.AuthorAvatarUrl" Size="MudBlazor.Size.Medium" />
+            <MudTooltip Text="@Collection.CreatorName">
+                <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" />
             </MudTooltip>
             <div class="d-inline-block ml-2">
                 <div class="collection-name">
@@ -25,7 +25,7 @@
                         <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
                         @if(Collection.BuyNowPrice > 0)
                         {
-                            <span>Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                            <span> Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
                         }
                     </MudText>
                 </div>
@@ -43,7 +43,7 @@
                 @foreach (var item in Collection.Items)
                 {
                     <MudItem xs="12" sm="6" md="4" lg="3" xl="2">
-                        <ItemDescriptionDetails Item="@item" />
+                        <ItemDescriptionSummary Item="@item" />
                     </MudItem>
                 }
             </MudGrid>

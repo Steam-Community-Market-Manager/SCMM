@@ -19,6 +19,9 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.Description.BuyNowPrice, p => p.Description.BuyNowCurrency))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFrom(p => p.Description.BuyNowUrl))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.LifetimeSubscriptions));
+
+            CreateMap<SteamMarketItemOrder, ItemOrderDTO>()
+                .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Item.Currency));
         }
     }
 }

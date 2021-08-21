@@ -79,7 +79,6 @@ namespace SCMM.Web.Server.API.Controllers
             );
         }
 
-
         /// <summary>
         /// Get items with the highest amount of market listing activity in the last 24hrs
         /// </summary>

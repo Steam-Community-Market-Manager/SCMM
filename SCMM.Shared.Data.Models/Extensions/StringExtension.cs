@@ -11,6 +11,15 @@
             return value.First().ToString().ToUpper() + value.Substring(1);
         }
 
+        public static string FirstCharToLower(this string value)
+        {
+            if (String.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+            return value.First().ToString().ToLower() + value.Substring(1);
+        }
+
         public static string Pluralise(this string value, int count)
         {
             if (String.IsNullOrEmpty(value))

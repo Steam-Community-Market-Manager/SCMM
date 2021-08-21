@@ -10,17 +10,17 @@
         <MudText Typo="MudBlazor.Typo.h6">@ListName</MudText>
     </TitleContent>
     <DialogContent>
-        @if (List == null)
+        @if (List?.Items == null)
         {
             <Loading Message="Loading item list..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
         } 
         else
         {
             <MudGrid Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
-                @foreach (var item in List.OrderBy(x => x.BuyNowPrice))
+                @foreach (var item in SortedItems(List.Items))
                 {
                     <MudItem xs="12" sm="6" md="4" lg="3" xl="2">
-                        <ItemDescriptionDetails Item="@item" Highlighted="@(item.Id == HighlightedItemId)" />
+                        <ItemDescriptionSummary Item="@item" Highlighted="@(item.Id == HighlightedItemId)" />
                     </MudItem>
                 }
             </MudGrid>
@@ -41,8 +41,11 @@
 
     [Parameter]
     public ulong HighlightedItemId { get; set; }
+    
+    [Parameter]
+    public bool SortByValue { get; set; }
 
-    private ItemDescriptionWithPriceDTO[] List { get; set; }
+    private PaginatedResult<ItemDescriptionWithPriceDTO> List { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
@@ -53,7 +56,7 @@
 
         try
         {
-            List = await Http.GetFromJsonAsync<ItemDescriptionWithPriceDTO[]>(ListUrl);
+            List = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(ListUrl);
             Dialog.ForceRender();
             StateHasChanged();
 
@@ -69,4 +72,12 @@
         }
     }
 
+    private IEnumerable<ItemDescriptionWithPriceDTO> SortedItems(IEnumerable<ItemDescriptionWithPriceDTO> items)
+    {
+        if (SortByValue)
+        {
+            items = items.OrderBy(x => x.BuyNowPrice);
+        }
+        return items;
+    }
 }

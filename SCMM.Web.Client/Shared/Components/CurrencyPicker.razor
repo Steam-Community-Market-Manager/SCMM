@@ -6,7 +6,7 @@
 
 @if (State.Currency != null && Currencies != null)
 {
-    <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.Currency.Name" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Dense="true" MaxHeight="500">
+    <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.Currency.Name" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Dense="true" MaxHeight="500" UserAttributes="@AdditionalAttributes">
         @foreach (var currency in Currencies)
         {
             <MudMenuItem OnClick="@(() => ChangeCurrency(currency))">
@@ -19,6 +19,9 @@
 @code
 {
     private IList<CurrencyDetailedDTO> Currencies { get; set; }
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
     
     protected override async Task OnInitializedAsync()
     {

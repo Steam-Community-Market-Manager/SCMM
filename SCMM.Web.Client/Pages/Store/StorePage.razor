@@ -239,18 +239,22 @@ else if (StoreList.Any())
                                                     </span>
                                                 </MudText>
                                             }
-                                            @if (item.BreaksIntoComponents != null)
+                                            @if (item.BreaksIntoComponents?.Any() == true)
                                             {
-                                                @foreach (var component in item.BreaksIntoComponents)
-                                                {
-                                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                                        <i class="fas fa-fw fa-cubes mud-secondary-text"></i>
-                                                        <span>
-                                                            <span class="mud-secondary-text">Breaks down into </span>
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-hammer mud-secondary-text"></i>
+                                                    <span>
+                                                        <span class="mud-secondary-text">Breaks down into </span>
+                                                        @foreach (var component in item.BreaksIntoComponents)
+                                                        {
                                                             <span>@(component.Value)x @component.Key</span>
-                                                        </span>
-                                                    </MudText>
-                                                }
+                                                            @if (item.BreaksIntoComponents.Last().Key != component.Key)
+                                                            {
+                                                                <span class="mud-secondary-text">, </span>
+                                                            }
+                                                        }
+                                                    </span>
+                                                </MudText>
                                             }
                                             @if (!String.IsNullOrEmpty(item.ItemCollection))
                                             {
@@ -266,7 +270,7 @@ else if (StoreList.Any())
                                             <div class="my-3">
                                                 <MudTooltip>
                                                     <ChildContent>
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Tradable" Disabled="@(!item.IsTradable)"
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsTradable ? "Tradable" : "Not Tradable")" Disabled="@(!item.IsTradable)"
                                                                  Icon="@(item.IsTradable ? "fas fa-fw fa-exchange-alt mr-2" : "fas fa-fw fa-times")" 
                                                                  Variant="@(item.IsTradable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
                                                                  Color="@(item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
@@ -291,7 +295,7 @@ else if (StoreList.Any())
                                                 </MudTooltip>
                                                 <MudTooltip>
                                                     <ChildContent>
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Marketable" Disabled="@(!item.IsMarketable)"
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsMarketable ? "Marketable" : "Not Marketable")" Disabled="@(!item.IsMarketable)"
                                                                  Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : ((item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
                                                                  Variant="@(item.IsMarketable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
                                                                  Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
@@ -326,10 +330,10 @@ else if (StoreList.Any())
                                                 {
                                                     <MudTooltip>
                                                         <ChildContent>
-                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"{(item.GlowRatio > 0 ? item.GlowRatio + "% " : String.Empty)}Glow")" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"Glow {(item.GlowRatio > 0.01m ? "(" + item.GlowRatio + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                         </ChildContent>
                                                         <TooltipContent>
-                                                            @if (item.GlowRatio > 0)
+                                                            @if (item.GlowRatio > 0.01m)
                                                             {
                                                                 <span>@item.GlowRatio% of this item glows in the dark, making it much easier to see at night</span>
                                                             }
@@ -350,10 +354,10 @@ else if (StoreList.Any())
                                                 {
                                                     <MudTooltip>
                                                         <ChildContent>
-                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"{(item.CutoutRatio > 0 ? item.CutoutRatio + "% " : String.Empty)}Cutout")" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"Cutout {(item.CutoutRatio > 0.01m ? "(" + item.CutoutRatio + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                         </ChildContent>
                                                         <TooltipContent>
-                                                            @if (item.CutoutRatio > 0)
+                                                            @if (item.CutoutRatio > 0.01m)
                                                             {
                                                                 <span>@item.CutoutRatio% of this items material has been removed. The shape may appeared altered when compared against the default item</span>
                                                             }
@@ -416,7 +420,7 @@ else if (StoreList.Any())
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">
                                                         <span>@State.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
                                                     </MudText>
-                                                    @if (item.MarketPrice > 0 && item.StorePrice > 0)
+                                                    @if (item.MarketPrice > 0 && item.StorePrice > 0 && item.MarketPrice != item.StorePrice)
                                                     {
                                                         @if (item.MarketPrice >= item.StorePrice)
                                                         {
@@ -595,8 +599,9 @@ else if (StoreList.Any())
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
             ["ListName"] = item.ItemType,
-            ["ListUrl"] = $"api/item/type/{item.ItemType}?compareWithItemId={item.AssetDescriptionId}&marketableItemsOnly=true",
+            ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&marketable=true&count=-1",
             ["HighlightedItemId"] = item.AssetDescriptionId,
+            ["SortByValue"] = true
         });
     }
 
@@ -660,7 +665,7 @@ else if (StoreList.Any())
         try
         {
             var search = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(value ?? String.Empty)}&start=0&count=25"
+                $"api/item?filter={Uri.EscapeDataString(value ?? String.Empty)}&count=30"
             );
 
             return search.Items;

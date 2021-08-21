@@ -1,0 +1,124 @@
+﻿@using SCMM.Web.Data.Models.UI.Item
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
+
+<div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
+    @if (PurchasableItem.BuyNowFrom != PriceType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowPrice != PurchasableItem.OriginalPrice)
+    {
+        @if (PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice)
+        {
+            <MudBadge Color="MudBlazor.Color.Success" Content="@($"▲ {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" Overlap="true" Bordered="true" Bottom="true" Class="mud-badge-center">
+                <div class="hover-zoom">
+                    <img src="@Item.IconUrl" class="full-width" />
+                </div>
+            </MudBadge>
+        }
+        else if (PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice)
+        {
+            <MudBadge Color="MudBlazor.Color.Error" Content="@($"▼ {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" Overlap="true" Bordered="true" Bottom="true" Class="mud-badge-center">
+                <div class="hover-zoom">
+                    <img src="@Item.IconUrl" class="full-width" />
+                </div>
+            </MudBadge>
+        }
+    }
+    else
+    {
+        <div class="hover-zoom">
+            <img src="@Item.IconUrl" class="full-width" />
+        </div>
+    }
+    <div class="ma-2 d-flex flex-column justify-center align-center text-centered">
+        <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {Item.ForegroundColour}")">
+            <span>@Item.Name</span>
+        </MudText>
+        @if (PurchasableItem?.BuyNowPrice != null)
+        {
+            <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap d-flex flex-row justify-center align-center">
+                @switch(PurchasableItem.BuyNowFrom)
+                {
+                    case PriceType.SteamStore:
+                    {
+                        <i class="mx-1"><RustIcon /></i>
+                        <span>@State.Currency.ToPriceString(PurchasableItem.OriginalPrice ?? PurchasableItem.BuyNowPrice ?? 0)</span>
+                        break;
+                    }
+                    case PriceType.SteamCommunityMarket:
+                    {
+                        <i class="fab fa-fw fa-steam mx-1" style="transform: scale(1.2)"></i>
+                        <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
+                        @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0)
+                        {
+                            <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(PurchasableItem.OriginalPrice.Value, dense: true)</span>
+                        }
+                        break;
+                    }
+                }
+            </MudText>
+        }
+        @if (SubscribableItem?.Subscriptions > 0)
+        {
+            <MudTooltip Text="Subscribers">
+                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>@SubscribableItem.Subscriptions.Value.ToQuantityString()</span>
+                </MudText>
+            </MudTooltip>
+        }
+        @if (PurchasableItem?.Supply > 0)
+        {
+            <MudTooltip Text="Market Listings">
+                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                    <i class="fas fa-fw fa-balance-scale-left "></i>
+                    <span>@PurchasableItem.Supply.Value.ToQuantityString()</span>
+                </MudText>
+            </MudTooltip>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public bool Highlighted { get; set; }
+
+    [Parameter]
+    public IItemDescription Item { get; set; }
+
+    private ICanBePurchased PurchasableItem => (Item as ICanBePurchased);
+    
+    private ICanBeSubscribed SubscribableItem => (Item as ICanBeSubscribed);
+    
+    [Parameter]
+    public Action<IItemDescription> OnClick { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+    
+    private string GetDynamicClassNames()
+    {
+        var classNames = new List<string>();
+        if (PurchasableItem != null)
+        {
+            classNames.Add("clickable");
+        }
+        if (Highlighted)
+        {
+            classNames.Add("flash highlighted");
+        }
+        return String.Join(' ', classNames);
+    }
+    
+    private void OnItemClicked()
+    {
+        if (OnClick != null)
+        {
+            OnClick.Invoke(Item);
+        }
+        else if (!String.IsNullOrEmpty(PurchasableItem?.BuyNowUrl))
+        {
+            ExternalNavigationManager.NavigateToNewTab(PurchasableItem.BuyNowUrl);
+        }
+    }
+
+}

@@ -1,0 +1,14 @@
+﻿
+.item {
+    border: 1px solid transparent;
+}
+
+.item:hover {
+    background-color: var(--mud-palette-overlay-dark);
+    border: 1px solid var(--mud-palette-lines-default);
+}
+
+.highlighted {
+    background-color: var(--mud-palette-overlay-dark);
+    border: 1px solid var(--mud-palette-lines-default);
+}

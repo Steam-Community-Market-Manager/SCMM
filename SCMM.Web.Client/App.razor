@@ -27,14 +27,14 @@
 
     private AppState State { get; set; }
 
-    private DotNetObjectReference<App> Instance { get; set; } = DotNetObjectReference.Create(this);
+    private DotNetObjectReference<App> Instance { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try 
         {
             // Check if there are pending updates
-            await UpdateManager.SetInstanceAsync(Instance);
+            await UpdateManager.SetInstanceAsync(Instance = DotNetObjectReference.Create(this));
             if (await UpdateManager.IsUpdatePendingAsync())
             {
                 ShowUpdateNotification();

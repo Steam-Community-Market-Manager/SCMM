@@ -489,7 +489,7 @@
                         <tbody>
                             <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item">
                                 <ItemContent>
-                                    <tr>
+                                    <tr @onclick="@((_) => ShowProfileItemsDialog(item))" class="clickable">
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
                                                 <img src="@item.AvatarUrl" class="mr-1" style="width:32px; height:32px;" />
@@ -520,7 +520,7 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-box-open" Title="Skin Containers" Subtitle="What is the cheapest way to buy skin containers?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-box" Title="Skin Containers" Subtitle="What is the cheapest way to buy skin containers?" Dense="true">
                 <div class="">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
@@ -585,7 +585,7 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-boxes" Title="Crafting Resources" Subtitle="What is the cheapest way to buy crafting resources?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-puzzle-piece" Title="Crafting Resources" Subtitle="What is the cheapest way to buy crafting resources?" Dense="true">
                 <div class="">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
                         <tbody>
@@ -648,6 +648,15 @@
         );
     }
     
+    private void ShowProfileItemsDialog(ProfileAcceptedItemsStatisticDTO profile)
+    {
+        Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
+        {
+            ["ListName"] = $"Skins by {profile.Name}",
+            ["ListUrl"] = $"api/item?creatorId={profile.SteamId}&count=-1"
+        });
+    }
+
     private void ShowItemCollectionDialog(string itemCollection)
     {
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()

@@ -1,0 +1,46 @@
+﻿@page "/item/{Name}"
+@page "/items/{Name}"
+@page "/skin/{Name}"
+@page "/skins/{Name}"
+@using SCMM.Web.Client.Shared.Components.Items
+@using SCMM.Web.Data.Models.UI.Item
+@inject ILogger<ItemPage> Logger
+@inject ISnackbar Snackbar
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+@inject AppState State
+
+<PageContainer Title="@(Item?.Name ?? Name)">
+
+    @if (Item == null)
+    {
+        <Loading Message="Loading item..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+    } 
+    else
+    {
+        <ItemDescriptionDetails Item="@Item" />
+    }
+            
+</PageContainer>
+
+@code {
+    
+    [Parameter]
+    public string Name { get; set; }
+    
+    private ItemDetailedDTO Item { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Item = await Http.GetFromJsonAsync<ItemDetailedDTO>($"/api/item/{Name}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading the item details");
+            Snackbar.Add($"Unable to load item details. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+}

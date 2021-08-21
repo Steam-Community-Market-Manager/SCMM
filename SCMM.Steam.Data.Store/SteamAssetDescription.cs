@@ -2,6 +2,7 @@
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store.Types;
@@ -211,7 +212,7 @@ namespace SCMM.Steam.Data.Store
                         BuyUrl = !string.IsNullOrEmpty(StoreItem.SteamId)
                             ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
                             : new SteamStorePageRequest() { AppId = appId },
-                        IsAvailable = StoreItem.IsAvailable
+                        QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null)
                     };
                 }
             }
@@ -230,7 +231,35 @@ namespace SCMM.Steam.Data.Store
                         AppId = appId,
                         MarketHashName = NameHash
                     },
-                    IsAvailable = (MarketItem.Supply > 0)
+                    QuantityAvailable = MarketItem.Supply
+                };
+            }
+
+            if (MarketItem != null)
+            {
+                yield return new Price
+                {
+                    Type = PriceType.Skinport
+                };
+                yield return new Price
+                {
+                    Type = PriceType.BitSkins
+                };
+                yield return new Price
+                {
+                    Type = PriceType.SwapGG
+                };
+                yield return new Price
+                {
+                    Type = PriceType.TradeitGG
+                };
+                yield return new Price
+                {
+                    Type = PriceType.Dmarket
+                };
+                yield return new Price
+                {
+                    Type = PriceType.CSDeals
                 };
             }
         }

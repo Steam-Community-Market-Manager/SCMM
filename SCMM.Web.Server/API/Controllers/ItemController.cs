@@ -4,12 +4,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.API;
+using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
+using System.Linq.Expressions;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -36,18 +40,22 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List all known items
+        /// Search for items
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
+        /// <param name="id">Optional array of ids to be included in the list. Helpful when you want search for items and compare against a known (but unrelated) item</param>
         /// <param name="filter">Optional search filter. Matches against item GUID, ID64, name, description, author, type, collection, and tags</param>
-        /// <param name="itemType">If specified, only items matching the supplied item type are returned</param>
+        /// <param name="type">If specified, only items matching the supplied item type are returned</param>
+        /// <param name="collection">If specified, only items matching the supplied item collection are returned</param>
+        /// <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
         /// <param name="glow">If <code>true</code>, only items tagged with 'glow' are returned</param>
         /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
         /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
+        /// <param name="marketable">If <code>true</code>, only marketable items are returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data). Use -1 to return all items</param>
         /// <param name="sortBy">Sort item property name from <see cref="ItemDetailedDTO"/></param>
         /// <param name="sortDirection">Sort item direction</param>
         /// <param name="detailed">If <code>true</code>, the response will be a paginated list of <see cref="ItemDetailedDTO"/>. If <code>false</code>, the response will be a paginated list of <see cref="ItemDescriptionWithPriceDTO"/></param>
@@ -62,16 +70,18 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItems([FromQuery] string filter = null, [FromQuery] string itemType = null, [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false,
+        public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null,
+                                                  [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
+            id = (id ?? new ulong?[0]);
             if (start < 0)
             {
                 return BadRequest("Start index must be a positive number");
             }
             if (count <= 0)
             {
-                return BadRequest("Item count must be greater than zero");
+                count = int.MaxValue;
             }
 
             var query = _db.SteamAssetDescriptions.AsNoTracking();
@@ -81,6 +91,7 @@ namespace SCMM.Web.Server.API.Controllers
             foreach (var filterWord in filterWords)
             {
                 query = query.Where(x =>
+                    id.Contains(x.ClassId) ||
                     x.Id.ToString() == filterWord ||
                     x.ClassId.ToString() == filterWord ||
                     x.Name.Contains(filterWord) ||
@@ -92,21 +103,33 @@ namespace SCMM.Web.Server.API.Controllers
                 );
             }
 
-            if (!string.IsNullOrEmpty(itemType))
+            if (!string.IsNullOrEmpty(type))
             {
-                query = query.Where(x => x.ItemType == itemType);
+                query = query.Where(x => id.Contains(x.ClassId) || x.ItemType == type);
+            }
+            if (!string.IsNullOrEmpty(collection))
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.ItemCollection == collection);
+            }
+            if (creatorId != null)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()));
             }
             if (glow)
             {
-                query = query.Where(x => x.HasGlow == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.HasGlow == true);
             }
             if (glowsight)
             {
-                query = query.Where(x => x.HasGlowSights == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.HasGlowSights == true);
             }
             if (cutout)
             {
-                query = query.Where(x => x.HasCutout == true);
+                query = query.Where(x => id.Contains(x.ClassId) || x.HasCutout == true);
+            }
+            if (marketable)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsMarketable == true);
             }
 
             query = query
@@ -177,57 +200,201 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get all items of the specified type
+        /// Get item price list
         /// </summary>
-        /// <param name="name">The name of the item type</param>
-        /// <param name="marketableItemsOnly">If true, only marketable items are returned. If false, all items are returned</param>
-        /// <param name="compareWithItemId">The id of an unrelated item to be included in the list. Helpful when you want to compare an item to the list</param>
-        /// <returns>The items of the specified item type</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
-        /// <response code="200">The list of item details.</response>
-        /// <response code="400">If the item type name is missing.</response>
-        /// <response code="404">If the item type name doesn't exist (or doesn't contain any marketable items).</response>
+        /// <param name="id">Item GUID, ID64, or name</param>
+        /// <response code="200">The item price list.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the request item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("type/{name}")]
-        [ProducesResponseType(typeof(ItemDescriptionWithPriceDTO[]), StatusCodes.Status200OK)]
+        [HttpGet("{id}/prices")]
+        [ProducesResponseType(typeof(IEnumerable<ItemPriceDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsByType([FromRoute] string name, [FromQuery] bool marketableItemsOnly = false, [FromQuery] ulong? compareWithItemId = null)
+        public async Task<IActionResult> GetItemPrices([FromRoute] string id)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(id))
             {
-                return BadRequest("Item type name is missing");
+                return BadRequest("Item id is invalid");
             }
 
-            var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
-                .Where(x =>
-                    ((x.ItemType == name) && (!marketableItemsOnly || x.IsMarketable)) ||
-                    (compareWithItemId != null && x.ClassId == compareWithItemId)
-                )
+            var guid = Guid.Empty;
+            var id64 = (ulong)0;
+            Guid.TryParse(id, out guid);
+            ulong.TryParse(id, out id64);
+
+            var item = await _db.SteamAssetDescriptions
+                .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .OrderBy(x => x.MarketItem.BuyNowPrice)
-                .ToListAsync();
+                .FirstOrDefaultAsync(x =>
+                    (guid != Guid.Empty && x.Id == guid) ||
+                    (id64 > 0 && x.ClassId == id64) ||
+                    (x.Name == id)
+                );
 
-            if (assetDescriptions?.Any() != true)
+            if (item == null)
             {
-                return NotFound("Item type does not exist, or there are no marketable items found");
+                return NotFound($"Item was not found");
             }
 
-            var assetDetails = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(assetDescriptions, this);
-            return Ok(assetDetails);
+            return Ok(
+                item.GetPrices(this.Currency())
+                    .OrderByDescending(x => x.Type == PriceType.SteamStore)
+                    .ThenByDescending(x => x.Type == PriceType.SteamCommunityMarket)
+                    .ThenByDescending(x => x.IsAvailable)
+                    .ThenBy(x => x.BuyPrice)
+                    .Select(x => _mapper.Map<Price, ItemPriceDTO>(x, this))
+                    .ToList()
+            );
+        }
+
+        /// <summary>
+        /// List item sell orders
+        /// </summary>
+        /// <param name="start">Return item sell orders starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the request item cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}/sellOrders")]
+        [ProducesResponseType(typeof(PaginatedResult<ItemOrderDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemSellOrders([FromRoute] string id, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Item id is invalid");
+            }
+
+            var guid = Guid.Empty;
+            var id64 = (ulong)0;
+            Guid.TryParse(id, out guid);
+            ulong.TryParse(id, out id64);
+
+            var query = _db.SteamMarketItemSellOrder
+                .Include(x => x.Item.Currency)
+                .Where(x =>
+                    (guid != Guid.Empty && x.Item.Description.Id == guid) ||
+                    (id64 > 0 && x.Item.Description.ClassId == id64) ||
+                    (x.Item.Description.Name == id)
+                )
+                .OrderBy(x => x.Price);
+
+            return Ok(
+                await query.PaginateAsync(start, count, x => _mapper.Map<SteamMarketItemOrder, ItemOrderDTO>(x, this))
+            );
+        }
+
+        /// <summary>
+        /// List item buy orders
+        /// </summary>
+        /// <param name="start">Return item buy orders starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the request item cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}/buyOrders")]
+        [ProducesResponseType(typeof(PaginatedResult<ItemOrderDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemBuyOrders([FromRoute] string id, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Item id is invalid");
+            }
+
+            var guid = Guid.Empty;
+            var id64 = (ulong)0;
+            Guid.TryParse(id, out guid);
+            ulong.TryParse(id, out id64);
+
+            var query = _db.SteamMarketItemBuyOrder
+                .Include(x => x.Item.Currency)
+                .Where(x =>
+                    (guid != Guid.Empty && x.Item.Description.Id == guid) ||
+                    (id64 > 0 && x.Item.Description.ClassId == id64) ||
+                    (x.Item.Description.Name == id)
+                )
+                .OrderByDescending(x => x.Price);
+
+            return Ok(
+                await query.PaginateAsync(start, count, x => _mapper.Map<SteamMarketItemOrder, ItemOrderDTO>(x, this))
+            );
+        }
+
+        /// <summary>
+        /// Get item sales chart data, grouped by day (UTC)
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}/salesTimeline")]
+        [ProducesResponseType(typeof(IEnumerable<ItemSaleChartDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemSalesTimeline([FromRoute] string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Item id is invalid");
+            }
+
+            var guid = Guid.Empty;
+            var id64 = (ulong)0;
+            Guid.TryParse(id, out guid);
+            ulong.TryParse(id, out id64);
+
+            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var query = _db.SteamMarketItemSale
+                .AsNoTracking()
+                .Where(x =>
+                    (guid != Guid.Empty && x.Item.Description.Id == guid) ||
+                    (id64 > 0 && x.Item.Description.ClassId == id64) ||
+                    (x.Item.Description.Name == id)
+                )
+                .Where(x => x.Timestamp.Date <= yesterday.Date)
+                .GroupBy(x => x.Timestamp.Date)
+                .OrderBy(x => x.Key.Date)
+                .Select(x => new
+                {
+                    Date = x.Key,
+                    Price = x.Average(y => y.Price),
+                    Quantity = x.Sum(y => y.Quantity)
+                });
+
+            var sales = (await query.ToListAsync()).Select(
+                x => new ItemSaleChartDTO
+                {
+                    Date = x.Date,
+                    Price = this.Currency().ToPrice(this.Currency().CalculateExchange((long) Math.Round(x.Price, 0))),
+                    Quantity = x.Quantity
+                }
+            );
+
+            return Ok(sales);
         }
 
         /// <summary>
         /// Get all items that belong to the specified collection
         /// </summary>
         /// <param name="name">The name of the item collection</param>
-        /// <param name="marketableItemsOnly">If true, only marketable items are returned. If false, all items are returned</param>
         /// <returns>The items belonging to the collection</returns>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -242,7 +409,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsByCollection([FromRoute] string name, [FromQuery] bool marketableItemsOnly = false)
+        public async Task<IActionResult> GetItemsByCollection([FromRoute] string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -251,7 +418,6 @@ namespace SCMM.Web.Server.API.Controllers
 
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.ItemCollection == name)
-                .Where(x => !marketableItemsOnly || x.IsMarketable)
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)

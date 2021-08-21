@@ -10,6 +10,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string BuyUrl { get; set; }
 
+        public int? QuantityAvailable { get; set; }
+
         public bool IsAvailable { get; set; }
     }
 }

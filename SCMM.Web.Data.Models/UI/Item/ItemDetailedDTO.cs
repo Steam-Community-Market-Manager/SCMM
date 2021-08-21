@@ -17,7 +17,13 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public ulong? WorkshopFileId { get; set; }
 
-        public ProfileDTO Creator { get; set; }
+        public string WorkshopFileUrl { get; set; }
+
+        public ulong? CreatorId { get; set; }
+
+        public string CreatorName { get; set; }
+
+        public string CreatorAvatarUrl { get; set; }
 
         public string ItemType { get; set; }
 
@@ -115,6 +121,16 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         #endregion
 
+        #region Store Item 
+
+        public bool IsAvailableOnStore { get; set; }
+
+        public long? StoreId { get; set; }
+
+        public long? StorePrice { get; set; }
+
+        #endregion
+
         #region Market Item
 
         public bool IsAvailableOnMarket { get; set; }
@@ -138,16 +154,6 @@ namespace SCMM.Web.Data.Models.UI.Item
         public long? Market24hrSales { get; set; }
 
         public long? Market24hrValue { get; set; }
-
-        #endregion
-
-        #region Store Item 
-
-        public bool IsAvailableOnStore { get; set; }
-
-        public long? StoreId { get; set; }
-
-        public long? StorePrice { get; set; }
 
         #endregion
     }

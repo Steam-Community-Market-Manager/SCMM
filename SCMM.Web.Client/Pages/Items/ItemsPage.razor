@@ -1,13 +1,12 @@
-﻿@page "/skins"
-@page "/skins/{Filter}"
-@page "/items"
+﻿@page "/items"
+@page "/skins"
 @using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
-@inject ILogger<SkinsPage> Logger
-@inject ExternalNavigationManager ExternalNavigationManager
+@inject ILogger<ItemsPage> Logger
+@inject NavigationManager NavigationManager
 @inject HttpClient Http
 
-<PageContainer Title="Skins">
+<PageContainer Title="Items">
 
     <MudGrid Spacing="2">
         <MudItem xs="12" lg="4">
@@ -136,7 +135,7 @@
             {
                 <MudItem xs="6" sm="4" md="3" lg="2" xl="1">
                     <MudPaper Outlined="true" Class="full-height">
-                        <ItemDescriptionDetails Item="@item" />
+                        <ItemDescriptionSummary Item="@item" OnClick="@OnItemClicked" />
                     </MudPaper>
                 </MudItem>
             }
@@ -187,6 +186,11 @@
         Filter = (text ?? Filter);
         RefreshItems();
     }
+    
+    private void OnItemClicked(IItemDescription item)
+    {
+        NavigationManager.NavigateTo($"/item/{item.Name}");  
+    }
 
     private async Task RefreshItems()
     {
@@ -195,7 +199,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start.GetValueOrDefault(0)}&count={Count.GetValueOrDefault(300)}&itemType={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start.GetValueOrDefault(0)}&count={Count.GetValueOrDefault(100)}&type={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}"
             );
         }
         catch (Exception ex)

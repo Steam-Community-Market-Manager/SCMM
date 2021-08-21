@@ -4,9 +4,9 @@
     {
         public string Name { get; set; }
 
-        public string AuthorName { get; set; }
+        public string CreatorName { get; set; }
 
-        public string AuthorAvatarUrl { get; set; }
+        public string CreatorAvatarUrl { get; set; }
 
         public long? BuyNowPrice { get; set; }
 
