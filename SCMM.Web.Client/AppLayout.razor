@@ -5,15 +5,15 @@
     <MudAppBar Fixed="true" Dense="false" Elevation="4">
         <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" />
         <MudText Typo="Typo.h4" Class="ml-2 pt-2">
-            <RustSquareIcon />
+            <img src="/images/rust-logo.svg" style="height:1em" />
         </MudText>
         <MudText Typo="Typo.h6" Class="ml-4">
             <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
-                <span>Rust - Steam Community Market Manager</span>
+                <span>Steam Community Market Manager</span>
                 <MudChip Size="MudBlazor.Size.Small" OnClick="@ViewAboutPage">@AppTag</MudChip>
             </MudHidden>
             <MudHidden Breakpoint="MudBlazor.Breakpoint.SmAndDown" Invert="true">
-                <span>Rust - SCMM</span>
+                <span>SCMM</span>
                 <MudHidden Breakpoint="MudBlazor.Breakpoint.Xs">
                     <MudChip Size="MudBlazor.Size.Small" OnClick="@ViewAboutPage">@AppTag</MudChip>
                 </MudHidden>
