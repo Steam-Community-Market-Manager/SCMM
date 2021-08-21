@@ -19,7 +19,7 @@ UpdateInterop.setInstance = (dotNetHelper) => {
     UpdateInterop.instance = dotNetHelper;
 };
 UpdateInterop.isUpdatePending = () => {
-    return (UpdateInterop.worker && UpdateInterop.worker.waiting);
+    return (UpdateInterop.worker != null && UpdateInterop.worker.waiting != null);
 }
 UpdateInterop.applyPendingUpdate = () => {
     var worker = UpdateInterop.worker;
