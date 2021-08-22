@@ -12,6 +12,8 @@
 
         public ulong? WorkshopFileId { get; set; }
 
+        public string WorkshopFileUrl { get; set; }
+
         public bool HasWorkshopFile => (WorkshopFileId != null);
 
         public string MarketListingId { get; set; }

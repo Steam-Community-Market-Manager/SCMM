@@ -1,0 +1,34 @@
+﻿@using SCMM.Web.Client.Shared.Components.Items
+
+<MudDialog>
+    <DialogContent>
+        <ItemModelView ItemType="@ItemType" WorkshopFileUrl="@WorkshopFileUrl" DisableCutoutControls="@DisableCutoutControls" DisableGlowControls="@DisableGlowControls" class="full-width" style="height:75vh" />
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] 
+    public MudDialogInstance Dialog { get; set; }
+
+    [Parameter]
+    public string ItemType { get; set; }
+    
+    [Parameter]
+    public string WorkshopFileUrl { get; set; }
+    
+    [Parameter]
+    public bool DisableCutoutControls { get; set; }
+    
+    [Parameter]
+    public bool DisableGlowControls { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Dialog.Options.NoHeader = true;
+        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Large;
+        Dialog.Options.FullWidth = true; // force item images to scale equally
+        Dialog.SetOptions(Dialog.Options);
+    }
+
+}

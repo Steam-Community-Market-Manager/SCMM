@@ -109,7 +109,7 @@ else if (StoreList.Any())
                         </MudPaper>
                     </MudItem>
                 }
-
+                
                 @foreach (var item in Store.Items.OrderBy(x => (x.TopSellerIndex ?? 0)).ThenByDescending(x => (x.SalesMinimum ?? 0) * (x.StorePrice ?? 0)).ThenByDescending(x => x.Subscriptions))
                 {
                     <MudItem xs="12" sm="6" md="4" xl="3">
@@ -389,29 +389,49 @@ else if (StoreList.Any())
                                             }
                                         </MudItem>
                                     
-                                        <MudItem xs="5" Class="text-centered">
-                                            <div class="d-flex flex-row justify-center align-center">
-                                                @if (item.StorePrice > 0)
+                                        @if (item.HasWorkshopFile)
+                                        {           
+                                            <MudItem xs="5" Class="text-centered">
+                                            </MudItem>
+                                            <MudItem xs="7" Class="text-centered d-flex align-stretch">
+                                                <MudButton OnClick="@(() => ViewItemWorkshopPage(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fas fa-fw fa-tools" Size="@Size.Small" FullWidth>     
+                                                    <strong>Workshop</strong>
+                                                </MudButton>
+                                                @if (!String.IsNullOrEmpty(item.WorkshopFileUrl))
                                                 {
-                                                    <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableFromStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Class="@($"no-wrap {(item.IsStillAvailableFromStore ? null : "text-line-through")}")">
-                                                        <span>@State.Currency.ToPriceString(item.StorePrice.Value)</span>
-                                                    </MudText>
+                                                    <MudButton OnClick="@(() => ShowItemModelDialog(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fab fa-fw fa-unity" Size="@Size.Small" Class="ml-2">     
+                                                        <strong>3D</strong>
+                                                    </MudButton>
                                                 }
-                                                else
-                                                {
-                                                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="px-4">
-                                                        <span>Store price is not available in your currency</span>
-                                                    </MudText>
-                                                }
-                                            </div>
-                                        </MudItem>
-                                        <MudItem xs="7" Class="text-centered d-flex align-stretch">
-                                            <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableFromStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
-                                                        Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableFromStore)" FullWidth>
-                                                <RustTransparentIcon />        
-                                                <strong class="ml-1">Store</strong>
-                                            </MudButton>
-                                        </MudItem>
+                                            </MudItem>
+                                        }
+                                        
+                                        @if (item.IsStillAvailableFromStore || !item.HasMarketListing)
+                                        {
+                                            <MudItem xs="5" Class="text-centered">
+                                                <div class="d-flex flex-row justify-center align-center">
+                                                    @if (item.StorePrice > 0)
+                                                    {
+                                                        <MudText Typo="MudBlazor.Typo.h6" Color="@(item.IsStillAvailableFromStore ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" Class="@($"no-wrap {(item.IsStillAvailableFromStore ? null : "text-line-through")}")">
+                                                            <span>@State.Currency.ToPriceString(item.StorePrice.Value)</span>
+                                                        </MudText>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="px-4">
+                                                            <span>Store price is not available in your currency</span>
+                                                        </MudText>
+                                                    }
+                                                </div>
+                                            </MudItem>
+                                            <MudItem xs="7" Class="text-centered d-flex align-stretch">
+                                                <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="@(item.IsStillAvailableFromStore ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                                            Color="MudBlazor.Color.Tertiary" Disabled="@(!item.IsStillAvailableFromStore)" FullWidth>
+                                                    <RustTransparentIcon />        
+                                                    <strong class="ml-1">Store</strong>
+                                                </MudButton>
+                                            </MudItem>
+                                        }
 
                                         @if (item.HasMarketListing)
                                         {
@@ -419,6 +439,10 @@ else if (StoreList.Any())
                                                 <div class="d-flex flex-column justify-center align-center">
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">
                                                         <span>@State.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
+                                                        @if (item.MarketPrice > 0 && item.StorePrice > 0 && !item.IsStillAvailableFromStore)
+                                                        {
+                                                            <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(item.StorePrice.Value, dense: true)</span>
+                                                        }
                                                     </MudText>
                                                     @if (item.MarketPrice > 0 && item.StorePrice > 0 && item.MarketPrice != item.StorePrice)
                                                     {
@@ -564,7 +588,7 @@ else if (StoreList.Any())
             StateHasChanged();
         }
     }
-
+    
     private void BuyItemFromStore(StoreItemDetailsDTO item)
     {
         ExternalNavigationManager.NavigateToNewTab(
@@ -586,6 +610,17 @@ else if (StoreList.Any())
         );
     }
     
+    private void ShowItemModelDialog(StoreItemDetailsDTO item)
+    {
+        Dialogs.Show<ViewItemModelDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemType"] = item.ItemType,
+            ["WorkshopFileUrl"] = item.WorkshopFileUrl,
+            ["DisableCutoutControls"] = item.HasCutout != true,
+            ["DisableGlowControls"] = item.HasGlow != true
+        });
+    }
+
     private void ShowStoreListDialog(StoreIdentifierDTO[] stores)
     {
         Dialogs.Show<ViewStoreListDialog>(null, parameters: new DialogParameters()
