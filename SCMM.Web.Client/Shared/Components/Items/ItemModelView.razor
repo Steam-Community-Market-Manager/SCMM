@@ -1,0 +1,200 @@
+﻿@using MudBlazor.Utilities
+@inject IJSRuntime JS
+
+<div @attributes="AdditionalAttributes">
+    <div @ref=Container class="scene-container full-width full-height">
+        
+        <div class="scene-controls position-top position-left d-flex flex-row align-center justify-center ma-2">
+            <MudTooltip Text="Reset camera">
+                <MudIconButton OnClick="@OnResetCameraClicked" Icon="fas fa-video" Color="Color.Default" />
+            </MudTooltip>
+            <MudTooltip Text="Toggle rotate animation">
+                <MudToggleIconButton ToggledChanged="@OnToggleAutoRotateChanged" Icon="fas fa-fw fa-play" ToggledIcon="fas fa-fw fa-pause" Color="@Color.Default" ToggledColor="@Color.Default" Class="ml-2" />
+            </MudTooltip>
+            <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap full-width">Auto-rotate</MudText>
+            @if (!DisableCutoutControls)
+            {
+                <MudTooltip Text="Show/hide cutout">
+                    <MudToggleIconButton ToggledChanged="@OnToggleAlphaCutoffChanged" Icon="fas fa-fw fa-eye" ToggledIcon="fas fa-fw fa-eye-slash" Color="@Color.Default" ToggledColor="@Color.Default" Class="ml-2" />
+                </MudTooltip>
+                <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap full-width">Cutout</MudText>
+            }
+            @if (!DisableGlowControls)
+            {
+                <MudTooltip Text="Slide to set the glow effect intensity">
+                    <MudIcon Icon="fas fa-fw fa-moon ml-2" Size="@Size.Medium" />
+                </MudTooltip>
+                <MudSlider T="double" ValueChanged="@OnEmissionIntensityChanged" Min="0" Max="1" Step="0.1" Class="ml-4 ma-2" />
+            }
+        </div>
+        
+        <div class="scene-controls position-top position-right d-flex flex-row align-center justify-center ma-2">
+            <MudTooltip Text="Toggle the lights on/off">
+                <MudToggleIconButton ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Class="ml-2" />
+            </MudTooltip>
+            <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Class="ma-2" />
+        </div>
+        
+        @*
+        <div class="scene-controls position-bottom position-left d-flex flex-row align-center justify-center ma-2">
+            <MudColorPicker ValueChanged="@OnLightColorChanged" Adornment="@Adornment.Start" AdornmentIcon="fa fa-fw fa-sun" 
+                            Variant="@Variant.Outlined" PickerVariant="PickerVariant.Inline" ColorPickerView="ColorPickerView.Palette" DisableToolbar="false" DisableAlpha="true" />
+        </div>
+        *@
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string ItemType { get; set; }
+    
+    [Parameter]
+    public string WorkshopFileUrl { get; set; }
+    
+    [Parameter]
+    public bool DisableCutoutControls { get; set; }
+    
+    [Parameter]
+    public bool DisableGlowControls { get; set; }
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+
+    private ElementReference Container { get; set; }
+
+    private ThreeJsScene Scene { get; set; }
+
+    private bool IsLoading { get; set; }
+
+    private long? ProgressLoaded { get; set; }
+    
+    private long? ProgressTotal { get; set; }
+
+    private string Error { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                Scene = await CreateSceneFromWorkshopFileAsync(
+                    Container, 
+                    new
+                    {
+                        ModelUrl = $"https://scmm.blob.core.windows.net/models/{ItemType.Replace(" ", "-").ToLower()}.obj",
+                        WorkshopFileUrl = WorkshopFileUrl
+                    }
+                );
+            }
+            catch(Exception ex)
+            {
+                Error = "An error occured whilst initialising the model viewer";
+            }
+        }
+    }
+    
+    private async Task<ThreeJsScene> CreateSceneFromWorkshopFileAsync(ElementReference sceneContainer, object sceneOptions)
+    {
+        var modelViewComponent = DotNetObjectReference.Create(this);
+        var threejsWrapper = await JS.InvokeAsync<IJSInProcessObjectReference>("import", "./js/threejs-wrapper.js");
+        var threejsScene = await threejsWrapper.InvokeAsync<IJSObjectReference>("createSceneFromWorkshopFile", sceneContainer, sceneOptions, modelViewComponent);
+        return new ThreeJsScene(threejsWrapper, threejsScene, modelViewComponent);
+    }
+
+    private async Task OnResetCameraClicked()
+    {
+        await Scene?.ToggleResetCameraAsync();
+    }
+    private async Task OnToggleAutoRotateChanged(bool toggled)
+    {
+        await Scene?.ToggleAutoRotateAsync();
+    }
+        private async Task OnToggleAlphaCutoffChanged(bool toggled)
+    {
+        await Scene?.ToggleAlphaCutoffAsync();
+    }
+        private async Task OnToggleLightChanged(bool toggled)
+    {
+        await Scene?.ToggleLightAsync();
+    }
+
+    private async Task OnLightColorChanged(MudColor color)
+    {
+        await Scene?.SetLightColorAsync(color);
+    }
+    
+    private async Task OnLightIntensityChanged(double intensity)
+    {
+        await Scene?.SetLightIntensityAsync(intensity);
+    }
+    
+    private async Task OnEmissionIntensityChanged(double intensity)
+    {
+        await Scene?.SetEmissionIntensityAsync(intensity);
+    }
+    
+    [JSInvokable]
+    public void OnLoadProgress(long loaded, long total)
+    {
+        Error = null;
+        IsLoading = true;
+        ProgressLoaded = loaded;
+        ProgressTotal = total;
+        StateHasChanged();
+    }
+    
+    [JSInvokable]
+    public void OnLoadComplete()
+    {
+        Error = null;
+        IsLoading = false;
+        ProgressLoaded = null;
+        ProgressTotal = null;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnLoadError(string error)
+    {
+        Error = error;
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    public class ThreeJsScene : IDisposable
+    {
+        private readonly IJSInProcessObjectReference _threejsWrapper;
+        private readonly IJSObjectReference _threejsScene;
+        private readonly DotNetObjectReference<ItemModelView> _modelViewComponent;
+        
+        public ThreeJsScene(IJSInProcessObjectReference threejsWrapper, IJSObjectReference threejsScene, DotNetObjectReference<ItemModelView> modelViewComponent)
+        {
+            _threejsWrapper = threejsWrapper;
+            _threejsScene = threejsScene;
+            _modelViewComponent = modelViewComponent;
+        }
+
+        public async Task ToggleResetCameraAsync() => await _threejsWrapper.InvokeVoidAsync("resetCamera", _threejsScene);
+
+        public async Task ToggleAutoRotateAsync() => await _threejsWrapper.InvokeVoidAsync("toggleAutoRotate", _threejsScene);
+        
+        public async Task ToggleAlphaCutoffAsync() => await _threejsWrapper.InvokeVoidAsync("toggleAlphaCutoff", _threejsScene);
+
+        public async Task ToggleLightAsync() => await _threejsWrapper.InvokeVoidAsync("toggleLight", _threejsScene);
+
+        public async Task SetLightIntensityAsync(double intensity) => await _threejsWrapper.InvokeVoidAsync("setLightIntensity", _threejsScene, intensity);
+
+        public async Task SetLightColorAsync(MudColor color) => await _threejsWrapper.InvokeVoidAsync("setLightColor", _threejsScene, $"rgb({color.R}, {color.G}, {color.B})");
+        
+        public async Task SetEmissionIntensityAsync(double intensity) => await _threejsWrapper.InvokeVoidAsync("setEmissionIntensity", _threejsScene, intensity);
+
+        public void Dispose()
+        {
+            _modelViewComponent?.Dispose();
+        }
+    }
+
+}

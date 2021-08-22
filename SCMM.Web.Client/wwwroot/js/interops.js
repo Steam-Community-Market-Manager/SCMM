@@ -15,8 +15,8 @@ WindowInterop.scrollElementIntoView = (selector) => {
 
 // Interops for PWA updates
 var UpdateInterop = UpdateInterop || {};
-UpdateInterop.setInstance = (dotNetHelper) => {
-    UpdateInterop.instance = dotNetHelper;
+UpdateInterop.setCallback = (dotNetHelper) => {
+    UpdateInterop.callback = dotNetHelper;
 };
 UpdateInterop.isUpdatePending = () => {
     return (UpdateInterop.worker != null && UpdateInterop.worker.waiting != null);

@@ -34,7 +34,7 @@
         try 
         {
             // Check if there are pending updates
-            await UpdateManager.SetInstanceAsync(Instance = DotNetObjectReference.Create(this));
+            await UpdateManager.SetCallbackAsync(Instance = DotNetObjectReference.Create(this));
             if (await UpdateManager.IsUpdatePendingAsync())
             {
                 ShowUpdateNotification();

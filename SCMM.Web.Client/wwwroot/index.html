@@ -155,8 +155,8 @@
                             if (newWorker.state == 'installed') {
                                 if (navigator.serviceWorker.controller) {
                                     UpdateInterop.worker = newWorker;
-                                    if (UpdateInterop.instance) {
-                                        UpdateInterop.instance.invokeMethodAsync('ShowUpdateNotification');
+                                    if (UpdateInterop.callback) {
+                                        UpdateInterop.callback.invokeMethodAsync('ShowUpdateNotification');
                                     } else {
                                         UpdateInterop.applyPendingUpdate();
                                     }

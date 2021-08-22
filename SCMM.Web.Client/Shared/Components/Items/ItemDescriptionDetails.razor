@@ -17,8 +17,8 @@
                     <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} full-width text-centered pa-8")" style="@GetGlowStyles()" />
                     <MudButtonGroup Color="Color.Default" Size="Size.Small" Variant="Variant.Filled" DisableElevation="true" Class="full-width" >
                         <MudButton OnClick="@ViewItemWorkshopPage" FullWidth="true" Disabled="Item.WorkshopFileId == null">Workshop</MudButton>
-                        <MudButton FullWidth="true" Disabled="true || Item.PreviewContentId == null">Preview</MudButton>
-                        <MudButton FullWidth="true" Disabled="true || String.IsNullOrEmpty(Item.WorkshopFileUrl)">3D</MudButton>
+                        <MudButton OnClick="@(() => IsPreviewEnabled = !IsPreviewEnabled)" FullWidth="true" Disabled="Item.PreviewContentId == null">Preview</MudButton>
+                        <MudButton OnClick="@(() => IsModelViewEnabled = !IsModelViewEnabled)" FullWidth="true" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">3D</MudButton>
                     </MudButtonGroup>
                     @* TODO: Workshop images + 3D viewer... *@
 				</MudPaper>
@@ -316,6 +316,10 @@
                                 {
                                     <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                 }
+                                @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(Constants.AssetTagAi)))
+                                {
+                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                }
 						    </div>
                         </div>
 				    </MudPaper>
@@ -420,6 +424,20 @@
                 </MudItem>
             }
  
+            @if(IsPreviewEnabled && Item.PreviewContentId != null)
+            {
+                <MudItem xs="12">
+                    @* TODO: Preview content slideshow *@
+                </MudItem>
+            }
+
+            @if(IsModelViewEnabled && !String.IsNullOrEmpty(Item.WorkshopFileUrl))
+            {
+                <MudItem xs="12">
+                    <ItemModelView ItemType="@Item.ItemType" WorkshopFileUrl="@Item.WorkshopFileUrl" DisableCutoutControls="@(Item.HasCutout != true)" DisableGlowControls="@(Item.HasGlow != true)" class="full-width" style="height:70vh" />
+                </MudItem>
+            }
+
             @if(Item.IsAvailableOnMarket)
             {
                 <MudItem xs="3">
@@ -640,6 +658,10 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
     
+    private bool IsPreviewEnabled { get; set; }
+
+    private bool IsModelViewEnabled { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         try

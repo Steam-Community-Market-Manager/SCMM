@@ -1,0 +1,24 @@
+﻿
+.scene-container {
+    position: relative;
+}
+
+.scene-container canvas, .scene-controls {
+    position: absolute;
+}
+
+.position-top {
+    top: 0px;
+}
+
+.position-bottom {
+    bottom: 0px;
+}
+
+.position-left {
+    left: 0px;
+}
+
+.position-right {
+    right: 0px;
+}

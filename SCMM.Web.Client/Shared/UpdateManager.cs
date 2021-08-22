@@ -10,9 +10,9 @@ public class UpdateManager
         _jsRuntime = jsRuntime;
     }
 
-    public async Task SetInstanceAsync(DotNetObjectReference<App> instance)
+    public async Task SetCallbackAsync(DotNetObjectReference<App> reference)
     {
-        await _jsRuntime.InvokeVoidAsync("UpdateInterop.setInstance", instance);
+        await _jsRuntime.InvokeVoidAsync("UpdateInterop.setCallback", reference);
     }
 
     public async Task<bool> IsUpdatePendingAsync()
