@@ -13,19 +13,21 @@
         <MudGrid>
 
             <MudItem xs="12" sm="6" lg="12">
-                <MudPaper Outlined="true" Style="@($"background-color: {Item.BackgroundColour}")">
-                    <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} full-width text-centered pa-8")" style="@GetGlowStyles()" />
-                    <MudButtonGroup Color="Color.Default" Size="Size.Small" Variant="Variant.Filled" DisableElevation="true" Class="full-width" >
-                        <MudButton OnClick="@ViewItemWorkshopPage" FullWidth="true" Disabled="Item.WorkshopFileId == null">Workshop</MudButton>
-                        <MudButton FullWidth="true" Disabled="true || Item.PreviewContentId == null">Preview</MudButton>
-                        <MudButton OnClick="@ShowItemModelDialog" FullWidth="true" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">3D</MudButton>
+                <MudPaper Outlined="true" Class="d-flex flex-column full-height" Style="@($"background-color: {Item.BackgroundColour}")">
+                    <div class="d-flex flex-grow-1 align-center">
+                        <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} full-width text-centered pa-8")" style="@GetGlowStyles()" />
+                    </div>
+                    <MudButtonGroup Color="Color.Default" Size="Size.Small" Variant="Variant.Filled" DisableElevation="true" Class="d-flex align-stretch text-centered full-width" >
+                        <MudButton OnClick="@ViewItemWorkshopPage" FullWidth="true" Disabled="Item.WorkshopFileId == null"><span class="no-wrap">Workshop</span></MudButton>
+                        <MudButton FullWidth="true" Disabled="true || Item.PreviewContentId == null"><span class="no-wrap">Preview</span></MudButton>
+                        <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)"><span class="no-wrap">3D</span></MudButton>
                     </MudButtonGroup>
                     @* TODO: Workshop images + 3D viewer... *@
 				</MudPaper>
 			</MudItem>
 
             <MudItem xs="12" sm="6" lg="12">
-                <MudPaper Outlined="true" Class="pa-4">
+                <MudPaper Outlined="true" Class="pa-4 full-height">
 
                     <div>
                         <MudText Typo="MudBlazor.Typo.h6" Class="mt-n1" Style="@($"color: {Item.ForegroundColour}")">@Item.Name</MudText>
@@ -329,7 +331,7 @@
             @if (Item.CreatorId != null && !String.IsNullOrEmpty(Item.CreatorName))
             {
                 <MudItem xs="12" sm="6" lg="12">
-                    <MudPaper Outlined="true" Class="py-2 px-3">
+                    <MudPaper Outlined="true" Class=" full-height py-2 px-3">
                         <div class="d-flex flex-row align-center">
                             <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" />
                             <div class="ml-3">
@@ -380,7 +382,7 @@
                         }
                         else
                         {
-                            <div class="d-flex flex-row align-stretch justify-start flex-wrap">
+                            <div class="d-flex flex-row align-stretch justify-sm-space-around flex-wrap">
                                 @foreach (var price in ItemPrices)
                                 {
                                     <div @onclick="@(() => BuyItem(price))" class="@($"pa-4 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
@@ -413,10 +415,6 @@
                                             }
                                         </MudText>
                                     </div>
-                                    @if (ItemPrices.Last() != price)
-                                    {
-                                        <MudDivider Vertical="true" FlexItem="true" />
-                                    }
                                 }
                             </div>
                         }
@@ -426,7 +424,7 @@
  
             @if(Item.IsAvailableOnMarket)
             {
-                <MudItem xs="3">
+                <MudItem xs="12" sm="6" xl="4">
                     <MudPaper Outlined="true" Class="text-centered">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
                             <span>@((Item.MarketSellOrderCount ?? 0).ToQuantityString())</span>
@@ -444,7 +442,7 @@
                             <tbody>
                                 <Virtualize ItemsProvider="LoadItemSellOrders" Context="item">
                                     <ItemContent>
-                                        <tr>
+                                        <tr class="hover-darken">
                                             <td class="text-centered">
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
                                             </td>
@@ -468,7 +466,7 @@
             
             @if(Item.IsAvailableOnMarket)
             {
-                <MudItem xs="3">
+                <MudItem xs="12" sm="6" xl="4">
                     <MudPaper Outlined="true" Class="text-centered">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
                             <span>@((Item.MarketBuyOrderCount ?? 0).ToQuantityString())</span>
@@ -487,7 +485,7 @@
                             <tbody>
                                 <Virtualize ItemsProvider="LoadItemBuyOrders" Context="item">
                                     <ItemContent>
-                                        <tr>
+                                        <tr class="hover-darken">
                                             <td class="text-centered">
                                                 <MudText Typo="Typo.body2" Color="Color.Secondary"Class="no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
                                             </td>
@@ -511,12 +509,12 @@
             
             @if(Item.IsAvailableOnMarket)
             {
-                <MudItem xs="6">
+                <MudItem xs="12">
                     <MudPaper Outlined="true" Class="pa-4" Style="height:30vh; overflow-y:scroll">
                         <Virtualize ItemsProvider="LoadItemActivity" Context="item">
                             <ItemContent>
                                 <div class="@(item.IsSale ? "mud-paper mud-paper-square" : null)">
-                                    <div class="d-flex flex-row justify-start align-center">
+                                    <div class="d-flex flex-row flex-wrap justify-start align-center hover-darken">
                                         @if (!String.IsNullOrEmpty(item.BuyerName))
                                         {
                                             <img src="@item.BuyerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
