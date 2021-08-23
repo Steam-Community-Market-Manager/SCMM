@@ -1,7 +1,13 @@
 ﻿
 <div class="loading-container" @attributes="AdditionalAttributes">
-    <MudProgressCircular Indeterminate="true" Size="@Size" />
-    <MudText Typo="@Typo" Class="ma-6">@Message</MudText>
+    <MudProgressCircular Indeterminate="@(ProgressTotal == null)" Value="@((double)(ProgressLoaded ?? 0))" Min="0" Max="@((double)(ProgressTotal ?? 0))" Size="@Size" />
+    <MudText Typo="@Typo" Class="ma-6">
+        <span>@Message</span>
+        @if (ProgressLoaded > 0 && ProgressTotal > 0)
+        {
+            <span class="mud-secondary-text">(@ProgressLoaded.Value.ToPercentageString(ProgressTotal.Value))</span>
+        }
+	</MudText>
 </div>
 
 @code {
@@ -9,6 +15,12 @@
     [Parameter]
     public string Message { set; get; } = "Loading...";
     
+    [Parameter]
+    public long? ProgressLoaded { get; set; }
+    
+    [Parameter]
+    public long? ProgressTotal { get; set; }
+
     [Parameter]
     public MudBlazor.Size Size { get; set; } = MudBlazor.Size.Medium;
     
@@ -18,4 +30,15 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object> AdditionalAttributes { get; set; }
     
+    private string GetLoadingMessage()
+    {
+        if (ProgressTotal > 0)
+        {
+            return $"{Message}";
+        }
+        else 
+        {
+            return Message;
+        }
+    }
 }
