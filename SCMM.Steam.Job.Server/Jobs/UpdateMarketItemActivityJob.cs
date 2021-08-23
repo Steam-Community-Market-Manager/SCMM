@@ -30,8 +30,8 @@ namespace SCMM.Steam.Job.Server.Jobs
             var steamService = scope.ServiceProvider.GetRequiredService<SteamService>();
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
 
-            // Delete all market activity older than 24hrs
-            var yesterday = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(1));
+            // Delete all market activity older than 7 days
+            var yesterday = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(7));
             var expiredActivity = await db.SteamMarketItemActivity
                 .Where(x => x.Timestamp < yesterday)
                 .ToListAsync();
@@ -46,12 +46,16 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             var assetDescriptions = await db.SteamAssetDescriptions
                 .Where(x => x.NameId != null && x.MarketItem != null)
+                .Where(x => x.MarketItem.Last24hrSales > 1)
                 .Select(x => new
                 {
                     Id = x.Id,
                     NameId = x.NameId,
-                    MarketItemId = x.MarketItem.Id
+                    MarketItemId = x.MarketItem.Id,
+                    Last1hrSales = x.MarketItem.Last1hrSales
                 })
+                .OrderByDescending(x => x.Last1hrSales)
+                .Take(1000)
                 .ToListAsync();
 
             if (!assetDescriptions.Any())
