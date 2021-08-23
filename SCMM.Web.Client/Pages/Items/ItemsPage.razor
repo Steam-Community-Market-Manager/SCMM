@@ -9,10 +9,10 @@
 <PageContainer Title="Items">
 
     <MudGrid Spacing="2">
-        <MudItem xs="12" lg="4">
+        <MudItem xs="12" lg="6">
             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Type here to find an item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
         </MudItem>
-        <MudItem xs="12" lg="4">
+        <MudItem xs="12" lg="6">
             <MudSelect T="string" Value="@ItemType" ValueChanged="@(async (x) => { ItemType = x; OnSearch(Filter); })" Label="Item Type" Clearable="true" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" >
                 <MudSelectItem Value="@("Acoustic Guitar")" />
                 <MudSelectItem Value="@("Armored Door")" />
@@ -116,11 +116,16 @@
                 <MudSelectItem Value="@("Wooden Door")" />
             </MudSelect>
         </MudItem>
-        <MudItem xs="12" lg="4">
-            <MudPaper Outlined="true" Class="pa-2 px-4">
+        <MudItem xs="12">
+            <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
                 <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@(async (x) => { Glow = x; OnSearch(Filter); })" Label="Glow" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@(async (x) => { Glowsight = x; OnSearch(Filter); })" Label="Glowsight" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@(async (x) => { Cutout = x; OnSearch(Filter); })" Label="Cutout" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@(async (x) => { Craftable = x; OnSearch(Filter); })" Label="Craftable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@(async (x) => { TwitchDrop = x; OnSearch(Filter); })" Label="Twitch Drop" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@(async (x) => { Tradeable = x; OnSearch(Filter); })" Label="Tradeable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@(async (x) => { Marketable = x; OnSearch(Filter); })" Label="Marketable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@(async (x) => { Banned = x; OnSearch(Filter); })" Label="Banned" Color="Color.Info" />
             </MudPaper>
         </MudItem>
         @if (Items == null)
@@ -170,6 +175,26 @@
     
     [Parameter]
     [SupplyParameterFromQuery]
+    public bool Craftable { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool TwitchDrop { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Tradeable { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Marketable { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool Banned { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
     public Nullable<int> Start { get; set; }
 
     [Parameter]
@@ -199,7 +224,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start.GetValueOrDefault(0)}&count={Count.GetValueOrDefault(100)}&type={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start.GetValueOrDefault(0)}&count={Count.GetValueOrDefault(100)}&type={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&banned={Banned}"
             );
         }
         catch (Exception ex)

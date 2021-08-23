@@ -71,7 +71,8 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null,
-                                                  [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false,
+                                                  [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false, [FromQuery] bool tradeable = false,
+                                                  [FromQuery] bool banned = false, [FromQuery] bool twitchDrop = false, [FromQuery] bool craftable = false,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
             id = (id ?? new ulong?[0]);
@@ -130,6 +131,22 @@ namespace SCMM.Web.Server.API.Controllers
             if (marketable)
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.IsMarketable == true);
+            }
+            if (tradeable)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsTradable == true);
+            }
+            if (banned)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsBanned == true);
+            }
+            if (twitchDrop)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsTwitchDrop == true);
+            }
+            if (craftable)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsCraftable == true);
             }
 
             query = query
