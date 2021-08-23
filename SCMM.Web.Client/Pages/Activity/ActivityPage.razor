@@ -31,7 +31,7 @@
             <Virtualize @ref="MarketActivityTable" ItemsProvider="LoadMarketActivity" Context="item">
                 <ItemContent>
                     <div class="@(item.IsSale ? "mud-paper mud-paper-square" : null)">
-                        <div class="d-flex flex-row justify-start align-center">
+                        <div class="d-flex flex-row flex-wrap justify-start align-center hover-darken">
                             @if (!String.IsNullOrEmpty(item.BuyerName))
                             {
                                 <img src="@item.BuyerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />

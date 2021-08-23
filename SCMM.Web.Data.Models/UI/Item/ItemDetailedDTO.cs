@@ -1,7 +1,5 @@
-﻿using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.Data.Models;
+﻿
 using SCMM.Steam.Data.Models.Enums;
-using SCMM.Web.Data.Models.UI.Profile;
 
 namespace SCMM.Web.Data.Models.UI.Item
 {
@@ -128,6 +126,8 @@ namespace SCMM.Web.Data.Models.UI.Item
         public long? StoreId { get; set; }
 
         public long? StorePrice { get; set; }
+
+        public IEnumerable<ItemStoreInstanceDTO> Stores { get; set; }
 
         #endregion
 

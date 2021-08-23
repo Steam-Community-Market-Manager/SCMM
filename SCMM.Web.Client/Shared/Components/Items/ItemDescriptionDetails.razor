@@ -3,6 +3,7 @@
 @inject ILogger<ItemDescriptionDetails> Logger
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
 @inject AppState State
@@ -46,13 +47,27 @@
                     
                     <div class="mt-3">
                         
-                        @if (Item.TimeAccepted != null)
+                        @if (Item.Stores?.Any() == true || Item.TimeAccepted != null)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-shopping-cart mud-secondary-text"></i>
                                 <span>
-                                    <span class="mud-secondary-text">Released on </span>
-                                    <span>@Item.TimeAccepted.Value.ToLocalTime().DateTime.ToShortDateString()</span>
+                                    @if(Item.Stores?.Count() > 1)
+                                    {
+                                        <span class="mud-secondary-text">First released on </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="mud-secondary-text">Released on </span>
+                                    }
+                                    @if(Item.Stores?.Any() == true)
+                                    {
+                                        <MudLink @onclick="@(() => ViewStorePage(Item.Stores.Min(x => x.Date)))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@Item.Stores.Min(x => x.Date).ToLocalTime().DateTime.ToShortDateString()</MudLink>
+                                    }
+                                    else
+                                    {
+                                        <span>@Item.TimeAccepted.Value.ToLocalTime().DateTime.ToShortDateString()</span>
+                                    }
                                 </span>
                             </MudText>
                         }
@@ -354,6 +369,41 @@
 			    </MudItem>
             }
             
+            @if (Item.Stores?.Count() > 1)
+            {
+                <MudItem xs="12" sm="6" lg="12">
+                    <MudPaper Outlined="true" Class="full-height">
+                        <div class="d-flex flex-column align-stretch">
+                            @foreach (var store in Item.Stores.OrderByDescending(x => x.Date))
+                            {
+                                <MudTooltip Text="@($"View the store from {store.Date.ToLocalTime().DateTime.ToShortDateString()}")">
+                                    <div @onclick="@(() => ViewStorePage(store.Date))" class="d-flex flex-row align-center justify-start full-width clickable hover-darken px-4 py-2">
+                                        <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary">
+                                            <i class="fa fa-fw fa-shopping-cart mr-4" />
+                                        </MudText>
+                                        <div class="d-flex flex-column">
+                                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
+                                                <span>@store.Date.ToLocalTime().DateTime.ToShortDateString()</span>
+                                            </MudText>
+                                            @if(!String.IsNullOrEmpty(store.Name))
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
+                                                    <span class="mud-secondary-text">@store.Name</span>
+                                                </MudText>
+                                            }
+                                        </div>
+                                        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" Class="flex-grow-1 text-right">
+                                            @State.Currency.ToPriceString(store.Price ?? 0)
+								        </MudText>
+						            </div>
+                                    <MudDivider FlexItem="true" />
+								</MudTooltip>
+                            }
+                        </div>
+				    </MudPaper>
+			    </MudItem>
+            }
+            
             @if (Item.Notes != null)
             {
                 @foreach (var note in Item.Notes)
@@ -396,36 +446,38 @@
                             <div class="d-flex flex-row align-stretch justify-sm-space-around flex-wrap">
                                 @foreach (var price in ItemPrices)
                                 {
-                                    <div @onclick="@(() => BuyItem(price))" class="@($"pa-4 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
-                                        <MudText Typo="MudBlazor.Typo.h6" Color="price.IsAvailable ? MudBlazor.Color.Inherit : MudBlazor.Color.Secondary" Class="d-flex align-center">
-                                            <img src="@($"/images/price/{price.Type.ToString().ToLower()}.png")" style="width:1.3em; height:1.3em" />
-                                            <span class="pl-2">@State.Currency.ToPriceString(price.BuyPrice)</span>
-                                            @if (price.BuyPrice > 0 && Item.StorePrice > 0 && price.BuyPrice != Item.StorePrice)
-                                            {
-                                                @if (price.BuyPrice >= Item.StorePrice)
+                                    <MudTooltip Text="@($"View this item on {@price.Type.GetDisplayName()}")">
+                                        <div @onclick="@(() => BuyItem(price))" class="@($"pa-4 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
+                                            <MudText Typo="MudBlazor.Typo.h6" Color="price.IsAvailable ? MudBlazor.Color.Inherit : MudBlazor.Color.Secondary" Class="d-flex align-center">
+                                                <img src="@($"/images/price/{price.Type.ToString().ToLower()}.png")" style="width:1.3em; height:1.3em" />
+                                                <span class="pl-2">@State.Currency.ToPriceString(price.BuyPrice)</span>
+                                                @if (price.BuyPrice > 0 && Item.StorePrice > 0 && price.BuyPrice != Item.StorePrice)
                                                 {
-                                                    <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
-                                                            Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                    @if (price.BuyPrice >= Item.StorePrice)
+                                                    {
+                                                        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
+                                                                Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
+                                                                 Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                    }
                                                 }
-                                                else
+									        </MudText>
+                                            <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
+                                                <span>@price.Type.GetDisplayName()</span>
+                                                @if (price.QuantityAvailable > 0)
                                                 {
-                                                    <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
-                                                             Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="my-0" />
+                                                    <span> (@price.QuantityAvailable.Value.ToQuantityString())</span>
                                                 }
-                                            }
-									    </MudText>
-                                        <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                                            <span>@price.Type.GetDisplayName()</span>
-                                            @if (price.QuantityAvailable > 0)
-                                            {
-                                                <span> (@price.QuantityAvailable.Value.ToQuantityString())</span>
-                                            }
-                                            else if (price.Type == PriceType.SteamStore && Item.TimeAccepted != null)
-                                            {
-                                                <span> (@Item.TimeAccepted.Value.ToLocalTime().DateTime.ToShortDateString())</span>
-                                            }
-                                        </MudText>
-                                    </div>
+                                                else if (price.Type == PriceType.SteamStore && Item.Stores?.Any() == true)
+                                                {
+                                                    <span> (@Item.Stores.Max(x => x.Date).ToLocalTime().DateTime.ToShortDateString())</span>
+                                                }
+                                            </MudText>
+                                        </div>
+								    </MudTooltip>
                                 }
                             </div>
                         }
@@ -521,11 +573,11 @@
             @if(!Item.IsBanned && Item.IsAvailableOnMarket)
             {
                 <MudItem xs="12" xl="6">
-                    <MudPaper Outlined="true" Class="pa-4" Style="height:30vh; overflow-y:scroll">
+                    <MudPaper Outlined="true" Style="height:30vh; overflow-y:scroll">
                         <Virtualize ItemsProvider="LoadItemActivity" Context="item">
                             <ItemContent>
                                 <div class="@(item.IsSale ? "mud-paper mud-paper-square" : null)">
-                                    <div class="d-flex flex-row flex-wrap justify-start align-center hover-darken">
+                                    <div class="d-flex flex-row flex-wrap justify-start align-center hover-darken pa-1">
                                         @if (!String.IsNullOrEmpty(item.BuyerName))
                                         {
                                             <img src="@item.BuyerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
@@ -720,6 +772,13 @@
         {
             ExternalNavigationManager.NavigateToNewTab(price.BuyUrl);
         }
+    }
+    
+    private void ViewStorePage(DateTimeOffset storeDate)
+    {
+        NavigationManager.NavigateTo(
+            $"/store/{storeDate.Add(TimeSpan.FromHours(1)).UtcDateTime.ToString(Constants.SCMMStoreIdDateFormat)}"
+        );
     }
     
     private void ViewItemWorkshopPage()

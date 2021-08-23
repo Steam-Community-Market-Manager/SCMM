@@ -1,8 +1,4 @@
 ﻿
-.hover-darken:hover {
-    background-color: var(--mud-palette-overlay-dark);
-}
-
 .quote-box {
     color: #000;
     background: #fff;

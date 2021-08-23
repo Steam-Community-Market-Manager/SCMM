@@ -37,6 +37,10 @@
     cursor: pointer;
 }
 
+.hover-darken:hover {
+    background-color: var(--mud-palette-overlay-dark);
+}
+
 .hover-zoom img {
     transition: transform .5s ease, filter .25s ease;
 }

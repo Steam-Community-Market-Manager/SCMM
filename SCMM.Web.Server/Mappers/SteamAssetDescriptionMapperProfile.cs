@@ -30,6 +30,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.IsAvailableOnMarket, o => o.MapFrom(p => (p.MarketItem != null ? true : false)))
                 .ForMember(x => x.StoreId, o => o.MapFrom(p => (p.StoreItem != null ? p.StoreItem.SteamId : null)))
                 .ForMember(x => x.StorePrice, o => o.MapFromUsingCurrencyTable(p => (p.StoreItem != null ? p.StoreItem.Prices : null)))
+                .ForMember(x => x.Stores, o => o.MapFrom(p => (p.StoreItem != null ? p.StoreItem.Stores : null)))
                 .ForMember(x => x.IsAvailableOnStore, o => o.MapFrom(p => (p.StoreItem != null ? p.StoreItem.IsAvailable : false)));
 
             CreateMap<List<SteamAssetDescription>, ItemCollectionDTO>()

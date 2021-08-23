@@ -54,6 +54,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
         /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
         /// <param name="marketable">If <code>true</code>, only marketable items are returned</param>
+        /// <param name="tradeable">If <code>true</code>, only tradable items are returned</param>
+        /// <param name="banned">If <code>true</code>, only banned items are returned</param>
+        /// <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param>
+        /// <param name="craftable">If <code>true</code>, only craftable items are returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data). Use -1 to return all items</param>
         /// <param name="sortBy">Sort item property name from <see cref="ItemDetailedDTO"/></param>
@@ -199,6 +203,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .FirstOrDefaultAsync(x =>
                     (guid != Guid.Empty && x.Id == guid) ||

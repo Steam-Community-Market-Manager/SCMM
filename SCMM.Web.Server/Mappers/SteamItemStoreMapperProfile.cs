@@ -3,6 +3,7 @@ using AutoMapper;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Store;
 using SCMM.Web.Server.Extensions;
 
@@ -64,6 +65,11 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BanReason, o => o.MapFrom(p => p.Item.Description.BanReason))
                 .ForMember(x => x.Notes, o => o.MapFrom(p => p.Item.Description.Notes))
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
+
+            CreateMap<SteamStoreItemItemStore, ItemStoreInstanceDTO>()
+                .ForMember(x => x.Date, o => o.MapFrom(p => p.Store.Start))
+                .ForMember(x => x.Name, o => o.MapFrom(p => p.Store.Name))
+                .ForMember(x => x.Price, o => o.MapFromUsingCurrencyTable(p => p.Item.Prices));
         }
     }
 }
