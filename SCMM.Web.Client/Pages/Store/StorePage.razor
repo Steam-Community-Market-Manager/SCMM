@@ -629,7 +629,7 @@ else if (StoreList.Any())
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
-            ["ListName"] = item.ItemType,
+            ["ListName"] = $"Marketable {item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&marketable=true&count=-1",
             ["HighlightedItemId"] = item.AssetDescriptionId,
             ["SortByValue"] = true
@@ -640,7 +640,7 @@ else if (StoreList.Any())
     {
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
         {
-            ["CollectionName"] = item.ItemCollection,
+            ["CollectionName"] = $"{item.ItemCollection} Collection",
             ["CollectionUrl"] = $"api/item/collection/{item.ItemCollection}?creatorId={item.CreatorId}"
         });
     }

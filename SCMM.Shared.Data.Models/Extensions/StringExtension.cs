@@ -20,7 +20,7 @@
             return value.First().ToString().ToLower() + value.Substring(1);
         }
 
-        public static string Pluralise(this string value, int count)
+        public static string Pluralise(this string value, int count = 0)
         {
             if (String.IsNullOrEmpty(value))
             {

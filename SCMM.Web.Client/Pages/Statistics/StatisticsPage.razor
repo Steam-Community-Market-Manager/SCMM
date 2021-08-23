@@ -661,7 +661,7 @@
     {
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
         {
-            ["CollectionName"] = collection.Name,
+            ["CollectionName"] = $"{collection.Name} Collection",
             ["CollectionUrl"] = $"api/item/collection/{collection.Name}?creatorId={collection.CreatorId}"
         });
     }

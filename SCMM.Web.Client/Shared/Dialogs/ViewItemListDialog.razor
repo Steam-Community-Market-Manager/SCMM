@@ -7,7 +7,14 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="MudBlazor.Typo.h6">@ListName</MudText>
+        <div class="d-flex flex-row align-center">
+            <MudText Typo="MudBlazor.Typo.h6">@ListName</MudText>
+            @if (List?.Items?.Any() == true)
+            {
+                <MudSpacer />
+                <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Class="flex-grow-0 mt-n2 mr-10" />
+            }
+		</div>
     </TitleContent>
     <DialogContent>
         @if (List?.Items == null)
@@ -17,7 +24,7 @@
         else
         {
             <MudGrid>
-                @foreach (var item in SortedItems(List.Items))
+                @foreach (var item in GetFilteredAndSortedItems(List.Items))
                 {
                     <MudItem xs="12" sm="6" md="4" lg="3" xl="2">
                         <ItemDescriptionSummary Item="@item" Highlighted="@(item.Id == HighlightedItemId)" />
@@ -47,6 +54,8 @@
 
     private PaginatedResult<ItemDescriptionWithPriceDTO> List { get; set; }
     
+    private string Filter { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         Dialog.Options.CloseButton = true;
@@ -71,9 +80,22 @@
             Snackbar.Add($"Unable to load item list. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
-
-    private IEnumerable<ItemDescriptionWithPriceDTO> SortedItems(IEnumerable<ItemDescriptionWithPriceDTO> items)
+    
+    private void OnSearch(string text)
     {
+        Filter = text;
+        StateHasChanged();
+    }
+
+    private IEnumerable<ItemDescriptionWithPriceDTO> GetFilteredAndSortedItems(IEnumerable<ItemDescriptionWithPriceDTO> items)
+    {
+        if (!String.IsNullOrEmpty(Filter))
+        {
+            items = items.Where(x => 
+                x.Name.Contains(Filter, StringComparison.InvariantCultureIgnoreCase) ||
+                x.ItemType.Contains(Filter, StringComparison.InvariantCultureIgnoreCase)
+            );
+        }
         if (SortByValue)
         {
             items = items.OrderBy(x => x.BuyNowPrice);

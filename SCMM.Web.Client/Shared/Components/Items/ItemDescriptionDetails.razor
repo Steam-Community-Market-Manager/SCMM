@@ -749,7 +749,7 @@
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
-            ["ListName"] = Item.ItemType,
+            ["ListName"] = $"Marketable {Item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?type={Item.ItemType}&count=-1",
             ["HighlightedItemId"] = Item.Id,
             ["SortByValue"] = true
@@ -760,7 +760,7 @@
     {
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
         {
-            ["CollectionName"] = Item.ItemCollection,
+            ["CollectionName"] = $"{Item.ItemCollection} Collection",
             ["CollectionUrl"] = $"api/item/collection/{Item.ItemCollection}?creatorId={Item.CreatorId}"
         });
     }

@@ -118,7 +118,7 @@ export function toggleAlphaCutoff(instance, toggled) {
 			child.material.needsUpdate = true;
 			child.material.userData = (child.material.userData || {});
 			if (toggled) {
-				child.material.userData.lastAlphaTest  = child.material.alphaTest;
+				child.material.userData.lastAlphaTest = child.material.alphaTest;
 				child.material.alphaTest = 0;
 			} else {
 				child.material.alphaTest = (child.material.userData.lastAlphaTest || 0);
