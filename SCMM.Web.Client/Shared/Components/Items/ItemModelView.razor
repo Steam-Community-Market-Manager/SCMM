@@ -176,6 +176,7 @@
         IsLoading = true;
         ProgressLoaded = loaded;
         ProgressTotal = total;
+        Logger.LogInformation($"Load Progress: {loaded}/{total}");
         StateHasChanged();
     }
     
@@ -186,6 +187,7 @@
         IsLoading = false;
         ProgressLoaded = null;
         ProgressTotal = null;
+        Logger.LogInformation($"Load Complete!");
         StateHasChanged();
     }
 
@@ -194,6 +196,7 @@
     {
         Error = error;
         IsLoading = false;
+        Logger.LogError($"Load Error: {error}");
         StateHasChanged();
     }
 
