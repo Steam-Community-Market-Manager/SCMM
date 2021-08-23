@@ -21,9 +21,7 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 
 	// Sanity check
 	if (!WEBGL.isWebGLAvailable()) {
-		console.log('WebGL is not supported by the browser');
-		container.appendChild(WEBGL.getWebGLErrorMessage());
-		return;
+		throw 'Your browser (or graphics card) does not support WebGL';
 	}
 
 	// Setup file loaders
@@ -69,9 +67,17 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 	// Setup camera and controls
 	camera = new THREE.PerspectiveCamera(50, 1, 0.01, 100);
 	camera.position.z = 1;
+
 	controls = new OrbitControls(camera, renderer.domElement);
-	controls.enableDamping = true;
 	controls.autoRotate = (options.autoRotate !== undefined ? options.autoRotate : false);
+	controls.enableDamping = true;
+	controls.listenToKeyEvents(window);
+	controls.keys = {
+		LEFT: 'KeyA',
+		UP: 'KeyW',
+		RIGHT: 'KeyD',
+		BOTTOM: 'KeyS'
+	}
 
 	// Setup scene	
 	scene = new THREE.Scene();
@@ -82,8 +88,8 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 	// Setup lighting
 	light = new THREE.PointLight(new THREE.Color(1, 1, 1), 1, 0);
 	light.position.set(0, 0, 0);
+	light.visible = (options.light !== undefined ? options.light : true);
 	light.castShadow = true;
-	light.visible = false;
 	scene.add(light);
 
 	// Show the renderer
@@ -102,26 +108,27 @@ export function resetCamera(instance) {
 	camera.position.set(0, 0, 3);
 }
 
-export function toggleAutoRotate(instance) {
-	controls.autoRotate = !controls.autoRotate;
+export function toggleAutoRotate(instance, toggled) {
+	controls.autoRotate = toggled;
 }
 
-export function toggleAlphaCutoff(instance) {
+export function toggleAlphaCutoff(instance, toggled) {
 	model.traverse(function (child) {
 		if (child instanceof THREE.Mesh) {
 			child.material.needsUpdate = true;
-			if (child.material.alphaTest > 0) {
-				child.material.alphaTestOriginal = child.material.alphaTest;
+			child.material.userData = (child.material.userData || {});
+			if (toggled) {
+				child.material.userData.lastAlphaTest  = child.material.alphaTest;
 				child.material.alphaTest = 0;
 			} else {
-				child.material.alphaTest = child.material.alphaTestOriginal;
+				child.material.alphaTest = (child.material.userData.lastAlphaTest || 0);
             }
 		}
 	});
 }
 
-export function toggleLight(instance) {
-	light.visible = !light.visible;
+export function toggleLight(instance, toggled) {
+	light.visible = toggled;
 }
 
 export function setLightColor(instance, color) {

@@ -1,4 +1,5 @@
 ﻿@using MudBlazor.Utilities
+@inject ILogger<ViewItemModelDialog> Logger
 @inject IJSRuntime JS
 
 <div @attributes="AdditionalAttributes">
@@ -6,16 +7,16 @@
         
         <div class="scene-controls position-top position-left d-flex flex-row align-center justify-center ma-2">
             <MudTooltip Text="Reset camera">
-                <MudIconButton OnClick="@OnResetCameraClicked" Icon="fas fa-video" Color="Color.Default" />
+                <MudIconButton OnClick="@OnResetCameraClicked" Icon="fas fa-video" Color="Color.Default" Disabled="@(Scene == null)" />
             </MudTooltip>
             <MudTooltip Text="Toggle rotate animation">
-                <MudToggleIconButton ToggledChanged="@OnToggleAutoRotateChanged" Icon="fas fa-fw fa-play" ToggledIcon="fas fa-fw fa-pause" Color="@Color.Default" ToggledColor="@Color.Default" Class="ml-2" />
+                <MudToggleIconButton Toggled="@IsRotating" ToggledChanged="@OnToggleAutoRotateChanged" Icon="fas fa-fw fa-play" ToggledIcon="fas fa-fw fa-pause" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" Class="ml-2" />
             </MudTooltip>
             <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap full-width">Auto-rotate</MudText>
             @if (!DisableCutoutControls)
             {
                 <MudTooltip Text="Show/hide cutout">
-                    <MudToggleIconButton ToggledChanged="@OnToggleAlphaCutoffChanged" Icon="fas fa-fw fa-eye" ToggledIcon="fas fa-fw fa-eye-slash" Color="@Color.Default" ToggledColor="@Color.Default" Class="ml-2" />
+                    <MudToggleIconButton Toggled="@IsCutoutVisible" ToggledChanged="@OnToggleAlphaCutoffChanged" Icon="fas fa-fw fa-eye" ToggledIcon="fas fa-fw fa-eye-slash" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" Class="ml-2" />
                 </MudTooltip>
                 <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap full-width">Cutout</MudText>
             }
@@ -24,15 +25,15 @@
                 <MudTooltip Text="Slide to set the glow effect intensity">
                     <MudIcon Icon="fas fa-fw fa-moon ml-2" Size="@Size.Medium" />
                 </MudTooltip>
-                <MudSlider T="double" ValueChanged="@OnEmissionIntensityChanged" Min="0" Max="1" Step="0.1" Class="ml-4 ma-2" />
+                <MudSlider T="double" ValueChanged="@OnEmissionIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null)" Class="ml-4 ma-2" />
             }
         </div>
         
         <div class="scene-controls position-top position-right d-flex flex-row align-center justify-center ma-2">
             <MudTooltip Text="Toggle the lights on/off">
-                <MudToggleIconButton ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Class="ml-2" />
+                <MudToggleIconButton Toggled="@IsLightOn" ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Disabled="@(Scene == null)" Class="" />
             </MudTooltip>
-            <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Class="ma-2" />
+            <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null || !IsLightOn)" Class="ma-2 mr-4" />
         </div>
         
         @*
@@ -41,6 +42,26 @@
                             Variant="@Variant.Outlined" PickerVariant="PickerVariant.Inline" ColorPickerView="ColorPickerView.Palette" DisableToolbar="false" DisableAlpha="true" />
         </div>
         *@
+        
+        @if(Scene != null) 
+        {
+            <div class="scene-controls position-bottom d-flex flex-row align-center justify-center full-width ma-2">
+                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" Title="Use left mouse to look around. Right mouse to pan. Middle mouse to zoom in/out." />
+            </div>
+        }
+        
+        @if (IsLoading) 
+        {
+            <div class="scene-controls position-top d-flex flex-row align-center justify-center full-width full-height">
+                <Loading Message="Loading model..." Progress="@ProgressLoaded" Total="@ProgressTotal" Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+            </div>
+        }
+        else if (!String.IsNullOrEmpty(Error))
+        {
+            <div class="scene-controls position-top d-flex flex-row align-center justify-center full-width full-height">
+                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Error" Icon="fas fa-fw fa-exclamation-triangle" Title="Unable to load model" SubTitle="@Error" />
+            </div>
+        }
 
     </div>
 </div>
@@ -65,6 +86,12 @@
     private ElementReference Container { get; set; }
 
     private ThreeJsScene Scene { get; set; }
+    
+    private bool IsRotating { get; set; } = false;
+    
+    private bool IsCutoutVisible { get; set; } = false;
+    
+    private bool IsLightOn { get; set; } = true;
 
     private bool IsLoading { get; set; }
 
@@ -85,13 +112,16 @@
                     new
                     {
                         ModelUrl = $"https://scmm.blob.core.windows.net/models/{ItemType.Replace(" ", "-").ToLower()}.obj",
-                        WorkshopFileUrl = WorkshopFileUrl
+                        WorkshopFileUrl = WorkshopFileUrl,
+                        AutoRotate = IsRotating,                        Light = IsLightOn
                     }
                 );
             }
             catch(Exception ex)
             {
-                Error = "An error occured whilst initialising the model viewer";
+                Logger.LogError(ex, "Failed to initialise the model viewer");
+                Error = "Unable to initialise the model viewer. {ex.Message}";
+                StateHasChanged();
             }
         }
     }
@@ -106,34 +136,37 @@
 
     private async Task OnResetCameraClicked()
     {
-        await Scene?.ToggleResetCameraAsync();
+        await Scene.ToggleResetCameraAsync();
     }
     private async Task OnToggleAutoRotateChanged(bool toggled)
     {
-        await Scene?.ToggleAutoRotateAsync();
+        IsRotating = toggled;
+        await Scene.ToggleAutoRotateAsync(toggled);
     }
         private async Task OnToggleAlphaCutoffChanged(bool toggled)
     {
-        await Scene?.ToggleAlphaCutoffAsync();
+        IsCutoutVisible = toggled;
+        await Scene.ToggleAlphaCutoffAsync(toggled);
     }
         private async Task OnToggleLightChanged(bool toggled)
     {
-        await Scene?.ToggleLightAsync();
+        IsLightOn = toggled;
+        await Scene.ToggleLightAsync(toggled);
     }
 
     private async Task OnLightColorChanged(MudColor color)
     {
-        await Scene?.SetLightColorAsync(color);
+        await Scene.SetLightColorAsync(color);
     }
     
     private async Task OnLightIntensityChanged(double intensity)
     {
-        await Scene?.SetLightIntensityAsync(intensity);
+        await Scene.SetLightIntensityAsync(intensity);
     }
     
     private async Task OnEmissionIntensityChanged(double intensity)
     {
-        await Scene?.SetEmissionIntensityAsync(intensity);
+        await Scene.SetEmissionIntensityAsync(intensity);
     }
     
     [JSInvokable]
@@ -179,11 +212,11 @@
 
         public async Task ToggleResetCameraAsync() => await _threejsWrapper.InvokeVoidAsync("resetCamera", _threejsScene);
 
-        public async Task ToggleAutoRotateAsync() => await _threejsWrapper.InvokeVoidAsync("toggleAutoRotate", _threejsScene);
+        public async Task ToggleAutoRotateAsync(bool toggled) => await _threejsWrapper.InvokeVoidAsync("toggleAutoRotate", _threejsScene, toggled);
         
-        public async Task ToggleAlphaCutoffAsync() => await _threejsWrapper.InvokeVoidAsync("toggleAlphaCutoff", _threejsScene);
+        public async Task ToggleAlphaCutoffAsync(bool toggled) => await _threejsWrapper.InvokeVoidAsync("toggleAlphaCutoff", _threejsScene, toggled);
 
-        public async Task ToggleLightAsync() => await _threejsWrapper.InvokeVoidAsync("toggleLight", _threejsScene);
+        public async Task ToggleLightAsync(bool toggled) => await _threejsWrapper.InvokeVoidAsync("toggleLight", _threejsScene, toggled);
 
         public async Task SetLightIntensityAsync(double intensity) => await _threejsWrapper.InvokeVoidAsync("setLightIntensity", _threejsScene, intensity);
 
