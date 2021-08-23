@@ -30,7 +30,7 @@
         {
             return quantity > 0
                 ? quantity.ToString("#,##")
-                : "∞";
+                : "0";
         }
 
         public static string ToMovementString(this int value, int max)

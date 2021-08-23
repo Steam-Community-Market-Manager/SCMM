@@ -135,10 +135,15 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.CurrentFavourited = (long?)publishedFile.Favorited;
                 assetDescription.LifetimeFavourited = (long?)publishedFile.LifetimeFavorited;
                 assetDescription.Views = (long?)publishedFile.Views;
-                assetDescription.IsBanned = publishedFile.Banned;
-                assetDescription.BanReason = publishedFile.BanReason;
                 assetDescription.TimeCreated = publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null;
                 assetDescription.TimeUpdated = publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null;
+
+                // Parse ban details
+                if (publishedFile.Banned)
+                {
+                    assetDescription.IsBanned = publishedFile.Banned;
+                    assetDescription.BanReason = publishedFile.BanReason;
+                }
 
                 // Parse asset workshop creator
                 if (assetDescription.CreatorProfileId == null && publishedFile.Creator > 0)

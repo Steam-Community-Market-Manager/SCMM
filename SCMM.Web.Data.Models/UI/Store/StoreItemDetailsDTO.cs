@@ -82,6 +82,10 @@
 
         public IDictionary<string, uint> BreaksIntoComponents { get; set; }
 
+        public bool IsBanned { get; set; }
+
+        public string BanReason { get; set; }
+
         public IList<string> Notes { get; set; }
 
         public bool IsDraft { get; set; }

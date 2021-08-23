@@ -170,6 +170,12 @@
                     </div>
 
                     <div class="mt-3">
+                        @if (Item.IsBanned == true)
+                        {
+                            <MudTooltip Text="@($"This item has been trade and market banned due to {Item.BanReason.FirstCharToLower()}")">
+                                <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Warning" />
+                            </MudTooltip>
+                        }
                         <MudTooltip>
                             <ChildContent>
                                 <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsTradable ? "Tradable" : "Not Tradable")" Disabled="@(!Item.IsTradable)"
@@ -228,10 +234,6 @@
                                 }
                             </TooltipContent>
                         </MudTooltip>
-                        @if (Item.IsBanned == true)
-                        {
-                            @* TODO: This... *@
-                        }
                         @if (Item.HasGlow == true)
                         {
                             <MudTooltip>
@@ -371,8 +373,17 @@
     
     <MudItem xs="12" lg="9" xl="10">
         <MudGrid>
-               
-            @if(ItemPrices == null || ItemPrices.Any())
+             
+            @if (Item.IsBanned)
+            {
+                <MudItem xs="12">
+                    <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Warning" Icon="fas fa-fw fa-ban mt-1" 
+                           Title="@($"This item is trade and market banned due to {Item.BanReason.FirstCharToLower()}.")" 
+                           Subtitle="The only way you can acquire this item is to 'buy' a Steam account that already contained the item before it was banned. Buying Steam accounts is against the Steam ToS." />
+                </MudItem>
+            }
+
+            @if(!Item.IsBanned && (ItemPrices == null || ItemPrices.Any()))
             {   
                 <MudItem xs="12">
                     <MudPaper Outlined="true">
@@ -422,9 +433,9 @@
                 </MudItem>
             }
  
-            @if(Item.IsAvailableOnMarket)
+            @if(!Item.IsBanned && Item.IsAvailableOnMarket)
             {
-                <MudItem xs="12" sm="6" xl="4">
+                <MudItem xs="12" sm="6" xl="3">
                     <MudPaper Outlined="true" Class="text-centered">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
                             <span>@((Item.MarketSellOrderCount ?? 0).ToQuantityString())</span>
@@ -432,7 +443,7 @@
                             <span>@State.Currency.ToPriceString(Item.MarketBuyPrice.Value)</span>
                         </MudText>
                         <MudDivider />
-                        <MudSimpleTable Dense="true" FixedHeader="true" Striped="true" Style="height:25vh;">
+                        <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;">
                             <thead>
                                 <tr>
                                     <th class="no-wrap text-centered">Price</th>
@@ -464,9 +475,9 @@
                 </MudItem>
             }
             
-            @if(Item.IsAvailableOnMarket)
+            @if(!Item.IsBanned && Item.IsAvailableOnMarket)
             {
-                <MudItem xs="12" sm="6" xl="4">
+                <MudItem xs="12" sm="6" xl="3">
                     <MudPaper Outlined="true" Class="text-centered">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
                             <span>@((Item.MarketBuyOrderCount ?? 0).ToQuantityString())</span>
@@ -475,7 +486,7 @@
                             <span class="mud-secondary-text"> or lower </span>
                         </MudText>
                         <MudDivider />
-                        <MudSimpleTable Dense="true" FixedHeader="true" Striped="true" Style="height:25vh;">
+                        <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;">
                             <thead>
                                 <tr>
                                     <th class="no-wrap text-centered">Price</th>
@@ -507,9 +518,9 @@
                 </MudItem>
             }
             
-            @if(Item.IsAvailableOnMarket)
+            @if(!Item.IsBanned && Item.IsAvailableOnMarket)
             {
-                <MudItem xs="12">
+                <MudItem xs="12" xl="6">
                     <MudPaper Outlined="true" Class="pa-4" Style="height:30vh; overflow-y:scroll">
                         <Virtualize ItemsProvider="LoadItemActivity" Context="item">
                             <ItemContent>
@@ -536,7 +547,7 @@
                                             <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
                                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
                                         }
-                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 text-right mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
+                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
                                     </div>
                                 </div>
                             </ItemContent>
@@ -646,7 +657,10 @@
     {
         try
         {
-            ItemPrices = await Http.GetFromJsonAsync<ItemPriceDTO[]>($"/api/item/{Item.Id}/prices");
+            if (!Item.IsBanned)
+            {
+                ItemPrices = await Http.GetFromJsonAsync<ItemPriceDTO[]>($"/api/item/{Item.Id}/prices");
+            }
         }
         catch (Exception ex)
         {

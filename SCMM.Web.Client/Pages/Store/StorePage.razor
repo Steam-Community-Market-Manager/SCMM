@@ -65,7 +65,7 @@ else if (StoreList.Any())
                     @foreach (var note in Store.Notes)
                     {
                         <MudItem xs="12">
-                            <Alert Variant="MudBlazor.Variant.Filled" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" Title="@note" />
+                            <Alert Variant="MudBlazor.Variant.Filled" Severity="MudBlazor.Severity.Info" Icon="fas fa-fw fa-info-circle" Title="@note" />
                         </MudItem>
                     }
                 }
@@ -268,6 +268,12 @@ else if (StoreList.Any())
                                                 </MudText>
                                             }
                                             <div class="my-3">
+                                                @if (item.IsBanned == true)
+                                                {
+                                                    <MudTooltip Text="@($"This item has been trade and market banned due to {item.BanReason.FirstCharToLower()}")">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Warning" />
+                                                    </MudTooltip>
+                                                }
                                                 <MudTooltip>
                                                     <ChildContent>
                                                         <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsTradable ? "Tradable" : "Not Tradable")" Disabled="@(!item.IsTradable)"
@@ -375,7 +381,7 @@ else if (StoreList.Any())
                                                     <span>This item is also available on the market.</span>
                                                 </MudText>
                                             }
-                                            else if (!item.IsStillAvailableFromStore && item.HasMarketListing)
+                                            else if (!item.IsStillAvailableFromStore && item.HasMarketListing && !item.IsBanned)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
                                                     <span>This item is no longer available from the store, grab it from the market instead.</span>
@@ -431,16 +437,25 @@ else if (StoreList.Any())
                                             </MudItem>
                                         }
 
-                                        @if (item.HasMarketListing)
+                                        @if (item.HasMarketListing && !item.IsBanned)
                                         {
                                             <MudItem xs="5" Class="d-flex flex-column justify-center align-center">
-                                                <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">
-                                                    <span>@State.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
-                                                    @if (item.MarketPrice > 0 && item.StorePrice > 0 && !item.IsStillAvailableFromStore)
-                                                    {
-                                                        <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(item.StorePrice.Value, dense: true)</span>
-                                                    }
-                                                </MudText>
+                                                @if (item.MarketPrice > 0)
+                                                {
+                                                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">
+                                                        <span>@State.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
+                                                        @if (item.MarketPrice > 0 && item.StorePrice > 0 && !item.IsStillAvailableFromStore)
+                                                        {
+                                                            <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(item.StorePrice.Value, dense: true)</span>
+                                                        }
+                                                    </MudText>
+                                                }
+                                                else
+                                                {
+                                                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="px-4">
+                                                        <span>Out of stock</span>
+                                                    </MudText>
+                                                }
                                                 @if (item.MarketPrice > 0 && item.StorePrice > 0 && item.MarketPrice != item.StorePrice)
                                                 {
                                                     @if (item.MarketPrice >= item.StorePrice)
