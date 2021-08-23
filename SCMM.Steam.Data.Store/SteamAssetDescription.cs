@@ -192,7 +192,7 @@ namespace SCMM.Steam.Data.Store
             if (StoreItem != null)
             {
                 var buyPrice = (long?)null;
-                if (StoreItem.Prices != null && currency != null)
+                if (StoreItem.Prices != null && currency != null && StoreItem.Prices.ContainsKey(currency.Name))
                 {
                     buyPrice = StoreItem.Prices[currency.Name];
                 }
