@@ -73,8 +73,3 @@
 .mud-tabs-panel-header {
     flex: none !important;
 }
-
-.mud-dialog-container {
-    overflow: auto;
-    flex-wrap: wrap;
-}

@@ -7,7 +7,7 @@
         <MudText Typo="MudBlazor.Typo.h6">Store List</MudText>
     </TitleContent>
     <DialogContent>
-        <MudExpansionPanels Elevation="0" DisableBorders="true" Dense="true">
+        <MudExpansionPanels Elevation="0" DisableBorders="true" Dense="true" Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
             @foreach (var group in List.GroupBy(x => x.Start.Year))
             {
                 <MudExpansionPanel>
