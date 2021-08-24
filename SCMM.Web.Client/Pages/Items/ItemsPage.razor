@@ -12,8 +12,8 @@
         <MudItem xs="12" sm="6">
             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Type here to find an item..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
         </MudItem>
-            <MudSelect T="string" Value="@ItemType" ValueChanged="@(async (x) => { ItemType = x; OnSearch(Filter); })" Label="Item Type" Clearable="true" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" >
         <MudItem xs="12" sm="6">
+            <MudSelect T="string" Value="@ItemType" ValueChanged="@(async (x) => { ItemType = x; RefreshItems(); })" Label="Item Type" Clearable="true" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" >
                 <MudSelectItem Value="@("Acoustic Guitar")" />
                 <MudSelectItem Value="@("Armored Door")" />
                 <MudSelectItem Value="@("Armored Double Door")" />
@@ -118,14 +118,14 @@
         </MudItem>
         <MudItem xs="12">
             <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@(async (x) => { Glow = x; OnSearch(Filter); })" Label="Glow" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@(async (x) => { Glowsight = x; OnSearch(Filter); })" Label="Glowsight" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@(async (x) => { Cutout = x; OnSearch(Filter); })" Label="Cutout" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@(async (x) => { Craftable = x; OnSearch(Filter); })" Label="Craftable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@(async (x) => { TwitchDrop = x; OnSearch(Filter); })" Label="Twitch Drop" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@(async (x) => { Tradeable = x; OnSearch(Filter); })" Label="Tradeable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@(async (x) => { Marketable = x; OnSearch(Filter); })" Label="Marketable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@(async (x) => { Banned = x; OnSearch(Filter); })" Label="Banned" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@(async (x) => { Glow = x; RefreshItems(); })" Label="Glow" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@(async (x) => { Glowsight = x; RefreshItems(); })" Label="Glowsight" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@(async (x) => { Cutout = x; RefreshItems(); })" Label="Cutout" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@(async (x) => { Craftable = x; RefreshItems(); })" Label="Craftable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@(async (x) => { TwitchDrop = x; RefreshItems(); })" Label="Twitch Drop" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@(async (x) => { Tradeable = x; RefreshItems(); })" Label="Tradeable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@(async (x) => { Marketable = x; RefreshItems(); })" Label="Marketable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@(async (x) => { Banned = x; RefreshItems(); })" Label="Banned" Color="Color.Info" />
             </MudPaper>
         </MudItem>
         @if (Items == null)
@@ -142,6 +142,14 @@
                     <MudPaper Outlined="true" Class="full-height">
                         <ItemDescriptionSummary Item="@item" OnClick="@OnItemClicked" />
                     </MudPaper>
+                </MudItem>
+            }
+            @if(Items.Total > 0)
+            {
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudPagination SelectedChanged="@OnPageChange" Color="@Color.Primary" ShowFirstButton="true" ShowLastButton="true" 
+                                   Selected="@((int)Math.Floor(Start > 0 ? ((double)Start.Value / Math.Max(Count ?? 100, 1)) + 1 : 1))" 
+                                   Count="@((int)Math.Ceiling((double)Items.Total / Math.Max(Count ?? 100, 1)))" />
                 </MudItem>
             }
         }
@@ -206,17 +214,30 @@
         await RefreshItems();
     }
     
-    private void OnSearch(string text)
-    {
-        Filter = (text ?? Filter);
-        RefreshItems();
-    }
-    
     private void OnItemClicked(IItemDescription item)
     {
         NavigationManager.NavigateTo($"/item/{item.Name}");  
     }
 
+    private void OnSearch(string text)
+    {
+        if (Filter != text)
+        {
+            Filter = text;
+            RefreshItems();
+        };
+    }
+    
+    private void OnPageChange(int page)
+    {
+        var newStart = (Math.Max(page - 1, 0) * Math.Max(Count ?? 100, 1));
+        if (Start != newStart)
+        {
+            Start = newStart;
+            RefreshItems();
+        }
+    }
+    
     private async Task RefreshItems()
     {
         try
@@ -224,7 +245,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start.GetValueOrDefault(0)}&count={Count.GetValueOrDefault(100)}&type={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&banned={Banned}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&banned={Banned}"
             );
         }
         catch (Exception ex)
