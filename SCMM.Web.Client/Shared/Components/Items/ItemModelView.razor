@@ -5,48 +5,53 @@
 <div @attributes="AdditionalAttributes">
     <div @ref=Container class="scene-container full-width full-height">
         
-        <div class="scene-controls position-top position-left d-flex flex-row align-center justify-center ma-2">
+        <div class="scene-controls position-top d-flex flex-wrap flex-row align-center full-width pa-2">
             <MudTooltip Text="Reset camera">
                 <MudIconButton OnClick="@OnResetCameraClicked" Icon="fas fa-video" Color="Color.Default" Disabled="@(Scene == null)" />
             </MudTooltip>
-            <MudTooltip Text="Toggle rotate animation">
-                <MudToggleIconButton Toggled="@IsRotating" ToggledChanged="@OnToggleAutoRotateChanged" Icon="fas fa-fw fa-play" ToggledIcon="fas fa-fw fa-pause" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" Class="ml-2" />
-            </MudTooltip>
-            <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap full-width">Auto-rotate</MudText>
+            <div class="d-flex flex-row align-center">
+                <MudTooltip Text="Toggle rotate animation">
+                    <MudToggleIconButton Toggled="@IsRotating" ToggledChanged="@OnToggleAutoRotateChanged" Icon="fas fa-fw fa-play" ToggledIcon="fas fa-fw fa-pause" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" />
+                </MudTooltip>
+                <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap">Auto-rotate</MudText>
+            </div>
             @if (!DisableCutoutControls)
             {
-                <MudTooltip Text="Show/hide cutout">
-                    <MudToggleIconButton Toggled="@IsCutoutVisible" ToggledChanged="@OnToggleAlphaCutoffChanged" Icon="fas fa-fw fa-eye" ToggledIcon="fas fa-fw fa-eye-slash" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" Class="ml-2" />
-                </MudTooltip>
-                <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap full-width">Cutout</MudText>
+                <div class="d-flex flex-row align-center">
+                    <MudTooltip Text="Show/hide cutout">
+                        <MudToggleIconButton Toggled="@IsCutoutVisible" ToggledChanged="@OnToggleAlphaCutoffChanged" Icon="fas fa-fw fa-eye" ToggledIcon="fas fa-fw fa-eye-slash" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" Class="ml-2" />
+                    </MudTooltip>
+                    <MudText Typo="@Typo.caption" Color="@Color.Default" Class="no-wrap">Cutout</MudText>
+                </div>
             }
             @if (!DisableGlowControls)
             {
-                <MudTooltip Text="Slide to set the glow effect intensity">
-                    <MudIcon Icon="fas fa-fw fa-moon ml-2" Size="@Size.Medium" />
-                </MudTooltip>
-                <MudSlider T="double" ValueChanged="@OnEmissionIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null)" Class="ml-4 ma-2" />
+                <div class="d-flex flex-row align-center">
+                    <MudTooltip Text="Slide to set the glow effect intensity">
+                        <MudIcon Icon="fas fa-fw fa-moon ml-2" Size="@Size.Medium" />
+                    </MudTooltip>
+                    <MudSlider T="double" ValueChanged="@OnEmissionIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null)" Class="ml-4 ma-2" />
+                </div>
             }
-        </div>
-        
-        <div class="scene-controls position-top position-right d-flex flex-row align-center justify-center ma-2">
-            <MudTooltip Text="Toggle the lights on/off">
-                <MudToggleIconButton Toggled="@IsLightOn" ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Disabled="@(Scene == null)" Class="" />
-            </MudTooltip>
-            <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null || !IsLightOn)" Class="ma-2 mr-4" />
+            <div class="d-flex flex-row align-center ml-auto">
+                <MudTooltip Text="Toggle the lights on/off">
+                    <MudToggleIconButton Toggled="@IsLightOn" ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Disabled="@(Scene == null)" Class="" />
+                </MudTooltip>
+                <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null || !IsLightOn)" Class="ma-2 mr-4" />
+            </div>
         </div>
         
         @*
-        <div class="scene-controls position-bottom position-left d-flex flex-row align-center justify-center ma-2">
+        <div class="scene-controls position-bottom d-flex flex-row align-center justify-center full-width pa-2">
             <MudColorPicker ValueChanged="@OnLightColorChanged" Adornment="@Adornment.Start" AdornmentIcon="fa fa-fw fa-sun" 
                             Variant="@Variant.Outlined" PickerVariant="PickerVariant.Inline" ColorPickerView="ColorPickerView.Palette" DisableToolbar="false" DisableAlpha="true" />
         </div>
         *@
         
-        @if(Scene != null) 
+        @if(Scene != null && !IsLoading) 
         {
-            <div class="scene-controls position-bottom d-flex flex-row align-center justify-center full-width ma-2">
-                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" Title="Use left mouse to look around. Right mouse to pan. Middle mouse to zoom in/out." />
+            <div class="scene-controls position-bottom d-flex flex-row align-center justify-center full-width pa-2">
+                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" SubTitle="Use left mouse to look around. Right mouse to pan. Middle mouse to zoom in/out." />
             </div>
         }
         

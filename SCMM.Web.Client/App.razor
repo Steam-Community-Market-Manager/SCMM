@@ -68,13 +68,13 @@
     [JSInvokable]
     public void ShowUpdateNotification()
     {
-        Snackbar.Add("A new update for SCMM is available.", MudBlazor.Severity.Success, config =>
+        Snackbar.Add("A new update is available.", MudBlazor.Severity.Success, config =>
         {
             config.RequireInteraction = true;
             config.CloseAfterNavigation = false;
             config.ShowCloseIcon = false;
             config.Icon = "fas fa-arrow-circle-up";
-            config.Action = "Reload";
+            config.Action = "Update";
             config.ActionColor = MudBlazor.Color.Dark;
             config.ActionVariant = MudBlazor.Variant.Outlined;
             config.Onclick = async snackbar =>

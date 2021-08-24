@@ -1,10 +1,6 @@
 ﻿
-.store-item .item-image {
-    text-align: center;
-}
-
-.store-item .item-image img {
-    width: 100%;
+.store-item .item-icon img {
+    max-width: 12rem;
 }
 
 .store-item .item-name {
