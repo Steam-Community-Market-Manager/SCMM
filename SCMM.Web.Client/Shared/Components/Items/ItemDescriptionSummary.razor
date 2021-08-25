@@ -3,7 +3,7 @@
 @inject AppState State
 
 <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
-    @if (PurchasableItem.BuyNowFrom != PriceType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowPrice != PurchasableItem.OriginalPrice)
+    @if (PurchasableItem.BuyNowFrom != PriceType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0)
     {
         <MudBadge Color="@((PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice) ? MudBlazor.Color.Success : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? MudBlazor.Color.Error : MudBlazor.Color.Secondary)" 
                   Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
