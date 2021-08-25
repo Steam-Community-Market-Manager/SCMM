@@ -171,17 +171,22 @@ else if (StoreList.Any())
                                             <div class="d-flex flex-column flex-grow-0 flex-shrink-1 align-center justify-center">
                                                 @if (item.MarketPrice > 0 && !item.IsBanned)
                                                 { 
-                                                    @if (item.MarketPrice > 0 && item.StorePrice > 0 && item.MarketPrice != item.StorePrice)
+                                                    @if (item.MarketPrice > 0 && item.StorePrice > 0)
                                                     {
-                                                        @if (item.MarketPrice >= item.StorePrice)
+                                                        @if (item.MarketPrice > item.StorePrice)
                                                         {
                                                             <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
                                                                      Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="mt-0" />
                                                         }
-                                                        else
+                                                        else if (item.MarketPrice < item.StorePrice)
                                                         {
                                                             <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
                                                                      Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="mt-0" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
+                                                                     Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Outlined" Class="mt-0" />
                                                         }
                                                     }
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">

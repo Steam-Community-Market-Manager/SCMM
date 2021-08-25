@@ -452,29 +452,34 @@
                                             <MudText Typo="MudBlazor.Typo.h6" Color="price.IsAvailable ? MudBlazor.Color.Inherit : MudBlazor.Color.Secondary" Class="d-flex align-center">
                                                 <img src="@($"/images/price/{price.Type.ToString().ToLower()}.png")" style="width:1.3em; height:1.3em" />
                                                 <span class="pl-2">@State.Currency.ToPriceString(price.BuyPrice)</span>
-                                                @if (price.BuyPrice > 0 && Item.StorePrice > 0 && price.BuyPrice != Item.StorePrice)
+                                                @if (price.BuyPrice > 0 && Item.StorePrice > 0 && price.Type != PriceType.SteamStore)
                                                 {
-                                                    @if (price.BuyPrice >= Item.StorePrice)
+                                                    @if (price.BuyPrice > Item.StorePrice)
                                                     {
                                                         <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
                                                                 Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="my-0 mx-2" />
                                                     }
-                                                    else
+                                                    else if (price.BuyPrice < Item.StorePrice)
                                                     {
                                                         <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
                                                                  Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="my-0 mx-2" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
+                                                                 Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Outlined" Class="my-0 mx-2" />
                                                     }
                                                 }
 									        </MudText>
                                             <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
                                                 <span>@price.Type.GetDisplayName()</span>
-                                                @if (price.QuantityAvailable > 0)
-                                                {
-                                                    <span> (@price.QuantityAvailable.Value.ToQuantityString())</span>
-                                                }
-                                                else if (price.Type == PriceType.SteamStore && Item.Stores?.Any() == true)
+                                                @if (price.Type == PriceType.SteamStore && Item.Stores?.Any() == true)
                                                 {
                                                     <span> (@Item.Stores.Max(x => x.Date).UtcDateTime.ToShortDateString())</span>
+                                                }
+                                                else if (price.Type != PriceType.SteamStore && price.QuantityAvailable > 0)
+                                                {
+                                                    <span> (@price.QuantityAvailable.Value.ToQuantityString())</span>
                                                 }
                                             </MudText>
                                         </div>
