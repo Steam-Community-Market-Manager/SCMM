@@ -150,10 +150,13 @@
 
                     // When a new update is ready, notify the user
                     worker.addEventListener('updatefound', () => {
+                        console.log('a new update was found');
                         var newWorker = worker.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state == 'installed') {
+                                console.log('update has been installed, ready for activation');
                                 if (navigator.serviceWorker.controller) {
+                                    console.log('update is installed, ready to be activated');
                                     UpdateInterop.worker = newWorker;
                                     if (UpdateInterop.callback) {
                                         UpdateInterop.callback.invokeMethodAsync('ShowUpdateNotification');
@@ -161,6 +164,9 @@
                                         UpdateInterop.applyPendingUpdate();
                                     }
                                 }
+                            }
+                            if (newWorker.state == 'activated') {
+                                console.log('update has been activated');
                             }
                         });
                     });

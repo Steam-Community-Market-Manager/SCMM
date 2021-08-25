@@ -36,8 +36,11 @@ UpdateInterop.applyPendingUpdate = () => {
         worker = worker.waiting;
     }
     if (worker) {
+        console.long("skipping wait for pending update, activating immediately");
         worker.postMessage({
             action: 'skipWaiting'
         });
+    } else {
+        console.warn("no updates are pending");
     }
 }
