@@ -9,18 +9,31 @@ public class DocumentManager
         _jsRuntime = jsRuntime;
     }
 
-    public void ScrollElementIntoView(string selector, TimeSpan? delay = null)
+    public void ScrollElementIntoView(string selector, TimeSpan? delay = null, int maxRetries = 10)
     {
         if (delay != null)
         {
-            _ = new Timer(async x =>
+            Timer timer = null;
+            timer = new Timer(async x =>
             {
-                await _jsRuntime.InvokeVoidAsync("WindowInterop.scrollElementIntoView", selector);
-            },
-                null,
-                ((int?)delay?.TotalMilliseconds) ?? 0,
-                Timeout.Infinite
-            );
+                try
+                {
+                    if (!(await _jsRuntime.InvokeAsync<bool>("WindowInterop.scrollElementIntoView", selector)))
+                    {
+                        // Element might not be visible yet, retry later...
+                        if (delay != null && maxRetries > 0)
+                        {
+                            ScrollElementIntoView(selector, delay, maxRetries - 1);
+                        }
+                    }
+                }
+                finally
+                {
+                    timer?.Dispose();
+                }
+            });
+
+            timer.Change(((int?)delay?.TotalMilliseconds) ?? 0, Timeout.Infinite);
         }
         else
         {

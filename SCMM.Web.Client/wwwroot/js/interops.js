@@ -8,9 +8,18 @@ WindowInterop.openInNewTab = (url) => {
     window.open(url, '_blank');
 };
 WindowInterop.scrollElementIntoView = (selector) => {
-    document.getElementsByClassName(selector)[0].scrollIntoView({
-        behavior: "smooth", block: "center", inline: "center"
-    });
+    var elements = document.getElementsByClassName(selector);
+    if (elements && elements.length > 0) {
+        elements[0].scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "center"
+        });
+        return true;
+    } else {
+        console.warn("no elements with selector '" + selector + "' were found");
+        return false;
+    }
 };
 
 // Interops for PWA updates
