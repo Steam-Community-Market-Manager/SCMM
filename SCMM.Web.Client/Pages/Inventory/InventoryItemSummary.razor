@@ -10,7 +10,7 @@
             </div>
             @if (Item.BuyNowPrice != null)
             {
-                <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap ma-1">
+                <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
                     @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
                 </MudText>
             }
