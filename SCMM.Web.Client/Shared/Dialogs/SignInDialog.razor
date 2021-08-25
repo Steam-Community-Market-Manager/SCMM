@@ -1,4 +1,5 @@
-﻿
+﻿@inherits ResponsiveDialog
+
 <MudDialog>
     <TitleContent>
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
@@ -7,11 +8,11 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">
             <ul class="fa-ul">
                 <li>
                     <MudText Color="MudBlazor.Color.Success" Class="fa-li fa-lg"><i class="fas fa-check-square"></i></MudText>
-                    <MudText Typo="MudBlazor.Typo.body2">Only enter your password on legitimate Steam websites, always check the address bar to ensure the URL is correct and that the connection is secured.</MudText>
+                    <MudText Typo="MudBlazor.Typo.body2">Only enter your password on legitimate Steam websites, always check the address bar to ensure the URL is correct and that the connection is secure.</MudText>
                     <img src="/images/steam_secure_login.png" />
                 </li>
                 <li>
@@ -48,9 +49,9 @@
         </MudText>
     </DialogContent>
     <DialogActions>
-        <MudFocusTrap DefaultFocus="MudBlazor.DefaultFocus.LastChild">
+        <MudFocusTrap DefaultFocus="MudBlazor.DefaultFocus.LastChild" Class="hidden-overflow px-2 py-1">
             <MudTooltip Text="Continue to Steam to complete the login process">
-                <MudLink @onclick="@SignIn" Class="signin-button">
+                <MudLink @onclick="@SignIn" Class="clickable">
                     <img src="/images/sits_01.png" alt="Sign in through Steam" />
                 </MudLink>
             </MudTooltip>
@@ -59,18 +60,18 @@
 </MudDialog>
 
 @code {
-
-    [CascadingParameter] 
-    public MudDialogInstance Dialog { get; set; }
     
-    protected override void OnInitialized()
+    protected override void OnConfigure(ResponsiveDialogOptions options)
     {
-        Dialog.Options.CloseButton = true;
-        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Small;
-        Dialog.SetOptions(Dialog.Options);
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Xs;
+        options.MaxWidth = MudBlazor.MaxWidth.Small;
+        options.CloseButton = true;
     }
     
-    void SignIn() => Dialog.Close(MudBlazor.DialogResult.Ok(true));
+    private void SignIn() 
+    {
+        Dialog.Close(MudBlazor.DialogResult.Ok(true));
+    }
     
     protected override bool ShouldRender() => false;
 

@@ -5,11 +5,11 @@
 <div @attributes="AdditionalAttributes">
     <div @ref=Container class="scene-container full-width full-height">
         
-        <div class="scene-controls position-top d-flex flex-wrap flex-row align-center full-width pa-2">
-            <MudTooltip Text="Reset camera">
+        <div class="scene-controls position-top d-flex flex-wrap flex-row align-center justify-center full-width pa-4">
+            <MudTooltip Text="Reset camera" Class="mx-4">
                 <MudIconButton OnClick="@OnResetCameraClicked" Icon="fas fa-video" Color="Color.Default" Disabled="@(Scene == null)" />
             </MudTooltip>
-            <div class="d-flex flex-row align-center">
+            <div class="d-flex flex-row align-center mx-4">
                 <MudTooltip Text="Toggle rotate animation">
                     <MudToggleIconButton Toggled="@IsRotating" ToggledChanged="@OnToggleAutoRotateChanged" Icon="fas fa-fw fa-play" ToggledIcon="fas fa-fw fa-pause" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" />
                 </MudTooltip>
@@ -17,7 +17,7 @@
             </div>
             @if (!DisableCutoutControls)
             {
-                <div class="d-flex flex-row align-center">
+                <div class="d-flex flex-row align-center mx-4">
                     <MudTooltip Text="Show/hide cutout">
                         <MudToggleIconButton Toggled="@IsCutoutVisible" ToggledChanged="@OnToggleAlphaCutoffChanged" Icon="fas fa-fw fa-eye" ToggledIcon="fas fa-fw fa-eye-slash" Color="@Color.Default" ToggledColor="@Color.Default" Disabled="@(Scene == null)" Class="ml-2" />
                     </MudTooltip>
@@ -26,19 +26,25 @@
             }
             @if (!DisableGlowControls)
             {
-                <div class="d-flex flex-row align-center">
+                <div class="d-flex flex-row align-center mx-4">
                     <MudTooltip Text="Slide to set the glow effect intensity">
                         <MudIcon Icon="fas fa-fw fa-moon ml-2" Size="@Size.Medium" />
                     </MudTooltip>
                     <MudSlider T="double" ValueChanged="@OnEmissionIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null)" Class="ml-4 ma-2" />
                 </div>
             }
-            <div class="d-flex flex-row align-center ml-auto">
+            <div class="d-flex flex-row align-center mx-4">
                 <MudTooltip Text="Toggle the lights on/off">
                     <MudToggleIconButton Toggled="@IsLightOn" ToggledChanged="@OnToggleLightChanged" Icon="@Icons.Filled.LightMode" ToggledIcon="@Icons.Filled.LightMode" Color="@Color.Default" ToggledColor="@Color.Warning" Disabled="@(Scene == null)" Class="" />
                 </MudTooltip>
                 <MudSlider T="double" ValueChanged="@OnLightIntensityChanged" Min="0" Max="1" Step="0.1" Disabled="@(Scene == null || !IsLightOn)" Class="ma-2 mr-4" />
             </div>
+            @if (AdditionalTools != null)
+            {
+                <div class="d-flex flex-row align-center mx-4">
+                    @AdditionalTools
+                </div>
+            }
         </div>
         
         @*
@@ -50,7 +56,7 @@
         
         @if(Scene != null && !IsLoading) 
         {
-            <div class="scene-controls position-bottom d-flex flex-row align-center justify-center full-width pa-2">
+            <div class="scene-controls position-bottom d-flex flex-row align-center justify-center full-width pa-4">
                 <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" SubTitle="Use left mouse to look around. Right mouse to pan. Middle mouse to zoom in/out." />
             </div>
         }
@@ -85,6 +91,9 @@
     [Parameter]
     public bool DisableGlowControls { get; set; }
     
+    [Parameter]
+    public RenderFragment AdditionalTools { get; set; }
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
 

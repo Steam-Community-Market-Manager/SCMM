@@ -73,3 +73,12 @@
 .mud-tabs-panel-header {
     flex: none !important;
 }
+
+.mud-dialog:not(.mud-dialog-fullscreen) > div:not(.mud-dialog-title) {
+    max-height: 95vh;
+}
+
+.mud-dialog > div:not(.mud-dialog-title) {
+    overflow-x: hidden;
+    overflow-y: auto;
+}

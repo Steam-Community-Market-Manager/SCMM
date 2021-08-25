@@ -8,7 +8,7 @@
         <MudBadge Color="@((PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice) ? MudBlazor.Color.Success : MudBlazor.Color.Error)" 
                   Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : "▼")} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
                   Overlap="true" Bordered="true" Bottom="true" Class="mud-badge-center">
-            <div class="hover-zoom">
+            <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
                 <img src="@Item.IconUrl" class="full-width" />
             </div>
         </MudBadge>

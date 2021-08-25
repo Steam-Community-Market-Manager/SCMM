@@ -1,4 +1,5 @@
-﻿@using SCMM.Web.Client.Shared.Components.Items
+﻿@inherits ResponsiveDialog
+@using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
 @inject ILogger<ViewItemCollectionDialog> Logger
 @inject ISnackbar Snackbar
@@ -39,22 +40,21 @@
         } 
         else
         {
-            <MudGrid Style="max-height:90vh; overflow-x:hidden; overflow-y:scroll">
-                @foreach (var item in Collection.Items)
-                {
-                    <MudItem xs="12" sm="6" md="4" lg="3" xl="2">
-                        <ItemDescriptionSummary Item="@item" />
-                    </MudItem>
-                }
-            </MudGrid>
+            <div class="py-4">
+                <MudGrid>
+                    @foreach (var item in Collection.Items)
+                    {
+                        <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
+                            <ItemDescriptionSummary Item="@item" />
+                        </MudItem>
+                    }
+                </MudGrid>
+            </div>
         }
     </DialogContent>
 </MudDialog>
 
 @code {
-
-    [CascadingParameter] 
-    public MudDialogInstance Dialog { get; set; }
 
     [Parameter]
     public string CollectionName { get; set; }
@@ -64,12 +64,17 @@
 
     private ItemCollectionDTO Collection { get; set; }
     
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
+        options.MaxWidth = MudBlazor.MaxWidth.Large;
+        options.FullWidth = true; // force item images to scale equally
+        options.CloseButton = true;
+    }
+    
     protected override async Task OnInitializedAsync()
     {
-        Dialog.Options.CloseButton = true;
-        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Large;
-        Dialog.Options.FullWidth = true; // force item images to scale equally
-        Dialog.SetOptions(Dialog.Options);
+        await base.OnInitializedAsync();
 
         try
         {

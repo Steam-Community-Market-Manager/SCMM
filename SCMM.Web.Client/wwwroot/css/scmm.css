@@ -3,6 +3,10 @@
     display: none;
 }
 
+.hidden-overflow {
+    overflow: hidden;
+}
+
 .full-width {
     width: 100% !important;
 }

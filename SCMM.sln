@@ -57,7 +57,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Fixer.Client", "SCMM.F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Azure.AI", "SCMM.Azure.AI\SCMM.Azure.AI.csproj", "{1F1E9B6D-681E-4607-9049-F054F823232D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SCMM.Steam.Functions", "SCMM.Steam.Functions\SCMM.Steam.Functions.csproj", "{C67B426E-60F8-4363-BF92-F7AE1C934610}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Steam.Functions", "SCMM.Steam.Functions\SCMM.Steam.Functions.csproj", "{C67B426E-60F8-4363-BF92-F7AE1C934610}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

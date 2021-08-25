@@ -1,4 +1,5 @@
-﻿
+﻿@inherits ResponsiveDialog
+
 <MudDialog>
     <TitleContent>
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">Donate and show your support</MudText>
@@ -9,20 +10,20 @@
             <p>If you found it useful and would like to support further development, consider buying me a drink or a Rust skin.</p>
         </MudText>
         <MudGrid Spacing="0">
-            <MudItem xs="6">
-                <MudTooltip Text="Buy me a drink!">
+            <MudItem xs="6" Class="hidden-overflow">
+                <MudTooltip Text="Buy me a drink!" Inline="false">
                     <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
                         <input type="hidden" name="cmd" value="_donations" onfocus="this.blur()" />
                         <input type="hidden" name="business" value="P29WU38RQJM8J" onfocus="this.blur()" />
                         <input type="hidden" name="currency_code" value="NZD" onfocus="this.blur()" />
-                        <input type="image" name="submit" src="/images/donate-paypal.png" border="0" alt="Donate with PayPal" onfocus="this.blur()" />
+                        <input type="image" name="submit" src="/images/donate-paypal.png" border="0" alt="Donate with PayPal" onfocus="this.blur()" class="full-width" />
                     </form>
                 </MudTooltip>
             </MudItem>
-            <MudItem xs="6">
-                <MudTooltip Text="Send me a skin!">
+            <MudItem xs="6" Class="hidden-overflow">
+                <MudTooltip Text="Send me a skin!" Inline="false">
                     <a href="https://steamcommunity.com/tradeoffer/new/?partner=121835790&token=AjBXyQhL" target="_blank">
-                        <img src="/images/donate-steam.png" alt="Donate with Steam" />
+                        <img src="/images/donate-steam.png" alt="Donate with Steam" class="full-width" />
                     </a>
                 </MudTooltip>
             </MudItem>
@@ -32,14 +33,11 @@
 
 @code {
 
-    [CascadingParameter] 
-    public MudDialogInstance Dialog { get; set; }
-    
-    protected override void OnInitialized()
+    protected override void OnConfigure(ResponsiveDialogOptions options)
     {
-        Dialog.Options.CloseButton = true;
-        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.ExtraSmall;
-        Dialog.SetOptions(Dialog.Options);
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Xs;
+        options.MaxWidth = MudBlazor.MaxWidth.ExtraSmall;
+        options.CloseButton = true;
     }
     
     protected override bool ShouldRender() => false;

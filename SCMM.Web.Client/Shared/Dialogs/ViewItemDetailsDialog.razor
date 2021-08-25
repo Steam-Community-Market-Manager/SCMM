@@ -1,4 +1,5 @@
-﻿@using SCMM.Web.Client.Shared.Components.Items
+﻿@inherits ResponsiveDialog
+@using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
 @inject ILogger<ViewItemDetailsDialog> Logger
 @inject ISnackbar Snackbar
@@ -15,10 +16,10 @@
         {
             <MudAvatar Image="@Item.IconUrl" Size="MudBlazor.Size.Medium" />
             <div class="d-inline-block ml-2">
-                <div class="collection-name">
+                <div class="item-name">
                     <MudText Typo="MudBlazor.Typo.h6">@Item.Name</MudText>
                 </div>
-                <div class="collection-description">
+                <div class="item-type">
                     <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
                         <span>@Item.ItemType</span>
                     </MudText>
@@ -40,9 +41,6 @@
 
 @code {
 
-    [CascadingParameter] 
-    public MudDialogInstance Dialog { get; set; }
-
     [Parameter]
     public string ItemName { get; set; }
     
@@ -51,12 +49,17 @@
 
     private ItemDetailedDTO Item { get; set; }
     
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Md;
+        options.MaxWidth = MudBlazor.MaxWidth.ExtraLarge;
+        options.FullWidth = true;
+        options.CloseButton = true;
+    }
+    
     protected override async Task OnInitializedAsync()
     {
-        Dialog.Options.CloseButton = true;
-        Dialog.Options.MaxWidth = MudBlazor.MaxWidth.Medium;
-        Dialog.Options.FullWidth = true; // force item images to scale equally
-        Dialog.SetOptions(Dialog.Options);
+        await base.OnInitializedAsync();
 
         try
         {

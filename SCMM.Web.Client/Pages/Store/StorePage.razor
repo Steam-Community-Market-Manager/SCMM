@@ -39,7 +39,7 @@ else if (StoreList.Any())
             }
         </TabPanelHeader>
 	    <Header>
-            <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" Class="pa-2" />
+            <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" Class="pa-2 pr-4" />
 	    </Header>
     </MudTabs>
     <PageContainer Title="@(Store != null ? $"Store - {Store.Start.UtcDateTime.ToShortDateString()}" : "Store")" Class="mb-6 ml-6 mr-6">
@@ -580,6 +580,7 @@ else if (StoreList.Any())
     {
         Dialogs.Show<ViewItemModelDialog>(null, parameters: new DialogParameters()
         {
+            ["ItemName"] = item.Name,
             ["ItemType"] = item.ItemType,
             ["WorkshopFileUrl"] = item.WorkshopFileUrl,
             ["DisableCutoutControls"] = item.HasCutout != true,

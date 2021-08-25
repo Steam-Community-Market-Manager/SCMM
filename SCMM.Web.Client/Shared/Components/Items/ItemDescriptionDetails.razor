@@ -363,7 +363,7 @@
                         <div class="d-flex flex-row">
                             <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="my-1" />
                             <div class="ml-3">
-                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Primary">@Item.CreatorName</MudText>
+                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@Item.CreatorName</MudText>
                                 <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
                                     @if (Item.CreatorId != Item.AppId)
                                     {
@@ -793,6 +793,7 @@
     {
         Dialogs.Show<ViewItemModelDialog>(null, parameters: new DialogParameters()
         {
+            ["ItemName"] = Item.Name,
             ["ItemType"] = Item.ItemType,
             ["WorkshopFileUrl"] = Item.WorkshopFileUrl,
             ["DisableCutoutControls"] = Item.HasCutout != true,
