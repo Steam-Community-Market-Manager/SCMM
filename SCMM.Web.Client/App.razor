@@ -68,7 +68,7 @@
     [JSInvokable]
     public void ShowUpdateNotification()
     {
-        Snackbar.Add("A new update is available.", MudBlazor.Severity.Success, config =>
+        Snackbar.Add("A new update is available", MudBlazor.Severity.Success, config =>
         {
             config.RequireInteraction = true;
             config.CloseAfterNavigation = false;
