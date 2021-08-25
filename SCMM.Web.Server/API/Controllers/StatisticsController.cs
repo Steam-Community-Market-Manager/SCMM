@@ -55,7 +55,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .AsNoTracking()
                 .Include(x => x.Description).ThenInclude(x => x.App)
                 .Include(x => x.Currency)
-                .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name == filter)
+                .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.BuyerName.Contains(filter) || x.SellerName.Contains(filter))
                 .OrderByDescending(x => x.Timestamp);
 
             return Ok(

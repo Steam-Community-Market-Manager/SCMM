@@ -12,10 +12,14 @@
     <MudGrid Spacing="2">
 
         <MudItem xs="12">
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search market activity..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
+        </MudItem>
+        
+        <MudItem xs="12">
             <div class="d-flex flex-row justify-start align-center">
                 <Virtualize ItemsProvider="LoadMarketActivityTopItems" Context="item">
                     <ItemContent>
-                        <div class="@(Filter == item.Name ? "mud-paper mud-paper-outlined" : null)">
+                        <div class="@(String.Equals(Filter, item.Name, StringComparison.InvariantCultureIgnoreCase) ? "mud-paper mud-paper-outlined" : null)">
                             <MudTooltip Text="@item.Name">
                                 <div class="d-flex flex-column justify-start align-center ma-2 clickable hover-zoom hover-zoom-extra" @onclick="@(() => ToggleItemFilter(item))">
                                     <img src="@item.IconUrl" style="width:96px; height:96px;" />
@@ -86,6 +90,16 @@
         );
     }
     
+    private async void OnSearch(string text)
+    {
+        if (Filter != text)
+        {
+            Filter = text;
+            await MarketActivityTable.RefreshDataAsync();
+            StateHasChanged();
+        };
+    }
+    
     private async void ToggleItemFilter(ItemDescriptionDTO item)
     {
         if (Filter != item.Name)
@@ -96,6 +110,7 @@
         {
             Filter = null;
         }
+
         await MarketActivityTable.RefreshDataAsync();
         StateHasChanged();
     }
