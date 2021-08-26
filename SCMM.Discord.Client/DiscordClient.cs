@@ -198,22 +198,26 @@ namespace SCMM.Discord.Client
             WaitUntilClientIsConnected();
 
             // Find the guilds that match our pattern
-            var guild = _client.Guilds.FirstOrDefault(x => x.Id == guildId);
+            var guild = _client.GetGuild(guildId);
             if (guild == null)
             {
                 throw new Exception($"Unable to find guild (id: {guildId})");
             }
-
+            
             // Find channels that match our pattern (and that we have permission to post in)
             channelPatterns = channelPatterns?.Where(x => !String.IsNullOrEmpty(x))?.ToArray();
-            var channels = guild.TextChannels
-                .OrderBy(x => x.Name)
-                .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
-                .Where(x => channelPatterns.Any(cp => string.Equals($"<#{x.Id}>", cp, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, cp)))
-                .ToList();
-
-            foreach (var channel in channels)
+            foreach (var channelPattern in channelPatterns)
             {
+                var channel = guild.TextChannels
+                    .OrderBy(x => x.Name)
+                    .Where(x => guild.CurrentUser.GetPermissions(x).SendMessages)
+                    .Where(x => string.Equals($"<#{x.Id}>", channelPattern, StringComparison.InvariantCultureIgnoreCase) || Regex.IsMatch(x.Name, channelPattern))
+                    .FirstOrDefault();
+                if (channel == null)
+                {
+                    continue;
+                }
+
                 try
                 {
                     // Send the message
@@ -235,7 +239,8 @@ namespace SCMM.Discord.Client
                 }
             }
 
-            throw new Exception($"Unable to find any suitable channels to post message (guild: {guild.Name} #{guild.Id}, channel pattersn: {String.Join(",", channelPatterns)})");
+            _logger.LogWarning($"Unable to find any suitable channels to post message (guild: {guild.Name} #{guild.Id}, channel patterns: {String.Join(",", channelPatterns)})");
+            return 0;
         }
 
         public IDisposable SubscribeToReplies(ulong messageId, Func<IMessage, bool> filter, Func<IMessage, Task> onReply)
@@ -317,7 +322,7 @@ namespace SCMM.Discord.Client
 
         public IEnumerable<DiscordShard> Shards => _client.Shards.Select(x => new DiscordShard(x));
 
-        public IEnumerable<DiscordGuild> Guilds => _client.Guilds.Select(x => new DiscordGuild(x));
+        public IEnumerable<DiscordGuild> Guilds => _client.Shards.SelectMany(x => x.Guilds).Select(x => new DiscordGuild(x));
 
         public DiscordUser User => new DiscordUser(_client.CurrentUser);
 
