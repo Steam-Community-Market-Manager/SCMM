@@ -112,10 +112,9 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .Select(x => new
                 {
                     AssetDescription = x,
-                    TimeAccepted = (x.MarketItem != null
-                        ? x.MarketItem.SalesHistory.Min(x => x.Timestamp) // the earliest date they appeared on the market
-                        : x.TimeAccepted // the date we saw them get accepted on the workshop
-                    )
+                    TimeAccepted = x.TimeAccepted,
+                    TimeStore = (x.StoreItem != null ? (DateTimeOffset?)x.StoreItem.Stores.Min(y => y.Store.Start) : null),
+                    TimeMarket = (x.MarketItem != null ? (DateTimeOffset?) x.MarketItem.SalesHistory.Min(y => y.Timestamp) : null)
                 })
                 .ToListAsync();
 
@@ -125,9 +124,19 @@ namespace SCMM.Discord.Bot.Server.Modules
                 foreach (var item in batch)
                 {
                     // Always use the earliest possible date that we know of
-                    if (item.TimeAccepted < item.AssetDescription.TimeAccepted || item.AssetDescription.TimeAccepted == null)
+                    var earliestTime = item.TimeAccepted;
+                    if (item.TimeStore != null && (item.TimeStore < earliestTime || earliestTime == null))
                     {
-                        item.AssetDescription.TimeAccepted = item.TimeAccepted;
+                        earliestTime = item.TimeStore;
+                    }
+                    if (item.TimeMarket != null && (item.TimeMarket < earliestTime || earliestTime == null))
+                    {
+                        earliestTime = item.TimeMarket;
+                    }
+
+                    if (item.AssetDescription.TimeAccepted == null || item.AssetDescription.TimeAccepted > earliestTime)
+                    {
+                        item.AssetDescription.TimeAccepted = earliestTime;
                     }
                 }
 
