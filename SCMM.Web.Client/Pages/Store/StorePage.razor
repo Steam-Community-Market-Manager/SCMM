@@ -191,7 +191,7 @@ else if (StoreList.Any())
                                                     }
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">
                                                         <span>@State.Currency.ToPriceString(item.MarketPrice ?? 0)</span>
-                                                        @if (item.MarketPrice > 0 && item.StorePrice > 0 && !item.IsStillAvailableFromStore)
+                                                        @if (item.MarketPrice > 0 && item.StorePrice > 0)
                                                         {
                                                             <span class="mud-secondary-text text-line-through px-2">@State.Currency.ToPriceString(item.StorePrice.Value, dense: true)</span>
                                                         }
@@ -417,17 +417,17 @@ else if (StoreList.Any())
                                                         }
                                                     </div>
                                                 }
-                                                @if (item.IsStillAvailableFromStore)
-                                                {
-                                                    <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Tertiary" Size="@Size.Medium" Class="@(item.HasMarketListing && !item.IsBanned ? "mb-2" : null)" FullWidth>
-                                                        <RustTransparentIcon />        
-                                                        <strong class="ml-1">Store</strong>
-                                                    </MudButton>
-                                                }
                                                 @if (item.HasMarketListing && !item.IsBanned)
                                                 {
-                                                    <MudButton OnClick="@(() => BuyItemFromMarket(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" Size="@Size.Medium" FullWidth>
+                                                    <MudButton OnClick="@(() => BuyItemFromMarket(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" Size="@Size.Medium" Class="mb-2" FullWidth>
                                                         <strong>Marketplace</strong>
+                                                    </MudButton>
+                                                }
+                                                @if (item.IsStillAvailableFromStore)
+                                                {
+                                                    <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Tertiary" Size="@Size.Medium" FullWidth>
+                                                        <RustTransparentIcon />        
+                                                        <strong class="ml-1">Store</strong>
                                                     </MudButton>
                                                 }
                                             </div>
