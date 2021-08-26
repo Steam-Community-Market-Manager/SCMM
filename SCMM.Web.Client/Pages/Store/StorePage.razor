@@ -176,17 +176,17 @@ else if (StoreList.Any())
                                                         @if (item.MarketPrice > item.StorePrice)
                                                         {
                                                             <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
-                                                                     Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="mt-0" />
+                                                                     Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Filled" Class="mt-0" />
                                                         }
                                                         else if (item.MarketPrice < item.StorePrice)
                                                         {
                                                             <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
-                                                                     Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="mt-0" />
+                                                                     Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Filled" Class="mt-0" />
                                                         }
                                                         else
                                                         {
                                                             <MudChip Size="MudBlazor.Size.Small" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
-                                                                     Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Outlined" Class="mt-0" />
+                                                                     Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Filled" Class="mt-0" />
                                                         }
                                                     }
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">
@@ -213,16 +213,6 @@ else if (StoreList.Any())
                                                     <span>This item is not from the Rust workshop, detailed statistics are not available.</span>
                                                 </MudText>
                                             }
-                                            @if (item.MarketRankTotal > 0 && !item.IsBanned)
-                                            {
-                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                                    <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
-                                                    <span>
-                                                        <MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketRankIndex cheaper @item.ItemType.Pluralise(item.MarketRankTotal)</MudLink>
-                                                        <span class="mud-secondary-text"> in the marketplace (@item.MarketRankTotal total).</span>
-                                                    </span>
-                                                </MudText>
-                                            }
                                             @if (item.SalesMinimum > 0)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
@@ -246,6 +236,7 @@ else if (StoreList.Any())
                                                     <span>
                                                         <i class="fas fa-fw fa-question-circle" title="Steam doesn't disclose exact sales figures, this is just an estimate. See the store analytics & insights for more details." />
                                                     </span>
+                                                    <span class="mud-secondary-text"> from the store</span>
                                                 </MudText>
                                             }
                                             else if (item.Subscriptions > 0)
@@ -253,7 +244,34 @@ else if (StoreList.Any())
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-user mud-secondary-text"></i>
                                                     <span>
-                                                        <span>@item.Subscriptions.Value.ToQuantityString() subscribers</span>
+                                                        <span>@item.Subscriptions.Value.ToQuantityString() current subscribers</span>
+                                                    </span>
+                                                </MudText>
+                                            }
+                                            @if (item.IsMarketable && !item.IsBanned && !item.IsStillAvailableFromStore)
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
+                                                    <span>
+                                                        <span>@item.MarketDemand24hrs.Value.ToQuantityString() demand</span>
+                                                        <span class="mud-secondary-text"> from the market (last 24hrs)</span>
+                                                    </span>
+                                                </MudText>
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-parachute-box mud-secondary-text"></i>
+                                                    <span>
+                                                        <span>@item.MarketSupply.Value.ToQuantityString() supply</span>
+                                                        <span class="mud-secondary-text"> on the market</span>
+                                                    </span>
+                                                </MudText>
+                                            }
+                                            @if (item.MarketRankTotal > 0 && !item.IsBanned)
+                                            {
+                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                    <i class="fas fa-fw fa-piggy-bank mud-secondary-text"></i>
+                                                    <span>
+                                                        <MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketRankIndex cheaper @item.ItemType.Split(" ").LastOrDefault().FirstCharToLower().Pluralise(item.MarketRankTotal)</MudLink>
+                                                        <span class="mud-secondary-text"> on the market</span>
                                                     </span>
                                                 </MudText>
                                             }
@@ -280,7 +298,7 @@ else if (StoreList.Any())
                                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mb-2">
                                                 @if (item.IsStillAvailableFromStore && item.HasMarketListing)
                                                 {
-                                                    <span>This item is also available on the market.</span>
+                                                    <span>This item is already available on the market.</span>
                                                 }
                                                 else if (!item.IsStillAvailableFromStore && item.HasMarketListing && !item.IsBanned)
                                                 {

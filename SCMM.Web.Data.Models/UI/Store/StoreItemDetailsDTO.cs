@@ -60,6 +60,10 @@
 
         public long? MarketPrice { get; set; }
 
+        public long? MarketSupply { get; set; }
+
+        public long? MarketDemand24hrs { get; set; }
+
         public int MarketRankIndex { get; set; }
 
         public int MarketRankTotal { get; set; }

@@ -20,10 +20,10 @@
                     </div>
                     <MudButtonGroup Color="Color.Default" Size="Size.Small" Variant="Variant.Filled" DisableElevation="true" Class="d-flex align-stretch text-centered full-width" >
                         <MudButton OnClick="@ViewItemWorkshopPage" FullWidth="true" Disabled="Item.WorkshopFileId == null"><span class="no-wrap">Workshop</span></MudButton>
-                        <MudButton FullWidth="true" Disabled="true || Item.PreviewContentId == null"><span class="no-wrap">Preview</span></MudButton>
+                        @* TODO: Workshop image preview *@
+                        <MudButton FullWidth="true" Disabled="true || Item.PreviewContentId == null"><span class="no-wrap">Images</span></MudButton>
                         <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)"><span class="no-wrap">3D</span></MudButton>
                     </MudButtonGroup>
-                    @* TODO: Workshop images + 3D viewer... *@
 				</MudPaper>
 			</MudItem>
 
@@ -82,7 +82,7 @@
                                 </span>
                             </MudText>
                         }
-                        @*
+                        @* TODO: Market rank
                         @if (Item.MarketRankTotal > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
@@ -335,8 +335,8 @@
 				        </div>
                     }
                     <MudPaper Outlined="true" Class="py-2 px-3">
-                        <div class="d-flex flex-row align-center">
-                            <MudIcon Icon="fas fa-robot" Size="MudBlazor.Size.Large" />
+                        <div class="d-flex flex-row">
+                            <MudIcon Icon="fas fa-robot" Size="MudBlazor.Size.Large" Class="my-1" />
                             <div class="ml-5">
                                 @if (!String.IsNullOrEmpty(Item.DominantColour))
                                 {
@@ -419,6 +419,8 @@
             @* TODO: Time created/updated/accepted... *@
             @* TODO: Time refreshed... *@
 
+            @* TODO: "Request Update" button *@
+
         </MudGrid>
     </MudItem>
     
@@ -457,17 +459,17 @@
                                                     @if (price.BuyPrice > Item.StorePrice)
                                                     {
                                                         <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
-                                                                Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Outlined" Class="my-0 mx-2" />
+                                                                Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Filled" Class="my-0 mx-2" />
                                                     }
                                                     else if (price.BuyPrice < Item.StorePrice)
                                                     {
                                                         <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
-                                                                 Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Outlined" Class="my-0 mx-2" />
+                                                                 Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Filled" Class="my-0 mx-2" />
                                                     }
                                                     else
                                                     {
                                                         <MudChip Size="MudBlazor.Size.Small" Text="@price.BuyPrice.ToMovementString(Item.StorePrice.Value)" 
-                                                                 Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Outlined" Class="my-0 mx-2" />
+                                                                 Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Filled" Class="my-0 mx-2" />
                                                     }
                                                 }
 									        </MudText>
@@ -513,10 +515,26 @@
                                     <ItemContent>
                                         <tr class="hover-darken">
                                             <td class="text-centered">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
+                                                <MudText Typo="Typo.body2" Color="@(item.Quantity >= 50 ? Color.Error : item.Quantity >= 25 ? Color.Warning : Color.Secondary)" Class="no-wrap">
+                                                    <span>@State.Currency.ToPriceString(item.Price)</span>
+                                                </MudText>
                                             </td>
                                             <td class="text-centered">
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">@item.Quantity.ToQuantityString()</MudText>
+                                                <MudText Typo="Typo.body2" Color="@(item.Quantity >= 50 ? Color.Error : item.Quantity >= 25 ? Color.Warning : Color.Secondary)" Class="no-wrap">
+                                                    @if (item.Quantity >= 100)
+                                                    {
+                                                        <MudTooltip Text="Severe mental disability detected; High quantity 'sell wall' listings like this often cause the price to drop as people to start undercut eachother">
+                                                            <i class="fas fa-fw fa-wheelchair mr-1" />
+                                                        </MudTooltip>
+                                                    }
+                                                    else if (item.Quantity >= 25)
+                                                    {
+                                                        <MudTooltip Text="High quantity 'sell wall' listings like this often cause the price to drop as people to start undercut eachother">
+                                                            <i class="fas fa-fw fa-exclamation-triangle mr-1" />
+                                                        </MudTooltip>
+                                                    }
+                                                    <span>@item.Quantity.ToQuantityString()</span>
+                                                </MudText>
                                             </td>
                                         </tr>
                                     </ItemContent>
@@ -624,6 +642,12 @@
             {
                 <MudItem xs="12">
                     <MudPaper Outlined="true" Class="pa-2">
+                        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
+                            <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
+                            <span class="mud-secondary-text"> sold in the last 24hrs, median price of </span>
+                            <span>@State.Currency.ToPriceString(Item.Market24hrValue.Value)</span>
+                        </MudText>
+                        <MudDivider />
                         <style>
                             #SalesHistory_Series_1_TrendLine_0 {
                                 stroke-dasharray: 10px 10px;
