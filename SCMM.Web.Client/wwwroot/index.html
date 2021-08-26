@@ -156,7 +156,6 @@
                             if (newWorker.state == 'installed') {
                                 console.log('update has been installed, ready for activation');
                                 if (navigator.serviceWorker.controller) {
-                                    console.log('update is installed, ready to be activated');
                                     UpdateInterop.worker = newWorker;
                                     if (UpdateInterop.callback) {
                                         UpdateInterop.callback.invokeMethodAsync('ShowUpdateNotification');
