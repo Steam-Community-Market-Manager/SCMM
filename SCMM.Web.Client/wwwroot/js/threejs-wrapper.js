@@ -71,6 +71,7 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 	controls = new OrbitControls(camera, renderer.domElement);
 	controls.autoRotate = (options.autoRotate !== undefined ? options.autoRotate : false);
 	controls.enableDamping = true;
+	/*
 	controls.listenToKeyEvents(window);
 	controls.keys = {
 		LEFT: 'KeyA',
@@ -78,6 +79,7 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 		RIGHT: 'KeyD',
 		BOTTOM: 'KeyS'
 	}
+	*/
 
 	// Setup scene	
 	scene = new THREE.Scene();
