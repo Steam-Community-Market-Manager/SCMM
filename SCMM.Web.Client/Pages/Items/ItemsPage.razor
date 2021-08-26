@@ -122,6 +122,7 @@
                 <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@(async (x) => { Glowsight = x; RefreshItems(); })" Label="Glowsight" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@(async (x) => { Cutout = x; RefreshItems(); })" Label="Cutout" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@(async (x) => { Craftable = x; RefreshItems(); })" Label="Craftable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@(async (x) => { SpecialDrop = x; RefreshItems(); })" Label="Special Drop" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@(async (x) => { TwitchDrop = x; RefreshItems(); })" Label="Twitch Drop" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@(async (x) => { Tradeable = x; RefreshItems(); })" Label="Tradeable" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@(async (x) => { Marketable = x; RefreshItems(); })" Label="Marketable" Color="Color.Info" />
@@ -187,6 +188,10 @@
     
     [Parameter]
     [SupplyParameterFromQuery]
+    public bool SpecialDrop { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
     public bool TwitchDrop { get; set; }
     
     [Parameter]
@@ -245,7 +250,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(ItemType ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&banned={Banned}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&banned={Banned}"
             );
         }
         catch (Exception ex)

@@ -310,6 +310,10 @@
                         {
                             <MudChip Size="MudBlazor.Size.Small" Text="Skin Container" Icon="fas fa-fw fa-box mr-2" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                         }
+                        @if (Item.IsSpecialDrop == true)
+                        {
+                            <MudChip Size="MudBlazor.Size.Small" Text="Special Drop" Icon="fab fa-fw fa-crown mr-2" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                        }
                         @if (Item.IsTwitchDrop == true)
                         {
                             <MudChip Size="MudBlazor.Size.Small" Text="Twitch Drop" Icon="fab fa-fw fa-twitch mr-2" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />

@@ -56,6 +56,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="marketable">If <code>true</code>, only marketable items are returned</param>
         /// <param name="tradeable">If <code>true</code>, only tradable items are returned</param>
         /// <param name="banned">If <code>true</code>, only banned items are returned</param>
+        /// <param name="specialDrop">If <code>true</code>, only special drops are returned</param>
         /// <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param>
         /// <param name="craftable">If <code>true</code>, only craftable items are returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
@@ -76,7 +77,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null,
                                                   [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false, [FromQuery] bool tradeable = false,
-                                                  [FromQuery] bool banned = false, [FromQuery] bool twitchDrop = false, [FromQuery] bool craftable = false,
+                                                  [FromQuery] bool banned = false, [FromQuery] bool specialDrop = false, [FromQuery] bool twitchDrop = false, [FromQuery] bool craftable = false,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
             id = (id ?? new ulong?[0]);
@@ -143,6 +144,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (banned)
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.IsBanned == true);
+            }
+            if (specialDrop)
+            {
+                query = query.Where(x => id.Contains(x.ClassId) || x.IsSpecialDrop == true);
             }
             if (twitchDrop)
             {
