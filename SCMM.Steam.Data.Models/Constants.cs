@@ -52,9 +52,9 @@
         };
 
         public const string RustItemTypeResource = "Resource";
-        public const string RustItemTypeContainer = "Container";
-        public const string RustItemTypeUnique = "Unique Item";
-        public const string RustItemTypeUnderwear = "Underwear Item";
+        public const string RustItemTypeSkinContainer = "Skin Container";
+        public const string RustItemTypeMiscellaneous = "Miscellaneous";
+        public const string RustItemTypeUnderwear = "Underwear";
 
         public const string RustItemTypeLR300 = "LR300";
         public const string RustItemTypeFurnace = "Furnace";

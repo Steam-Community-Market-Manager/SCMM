@@ -407,19 +407,19 @@ namespace SCMM.Steam.API.Commands
                     // Is it a craftable container?
                     else if (assetDescription.IsCraftable)
                     {
-                        assetDescription.ItemType = Constants.RustItemTypeContainer;
+                        assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
                     }
                     // Is it a non-craftable container?
                     // e.g. "This special crate acquired from a twitch drop during Trust in Rust 3 will yield a random skin"
                     else if (Regex.IsMatch(assetDescription.Description, @"crate .* random skin"))
                     {
-                        assetDescription.ItemType = Constants.RustItemTypeContainer;
+                        assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
                     }
-                    // Is it a unique item?
+                    // Is it a miscellaneous item?
                     // e.g. "Having this item in your Steam Inventory means you'll be able to craft it in game. If you sell, trade or break this item you will no longer have this ability in game."
                     else if (Regex.IsMatch(assetDescription.Description, @"craft it in game"))
                     {
-                        assetDescription.ItemType = Constants.RustItemTypeUnique;
+                        assetDescription.ItemType = Constants.RustItemTypeMiscellaneous;
                     }
                     // Is it an underwear item?
                     // e.g. "Having this item in your Steam Inventory means you'll be able to select this as your players default appearance. If you sell, trade or break this item you will no longer have this ability in game."

@@ -13,7 +13,6 @@ using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
-using System.Linq.Expressions;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -37,6 +36,27 @@ namespace SCMM.Web.Server.API.Controllers
             _queryProcessor = queryProcessor;
             _mapper = mapper;
             _steam = steam;
+        }
+
+        /// <summary>
+        /// List all known item types
+        /// </summary>
+        /// <response code="200">List of unique item types</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("types")]
+        [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemTypes()
+        {
+            return Ok(
+                await _db.SteamAssetDescriptions
+                    .AsNoTracking()
+                    .Where(x => !String.IsNullOrEmpty(x.ItemType))
+                    .GroupBy(x => x.ItemType)
+                    .Select(x => x.Key)
+                    .ToArrayAsync()
+            );
         }
 
         /// <summary>
