@@ -72,6 +72,8 @@ namespace SCMM.Steam.Data.Store
                 Price = latestStore.Price;
                 Prices = new PersistablePriceDictionary(latestStore.Prices);
             }
+
+            RecalculateHasReturnedToStore();
         }
 
         public void RecalculateTotalSales(SteamItemStore store)
