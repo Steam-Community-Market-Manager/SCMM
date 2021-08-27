@@ -217,7 +217,8 @@ namespace SCMM.Steam.Data.Store
                         BuyUrl = !string.IsNullOrEmpty(StoreItem.SteamId)
                             ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
                             : new SteamStorePageRequest() { AppId = appId },
-                        QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null)
+                        QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null),
+                        IsAvailable = StoreItem.IsAvailable
                     };
                 }
             }
@@ -236,7 +237,8 @@ namespace SCMM.Steam.Data.Store
                         AppId = appId,
                         MarketHashName = NameHash
                     },
-                    QuantityAvailable = MarketItem.Supply
+                    QuantityAvailable = MarketItem.Supply,
+                    IsAvailable = !String.IsNullOrEmpty(NameHash)
                 };
             }
 

@@ -18,6 +18,6 @@ namespace SCMM.Steam.Data.Models
         /// </summary>
         public int? QuantityAvailable { get; set; } = 0;
 
-        public bool IsAvailable => (QuantityAvailable == null || QuantityAvailable > 0);
+        public bool IsAvailable { get; set; }
     }
 }
