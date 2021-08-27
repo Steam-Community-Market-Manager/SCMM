@@ -1,9 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SCMM.Steam.Data.Store.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Store
 {
     public class SteamStoreItemItemStore
     {
+        public SteamStoreItemItemStore()
+        {
+            Prices = new PersistablePriceDictionary();
+        }
+
         [Required]
         public Guid StoreId { get; set; }
 
@@ -13,6 +19,14 @@ namespace SCMM.Steam.Data.Store
         public Guid ItemId { get; set; }
 
         public SteamStoreItem Item { get; set; }
+
+        public Guid? CurrencyId { get; set; }
+
+        public SteamCurrency Currency { get; set; }
+
+        public long? Price { get; set; }
+
+        public PersistablePriceDictionary Prices { get; set; }
 
         public int? TopSellerIndex { get; set; }
 

@@ -11,25 +11,28 @@ namespace SCMM.Steam.Data.Store
             Prices = new PersistablePriceDictionary();
         }
 
-        public Guid? CurrencyId { get; set; }
+        public Guid? CurrencyId { get; private set; }
 
-        public SteamCurrency Currency { get; set; }
+        public SteamCurrency Currency { get; private set; }
 
         /// <summary>
         /// The most recent price this item was sold for on the store
         /// </summary>
-        public long? Price { get; set; }
+        public long? Price { get; private set; }
 
         /// <summary>
         /// The most recent price set this item was sold for on the store.
         /// Store prices are generally fixed and don't fluxuate with currency exhange rates.
         /// Because of this, we need to keep a list of all the fixed store prices in each currency.
         /// </summary>
-        public PersistablePriceDictionary Prices { get; set; }
+        public PersistablePriceDictionary Prices { get; private set; }
 
         /// <summary>
         /// If true, the price are locked and have been confirmed as 100% accurate
         /// </summary>
+        /// <remarks>
+        /// TODO: Remove this, obsolete
+        /// </remarks>
         public bool PricesAreLocked { get; set; }
 
         public long? TotalSalesMin { get; set; }
@@ -42,6 +45,29 @@ namespace SCMM.Steam.Data.Store
         public bool IsAvailable { get; set; }
 
         public ICollection<SteamStoreItemItemStore> Stores { get; set; }
+
+        public void UpdatePrice(SteamCurrency currency, long price, PersistablePriceDictionary prices)
+        {
+            if (!PricesAreLocked)
+            {
+                CurrencyId = currency?.Id;
+                Currency = currency;
+                Price = price;
+                Prices = new PersistablePriceDictionary(prices);
+            }
+        }
+
+        public void UpdateLatestPrice()
+        {
+            var latestStore = Stores?.FirstOrDefault(x => x.Store?.Start == Stores?.Max(x => x.Store?.Start));
+            if (!PricesAreLocked && latestStore != null)
+            {
+                CurrencyId = latestStore.CurrencyId;
+                Currency = latestStore.Currency;
+                Price = latestStore.Price;
+                Prices = new PersistablePriceDictionary(latestStore.Prices);
+            }
+        }
 
         public void RecalculateTotalSales(SteamItemStore store)
         {

@@ -7,6 +7,7 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -45,6 +46,14 @@ namespace SCMM.Steam.API.Commands
                 throw new Exception("Unable to load store page");
             }
 
+            // Find the most appropriate store
+            var store = await _db.SteamItemStores
+                .OrderByDescending(x => x.Start)
+                .Where(x => request.Timestamp >= x.Start)
+                .Take(1)
+                .Include(x => x.Items)
+                .FirstOrDefaultAsync();
+            
             // Find all item definitions in the page ("top sellers" and "new releases")
             var itemGridDefinitions = storePageHtml.Descendants("div").Where(x => x?.Attribute("class")?.Value == "item_def_grid_item").ToList();
             var itemRowDefinitions = storePageHtml.Descendants("div").Where(x => x?.Attribute("class")?.Value?.Contains("item_def_row_item") == true).ToList();
@@ -65,10 +74,15 @@ namespace SCMM.Steam.API.Commands
                     itemDefinitionDetailsLink = itemDefinition?.Parent;
                 }
 
-                // Find the associated asset description for this item definition
+                // Create the store item for this item definition (if missing)
                 var itemName = itemDefinitionName?.Value;
-                var storeItem = _db.SteamStoreItems.FirstOrDefault(x => x.Description.Name == itemName) ??
-                                _db.SteamStoreItems.Local.FirstOrDefault(x => x.Description?.Name == itemName);
+                var storeItem = _db.SteamStoreItems
+                    .Include(x => x.Stores).ThenInclude(x => x.Store)
+                    .FirstOrDefault(x => x.Description.Name == itemName);
+                if (storeItem == null)
+                {
+                    storeItem = _db.SteamStoreItems.Local.FirstOrDefault(x => x.Description?.Name == itemName);
+                }
                 if (storeItem == null)
                 {
                     var assetDescription = _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefault(x => x.Name == itemName);
@@ -88,6 +102,20 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
 
+                // Create the store item link (if missing)
+                var storeItemLink = storeItem.Stores.FirstOrDefault(x => x.StoreId == store?.Id);
+                if (storeItemLink == null && store != null)
+                {
+                    storeItem.Stores.Add(
+                        storeItemLink = new SteamStoreItemItemStore()
+                        {
+                            Store = store,
+                            Item = storeItem,
+                            IsDraft = true
+                        }
+                    );
+                }
+
                 // Parse and update the store item id
                 var itemDetailsUrl = itemDefinitionDetailsLink?.Attribute("href")?.Value;
                 if (string.IsNullOrEmpty(storeItem.SteamId) && !string.IsNullOrEmpty(itemDetailsUrl))
@@ -100,7 +128,7 @@ namespace SCMM.Steam.API.Commands
 
                 // Parse and update the store item prices
                 var itemPriceText = itemDefinitionPrice?.Value;
-                if (!storeItem.PricesAreLocked && !string.IsNullOrEmpty(itemPriceText))
+                if (!string.IsNullOrEmpty(itemPriceText))
                 {
                     // NOTE: Unless specified in the prefix/suffix text, the price is assumed to be USD
                     var possibleCurrencies = currencies
@@ -118,9 +146,7 @@ namespace SCMM.Steam.API.Commands
                     var itemPrice = itemPriceText.SteamPriceAsInt();
                     if (itemPrice > 0)
                     {
-                        //storeItem.PricesAreLocked = true; // we are 100% confident that these are correct
-                        storeItem.Currency = itemPriceCurrency;
-                        storeItem.Price = itemPrice;
+                        var itemPrices = new PersistablePriceDictionary();
                         foreach (var currency in currencies)
                         {
                             var exchangeRate = await _db.SteamCurrencyExchangeRates
@@ -131,9 +157,21 @@ namespace SCMM.Steam.API.Commands
                                 .Select(x => x.ExchangeRateMultiplier)
                                 .FirstOrDefaultAsync();
 
-                            storeItem.Prices[currency.Name] = EconomyExtensions.SteamStorePriceRounded(
+                            itemPrices[currency.Name] = EconomyExtensions.SteamStorePriceRounded(
                                 exchangeRate.CalculateExchange(itemPrice)
                             );
+                        }
+
+                        if (storeItemLink != null)
+                        {
+                            storeItemLink.Currency = itemPriceCurrency;
+                            storeItemLink.Price = itemPrice;
+                            storeItemLink.Prices = new PersistablePriceDictionary(itemPrices);
+                            storeItem.UpdateLatestPrice();
+                        }
+                        else
+                        {
+                            storeItem.UpdatePrice(itemPriceCurrency, itemPrice, itemPrices);
                         }
                     }
                 }

@@ -37,7 +37,7 @@ namespace SCMM.Steam.API
         public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamCurrency currency, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
-                .Include(x => x.Stores)
+                .Include(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.Description)
                 .Where(x => x.AppId == app.Id)
                 .FirstOrDefaultAsync(x => x.SteamId == asset.Name);
@@ -73,19 +73,14 @@ namespace SCMM.Steam.API
             }
 
             // TODO: This is creating duplicate items, need to find and re-use any existing items before creating new ones
-            var prices = ParseStoreItemPriceTable(asset.Prices);
             app.StoreItems.Add(dbItem = new SteamStoreItem()
             {
                 SteamId = asset.Name,
                 AppId = app.Id,
                 Description = assetDescription,
-                Currency = currency,
-                Price = (long)prices.FirstOrDefault(x => x.Key == currency.Name).Value,
-                Prices = new PersistablePriceDictionary(prices),
-                PricesAreLocked = true, // we are 100% confident that these are correct
                 IsAvailable = true
             });
-
+            
             return dbItem;
         }
 
@@ -180,7 +175,7 @@ namespace SCMM.Steam.API
             return item;
         }
 
-        private IDictionary<string, long> ParseStoreItemPriceTable(AssetPricesModel prices)
+        public IDictionary<string, long> ParseStoreItemPriceTable(AssetPricesModel prices)
         {
             return prices.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)

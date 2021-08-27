@@ -11,6 +11,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using SCMM.Steam.Job.Server.Jobs.Cron;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
@@ -141,30 +142,39 @@ namespace SCMM.Steam.Job.Server.Jobs
                     );
                 }
 
-                // Ensure that all store items are available in the database (create them if missing)
+                // Add all the items to the new store
                 var activeStoreItems = new List<SteamStoreItem>();
+                var newStoreItems = new List<SteamStoreItem>();
                 foreach (var asset in response.Data.Assets)
                 {
-                    activeStoreItems.Add(
-                        await steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
-                            app, currency, asset, DateTimeOffset.Now
-                        )
+                    // Ensure that the item is available in the database (create them if missing)
+                    var storeItem = await steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
+                        app, currency, asset, DateTimeOffset.Now
                     );
-                }
-
-                // Ensure that the store items are linked to the active store
-                var newStoreItems = new List<SteamStoreItem>();
-                foreach (var item in activeStoreItems)
-                {
-                    if (!item.Stores.Any(x => activeItemStores.Select(x => x.Id).Contains(x.StoreId)))
+                    if (storeItem == null)
                     {
-                        newStoreItems.Add(item);
+                        continue;
+                    }
+
+                    activeStoreItems.Add(storeItem);
+
+                    // Ensure that the item is linked to the active store
+                    if (!storeItem.Stores.Any(x => activeItemStores.Select(x => x.Id).Contains(x.StoreId)))
+                    {
+                        var prices = steamService.ParseStoreItemPriceTable(asset.Prices);
+                        newStoreItems.Add(storeItem);
                         newItemStore.Items.Add(new SteamStoreItemItemStore()
                         {
                             Store = newItemStore,
-                            Item = item
+                            Item = storeItem,
+                            Currency = currency,
+                            Price = (long)prices.FirstOrDefault(x => x.Key == currency.Name).Value,
+                            Prices = new PersistablePriceDictionary(prices),
                         });
                     }
+
+                    // Update the store items "latest price"
+                    storeItem.UpdateLatestPrice();
                 }
 
                 // Recalculate store statistics
