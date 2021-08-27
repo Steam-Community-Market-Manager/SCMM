@@ -6,7 +6,6 @@
 @using SCMM.Web.Data.Models.UI.Item
 @inject ILogger<ItemPage> Logger
 @inject ISnackbar Snackbar
-@inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
 @inject AppState State
 
@@ -31,6 +30,23 @@
     private ItemDetailedDTO Item { get; set; }
     
     protected override async Task OnInitializedAsync()
+    {
+        await LoadItem();
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        // If we have navigated to a different item, reload the new item
+        if ((Item != null) && !String.Equals(Name, Item?.Name, StringComparison.InvariantCultureIgnoreCase))
+        {
+            Item = null;
+            StateHasChanged();
+            await LoadItem();
+            StateHasChanged();
+        }
+    }
+    
+    private async Task LoadItem()
     {
         try
         {

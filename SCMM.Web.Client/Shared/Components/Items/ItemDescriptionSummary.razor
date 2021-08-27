@@ -1,4 +1,5 @@
 ﻿@using SCMM.Web.Data.Models.UI.Item
+@inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
 
@@ -106,9 +107,13 @@
         {
             OnClick.Invoke(Item);
         }
-        else if (!String.IsNullOrEmpty(PurchasableItem?.BuyNowUrl))
+        //else if (!String.IsNullOrEmpty(PurchasableItem?.BuyNowUrl))
+        //{
+        //    ExternalNavigationManager.NavigateToNewTab(PurchasableItem.BuyNowUrl);
+        //}
+        else
         {
-            ExternalNavigationManager.NavigateToNewTab(PurchasableItem.BuyNowUrl);
+            NavigationManager.NavigateTo($"/item/{Item.Name}");  
         }
     }
 
