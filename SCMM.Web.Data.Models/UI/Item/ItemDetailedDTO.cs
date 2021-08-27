@@ -125,6 +125,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public bool IsAvailableOnStore { get; set; }
 
+        public bool HasReturnedToStoreBefore { get; set; }
+
         public long? StoreId { get; set; }
 
         public long? StorePrice { get; set; }

@@ -58,6 +58,8 @@
 
         public bool IsStillAvailableFromStore { get; set; }
 
+        public bool HasReturnedToStoreBefore { get; set; }
+
         public long? MarketPrice { get; set; }
 
         public long? MarketSupply { get; set; }
@@ -81,6 +83,8 @@
         public bool IsTradable { get; set; }
 
         public int? TradableRestrictionDays { get; set; }
+
+        public bool IsSpecialDrop { get; set; }
 
         public bool IsBreakable { get; set; }
 

@@ -42,7 +42,7 @@ else if (StoreList.Any())
             <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" Class="pa-2 pr-4" />
 	    </Header>
     </MudTabs>
-    <PageContainer Title="@(Store != null ? $"Store - {Store.Start.UtcDateTime.ToShortDateString()}" : "Store")" Class="mb-6 ml-6 mr-6">
+    <PageContainer Title="@(Store != null ? $"Store - {Store.Start.ToString("d")}" : "Store")" Class="mb-6 ml-6 mr-6">
 
         <MudGrid Spacing="2">
             @if (Store == null)
@@ -414,6 +414,18 @@ else if (StoreList.Any())
                                                                 <span>Parts of this items material has been removed. The shape may appeared altered when compared against the default item</span>
                                                             }
                                                         </TooltipContent>
+                                                    </MudTooltip>
+                                                }
+                                                @if (item.IsSpecialDrop == true)
+                                                {
+                                                    <MudTooltip Text="This item is a limited-time drop, generally done as part of special event (e.g. charity or promotion)">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Special Drop" Icon="fas fa-fw fa-crown mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                    </MudTooltip>
+                                                }
+                                                @if (item.HasReturnedToStoreBefore == true)
+                                                {
+                                                    <MudTooltip Text="This item has returned from a previous store release">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Returning Item" Icon="fas fa-fw fa-redo mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
                                             </div>

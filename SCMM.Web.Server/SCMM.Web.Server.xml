@@ -30,7 +30,7 @@
             <response code="200">List of unique item types</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.Nullable{System.UInt64}[],System.String,System.String,System.String,System.Nullable{System.UInt64},System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItems(System.Nullable{System.UInt64}[],System.String,System.String,System.String,System.Nullable{System.UInt64},System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection,System.Boolean)">
             <summary>
             Search for items
             </summary>
@@ -47,6 +47,7 @@
             <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
             <param name="marketable">If <code>true</code>, only marketable items are returned</param>
             <param name="tradeable">If <code>true</code>, only tradable items are returned</param>
+            <param name="returning">If <code>true</code>, only items that have been released over multiple stores are returned</param>
             <param name="banned">If <code>true</code>, only banned items are returned</param>
             <param name="specialDrop">If <code>true</code>, only special drops are returned</param>
             <param name="twitchDrop">If <code>true</code>, only twitch drops are returned</param>

@@ -44,6 +44,11 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public bool IsAvailable { get; set; }
 
+        /// <summary>
+        /// If true, this item has returned from a previous store release
+        /// </summary>
+        public bool HasReturnedToStore { get; set; }
+
         public ICollection<SteamStoreItemItemStore> Stores { get; set; }
 
         public void UpdatePrice(SteamCurrency currency, long price, PersistablePriceDictionary prices)
@@ -142,6 +147,20 @@ namespace SCMM.Steam.Data.Store
             // Maximum sales should be null if we are unsure
             TotalSalesMax = (afterItem != null) ? newTotalSalesMax : null;
             */
+        }
+
+        public void RecalculateHasReturnedToStore()
+        {
+            if (!Stores.Any())
+            {
+                return;
+            }
+
+            var firstTimeSeen = Stores.Min(x => x.Store.Start);
+            var lastTimeSeen = Stores.Max(x => (x.Store.End ?? x.Store.Start.AddDays(7)));
+            var totalTimeInStore = Stores.Select(x => ((x.Store.End ?? x.Store.Start.AddDays(7)) - x.Store.Start)).Aggregate(TimeSpan.Zero, (t1, t2) => t1 + t2);
+            var totalTimeInExistance = (lastTimeSeen - firstTimeSeen).Subtract(TimeSpan.FromHours(1));
+            HasReturnedToStore = (totalTimeInExistance > totalTimeInStore);
         }
     }
 }

@@ -35,6 +35,7 @@
                 <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@(async (x) => { TwitchDrop = x; RefreshItems(); })" Label="Twitch Drop" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@(async (x) => { Tradeable = x; RefreshItems(); })" Label="Tradeable" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@(async (x) => { Marketable = x; RefreshItems(); })" Label="Marketable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@(async (x) => { Returning = x; RefreshItems(); })" Label="Returning" Color="Color.Info" />
                 <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@(async (x) => { Banned = x; RefreshItems(); })" Label="Banned" Color="Color.Info" />
             </MudPaper>
         </MudItem>
@@ -115,6 +116,10 @@
     
     [Parameter]
     [SupplyParameterFromQuery]
+    public bool Returning { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
     public bool Banned { get; set; }
     
     [Parameter]
@@ -178,7 +183,7 @@
             Items = null;
             StateHasChanged();
             Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&banned={Banned}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
             );
         }
         catch (Exception ex)

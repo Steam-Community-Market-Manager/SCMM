@@ -199,6 +199,26 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
+        [Command("rebuild-store-item-rereleases")]
+        public async Task<RuntimeResult> RebuildStoreItemRereleasesAsync()
+        {
+            var items = await _db.SteamStoreItems
+                .Include(x => x.Stores).ThenInclude(x => x.Store)
+                .ToListAsync();
+
+            foreach (var batch in items.Batch(100))
+            {
+                foreach (var item in batch)
+                {
+                    item.RecalculateHasReturnedToStore();
+                }
+
+                await _db.SaveChangesAsync();
+            }
+
+            return CommandResult.Success();
+        }
+
         /*
         [Command("rebuild-store-list")]
         public async Task<RuntimeResult> RebuildStoreListAsync()
