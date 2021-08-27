@@ -471,7 +471,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.ItemCollection == name)
-                .Where(x => x.CreatorId == creatorId || creatorId == null)
+                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)

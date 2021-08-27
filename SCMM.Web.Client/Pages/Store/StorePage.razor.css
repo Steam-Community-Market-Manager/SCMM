@@ -2,11 +2,3 @@
 .store-item .item-icon img {
     max-width: 12rem;
 }
-
-.store-item .item-name {
-    margin-top: -4px;
-}
-
-.store-item .item-type {
-    margin-top: -8px;
-}

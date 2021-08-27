@@ -646,7 +646,7 @@
                                 </div>
                             </ItemContent>
                             <Placeholder>
-                                <div class="d-flex flex-row justify-start align-center">
+                                <div class="d-flex flex-row justify-start align-center pa-1">
                                     <MudProgressCircular Indeterminate="true" Class="mx-1" Style="width:32px; height:32px;" />
                                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mx-1">Loading...</MudText>
                                 </div>
@@ -665,7 +665,6 @@
                             <span class="mud-secondary-text"> sold in the last 24hrs, median price of </span>
                             <span>@State.Currency.ToPriceString(Item.Market24hrValue.Value)</span>
                         </MudText>
-                        <MudDivider />
                         <style>
                             #SalesHistory_Series_1_TrendLine_0 {
                                 stroke-dasharray: 10px 10px;
@@ -716,16 +715,40 @@
                 </MudItem>
             }
             
-            @*
             @if (!String.IsNullOrEmpty(Item.ItemCollection))
             {
                 <MudItem xs="12">
                     <MudPaper Outlined="true" Class="pa-4">
-                    Collection...
+                        @if (Collection == null)
+                        {
+                            <Loading Message="Loading item collection..." Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+                        } 
+                        else
+                        {
+                            <div>
+                                <MudText Typo="MudBlazor.Typo.h6">@Collection.Name Collection</MudText>
+                            </div>
+                            <div class="mt-n1">
+                                <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
+                                    <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
+                                    @if(Collection.BuyNowPrice > 0)
+                                    {
+                                        <span> Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                                    }
+                                </MudText>
+                            </div>
+                            <MudGrid Class="mt-1">
+                                @foreach (var item in Collection.Items)
+                                {
+                                    <MudItem xs="12" sm="6" md="4" lg="2" xl="1">
+                                        <ItemDescriptionSummary Item="@item" />
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        }
 				    </MudPaper>
                 </MudItem>
             }
-            *@
 
             @*
             @if (!String.IsNullOrEmpty(Item.ItemType))
@@ -749,7 +772,9 @@
     public ItemDetailedDTO Item { get; set; }
     
     private ItemPriceDTO[] ItemPrices { get; set; }
-
+    
+    private ItemCollectionDTO Collection { get; set; }
+    
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
     
@@ -766,6 +791,18 @@
         {
             Logger.LogError(ex, $"Error loading the item prices");
             Snackbar.Add($"Unable to load item prices. {ex.Message}", MudBlazor.Severity.Error);
+        }
+        try
+        {
+            if (!String.IsNullOrEmpty(Item.ItemCollection))
+            {
+                Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={Item.CreatorId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading the item collection");
+            Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
     

@@ -18,10 +18,10 @@
                 <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" />
             </MudTooltip>
             <div class="d-inline-block ml-2">
-                <div class="collection-name">
+                <div>
                     <MudText Typo="MudBlazor.Typo.h6">@Collection.Name Collection</MudText>
                 </div>
-                <div class="collection-description">
+                <div class="mt-n1">
                     <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
                         <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
                         @if(Collection.BuyNowPrice > 0)

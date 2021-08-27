@@ -563,6 +563,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Name = x.Name 
                 })
                 .OrderByDescending(x => x.Count())
+                .ThenByDescending(x => x.Sum(y => y.BuyNowPrice ?? 0))
                 .AsQueryable();
 
             return Ok(

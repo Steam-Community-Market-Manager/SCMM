@@ -124,12 +124,12 @@ else if (StoreList.Any())
                                         </MudHidden>
                                     </CardHeaderAvatar>
                                     <CardHeaderContent>
-                                        <div class="item-name">
+                                        <div>
                                             <MudText Typo="MudBlazor.Typo.h6" Style="@($"color: {item.ForegroundColour}")">@item.Name</MudText>
                                         </div>
                                         @if (!String.IsNullOrEmpty(item.ItemType))
                                         {
-                                            <div class="item-type">
+                                            <div class="mt-n1">
                                                 <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">@item.ItemType</MudText>
                                             </div>
                                         }
