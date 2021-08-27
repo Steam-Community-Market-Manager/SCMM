@@ -825,7 +825,7 @@
         {
             if (!String.IsNullOrEmpty(Item.ItemCollection))
             {
-                Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={Item.CreatorId}");
+                Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}");
             }
         }
         catch (Exception ex)
@@ -947,7 +947,7 @@
         Dialogs.Show<ViewItemCollectionDialog>(null, parameters: new DialogParameters()
         {
             ["CollectionName"] = $"{Item.ItemCollection} Collection",
-            ["CollectionUrl"] = $"api/item/collection/{Item.ItemCollection}?creatorId={Item.CreatorId}"
+            ["CollectionUrl"] = $"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}"
         });
     }
     
