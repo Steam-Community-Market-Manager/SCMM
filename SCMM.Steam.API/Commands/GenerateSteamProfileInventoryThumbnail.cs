@@ -48,7 +48,7 @@ namespace SCMM.Steam.API.Commands
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
-                .Where(x => !x.Description.IsTwitchDrop)
+                .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
                 .Select(x => new
                 {
                     IconUrl = x.Description.IconUrl,

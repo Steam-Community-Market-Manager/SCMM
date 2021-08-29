@@ -41,7 +41,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             var assetDescriptions = db.SteamAssetDescriptions
                 .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0))
-                .Where(x => x.IsSpecialDrop == false && x.IsTwitchDrop == false)
+                .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
                 .Where(x => x.TimeAccepted != null)
                 .Include(x => x.App)
                 .ToList();

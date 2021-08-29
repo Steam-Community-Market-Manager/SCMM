@@ -515,11 +515,11 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            // Check if this is a twitch drop item
-            if (!assetDescription.IsTwitchDrop)
+            // Check if this is a special/twitch drop item
+            if (!assetDescription.IsTwitchDrop && !assetDescription.IsSpecialDrop)
             {
                 // Does this look like a streamer commissioned twitch drop?
-                if (assetDescription.WorkshopFileId != null && assetDescription.TimeAccepted == null && assetDescription.TimeCreated > new DateTime(2020, 01, 01) && !assetDescription.IsMarketable && (assetDescription.LifetimeSubscriptions == null || assetDescription.LifetimeSubscriptions == 0))
+                if (assetDescription.WorkshopFileId != null && assetDescription.TimeAccepted == null && assetDescription.TimeCreated > new DateTime(2020, 11, 12) && !assetDescription.IsMarketable && (assetDescription.LifetimeSubscriptions == null || assetDescription.LifetimeSubscriptions == 0))
                 {
                     assetDescription.IsTwitchDrop = true;
                 }

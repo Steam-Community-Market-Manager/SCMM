@@ -163,8 +163,8 @@ namespace SCMM.Steam.API.Commands
                         Quantity = (int)asset.Amount
                     };
 
-                    // If this item is a twitch drop, automatically mark it as a drop
-                    if (assetDescription.IsTwitchDrop)
+                    // If this item is a special/twitch drop, automatically mark it as a drop
+                    if (assetDescription.IsSpecialDrop || assetDescription.IsTwitchDrop)
                     {
                         inventoryItem.AcquiredBy = SteamProfileInventoryItemAcquisitionType.Drop;
                     }
