@@ -364,7 +364,7 @@
                                 {
                                     <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                 }
-                                @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(Constants.AssetTagAi)))
+                                @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(Constants.AssetTagAi) && !x.Key.StartsWith(Constants.SteamAssetTagWorkshop)))
                                 {
                                     <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
                                 }
