@@ -27,42 +27,40 @@
         @if (PurchasableItem?.BuyNowPrice != null)
         {
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap d-flex flex-row justify-center align-center">
-                @switch(PurchasableItem.BuyNowFrom)
+                <img src="@($"/images/price/{PurchasableItem.BuyNowFrom.ToString().ToLower()}.png")" class="mr-1" style="width:1.1em; height:1.1em" />
+                <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
+                @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowFrom != PriceType.SteamStore)
                 {
-                    case PriceType.SteamStore:
-                    {
-                        <i class="mx-1"><RustIcon /></i>
-                        <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
-                        break;
-                    }
-                    case PriceType.SteamCommunityMarket:
-                    {
-                        <i class="fab fa-fw fa-steam mx-1" style="transform: scale(1.2)"></i>
-                        <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
-                        @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0)
-                        {
-                            <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(PurchasableItem.OriginalPrice.Value, dense: true)</span>
-                        }
-                        break;
-                    }
+                    <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(PurchasableItem.OriginalPrice.Value, dense: true)</span>
                 }
             </MudText>
         }
+        <div class="d-flex flex-row justify-center align-center text-centered">
+            @if (PurchasableItem?.Supply > 0)
+            {
+                <MudTooltip Text="Supply on the market">
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                        <i class="fas fa-fw fa-parachute-box"></i>
+                        <span>@PurchasableItem.Supply.Value.ToQuantityString()</span>
+                    </MudText>
+                </MudTooltip>
+            }
+            @if (PurchasableItem?.Demand > 0)
+            {
+                <MudTooltip Text="Demand from the market over (last 24hrs)">
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                        <i class="fas fa-fw fa-exchange-alt ml-1"></i>
+                        <span>@PurchasableItem.Demand.Value.ToQuantityString()</span>
+                    </MudText>
+                </MudTooltip>
+            }
+        </div>
         @if (SubscribableItem?.Subscriptions > 0)
         {
             <MudTooltip Text="Subscribers">
                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
                     <i class="fas fa-fw fa-user"></i>
                     <span>@SubscribableItem.Subscriptions.Value.ToQuantityString()</span>
-                </MudText>
-            </MudTooltip>
-        }
-        @if (PurchasableItem?.Supply > 0)
-        {
-            <MudTooltip Text="Market Listings">
-                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                    <i class="fas fa-fw fa-balance-scale-left "></i>
-                    <span>@PurchasableItem.Supply.Value.ToQuantityString()</span>
                 </MudText>
             </MudTooltip>
         }

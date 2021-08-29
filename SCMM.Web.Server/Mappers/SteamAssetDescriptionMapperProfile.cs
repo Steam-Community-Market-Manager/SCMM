@@ -56,8 +56,9 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p, p => p.Type))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetPrice(p => p, p => p.LowestPrice))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetPrice(p => p, p => p.Url))
-                .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Supply : null)))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions));
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions))
+                .ForMember(x => x.Demand, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)))
+                .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Supply : null)));
 
             CreateMap<SteamAssetDescription, ProfileInventoryItemDescriptionDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
@@ -66,8 +67,9 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p, p => p.Type))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetPrice(p => p, p => p.LowestPrice))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetPrice(p => p, p => p.Url))
-                .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Supply : null)))
-                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions));
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions))
+                .ForMember(x => x.Demand, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)))
+                .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Supply : null)));
 
             CreateMap<Price, ItemPriceDTO>()
                 .ForMember(x => x.LowestPrice, o => o.MapFromUsingCurrencyExchange(p => p.LowestPrice, p => p.Currency));

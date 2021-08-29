@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Data.Models.UI.Item
 {
-    public class ItemDescriptionWithPriceDTO : IItemDescription, ICanBePurchased, ICanBeSubscribed
+    public class ItemDescriptionWithPriceDTO : IItemDescription, ICanBeSubscribed, ICanBePurchased
     {
         public ulong Id { get; set; }
 
@@ -26,8 +26,11 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string BuyNowUrl { get; set; }
 
+        public long? Subscriptions { get; set; }
+
+        public long? Demand  { get; set; }
+
         public long? Supply { get; set; }
 
-        public long? Subscriptions { get; set; }
     }
 }

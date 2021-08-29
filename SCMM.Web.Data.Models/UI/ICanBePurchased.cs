@@ -12,6 +12,8 @@ namespace SCMM.Web.Data.Models.UI
 
         public long? OriginalPrice { get; }
 
+        public long? Demand { get; }
+
         public long? Supply { get; }
     }
 }
