@@ -10,8 +10,6 @@ namespace SCMM.Steam.Data.Store
         public SteamItemStore()
         {
             Items = new Collection<SteamStoreItemItemStore>();
-            Media = new PersistableStringCollection();
-            Notes = new PersistableStringCollection();
         }
 
         [Required]
@@ -31,8 +29,10 @@ namespace SCMM.Steam.Data.Store
 
         public FileData ItemsThumbnail { get; set; }
 
+        [Required]
         public PersistableStringCollection Media { get; set; }
 
+        [Required]
         public PersistableStringCollection Notes { get; set; }
 
         /// <summary>

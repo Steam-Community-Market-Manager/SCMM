@@ -13,14 +13,6 @@ namespace SCMM.Steam.Data.Store
 {
     public class SteamAssetDescription : Entity
     {
-        public SteamAssetDescription()
-        {
-            Tags = new PersistableStringDictionary();
-            CraftingComponents = new PersistableAssetQuantityDictionary();
-            BreaksIntoComponents = new PersistableAssetQuantityDictionary();
-            Notes = new PersistableStringCollection();
-        }
-
         [Required]
         public Guid AppId { get; set; }
 
@@ -66,6 +58,7 @@ namespace SCMM.Steam.Data.Store
 
         public string DescriptionWorkshop { get; set; }
 
+        [Required]
         public PersistableStringDictionary Tags { get; set; }
         
         public bool? HasGlow { get; set; }
@@ -149,16 +142,19 @@ namespace SCMM.Steam.Data.Store
 
         public bool IsCraftable { get; set; }
 
+        [Required]
         public PersistableAssetQuantityDictionary CraftingComponents { get; set; }
 
         public bool IsBreakable { get; set; }
 
+        [Required]
         public PersistableAssetQuantityDictionary BreaksIntoComponents { get; set; }
 
         public bool IsBanned { get; set; }
 
         public string BanReason { get; set; }
 
+        [Required]
         public PersistableStringCollection Notes { get; set; }
 
         public DateTimeOffset? TimeCreated { get; set; }

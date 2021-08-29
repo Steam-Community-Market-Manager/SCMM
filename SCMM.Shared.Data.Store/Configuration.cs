@@ -15,6 +15,7 @@ namespace SCMM.Shared.Data.Store
 
         public string Value { get; set; }
 
+        [Required]
         public PersistableStringCollection List { get; set; }
     }
 }

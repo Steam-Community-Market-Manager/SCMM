@@ -2,6 +2,7 @@
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Enums;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -9,7 +10,6 @@ namespace SCMM.Steam.Data.Store
     {
         public SteamProfile()
         {
-            Roles = new PersistableStringCollection();
             InventoryItems = new Collection<SteamProfileInventoryItem>();
             InventorySnapshots = new Collection<SteamProfileInventorySnapshot>();
             MarketItems = new Collection<SteamProfileMarketItem>();
@@ -64,6 +64,7 @@ namespace SCMM.Steam.Data.Store
 
         public SteamVisibilityType Privacy { get; set; }
 
+        [Required]
         public PersistableStringCollection Roles { get; set; }
 
         public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }

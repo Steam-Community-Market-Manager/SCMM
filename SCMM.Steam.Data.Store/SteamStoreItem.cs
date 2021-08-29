@@ -1,5 +1,6 @@
 ﻿using SCMM.Steam.Data.Store.Types;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -8,7 +9,6 @@ namespace SCMM.Steam.Data.Store
         public SteamStoreItem()
         {
             Stores = new Collection<SteamStoreItemItemStore>();
-            Prices = new PersistablePriceDictionary();
         }
 
         public Guid? CurrencyId { get; private set; }
@@ -25,6 +25,7 @@ namespace SCMM.Steam.Data.Store
         /// Store prices are generally fixed and don't fluxuate with currency exhange rates.
         /// Because of this, we need to keep a list of all the fixed store prices in each currency.
         /// </summary>
+        [Required]
         public PersistablePriceDictionary Prices { get; private set; }
 
         public long? TotalSalesMin { get; set; }

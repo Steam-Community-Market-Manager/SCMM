@@ -5,11 +5,6 @@ namespace SCMM.Steam.Data.Store
 {
     public class SteamStoreItemItemStore
     {
-        public SteamStoreItemItemStore()
-        {
-            Prices = new PersistablePriceDictionary();
-        }
-
         [Required]
         public Guid StoreId { get; set; }
 
@@ -26,6 +21,7 @@ namespace SCMM.Steam.Data.Store
 
         public long? Price { get; set; }
 
+        [Required]
         public PersistablePriceDictionary Prices { get; set; }
 
         public int? TopSellerIndex { get; set; }
