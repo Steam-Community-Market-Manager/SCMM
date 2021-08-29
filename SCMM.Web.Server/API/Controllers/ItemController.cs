@@ -156,7 +156,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (marketable)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.IsMarketable == true);
+                query = query.Where(x => id.Contains(x.ClassId) || (x.IsMarketable == true || x.MarketableRestrictionDays > 0));
             }
             if (tradeable)
             {

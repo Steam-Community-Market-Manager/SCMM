@@ -15,9 +15,9 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
-                .ForMember(x => x.BuyNowFrom, o => o.MapFrom(p => p.Description.BuyNowFrom))
-                .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.Description.BuyNowPrice, p => p.Description.BuyNowCurrency))
-                .ForMember(x => x.BuyNowUrl, o => o.MapFrom(p => p.Description.BuyNowUrl))
+                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p.Description, p => p.Type))
+                .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetPrice(p => p.Description, p => p.BuyPrice))
+                .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetPrice(p => p.Description, p => p.BuyUrl))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.LifetimeSubscriptions));
 
             CreateMap<SteamMarketItemOrder, ItemOrderDTO>()

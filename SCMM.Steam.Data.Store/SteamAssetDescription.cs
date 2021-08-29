@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models;
@@ -179,71 +180,77 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public PriceType? BuyNowFrom => 
-            GetPrices().Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault()?.Type;
+        public Price this[IExchangeableCurrency currency] =>
+            GetPrices(currency).Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault() ?? new Price();
 
-        public IExchangeableCurrency BuyNowCurrency => 
-            GetPrices().Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault()?.Currency;
-
-        public long? BuyNowPrice => 
-            GetPrices().Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyPrice;
-
-        public string BuyNowUrl => 
-            GetPrices().Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault()?.BuyUrl;
-
-        public IEnumerable<Price> GetPrices(IExchangeableCurrency currency = null)
+        public IEnumerable<Price> GetPrices(IExchangeableCurrency currency)
         {
             // Steam store
-            if (StoreItem != null)
+            if (StoreItem != null && StoreItem.Currency != null)
             {
+                var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
                 var buyPrice = (long?)null;
-                if (StoreItem.Prices != null && currency != null && StoreItem.Prices.ContainsKey(currency.Name))
+                if (currency != null)
                 {
-                    buyPrice = StoreItem.Prices[currency.Name];
+                    if (StoreItem.Prices != null && StoreItem.Prices.ContainsKey(currency.Name))
+                    {
+                        buyPrice = StoreItem.Prices[currency.Name];
+                    }
+                    else
+                    {
+                        buyPrice = currency.CalculateExchange(StoreItem.Price ?? 0, StoreItem.Currency);
+                    }
                 }
-                else if (StoreItem.Price != null && StoreItem.Currency != null)
+                else
                 {
                     currency = StoreItem.Currency;
-                    buyPrice = StoreItem.Price.Value;
+                    buyPrice = StoreItem.Price;
                 }
-                if (buyPrice != null && currency != null)
+                yield return new Price
                 {
-                    var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
-                    yield return new Price
-                    {
-                        Type = PriceType.SteamStore,
-                        Currency = currency,
-                        BuyPrice = buyPrice.Value,
-                        BuyUrl = !string.IsNullOrEmpty(StoreItem.SteamId)
-                            ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
-                            : new SteamStorePageRequest() { AppId = appId },
-                        QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null),
-                        IsAvailable = StoreItem.IsAvailable
-                    };
-                }
+                    Type = PriceType.SteamStore,
+                    Currency = currency,
+                    BuyPrice = buyPrice ?? 0,
+                    BuyUrl = !string.IsNullOrEmpty(StoreItem.SteamId)
+                        ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
+                        : new SteamStorePageRequest() { AppId = appId },
+                    QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null),
+                    IsAvailable = (StoreItem.IsAvailable && buyPrice > 0)
+                };
             }
 
             // Steam community market
             if (MarketItem != null && MarketItem.Currency != null)
             {
                 var appId = (MarketItem.App?.SteamId ?? App?.SteamId);
+                var buyPrice = (long?)null;
+                if (currency != null)
+                {
+                    buyPrice = currency.CalculateExchange(MarketItem.BuyNowPrice, MarketItem.Currency);
+                }
+                else
+                {
+                    currency = MarketItem.Currency;
+                    buyPrice = MarketItem.BuyNowPrice;
+                }
                 yield return new Price
                 {
                     Type = PriceType.SteamCommunityMarket,
-                    Currency = MarketItem.Currency,
-                    BuyPrice = MarketItem.BuyNowPrice,
+                    Currency = currency,
+                    BuyPrice = buyPrice ?? 0,
                     BuyUrl = new SteamMarketListingPageRequest()
                     {
                         AppId = appId,
                         MarketHashName = NameHash
                     },
                     QuantityAvailable = MarketItem.Supply,
-                    IsAvailable = !String.IsNullOrEmpty(NameHash)
+                    IsAvailable = (!String.IsNullOrEmpty(NameHash) && buyPrice > 0 && MarketItem.Supply > 0)
                 };
             }
 
-            if (MarketItem != null)
+            if (MarketItem != null && MarketItem.BuyNowPrice > 0 && MarketItem.Currency != null)
             {
+                // TODO: Implement these properly...
                 yield return new Price
                 {
                     Type = PriceType.Skinport

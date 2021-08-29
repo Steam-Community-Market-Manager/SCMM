@@ -131,18 +131,15 @@ namespace SCMM.Steam.API.Commands
                 if (!string.IsNullOrEmpty(itemPriceText))
                 {
                     // NOTE: Unless specified in the prefix/suffix text, the price is assumed to be USD
-                    var possibleCurrencies = currencies
+                    var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+                    var mostLikelyCurrencies = currencies
                         .Where(x =>
                             (!string.IsNullOrEmpty(x.PrefixText) && itemPriceText.Contains(x.PrefixText)) ||
                             (!string.IsNullOrEmpty(x.SuffixText) && itemPriceText.Contains(x.SuffixText))
                         )
                         .OrderBy(x => int.Parse(x.SteamId));
 
-                    var itemPriceCurrency = (
-                        possibleCurrencies.FirstOrDefault() ??
-                        currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD)
-                    );
-
+                    var itemPriceCurrency = (mostLikelyCurrencies.FirstOrDefault() ?? usdCurrency);
                     var itemPrice = itemPriceText.SteamPriceAsInt();
                     if (itemPrice > 0)
                     {

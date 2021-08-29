@@ -14,7 +14,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> RebuildCurrencyExchangeRatesAsync()
         {
             var currencies = await _db.SteamCurrencies.ToListAsync();
-            var baseCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+            var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
 
             var requiredTimestamps = await _db.SteamMarketItemSale
                 .GroupBy(x => x.Timestamp.Date)
@@ -35,7 +35,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                        x => x.Content = $"Importing exchange rates for {timestamp.ToString("yyyy-MM-dd")} ({Array.IndexOf(missingTimestamps, timestamp) + 1}/{missingTimestamps.Length})..."
                     );
 
-                    var exchangeRates = await _fixerWebClient.GetHistoricalRatesAsync(timestamp, baseCurrency.Name, currencies.Select(x => x.Name).ToArray());
+                    var exchangeRates = await _fixerWebClient.GetHistoricalRatesAsync(timestamp, usdCurrency.Name, currencies.Select(x => x.Name).ToArray());
                     if (exchangeRates != null)
                     {
                         foreach (var exchangeRate in exchangeRates)

@@ -53,6 +53,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     IconUrl = x.Description.IconUrl,
                     Quantity = x.Quantity,
+                    // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
                     Value = (x.Description.MarketItem != null ? x.Description.MarketItem.Last1hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
                     ValueUp = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue > 0 : false),
                     ValueDown = (x.Description.MarketItem != null ? x.Description.MarketItem.Last48hrValue - x.Description.MarketItem.Last24hrValue < 0 : false),

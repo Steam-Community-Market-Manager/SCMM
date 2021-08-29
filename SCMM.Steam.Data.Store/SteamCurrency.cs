@@ -38,15 +38,5 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         [Column(TypeName = "decimal(29,21)")]
         public decimal ExchangeRateMultiplier { get; set; }
-
-        /// <summary>
-        /// If true, this is the system currency that all others are converted from
-        /// </summary>
-        public bool IsDefault { get; set; }
-
-        /// <summary>
-        /// If true, this is a "cool" price which is highlighted when presenting "common" currencies
-        /// </summary>
-        public bool IsCommon { get; set; }
     }
 }

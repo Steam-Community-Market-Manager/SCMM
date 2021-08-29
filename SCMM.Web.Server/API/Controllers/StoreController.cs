@@ -133,32 +133,32 @@ namespace SCMM.Web.Server.API.Controllers
             var storeItems = itemStoreDetail.Items.Where(x => !string.IsNullOrEmpty(x.ItemType));
             if (storeItems.Any())
             {
-                var storeItemIds = storeItems.Select(x => x.Guid.ToString()).ToArray();
-                var marketPriceRanks = await _db.SteamStoreItems
-                    .Where(x => storeItemIds.Contains(x.Id.ToString()))
+                var allItemTypes = storeItems.Select(x => x.ItemType).Distinct();
+                var allItemPrices = await _db.SteamAssetDescriptions
+                    .Where(x => allItemTypes.Contains(x.ItemType))
+                    .Where(x => x.IsMarketable || x.MarketableRestrictionDays > 0)
                     .Select(x => new
                     {
-                        ItemId = x.Id,
-                        Position = x.App.MarketItems
-                            .Where(y => y.Description.IsMarketable)
-                            .Where(y => y.Description.ItemType == x.Description.ItemType)
-                            .Where(y => y.BuyNowPrice < ((x.IsAvailable || x.Description.MarketItem == null) ? x.Price ?? 0 : x.Description.MarketItem.BuyNowPrice))
-                            .Count(),
-                        Total = x.App.MarketItems
-                            .Where(y => y.Description.IsMarketable)
-                            .Where(y => y.Description.ItemType == x.Description.ItemType)
-                            .Count(),
+                        ItemType = x.ItemType,
+                        MarketPrice = (x.MarketItem != null ? x.MarketItem.BuyNowPrice : 0),
+                        MarketCurrency = (x.MarketItem != null ? x.MarketItem.Currency : null),
+                        StorePrices = (x.StoreItem != null && x.StoreItem.IsAvailable ? x.StoreItem.Prices : null)
                     })
                     .ToListAsync();
 
-                foreach (var marketPriceRank in marketPriceRanks)
+                foreach (var storeItem in storeItems)
                 {
-                    var storeItem = storeItems.FirstOrDefault(x => x.Guid == marketPriceRank.ItemId);
-                    if (storeItem != null)
-                    {
-                        storeItem.MarketRankIndex = marketPriceRank.Position;
-                        storeItem.MarketRankTotal = marketPriceRank.Total;
-                    }
+                    var cheapestPrice = (storeItem.IsStillAvailableFromStore
+                        ? (storeItem.StorePrice > 0 && storeItem.MarketPrice > 0) ? Math.Min(storeItem.StorePrice.Value, storeItem.MarketPrice.Value) : storeItem.StorePrice
+                        : storeItem.MarketPrice
+                    );
+                    var allItems = allItemPrices.Where(x => x.ItemType == storeItem.ItemType).ToList();
+                    var cheaperItems = allItems.Where(x => 
+                        (x.MarketPrice > 0 && this.Currency().CalculateExchange(x.MarketPrice, x.MarketCurrency) < cheapestPrice) ||
+                        (x.StorePrices != null && x.StorePrices.ContainsKey(this.Currency().Name) && x.StorePrices[this.Currency().Name] < cheapestPrice)
+                    );
+                    storeItem.MarketRankIndex = cheaperItems.Count();
+                    storeItem.MarketRankTotal = allItems.Count();
                 }
             }
 
@@ -262,7 +262,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Name = x.Item.Description.Name,
                     Currency = x.Item.Currency,
-                    Price = x.Item.Price ?? 0,
+                    Price = x.Item.Price,
                     Prices = x.Item.Prices,
                     Subscriptions = x.Item.Description.LifetimeSubscriptions ?? 0,
                     KnownInventoryDuplicates = x.Item.Description.InventoryItems
@@ -280,10 +280,10 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // NOTE: Steam revenue will always be collected in USD. Convert to the user local currency after calculating the final result
-            var steamCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
+            var usdCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
             var storeItemRevenue = (
                 from storeItem in storeItems
-                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(steamCurrency.Name) ? storeItem.Prices[steamCurrency.Name] : 0))
+                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(usdCurrency.Name) ? storeItem.Prices[usdCurrency.Name] : 0))
                 let salesTax = (long)Math.Round(total * 0.20)
                 let totalAfterTax = (total - salesTax)
                 let authorRevenue = EconomyExtensions.SteamFeeAuthorComponentAsInt(totalAfterTax)
@@ -292,10 +292,10 @@ namespace SCMM.Web.Server.API.Controllers
                 select new StoreChartItemRevenueDTO
                 {
                     Name = storeItem.Name,
-                    SalesTax = this.Currency().ToPrice(this.Currency().CalculateExchange(salesTax, steamCurrency)),
-                    AuthorRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(authorRevenue, steamCurrency)),
-                    PlatformRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(platformRevenue, steamCurrency)),
-                    PublisherRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(publisherRevenue, steamCurrency))
+                    SalesTax = this.Currency().ToPrice(this.Currency().CalculateExchange(salesTax, usdCurrency)),
+                    AuthorRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(authorRevenue, usdCurrency)),
+                    PlatformRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(platformRevenue, usdCurrency)),
+                    PublisherRevenue = this.Currency().ToPrice(this.Currency().CalculateExchange(publisherRevenue, usdCurrency))
                 }
             );
 
@@ -385,8 +385,8 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 // NOTE: This assumes the input price is supplied in USD
                 var currencies = await _db.SteamCurrencies.ToListAsync();
-                var storeCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
-                storeItemLink.Currency = storeCurrency;
+                var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+                storeItemLink.Currency = usdCurrency;
                 storeItemLink.Price = command.StorePrice;
                 foreach (var currency in currencies)
                 {

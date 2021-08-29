@@ -32,7 +32,7 @@
                     case PriceType.SteamStore:
                     {
                         <i class="mx-1"><RustIcon /></i>
-                        <span>@State.Currency.ToPriceString(PurchasableItem.OriginalPrice ?? PurchasableItem.BuyNowPrice ?? 0)</span>
+                        <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
                         break;
                     }
                     case PriceType.SteamCommunityMarket:

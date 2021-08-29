@@ -56,18 +56,12 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return;
             }
 
-            var language = await db.SteamLanguages.FirstOrDefaultAsync(x => x.IsDefault);
-            if (language == null)
-            {
-                return;
-            }
-
             foreach (var app in steamApps)
             {
                 _logger.LogInformation($"Checking for new store items (appId: {app.SteamId})");
-                var currency = currencies.FirstOrDefault(x => x.IsDefault);
+                var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
                 var response = await steamEconomy.GetAssetPricesAsync(
-                    uint.Parse(app.SteamId), string.Empty, language.SteamId
+                    uint.Parse(app.SteamId), string.Empty, Constants.SteamDefaultLanguage
                 );
                 if (response?.Data?.Success != true)
                 {
@@ -149,7 +143,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 {
                     // Ensure that the item is available in the database (create them if missing)
                     var storeItem = await steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
-                        app, currency, asset, DateTimeOffset.Now
+                        app, asset, DateTimeOffset.Now
                     );
                     if (storeItem == null)
                     {
@@ -167,8 +161,8 @@ namespace SCMM.Steam.Job.Server.Jobs
                         {
                             Store = newItemStore,
                             Item = storeItem,
-                            Currency = currency,
-                            Price = (long)prices.FirstOrDefault(x => x.Key == currency.Name).Value,
+                            Currency = usdCurrency,
+                            Price = prices.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
                             Prices = new PersistablePriceDictionary(prices),
                         });
                     }
@@ -253,7 +247,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 }
                 else
                 {
-                    filteredCurrencies = currencies.Where(x => x.IsCommon).ToList();
+                    filteredCurrencies = currencies.Where(x => x.Name == Constants.SteamCurrencyUSD).ToList();
                 }
 
                 await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()

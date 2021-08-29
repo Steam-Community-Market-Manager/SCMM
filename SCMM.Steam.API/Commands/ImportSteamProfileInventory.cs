@@ -83,13 +83,6 @@ namespace SCMM.Steam.API.Commands
                 };
             }
 
-            // Load the language
-            var language = await _db.SteamLanguages.AsNoTracking().FirstOrDefaultAsync(x => x.IsDefault);
-            if (language == null)
-            {
-                return null;
-            }
-
             // Load the apps
             var apps = await _db.SteamApps.ToListAsync();
             if (!apps.Any())

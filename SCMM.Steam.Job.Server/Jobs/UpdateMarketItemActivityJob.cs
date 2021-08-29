@@ -69,8 +69,8 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return;
             }
 
-            var currency = db.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
-            if (currency == null)
+            var usdCurrency = db.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+            if (usdCurrency == null)
             {
                 return;
             }
@@ -88,7 +88,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                         {
                             ItemNameId = assetDescription.NameId.ToString(),
                             Language = language.SteamId,
-                            CurrencyId = currency.SteamId,
+                            CurrencyId = usdCurrency.SteamId,
                             NoRender = true
                         }
                     );
@@ -116,7 +116,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                             Timestamp = activity.Time.SteamTimestampToDateTimeOffset(),
                             DescriptionId = assetDescription.Id,
                             ItemId = assetDescription.MarketItemId,
-                            CurrencyId = currency.Id,
+                            CurrencyId = usdCurrency.Id,
                             Type = activityType,
                             Price = activity.Price,
                             Quantity = activity.Quantity,

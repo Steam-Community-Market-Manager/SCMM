@@ -39,7 +39,6 @@
         public const string SteamAssetClassDescriptionStripBBCodeRegex = @"\[[^\]]*\]";
 
         public const string SteamCurrencyUSD = "USD";
-        public const string SteamDefaultCurrency = SteamCurrencyUSD;
         public const string SteamLanguageEnglish = "english";
         public const string SteamDefaultLanguage = SteamLanguageEnglish;
 

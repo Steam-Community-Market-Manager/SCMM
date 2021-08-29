@@ -1,6 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.API.Queries
@@ -34,7 +35,7 @@ namespace SCMM.Steam.API.Queries
             }
             else
             {
-                currency = currencies.FirstOrDefault(x => x.IsDefault);
+                currency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
             }
 
             return new GetCurrencyByNameResponse

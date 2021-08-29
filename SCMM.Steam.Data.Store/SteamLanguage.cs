@@ -13,7 +13,5 @@ namespace SCMM.Steam.Data.Store
         public string Name { get; set; }
 
         public string CultureName { get; set; }
-
-        public bool IsDefault { get; set; }
     }
 }

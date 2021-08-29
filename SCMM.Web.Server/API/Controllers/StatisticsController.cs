@@ -553,8 +553,9 @@ namespace SCMM.Web.Server.API.Controllers
                     CreatorId = x.CreatorId,
                     Name = x.ItemCollection,
                     IconUrl = x.IconLargeUrl,
-                    Currency = x.MarketItem != null ? x.MarketItem.Currency : (x.StoreItem != null ? x.StoreItem.Currency : null),
-                    BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.BuyNowPrice : (x.StoreItem != null ? (long?)x.StoreItem.Price : null)
+                    // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
+                    BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.BuyNowPrice : (x.StoreItem != null ? (long?)x.StoreItem.Price : null),
+                    Currency = x.MarketItem != null ? x.MarketItem.Currency : (x.StoreItem != null ? x.StoreItem.Currency : null)
                 })
                 .ToList()
                 .GroupBy(x => new 
@@ -658,6 +659,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => new
                 {
                     Resource = x,
+                    ResourcePrice = (x.MarketItem.BuyNowPrice > 0 ? (x.MarketItem.BuyNowPrice / x.MarketItem.Currency.ExchangeRateMultiplier) : 0),
                     CheapestItem = x.App.AssetDescriptions
                         .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
                         .Where(y => y.MarketItem != null && y.MarketItem.BuyNowPrice > 0)
@@ -665,8 +667,8 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(y => new
                         {
                             Item = y,
-                            Currency = y.MarketItem.Currency,
-                            MarketItem = y.MarketItem,
+                            ItemPrice = (y.MarketItem.BuyNowPrice / y.MarketItem.Currency.ExchangeRateMultiplier),
+                            MarketItem = y.MarketItem
                         })
                         .FirstOrDefault()
                 })
@@ -691,16 +693,10 @@ namespace SCMM.Web.Server.API.Controllers
                     IconUrl = x.IconUrl,
                     BuyNowPrice = this.Currency().CalculateExchange(x.MarketItem.BuyNowPrice, x.MarketItem.Currency),
                     CraftingComponents = x.CraftingComponents
-                        .Select(y => new
+                        .Join(resources, x => x.Key, x => x.Resource.Name, (x, y) => new
                         {
-                            Component = resources.FirstOrDefault(r => y.Key == r.Resource.Name),
-                            Quantity = y.Value
-                        })
-                        .Select(y => new
-                        {
-                            Component = y.Component,
-                            CheapestItem = y.Component.CheapestItem.MarketItem.BuyNowPrice > y.Component.Resource.BuyNowPrice ? y.Component.Resource : y.Component.CheapestItem.Item,
-                            Quantity = y.Quantity
+                            CheapestItem = (y.ResourcePrice <= y.CheapestItem.ItemPrice) ? y.Resource : y.CheapestItem.Item,
+                            Quantity = x.Value
                         })
                         .Select(y => new ItemCraftingComponentCostDTO()
                         {
@@ -712,7 +708,7 @@ namespace SCMM.Web.Server.API.Controllers
                                 BackgroundColour = y.CheapestItem.BackgroundColour,
                                 ForegroundColour = y.CheapestItem.ForegroundColour,
                                 IconUrl = y.CheapestItem.IconUrl,
-                                BuyNowPrice = this.Currency().CalculateExchange(y.CheapestItem.BuyNowPrice ?? 0, y.CheapestItem.BuyNowCurrency),
+                                BuyNowPrice = y.CheapestItem[this.Currency()].BuyPrice,
                             },
                             Quantity = y.Quantity
                         })

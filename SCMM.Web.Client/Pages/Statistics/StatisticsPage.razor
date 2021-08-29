@@ -531,7 +531,7 @@
                                             <div class="d-flex flex-row justify-start align-start">
                                                 <img src="@item.IconUrl" class="mr-2" style="width:64px; height:64px;" />
                                                 <div>
-                                                    @if (item.CraftingCost > item.BuyNowPrice)
+                                                    @if (item.CraftingCost >= item.BuyNowPrice)
                                                     {
                                                         <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest directly from the market for <strong>@State.Currency.ToPriceString(item.BuyNowPrice)</strong>.</MudText>
                                                         <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">It would cost <span>@State.Currency.ToPriceString(item.CraftingCost)</span> in resources to craft yourself.</MudText>
@@ -596,7 +596,7 @@
                                             <div class="d-flex flex-row justify-start align-start">
                                                 <img src="@item.IconUrl" class="mr-2" style="width:64px; height:64px;" />
                                                 <div>
-                                                    @if (item.CheapestItem.BuyNowPrice > item.BuyNowPrice)
+                                                    @if (item.CheapestItem.BuyNowPrice >= item.BuyNowPrice)
                                                     {
                                                         <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest directly from the market for <strong>@State.Currency.ToPriceString(item.BuyNowPrice)</strong>.</MudText>
                                                         <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can also buy <span>@item.CheapestItem.Name</span> for <span>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</span> and break it down using the Rust in-game workshop.</MudText>

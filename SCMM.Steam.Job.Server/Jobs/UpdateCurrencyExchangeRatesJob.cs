@@ -68,28 +68,22 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return;
             }
 
-            var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
-            if (language == null)
-            {
-                return;
-            }
-
             var currencies = db.SteamCurrencies.ToList();
             if (!currencies.Any())
             {
                 return;
             }
 
-            var systemCurrencyPrice = 0L;
-            var systemCurrency = currencies.FirstOrDefault(x => x.IsDefault);
-            if (systemCurrency == null)
+            var usdPrice = 0L;
+            var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+            if (usdCurrency == null)
             {
                 return;
             }
 
-            // Update exchange rates for currencies
-            var currencyPrices = new Dictionary<SteamCurrency, SteamMarketPriceOverviewJsonResponse>();
-            foreach (var currency in currencies.OrderByDescending(x => x.IsDefault))
+            // Update current exchange rates for each currency
+            var updatedCurrencies = new List<SteamCurrency>();
+            foreach (var currency in currencies.OrderByDescending(x => x.Name == usdCurrency.Name))
             {
                 // TODO: Find a better way to deal with Steam's rate limiting.
                 Thread.Sleep(3000);
@@ -99,7 +93,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     {
                         AppId = mostExpensiveItem.App.SteamId,
                         MarketHashName = mostExpensiveItem.Description.Name,
-                        Language = language.SteamId,
+                        Language = Constants.SteamDefaultLanguage,
                         CurrencyId = currency.SteamId,
                         NoRender = true
                     }
@@ -107,55 +101,52 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                 if (response?.Success != true)
                 {
+                    _logger.LogWarning($"Currency exchange rate for {currency.Name} could not be fetched");
                     continue;
                 }
 
-                currencyPrices[currency] = response;
                 var currencyPrice = response.LowestPrice.SteamPriceAsInt();
-                if (currency == systemCurrency)
+                if (usdCurrency == currency)
                 {
-                    systemCurrencyPrice = currencyPrice;
+                    usdPrice = currencyPrice;
                 }
-                if (currencyPrice > 0 && systemCurrencyPrice > 0)
+                var currencyExchangeRateMultiplier = 0m;
+                if (usdPrice > 0 && currencyPrice > 0)
                 {
-                    currency.ExchangeRateMultiplier = ((decimal)currencyPrice / systemCurrencyPrice);
+                    currencyExchangeRateMultiplier = ((decimal)currencyPrice / usdPrice);
                 }
-            }
+                if (currencyExchangeRateMultiplier <= 0)
+                {
+                    _logger.LogWarning($"Currency exchange rate for {currency.Name} could not be calculated");
+                    continue;
+                }
 
-            // Add a historical record for each currency exchange rate change
-            var basePrice = currencyPrices.FirstOrDefault(x => x.Key.Name == Constants.SteamDefaultCurrency);
-            if (basePrice.Value?.Success == true)
-            {
-                foreach (var currencyPrice in currencyPrices)
-                {
-                    var baseLowestPrice = basePrice.Value.LowestPrice.SteamPriceAsInt();
-                    var currencyLowestPrice = currencyPrice.Value.LowestPrice.SteamPriceAsInt();
-                    var exchangeRateMultiplier = (baseLowestPrice > 0 && currencyLowestPrice > 0)
-                        ? ((decimal)currencyLowestPrice / (decimal)baseLowestPrice)
-                        : (0);
+                // Set the exchange rate multiplier and add a historical exchange rate records (for historical conversions)
+                currency.ExchangeRateMultiplier = currencyExchangeRateMultiplier;
+                db.SteamCurrencyExchangeRates.Add(
+                    new SteamCurrencyExchangeRate()
+                    {
+                        CurrencyId = currency.Name,
+                        Timestamp = timeChecked,
+                        ExchangeRateMultiplier = currencyExchangeRateMultiplier
+                    }
+                );
 
-                    db.SteamCurrencyExchangeRates.Add(
-                        new SteamCurrencyExchangeRate()
-                        {
-                            CurrencyId = currencyPrice.Key.Name,
-                            Timestamp = timeChecked,
-                            ExchangeRateMultiplier = exchangeRateMultiplier
-                        }
-                    );
-                }
+                updatedCurrencies.Add(currency);
             }
 
             db.SaveChanges();
 
+            // Let all other services know the exchange rates have changed (they may have them cached)
             var currencyExchangeRateUpdatedMessages = new List<CurrencyExchangeRateUpdateMessage>();
-            foreach (var currencyPrice in currencyPrices)
+            foreach (var currency in updatedCurrencies)
             {
                 currencyExchangeRateUpdatedMessages.Add(
                     new CurrencyExchangeRateUpdateMessage()
                     {
                         Timestamp = DateTime.UtcNow,
-                        Currency = currencyPrice.Key.Name,
-                        ExchangeRateMultiplier = currencyPrice.Key.ExchangeRateMultiplier
+                        Currency = currency.Name,
+                        ExchangeRateMultiplier = currency.ExchangeRateMultiplier
                     }
                 );
             }

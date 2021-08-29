@@ -1,5 +1,7 @@
-﻿using SCMM.Steam.API;
+﻿using Microsoft.EntityFrameworkCore;
+using SCMM.Steam.API;
 using SCMM.Steam.Client;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
@@ -27,6 +29,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
             var items = db.SteamMarketItems
+                .Include(x => x.Currency)
                 .Where(x => !string.IsNullOrEmpty(x.SteamId))
                 .Where(x => x.LastCheckedOrdersOn == null || x.LastCheckedOrdersOn <= cutoff)
                 .OrderBy(x => x.LastCheckedOrdersOn)
@@ -34,18 +37,6 @@ namespace SCMM.Steam.Job.Server.Jobs
                 .ToList();
 
             if (!items.Any())
-            {
-                return;
-            }
-
-            var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
-            if (language == null)
-            {
-                return;
-            }
-
-            var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-            if (currency == null)
             {
                 return;
             }
@@ -58,19 +49,15 @@ namespace SCMM.Steam.Job.Server.Jobs
                     new SteamMarketItemOrdersHistogramJsonRequest()
                     {
                         ItemNameId = item.SteamId,
-                        Language = language.SteamId,
-                        CurrencyId = currency.SteamId,
+                        Language = Constants.SteamDefaultLanguage,
+                        CurrencyId = item.Currency.SteamId,
                         NoRender = true
                     }
                 );
 
                 try
                 {
-                    await steamService.UpdateMarketItemOrders(
-                        item,
-                        currency.Id,
-                        response
-                    );
+                    await steamService.UpdateMarketItemOrders(item, response);
                 }
                 catch (Exception ex)
                 {

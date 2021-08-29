@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
@@ -150,6 +151,39 @@ namespace SCMM.Web.Server.Extensions
                 catch (Exception)
                 {
                     return 0L;
+                }
+            });
+        }
+
+        public static void MapFromUsingAssetPrice<TSource, TDestination, TValue>(this IMemberConfigurationExpression<TSource, TDestination, TValue> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression, Expression<Func<Price, TValue>> propertyExpression)
+        {
+            memberOptions.MapFrom((src, dst, _, context) =>
+            {
+                try
+                {
+                    if (!context.Items.ContainsKey(ContextKeyCurrency))
+                    {
+                        return default(TValue);
+                    }
+
+                    var currency = (CurrencyDetailedDTO)context.Items[ContextKeyCurrency];
+                    if (currency == null)
+                    {
+                        return default(TValue);
+                    }
+
+                    var assetDescription = assetDescriptionExpression.Compile().Invoke(src);
+                    if (assetDescription == null)
+                    {
+                        return default(TValue);
+                    }
+
+                    var price = assetDescription[currency];
+                    return propertyExpression.Compile().Invoke(price);
+                }
+                catch (Exception)
+                {
+                    return default(TValue);
                 }
             });
         }

@@ -2,6 +2,7 @@
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
@@ -31,6 +32,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
             var items = db.SteamMarketItems
+                .Include(x => x.Currency)
                 .Where(x => x.LastCheckedSalesOn == null || x.LastCheckedSalesOn <= cutoff)
                 .OrderBy(x => x.LastCheckedSalesOn)
                 .Include(x => x.App)
@@ -43,14 +45,8 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return;
             }
 
-            var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
-            if (language == null)
-            {
-                return;
-            }
-
-            var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-            if (currency == null)
+            var nzdCurrency = db.SteamCurrencies.FirstOrDefault(x => x.Name == "NZD");
+            if (nzdCurrency == null)
             {
                 return;
             }
@@ -66,17 +62,13 @@ namespace SCMM.Steam.Job.Server.Jobs
                         {
                             AppId = item.App.SteamId,
                             MarketHashName = item.Description.Name,
-                            Language = language.SteamId,
-                            CurrencyId = currency.SteamId,
-                            NoRender = true
+                            //CurrencyId = item.Currency.SteamId
                         }
                     );
 
-                    await steamService.UpdateMarketItemSalesHistory(
-                        item,
-                        currency.Id,
-                        response
-                    );
+                    // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency
+                    // TODO: Find/buy a Steam account that is locked to USD for better accuracy
+                    await steamService.UpdateMarketItemSalesHistory(item, response, nzdCurrency);
                 }
                 catch (Exception ex)
                 {

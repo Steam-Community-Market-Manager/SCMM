@@ -9,6 +9,7 @@ using SCMM.Steam.API;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs.Cron;
@@ -40,6 +41,7 @@ namespace SCMM.Steam.Job.Server.Jobs
 
             var assetDescriptions = db.SteamAssetDescriptions
                 .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0))
+                .Where(x => x.IsSpecialDrop == false && x.IsTwitchDrop == false)
                 .Where(x => x.TimeAccepted != null)
                 .Include(x => x.App)
                 .ToList();
@@ -48,14 +50,8 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return;
             }
 
-            var language = db.SteamLanguages.FirstOrDefault(x => x.IsDefault);
-            if (language == null)
-            {
-                return;
-            }
-
-            var currency = db.SteamCurrencies.FirstOrDefault(x => x.IsDefault);
-            if (currency == null)
+            var usdCurrency = db.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+            if (usdCurrency == null)
             {
                 return;
             }
@@ -73,15 +69,15 @@ namespace SCMM.Steam.Job.Server.Jobs
                     {
                         AppId = assetDescription.App.SteamId,
                         MarketHashName = assetDescription.NameHash,
-                        Language = language.SteamId,
-                        CurrencyId = currency.SteamId,
+                        Language = Constants.SteamDefaultLanguage,
+                        CurrencyId = usdCurrency.SteamId,
                         NoRender = true
                     };
 
                     var marketPriceOverviewResponse = await steamCommnityClient.GetMarketPriceOverview(marketPriceOverviewRequest);
                     if (marketPriceOverviewResponse?.Success == true)
                     {
-                        var newMarketItem = await steamService.AddOrUpdateMarketItem(assetDescription.App, currency, marketPriceOverviewResponse, assetDescription);
+                        var newMarketItem = await steamService.AddOrUpdateMarketItem(assetDescription.App, usdCurrency, marketPriceOverviewResponse, assetDescription);
                         if (newMarketItem != null)
                         {
                             newMarketItems.Add(newMarketItem);

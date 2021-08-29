@@ -1,6 +1,7 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -34,7 +35,7 @@ namespace SCMM.Steam.API
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, SteamCurrency currency, AssetModel asset, DateTimeOffset timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, DateTimeOffset timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Stores).ThenInclude(x => x.Store)
@@ -46,13 +47,6 @@ namespace SCMM.Steam.API
             {
                 // Item is now available again
                 dbItem.IsAvailable = true;
-                // Update prices
-                // TODO: Move this to a seperate job (to avoid spam?)
-                //if (asset.Prices != null)
-                //{
-                //    dbItem.Prices = new PersistablePriceDictionary(GetPriceTable(asset.Prices));
-                //    dbItem.Price = dbItem.Prices.FirstOrDefault(x => x.Key == currency.Name).Value;
-                //}
                 return dbItem;
             }
 
@@ -122,7 +116,7 @@ namespace SCMM.Steam.API
             return dbItem;
         }
 
-        public async Task<SteamMarketItem> UpdateMarketItemOrders(SteamMarketItem item, Guid currencyId, SteamMarketItemOrdersHistogramJsonResponse histogram)
+        public async Task<SteamMarketItem> UpdateMarketItemOrders(SteamMarketItem item, SteamMarketItemOrdersHistogramJsonResponse histogram)
         {
             if (item == null || histogram?.Success != true)
             {
@@ -139,7 +133,6 @@ namespace SCMM.Steam.API
             }
 
             item.LastCheckedOrdersOn = DateTimeOffset.Now;
-            item.CurrencyId = currencyId;
             item.RecalculateOrders(
                 ParseMarketItemOrdersFromGraph<SteamMarketItemBuyOrder>(histogram.BuyOrderGraph),
                 histogram.BuyOrderCount.SteamQuantityValueAsInt(),
@@ -150,7 +143,7 @@ namespace SCMM.Steam.API
             return item;
         }
 
-        public async Task<SteamMarketItem> UpdateMarketItemSalesHistory(SteamMarketItem item, Guid currencyId, SteamMarketPriceHistoryJsonResponse sales)
+        public async Task<SteamMarketItem> UpdateMarketItemSalesHistory(SteamMarketItem item, SteamMarketPriceHistoryJsonResponse sales, SteamCurrency salesCurrency = null)
         {
             if (item == null || sales?.Success != true)
             {
@@ -166,11 +159,18 @@ namespace SCMM.Steam.API
                     .SingleOrDefaultAsync(x => x.Id == item.Id);
             }
 
+            // If the sales are not already in our items currency, exchange them now
+            var itemSales = ParseMarketItemSalesFromGraph(sales.Prices, item.LastCheckedSalesOn);
+            if (itemSales != null && salesCurrency != null && salesCurrency.Id != item.CurrencyId)
+            {
+                foreach (var sale in itemSales)
+                {
+                    sale.Price = item.Currency.CalculateExchange(sale.Price, salesCurrency);
+                }
+            }
+
             item.LastCheckedSalesOn = DateTimeOffset.Now;
-            item.CurrencyId = currencyId;
-            item.RecalculateSales(
-                ParseMarketItemSalesFromGraph(sales.Prices)
-            );
+            item.RecalculateSales(itemSales);
 
             return item;
         }
@@ -210,7 +210,7 @@ namespace SCMM.Steam.API
             return orders.ToArray();
         }
 
-        private SteamMarketItemSale[] ParseMarketItemSalesFromGraph(string[][] salesGraph)
+        private SteamMarketItemSale[] ParseMarketItemSalesFromGraph(string[][] salesGraph, DateTimeOffset? ignoreSalesBefore = null)
         {
             var sales = new List<SteamMarketItemSale>();
             if (salesGraph == null)
