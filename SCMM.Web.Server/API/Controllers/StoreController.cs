@@ -445,6 +445,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var store = await _db.SteamItemStores
+                .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
                 .FirstOrDefaultAsync(x => x.Id == id);
             if (store == null)
@@ -458,6 +459,12 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Asset description not found in store");
             }
 
+            // Update the store items "latest price"
+            var storeItem = storeItemLink.Item;
+            storeItem.Stores.Remove(storeItemLink);
+            storeItem.UpdateLatestPrice();
+
+            // Remove the store item link
             store.Items.Remove(storeItemLink);
             await _db.SaveChangesAsync();
 

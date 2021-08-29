@@ -152,7 +152,7 @@ else if (StoreList.Any())
                                                     </TooltipContent>
                                                 </MudTooltip>
                                             }
-                                            @if (item.IsDraft && State.IsInRole(Roles.Contributor))
+                                            @if (Store.IsDraft && item.IsDraft && State.IsInRole(Roles.Contributor))
                                             {
                                                 <MudTooltip Text="Remove this item from the store">
                                                     <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" Icon="fas fa-fw fa-trash-alt"></MudFab>

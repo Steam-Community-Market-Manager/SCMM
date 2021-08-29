@@ -27,14 +27,6 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public PersistablePriceDictionary Prices { get; private set; }
 
-        /// <summary>
-        /// If true, the price are locked and have been confirmed as 100% accurate
-        /// </summary>
-        /// <remarks>
-        /// TODO: Remove this, obsolete
-        /// </remarks>
-        public bool PricesAreLocked { get; set; }
-
         public long? TotalSalesMin { get; set; }
 
         public long? TotalSalesMax { get; set; }
@@ -53,19 +45,16 @@ namespace SCMM.Steam.Data.Store
 
         public void UpdatePrice(SteamCurrency currency, long price, PersistablePriceDictionary prices)
         {
-            if (!PricesAreLocked)
-            {
-                CurrencyId = currency?.Id;
-                Currency = currency;
-                Price = price;
-                Prices = new PersistablePriceDictionary(prices);
-            }
+            CurrencyId = currency?.Id;
+            Currency = currency;
+            Price = price;
+            Prices = new PersistablePriceDictionary(prices);
         }
 
         public void UpdateLatestPrice()
         {
             var latestStore = Stores?.FirstOrDefault(x => x.Store?.Start == Stores?.Max(x => x.Store?.Start));
-            if (!PricesAreLocked && latestStore != null)
+            if (latestStore != null)
             {
                 CurrencyId = latestStore.CurrencyId;
                 Currency = latestStore.Currency;
