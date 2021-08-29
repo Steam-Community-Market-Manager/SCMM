@@ -31,31 +31,28 @@ namespace SCMM.Steam.API.Queries
 
         public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request)
         {
-            var lastItemAcceptedOnQuery = await _db.SteamAssetDescriptions
-                .AsNoTracking()
-                .Where(x => x.TimeAccepted != null)
-                .MaxAsync(x => x.TimeAccepted);
+            var recentStoreStarts = await _db.SteamItemStores
+                .OrderByDescending(x => x.Start).Take(5)
+                .Select(x => x.Start)
+                .ToListAsync();
 
-            var lastItemAcceptedOn = lastItemAcceptedOnQuery?.UtcDateTime;
-            if (lastItemAcceptedOn == null)
-            {
-                return null;
-            }
-
-            // Store normally updates around Friday 6am NZT (Thursday 5pm UTC)
-            var nextStoreUpdateUtc = (lastItemAcceptedOn.Value.Date + new TimeSpan(17, 0, 0));
+            // Average out the last month or so of store start times
+            // For reference, the store normally updates around Friday 6am NZT (Thursday 5pm UTC)
+            var lastStoreStart = recentStoreStarts.FirstOrDefault();
+            var averageStoreStartTime = TimeSpan.FromSeconds(recentStoreStarts.Select(s => s.TimeOfDay.TotalSeconds).Average());
+            var nextStoreStartUtc = (lastStoreStart.UtcDateTime + averageStoreStartTime);
             do
             {
-                nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
-            } while (nextStoreUpdateUtc.DayOfWeek != DayOfWeek.Thursday);
+                nextStoreStartUtc = nextStoreStartUtc.AddDays(1);
+            } while (nextStoreStartUtc.DayOfWeek != DayOfWeek.Thursday);
 
             // If the store is overdue by more than 6hrs, assume it will update the next day at the same time
-            while ((nextStoreUpdateUtc + TimeSpan.FromHours(6)) <= DateTime.UtcNow)
+            while ((nextStoreStartUtc + TimeSpan.FromHours(6)) <= DateTime.UtcNow)
             {
-                nextStoreUpdateUtc = nextStoreUpdateUtc.AddDays(1);
+                nextStoreStartUtc = nextStoreStartUtc.AddDays(1);
             }
 
-            var nextStoreUpdate = new DateTimeOffset(nextStoreUpdateUtc, TimeZoneInfo.Utc.BaseUtcOffset);
+            var nextStoreUpdate = new DateTimeOffset(nextStoreStartUtc, TimeZoneInfo.Utc.BaseUtcOffset);
             var nextStoreRemaining = (nextStoreUpdate - DateTimeOffset.Now);
             var nextStoreIsOverdue = (nextStoreUpdate <= DateTimeOffset.Now);
             return new GetStoreNextUpdateTimeResponse
