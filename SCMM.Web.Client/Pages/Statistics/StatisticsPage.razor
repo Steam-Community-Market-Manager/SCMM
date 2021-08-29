@@ -67,43 +67,6 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-star" Title="Latest Items" Subtitle="What are the newest accepted in-game items?" Dense="true">
-                <div class="">
-                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
-                        <tbody>
-                            <Virtualize ItemsProvider="LoadItemsMostRecent" Context="item">
-                                <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
-                                        <td>
-                                            <div class="d-flex flex-row justify-start align-center">
-                                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                                            </div>
-                                        </td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@item.Age</MudText>
-                                        </td>
-                                    </tr>
-                                </ItemContent>
-                                <Placeholder>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex flex-row justify-start align-center">
-                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                            </div>
-                                        </td>
-                                        <td class="text-right">—</td>
-                                    </tr>
-                                </Placeholder>
-                            </Virtualize>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-            </StatisticsPanel>
-        </MudItem>
-
-        <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-fire" Title="Hot Right Now" Subtitle="What items have been bought/sold the most in the past 24hrs?" Dense="true">
                 <div class="">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
@@ -662,20 +625,6 @@
     private string GetItemStyles(IItemDescription item)
     {
         return $"color: {item.ForegroundColour}";
-    }
-    
-    protected async ValueTask<ItemsProviderResult<AssetDescriptionAgeStatisticDTO>> LoadItemsMostRecent(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<AssetDescriptionAgeStatisticDTO>>($"api/stats/items/mostRecent?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<AssetDescriptionAgeStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'most recent' item statistics");
-            throw;
-        }
     }
     
     protected async ValueTask<ItemsProviderResult<ItemSupplyDemandStatisticDTO>> LoadItemsMostDemanded(ItemsProviderRequest request)

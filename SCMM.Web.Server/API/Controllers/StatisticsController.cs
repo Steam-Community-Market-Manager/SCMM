@@ -164,39 +164,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List items, sorted by most recent first
-        /// </summary>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("items/mostRecent")]
-        [ProducesResponseType(typeof(PaginatedResult<AssetDescriptionAgeStatisticDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsMostRecent([FromQuery] int start = 0, [FromQuery] int count = 10)
-        {
-            var query = _db.SteamAssetDescriptions
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Where(x => x.TimeAccepted != null)
-                .OrderByDescending(x => x.TimeAccepted);
-
-            return Ok(
-                await query.PaginateAsync(start, count, x => new AssetDescriptionAgeStatisticDTO()
-                {
-                    Id = x.ClassId,
-                    AppId = ulong.Parse(x.App.SteamId),
-                    Name = x.Name,
-                    BackgroundColour = x.BackgroundColour,
-                    ForegroundColour = x.ForegroundColour,
-                    IconUrl = x.IconUrl,
-                    Age = (DateTimeOffset.Now - x.TimeAccepted).ToMarketAgeString()
-                })
-            );
-        }
-
-        /// <summary>
         /// List items, sorted by highest number of sales in the last 24hrs
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
