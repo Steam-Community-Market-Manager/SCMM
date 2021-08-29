@@ -209,7 +209,7 @@ namespace SCMM.Steam.Data.Store
                     order.Old.Quantity = order.New.Quantity;
                 }
 
-                var sellOrdersSorted = BuyOrders.OrderBy(y => y.Price).ToArray();
+                var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
                 var lowestBuyNowPrice = (sellOrdersSorted.Length > 0)
                     ? sellOrdersSorted.First().Price
                     : 0;
