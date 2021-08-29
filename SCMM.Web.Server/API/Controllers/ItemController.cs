@@ -39,27 +39,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List all known item types
-        /// </summary>
-        /// <response code="200">List of unique item types</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("types")]
-        [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemTypes()
-        {
-            return Ok(
-                await _db.SteamAssetDescriptions
-                    .AsNoTracking()
-                    .Where(x => !String.IsNullOrEmpty(x.ItemType))
-                    .GroupBy(x => x.ItemType)
-                    .Select(x => x.Key)
-                    .ToArrayAsync()
-            );
-        }
-
-        /// <summary>
         /// Search for items
         /// </summary>
         /// <remarks>
@@ -301,7 +280,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .OrderByDescending(x => x.Type == PriceType.SteamStore)
                     .ThenByDescending(x => x.Type == PriceType.SteamCommunityMarket)
                     .ThenByDescending(x => x.IsAvailable)
-                    .ThenBy(x => x.BuyPrice)
+                    .ThenBy(x => x.LowestPrice)
                     .Select(x => _mapper.Map<Price, ItemPriceDTO>(x, this))
                     .ToList()
             );
@@ -390,7 +369,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get item sales chart data, grouped by day (UTC)
+        /// Get item sales history chart data, grouped by day (UTC)
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -398,7 +377,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{id}/salesTimeline")]
+        [HttpGet("{id}/salesHistory")]
         [ProducesResponseType(typeof(IEnumerable<ItemSaleChartDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemSalesTimeline([FromRoute] string id)
@@ -486,6 +465,27 @@ namespace SCMM.Web.Server.API.Controllers
 
             var assetDetails = _mapper.Map<List<SteamAssetDescription>, ItemCollectionDTO>(assetDescriptions, this);
             return Ok(assetDetails);
+        }
+
+        /// <summary>
+        /// List all known item types
+        /// </summary>
+        /// <response code="200">List of unique item types</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("types")]
+        [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemTypes()
+        {
+            return Ok(
+                await _db.SteamAssetDescriptions
+                    .AsNoTracking()
+                    .Where(x => !String.IsNullOrEmpty(x.ItemType))
+                    .GroupBy(x => x.ItemType)
+                    .Select(x => x.Key)
+                    .ToArrayAsync()
+            );
         }
     }
 }

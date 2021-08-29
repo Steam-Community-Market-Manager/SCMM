@@ -113,12 +113,6 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public DateTimeOffset? TimeRefreshed { get; set; }
 
-        public PriceType? BuyNowFrom { get; set; }
-
-        public long? BuyNowPrice { get; set; }
-
-        public string BuyNowUrl { get; set; }
-
         #endregion
 
         #region Store Item 
@@ -158,6 +152,18 @@ namespace SCMM.Web.Data.Models.UI.Item
         public long? Market24hrSales { get; set; }
 
         public long? Market24hrValue { get; set; }
+
+        #endregion
+
+        #region Prices
+
+        public PriceType? BuyNowFrom { get; set; }
+
+        public long? BuyNowPrice { get; set; }
+
+        public string BuyNowUrl { get; set; }
+
+        public IEnumerable<ItemPriceDTO> Prices { get; set; }
 
         #endregion
     }

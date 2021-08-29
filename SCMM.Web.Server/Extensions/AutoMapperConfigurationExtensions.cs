@@ -2,8 +2,10 @@
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Currency;
+using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Language;
 using System.Linq.Expressions;
 
@@ -179,6 +181,11 @@ namespace SCMM.Web.Server.Extensions
                     }
 
                     var price = assetDescription[currency];
+                    if (price == null)
+                    {
+                        return default(TValue);
+                    }
+
                     return propertyExpression.Compile().Invoke(price);
                 }
                 catch (Exception)
@@ -188,5 +195,41 @@ namespace SCMM.Web.Server.Extensions
             });
         }
 
+        public static void MapFromAssetPrices<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, IEnumerable<ItemPriceDTO>> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression)
+        {
+            memberOptions.MapFrom((src, dst, _, context) =>
+            {
+                try
+                {
+                    if (!context.Items.ContainsKey(ContextKeyCurrency))
+                    {
+                        return null;
+                    }
+
+                    var currency = (CurrencyDetailedDTO)context.Items[ContextKeyCurrency];
+                    if (currency == null)
+                    {
+                        return null;
+                    }
+
+                    var assetDescription = assetDescriptionExpression.Compile().Invoke(src);
+                    if (assetDescription == null)
+                    {
+                        return null;
+                    }
+
+                    return assetDescription.GetPrices(currency)
+                        .OrderByDescending(x => x.Type == PriceType.SteamStore)
+                        .ThenByDescending(x => x.Type == PriceType.SteamCommunityMarket)
+                        .ThenByDescending(x => x.IsAvailable)
+                        .ThenBy(x => x.LowestPrice)
+                        .ToList();
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            });
+        }
     }
 }

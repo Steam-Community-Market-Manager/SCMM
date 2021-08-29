@@ -9,9 +9,7 @@ namespace SCMM.Steam.Data.Models
 
         public IExchangeableCurrency Currency { get; set; }
 
-        public long BuyPrice { get; set; }
-
-        public string BuyUrl { get; set; }
+        public long LowestPrice { get; set; }
 
         /// <summary>
         /// Zero == no supply. Null == unlimited supply. 
@@ -19,5 +17,7 @@ namespace SCMM.Steam.Data.Models
         public int? QuantityAvailable { get; set; } = 0;
 
         public bool IsAvailable { get; set; }
+
+        public string Url { get; set; }
     }
 }

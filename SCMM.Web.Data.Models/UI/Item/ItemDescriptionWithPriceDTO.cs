@@ -18,13 +18,13 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string IconUrl { get; set; }
 
+        public long? OriginalPrice { get; set; }
+
         public PriceType? BuyNowFrom { get; set; }
 
         public long? BuyNowPrice { get; set; }
 
         public string BuyNowUrl { get; set; }
-
-        public long? OriginalPrice { get; set; }
 
         public long? Supply { get; set; }
 

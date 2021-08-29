@@ -414,14 +414,7 @@
                                         </td>
                                         <td class="text-right">
                                             <MudText Typo="Typo.body2" Class="no-wrap">
-                                                @if (item.Demand > 0)
-                                                {
-                                                    <span>@item.Demand.ToQuantityString() sold today</span>
-                                                }
-                                                else 
-                                                {
-                                                    <span>None sold yesterday</span>
-                                                }
+                                                <span>@item.Demand.ToQuantityString() today</span>
                                             </MudText>
                                         </td>
                                     </tr>

@@ -181,7 +181,7 @@ namespace SCMM.Steam.Data.Store
         public SteamMarketItem MarketItem { get; set; }
 
         public Price this[IExchangeableCurrency currency] =>
-            GetPrices(currency).Where(x => x.IsAvailable).OrderBy(x => x.BuyPrice).FirstOrDefault() ?? new Price();
+            GetPrices(currency).Where(x => x.IsAvailable).OrderBy(x => x.LowestPrice).FirstOrDefault();
 
         public IEnumerable<Price> GetPrices(IExchangeableCurrency currency)
         {
@@ -210,12 +210,12 @@ namespace SCMM.Steam.Data.Store
                 {
                     Type = PriceType.SteamStore,
                     Currency = currency,
-                    BuyPrice = buyPrice ?? 0,
-                    BuyUrl = !string.IsNullOrEmpty(StoreItem.SteamId)
-                        ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
-                        : new SteamStorePageRequest() { AppId = appId },
+                    LowestPrice = buyPrice ?? 0,
                     QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null),
-                    IsAvailable = (StoreItem.IsAvailable && buyPrice > 0)
+                    IsAvailable = (StoreItem.IsAvailable && buyPrice > 0),
+                    Url = !string.IsNullOrEmpty(StoreItem.SteamId)
+                        ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
+                        : new SteamStorePageRequest() { AppId = appId }
                 };
             }
 
@@ -237,14 +237,14 @@ namespace SCMM.Steam.Data.Store
                 {
                     Type = PriceType.SteamCommunityMarket,
                     Currency = currency,
-                    BuyPrice = buyPrice ?? 0,
-                    BuyUrl = new SteamMarketListingPageRequest()
+                    LowestPrice = buyPrice ?? 0,
+                    QuantityAvailable = MarketItem.Supply,
+                    IsAvailable = (!String.IsNullOrEmpty(NameHash) && buyPrice > 0 && MarketItem.Supply > 0),
+                    Url = new SteamMarketListingPageRequest()
                     {
                         AppId = appId,
                         MarketHashName = NameHash
-                    },
-                    QuantityAvailable = MarketItem.Supply,
-                    IsAvailable = (!String.IsNullOrEmpty(NameHash) && buyPrice > 0 && MarketItem.Supply > 0)
+                    }
                 };
             }
 

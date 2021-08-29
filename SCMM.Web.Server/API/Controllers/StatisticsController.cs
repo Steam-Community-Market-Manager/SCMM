@@ -708,7 +708,7 @@ namespace SCMM.Web.Server.API.Controllers
                                 BackgroundColour = y.CheapestItem.BackgroundColour,
                                 ForegroundColour = y.CheapestItem.ForegroundColour,
                                 IconUrl = y.CheapestItem.IconUrl,
-                                BuyNowPrice = y.CheapestItem[this.Currency()].BuyPrice,
+                                BuyNowPrice = (y.CheapestItem[this.Currency()]?.LowestPrice ?? 0),
                             },
                             Quantity = y.Quantity
                         })
