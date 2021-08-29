@@ -592,9 +592,7 @@
 
     private void ViewItem(ItemDescriptionDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(
-            $"https://steamcommunity.com/market/listings/{item.AppId}/{Uri.EscapeDataString(item.Name)}"
-        );
+        NavigationManager.NavigateTo($"/item/{item.Name}");
     }
     
     private void ViewProfile(string steamId)
