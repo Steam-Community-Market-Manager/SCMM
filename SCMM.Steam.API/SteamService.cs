@@ -151,11 +151,10 @@ namespace SCMM.Steam.API
             }
 
             // Lazy-load sales history if missing, required for recalculation
-            if (item.SalesHistory?.Any() != true || item.Activity?.Any() != true)
+            if (item.SalesHistory?.Any() != true)
             {
                 item = await _db.SteamMarketItems
                     .Include(x => x.SalesHistory)
-                    .Include(x => x.Activity)
                     .SingleOrDefaultAsync(x => x.Id == item.Id);
             }
 

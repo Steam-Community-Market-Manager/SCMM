@@ -1,6 +1,8 @@
-﻿using SCMM.Steam.Data.Models.Extensions;
+﻿using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Extensions;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -174,10 +176,18 @@ namespace SCMM.Steam.Data.Store
 
         public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
         {
-            var buyOrdersSafe = (buyOrders ?? BuyOrders?.ToArray());
-            if (buyOrdersSafe != null)
+            // Recalculate buy order stats
+            if (buyOrders != null)
             {
-                var buyOrdersSorted = buyOrdersSafe.OrderByDescending(y => y.Price).ToArray();
+                // Add new orders, remove old orders, update existing orders
+                BuyOrders.AddRange(buyOrders.Where(x => !BuyOrders.Any(y => x.Price == y.Price)));
+                BuyOrders.RemoveAll(x => !buyOrders.Any(y => x.Price == y.Price));
+                foreach (var order in BuyOrders.Join(buyOrders, x => x.Price, x => x.Price, (x, y) => new { Old = x, New = y }))
+                {
+                    order.Old.Quantity = order.New.Quantity;
+                }
+
+                var buyOrdersSorted = BuyOrders.OrderByDescending(y => y.Price).ToArray();
                 var highestPrice = (buyOrdersSorted.Length > 0)
                     ? buyOrdersSorted.First().Price
                     : 0;
@@ -185,22 +195,21 @@ namespace SCMM.Steam.Data.Store
                 // NOTE: Steam only returns the top 100 orders, so the true demand can't be calculated from sell orders list
                 //Demand = buyOrdersSorted.Sum(y => y.Quantity);
                 Demand = (buyOrderCount ?? Demand);
-
                 BuyAskingPrice = highestPrice;
-                if (buyOrders != null)
-                {
-                    BuyOrders.Clear();
-                    foreach (var order in buyOrdersSorted)
-                    {
-                        BuyOrders.Add(order);
-                    }
-                }
             }
 
-            var sellOrdersSafe = (sellOrders ?? SellOrders?.ToArray());
-            if (sellOrdersSafe != null)
+            // Recalculate sell order stats
+            if (sellOrders != null)
             {
-                var sellOrdersSorted = sellOrdersSafe.OrderBy(y => y.Price).ToArray();
+                // Add new orders, remove old orders, update existing orders
+                SellOrders.AddRange(sellOrders.Where(x => !SellOrders.Any(y => x.Price == y.Price)));
+                SellOrders.RemoveAll(x => !sellOrders.Any(y => x.Price == y.Price));
+                foreach (var order in SellOrders.Join(sellOrders, x => x.Price, x => x.Price, (x, y) => new { Old = x, New = y }))
+                {
+                    order.Old.Quantity = order.New.Quantity;
+                }
+
+                var sellOrdersSorted = BuyOrders.OrderBy(y => y.Price).ToArray();
                 var lowestBuyNowPrice = (sellOrdersSorted.Length > 0)
                     ? sellOrdersSorted.First().Price
                     : 0;
@@ -216,43 +225,34 @@ namespace SCMM.Steam.Data.Store
                 // NOTE: Steam only returns the top 100 orders, so the true supply can't be calculated from sell orders list
                 //Supply = sellOrdersSorted.Sum(y => y.Quantity);
                 Supply = (sellOrderCount ?? Supply);
-
                 BuyNowPrice = lowestBuyNowPrice;
                 BuyNowPriceDelta = (secondLowestBuyNowPrice - lowestBuyNowPrice);
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
                 ResellProfit = (resellPrice - resellTax - lowestBuyNowPrice);
-                if (sellOrders != null)
-                {
-                    SellOrders.Clear();
-                    foreach (var order in sellOrdersSorted)
-                    {
-                        SellOrders.Add(order);
-                    }
-                }
             }
         }
 
-        public void RecalculateSales(SteamMarketItemSale[] sales = null)
+        public void RecalculateSales(SteamMarketItemSale[] newSales = null)
         {
-            var salesSafe = (sales ?? SalesHistory?.ToArray());
-            if (salesSafe == null)
+            // Add any new sales we don't already have
+            if (newSales != null)
             {
-                return;
+                SalesHistory.AddRange(newSales.Where(x => !SalesHistory.Any(y => x.Timestamp == y.Timestamp)));
             }
 
-            var salesSorted = salesSafe.OrderBy(y => y.Timestamp).ToArray();
+            // Sort sales from earliest to latest
+            var salesSorted = SalesHistory.OrderBy(y => y.Timestamp).ToArray();
             if (!salesSorted.Any())
             {
                 return;
             }
 
+            // Recalculate sales stats
             var earliestTimestamp = salesSorted.Min(x => x.Timestamp);
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
-
             var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24)) && x.Timestamp > earliestTimestamp).ToArray();
             var first24hrValue = (long)Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
-
             var last1hrs = salesSorted.Where(x => x.Timestamp == latestTimestamp).ToArray();
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
             var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.Price) : 0, 0);
@@ -297,7 +297,7 @@ namespace SCMM.Steam.Data.Store
             Last168hrSales = last168hrSales;
             Last168hrValue = last168hrValue;
 
-            // The first three days sees alot of extreme price spikes, filter these out of the overall averages
+            // The first three days on the market is always overinflated, filter these out before calculating overall averages
             var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
             if (salesAfterFirstSevenDays.Any())
             {
@@ -309,15 +309,6 @@ namespace SCMM.Steam.Data.Store
                 AllTimeHighestValueOn = allTimeHigh?.Timestamp;
                 AllTimeLowestValue = (allTimeLow?.Price ?? 0);
                 AllTimeLowestValueOn = allTimeLow?.Timestamp;
-            }
-
-            if (sales != null)
-            {
-                SalesHistory.Clear();
-                foreach (var sale in salesSorted)
-                {
-                    SalesHistory.Add(sale);
-                }
             }
         }
     }
