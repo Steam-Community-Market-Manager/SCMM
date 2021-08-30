@@ -56,6 +56,8 @@ namespace SCMM.Steam.Job.Server.Jobs
                 return;
             }
 
+            // TODO: Check up to 5 times with a 1min delay between each attempt
+
             _logger.LogInformation($"Checking for new market items (assets: {assetDescriptions.Count})");
             var newMarketItems = new List<SteamMarketItem>();
             foreach (var assetDescription in assetDescriptions)

@@ -253,7 +253,7 @@ namespace SCMM.Steam.Data.Store
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
             var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24)) && x.Timestamp > earliestTimestamp).ToArray();
             var first24hrValue = (long)Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
-            var last1hrs = salesSorted.Where(x => x.Timestamp == latestTimestamp).ToArray();
+            var last1hrs = salesSorted.Where(x => x.Timestamp == latestTimestamp).ToArray(); // TODO: This isn't the true 1hr value, can be quite misleading
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
             var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.Price) : 0, 0);
             var last24hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(24)) && x.Timestamp < latestTimestamp).ToArray();

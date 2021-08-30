@@ -192,6 +192,8 @@ namespace SCMM.Steam.Job.Server.Jobs
 
                 // Send out a broadcast about any "new" items that weren't already in our store
                 await BroadcastNewStoreItemsNotification(commandProcessor, db, app, newItemStore, newStoreItems, currencies);
+
+                // TODO: Wait 1min, then trigger CheckForNewMarketItemsJob
             }
         }
 
