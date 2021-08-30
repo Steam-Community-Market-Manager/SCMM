@@ -51,7 +51,33 @@ public static class WebApplicationExtensions
 
         // Authentication
         builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+            .AddMicrosoftIdentityWebApp(
+                options =>
+                {
+                    var config = builder.Configuration.GetSection("AzureAd").Get<MicrosoftIdentityOptions>();
+                    options.Instance = config.Instance;
+                    options.Domain = config.Domain;
+                    options.ClientId = config.ClientId;
+                    options.TenantId = config.TenantId;
+                    options.CallbackPath = config.CallbackPath;
+                    options.NonceCookie.IsEssential = true;
+                    options.NonceCookie.HttpOnly = false;
+                    options.NonceCookie.SameSite = SameSiteMode.None;
+                    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.CorrelationCookie.IsEssential = true;
+                    options.CorrelationCookie.HttpOnly = false;
+                    options.CorrelationCookie.SameSite = SameSiteMode.None;
+                    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+                },
+                configureCookieAuthenticationOptions: options =>
+                {
+                    options.SlidingExpiration = true;
+                    options.ExpireTimeSpan = TimeSpan.FromDays(1);
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.HttpOnly = false;
+                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                });
 
         // Database
         builder.Services.AddDbContext<SteamDbContext>(options =>

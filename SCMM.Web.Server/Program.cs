@@ -59,13 +59,18 @@ public static class WebApplicationExtensions
                 options.AccessDeniedPath = "/";
                 options.SlidingExpiration = true;
                 options.ExpireTimeSpan = TimeSpan.FromDays(7);
-                options.Cookie.Name = "scmmLoginSecure";
                 options.Cookie.IsEssential = true;
                 options.Cookie.HttpOnly = false;
+                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             })
             .AddSteam(options =>
             {
                 options.ApplicationKey = builder.Configuration.GetSteamConfiguration().ApplicationKey;
+                options.CorrelationCookie.IsEssential = true;
+                options.CorrelationCookie.HttpOnly = false;
+                options.CorrelationCookie.SameSite = SameSiteMode.None;
+                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Events = new OpenIdAuthenticationEvents
                 {
                     OnTicketReceived = async (ctx) =>
