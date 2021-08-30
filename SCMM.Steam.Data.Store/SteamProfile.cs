@@ -10,6 +10,7 @@ namespace SCMM.Steam.Data.Store
     {
         public SteamProfile()
         {
+            Roles = new PersistableStringCollection();
             InventoryItems = new Collection<SteamProfileInventoryItem>();
             InventorySnapshots = new Collection<SteamProfileInventorySnapshot>();
             MarketItems = new Collection<SteamProfileMarketItem>();

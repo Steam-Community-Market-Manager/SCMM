@@ -9,6 +9,7 @@ namespace SCMM.Steam.Data.Store
         public SteamStoreItem()
         {
             Stores = new Collection<SteamStoreItemItemStore>();
+            Prices = new PersistablePriceDictionary();
         }
 
         public Guid? CurrencyId { get; private set; }

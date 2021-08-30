@@ -13,6 +13,14 @@ namespace SCMM.Steam.Data.Store
 {
     public class SteamAssetDescription : Entity
     {
+        public SteamAssetDescription()
+        {
+            Tags = new PersistableStringDictionary();
+            CraftingComponents = new PersistableAssetQuantityDictionary();
+            BreaksIntoComponents = new PersistableAssetQuantityDictionary();
+            Notes = new PersistableStringCollection();
+        }
+
         [Required]
         public Guid AppId { get; set; }
 

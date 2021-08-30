@@ -6,6 +6,11 @@ namespace SCMM.Steam.Data.Store
 {
     public class SteamAssetFilter : Entity
     {
+        public SteamAssetFilter()
+        {
+            Options = new PersistableStringDictionary();
+        }
+
         [Required]
         public string SteamId { get; set; }
 
