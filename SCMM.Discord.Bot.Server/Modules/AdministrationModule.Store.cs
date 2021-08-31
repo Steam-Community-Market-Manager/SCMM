@@ -146,6 +146,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var itemStores = await _db.SteamItemStores
                 .Where(x => x.ItemsThumbnailId == null)
                 .Where(x => x.Items.Any())
+                .Include(x => x.ItemsThumbnail)
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
                 .ToArrayAsync();
 
@@ -181,6 +182,14 @@ namespace SCMM.Discord.Bot.Server.Modules
                 if (thumbnail == null)
                 {
                     continue;
+                }
+
+                var oldThumbnail = itemStore.ItemsThumbnail;
+                if (oldThumbnail != null)
+                {
+                    itemStore.ItemsThumbnail = null;
+                    itemStore.ItemsThumbnailId = null;
+                    _db.FileData.Remove(oldThumbnail);
                 }
 
                 itemStore.ItemsThumbnail = new FileData()
