@@ -75,7 +75,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
-
+        /*
         [Command("rebuild-asset-description-collections")]
         public async Task<RuntimeResult> RebuildAssetDescriptionCollectionsAsync()
         {
@@ -104,7 +104,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             return CommandResult.Success();
         }
-
+        */
         [Command("rebuild-asset-description-accepted-times")]
         public async Task<RuntimeResult> RebuildAssetDescriptionAcceptedTimesAsync()
         {

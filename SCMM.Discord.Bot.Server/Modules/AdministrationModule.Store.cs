@@ -285,7 +285,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
         */
-
+        /*
         [Command("import-tgg-stores")]
         public async Task<RuntimeResult> ImportTGGStoresAsync()
         {
@@ -384,7 +384,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
-
+        */
         // store.steampowered.com/itemstore/252490/
         // store.steampowered.com/itemstore/252490/?filter=Featured
         // store.steampowered.com/itemstore/252490/browse/
