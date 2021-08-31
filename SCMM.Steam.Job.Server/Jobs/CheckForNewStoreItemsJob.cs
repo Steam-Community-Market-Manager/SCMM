@@ -164,6 +164,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                             Currency = usdCurrency,
                             Price = prices.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
                             Prices = new PersistablePriceDictionary(prices),
+                            IsPriceVerified = true
                         });
                     }
 

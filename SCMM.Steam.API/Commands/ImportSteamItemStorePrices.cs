@@ -103,7 +103,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Create the store item link (if missing)
-                var storeItemLink = storeItem.Stores.FirstOrDefault(x => x.StoreId == store?.Id);
+                var storeItemLink = storeItem.Stores.FirstOrDefault(x => x.Store == store);
                 if (storeItemLink == null && store != null)
                 {
                     storeItem.Stores.Add(
@@ -164,6 +164,7 @@ namespace SCMM.Steam.API.Commands
                             storeItemLink.Currency = itemPriceCurrency;
                             storeItemLink.Price = itemPrice;
                             storeItemLink.Prices = new PersistablePriceDictionary(itemPrices);
+                            storeItemLink.IsPriceVerified = true;
                             storeItem.UpdateLatestPrice();
                         }
                         else

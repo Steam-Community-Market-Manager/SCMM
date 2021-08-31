@@ -29,6 +29,8 @@ namespace SCMM.Steam.Data.Store
         [Required]
         public PersistablePriceDictionary Prices { get; set; }
 
+        public bool IsPriceVerified { get; set; }
+
         public int? TopSellerIndex { get; set; }
 
         /// <summary>
