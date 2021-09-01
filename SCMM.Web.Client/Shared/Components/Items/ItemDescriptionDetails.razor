@@ -451,6 +451,29 @@
             @* TODO: Time refreshed... *@
 
             @* TODO: "Request Update" button *@
+            
+            <MudItem xs="12">
+                <MudPaper Outlined="true" Class="pa-4">
+                    <MudTimeline>
+                        @foreach (var timelineEvent in GetTimelineEvents().OrderByDescending(x => x.Timestamp))
+                        {
+                            <MudTimelineItem Color="@timelineEvent.Color" TimelineAlign="TimelineAlign.End" Size="Size.Medium" Elevation="25">
+                                <ItemOpposite>
+                                    <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Timestamp.ToString("d")</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@((DateTimeOffset.Now - timelineEvent.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</MudText>
+                                </ItemOpposite>
+                                <ItemDot>
+                                    <i class="@timelineEvent.Icon" />
+                                </ItemDot>
+                                <ItemContent>
+                                    <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Title</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@timelineEvent.Subtitle</MudText>
+                                </ItemContent>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+		        </MudPaper>
+            </MudItem>
 
         </MudGrid>
     </MudItem>
@@ -990,4 +1013,92 @@
         }
     }
 
+    private IEnumerable<TimelineEvent> GetTimelineEvents()
+    {
+        var events = new List<TimelineEvent>();
+        if (Item.TimeCreated != null)
+        {
+            events.Add(new TimelineEvent()
+            {
+                Timestamp = Item.TimeCreated.Value,
+                Color = Color.Primary,
+                Icon = "fas fa-fw fa-plus",
+                Title = "Item Created",
+                Subtitle = $"{Item.CreatorName} published the item."
+            });
+        }
+        if (Item.TimeAccepted != null)
+        {
+            events.Add(new TimelineEvent()
+            {
+                Timestamp = Item.TimeAccepted.Value,
+                Color = Color.Primary,
+                Icon = "fas fa-fw fa-check",
+                Title = "Item Accepted",
+                Subtitle = "Item was accepted for Rust."
+            });
+        }
+        foreach (var change in Item.Changes)
+        {
+            events.Add(new TimelineEvent()
+            {
+                Timestamp = new DateTimeOffset(change.Key, TimeZoneInfo.Utc.BaseUtcOffset),
+                Color = Color.Inherit,
+                Icon = "fas fa-fw fa-wrench",
+                Title = "Item Updated",
+                Subtitle = !String.IsNullOrEmpty(change.Value) ? change.Value : "An unknown file change was made."
+            });
+        }
+        if (Item.TimeMarketFirstListed != null)
+        {
+            events.Add(new TimelineEvent()
+            {
+                Timestamp = Item.TimeMarketFirstListed.Value,
+                Color = Color.Primary,
+                Icon = "fas fa-fw fa-balance-scale-left",
+                Title = "First Market Listing",
+                Subtitle = "Item was first listed on the market."
+            });
+        }
+        if (Item.TimeMarketHighestValue != null)
+        {
+            events.Add(new TimelineEvent()
+            {
+                Timestamp = Item.TimeMarketHighestValue.Value,
+                Color = Color.Success,
+                Icon = "fas fa-fw fa-arrow-up",
+                Title = "All-time High Value",
+                Subtitle = State.Currency.ToPriceString(Item.MarketHighestValue.Value)
+            });
+        }
+        if (Item.TimeMarketLowestValue != null)
+        {
+            events.Add(new TimelineEvent()
+            {
+                Timestamp = Item.TimeMarketLowestValue.Value,
+                Color = Color.Error,
+                Icon = "fas fa-fw fa-arrow-down",
+                Title = "All-time Low Value",
+                Subtitle = State.Currency.ToPriceString(Item.MarketLowestValue.Value)
+            });
+        }
+
+        // TODO: Highest market volume day
+        // TODO: Stores
+
+        return events;
+    }
+
+    private class TimelineEvent 
+    {
+        public DateTimeOffset Timestamp { get; set; }
+
+        public Color Color { get; set; }
+
+        public string Icon { get; set; }
+
+        public string Title { get; set; }
+
+        public string Subtitle { get; set; }
+    }
 }

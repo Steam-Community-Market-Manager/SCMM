@@ -41,7 +41,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public IList<string> Notes { get; set; }
 
-        public IDictionary<string, string> Changes { get; set; }
+        public IDictionary<long, string> Changes { get; set; }
 
         public IDictionary<string, string> Tags { get; set; }
 
