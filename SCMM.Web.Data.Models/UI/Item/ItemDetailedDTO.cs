@@ -161,6 +161,16 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? Market24hrValue { get; set; }
 
+        public long? MarketHighestValue { get; set; }
+
+        public long? MarketLowestValue { get; set; }
+
+        public DateTimeOffset? TimeMarketHighestValue { get; set; }
+
+        public DateTimeOffset? TimeMarketLowestValue { get; set; }
+
+        public DateTimeOffset? TimeMarketFirstListed { get; set; }
+
         #endregion
 
         #region Prices
