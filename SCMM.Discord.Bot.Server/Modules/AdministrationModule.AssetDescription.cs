@@ -137,6 +137,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     if (item.AssetDescription.TimeAccepted == null || item.AssetDescription.TimeAccepted > earliestTime)
                     {
                         item.AssetDescription.TimeAccepted = earliestTime;
+                        item.AssetDescription.IsAccepted = true;
                     }
                 }
 

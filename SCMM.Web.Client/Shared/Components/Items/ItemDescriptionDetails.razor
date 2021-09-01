@@ -21,7 +21,7 @@
                     <MudButtonGroup Color="Color.Default" Size="Size.Small" Variant="Variant.Filled" DisableElevation="true" Class="d-flex align-stretch text-centered full-width" >
                         <MudButton OnClick="@ViewItemWorkshopPage" FullWidth="true" Disabled="Item.WorkshopFileId == null"><span class="no-wrap">Workshop</span></MudButton>
                         @* TODO: Workshop image preview *@
-                        <MudButton FullWidth="true" Disabled="true || Item.PreviewContentId == null"><span class="no-wrap">Images</span></MudButton>
+                        <MudButton FullWidth="true" Disabled="true"><span class="no-wrap">Images</span></MudButton>
                         <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)"><span class="no-wrap">3D</span></MudButton>
                     </MudButtonGroup>
 				</MudPaper>
@@ -127,7 +127,7 @@
                                 <span>
                                     <span class="mud-secondary-text">Part of the </span>
                                     <MudLink @onclick="@(() => ShowItemCollectionDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@Item.ItemCollection</MudLink>
-                                    <span class="mud-secondary-text"> set</span>
+                                    <span class="mud-secondary-text"> collection</span>
                                 </span>
                             </MudText>
                         }

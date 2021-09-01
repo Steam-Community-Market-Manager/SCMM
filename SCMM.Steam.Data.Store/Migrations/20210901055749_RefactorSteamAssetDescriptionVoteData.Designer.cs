@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210901055749_RefactorSteamAssetDescriptionVoteData")]
+    partial class RefactorSteamAssetDescriptionVoteData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -323,6 +325,37 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.HasIndex("PreviewId");
 
                     b.ToTable("SteamAssetDescriptions");
+                });
+
+            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamAssetDescriptionPreview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DescriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Index")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("SteamId")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DescriptionId");
+
+                    b.ToTable("SteamAssetDescriptionPreview");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamAssetFilter", b =>
@@ -1250,23 +1283,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                                 .HasForeignKey("SteamAssetDescriptionId");
                         });
 
-                    b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistableMediaDictionary", "Previews", b1 =>
-                        {
-                            b1.Property<Guid>("SteamAssetDescriptionId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Serialised")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("SteamAssetDescriptionId");
-
-                            b1.ToTable("SteamAssetDescriptions");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SteamAssetDescriptionId");
-                        });
-
                     b.Navigation("App");
 
                     b.Navigation("BreaksIntoComponents")
@@ -1289,11 +1305,19 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Navigation("Preview");
 
-                    b.Navigation("Previews")
-                        .IsRequired();
-
                     b.Navigation("Tags")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SCMM.Steam.Data.Store.SteamAssetDescriptionPreview", b =>
+                {
+                    b.HasOne("SCMM.Steam.Data.Store.SteamAssetDescription", "Description")
+                        .WithMany("Previews")
+                        .HasForeignKey("DescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Description");
                 });
 
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamAssetFilter", b =>
@@ -1747,6 +1771,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Navigation("InventoryItems");
 
                     b.Navigation("MarketItem");
+
+                    b.Navigation("Previews");
 
                     b.Navigation("StoreItem");
                 });

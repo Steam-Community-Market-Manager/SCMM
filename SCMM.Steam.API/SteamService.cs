@@ -64,6 +64,7 @@ namespace SCMM.Steam.API
             if (assetDescription.TimeAccepted == null)
             {
                 assetDescription.TimeAccepted = timeChecked;
+                assetDescription.IsAccepted = true;
             }
 
             // TODO: This is creating duplicate items, need to find and re-use any existing items before creating new ones

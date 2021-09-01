@@ -89,6 +89,10 @@ namespace SCMM.Steam.Data.Store
                 .HasIndex(x => x.ClassId)
                 .IsUnique(true);
             builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.Notes);
+            builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.Changes);
+            builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Tags);
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.Icon);
@@ -97,11 +101,11 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.Preview);
             builder.Entity<SteamAssetDescription>()
+                .OwnsOne(x => x.Previews);
+            builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.CraftingComponents);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.BreaksIntoComponents);
-            builder.Entity<SteamAssetDescription>()
-                .OwnsOne(x => x.Notes);
             builder.Entity<SteamAssetDescription>()
                 .HasMany(x => x.InventoryItems)
                 .WithOne(x => x.Description)

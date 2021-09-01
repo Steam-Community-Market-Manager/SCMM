@@ -19,16 +19,6 @@ namespace SCMM.Steam.Client
             return await GetXml<SteamProfilePageRequest, SteamProfileXmlResponse>(request);
         }
 
-        public async Task<SteamMarketAppFiltersJsonResponse> GetMarketAppFilters(SteamMarketAppFiltersJsonRequest request)
-        {
-            return await GetJson<SteamMarketAppFiltersJsonRequest, SteamMarketAppFiltersJsonResponse>(request);
-        }
-
-        public async Task<XElement> GetItemWorkshopPage(SteamWorkshopBrowsePageRequest request)
-        {
-            return await GetHtml<SteamWorkshopBrowsePageRequest>(request);
-        }
-
         public async Task<XElement> GetStorePage(SteamStorePageRequest request)
         {
             return await GetHtml<SteamStorePageRequest>(request);

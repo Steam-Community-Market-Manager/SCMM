@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Steam.Data.Models.Community.Requests.Html
 {
-    public class SteamWorkshopViewFileDetailsRequest : SteamRequest
+    public class SteamWorkshopFileDetailsPageRequest : SteamRequest
     {
         public string Id { get; set; }
 

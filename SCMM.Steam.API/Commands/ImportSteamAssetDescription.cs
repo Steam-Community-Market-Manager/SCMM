@@ -10,6 +10,8 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
+using SCMM.Steam.Data.Models.WebApi.Models;
+using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
 using SCMM.Steam.Data.Store;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
@@ -46,16 +48,18 @@ namespace SCMM.Steam.API.Commands
         private readonly ILogger<ImportSteamAssetDescription> _logger;
         private readonly SteamDbContext _db;
         private readonly SteamConfiguration _cfg;
+        private readonly SteamWebApiClient _apiClient;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly ServiceBusClient _serviceBusClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamCommunityWebClient communityClient, ServiceBusClient serviceBusClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamAssetDescription(ILogger<ImportSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, SteamWebApiClient apiClient, SteamCommunityWebClient communityClient, ServiceBusClient serviceBusClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
+            _apiClient = apiClient;
             _communityClient = communityClient;
             _serviceBusClient = serviceBusClient;
             _commandProcessor = commandProcessor;
@@ -168,7 +172,11 @@ namespace SCMM.Steam.API.Commands
 
             // Get published file details from Steam (if workshopfileid is available)
             var publishedFile = (PublishedFileDetailsModel)null;
+            var publishedFileVotes = (PublishedFileVoteData)null;
+            var publishedFilePreviews = (IEnumerable<PublishedFilePreview>)null;
+            var publishedFileChangeNotesPageHtml = (XElement)null;
             var publishedFileId = (ulong)0;
+            var publishedFileHasChanged = false;
             var viewWorkshopAction = assetClass.Actions?.FirstOrDefault(x =>
                 string.Equals(x.Name, Constants.SteamActionViewWorkshopItemId, StringComparison.InvariantCultureIgnoreCase) ||
                 string.Equals(x.Name, Constants.SteamActionViewWorkshopItem, StringComparison.InvariantCultureIgnoreCase)
@@ -180,6 +188,7 @@ namespace SCMM.Steam.API.Commands
             }
             if (publishedFileId > 0)
             {
+                // Get file details
                 var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
                 var publishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(publishedFileId);
                 if (publishedFileDetails?.Data == null)
@@ -188,13 +197,57 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 publishedFile = publishedFileDetails.Data;
+                publishedFileHasChanged = (assetDescription.TimeUpdated == null || assetDescription.TimeUpdated < publishedFile.TimeUpdated);
+                
+                // Get file vote data (if missing or item is not yet accepted, votes don't change once accepted)
+                if ((assetDescription.VotesDown == null || assetDescription.VotesUp == null || !assetDescription.IsAccepted) && !string.IsNullOrEmpty(publishedFile.Title))
+                {
+                    var queryVoteData = await _apiClient.PublishedFileServiceQueryFiles(new QueryFilesJsonRequest()
+                    {
+                        QueryType = QueryFilesJsonRequest.QueryTypeRankedByTextSearch,
+                        SearchText = publishedFile.Title,
+                        AppId = publishedFile.ConsumerAppId,
+                        Page = 0,
+                        NumPerPage = 3,
+                        ReturnVoteData = true
+                    });
 
-                // Queue a download of the workshop file data for analyse (if missing)
-                if (string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
+                    publishedFileVotes = queryVoteData?.PublishedFileDetails?.FirstOrDefault(x => x.PublishedFileId == publishedFile.PublishedFileId)?.VoteData;
+                }
+
+                // Get file previews (if missing or changed since our last check)
+                if ((publishedFileHasChanged || !assetDescription.Previews.Any()) && !string.IsNullOrEmpty(publishedFile.Title))
+                {
+                    // NOTE: We have to do two seperate calls here as for some strange reason Steam only returns vote counts if requested in isolation
+                    var queryPreviews = await _apiClient.PublishedFileServiceQueryFiles(new QueryFilesJsonRequest()
+                    {
+                        QueryType = QueryFilesJsonRequest.QueryTypeRankedByTextSearch,
+                        SearchText = publishedFile.Title,
+                        AppId = publishedFile.ConsumerAppId,
+                        Page = 0,
+                        NumPerPage = 3,
+                        ReturnPreviews = true
+                    });
+
+                    publishedFilePreviews = queryPreviews?.PublishedFileDetails?.FirstOrDefault(x => x.PublishedFileId == publishedFile.PublishedFileId)?.Previews;
+                }
+
+                // Get change history (if missing or changed since our last check)
+                if ((publishedFileHasChanged || !assetDescription.Changes.Any()) && assetDescription.TimeAccepted != null)
+                {
+                    publishedFileChangeNotesPageHtml = await _communityClient.GetHtml(new SteamWorkshopFileChangeNotesPageRequest()
+                    {
+                        Id = publishedFile.PublishedFileId.ToString()
+                    });
+                }
+                
+                // Queue a download of the workshop file data for analyse (if missing or changed since our last check)
+                if (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
                 {
                     await _serviceBusClient.SendMessageAsync(new DownloadSteamWorkshopFileMessage()
                     {
-                        PublishedFileId = publishedFileId
+                        PublishedFileId = publishedFileId,
+                        Force = publishedFileHasChanged
                     });
                 }
             }
@@ -247,6 +300,9 @@ namespace SCMM.Steam.API.Commands
                 AssetDescription = assetDescription,
                 AssetClass = assetClass,
                 PublishedFile = publishedFile,
+                PublishedFileVoteData = publishedFileVotes,
+                PublishedFilePreviews = publishedFilePreviews,
+                PublishedFileChangeNotesPageHtml = publishedFileChangeNotesPageHtml,
                 MarketListingPageHtml = marketListingPageHtml,
                 StoreItemPageHtml = storeItemPageHtml
             });

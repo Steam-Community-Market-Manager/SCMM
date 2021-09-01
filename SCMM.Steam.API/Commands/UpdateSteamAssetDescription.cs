@@ -12,11 +12,13 @@ using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Blob;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using Steam.Models;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Utilities;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -29,6 +31,12 @@ namespace SCMM.Steam.API.Commands
         public AssetClassInfoModel AssetClass { get; set; }
 
         public PublishedFileDetailsModel PublishedFile { get; set; }
+
+        public PublishedFileVoteData PublishedFileVoteData { get; set; }
+
+        public IEnumerable<PublishedFilePreview> PublishedFilePreviews { get; set; }
+
+        public XElement PublishedFileChangeNotesPageHtml { get; set; }
 
         public string MarketListingPageHtml { get; set; }
 
@@ -66,9 +74,9 @@ namespace SCMM.Steam.API.Commands
                 throw new ArgumentNullException(nameof(request.AssetDescription));
             }
 
+            // Parse asset description details
             if (request.AssetClass != null)
             {
-                // Parse asset description details
                 var assetClass = request.AssetClass;
                 assetDescription.Name = assetClass.MarketName;
                 assetDescription.NameHash = assetClass.MarketHashName;
@@ -119,9 +127,9 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
+            // Parse asset workshop details
             if (request.PublishedFile != null)
             {
-                // Parse asset workshop details
                 var publishedFile = request.PublishedFile;
                 assetDescription.AssetType = SteamAssetDescriptionType.WorkshopItem;
                 assetDescription.WorkshopFileId = publishedFile.PublishedFileId;
@@ -129,7 +137,6 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.NameWorkshop = publishedFile.Title;
                 assetDescription.DescriptionWorkshop = publishedFile.Description;
                 assetDescription.PreviewUrl = publishedFile.PreviewUrl?.ToString();
-                assetDescription.PreviewContentId = publishedFile.PreviewContentHandle;
                 assetDescription.CurrentSubscriptions = (long?)publishedFile.Subscriptions;
                 assetDescription.LifetimeSubscriptions = (long?)publishedFile.LifetimeSubscriptions;
                 assetDescription.CurrentFavourited = (long?)publishedFile.Favorited;
@@ -201,6 +208,63 @@ namespace SCMM.Steam.API.Commands
                     );
                 }
                 */
+            }
+
+            // Parse asset workshop change notes
+            if (request.PublishedFileChangeNotesPageHtml != null && assetDescription.TimeAccepted != null)
+            {
+                var changeNotes = request.PublishedFileChangeNotesPageHtml.Descendants("div").Where(x => x?.Attribute("class")?.Value?.Contains("workshopAnnouncement") == true);
+                if (changeNotes != null)
+                {
+                    assetDescription.Changes = new PersistableChangeNotesDictionary(assetDescription.Changes);
+                    foreach (var changeNote in changeNotes)
+                    {
+                        var timestamp = DateTime.UtcNow;
+                        var headline = changeNote.Descendants("div").FirstOrDefault(x => x?.Attribute("class")?.Value?.Contains("headline") == true)?.Value;
+                        var description = changeNote.Descendants("p").FirstOrDefault(x => x?.Attribute("id") != null)?.Value;
+                        var updateDateTimeMatchGroup = Regex.Match(headline ?? String.Empty, @"Update:(.*)").Groups;
+                        var updateDateTime = (updateDateTimeMatchGroup.Count > 1)
+                            ? updateDateTimeMatchGroup[1].Value.Trim()
+                            : null;
+                        if (DateTime.TryParseExact(updateDateTime, "d MMM @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp) ||
+                            DateTime.TryParseExact(updateDateTime, "d MMM, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp))
+                        {
+                            // Only track changes that happened after the item was accepted
+                            if (timestamp > assetDescription.TimeAccepted)
+                            {
+                                if (String.IsNullOrEmpty(description) && assetDescription.Changes.ContainsKey(timestamp))
+                                {
+                                    description = assetDescription.Changes[timestamp];
+                                }
+                                assetDescription.Changes[timestamp] = (description ?? string.Empty).FirstCharToUpper();
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Parse asset workshop vote data
+            if (request.PublishedFileVoteData != null)
+            {
+                var voteData = request.PublishedFileVoteData;
+                assetDescription.VotesUp = voteData.VotesUp;
+                assetDescription.VotesDown = voteData.VotesDown;
+            }
+
+            // Parse asset workshop previews
+            if (request.PublishedFilePreviews != null)
+            {
+                assetDescription.Previews = new PersistableMediaDictionary();
+                foreach (var preview in request.PublishedFilePreviews.OrderBy(x => x.SortOrder))
+                {
+                    switch(preview.PreviewType)
+                    {
+                        case 0: assetDescription.Previews[preview.Url] = SteamMediaType.Image; break;
+                        case 1: assetDescription.Previews[preview.YouTubeVideoId] = SteamMediaType.YouTube; break;
+                        case 2: assetDescription.Previews[preview.ExternalReference] = SteamMediaType.Sketchfab; break;
+                        default: _logger.LogWarning($"Unsupported published file preview type {preview.PreviewType}: {preview.Url ?? preview.ExternalReference ?? preview.YouTubeVideoId}"); break;
+                    }
+                }
             }
 
             // Parse asset icon and image data

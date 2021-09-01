@@ -101,6 +101,8 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton(x => builder.Configuration.GetGoogleConfiguration());
         builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton<GoogleClient>();
+        builder.Services.AddScoped<SteamWebClient>();
+        builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
 
         // Command/query/message handlers

@@ -39,6 +39,10 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string DescriptionWorkshop { get; set; }
 
+        public IList<string> Notes { get; set; }
+
+        public IDictionary<string, string> Changes { get; set; }
+
         public IDictionary<string, string> Tags { get; set; }
 
         public bool? HasGlow { get; set; }
@@ -63,7 +67,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string PreviewUrl { get; set; }
 
-        public ulong? PreviewContentId { get; set; }
+        public IDictionary<string, SteamMediaType> Previews { get; set; }
 
         public long? CurrentSubscriptions { get; set; }
 
@@ -74,6 +78,10 @@ namespace SCMM.Web.Data.Models.UI.Item
         public long? LifetimeFavourited { get; set; }
 
         public long? Views { get; set; }
+
+        public uint? VotesUp { get; set; }
+
+        public uint? VotesDown { get; set; }
 
         public bool IsCommodity { get; set; }
 
@@ -103,13 +111,13 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string BanReason { get; set; }
 
-        public IList<string> Notes { get; set; }
+        public bool IsAccepted { get; set; }
 
-        public DateTimeOffset? TimeCreated { get; set; }
+        public DateTimeOffset? TimeAccepted { get; set; }
 
         public DateTimeOffset? TimeUpdated { get; set; }
 
-        public DateTimeOffset? TimeAccepted { get; set; }
+        public DateTimeOffset? TimeCreated { get; set; }
 
         public DateTimeOffset? TimeRefreshed { get; set; }
 

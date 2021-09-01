@@ -7,6 +7,7 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store.Types;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Store
@@ -15,10 +16,12 @@ namespace SCMM.Steam.Data.Store
     {
         public SteamAssetDescription()
         {
+            Notes = new PersistableStringCollection();
+            Changes = new PersistableChangeNotesDictionary();
             Tags = new PersistableStringDictionary();
+            Previews = new PersistableMediaDictionary();
             CraftingComponents = new PersistableAssetQuantityDictionary();
             BreaksIntoComponents = new PersistableAssetQuantityDictionary();
-            Notes = new PersistableStringCollection();
         }
 
         [Required]
@@ -67,8 +70,14 @@ namespace SCMM.Steam.Data.Store
         public string DescriptionWorkshop { get; set; }
 
         [Required]
+        public PersistableStringCollection Notes { get; set; }
+
+        [Required]
+        public PersistableChangeNotesDictionary Changes { get; set; }
+
+        [Required]
         public PersistableStringDictionary Tags { get; set; }
-        
+
         public bool? HasGlow { get; set; }
 
         /// <summary>
@@ -117,7 +126,8 @@ namespace SCMM.Steam.Data.Store
 
         public FileData Preview { get; set; }
 
-        public ulong? PreviewContentId { get; set; }
+        [Required]
+        public PersistableMediaDictionary Previews { get; set; }
 
         public long? CurrentSubscriptions { get; set; }
 
@@ -128,6 +138,10 @@ namespace SCMM.Steam.Data.Store
         public long? LifetimeFavourited { get; set; }
 
         public long? Views { get; set; }
+
+        public uint? VotesUp { get; set; }
+
+        public uint? VotesDown { get; set; }
 
         public bool IsCommodity { get; set; }
 
@@ -162,14 +176,13 @@ namespace SCMM.Steam.Data.Store
 
         public string BanReason { get; set; }
 
-        [Required]
-        public PersistableStringCollection Notes { get; set; }
+        public bool IsAccepted { get; set; }
 
-        public DateTimeOffset? TimeCreated { get; set; }
+        public DateTimeOffset? TimeAccepted { get; set; }
 
         public DateTimeOffset? TimeUpdated { get; set; }
 
-        public DateTimeOffset? TimeAccepted { get; set; }
+        public DateTimeOffset? TimeCreated { get; set; }
 
         /// <summary>
         /// Last time this asset description was updated from Steam
