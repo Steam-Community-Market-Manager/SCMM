@@ -174,6 +174,19 @@
                                 </span>
                             </MudText>
                         }
+                        @if (Item.VotesUp != null && Item.VotesDown != null)
+                        {
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                <i class="fas fa-fw fa-thumbs-up mud-secondary-text"></i>
+                                <span>
+                                    <span>@(((int?)Item.VotesUp ?? 0).ToQuantityString()) votes</span>
+                                </span>
+                                @if (Item.VotesUp > 0 && Item.VotesDown > 0)
+                                {
+                                    <span class="mud-secondary-text"> (@(((int)Item.VotesUp.Value).ToPercentageString((int)Item.VotesUp.Value + (int)Item.VotesDown.Value)) approval rating) </span>
+                                }
+                            </MudText>
+                        }
                         @if (Item.CurrentFavourited > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
