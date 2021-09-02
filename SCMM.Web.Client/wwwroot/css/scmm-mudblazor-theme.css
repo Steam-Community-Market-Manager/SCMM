@@ -75,7 +75,7 @@
 }
 
 .mud-dialog:not(.mud-dialog-fullscreen) > div:not(.mud-dialog-title) {
-    max-height: 95vh;
+    max-height: 85vh;
 }
 
 .mud-dialog > div:not(.mud-dialog-title) {

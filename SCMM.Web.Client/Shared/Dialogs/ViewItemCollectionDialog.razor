@@ -14,21 +14,21 @@
         } 
         else
         {
-            <MudTooltip Text="@Collection.CreatorName">
-                <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" />
-            </MudTooltip>
-            <div class="d-inline-block ml-2">
-                <div>
-                    <MudText Typo="MudBlazor.Typo.h6">@Collection.Name Collection</MudText>
-                </div>
-                <div class="mt-n1">
-                    <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
+            <div class="d-flex">
+                <MudTooltip Text="@Collection.CreatorName">
+                    <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="mt-2" />
+                </MudTooltip>
+                <div class="ml-4">
+                    <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@Collection.Name Collection</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
                         <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
-                        @if(Collection.BuyNowPrice > 0)
-                        {
-                            <span> Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
-                        }
                     </MudText>
+                    @if(Collection.BuyNowPrice > 0)
+                    {
+                        <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
+                            <span>Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                        </MudText>
+                    }
                 </div>
             </div>
         }

@@ -10,18 +10,18 @@
 
 <MudGrid UserAttributes="@AdditionalAttributes">
 
-    <MudItem xs="12" lg="3" xl="2">
+    <MudItem xs="12" lg="4" xl="3">
         <MudGrid>
 
             <MudItem xs="12" sm="6" lg="12">
                 <MudPaper Outlined="true" Class="d-flex flex-column full-height" Style="@($"background-color: {Item.BackgroundColour}")">
-                    <div class="d-flex flex-grow-1 align-center justify-center">
+                    <div class="d-flex flex-grow-1 align-center justify-center item-icon">
                         <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} full-width pa-8")" style="@GetGlowStyles()" />
                     </div>
                     <MudButtonGroup Color="Color.Default" Size="Size.Small" Variant="Variant.Filled" DisableElevation="true" Class="d-flex align-stretch text-centered full-width" >
                         <MudButton OnClick="@ViewItemWorkshopPage" FullWidth="true" Disabled="Item.WorkshopFileId == null"><span class="no-wrap">Workshop</span></MudButton>
                         @* TODO: Workshop image preview *@
-                        <MudButton FullWidth="true" Disabled="true"><span class="no-wrap">Images</span></MudButton>
+                        <MudButton FullWidth="true" Disabled="true"><span class="no-wrap">Preview</span></MudButton>
                         <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)"><span class="no-wrap">3D</span></MudButton>
                     </MudButtonGroup>
 				</MudPaper>
@@ -201,7 +201,7 @@
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-eye mud-secondary-text"></i>
                                 <span>
-                                    <span>@Item.Views.Value.ToQuantityString() views</span>
+                                    <span>@Item.Views.Value.ToQuantityString() workshop views</span>
                                 </span>
                             </MudText>
                         }
@@ -478,7 +478,7 @@
         </MudGrid>
     </MudItem>
     
-    <MudItem xs="12" lg="9" xl="10">
+    <MudItem xs="12" lg="8" xl="9">
         <MudGrid>
              
             @if (Item.IsBanned)
@@ -786,22 +786,27 @@
                         } 
                         else
                         {
-                            <div>
-                                <MudText Typo="MudBlazor.Typo.h6">@Collection.Name Collection</MudText>
-                            </div>
-                            <div class="mt-n1">
-                                <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary">
-                                    <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
+                            <div class="d-flex">
+                                <MudTooltip Text="@Collection.CreatorName">
+                                    <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="mt-2" />
+                                </MudTooltip>
+                                <div class="ml-4">
+                                    <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@Collection.Name Collection</MudText>
+                                    <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
+                                        <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
+                                    </MudText>
                                     @if(Collection.BuyNowPrice > 0)
                                     {
-                                        <span> Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                                        <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
+                                            <span>Total cost: <strong>@State.Currency.ToPriceString(Collection.BuyNowPrice.Value)</strong></span>
+                                        </MudText>
                                     }
-                                </MudText>
+                                </div>
                             </div>
                             <MudGrid Class="mt-1">
                                 @foreach (var item in Collection.Items)
                                 {
-                                    <MudItem xs="12" sm="6" md="4" lg="2" xl="1">
+                                    <MudItem xs="6" sm="4" md="4" lg="3" xl="1">
                                         <ItemDescriptionSummary Item="@item" />
                                     </MudItem>
                                 }

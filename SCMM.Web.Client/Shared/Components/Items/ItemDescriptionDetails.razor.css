@@ -1,4 +1,8 @@
 ﻿
+.item-icon img {
+    max-width: 25rem;
+}
+
 .quote-box {
     color: #000;
     background: #fff;

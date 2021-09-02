@@ -8,14 +8,24 @@
 
 <MudDialog>
     <TitleContent>
-        <div class="d-flex flex-row align-center">
-            <MudText Typo="MudBlazor.Typo.h6">@ListName</MudText>
-            @if (List?.Items?.Any() == true)
-            {
-                <MudSpacer />
-                <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Class="flex-grow-0 mt-n2 mx-10" />
-            }
-		</div>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@ListName</MudText>
+			</MudItem>
+            <MudItem xs="12" sm="6">
+                @if (List?.Items?.Any() == true)
+                {
+                    <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                        <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items" FullWidth="true" Class="flex-grow-0 mt-n8"
+                                      Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
+					</MudHidden>
+                    <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
+                        <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items" FullWidth="false" Class="flex-grow-0 mt-n4 mx-10"
+                                      Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
+					</MudHidden>
+                }
+			</MudItem>
+		</MudGrid>
     </TitleContent>
     <DialogContent>
         @if (List?.Items == null)

@@ -17,7 +17,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.CreatorId, o => o.MapFrom(p => p.CreatorProfile != null ? p.CreatorProfile.SteamId : p.App.SteamId))
                 .ForMember(x => x.CreatorName, o => o.MapFrom(p => p.CreatorProfile != null ? p.CreatorProfile.Name : p.App.Name))
                 .ForMember(x => x.CreatorAvatarUrl, o => o.MapFrom(p => p.CreatorProfile != null ? p.CreatorProfile.AvatarUrl : p.App.IconUrl))
-                .ForMember(x => x.Changes, o => o.MapFrom(p => p.Changes.ToDictionary(x => x.Key.Ticks, x => x))
+                .ForMember(x => x.Changes, o => o.MapFrom(p => p.Changes.ToDictionary(x => x.Key.Ticks, x => x)))
                 .ForMember(x => x.IsAvailableOnMarket, o => o.MapFrom(p => (p.MarketItem != null ? (p.MarketItem.BuyNowPrice > 0) : false)))
                 .ForMember(x => x.MarketId, o => o.MapFrom(p => p.NameHash))
                 .ForMember(x => x.MarketBuyOrderCount, o => o.MapFrom(p => (p.MarketItem != null ? (int?)p.MarketItem.Demand : null)))
