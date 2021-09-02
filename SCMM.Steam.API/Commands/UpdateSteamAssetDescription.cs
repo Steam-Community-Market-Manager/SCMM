@@ -394,6 +394,9 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
+            // TODO: Parse store item id from workshop description "buy now" urls
+            //       @"\/252490\/[detail\/]*([0-9]+)\/"
+
             // Parse asset crafting components from the description text (if available)
             if (!string.IsNullOrEmpty(assetDescription.Description))
             {
