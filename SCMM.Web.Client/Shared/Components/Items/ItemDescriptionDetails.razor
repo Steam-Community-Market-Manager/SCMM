@@ -40,14 +40,24 @@
                         }
                         <div class="d-flex align-center justify-center full-width item-preview-controls">
                             <MudButtonGroup Color="Color.Default" Size="Size.Medium" Variant="Variant.Filled" DisableElevation="true">
-                                <MudButton OnClick="@ViewItemWorkshopPage" VDisabled="Item.WorkshopFileId == null">
-                                    <i class="fas fa-fw fa-tools mr-1"></i>
-                                    <span class="no-wrap">Workshop</span>
-                                </MudButton>
-                                <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
-                                    <i class="fab fa-fw fa-unity mr-1"></i>
-                                    <span class="no-wrap">3D</span>
-                                </MudButton>
+                                <MudTooltip Text="View the workshop page">
+                                    <MudButton OnClick="@ViewItemWorkshopPage" Disabled="Item.WorkshopFileId == null">
+                                        <i class="fas fa-fw fa-tools mr-1"></i>
+                                        <span class="no-wrap">Workshop</span>
+                                    </MudButton>
+								</MudTooltip>
+                                <MudTooltip Text="View an interactive 3D render of this item">
+                                    <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
+                                        <i class="fab fa-fw fa-unity mr-1"></i>
+                                        <span class="no-wrap">3D</span>
+                                    </MudButton>
+								</MudTooltip>
+                                <MudTooltip Text="Download the workshop file for this item">
+                                    <MudButton OnClick="@DownloadItemWorkshopFile" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
+                                        <i class="fas fa-fw fa-download"></i>
+                                        <span class="no-wrap">&nbsp;</span>
+                                    </MudButton>
+								</MudTooltip>
                             </MudButtonGroup>
                         </div>
                     </div>
@@ -939,6 +949,11 @@
         ExternalNavigationManager.NavigateToNewTab(
             $"https://steamcommunity.com/sharedfiles/filedetails/?id={Item.WorkshopFileId}"
         );
+    }
+    
+    private void DownloadItemWorkshopFile()
+    {
+        ExternalNavigationManager.NavigateTo(Item.WorkshopFileUrl);
     }
     
     private void ShowItemModelDialog()
