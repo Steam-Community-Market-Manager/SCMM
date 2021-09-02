@@ -21,6 +21,26 @@
             }
         }
 
+        public static string ToFileSizeString(this long size)
+        {
+            if (size > (1024 * 1024 * 1024))
+            {
+                return $"{ToQuantityString((long)Math.Round((double)size / (1024 * 1024 * 1024), 0))}GB";
+            }
+            else if (size > (1024 * 1024))
+            {
+                return $"{ToQuantityString((long)Math.Round((double)size / (1024 * 1024), 0))}MB";
+            }
+            else if (size > (1024))
+            {
+                return $"{ToQuantityString((long)Math.Round((double)size / (1024), 0))}KB";
+            }
+            else
+            {
+                return ToQuantityString(size);
+            }
+        }
+
         public static string ToQuantityString(this int quantity)
         {
             return ToQuantityString((long)quantity);

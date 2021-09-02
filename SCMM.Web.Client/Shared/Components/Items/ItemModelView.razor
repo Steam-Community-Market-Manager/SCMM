@@ -63,8 +63,12 @@
         
         @if (IsLoading) 
         {
-            <div class="scene-controls position-top d-flex flex-row align-center justify-center full-width full-height">
-                <Loading Message="Loading model..." Progress="@ProgressLoaded" Total="@ProgressTotal" Size="MudBlazor.Size.Large" Typo="MudBlazor.Typo.h6" />
+            <div class="scene-controls position-top d-flex flex-column align-center justify-center full-width full-height">
+                <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+                @if(ProgressLoaded != null && ProgressTotal != null)
+                {
+                    <MudText Typo="Typo.body1" Color="Color.Default" Class="pa-2">@(((long)ProgressLoaded.Value).ToFileSizeString()) / @(((long)ProgressTotal.Value).ToFileSizeString())</MudText>
+                }
             </div>
         }
         else if (!String.IsNullOrEmpty(Error))
