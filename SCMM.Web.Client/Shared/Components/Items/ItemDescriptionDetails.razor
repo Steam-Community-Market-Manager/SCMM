@@ -14,16 +14,43 @@
         <MudGrid>
 
             <MudItem xs="12" sm="6" lg="12">
-                <MudPaper Outlined="true" Class="d-flex flex-column full-height" Style="@($"background-color: {Item.BackgroundColour}")">
-                    <div class="d-flex flex-grow-1 align-center justify-center item-icon">
-                        <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} full-width pa-8")" style="@GetGlowStyles()" />
+                <MudPaper Outlined="true" Class="full-width full-height" Style="@($"background-color: {Item.BackgroundColour}")">
+                    <div class="d-flex flex-column full-height item-preview-container">
+                        @if (Item.Previews.Any())
+                        {
+                            <MudCarousel ShowArrows="true" ShowDelimiters="false" AutoCycle="true" TData="object" Class="full-width full-height" Style="min-height: 30vh;">
+                                <MudCarouselItem Transition="Transition.Fade" Class="d-flex flex-grow-1 align-center justify-center">
+                                    <div class="d-flex flex-grow-1 align-center justify-center item-icon">
+                                        <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} full-width pa-8")" style="@GetGlowStyles()" />
+                                    </div>
+                                </MudCarouselItem>
+                                @foreach (var preview in Item.Previews.Where(x => x.Value == SteamMediaType.Image))
+                                {
+                                    <MudCarouselItem Transition="Transition.Fade" Class="d-flex flex-grow-1 align-center justify-center">
+                                        <img src="@preview.Key" class="full-height" />
+                                    </MudCarouselItem>
+                                }
+                            </MudCarousel>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-grow-1 align-center justify-center item-icon">
+                                <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} full-width pa-8")" style="@GetGlowStyles()" />
+                            </div>
+                        }
+                        <div class="d-flex align-center justify-center full-width item-preview-controls">
+                            <MudButtonGroup Color="Color.Default" Size="Size.Medium" Variant="Variant.Filled" DisableElevation="true">
+                                <MudButton OnClick="@ViewItemWorkshopPage" VDisabled="Item.WorkshopFileId == null">
+                                    <i class="fas fa-fw fa-tools mr-1"></i>
+                                    <span class="no-wrap">Workshop</span>
+                                </MudButton>
+                                <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
+                                    <i class="fab fa-fw fa-unity mr-1"></i>
+                                    <span class="no-wrap">3D</span>
+                                </MudButton>
+                            </MudButtonGroup>
+                        </div>
                     </div>
-                    <MudButtonGroup Color="Color.Default" Size="Size.Small" Variant="Variant.Filled" DisableElevation="true" Class="d-flex align-stretch text-centered full-width" >
-                        <MudButton OnClick="@ViewItemWorkshopPage" FullWidth="true" Disabled="Item.WorkshopFileId == null"><span class="no-wrap">Workshop</span></MudButton>
-                        @* TODO: Workshop image preview *@
-                        <MudButton FullWidth="true" Disabled="true"><span class="no-wrap">Preview</span></MudButton>
-                        <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)"><span class="no-wrap">3D</span></MudButton>
-                    </MudButtonGroup>
 				</MudPaper>
 			</MudItem>
 
@@ -366,7 +393,7 @@
 				        </div>
                     }
                     <MudPaper Outlined="true" Class="py-2 px-3">
-                        <div class="d-flex flex-row">
+                        <div class="d-flex flex-row align-center">
                             <MudIcon Icon="fas fa-robot" Size="MudBlazor.Size.Large" Class="my-1" />
                             <div class="ml-5">
                                 @if (!String.IsNullOrEmpty(Item.DominantColour))

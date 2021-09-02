@@ -1,4 +1,13 @@
 ﻿
+.item-preview-container {
+    position: relative;
+}
+
+.item-preview-controls {
+    position: absolute;
+    bottom: 0px;
+}
+
 .item-icon img {
     max-width: 25rem;
 }
