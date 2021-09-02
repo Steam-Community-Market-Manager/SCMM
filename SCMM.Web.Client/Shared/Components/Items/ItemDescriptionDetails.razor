@@ -1062,7 +1062,7 @@
                 Color = Color.Primary,
                 Icon = "fas fa-fw fa-balance-scale-left",
                 Title = "First Market Listing",
-                Subtitle = "Item was first listed on the market."
+                Subtitle = "Item first appeared on the market."
             });
         }
         if (Item.TimeMarketHighestValue != null)
@@ -1072,7 +1072,7 @@
                 Timestamp = Item.TimeMarketHighestValue.Value,
                 Color = Color.Success,
                 Icon = "fas fa-fw fa-arrow-up",
-                Title = "All-time High Value",
+                Title = "All-Time High Value",
                 Subtitle = State.Currency.ToPriceString(Item.MarketHighestValue.Value)
             });
         }
@@ -1083,7 +1083,7 @@
                 Timestamp = Item.TimeMarketLowestValue.Value,
                 Color = Color.Error,
                 Icon = "fas fa-fw fa-arrow-down",
-                Title = "All-time Low Value",
+                Title = "All-Time Low Value",
                 Subtitle = State.Currency.ToPriceString(Item.MarketLowestValue.Value)
             });
         }
