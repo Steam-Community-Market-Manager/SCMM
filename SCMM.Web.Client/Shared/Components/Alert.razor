@@ -1,5 +1,5 @@
 ﻿
-<MudAlert Severity="@Severity" Variant="@Variant" Elevation="@Elevation" Icon="@Icon" Dense="@Dense" UserAttributes="@AdditionalAttributes">
+<MudAlert Severity="@Severity" Variant="@Variant" Elevation="@Elevation" Icon="@Icon" Dense="@Dense" Class="@Class" UserAttributes="@AdditionalAttributes">
     @if (Exception == null)
     {
         @if (!String.IsNullOrEmpty(Title))
@@ -53,6 +53,9 @@
     [Parameter]
     public MudBlazor.Variant Variant { get; set; } = MudBlazor.Variant.Text;
     
+    [Parameter]
+    public string Class { set; get; }
+
     [Parameter]
     public int Elevation { get; set; } = 0;
     

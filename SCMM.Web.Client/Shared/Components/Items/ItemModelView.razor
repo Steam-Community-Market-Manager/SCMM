@@ -57,7 +57,7 @@
         @if(Scene != null && !IsLoading) 
         {
             <div class="scene-controls position-bottom d-flex flex-row align-center justify-center full-width pa-4">
-                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" SubTitle="Use left mouse to look around. Right mouse to pan. Middle mouse to zoom in/out." />
+                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" SubTitle="Use left mouse to look around. Right mouse to pan. Middle mouse to zoom in/out." Elevation="4" />
             </div>
         }
         
@@ -74,7 +74,7 @@
         else if (!String.IsNullOrEmpty(Error))
         {
             <div class="scene-controls position-top d-flex flex-row align-center justify-center full-width full-height">
-                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Error" Icon="fas fa-fw fa-exclamation-triangle" Title="Unable to load model" SubTitle="@Error" />
+                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Error" Icon="fas fa-fw fa-exclamation-triangle" Title="Unable to load item model" SubTitle="@Error" Elevation="12" />
             </div>
         }
 
@@ -126,10 +126,11 @@
             try
             {
                 Scene = await CreateSceneFromWorkshopFileAsync(
-                    Container, 
+                    Container,
                     new
                     {
-                        ModelUrl = $"https://scmm.blob.core.windows.net/models/{ItemType.Replace(" ", "-").ToLower()}.obj",
+                        ModelEndpoint = $"https://scmm.blob.core.windows.net/models",
+                        ModelName = ItemType.RustItemTypeToItemId(),
                         WorkshopFileUrl = WorkshopFileUrl,
                         AutoRotate = IsRotating,                        Light = IsLightOn
                     }

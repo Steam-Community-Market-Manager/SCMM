@@ -1,13 +1,14 @@
 ﻿
 import * as THREE from 'https://cdn.skypack.dev/three@v0.131.3';
 import { WEBGL } from 'https://cdn.skypack.dev/three@v0.131.3/examples/jsm/WebGL.js';
+import { Loader } from 'https://cdn.skypack.dev/three@v0.131.3/src/loaders/Loader.js';
 import { OBJLoader } from 'https://cdn.skypack.dev/three@v0.131.3/examples/jsm/loaders/OBJLoader.js';
 import { TGALoader } from 'https://cdn.skypack.dev/three@v0.131.3/examples/jsm/loaders/TGALoader.js';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@v0.131.3/examples/jsm/controls/OrbitControls.js';
 import ZipLoader from 'https://cdn.jsdelivr.net/npm/zip-loader@1.1.0/dist/ZipLoader.module.js';
 
 // TODO: Make this instanced rather than global
-let loadingManager, zipLoader, objLoader, tgaLoader, textureLoader;
+let loadingManager, workshopFileLoader, objLoader, tgaLoader, textureLoader;
 let renderer, container, options, callback;
 let camera, controls;
 let scene, model, light;
@@ -39,20 +40,20 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 		callback.invokeMethodAsync('OnLoadError', 'There was an error downloading ' + url);
 	};
 
-	zipLoader = new ZipLoader(options.workshopFileUrl);
-	zipLoader.on('progress', function (event) {
+	workshopFileLoader = new ZipLoader(options.workshopFileUrl);
+	workshopFileLoader.on('progress', function (event) {
 		callback.invokeMethodAsync('OnLoadProgress', event.loaded, event.total);
 	});
-	zipLoader.on('load', function (event) {
+	workshopFileLoader.on('load', function (event) {
 		callback.invokeMethodAsync('OnLoadComplete');
 		try {
-			addWorkshopFileToScene(zipLoader.files, scene);
+			addWorkshopFileToScene(workshopFileLoader, scene);
 		}
 		catch (error) {
-			callback.invokeMethodAsync('OnLoadError', event.error);
+			callback.invokeMethodAsync('OnLoadError', error);
         }
 	});
-	zipLoader.on('error', function (event) {
+	workshopFileLoader.on('error', function (event) {
 		callback.invokeMethodAsync('OnLoadError', event.error);
 	});
 
@@ -71,6 +72,9 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 	controls = new OrbitControls(camera, renderer.domElement);
 	controls.autoRotate = (options.autoRotate !== undefined ? options.autoRotate : false);
 	controls.enableDamping = true;
+	controls.target.set(0, 10, 0);
+	controls.minDistance = 0.01;
+	controls.maxDistance = 1.0;
 	/*
 	controls.listenToKeyEvents(window);
 	controls.keys = {
@@ -99,7 +103,7 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 	resized = true;
 
 	// Start loading the workshop file
-	zipLoader.load();
+	workshopFileLoader.load();
 	return scene;
 }
 
@@ -151,78 +155,119 @@ export function setEmissionIntensity(instance, intensity) {
 	});
 }
 
-function addWorkshopFileToScene(files, scene) {
+function addWorkshopFileToScene(loader, scene) {
 
-	var manifest = zipLoader.extractAsJSON('manifest.txt');
+	if (!loader.files.hasOwnProperty('manifest.txt')) {
+		throw 'No skin manifest detected, this is probably a very old skin';
+	}
+	var manifest = loader.extractAsJSON('manifest.txt');
 	if (manifest == null) {
-		throw 'Unable to find manifest.txt';
+		throw 'Unable to load manifest.txt';
 	}
 
-	objLoader.load(
-		options.modelUrl,
-		function (object) {
+	var endpointUrl = options.modelEndpoint;
+	var azureBlobLoader = new AzureBlobLoader(loadingManager);
+	azureBlobLoader.load(
+		{
+			endpoint: endpointUrl.substr(0, endpointUrl.lastIndexOf('/')),
+			container: endpointUrl.substr(endpointUrl.lastIndexOf('/') + 1),
+			prefix: options.modelName + '/'
+		},
+		function (blobs) {
+			blobs.forEach(function (blob) {
+				var manifestIndex = parseInt(blob.metadata.index || '0');
+				if (manifestIndex > manifest.Groups.length - 1) {
+					manifestIndex = 0;
+                }
+				if (blob.metadata.hidden) {
+					return;
+                }
+				objLoader.load(
+					(endpointUrl + '/' + blob.name),
+					function (object) {
 
-			object.castShadow = true;
-			object.receiveShadow = true;
-			object.traverse(function (child) {
-				if (child instanceof THREE.Mesh) {
+						object.castShadow = true;
+						object.receiveShadow = true;
+						object.traverse(function (child) {
+							if (child instanceof THREE.Mesh) {
 
-					var manifestMesh = manifest.Groups[0];
-					if (manifestMesh == null) {
-						throw 'Unable to find manifest group for mesh #' + child.id;
+								var manifestMesh = manifest.Groups[manifestIndex];
+								if (manifestMesh == null) {
+									throw 'Unable to find manifest group (' + manifestIndex + ') for mesh #' + child.id;
+								}
+
+								child.castShadow = true;
+								child.receiveShadow = true;
+								child.material.needsUpdate = true;
+
+								var map = loadWorkshopFileTexture(loader, manifestMesh.Textures._MainTex);
+								var normalMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._BumpMap);
+								var lightMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._OcclusionMap);
+								var specularMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._SpecGlossMap);
+								var emissiveMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._EmissionMap);
+
+								// Textures
+								child.material.map = map;
+								child.material.normalMap = normalMap;
+								child.material.lightMap = lightMap;
+								child.material.specularMap = specularMap;
+								if (emissiveMap) {
+									child.material.emissiveMap = emissiveMap;
+								}
+
+								// Floats
+								child.material.alphaTest = manifestMesh.Floats._Cutoff;
+								child.material.normalScale = new THREE.Vector2(manifestMesh.Floats._BumpScale, manifestMesh.Floats._BumpScale);
+								child.material.lightMapIntensity = manifestMesh.Floats._OcclusionStrength;
+								child.material.shininess = manifestMesh.Floats._Glossiness;
+								if (emissiveMap) {
+									child.material.emissiveIntensity = 1;
+								}
+
+								// Colors
+								child.material.color = new THREE.Color(manifestMesh.Colors._Color.r, manifestMesh.Colors._Color.g, manifestMesh.Colors._Color.b);
+								child.material.specular = new THREE.Color(manifestMesh.Colors._SpecColor.r, manifestMesh.Colors._SpecColor.g, manifestMesh.Colors._SpecColor.b);
+								if (emissiveMap) {
+									child.material.emissive = new THREE.Color(manifestMesh.Colors._EmissionColor.r, manifestMesh.Colors._EmissionColor.g, manifestMesh.Colors._EmissionColor.b);
+								}
+
+							}
+						});
+
+						if (blob.metadata.positionx) {
+							object.position.x = parseFloat(blob.metadata.positionx);
+						}
+						if (blob.metadata.positiony) {
+							object.position.y = parseFloat(blob.metadata.positiony);
+						}
+						if (blob.metadata.positionz) {
+							object.position.z = parseFloat(blob.metadata.positionz);
+						}
+						if (blob.metadata.scalex) {
+							object.scale.x = parseFloat(blob.metadata.scalex);
+						} else {
+							object.scale.x = -1; // by default invert objects horizontally, seems that most skins need this
+                        }
+						if (blob.metadata.scaley) {
+							object.scale.y = parseFloat(blob.metadata.scaley);
+						}
+
+						model = object;
+						scene.add(model);
+
+						if (manifestIndex == 0) {
+							resetCamera();
+						}
+
 					}
-
-					child.castShadow = true;
-					child.receiveShadow = true;
-					child.material.needsUpdate = true;
-
-					var map = loadWorkshopFileTexture(files, manifestMesh.Textures._MainTex);
-					var normalMap = loadWorkshopFileTexture(files, manifestMesh.Textures._BumpMap);
-					var lightMap = loadWorkshopFileTexture(files, manifestMesh.Textures._OcclusionMap);
-					var specularMap = loadWorkshopFileTexture(files, manifestMesh.Textures._SpecGlossMap);
-					var emissiveMap = loadWorkshopFileTexture(files, manifestMesh.Textures._EmissionMap);
-
-					// Textures
-					child.material.map = map;
-					child.material.normalMap = normalMap;
-					child.material.lightMap = lightMap;
-					child.material.specularMap = specularMap;
-					if (emissiveMap) {
-						child.material.emissiveMap = emissiveMap;
-                    }
-
-					// Floats
-					child.material.alphaTest = manifestMesh.Floats._Cutoff;
-					child.material.normalScale = new THREE.Vector2(manifestMesh.Floats._BumpScale, manifestMesh.Floats._BumpScale);
-					child.material.lightMapIntensity = manifestMesh.Floats._OcclusionStrength;
-					child.material.shininess = manifestMesh.Floats._Glossiness;
-					if (emissiveMap) {
-						child.material.emissiveIntensity = 1;
-					}
-
-					// Colors
-					child.material.color = new THREE.Color(manifestMesh.Colors._Color.r, manifestMesh.Colors._Color.g, manifestMesh.Colors._Color.b);
-					child.material.specular = new THREE.Color(manifestMesh.Colors._SpecColor.r, manifestMesh.Colors._SpecColor.g, manifestMesh.Colors._SpecColor.b);
-					if (emissiveMap) {
-						child.material.emissive = new THREE.Color(manifestMesh.Colors._EmissionColor.r, manifestMesh.Colors._EmissionColor.g, manifestMesh.Colors._EmissionColor.b);
-                    }
-
-				}
+				);
 			});
-
-			// HACK: Textures show back-to-front... must negatively scale the object to "fix" it
-			object.scale.x = -1;
-
-			model = object;
-			scene.add(model);
-			resetCamera();
 		}
 	);
-
 }
 
-function loadWorkshopFileTexture(files, name) {
-	if (name == null || !files.hasOwnProperty(name)) {
+function loadWorkshopFileTexture(loader, name) {
+	if (name == null || !loader.files.hasOwnProperty(name)) {
 		return null;
 	}
 	const mimeType = (
@@ -232,7 +277,7 @@ function loadWorkshopFileTexture(files, name) {
 		(/\.tga$/).test(name) ? 'image/tga' :
 		undefined
 	);
-	const textureUrl = zipLoader.extractAsBlobUrl(name, mimeType)
+	const textureUrl = loader.extractAsBlobUrl(name, mimeType)
 	switch (mimeType) {
 		case 'image/tga': return tgaLoader.load(textureUrl);
 		default: return textureLoader.load(textureUrl);
@@ -258,3 +303,26 @@ function renderLoop() {
 window.addEventListener('resize', () => {
 	resized = true;
 });
+
+class AzureBlobLoader extends Loader {
+
+	load(url, onLoad, onProgress, onError) {
+		try
+		{
+			const blobService = AzureStorage.Blob.createBlobServiceAnonymous(url.endpoint);
+			const blobs = blobService.listBlobsSegmentedWithPrefix(url.container, url.prefix, null, { include: 'metadata' },
+				function (error, result) {
+					if (result && result.entries) {
+						onLoad(result.entries);
+					}
+					else {
+						onError(error);
+					}
+				}
+			);
+		} catch (ex) {
+			onError(ex);
+        }
+	}
+
+}
