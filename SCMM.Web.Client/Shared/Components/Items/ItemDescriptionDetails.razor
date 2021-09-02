@@ -473,12 +473,6 @@
 			    </MudItem>
             }
             
-            @* TODO: Technical: app id, class id, workshop id, name id, store id... *@
-            @* TODO: Time created/updated/accepted... *@
-            @* TODO: Time refreshed... *@
-
-            @* TODO: "Request Update" button *@
-            
             <MudItem xs="12">
                 <MudPaper Outlined="true" Class="pa-4">
                     <MudTimeline>
@@ -501,7 +495,13 @@
                     </MudTimeline>
 		        </MudPaper>
             </MudItem>
+            
+            @* TODO: Technical: app id, class id, workshop id, name id, store id... *@
+            @* TODO: Time created/updated/accepted... *@
+            @* TODO: Time refreshed... *@
 
+            @* TODO: "Request Update" button *@
+            
         </MudGrid>
     </MudItem>
     
@@ -842,17 +842,6 @@
 				    </MudPaper>
                 </MudItem>
             }
-
-            @*
-            @if (!String.IsNullOrEmpty(Item.ItemType))
-            {
-                <MudItem xs="12">
-                    <MudPaper Outlined="true" Class="pa-4">
-                    Similar (type, colour, price, author)...
-				    </MudPaper>
-                </MudItem>
-            }
-            *@
 
 		</MudGrid>
     </MudItem>
