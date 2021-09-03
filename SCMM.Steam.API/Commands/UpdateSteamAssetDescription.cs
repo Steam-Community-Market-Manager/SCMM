@@ -89,6 +89,7 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.MarketableRestrictionDays = string.IsNullOrEmpty(assetClass.MarketMarketableRestriction) ? (int?)null : int.Parse(assetClass.MarketMarketableRestriction);
                 assetDescription.IsTradable = string.Equals(assetClass.Tradable, "1", StringComparison.InvariantCultureIgnoreCase);
                 assetDescription.TradableRestrictionDays = string.IsNullOrEmpty(assetClass.MarketTradableRestriction) ? (int?)null : int.Parse(assetClass.MarketTradableRestriction);
+                assetDescription.IsAccepted = true;
 
                 // Parse asset type
                 switch (assetClass.Type)
@@ -585,13 +586,9 @@ namespace SCMM.Steam.API.Commands
             // Check if this is a special/twitch drop item
             if (!assetDescription.IsTwitchDrop && !assetDescription.IsSpecialDrop)
             {
-                // Does this look like a streamer commissioned twitch drop?
-                if (assetDescription.WorkshopFileId != null && assetDescription.TimeAccepted == null && assetDescription.TimeCreated > new DateTime(2020, 11, 12) && !assetDescription.IsMarketable && (assetDescription.LifetimeSubscriptions == null || assetDescription.LifetimeSubscriptions == 0))
-                {
-                    assetDescription.IsTwitchDrop = true;
-                }
                 // Does this look like a publisher item twitch drop?
-                else if (assetDescription.WorkshopFileId == null && assetDescription.TimeAccepted == null && !assetDescription.IsMarketable && !string.IsNullOrEmpty(assetDescription.Description) && Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+                else if (assetDescription.WorkshopFileId == null && assetDescription.TimeAccepted == null && !assetDescription.IsMarketable && !string.IsNullOrEmpty(assetDescription.Description) && 
+                         Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                 {
                     assetDescription.IsTwitchDrop = true;
                 }
