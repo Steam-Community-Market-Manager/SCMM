@@ -137,8 +137,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 }
 
                 // Add all the items to the new store
-                var activeStoreItems = new List<SteamStoreItem>();
-                var newStoreItems = new List<SteamStoreItem>();
+                var newStoreItems = new List<SteamStoreItemItemStore>();
                 foreach (var asset in response.Data.Assets)
                 {
                     // Ensure that the item is available in the database (create them if missing)
@@ -150,14 +149,11 @@ namespace SCMM.Steam.Job.Server.Jobs
                         continue;
                     }
 
-                    activeStoreItems.Add(storeItem);
-
                     // Ensure that the item is linked to the active store
                     if (!storeItem.Stores.Any(x => activeItemStores.Select(x => x.Id).Contains(x.StoreId)))
                     {
                         var prices = steamService.ParseStoreItemPriceTable(asset.Prices);
-                        newStoreItems.Add(storeItem);
-                        newItemStore.Items.Add(new SteamStoreItemItemStore()
+                        var storeItemLink = new SteamStoreItemItemStore()
                         {
                             Store = newItemStore,
                             Item = storeItem,
@@ -165,7 +161,10 @@ namespace SCMM.Steam.Job.Server.Jobs
                             Price = prices.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
                             Prices = new PersistablePriceDictionary(prices),
                             IsPriceVerified = true
-                        });
+                        };
+                        storeItem.Stores.Add(storeItemLink);
+                        newItemStore.Items.Add(storeItemLink);
+                        newStoreItems.Add(storeItemLink);
                     }
 
                     // Update the store items "latest price"
@@ -231,9 +230,9 @@ namespace SCMM.Steam.Job.Server.Jobs
             };
         }
 
-        private async Task BroadcastNewStoreItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItem> newStoreItems, IEnumerable<SteamCurrency> currencies)
+        private async Task BroadcastNewStoreItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
         {
-            newStoreItems = newStoreItems?.OrderBy(x => x.Description.Name);
+            newStoreItems = newStoreItems?.OrderBy(x => x.Item?.Description?.Name);
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
@@ -263,7 +262,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     Title = $"{app.Name} Store - {store.Start.ToString("yyyy MMMM d")}{store.Start.GetDaySuffix()}",
                     Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
                     Fields = newStoreItems.ToDictionary(
-                        x => x.Description?.Name,
+                        x => x.Item?.Description?.Name,
                         x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
                     FieldsInline = true,
@@ -275,7 +274,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             }
         }
 
-        private string GenerateStoreItemPriceList(SteamStoreItem storeItem, IEnumerable<SteamCurrency> currencies)
+        private string GenerateStoreItemPriceList(SteamStoreItemItemStore storeItem, IEnumerable<SteamCurrency> currencies)
         {
             var prices = new List<string>();
             foreach (var currency in currencies.OrderBy(x => x.Name))
