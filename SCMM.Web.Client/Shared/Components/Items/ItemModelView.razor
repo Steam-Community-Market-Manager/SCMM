@@ -3,7 +3,7 @@
 @inject IJSRuntime JS
 
 <div @attributes="AdditionalAttributes">
-    <div @ref=Container class="scene-container full-width full-height">
+    <div @ref=Container class="scene-container interactive full-width full-height">
         
         <div class="scene-controls position-top d-flex flex-wrap flex-row align-center justify-center full-width pa-4">
             <MudTooltip Text="Reset camera" Class="mx-4">
@@ -56,8 +56,15 @@
         
         @if(Scene != null && !IsLoading) 
         {
-            <div class="scene-controls position-bottom d-flex flex-row align-center justify-center full-width pa-4">
-                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" SubTitle="Use left mouse to look around. Right mouse to pan. Middle mouse to zoom in/out." Elevation="4" />
+            <div class="scene-controls position-bottom d-flex flex-column align-center justify-center full-width pa-4">
+                <div class="fade-out">
+                    <div class="grabbing mb-4">
+                        <i class="fas fa-fw fa-long-arrow-alt-left"></i>
+                        <i class="fas fa-fw fa-hand-pointer"></i>
+                        <i class="fas fa-fw fa-long-arrow-alt-right"></i>
+				    </div>
+				</div>
+                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-info-circle" SubTitle="Use left mouse to look around. Right mouse to pan. Middle mouse to zoom in/out." />
             </div>
         }
         

@@ -3,7 +3,7 @@
     position: relative;
 }
 
-.scene-container canvas, .scene-controls {
+.scene-controls {
     position: absolute;
 }
 
@@ -13,4 +13,19 @@
 
 .position-bottom {
     bottom: 0px;
+}
+
+.grabbing {
+    font-size: 3em;
+    animation: drag 1.5s ease-in 0.5s 5 reverse;
+}
+
+@keyframes drag {
+    0% {
+        margin-right: 5vw;
+    }
+
+    100% {
+        margin-right: -5vw;
+    }
 }

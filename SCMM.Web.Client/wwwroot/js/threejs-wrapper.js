@@ -72,9 +72,6 @@ export function createSceneFromWorkshopFile(sceneContainer, sceneOptions, dotNet
 	controls = new OrbitControls(camera, renderer.domElement);
 	controls.autoRotate = (options.autoRotate !== undefined ? options.autoRotate : false);
 	controls.enableDamping = true;
-	controls.target.set(0, 10, 0);
-	controls.minDistance = 0.01;
-	controls.maxDistance = 1.0;
 	/*
 	controls.listenToKeyEvents(window);
 	controls.keys = {
@@ -230,6 +227,9 @@ function addWorkshopFileToScene(loader, scene) {
 								if (emissiveMap) {
 									child.material.emissive = new THREE.Color(manifestMesh.Colors._EmissionColor.r, manifestMesh.Colors._EmissionColor.g, manifestMesh.Colors._EmissionColor.b);
 								}
+
+								child.material.side = THREE.DoubleSide;
+								child.material.shadowSide = THREE.DoubleSide;
 
 							}
 						});

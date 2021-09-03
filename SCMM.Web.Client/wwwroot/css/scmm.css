@@ -41,6 +41,14 @@
     cursor: pointer;
 }
 
+.interactive canvas {
+    cursor: grab;
+}
+
+.interactive canvas:active {
+    cursor: grabbing;
+}
+
 .hover-darken:hover {
     background-color: var(--mud-palette-overlay-dark);
 }
@@ -56,6 +64,20 @@
 
 .hover-zoom-extra:hover img {
     transform: scale(1.5) !important;
+}
+
+.fade-out {
+    animation: fade-out 0.5s 5s forwards 1;
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
 
 .flash {

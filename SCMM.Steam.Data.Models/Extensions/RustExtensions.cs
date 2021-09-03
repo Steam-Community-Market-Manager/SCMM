@@ -13,7 +13,7 @@
                 case "Bandana Mask": return "mask.bandana";
                 case "Baseball Cap": return "hat.cap";
                 case "Beenie Hat": return "hat.beenie";
-                case "Bolt Action Rifle": return "rifle.bolt";
+                case "Bolt Action Rifle": return "rifle.bolt"; // texture issues (Tempered)
                 case "Bone Club": return "bone.club";
                 case "Bone Helmet": return "deer.skull.mask";
                 case "Bone Knife": return "knife.bone";
@@ -28,17 +28,17 @@
                 case "Coffee Can Helmet": return "coffeecan.helmet";
                 case "Combat Knife": return "knife.combat";
                 case "Concrete Barricade": return "barricade.concrete";
-                case "Crossbow": return "crossbow";
-                case "Custom SMG": return "smg.2";
-                case "Double Barrel Shotgun": return "shotgun.double";
+                case "Crossbow": return "crossbow"; // texture issues (Tempered)
+                case "Custom SMG": return "smg.2"; // texture issues (Lovely SMG)
+                case "Double Barrel Shotgun": return "shotgun.double"; // model broken
                 case "Eoka Pistol": return "pistol.eoka";
                 case "F1 Grenade": return "grenade.f1";
-                case "Fridge": return "fridge";
+                case "Fridge": return "fridge"; // door is open
                 case "Furnace": return "furnace";
                 case "Garage Door": return "wall.frame.garagedoor";
                 case "Hammer": return "hammer";
                 case "Hatchet": return "hatchet";
-                case "Hide Boots": return "attire.hide.boots";
+                case "Hide Boots": return "attire.hide.boots"; //...
                 case "Hide Halterneck": return "attire.hide.helterneck";
                 case "Hide Pants": return "attire.hide.pants";
                 case "Hide Poncho": return "attire.hide.poncho";
