@@ -18,7 +18,7 @@
                     <div class="d-flex flex-column full-height item-preview-container">
                         @if (Item.Previews.Any())
                         {
-                            <MudCarousel ShowArrows="true" ShowDelimiters="false" AutoCycle="true" TData="object" Class="full-width full-height" Style="min-height: 30vh;">
+                            <MudCarousel ShowArrows="true" ShowDelimiters="false" AutoCycle="false" TData="object" Class="full-width full-height" Style="min-height: 25rem;">
                                 <MudCarouselItem Transition="Transition.Fade" Class="d-flex flex-grow-1 align-center justify-center">
                                     <div class="d-flex flex-grow-1 align-center justify-center item-icon">
                                         <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} full-width pa-8")" style="@GetGlowStyles()" />
