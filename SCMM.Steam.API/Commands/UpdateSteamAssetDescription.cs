@@ -587,7 +587,7 @@ namespace SCMM.Steam.API.Commands
             if (!assetDescription.IsTwitchDrop && !assetDescription.IsSpecialDrop)
             {
                 // Does this look like a publisher item twitch drop?
-                else if (assetDescription.WorkshopFileId == null && assetDescription.TimeAccepted == null && !assetDescription.IsMarketable && !string.IsNullOrEmpty(assetDescription.Description) && 
+                if (assetDescription.WorkshopFileId == null && assetDescription.TimeAccepted == null && !assetDescription.IsMarketable && !string.IsNullOrEmpty(assetDescription.Description) && 
                          Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                 {
                     assetDescription.IsTwitchDrop = true;
