@@ -22,7 +22,6 @@ namespace SCMM.Steam.Data.Store
         public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
         public DbSet<SteamProfile> SteamProfiles { get; set; }
         public DbSet<SteamProfileInventoryItem> SteamProfileInventoryItems { get; set; }
-        public DbSet<SteamProfileInventorySnapshot> SteamProfileInventorySnapshots { get; set; }
         public DbSet<SteamProfileMarketItem> SteamProfileMarketItems { get; set; }
 
         public DbSet<FileData> FileData { get; set; }
@@ -193,11 +192,9 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamProfile>()
                 .OwnsOne(x => x.Roles);
             builder.Entity<SteamProfile>()
-                .HasMany(x => x.InventoryItems)
-                .WithOne(x => x.Profile)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OwnsOne(x => x.Preferences);
             builder.Entity<SteamProfile>()
-                .HasMany(x => x.InventorySnapshots)
+                .HasMany(x => x.InventoryItems)
                 .WithOne(x => x.Profile)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamProfile>()
@@ -208,10 +205,6 @@ namespace SCMM.Steam.Data.Store
                 .HasMany(x => x.AssetDescriptions)
                 .WithOne(x => x.CreatorProfile)
                 .OnDelete(DeleteBehavior.SetNull);
-            builder.Entity<SteamProfile>()
-                .HasMany(x => x.Configurations)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<SteamProfileConfiguration>()
                 .OwnsOne(x => x.List);
@@ -223,12 +216,6 @@ namespace SCMM.Steam.Data.Store
                 .HasOne(x => x.Description)
                 .WithMany(x => x.InventoryItems);
             builder.Entity<SteamProfileInventoryItem>()
-                .HasOne(x => x.Currency);
-
-            builder.Entity<SteamProfileInventorySnapshot>()
-                .HasIndex(x => new { x.ProfileId, x.Timestamp })
-                .IsUnique(true);
-            builder.Entity<SteamProfileInventorySnapshot>()
                 .HasOne(x => x.Currency);
 
             builder.Entity<SteamProfileMarketItem>()

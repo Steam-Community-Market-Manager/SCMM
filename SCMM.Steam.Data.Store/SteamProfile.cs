@@ -6,13 +6,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Store
 {
-    public class SteamProfile : ConfigurableEntity<SteamProfileConfiguration>
+    public class SteamProfile : Entity
     {
         public SteamProfile()
         {
             Roles = new PersistableStringCollection();
+            Preferences = new PersistableStringDictionary();
             InventoryItems = new Collection<SteamProfileInventoryItem>();
-            InventorySnapshots = new Collection<SteamProfileInventorySnapshot>();
             MarketItems = new Collection<SteamProfileMarketItem>();
             AssetDescriptions = new Collection<SteamAssetDescription>();
         }
@@ -61,22 +61,19 @@ namespace SCMM.Steam.Data.Store
 
         public long GamblingOffset { get; set; }
 
-        public SteamProfileFlags Flags { get; set; }
-
         public SteamVisibilityType Privacy { get; set; }
 
         [Required]
         public PersistableStringCollection Roles { get; set; }
 
-        public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
+        [Required]
+        public PersistableStringDictionary Preferences { get; set; }
 
-        public ICollection<SteamProfileInventorySnapshot> InventorySnapshots { get; set; }
+        public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
 
         public ICollection<SteamProfileMarketItem> MarketItems { get; set; }
 
         public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
 
-        protected override IEnumerable<ConfigurationDefinition> ConfigurationDefinitions
-            => SteamProfileConfiguration.Definitions;
     }
 }

@@ -47,7 +47,7 @@
             }
             @if (PurchasableItem?.Demand > 0)
             {
-                <MudTooltip Text="Demand from the market over (last 24hrs)">
+                <MudTooltip Text="Demand from the market in the last 24hrs">
                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
                         <i class="fas fa-fw fa-exchange-alt ml-1"></i>
                         <span>@PurchasableItem.Demand.Value.ToQuantityString()</span>
