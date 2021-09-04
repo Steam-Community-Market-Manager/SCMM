@@ -1,7 +1,7 @@
 {
   "name": "Rust - Steam Community Market Manager",
   "short_name": "Rust - SCMM",
-  "description": "Rust - SCMM is a web app for analysing Steam Community Market information from Rust",
+  "description": "Rust - SCMM is an app for analysing Steam Community Market information",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#333333",
