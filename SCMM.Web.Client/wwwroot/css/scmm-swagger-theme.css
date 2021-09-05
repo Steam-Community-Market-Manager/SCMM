@@ -16,7 +16,7 @@ select option:hover {
     display:none;
 }
 .swagger-ui .topbar {
-    background-color: #000;
+    background: none;
 }
 .swagger-ui .info .title {
     color: #fff;

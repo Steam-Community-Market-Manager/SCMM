@@ -179,7 +179,7 @@ public static class WebApplicationExtensions
                     Version = "v1",
                     Description = (
                         "Steam Community Market Manager (SCMM) API.<br/>" +
-                        "These APIs are provided unrestricted, unthrottled, and free of charge in the hopes that they are useful to somebody. If you abuse them, don't be surprised if you get IP banned."
+                        "These APIs are provided unrestricted, unthrottled, and free of charge in the hopes that they are useful to somebody. If you abuse them or are the cause of significant performance degradation, don't be surprised if you get blocked."
                     ),
                     Contact = new OpenApiContact()
                     {
@@ -201,7 +201,7 @@ public static class WebApplicationExtensions
             app.UseDevelopmentExceptionHandler();
             // Enable automatic DB migrations
             app.UseMigrationsEndPoint();
-            // Enable WASM debugging
+            // Enable wasm debugging
             app.UseWebAssemblyDebugging();
         }
         else
