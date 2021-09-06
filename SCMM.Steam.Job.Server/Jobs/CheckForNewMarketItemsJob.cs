@@ -151,13 +151,18 @@ namespace SCMM.Steam.Job.Server.Jobs
         private async Task BroadcastNewMarketItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, IEnumerable<SteamMarketItem> newMarketItems, FileData thumbnailImage)
         {
             newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name);
+            var app = newMarketItems.Where(x => x.App != null).FirstOrDefault()?.App;
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
-                if (guild.IsSet(Steam.Data.Store.DiscordConfiguration.Alerts) && !guild.Get(Steam.Data.Store.DiscordConfiguration.Alerts).Value.Contains(Steam.Data.Store.DiscordConfiguration.AlertsMarket))
+                if (guild.IsSet(DiscordConfiguration.Alerts) && !guild.Get(DiscordConfiguration.Alerts).Value.Contains(DiscordConfiguration.AlertsMarket))
                 {
                     continue;
                 }
+
+                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                    "announcement", "market", "skin", app.Name, "general", "chat", "bot"
+                });
 
                 var fields = new Dictionary<string, string>();
                 foreach (var marketItem in newMarketItems)
@@ -195,13 +200,10 @@ namespace SCMM.Steam.Job.Server.Jobs
                     .Where(x => x.Description?.IconId != null)
                     .Select(x => x.Description.IconId);
 
-                var app = newMarketItems.Where(x => x.App != null).FirstOrDefault()?.App;
                 await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuidId = ulong.Parse(guild.DiscordId),
-                    ChannelPatterns = new[] {
-                        guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel).Value, "announcement", "market", "skin", app.Name, "general", "chat", "bot"
-                    },
+                    ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
                     Title = $"{app?.Name} Market - New Listings",
                     Description = $"{newMarketItems.Count()} new item(s) have just appeared in the {app?.Name} marketplace.",

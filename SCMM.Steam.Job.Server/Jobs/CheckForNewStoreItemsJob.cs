@@ -236,13 +236,17 @@ namespace SCMM.Steam.Job.Server.Jobs
             var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
             foreach (var guild in guilds)
             {
-                if (guild.IsSet(Steam.Data.Store.DiscordConfiguration.Alerts) && !guild.Get(Steam.Data.Store.DiscordConfiguration.Alerts).Value.Contains(Steam.Data.Store.DiscordConfiguration.AlertsStore))
+                if (guild.IsSet(DiscordConfiguration.Alerts) && !guild.Get(DiscordConfiguration.Alerts).Value.Contains(DiscordConfiguration.AlertsStore))
                 {
                     continue;
                 }
 
+                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                    "announcement", "store", "skin", app.Name, "general", "chat", "bot"
+                });
+
                 var filteredCurrencies = currencies;
-                var guildCurrencies = guild.List(Steam.Data.Store.DiscordConfiguration.Currency).Value;
+                var guildCurrencies = guild.List(DiscordConfiguration.Currency).Value;
                 if (guildCurrencies?.Any() == true)
                 {
                     filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
@@ -255,9 +259,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuidId = ulong.Parse(guild.DiscordId),
-                    ChannelPatterns = new[] {
-                        guild.Get(Steam.Data.Store.DiscordConfiguration.AlertChannel).Value, "announcement", "store", "skin", app.Name, "general", "chat", "bot"
-                    },
+                    ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
                     Title = $"{app.Name} Store - {store.Start.ToString("yyyy MMMM d")}{store.Start.GetDaySuffix()}",
                     Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
