@@ -207,6 +207,7 @@ function addWorkshopFileToScene(loader, scene) {
 								child.material.map = map;
 								child.material.normalMap = normalMap;
 								child.material.lightMap = lightMap;
+								//child.material.aoMap = lightMap;
 								child.material.specularMap = specularMap;
 								if (emissiveMap) {
 									child.material.emissiveMap = emissiveMap;
@@ -214,9 +215,12 @@ function addWorkshopFileToScene(loader, scene) {
 
 								// Floats
 								child.material.alphaTest = manifestMesh.Floats._Cutoff;
+								//child.material.alphaToCoverage = manifestMesh.Floats._Cutoff;
 								child.material.normalScale = new THREE.Vector2(manifestMesh.Floats._BumpScale, manifestMesh.Floats._BumpScale);
 								child.material.lightMapIntensity = manifestMesh.Floats._OcclusionStrength;
+								//child.material.aoMapIntensity = manifestMesh.Floats._OcclusionStrength;
 								child.material.shininess = manifestMesh.Floats._Glossiness;
+								//child.material.roughness = manifestMesh.Floats._Glossiness;
 								if (emissiveMap) {
 									child.material.emissiveIntensity = 1;
 								}
@@ -230,6 +234,9 @@ function addWorkshopFileToScene(loader, scene) {
 
 								child.material.side = THREE.DoubleSide;
 								child.material.shadowSide = THREE.DoubleSide;
+								//child.material.premultipliedAlpha = true;
+								//child.material.dithering = true;
+								//child.material.transparent = true;
 
 							}
 						});
