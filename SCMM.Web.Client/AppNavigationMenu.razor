@@ -87,9 +87,9 @@ else
     private List<INavigationMenuItem> RebuildMenuItems()
     {
         var inventoryValue = String.Empty;
-        if (InventoryTotals?.TotalMarketValue > 0)
+        if (InventoryTotals?.MarketValue > 0)
         {
-            inventoryValue = State.Currency.ToPriceString(InventoryTotals.TotalMarketValue);
+            inventoryValue = State.Currency.ToPriceString(InventoryTotals.MarketValue);
         }
 
         var storeUpdateTimeRemaining = String.Empty;

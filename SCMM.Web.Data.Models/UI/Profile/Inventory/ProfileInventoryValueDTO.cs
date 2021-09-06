@@ -14,14 +14,16 @@
 
         public long? Invested { get; set; }
 
+        public long? InvestmentGains { get; set; }
+
+        public long? InvestmentLosses { get; set; }
+
+        public long BuyNowValue { get; set; }
+
         public long MarketValue { get; set; }
 
-        public long Market24hrMovement { get; set; }
+        public long MarketMovementValue { get; set; }
 
-        public long ResellValue { get; set; }
-
-        public long ResellTax { get; set; }
-
-        public long ResellProfit { get; set; }
+        public DateTimeOffset MarketMovementTime { get; set; }
     }
 }

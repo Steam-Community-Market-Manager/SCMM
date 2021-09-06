@@ -2,18 +2,22 @@
 {
     public class ProfileInventoryTotalsDTO
     {
-        public int TotalItems { get; set; }
+        public int Items { get; set; }
 
-        public long? TotalInvested { get; set; }
+        public long? Invested { get; set; }
 
-        public long TotalMarketValue { get; set; }
+        public long? InvestmentGains { get; set; }
 
-        public long TotalMarket24hrMovement { get; set; }
+        public long? InvestmentLosses { get; set; }
 
-        public long TotalResellValue { get; set; }
+        public long? InvestmentNetReturn { get; set; }
 
-        public long TotalResellTax { get; set; }
+        public long BuyNowValue { get; set; }
 
-        public long TotalResellProfit { get; set; }
+        public long MarketValue { get; set; }
+
+        public long MarketMovementValue { get; set; }
+
+        public DateTimeOffset MarketMovementTime { get; set; }
     }
 }

@@ -29,6 +29,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.Market1hrValue, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.Last1hrValue : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
                 .ForMember(x => x.Market24hrSales, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)))
                 .ForMember(x => x.Market24hrValue, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrValue : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
+                .ForMember(x => x.MarketLastSaleValue, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.LastSaleValue : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
+                .ForMember(x => x.MarketLastSaleOn, o => o.MapFrom(p => (p.MarketItem != null ? p.MarketItem.LastSaleOn : null)))
                 .ForMember(x => x.MarketHighestValue, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.AllTimeHighestValue : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
                 .ForMember(x => x.MarketLowestValue, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.AllTimeLowestValue : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
                 .ForMember(x => x.TimeMarketHighestValue, o => o.MapFrom(p => (p.MarketItem != null ? p.MarketItem.AllTimeHighestValueOn : null)))

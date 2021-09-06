@@ -48,7 +48,7 @@
                     }
                     else 
                     {
-                        @InventoryTotal.TotalItems.ToQuantityString()
+                        @InventoryTotal.Items.ToQuantityString()
                     }
                 </MudText>
             </div>
@@ -56,7 +56,73 @@
     </MudTooltip>
 </MudItem>
 
-@if (InventoryTotal == null || InventoryTotal?.TotalInvested > 0)
+@if (InventoryTotal == null || InventoryTotal?.MarketValue > 0)
+{
+    <MudItem xs="12" sm="6" lg="4" xl="2">
+        <MudTooltip Text="How much people have recently paid for this inventory, based on the most recent median sales price of each item. This is a good indication of the inventories trading value, when you want to exchange for things other than real money">
+            <div class="d-flex flex-row justify-start align-center">
+                <MudAvatar Class="mud-info">
+                    <i class="fas fa-fw fa-hand-holding-usd"></i>
+                </MudAvatar>
+                <div class="ml-2">
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Market Value (last median sale)</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2">
+                        @if (InventoryTotal == null)
+                        {
+                            <MudSkeleton Class="mud-skeleton-light" />
+                        }
+                        else 
+                        {
+                            <span>@State.Currency.ToPriceString(InventoryTotal.MarketValue)</span>
+                            @if (InventoryTotal.MarketMovementValue > 0)
+                            {
+                                <small class="mud-success-text ml-1">
+                                    <i class="fas fa-fw fa-arrow-up"></i> 
+                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in last", maxGranularity: 1))</span>
+                                </small>
+                            }
+                            @if (InventoryTotal.MarketMovementValue < 0)
+                            {
+                                <small class="mud-error-text ml-1">
+                                    <i class="fas fa-fw fa-arrow-down"></i> 
+                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in last", maxGranularity: 1))</span>
+                                </small>
+                            }
+                        }
+                    </MudText>
+                </div>
+            </div>
+        </MudTooltip>
+    </MudItem>
+}
+
+@if (InventoryTotal == null || InventoryTotal?.BuyNowValue > 0)
+{
+    <MudItem xs="12" sm="6" lg="4" xl="2">
+        <MudTooltip Text="How much it would cost to instantly buy this inventory from the Steam Community Market using the cheapest current sell order. This is a good indication of the inventories cash value, when you want to exchange for real money">
+            <div class="d-flex flex-row justify-start align-center">
+                <MudAvatar Class="mud-info">
+                    <i class="fas fa-fw fa-hand-holding-usd"></i>
+                </MudAvatar>
+                <div class="ml-2">
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Market Value (buy now cheapest)</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2">
+                        @if (InventoryTotal == null)
+                        {
+                            <MudSkeleton Class="mud-skeleton-light" />
+                        }
+                        else 
+                        {
+                            <span>@State.Currency.ToPriceString(InventoryTotal.BuyNowValue)</span>
+                        }
+                    </MudText>
+                </div>
+            </div>
+        </MudTooltip>
+    </MudItem>
+}
+
+@if (InventoryTotal == null || InventoryTotal?.Invested > 0)
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
         <MudTooltip Text="The total amount of money spent to purchase this inventory">
@@ -73,7 +139,7 @@
                         }
                         else 
                         {
-                            @State.Currency.ToPriceString(InventoryTotal.TotalInvested.Value)
+                            @State.Currency.ToPriceString(InventoryTotal.Invested.Value)
                         }
                     </MudText>
                 </div>
@@ -82,85 +148,19 @@
     </MudItem>
 }
 
-@if (InventoryTotal == null || InventoryTotal?.TotalMarketValue > 0)
+@if (InventoryTotal == null || InventoryTotal?.InvestmentNetReturn > 0)
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
-        <MudTooltip Text="The price that people are actually paying for this inventory right now, based on the most recent sales of each item. This is a good indication of the inventories trading value, when you want to exchange for things other than real money">
+        <MudTooltip Text="The total amount of investment gains and losses for this inventory. Calculated by subtracting the cost of purchasing all items (where purchase price is known) from the last median sales price">
             <div class="d-flex flex-row justify-start align-center">
-                <MudAvatar Class="mud-info">
-                    <i class="fas fa-fw fa-dollar-sign"></i>
-                </MudAvatar>
-                <div class="ml-2">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Market Value</MudText>
-                    <MudText Typo="MudBlazor.Typo.subtitle2">
-                        @if (InventoryTotal == null)
-                        {
-                            <MudSkeleton Class="mud-skeleton-light" />
-                        }
-                        else 
-                        {
-                            <span>@State.Currency.ToPriceString(InventoryTotal.TotalMarketValue)</span>
-                            @if (InventoryTotal.TotalMarket24hrMovement > 0)
-                            {
-                                <span class="mud-success-text ml-1">
-                                    <i class="fas fa-fw fa-arrow-up"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today</span>
-                                </span>
-                            }
-                            @if (InventoryTotal.TotalMarket24hrMovement < 0)
-                            {
-                                <span class="mud-error-text ml-1">
-                                    <i class="fas fa-fw fa-arrow-down"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.TotalMarket24hrMovement) today</span>
-                                </span>
-                            }
-                        }
-                    </MudText>
-                </div>
-            </div>
-        </MudTooltip>
-    </MudItem>
-}
-
-@if (InventoryTotal == null || InventoryTotal?.TotalResellValue > 0)
-{
-    <MudItem xs="12" sm="6" lg="4" xl="2">
-        <MudTooltip Text="The amount of money you could probably get if this inventory was cashed-out right now; more specifically, if all items were listed and sold on the Steam Community Market by undercutting the current 'buy now' prices. This is a good indication of the inventories cash value, when you want to exchange for real money">
-            <div class="d-flex flex-row justify-start align-center">
-                <MudAvatar Class="mud-success">
-                    <i class="fas fa-fw fa-hand-holding-usd"></i>
-                </MudAvatar>
-                <div class="ml-2">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Market Cash-Out Value (after fees)</MudText>
-                    <MudText Typo="MudBlazor.Typo.subtitle2">
-                        @if (InventoryTotal == null)
-                        {
-                            <MudSkeleton Class="mud-skeleton-light" />
-                        }
-                        else 
-                        {
-                            <span>@State.Currency.ToPriceString(InventoryTotal.TotalResellValue - InventoryTotal.TotalResellTax)</span>
-                        }
-                    </MudText>
-                </div>
-            </div>
-        </MudTooltip>
-    </MudItem>
-}
-
-@if (InventoryTotal == null || InventoryTotal?.TotalInvested > 0)
-{
-    <MudItem xs="12" sm="6" lg="4" xl="2">
-        <MudTooltip Text="The total amount of profit/loss for this inventory. Calculated by subtracting the cost of purchasing all items (where purchase price is known) and the sellers fees incurred by the Steam Community Market (assuming the items will be cashed-out at some point)">
-            <div class="d-flex flex-row justify-start align-center">
-                <MudAvatar Class="@(InventoryTotal?.TotalResellProfit < 0 ? "mud-error" : "mud-success")">
+                <MudAvatar Class="@(InventoryTotal?.InvestmentNetReturn >= 0 ? "mud-success" : "mud-error")">
                     @if (InventoryTotal == null)
                     {
                         <MudSkeleton SkeletonType="MudBlazor.SkeletonType.Circle" Class="mud-skeleton-light" />
                     }
                     else
                     {
-                        @if (InventoryTotal.TotalResellProfit >= 0)
+                        @if (InventoryTotal.InvestmentNetReturn >= 0)
                         {
                             <i class="fas fa-fw fa-arrow-up"></i>
                         }
@@ -178,24 +178,31 @@
                         }
                         else
                         {
-                            @if (InventoryTotal.TotalResellProfit >= 0)
-                            {
-                                <span>Profit (after investment costs and fees)</span>
-                            }
-                            else
-                            {
-                                <span>Loss (after investment costs and fees)</span>
-                            }
+                            <span>Investment Returns</span>
                         }
                     </MudText>
-                    <MudText Typo="MudBlazor.Typo.subtitle2">
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Default">
                         @if (InventoryTotal == null)
                         {
                             <MudSkeleton Width="12em" Class="mud-skeleton-light" />
                         }
                         else 
                         {
-                            <span>@State.Currency.ToPriceString(InventoryTotal.TotalResellProfit)</span>
+                            <span>@State.Currency.ToPriceString(InventoryTotal.InvestmentNetReturn.Value)</span>
+                            @if (InventoryTotal.InvestmentGains > 0)
+                            {
+                                <small class="mud-success-text ml-1">
+                                    <i class="fas fa-fw fa-arrow-up"></i> 
+                                    <span>@State.Currency.ToPriceString(InventoryTotal.InvestmentGains.Value, dense: true) gains</span>
+                                </small>
+                            }
+                            @if (InventoryTotal.InvestmentLosses > 0)
+                            {
+                                <small class="mud-error-text ml-1">
+                                    <i class="fas fa-fw fa-arrow-down"></i> 
+                                    <span>@State.Currency.ToPriceString(InventoryTotal.InvestmentLosses.Value, dense: true) losses</span>
+                                </small>
+                            }
                         }
                     </MudText>
                 </div>

@@ -201,26 +201,13 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 new EmbedFieldBuilder()
                 .WithName("📈 Market Value")
-                .WithValue(currency.ToPriceString(inventoryTotals.TotalMarketValue))
+                .WithValue(currency.ToPriceString(inventoryTotals.MarketValue))
                 .WithIsInline(false)
             };
-            if (inventoryTotals.TotalInvested != null && inventoryTotals.TotalInvested > 0)
-            {
-                fields.Add(new EmbedFieldBuilder()
-                    .WithName("💰 Investment Cost")
-                    .WithValue(currency.ToPriceString(inventoryTotals.TotalInvested.Value))
-                    .WithIsInline(true)
-                );
-                fields.Add(new EmbedFieldBuilder()
-                    .WithName((inventoryTotals.TotalResellProfit >= 0) ? "⬆️ Profit" : "⬇️ Loss")
-                    .WithValue(currency.ToPriceString(inventoryTotals.TotalResellProfit))
-                    .WithIsInline(true)
-                );
-            }
 
             var embed = new EmbedBuilder()
                 .WithAuthor(author)
-                .WithDescription($"Inventory of **{inventoryTotals.TotalItems.ToQuantityString()} item(s)**.")
+                .WithDescription($"Inventory of **{inventoryTotals.Items.ToQuantityString()} item(s)**.")
                 .WithFields(fields)
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)

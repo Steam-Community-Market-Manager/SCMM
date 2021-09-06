@@ -322,13 +322,14 @@ namespace SCMM.Web.Server.API.Controllers
                     Name = profile.Name,
                     AvatarUrl = profile.AvatarUrl,
                     InventoryMosaicUrl = inventoryThumbnail?.Image?.Id != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image.Id}" : null,
-                    Items = inventoryTotals.TotalItems,
-                    Invested = inventoryTotals.TotalInvested,
-                    MarketValue = inventoryTotals.TotalMarketValue,
-                    Market24hrMovement = inventoryTotals.TotalMarket24hrMovement,
-                    ResellValue = inventoryTotals.TotalResellValue,
-                    ResellTax = inventoryTotals.TotalResellTax,
-                    ResellProfit = inventoryTotals.TotalResellProfit
+                    Items = inventoryTotals.Items,
+                    Invested = inventoryTotals.Invested,
+                    InvestmentGains = inventoryTotals.InvestmentGains,
+                    InvestmentLosses = inventoryTotals.InvestmentLosses,
+                    BuyNowValue = inventoryTotals.BuyNowValue,
+                    MarketValue = inventoryTotals.MarketValue,
+                    MarketMovementValue = inventoryTotals.MarketMovementValue,
+                    MarketMovementTime = inventoryTotals.MarketMovementTime,
                 }
             );
         }

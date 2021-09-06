@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210906100630_RefactorSteamMarketItemValueSnapshots")]
+    partial class RefactorSteamMarketItemValueSnapshots
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -629,12 +631,6 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.Property<DateTimeOffset?>("LastCheckedSalesOn")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("LastSaleOn")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<long?>("LastSaleValue")
-                        .HasColumnType("bigint");
 
                     b.Property<long>("Open24hrValue")
                         .HasColumnType("bigint");

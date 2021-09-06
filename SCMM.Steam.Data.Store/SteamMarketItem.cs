@@ -40,9 +40,6 @@ namespace SCMM.Steam.Data.Store
         // What is the cheapest sell order
         public long BuyNowPrice { get; set; }
 
-        // What is the difference between the cheapest and 2nd cheapest sell orders
-        public long BuyNowPriceDelta { get; set; }
-
         // What is the price you could reasonably flip this for given the current buy orders
         public long ResellPrice { get; set; }
 
@@ -52,11 +49,8 @@ namespace SCMM.Steam.Data.Store
         // What is the difference between buy now and resell prices
         public long ResellProfit { get; set; }
 
-        [NotMapped]
-        public bool WouldResellProfit => (ResellProfit >= 0);
-
-        [NotMapped]
-        public bool WouldResellLoss => (ResellProfit < 0);
+        // What was the total number of sales from the first 24hrs (1 day)
+        public long First24hrSales { get; set; }
 
         // What was the average price from the first 24hrs (1 day)
         public long First24hrValue { get; set; }
@@ -72,6 +66,9 @@ namespace SCMM.Steam.Data.Store
 
         // What was the average price from the last 24hrs (1 day)
         public long Last24hrValue { get; set; }
+
+        // Was was the price starting at todays open (UTC)
+        public long Open24hrValue { get; set; }
 
         // What was the total number of sales from the last 48hrs (2 days)
         public long Last48hrSales { get; set; }
@@ -109,43 +106,10 @@ namespace SCMM.Steam.Data.Store
         // What was the average price from the last 168hrs (7 days)
         public long Last168hrValue { get; set; }
 
-        // What is the difference between current and 120hr sale prices
-        [NotMapped]
-        public long MovementLast24hrValue => (Last1hrValue - Last24hrValue);
+        // What was the price from the last sale (at any time range)
+        public long? LastSaleValue { get; set; }
 
-        // What is the difference between current and 48hr sale prices
-        [NotMapped]
-        public long MovementLast48hrValue => (Last1hrValue - Last48hrValue);
-
-        // What is the difference between current and 72hr sale prices
-        [NotMapped]
-        public long MovementLast72hrValue => (Last1hrValue - Last72hrValue);
-
-        // What is the difference between current and 96hr sale prices
-        [NotMapped]
-        public long MovementLast96hrValue => (Last1hrValue - Last96hrValue);
-
-        // What is the difference between current and 120hr sale prices
-        [NotMapped]
-        public long MovementLast120hrValue => (Last1hrValue - Last120hrValue);
-
-        // What is the difference between current and 144hr sale prices
-        [NotMapped]
-        public long MovementLast144hrValue => (Last1hrValue - Last144hrValue);
-
-        // What is the difference between current and 168hr sale prices
-        [NotMapped]
-        public long MovementLast168hrValue => (Last1hrValue - Last168hrValue);
-
-        // What is the difference between current and original sale prices
-        [NotMapped]
-        public long MovementAllTimeValue => (Last1hrValue - First24hrValue);
-
-        [NotMapped]
-        public bool HasAppreciated => (Last1hrValue >= First24hrValue);
-
-        [NotMapped]
-        public bool HasDepreciated => (Last1hrValue < First24hrValue);
+        public DateTimeOffset? LastSaleOn { get; set; }
 
         // What was the all-time average price this sells for
         public long AllTimeAverageValue { get; set; }
@@ -160,13 +124,8 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? AllTimeLowestValueOn { get; set; }
 
-        // What is the difference between all-time highest and lowest sale prices
-        public long AllTimeSwingValue => (AllTimeHighestValue - AllTimeLowestValue);
-
         // When was the very first sale
         public DateTimeOffset? FirstSeenOn { get; set; }
-
-        public TimeSpan? MarketAge => (DateTimeOffset.Now - FirstSeenOn);
 
         // How long since orders were last checked
         public DateTimeOffset? LastCheckedOrdersOn { get; set; }
@@ -226,7 +185,6 @@ namespace SCMM.Steam.Data.Store
                 //Supply = sellOrdersSorted.Sum(y => y.Quantity);
                 Supply = (sellOrderCount ?? Supply);
                 BuyNowPrice = lowestBuyNowPrice;
-                BuyNowPriceDelta = (secondLowestBuyNowPrice - lowestBuyNowPrice);
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
                 ResellProfit = (resellPrice - resellTax - lowestBuyNowPrice);
@@ -249,41 +207,47 @@ namespace SCMM.Steam.Data.Store
             }
 
             // Recalculate sales stats
+            var now = DateTimeOffset.UtcNow;
+            var dayOpenTimestamp = now.DateTime;
             var earliestTimestamp = salesSorted.Min(x => x.Timestamp);
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
-            var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24)) && x.Timestamp > earliestTimestamp).ToArray();
+            var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24))).ToArray();
+            var first24hrSales = first24hrs.Sum(x => x.Quantity);
             var first24hrValue = (long)Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
-            var last1hrs = salesSorted.Where(x => x.Timestamp == latestTimestamp).ToArray(); // TODO: This isn't the true 1hr value, can be quite misleading
+            var last1hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(1))).ToArray();
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
             var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.Price) : 0, 0);
-            var last24hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(24)) && x.Timestamp < latestTimestamp).ToArray();
+            var last24hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(24))).ToArray();
             var last24hrSales = last24hrs.Sum(x => x.Quantity);
             var last24hrValue = (long)Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
-            var last48hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(48)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(24))).ToArray();
+            var open24hrValue = (long)(salesSorted.FirstOrDefault(x => x.Timestamp >= dayOpenTimestamp)?.Price ?? 0);
+            var last48hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(48))).ToArray();
             var last48hrSales = last48hrs.Sum(x => x.Quantity);
             var last48hrValue = (long)Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.Price) : 0, 0);
-            var last72hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(72)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(48))).ToArray();
+            var last72hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(72))).ToArray();
             var last72hrSales = last72hrs.Sum(x => x.Quantity);
             var last72hrValue = (long)Math.Round(last72hrs.Length > 0 ? last72hrs.Average(x => x.Price) : 0, 0);
-            var last96hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(96)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(72))).ToArray();
+            var last96hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(96))).ToArray();
             var last96hrSales = last96hrs.Sum(x => x.Quantity);
             var last96hrValue = (long)Math.Round(last96hrs.Length > 0 ? last96hrs.Average(x => x.Price) : 0, 0);
-            var last120hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(120)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(96))).ToArray();
+            var last120hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(120))).ToArray();
             var last120hrSales = last120hrs.Sum(x => x.Quantity);
             var last120hrValue = (long)Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
-            var last144hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(144)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(120))).ToArray();
+            var last144hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(144))).ToArray();
             var last144hrSales = last144hrs.Sum(x => x.Quantity);
             var last144hrValue = (long)Math.Round(last144hrs.Length > 0 ? last144hrs.Average(x => x.Price) : 0, 0);
-            var last168hrs = salesSorted.Where(x => x.Timestamp >= latestTimestamp.Subtract(TimeSpan.FromHours(168)) && x.Timestamp < latestTimestamp.Subtract(TimeSpan.FromHours(144))).ToArray();
+            var last168hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(168))).ToArray();
             var last168hrSales = last168hrs.Sum(x => x.Quantity);
             var last168hrValue = (long)Math.Round(last168hrs.Length > 0 ? last168hrs.Average(x => x.Price) : 0, 0);
 
             FirstSeenOn = salesSorted.FirstOrDefault()?.Timestamp;
+            First24hrSales = first24hrSales;
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
             Last1hrValue = last1hrValue;
             Last24hrSales = last24hrSales;
             Last24hrValue = last24hrValue;
+            Open24hrValue = open24hrValue;
             Last48hrSales = last48hrSales;
             Last48hrValue = last48hrValue;
             Last72hrSales = last72hrSales;
@@ -296,6 +260,8 @@ namespace SCMM.Steam.Data.Store
             Last144hrValue = last144hrValue;
             Last168hrSales = last168hrSales;
             Last168hrValue = last168hrValue;
+            LastSaleValue = salesSorted.LastOrDefault()?.Price;
+            LastSaleOn = salesSorted.LastOrDefault()?.Timestamp;
 
             // The first three days on the market is always overinflated, filter these out before calculating overall averages
             var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
