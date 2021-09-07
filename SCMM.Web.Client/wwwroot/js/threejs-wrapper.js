@@ -243,8 +243,11 @@ function addWorkshopFileToScene(loader, scene) {
 								}
 								if (occlusionMap) {
 									child.material.aoMapIntensity = (manifestMesh.Floats._OcclusionStrength || 1);
-									child.material.roughness = (1 - (manifestMesh.Floats._Glossiness || 0)); // glossiness is the inverse of roughness
-									child.material.metalness = 0; // not supported yet?
+									child.material.roughness = (1 - (manifestMesh.Floats._Glossiness || 0)); // roughness is the inverse of glossiness
+									child.material.metalness = 0;
+								}
+								if (specularMap) {
+									child.material.shininess = (manifestMesh.Floats._Glossiness || 1);
 								}
 								if (emissiveMap) {
 									child.material.emissiveIntensity = 1;
