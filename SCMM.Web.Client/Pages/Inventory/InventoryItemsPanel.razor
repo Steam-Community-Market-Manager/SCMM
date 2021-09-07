@@ -1,5 +1,5 @@
 ﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
-@inject ILogger<InventorySummaryPanel> Logger
+@inject ILogger<InventoryItemsPanel> Logger
 @inject HttpClient Http
 @inject AppState State
 
@@ -45,8 +45,6 @@ else
     [Parameter]
     public string Filter { get; set; }
 
-    public bool HideFree { get; set; }
-    
     private IList<ProfileInventoryItemDescriptionDTO> InventoryItems { get; set; }
     
     private Exception LoadingError { get; set; }
@@ -60,14 +58,14 @@ else
     {
         try
         {
-            Logger.LogInformation("Fetching inventory summary...");
+            Logger.LogInformation("Fetching inventory items...");
             InventoryItems = await Http.GetFromJsonAsync<IList<ProfileInventoryItemDescriptionDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/items"
             );
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error fetching inventory summary for '{SteamId}'");
+            Logger.LogError(ex, $"Error fetching inventory items for '{SteamId}'");
             InventoryItems = null;
             LoadingError = ex;
             throw;

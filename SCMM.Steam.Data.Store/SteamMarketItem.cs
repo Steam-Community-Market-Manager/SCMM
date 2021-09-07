@@ -208,7 +208,7 @@ namespace SCMM.Steam.Data.Store
 
             // Recalculate sales stats
             var now = DateTimeOffset.UtcNow;
-            var dayOpenTimestamp = now.DateTime;
+            var dayOpenTimestamp = now.Date;
             var earliestTimestamp = salesSorted.Min(x => x.Timestamp);
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
             var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24))).ToArray();

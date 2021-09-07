@@ -255,9 +255,6 @@ function addWorkshopFileToScene(loader, scene) {
 
 								child.material.side = THREE.DoubleSide;
 								child.material.shadowSide = THREE.DoubleSide;
-								//child.material.premultipliedAlpha = true;
-								//child.material.dithering = true;
-								//child.material.transparent = true;
 
 							}
 						});

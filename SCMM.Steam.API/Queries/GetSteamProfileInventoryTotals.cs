@@ -25,8 +25,6 @@ namespace SCMM.Steam.API.Queries
 
         public long? InvestmentNetReturn { get; set; }
 
-        public long BuyNowValue { get; set; }
-
         public long MarketValue { get; set; }
 
         public long MarketMovementValue { get; set; }
@@ -77,7 +75,6 @@ namespace SCMM.Steam.API.Queries
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
                     ItemLastSaleValue = (x.Description.MarketItem != null ? x.Description.MarketItem.LastSaleValue ?? 0 : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
                     ItemOpen24hrValue = (x.Description.MarketItem != null ? x.Description.MarketItem.Open24hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
-                    ItemBuyNowPrice = (x.Description.MarketItem != null ? x.Description.MarketItem.BuyNowPrice : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
                     ItemExchangeRateMultiplier = (x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : (x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0))
                 })
                 .ToListAsync();
@@ -107,10 +104,7 @@ namespace SCMM.Steam.API.Queries
                     .Sum(x => (x.ItemLastSaleValue / x.ItemExchangeRateMultiplier) * x.Quantity),
                 TotalValueOpen24hr = profileInventoryItems
                     .Where(x => (x.ItemOpen24hrValue != 0 || x.ItemLastSaleValue != 0) && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => ((x.ItemOpen24hrValue > 0 ? x.ItemOpen24hrValue : x.ItemLastSaleValue) / x.ItemExchangeRateMultiplier) * x.Quantity),
-                TotalBuyNowValue = profileInventoryItems
-                    .Where(x => x.ItemBuyNowPrice != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => (x.ItemBuyNowPrice / x.ItemExchangeRateMultiplier) * x.Quantity)
+                    .Sum(x => ((x.ItemOpen24hrValue > 0 ? x.ItemOpen24hrValue : x.ItemLastSaleValue) / x.ItemExchangeRateMultiplier) * x.Quantity)
             };
 
             // if more than 50% have buy prices set
@@ -128,7 +122,6 @@ namespace SCMM.Steam.API.Queries
                 MarketValue = currency.CalculateExchange(profileInventory.TotalValueLastSale),
                 MarketMovementValue = currency.CalculateExchange(profileInventory.TotalValueLastSale - profileInventory.TotalValueOpen24hr),
                 MarketMovementTime = DateTimeOffset.UtcNow.Date, // start of today (UTC)
-                BuyNowValue = currency.CalculateExchange(profileInventory.TotalBuyNowValue),
             };
         }
     }

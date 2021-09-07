@@ -18,8 +18,6 @@
 
         public long? InvestmentLosses { get; set; }
 
-        public long BuyNowValue { get; set; }
-
         public long MarketValue { get; set; }
 
         public long MarketMovementValue { get; set; }

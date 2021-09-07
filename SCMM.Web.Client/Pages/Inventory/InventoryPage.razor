@@ -1,5 +1,4 @@
 ﻿@page "/inventory/{SteamId}"
-@page "/inventory/{SteamId}/{PanelName}"
 @page "/steam/inventory/{SteamId}"
 @using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject ILogger<InventoryPage> Logger
@@ -38,17 +37,22 @@
             else
             {
                 <MudTabs Elevation="0" ActivePanelIndex="PanelIndex" ActivePanelIndexChanged="OnSelectedPanelChanged" Class="mud-transparent-tabs">
-                    <MudTabPanel Icon="fas fa-fw fa-th" Text="Inventory">
+                    <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory">
                         <MudPaper Outlined="true">
-                            <InventorySummaryPanel SteamId="@SteamId" Filter="@Filter" />
+                            <InventoryItemsPanel SteamId="@SteamId" Filter="@Filter" />
                         </MudPaper>
                     </MudTabPanel>
-                    <MudTabPanel Icon="fas fa-fw fa-poll-h" Text="Investment Performance" Disabled="@(!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator))">
+                    <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Value">
+                        <MudPaper Outlined="true">
+                            <InventoryMarketPanel SteamId="@SteamId" Filter="@Filter" />
+                        </MudPaper>
+                    </MudTabPanel>
+                    <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Returns" Disabled="@(!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator))">
                         <MudPaper Outlined="true">
                             <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!State.Is(Profile?.SteamId))"/>
                         </MudPaper>
                     </MudTabPanel>
-                    <MudTabPanel Icon="fas fa-fw fa-chart-pie" Text="Statistics" Disabled="true">
+                    <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics" Disabled="true">
                         <MudPaper Outlined="true">
                             <InventoryStatisticsPanel SteamId="@SteamId" InventoryTotals="@InventoryTotals" />
                         </MudPaper>
@@ -73,21 +77,25 @@
     private Exception LoadingError { get; set; }
     
     private HttpStatusCode? LoadingErrorStatusCode => (LoadingError as HttpRequestException)?.StatusCode;
-
-    private string Filter { get; set; }
-
+    
     [Parameter]
-    public string PanelName { get; set; }
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Panel { get; set; }
 
     private int PanelIndex { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        switch (PanelName)
+        switch (Panel)
         {
-            case "summary": PanelIndex = 0; break;
-            case "investment": PanelIndex = 1; break;
-            case "statistics": PanelIndex = 2; break;
+            case "items": PanelIndex = 0; break;
+            case "market": PanelIndex = 1; break;
+            case "investment": PanelIndex = 2; break;
+            case "statistics": PanelIndex = 3; break;
         }
         
         await LoadProfileAndInventory();
@@ -109,9 +117,10 @@
         PanelIndex = index;
         switch (index)
         {
-            case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/summary"); break;
-            case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/investment"); break;
-            case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}/statistics"); break;
+            case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=items"); break;
+            case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market"); break;
+            case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment"); break;
+            case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics"); break;
         }
     }
     

@@ -37,7 +37,7 @@
     <MudTooltip Text="The total number of items in this inventory">
         <div class="d-flex flex-row justify-start align-center">
             <MudAvatar Class="mud-info">
-                <InventoryIcon />
+                <i class="fas fa-fw fa-th"></i>
             </MudAvatar>
             <div class="ml-2">
                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Inventory Items</MudText>
@@ -59,13 +59,13 @@
 @if (InventoryTotal == null || InventoryTotal?.MarketValue > 0)
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
-        <MudTooltip Text="How much people have recently paid for this inventory, based on the most recent median sales price of each item. This is a good indication of the inventories trading value, when you want to exchange for things other than real money">
+        <MudTooltip Text="How much people have recently paid for the items in this inventory, based on the most recent median sales price of each item">
             <div class="d-flex flex-row justify-start align-center">
                 <MudAvatar Class="mud-info">
-                    <i class="fas fa-fw fa-hand-holding-usd"></i>
+                    <i class="fas fa-fw fa-balance-scale-left"></i>
                 </MudAvatar>
                 <div class="ml-2">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Market Value (last median sale)</MudText>
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Market Value</MudText>
                     <MudText Typo="MudBlazor.Typo.subtitle2">
                         @if (InventoryTotal == null)
                         {
@@ -78,42 +78,16 @@
                             {
                                 <small class="mud-success-text ml-1">
                                     <i class="fas fa-fw fa-arrow-up"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in last", maxGranularity: 1))</span>
+                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "from", suffix: "ago", maxGranularity: 1))</span>
                                 </small>
                             }
                             @if (InventoryTotal.MarketMovementValue < 0)
                             {
                                 <small class="mud-error-text ml-1">
                                     <i class="fas fa-fw fa-arrow-down"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in last", maxGranularity: 1))</span>
+                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "from", suffix: "ago", maxGranularity: 1))</span>
                                 </small>
                             }
-                        }
-                    </MudText>
-                </div>
-            </div>
-        </MudTooltip>
-    </MudItem>
-}
-
-@if (InventoryTotal == null || InventoryTotal?.BuyNowValue > 0)
-{
-    <MudItem xs="12" sm="6" lg="4" xl="2">
-        <MudTooltip Text="How much it would cost to instantly buy this inventory from the Steam Community Market using the cheapest current sell order. This is a good indication of the inventories cash value, when you want to exchange for real money">
-            <div class="d-flex flex-row justify-start align-center">
-                <MudAvatar Class="mud-info">
-                    <i class="fas fa-fw fa-hand-holding-usd"></i>
-                </MudAvatar>
-                <div class="ml-2">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Market Value (buy now cheapest)</MudText>
-                    <MudText Typo="MudBlazor.Typo.subtitle2">
-                        @if (InventoryTotal == null)
-                        {
-                            <MudSkeleton Class="mud-skeleton-light" />
-                        }
-                        else 
-                        {
-                            <span>@State.Currency.ToPriceString(InventoryTotal.BuyNowValue)</span>
                         }
                     </MudText>
                 </div>
@@ -131,7 +105,7 @@
                     <i class="fas fa-fw fa-dollar-sign"></i>
                 </MudAvatar>
                 <div class="ml-2">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Investment Cost</MudText>
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Investment Costs</MudText>
                     <MudText Typo="MudBlazor.Typo.subtitle2">
                         @if (InventoryTotal == null)
                         {
@@ -160,14 +134,7 @@
                     }
                     else
                     {
-                        @if (InventoryTotal.InvestmentNetReturn >= 0)
-                        {
-                            <i class="fas fa-fw fa-arrow-up"></i>
-                        }
-                        else
-                        {
-                            <i class="fas fa-fw fa-arrow-down"></i>
-                        }
+                        <i class="fas fa-fw fa-hand-holding-usd"></i>
                     }
                 </MudAvatar>
                 <div class="ml-2">
@@ -222,7 +189,7 @@
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="ml-2 no-wrap">
             @if (@Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) > 0)
             {
-                <span>Last refreshed @Math.Floor((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).TotalHours) hour(s) ago</span>
+                <span>Last refreshed @((DateTimeOffset.Now - (Profile.LastUpdatedInventoryOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1))</span>
             }
             else
             {

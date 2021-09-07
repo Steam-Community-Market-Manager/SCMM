@@ -235,6 +235,18 @@
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryMovement(System.String)">
+            <summary>
+            Get profile inventory item information
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
+            <response code="200">Profile inventory item information.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetInventoryInvestment(System.String,System.String,System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection)">
             <summary>
             Get profile inventory investment information

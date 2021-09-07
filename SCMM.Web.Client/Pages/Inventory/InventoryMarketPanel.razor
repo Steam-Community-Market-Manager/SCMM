@@ -1,0 +1,100 @@
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@inject ILogger<InventoryMarketPanel> Logger
+@inject HttpClient Http
+@inject AppState State
+
+@if (InventoryMovement == null)
+{
+    @if (LoadingError != null)
+    {
+        <Alert Exception="@LoadingError" />
+    }
+    else
+    {
+        <Loading Message="Loading market movement..." />
+    }
+}
+else if (InventoryMovement?.Items?.Any() != true)
+{
+    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="Inventory is empty, nothing to see here." />
+}
+else 
+{
+    <div class="d-flex flex-wrap flex-column align-start justify-center pa-4">
+        @foreach (var movement in InventoryMovement.MarketMovement)
+        {
+            <div class="mt-4 mb-2">
+                <MudText Typo="Typo.h6" Color="MudBlazor.Color.Default">@movement.Key.ToString("g")</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@((DateTimeOffset.Now - @movement.Key).ToDurationString(prefix: "from", suffix: "ago", maxGranularity: 1))</MudText>
+            </div>
+            <div class="d-flex flex-wrap flex-row align-start justify-start">
+                @foreach (var item in movement.Value.Where(x => x.Value != 0).OrderByDescending(x => x.Value))
+                {
+                    <div class="d-flex flex-row align-center pa-1">
+                        <img src="@(InventoryMovement.Items.FirstOrDefault(x => x.Id == item.Key)?.IconUrl)" class="mx-1" style="width:32px; height:32px;" />
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap clickable" Style="@($"color: {(InventoryMovement.Items.FirstOrDefault(x => x.Id == item.Key)?.ForegroundColour)}")">
+                                <span>@(InventoryMovement.Items.FirstOrDefault(x => x.Id == item.Key)?.Name)</span>
+						    </MudText>
+                            @if (item.Value > 0)
+                            {
+                                <small class="mud-success-text">
+                                    <i class="fas fa-fw fa-arrow-up"></i> 
+                                    <span>@State.Currency.ToPriceString(item.Value)</span>
+                                </small>
+                            }
+                            @if (item.Value < 0)
+                            {
+                                <small class="mud-error-text">
+                                    <i class="fas fa-fw fa-arrow-down"></i> 
+                                    <span>@State.Currency.ToPriceString(item.Value)</span>
+                                </small>
+                            }
+					    </div>
+					</div>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string SteamId { get; set; }
+    
+    [Parameter]
+    public string Filter { get; set; }
+
+    private ProfileInventoryItemMovementDTO InventoryMovement { get; set; }
+    
+    private Exception LoadingError { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInventoryMovement();
+    }
+
+    private async Task LoadInventoryMovement()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory market movement...");
+            InventoryMovement = await Http.GetFromJsonAsync<ProfileInventoryItemMovementDTO>(
+                $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/movement"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory market movement for '{SteamId}'");
+            InventoryMovement = null;
+            LoadingError = ex;
+            throw;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+    
+}
