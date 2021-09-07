@@ -197,39 +197,57 @@ function addWorkshopFileToScene(loader, scene) {
 								child.receiveShadow = true;
 								child.material.needsUpdate = true;
 
+								manifestMesh.Textures = (manifestMesh.Textures || {});
 								var map = loadWorkshopFileTexture(loader, manifestMesh.Textures._MainTex);
 								var normalMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._BumpMap);
-								var lightMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._OcclusionMap);
+								var occlusionMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._OcclusionMap);
 								var specularMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._SpecGlossMap);
 								var emissiveMap = loadWorkshopFileTexture(loader, manifestMesh.Textures._EmissionMap);
 
 								// Textures
 								child.material.map = map;
-								child.material.normalMap = normalMap;
-								child.material.lightMap = lightMap;
-								//child.material.aoMap = lightMap;
-								child.material.specularMap = specularMap;
+								if (normalMap) {
+									child.material.normalMap = normalMap;
+								}
+								if (occlusionMap) {
+									child.material.aoMap = occlusionMap; // red channel
+									child.material.roughnessMap = occlusionMap; // green channel
+									child.material.metalnessMap = occlusionMap; // blue channel
+								}
+								if (specularMap) {
+									child.material.specularMap = specularMap;
+                                }
 								if (emissiveMap) {
 									child.material.emissiveMap = emissiveMap;
 								}
 
-								// Floats
-								child.material.alphaTest = manifestMesh.Floats._Cutoff;
-								//child.material.alphaToCoverage = manifestMesh.Floats._Cutoff;
-								child.material.normalScale = new THREE.Vector2(manifestMesh.Floats._BumpScale, manifestMesh.Floats._BumpScale);
-								child.material.lightMapIntensity = manifestMesh.Floats._OcclusionStrength;
-								//child.material.aoMapIntensity = manifestMesh.Floats._OcclusionStrength;
-								child.material.shininess = manifestMesh.Floats._Glossiness;
-								//child.material.roughness = manifestMesh.Floats._Glossiness;
-								if (emissiveMap) {
-									child.material.emissiveIntensity = 1;
+								// Colors
+								manifestMesh.Colors = (manifestMesh.Colors || {});
+								if (manifestMesh.Colors._Color) {
+									child.material.color = new THREE.Color(manifestMesh.Colors._Color.r, manifestMesh.Colors._Color.g, manifestMesh.Colors._Color.b);
+								}
+								if (specularMap && manifestMesh.Colors._SpecColor) {
+									child.material.specular = new THREE.Color(manifestMesh.Colors._SpecColor.r, manifestMesh.Colors._SpecColor.g, manifestMesh.Colors._SpecColor.b);
+                                }
+								if (emissiveMap && manifestMesh.Colors._EmissionColor) {
+									child.material.emissive = new THREE.Color(manifestMesh.Colors._EmissionColor.r, manifestMesh.Colors._EmissionColor.g, manifestMesh.Colors._EmissionColor.b);
 								}
 
-								// Colors
-								child.material.color = new THREE.Color(manifestMesh.Colors._Color.r, manifestMesh.Colors._Color.g, manifestMesh.Colors._Color.b);
-								child.material.specular = new THREE.Color(manifestMesh.Colors._SpecColor.r, manifestMesh.Colors._SpecColor.g, manifestMesh.Colors._SpecColor.b);
+								// Floats
+								manifestMesh.Floats = (manifestMesh.Floats || {});
+								child.material.alphaTest = (manifestMesh.Floats._Cutoff || 0);
+								child.material.alphaToCoverage = (manifestMesh.Floats._Cutoff || 0);
+								if (normalMap) {
+									child.material.normalMapType = THREE.TangentSpaceNormalMap;
+									child.material.normalScale = new THREE.Vector2(manifestMesh.Floats._BumpScale || 1, manifestMesh.Floats._BumpScale || 1);
+								}
+								if (occlusionMap) {
+									child.material.aoMapIntensity = (manifestMesh.Floats._OcclusionStrength || 1);
+									child.material.roughness = (1 - (manifestMesh.Floats._Glossiness || 0)); // glossiness is the inverse of roughness
+									child.material.metalness = 0; // not supported yet?
+								}
 								if (emissiveMap) {
-									child.material.emissive = new THREE.Color(manifestMesh.Colors._EmissionColor.r, manifestMesh.Colors._EmissionColor.g, manifestMesh.Colors._EmissionColor.b);
+									child.material.emissiveIntensity = 1;
 								}
 
 								child.material.side = THREE.DoubleSide;
