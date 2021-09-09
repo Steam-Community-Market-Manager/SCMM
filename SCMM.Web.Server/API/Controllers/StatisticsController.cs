@@ -40,7 +40,8 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get marketplace listing activity from the last 24hrs
         /// </summary>
-        /// <param name="filter">Optional filter, matches against the item name</param>
+        /// <param name="filter">Optional filter, matches against the buyer name, seller name, or item name</param>
+        /// <param name="item">Optional filter, matches against the item name</param>
         /// <param name="start">Return activity starting at this specific index (pagination)</param>
         /// <param name="count">Number activity to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of activity matching the request parameters.</response>
@@ -49,13 +50,14 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/activity")]
         [ProducesResponseType(typeof(PaginatedResult<ItemActivityStatisticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketActivity([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetMarketActivity([FromQuery] string filter = null, [FromQuery] string item = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamMarketItemActivity
                 .AsNoTracking()
                 .Include(x => x.Description).ThenInclude(x => x.App)
                 .Include(x => x.Currency)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.BuyerName.Contains(filter) || x.SellerName.Contains(filter))
+                .Where(x => string.IsNullOrEmpty(item) || x.Description.Name.Contains(item))
                 .OrderByDescending(x => x.Timestamp);
 
             return Ok(

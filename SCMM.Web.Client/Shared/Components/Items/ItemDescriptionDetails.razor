@@ -918,7 +918,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?filter={Uri.EscapeDataString(Item.Name)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?item={Uri.EscapeDataString(Item.Name)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemActivityStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
