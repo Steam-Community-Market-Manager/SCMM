@@ -30,7 +30,7 @@
                 case "Concrete Barricade": return "barricade.concrete";
                 case "Crossbow": return "crossbow"; // texture issues (Tempered)
                 case "Custom SMG": return "smg.2"; // texture issues (Lovely SMG)
-                case "Double Barrel Shotgun": return "shotgun.double"; // model broken
+                case "Double Barrel Shotgun": return "shotgun.double"; // broken model
                 case "Eoka Pistol": return "pistol.eoka";
                 case "F1 Grenade": return "grenade.f1";
                 case "Fridge": return "fridge"; // door is open
@@ -38,7 +38,7 @@
                 case "Garage Door": return "wall.frame.garagedoor";
                 case "Hammer": return "hammer";
                 case "Hatchet": return "hatchet";
-                case "Hide Boots": return "attire.hide.boots"; //...
+                case "Hide Boots": return "attire.hide.boots";
                 case "Hide Halterneck": return "attire.hide.helterneck";
                 case "Hide Pants": return "attire.hide.pants";
                 case "Hide Poncho": return "attire.hide.poncho";
@@ -50,13 +50,13 @@
                 case "Jacket": return "jacket";
                 case "Jackhammer": return "jackhammer";
                 case "L96 Rifle": return "rifle.l96";
-                case "Large Wood Box": return "box.wooden.large";
-                case "Leather Gloves": return "burlap.gloves"; // dafuq???
-                case "Locker": return "locker";
+                case "Large Wood Box": return "box.wooden.large"; // texture issues (Large Stickered Toy Car)
+                case "Leather Gloves": return "burlap.gloves";
+                case "Locker": return "locker"; // texture issues (Heli Cargo), doors are open
                 case "Longsleeve T-Shirt": return "tshirt.long";
                 case "Longsword": return "longsword";
                 case "LR300": return "lr300.item";
-                case "M249": return "lmg.m249";
+                case "M249": return "lmg.m249"; // broken model
                 case "M39 Rifle": return "rifle.m39";
                 case "Metal Chest Plate": return "metal.plate.torso";
                 case "Metal Facemask": return "metal.facemask";
@@ -64,11 +64,11 @@
                 case "MP5A4": return "smg.mp5";
                 case "Pants": return "pants";
                 case "Pickaxe": return "pickaxe";
-                case "Pump Shotgun": return "shotgun.pump";
-                case "Python Revolver": return "pistol.python";
+                case "Pump Shotgun": return "shotgun.pump"; // can't hide bullet
+                case "Python Revolver": return "pistol.python"; // can't hide chamber
                 case "Reactive Target": return "target.reactive";
                 case "Revolver": return "pistol.revolver";
-                case "Riot Helmet": return "riot.helmet";
+                case "Riot Helmet": return "riot.helmet"; // broken model
                 case "Road Sign Jacket": return "roadsign.jacket";
                 case "Road Sign Kilt": return "roadsign.kilt";
                 case "Roadsign Gloves": return "roadsign.gloves";
@@ -79,12 +79,12 @@
                 case "Salvaged Icepick": return "icepick.salvaged";
                 case "Salvaged Sword": return "salvaged.sword";
                 case "Sandbag Barricade": return "barricade.sandbags";
-                case "Satchel Charge": return "explosive.satchel";
+                case "Satchel Charge": return "explosive.satchel"; // broken model
                 case "Semi-Automatic Pistol": return "pistol.semiauto";
                 case "Semi-Automatic Rifle": return "rifle.semiauto";
                 case "Sheet Metal Door": return "door.hinged.metal";
                 case "Sheet Metal Double Door": return "door.double.hinged.metal";
-                case "Shirt": return "shirt.collared";
+                case "Shirt": return "shirt.collared"; // texture issues (torso should map to white)
                 case "Shorts": return "pants.shorts";
                 case "Sleeping Bag": return "sleepingbag";
                 case "Snow Jacket": return "jacket.snow";
@@ -94,11 +94,11 @@
                 case "Tank Top": return "shirt.tanktop";
                 case "Thompson": return "smg.thompson";
                 case "T-Shirt": return "tshirt";
-                case "Vending Machine": return "vending.machine";
+                case "Vending Machine": return "vending.machine"; // broken model
                 case "Water Purifier": return "water.purifier";
                 case "Waterpipe Shotgun": return "shotgun.waterpipe";
                 case "Wood Double Door": return "door.double.hinged.wood";
-                case "Wood Storage Box": return "box.wooden";
+                case "Wood Storage Box": return "box.wooden"; // texture issues (Heli Cargo)
                 case "Wooden Door": return "door.hinged.wood";
                 default: return null;
             }
