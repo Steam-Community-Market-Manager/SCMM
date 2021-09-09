@@ -441,18 +441,18 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get profile inventory item information
+        /// Get profile inventory market movement
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
-        /// <response code="200">Profile inventory item information.</response>
+        /// <response code="200">Profile inventory market movement information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/inventory/movement")]
-        [ProducesResponseType(typeof(ProfileInventoryItemMovementDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ProfileInventoryItemMovementDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryMovement([FromRoute] string id)
@@ -471,52 +471,36 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
-            var marketItems = await _db.SteamProfileInventoryItems
+            var profileItemMovements = await _db.SteamProfileInventoryItems
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
                 .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
                 .Select(x => new
                 {
-                    ItemId = x.Description.MarketItem.Id,
-                    Currency = x.Description.MarketItem.Currency,
-                    Open24hrValue = x.Description.MarketItem.Open24hrValue,
-                    Description = x.Description
+                    Description = x.Description,
+                    LastSaleValue = (x.Description.MarketItem.LastSaleValue > 0 ? ((decimal)x.Description.MarketItem.LastSaleValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
+                    Open24hrValue = (x.Description.MarketItem.Open24hrValue > 0 ? ((decimal)x.Description.MarketItem.Open24hrValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
+                    Quantity = x.Quantity
                 })
-                .Distinct()
                 .ToListAsync();
-            if (marketItems?.Any() != true)
+            if (profileItemMovements?.Any() != true)
             {
                 return NotFound("No marketable items found");
             }
 
-            var startOfDayUtc = DateTimeOffset.UtcNow.Date;
-            var marketItemIds = marketItems.Select(x => x.ItemId).ToArray();
-            var recentSalesHistory = await _db.SteamMarketItemSale
-                .Where(x => marketItemIds.Contains(x.ItemId))
-                .Where(x => x.Timestamp >= startOfDayUtc)
-                .ToListAsync();
-
-            var groupedSalesHistory = recentSalesHistory
-                .GroupBy(x => x.Timestamp)
-                .OrderByDescending(x => x.Key)
-                .ToDictionary(
-                    k1 => k1.Key,
-                    v1 => v1.ToDictionary(
-                        k2 => marketItems.FirstOrDefault(x => x.ItemId == k2.ItemId)?.Description?.ClassId ?? 0,
-                        v2 => this.Currency().CalculateExchange(
-                            ((marketItems.FirstOrDefault(x => x.ItemId == v2.ItemId)?.Open24hrValue ?? v2.Price) - v2.Price), 
-                            marketItems.FirstOrDefault(x => x.ItemId == v2.ItemId)?.Currency
-                        )
-                    )
-                );
-
-            return Ok(
-                new ProfileInventoryItemMovementDTO()
+            var groupedItemMovement = profileItemMovements
+                .GroupBy(x => x.Description)
+                .Select(x => new ProfileInventoryItemMovementDTO
                 {
-                    Items = marketItems.Select(x => _mapper.Map<SteamAssetDescription, ItemDescriptionDTO>(x.Description, this)).ToList(),
-                    MarketMovement = groupedSalesHistory
-                }
-            );
+                    Item = _mapper.Map<SteamAssetDescription, ItemDescriptionDTO>(x.Key, this),
+                    MovementTime = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset),
+                    Movement = x.Any() ? (this.Currency().CalculateExchange(x.FirstOrDefault()?.LastSaleValue ?? 0m) - this.Currency().CalculateExchange(x.FirstOrDefault()?.Open24hrValue ?? 0m)) : 0,
+                    Quantity = x.Sum(y => y.Quantity)
+                })
+                .OrderByDescending(x => x.Movement)
+                .ToList();
+
+            return Ok(groupedItemMovement);
         }
 
         /// <summary>

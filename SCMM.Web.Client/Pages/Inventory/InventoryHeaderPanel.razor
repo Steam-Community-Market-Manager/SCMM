@@ -78,14 +78,14 @@
                             {
                                 <small class="mud-success-text ml-1">
                                     <i class="fas fa-fw fa-arrow-up"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "from", suffix: "ago", maxGranularity: 1))</span>
+                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
                                 </small>
                             }
                             @if (InventoryTotal.MarketMovementValue < 0)
                             {
                                 <small class="mud-error-text ml-1">
                                     <i class="fas fa-fw fa-arrow-down"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "from", suffix: "ago", maxGranularity: 1))</span>
+                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
                                 </small>
                             }
                         }

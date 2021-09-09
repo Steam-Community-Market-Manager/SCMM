@@ -4,8 +4,12 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {
     public class ProfileInventoryItemMovementDTO
     {
-        public IEnumerable<ItemDescriptionDTO> Items { get; set; }
+        public ItemDescriptionDTO Item { get; set; }
 
-        public IDictionary<DateTimeOffset, Dictionary<ulong, long>> MarketMovement { get; set; }
+        public DateTimeOffset MovementTime { get; set; }
+
+        public long Movement { get; set; }
+
+        public long Quantity { get; set; }
     }
 }

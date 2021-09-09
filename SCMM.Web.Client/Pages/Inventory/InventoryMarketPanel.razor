@@ -14,48 +14,88 @@
         <Loading Message="Loading market movement..." />
     }
 }
-else if (InventoryMovement?.Items?.Any() != true)
+else if (InventoryMovement?.Any() != true)
 {
     <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="Inventory is empty, nothing to see here." />
 }
 else 
 {
-    <div class="d-flex flex-wrap flex-column align-start justify-center pa-4">
-        @foreach (var movement in InventoryMovement.MarketMovement)
-        {
-            <div class="mt-4 mb-2">
-                <MudText Typo="Typo.h6" Color="MudBlazor.Color.Default">@movement.Key.ToString("g")</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary">@((DateTimeOffset.Now - @movement.Key).ToDurationString(prefix: "from", suffix: "ago", maxGranularity: 1))</MudText>
+    <MudGrid Spacing="0">
+        <MudItem xs="12">
+            <div class="pa-4">
+                <MudText Typo="Typo.h5" Color="@(InventoryMovement.Sum(x => x.Movement * x.Quantity) >= 0 ? Color.Success : Color.Error)" Class="no-wrap text-centered">
+                    @if (InventoryMovement.Sum(x => x.Movement * x.Quantity) >= 0)
+                    {
+                        <i class="fas fa-fw fa-arrow-up"></i>
+                    }
+                    else
+                    {
+                        <i class="fas fa-fw fa-arrow-down"></i>
+                    }
+                    <span>@State.Currency.ToPriceString(InventoryMovement.Sum(x => x.Movement * x.Quantity)) total movement</span>
+			    </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap text-centered">
+                    <span>@((DateTimeOffset.Now - InventoryMovement.Min(x => x.MovementTime)).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
+			    </MudText>
             </div>
-            <div class="d-flex flex-wrap flex-row align-start justify-start">
-                @foreach (var item in movement.Value.Where(x => x.Value != 0).OrderByDescending(x => x.Value))
+		</MudItem>
+        <MudItem xs="12" lg="6">
+            <div class="pa-4">
+                <MudText Typo="Typo.h5" Color="Color.Success" Class="no-wrap text-centered">
+                    <i class="fas fa-fw fa-arrow-up"></i> 
+                    <span>@State.Currency.ToPriceString(InventoryMovement.Where(x => x.Movement > 0).Sum(x => x.Movement * x.Quantity)) positive movement</span>
+			    </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap text-centered">
+                    <span>@((DateTimeOffset.Now - InventoryMovement.Min(x => x.MovementTime)).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
+			    </MudText>
+            </div>
+            <div class="d-flex flex-wrap flex-row align-start justify-center pa-4">
+                @foreach (var item in InventoryMovement.Where(x => x.Movement > 0).OrderByDescending(x => x.Movement))
                 {
                     <div class="d-flex flex-row align-center pa-1">
-                        <img src="@(InventoryMovement.Items.FirstOrDefault(x => x.Id == item.Key)?.IconUrl)" class="mx-1" style="width:32px; height:32px;" />
+                        <img src="@(item.Item.IconUrl)" class="mx-1" style="width:32px; height:32px;" />
                         <div class="d-flex flex-column">
-                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap clickable" Style="@($"color: {(InventoryMovement.Items.FirstOrDefault(x => x.Id == item.Key)?.ForegroundColour)}")">
-                                <span>@(InventoryMovement.Items.FirstOrDefault(x => x.Id == item.Key)?.Name)</span>
-						    </MudText>
-                            @if (item.Value > 0)
-                            {
-                                <small class="mud-success-text">
-                                    <i class="fas fa-fw fa-arrow-up"></i> 
-                                    <span>@State.Currency.ToPriceString(item.Value)</span>
-                                </small>
-                            }
-                            @if (item.Value < 0)
-                            {
-                                <small class="mud-error-text">
-                                    <i class="fas fa-fw fa-arrow-down"></i> 
-                                    <span>@State.Currency.ToPriceString(item.Value)</span>
-                                </small>
-                            }
-					    </div>
-					</div>
+                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
+                                <span>@(item.Item.Name)</span>
+					        </MudText>
+                            <small class="mud-success-text">
+                                <i class="fas fa-fw fa-arrow-up"></i> 
+                                <span>@State.Currency.ToPriceString(item.Movement)</span>
+                            </small>
+				        </div>
+			        </div>
                 }
             </div>
-        }
-    </div>
+		</MudItem>
+        <MudItem xs="12" lg="6">
+            <div class="pa-4">
+                <MudText Typo="Typo.h5" Color="Color.Error" Class="no-wrap text-centered">
+                    <i class="fas fa-fw fa-arrow-down"></i> 
+                    <span>@State.Currency.ToPriceString(InventoryMovement.Where(x => x.Movement < 0).Sum(x => x.Movement * x.Quantity)) negative movement</span>
+			    </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap text-centered">
+                    <span>@((DateTimeOffset.Now - InventoryMovement.Min(x => x.MovementTime)).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
+			    </MudText>
+            </div>
+            <div class="d-flex flex-wrap flex-row align-start justify-center pa-4">
+                @foreach (var item in InventoryMovement.Where(x => x.Movement < 0).OrderBy(x => x.Movement))
+                {
+                    <div class="d-flex flex-row align-center pa-1">
+                        <img src="@(item.Item.IconUrl)" class="mx-1" style="width:32px; height:32px;" />
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
+                                <span>@(item.Item.Name)</span>
+					        </MudText>
+                            <small class="mud-error-text">
+                                <i class="fas fa-fw fa-arrow-down"></i> 
+                                <span>@State.Currency.ToPriceString(item.Movement)</span>
+                            </small>
+				        </div>
+			        </div>
+                }
+            </div>
+		</MudItem>
+    </MudGrid>
 }
 
 @code {
@@ -66,7 +106,7 @@ else
     [Parameter]
     public string Filter { get; set; }
 
-    private ProfileInventoryItemMovementDTO InventoryMovement { get; set; }
+    private IEnumerable<ProfileInventoryItemMovementDTO> InventoryMovement { get; set; }
     
     private Exception LoadingError { get; set; }
     
@@ -80,7 +120,7 @@ else
         try
         {
             Logger.LogInformation("Fetching inventory market movement...");
-            InventoryMovement = await Http.GetFromJsonAsync<ProfileInventoryItemMovementDTO>(
+            InventoryMovement = await Http.GetFromJsonAsync<IEnumerable<ProfileInventoryItemMovementDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/movement"
             );
         }
