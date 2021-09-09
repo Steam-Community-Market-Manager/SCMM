@@ -40,7 +40,7 @@ namespace SCMM.Steam.API.Queries
             // For reference, the store normally updates around Friday 6am NZT (Thursday 5pm UTC)
             var lastStoreStart = recentStoreStarts.FirstOrDefault();
             var averageStoreStartTime = TimeSpan.FromSeconds(recentStoreStarts.Select(s => s.TimeOfDay.TotalSeconds).Average());
-            var nextStoreStartUtc = (lastStoreStart.UtcDateTime + averageStoreStartTime);
+            var nextStoreStartUtc = (lastStoreStart.UtcDateTime.Date + averageStoreStartTime);
             do
             {
                 nextStoreStartUtc = nextStoreStartUtc.AddDays(1);
