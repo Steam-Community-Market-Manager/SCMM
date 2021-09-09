@@ -261,11 +261,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .Where(x => (x.LastSaleValue ?? 0 - x.AllTimeHighestValue) >= 0)
+                .Where(x => ((x.LastSaleValue ?? 0) - x.AllTimeHighestValue) >= 0)
                 .Where(x => x.Supply > 0)
                 .Where(x => x.AllTimeHighestValue > 0)
-                .OrderBy(x => Math.Abs(x.LastSaleValue ?? 0 - x.AllTimeHighestValue))
-                .ThenByDescending(x => x.LastSaleValue ?? 0 - x.Last24hrValue);
+                .OrderBy(x => Math.Abs((x.LastSaleValue ?? 0) - x.AllTimeHighestValue))
+                .ThenByDescending(x => (x.LastSaleValue ?? 0) - x.Last24hrValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
@@ -304,11 +304,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .Where(x => (x.LastSaleValue ?? 0 - x.AllTimeLowestValue) <= 0)
+                .Where(x => ((x.LastSaleValue ?? 0) - x.AllTimeLowestValue) <= 0)
                 .Where(x => x.Supply > 0)
                 .Where(x => x.AllTimeLowestValue > 0)
-                .OrderBy(x => Math.Abs(x.LastSaleValue ?? 0 - x.AllTimeLowestValue))
-                .ThenBy(x => x.LastSaleValue ?? 0 - x.LastSaleValue ?? 0);
+                .OrderBy(x => Math.Abs((x.LastSaleValue ?? 0) - x.AllTimeLowestValue))
+                .ThenBy(x => (x.LastSaleValue ?? 0) - x.Last24hrValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
@@ -475,7 +475,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Item = x,
                     // TODO: Snapshot these for faster querying
                     Subscriptions = (x.LifetimeSubscriptions ?? 0),
-                    TotalSalesMin = (x.StoreItem != null ? x.StoreItem.TotalSalesMin ?? 0 : 0),
+                    TotalSalesMin = (x.StoreItem != null ? (x.StoreItem.TotalSalesMin ?? 0) : 0),
                     KnownInventoryDuplicates = 0/*x.InventoryItems
                         .GroupBy(y => y.ProfileId)
                         .Where(y => y.Count() > 1)
