@@ -477,6 +477,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
                 .Select(x => new
                 {
+                    App = x.App,
                     Description = x.Description,
                     LastSaleValue = (x.Description.MarketItem.LastSaleValue > 0 ? ((decimal)x.Description.MarketItem.LastSaleValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
                     Open24hrValue = (x.Description.MarketItem.Open24hrValue > 0 ? ((decimal)x.Description.MarketItem.Open24hrValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
