@@ -44,7 +44,7 @@
                     </MudTabPanel>
                     <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Movement">
                         <MudPaper Outlined="true">
-                            <InventoryMarketPanel SteamId="@SteamId" Filter="@Filter" />
+                            <InventoryMarketPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
                         </MudPaper>
                     </MudTabPanel>
                     <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Returns" Disabled="@(!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator))">

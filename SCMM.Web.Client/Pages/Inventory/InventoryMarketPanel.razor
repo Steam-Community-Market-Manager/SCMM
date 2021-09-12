@@ -21,46 +21,139 @@ else if (InventoryMovement?.Any() != true)
 else 
 {
     <MudGrid Spacing="0">
-        <MudItem xs="12">
-            <div class="pa-4">
-                <MudText Typo="Typo.h5" Color="@(InventoryMovement.Sum(x => x.Movement * x.Quantity) >= 0 ? Color.Success : Color.Error)" Class="no-wrap text-centered">
-                    @if (InventoryMovement.Sum(x => x.Movement * x.Quantity) >= 0)
-                    {
-                        <i class="fas fa-fw fa-arrow-up"></i>
-                    }
-                    else
-                    {
-                        <i class="fas fa-fw fa-arrow-down"></i>
-                    }
-                    <span>@State.Currency.ToPriceString(InventoryMovement.Sum(x => x.Movement * x.Quantity)) total movement</span>
-			    </MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap text-centered">
-                    <span>@((DateTimeOffset.Now - InventoryMovement.Min(x => x.MovementTime)).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
-			    </MudText>
-            </div>
-		</MudItem>
+        @if (InventoryMovementChartData?.Any() == true)
+        {
+            <MudItem xs="12" xl="4">
+                <div class="pa-4">
+                    <style>
+                        #MarketMovement_Series_0_Connector_ {
+                            stroke-dasharray: 10px 10px;
+                            stroke-linejoin: round;
+                            stroke-linecap: round;
+                            -webkit-animation: dash 1s linear infinite;
+                            animation: dash 1s linear infinite;
+                        }
+                        @@-webkit-keyframes dash {
+                            100% {
+                                stroke-dashoffset: -20px;
+                            }
+                        }
+                        @@keyframes dash {
+                            100% {
+                                stroke-dashoffset: -20px;
+                            }
+                        }
+                    </style>
+                    <SfChart ID="MarketMovement" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%"
+                             Title="@($"Market movement {((DateTimeOffset.Now - InventoryMovement.Min(x => x.MovementTime)).ToDurationString(prefix: "in the last", maxGranularity: 1))}")">
+                        <ChartTitleStyle Size="1.3em" Color="#eeeeee" />
+                        <ChartArea>
+                            <ChartAreaBorder Width="0" />
+                        </ChartArea>
+                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" LabelIntersectAction="LabelIntersectAction.Rotate90">
+                        </ChartPrimaryXAxis>
+                        <ChartAxes>
+                            <ChartAxis Name="MovementAxis" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" />
+                        </ChartAxes>
+                        <ChartSeriesCollection>
+                            <ChartSeries DataSource="@InventoryMovementChartData" XName="Name" YName="Value" YAxisName="MovementAxis" Fill="#388e3c" NegativeFillColor="#d32f2f" SummaryFillColor="#1976d2" 
+                                         SumIndexes="@InventoryMovementChartSumIndexes" Type="ChartSeriesType.Waterfall">
+                                <ChartMarker>
+                                    <ChartDataLabel Visible="true" Position="LabelPosition.Outer">
+                                        <ChartDataLabelFont Color="#eeeeee" />
+                                        <ChartDataLabelMargin Left="5" Right="5" Top="5" Bottom="5" />
+									</ChartDataLabel>
+                                    @*
+                                    <ChartDataLabel Visible="true" Name="Icon">
+                                        <Template>
+                                            @{
+                                                var data = context as ChartDataPointInfo;
+                                            }
+                                            @if (!String.IsNullOrEmpty(data.Text))
+                                            {
+                                                <img src="@data.Text" style="max-width:3em" />
+                                            }                                            
+                                            
+                                        </Template>
+                                    </ChartDataLabel>
+                                    *@
+                                </ChartMarker>
+                            </ChartSeries>
+                        </ChartSeriesCollection>
+                        <ChartZoomSettings EnableSelectionZooming="false" EnableMouseWheelZooming="false" EnablePinchZooming="false" />
+                        <ChartTooltipSettings Enable="false" />
+                        <ChartLegendSettings Visible="false" />
+                    </SfChart>
+                </div>
+		    </MudItem>
+        }
+        @if (InventoryMovementPositiveDistributionChartData?.Any() == true)
+        {
+            <MudItem xs="12" md="6" xl="4">
+                <div class="pa-4">
+                    <SfAccumulationChart ID="PositiveMovementDistribution" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%"
+                                         Title="Positive movement distribution" EnableSmartLabels="true">
+                        <ChartTitleStyle Size="1.3em" Color="#eeeeee" />
+                        <ChartArea>
+                            <ChartAreaBorder Width="0" />
+                        </ChartArea>
+                        <AccumulationChartTooltipSettings Enable="true" Format="@($"${{point.x}}: <b>{State.Currency.PrefixText}${{point.y}}{State.Currency.SuffixText}</b>")" />
+                        <AccumulationChartLegendSettings Visible="false" />
+                        <AccumulationChartSeriesCollection>
+                            <AccumulationChartSeries DataSource="@InventoryMovementPositiveDistributionChartData" XName="Name" YName="Value" Radius="80%" StartAngle="0" EndAngle="360" InnerRadius="0%" Explode="false" GroupMode="GroupMode.Point" GroupTo="9">
+                                <AccumulationDataLabelSettings Name="Name" Visible="true" Position="AccumulationLabelPosition.Outside">
+                                    <AccumulationChartDataLabelFont Color="#eeeeee" />
+                                    <AccumulationChartConnector Type="ConnectorType.Curve" />
+                                </AccumulationDataLabelSettings>
+                            </AccumulationChartSeries>
+                        </AccumulationChartSeriesCollection>
+                    </SfAccumulationChart>
+                </div>
+		    </MudItem>
+        }
+        @if (InventoryMovementNegativeDistributionChartData?.Any() == true)
+        {
+            <MudItem xs="12" md="6" xl="4">
+                <div class="pa-4">
+                    <SfAccumulationChart ID="NegativeMovementDistribution" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%"
+                                         Title="Negative movement distribution" EnableSmartLabels="true">
+                        <ChartTitleStyle Size="1.3em" Color="#eeeeee"></ChartTitleStyle>
+                        <ChartArea>
+                            <ChartAreaBorder Width="0"></ChartAreaBorder>
+                        </ChartArea>
+                        <AccumulationChartTooltipSettings Enable="true" Format="@($"${{point.x}}: <b>{State.Currency.PrefixText}${{point.y}}{State.Currency.SuffixText}</b>")" />
+                        <AccumulationChartLegendSettings Visible="false" />
+                        <AccumulationChartSeriesCollection>
+                            <AccumulationChartSeries DataSource="@InventoryMovementNegativeDistributionChartData" XName="Name" YName="Value" Radius="80%" StartAngle="0" EndAngle="360" InnerRadius="0%" Explode="false" GroupMode="GroupMode.Point" GroupTo="9">
+                                <AccumulationDataLabelSettings Name="Name" Visible="true" Position="AccumulationLabelPosition.Outside">
+                                    <AccumulationChartDataLabelFont Color="#eeeeee" />
+                                    <AccumulationChartConnector Type="ConnectorType.Curve" />
+                                </AccumulationDataLabelSettings>
+                            </AccumulationChartSeries>
+                        </AccumulationChartSeriesCollection>
+                    </SfAccumulationChart>
+                </div>
+            </MudItem>
+            }
         <MudItem xs="12" lg="6">
-            <div class="pa-4">
-                <MudText Typo="Typo.h5" Color="Color.Success" Class="no-wrap text-centered">
-                    <i class="fas fa-fw fa-arrow-up"></i> 
-                    <span>@State.Currency.ToPriceString(InventoryMovement.Where(x => x.Movement > 0).Sum(x => x.Movement * x.Quantity)) positive movement</span>
-			    </MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap text-centered">
-                    <span>@((DateTimeOffset.Now - InventoryMovement.Min(x => x.MovementTime)).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
-			    </MudText>
-            </div>
             <div class="d-flex flex-wrap flex-row align-start justify-center pa-4">
-                @foreach (var item in InventoryMovement.Where(x => x.Movement > 0).OrderByDescending(x => x.Movement))
+                @foreach (var item in InventoryMovement.Where(x => x.Movement > 0).OrderByDescending(x => x.Movement * x.Quantity))
                 {
                     <div class="d-flex flex-row align-center pa-1">
-                        <img src="@(item.Item.IconUrl)" class="mx-1" style="width:32px; height:32px;" />
+                        <img src="@(item.Item.IconUrl)" class="mx-1" style="max-width:3em" />
                         <div class="d-flex flex-column">
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
                                 <span>@(item.Item.Name)</span>
+                                @if (item.Quantity > 1 ) {
+                                    <span class="mud-secondary-text"> (@item.Quantity.ToQuantityString()) </span>
+                                }
 					        </MudText>
                             <small class="mud-success-text">
                                 <i class="fas fa-fw fa-arrow-up"></i> 
-                                <span>@State.Currency.ToPriceString(item.Movement)</span>
+                                <span>@State.Currency.ToPriceString(item.Movement * item.Quantity)</span>
+                                @if (item.Quantity > 1 ) {
+                                    <span class="mud-secondary-text"> (@State.Currency.ToPriceString(item.Movement) each) </span>
+                                }
                             </small>
 				        </div>
 			        </div>
@@ -68,27 +161,24 @@ else
             </div>
 		</MudItem>
         <MudItem xs="12" lg="6">
-            <div class="pa-4">
-                <MudText Typo="Typo.h5" Color="Color.Error" Class="no-wrap text-centered">
-                    <i class="fas fa-fw fa-arrow-down"></i> 
-                    <span>@State.Currency.ToPriceString(InventoryMovement.Where(x => x.Movement < 0).Sum(x => x.Movement * x.Quantity)) negative movement</span>
-			    </MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap text-centered">
-                    <span>@((DateTimeOffset.Now - InventoryMovement.Min(x => x.MovementTime)).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
-			    </MudText>
-            </div>
             <div class="d-flex flex-wrap flex-row align-start justify-center pa-4">
-                @foreach (var item in InventoryMovement.Where(x => x.Movement < 0).OrderBy(x => x.Movement))
+                @foreach (var item in InventoryMovement.Where(x => x.Movement < 0).OrderBy(x => x.Movement * x.Quantity))
                 {
                     <div class="d-flex flex-row align-center pa-1">
                         <img src="@(item.Item.IconUrl)" class="mx-1" style="width:32px; height:32px;" />
                         <div class="d-flex flex-column">
                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
                                 <span>@(item.Item.Name)</span>
+                                @if (item.Quantity > 1 ) {
+                                    <span class="mud-secondary-text"> (@item.Quantity.ToQuantityString())</span>
+                                }
 					        </MudText>
                             <small class="mud-error-text">
                                 <i class="fas fa-fw fa-arrow-down"></i> 
-                                <span>@State.Currency.ToPriceString(item.Movement)</span>
+                                <span>@State.Currency.ToPriceString(item.Movement * item.Quantity)</span>
+                                @if (item.Quantity > 1 ) {
+                                    <span class="mud-secondary-text"> (@State.Currency.ToPriceString(item.Movement) each) </span>
+                                }
                             </small>
 				        </div>
 			        </div>
@@ -105,9 +195,20 @@ else
     
     [Parameter]
     public string Filter { get; set; }
+    
+    [Parameter]
+    public ProfileInventoryTotalsDTO InventoryTotals { get; set; }
 
     private IEnumerable<ProfileInventoryItemMovementDTO> InventoryMovement { get; set; }
     
+    private IEnumerable<object> InventoryMovementChartData { get; set; }
+    
+    private IEnumerable<object> InventoryMovementPositiveDistributionChartData { get; set;}
+
+    private IEnumerable<object> InventoryMovementNegativeDistributionChartData { get; set;}
+
+    private double[] InventoryMovementChartSumIndexes { get; set; }
+
     private Exception LoadingError { get; set; }
     
     protected override async Task OnInitializedAsync()
@@ -123,6 +224,7 @@ else
             InventoryMovement = await Http.GetFromJsonAsync<IEnumerable<ProfileInventoryItemMovementDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/movement"
             );
+            RecalculateInventoryMovementChartData();
         }
         catch (Exception ex)
         {
@@ -137,4 +239,60 @@ else
         }
     }
     
+    private void RecalculateInventoryMovementChartData()
+    {
+        var movementChartData = new List<ChartData>();
+        movementChartData.Add(new ChartData() 
+        {
+            Name = $"Value {(DateTimeOffset.Now - InventoryTotals.MarketMovementTime).ToDurationString(suffix: "ago", zero: "moments ago", maxGranularity: 1)}",
+            Value =  (double) State.Currency.ToPrice(InventoryTotals.MarketValue - InventoryMovement.Sum(x => x.Movement * x.Quantity))
+        });
+        
+        var positiveMovement = InventoryMovement.Where(x => x.Movement > 0);
+        if (positiveMovement.Any())
+        {
+            movementChartData.Add(new ChartData() 
+            {
+                Name = $"Positive movement",
+                Value = (double) State.Currency.ToPrice(positiveMovement.Sum(x => x.Movement * x.Quantity))
+            });
+        }
+
+        var negativeMovement = InventoryMovement.Where(x => x.Movement < 0);
+        if (negativeMovement.Any())
+        {
+            movementChartData.Add(new ChartData() 
+            {
+                Name = $"Negative movement",
+                Value = (double) State.Currency.ToPrice(negativeMovement.Sum(x => x.Movement * x.Quantity))
+            });
+        }
+        
+        movementChartData.Add(new ChartData() 
+        {
+            Name = "Value now"
+        });
+        
+        InventoryMovementChartSumIndexes = new double[] { movementChartData.Count() - 1 };
+        InventoryMovementChartData = movementChartData;
+
+        var distributionChartData = InventoryMovement.Select(x => new ChartData()
+        {
+            Name = $"{x.Item.Name}",
+            Icon = x.Item.IconUrl,
+            Value = (double) State.Currency.ToPrice(x.Movement * x.Quantity),
+        });
+
+        InventoryMovementPositiveDistributionChartData = distributionChartData.Where(x => x.Value > 0).OrderByDescending(x => x.Value).ToList();
+        InventoryMovementNegativeDistributionChartData = distributionChartData.Where(x => x.Value < 0).OrderBy(x => x.Value).ToList();
+    }
+
+    public class ChartData
+    {
+        public string Name {get; set; }
+
+        public string Icon { get; set; }
+
+        public double Value {get; set; }
+    }
 }
