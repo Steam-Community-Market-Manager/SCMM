@@ -2,6 +2,7 @@
 @page "/store"
 @page "/store/{StoreId}"
 @page "/steam/store"
+@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Store
 @inject ILogger<StorePage> Logger
@@ -589,25 +590,30 @@ else if (StoreList.Any())
     
     private void BuyItemFromStore(StoreItemDetailsDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(
-            $"https://store.steampowered.com/itemstore/{item.AppId}/detail/{item.Id}/"
-        );
+        ExternalNavigationManager.NavigateToNewTab(new SteamStoreItemPageRequest() 
+        {
+            AppId = item.AppId.ToString(),
+            ItemId = item.Id.ToString()
+        });
     }
     
     private void BuyItemFromMarket(StoreItemDetailsDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(
-            $"https://steamcommunity.com/market/listings/{item.AppId}/{Uri.EscapeDataString(item.Name)}"
-        );
+        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
+        {
+            AppId = item.AppId.ToString(),
+            MarketHashName = item.Name
+        });
     }
 
     private void ViewItemWorkshopPage(StoreItemDetailsDTO item)
     {
         if (item.HasWorkshopFile)
         {
-            ExternalNavigationManager.NavigateToNewTab(
-                $"https://steamcommunity.com/sharedfiles/filedetails/?id={item.WorkshopFileId}"
-            );
+            ExternalNavigationManager.NavigateToNewTab(new SteamWorkshopFileDetailsPageRequest() 
+            {
+                Id = item.WorkshopFileId.ToString()
+            });
         }
     }
     

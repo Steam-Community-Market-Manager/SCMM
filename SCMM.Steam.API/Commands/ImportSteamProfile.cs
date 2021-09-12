@@ -97,7 +97,7 @@ namespace SCMM.Steam.API.Commands
                 // Else, if we know the custom profile id, fetch using the legacy XML API
                 else if (!string.IsNullOrEmpty(resolvedId.CustomUrl))
                 {
-                    var response = await _communityClient.GetProfile(new SteamProfilePageRequest()
+                    var response = await _communityClient.GetCustomProfile(new SteamCustomProfilePageRequest()
                     {
                         ProfileId = resolvedId.CustomUrl,
                         Xml = true

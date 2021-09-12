@@ -592,14 +592,7 @@
 
     private void ViewItem(ItemDescriptionDTO item)
     {
-        NavigationManager.NavigateTo($"/item/{item.Name}");
-    }
-    
-    private void ViewProfile(string steamId)
-    {
-        ExternalNavigationManager.NavigateToNewTab(
-            $"https://steamcommunity.com/profiles/{steamId}"
-        );
+        ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");
     }
     
     private void ShowProfileItemsDialog(ProfileAcceptedItemsStatisticDTO profile)

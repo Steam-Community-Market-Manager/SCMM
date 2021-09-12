@@ -1,4 +1,5 @@
-﻿@using SCMM.Web.Data.Models.UI.Item
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Statistic
 @inject ILogger<ItemDescriptionDetails> Logger
 @inject IDialogService Dialogs
@@ -939,16 +940,17 @@
     
     private void ViewStorePage(DateTimeOffset storeDate)
     {
-        NavigationManager.NavigateTo(
+        ExternalNavigationManager.NavigateToNewTab(
             $"/store/{storeDate.Add(TimeSpan.FromHours(1)).UtcDateTime.ToString(Constants.SCMMStoreIdDateFormat)}"
         );
     }
     
     private void ViewItemWorkshopPage()
     {
-        ExternalNavigationManager.NavigateToNewTab(
-            $"https://steamcommunity.com/sharedfiles/filedetails/?id={Item.WorkshopFileId}"
-        );
+        ExternalNavigationManager.NavigateToNewTab(new SteamWorkshopFileDetailsPageRequest() 
+        {
+            Id = Item.WorkshopFileId.ToString()
+        });
     }
     
     private void DownloadItemWorkshopFile()
@@ -970,9 +972,11 @@
 
     private void ViewCreatorWorkshopPage()
     {
-        ExternalNavigationManager.NavigateToNewTab(
-            $"https://steamcommunity.com/profiles/{Item.CreatorId}/myworkshopfiles/?appid={Item.AppId}"
-        );
+        ExternalNavigationManager.NavigateToNewTab(new SteamProfileMyWorkshopFilesPageRequest() 
+        {
+            SteamId = Item.CreatorId.ToString(),
+            AppId = Item.AppId.ToString()
+        });
     }
     
     private void ShowCreatorItemsDialog()

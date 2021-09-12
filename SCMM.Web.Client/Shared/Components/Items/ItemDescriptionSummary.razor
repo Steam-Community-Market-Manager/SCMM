@@ -105,13 +105,13 @@
         {
             OnClick.Invoke(Item);
         }
-        //else if (!String.IsNullOrEmpty(PurchasableItem?.BuyNowUrl))
-        //{
-        //    ExternalNavigationManager.NavigateToNewTab(PurchasableItem.BuyNowUrl);
-        //}
+        else if (!String.IsNullOrEmpty(PurchasableItem?.BuyNowUrl))
+        {
+            ExternalNavigationManager.NavigateToNewTab(PurchasableItem.BuyNowUrl);
+        }
         else
         {
-            NavigationManager.NavigateTo($"/item/{Item.Name}");  
+            ExternalNavigationManager.NavigateToNewTab($"/item/{Item.Name}");  
         }
     }
 

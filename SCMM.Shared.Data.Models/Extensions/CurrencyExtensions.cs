@@ -53,7 +53,7 @@ namespace SCMM.Shared.Data.Models.Extensions
             return currency?.ToPrice(currency.CalculateExchange(price, priceCurrency)) ?? 0;
         }
 
-        public static string ToPriceString(this ICurrency currency, long price, bool dense = false)
+        public static string ToPriceString(this ICurrency currency, decimal price, bool dense = false)
         {
             if (currency == null)
             {
@@ -63,13 +63,17 @@ namespace SCMM.Shared.Data.Models.Extensions
             var localScaleString = string.Empty.PadRight(currency.Scale, '0');
             var localFormat = $"#,##0{(currency.Scale > 0 ? "." : string.Empty)}{localScaleString}";
             var localCulture = CultureInfo.GetCultureInfo(currency.CultureName);
-            var localPrice = currency.ToPrice(price);
-            var localPriceString = localPrice.ToString(localFormat, localCulture.NumberFormat);
+            var localPriceString = price.ToString(localFormat, localCulture.NumberFormat);
             if (!dense)
             {
                 localPriceString = $"{currency.PrefixText}{localPriceString}{currency.SuffixText}";
             }
             return localPriceString.Trim();
+        }
+
+        public static string ToPriceString(this ICurrency currency, long price, bool dense = false)
+        {
+            return currency?.ToPriceString(currency.ToPrice(price), dense: dense);
         }
 
         public static string ToPriceString<T>(this T currency, long price, IExchangeableCurrency priceCurrency, bool dense = false)

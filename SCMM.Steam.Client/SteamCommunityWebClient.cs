@@ -14,9 +14,9 @@ namespace SCMM.Steam.Client
         {
         }
 
-        public async Task<SteamProfileXmlResponse> GetProfile(SteamProfilePageRequest request)
+        public async Task<SteamProfileXmlResponse> GetCustomProfile(SteamCustomProfilePageRequest request)
         {
-            return await GetXml<SteamProfilePageRequest, SteamProfileXmlResponse>(request);
+            return await GetXml<SteamCustomProfilePageRequest, SteamProfileXmlResponse>(request);
         }
 
         public async Task<XElement> GetStorePage(SteamStorePageRequest request)
