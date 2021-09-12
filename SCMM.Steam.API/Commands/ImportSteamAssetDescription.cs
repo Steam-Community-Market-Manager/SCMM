@@ -255,7 +255,9 @@ namespace SCMM.Steam.API.Commands
             // Get community market details from Steam (if item description or nameid is missing and it is a marketable item)
             var marketListingPageHtml = (string)null;
             var assetIsMarketable = string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
-            if ((string.IsNullOrEmpty(itemDescription) || assetDescription.NameId == null) && assetIsMarketable)
+            var needsDescription = (string.IsNullOrEmpty(assetDescription.Description) || string.IsNullOrEmpty(assetDescription.ItemType) || !assetDescription.BreaksIntoComponents.Any());
+            var needsNameId = (assetDescription.NameId == null);
+            if (assetIsMarketable && string.IsNullOrEmpty(itemDescription) && (needsDescription || needsNameId))
             {
                 marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
                 {
@@ -267,7 +269,7 @@ namespace SCMM.Steam.API.Commands
             // Get store details from Steam (if item description is missing and it is a recently accepted store item)
             var storeItemPageHtml = (XElement)null;
             var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
-            if (string.IsNullOrEmpty(itemDescription) && assetIsRecentlyAccepted)
+            if (assetIsRecentlyAccepted && string.IsNullOrEmpty(itemDescription) && (needsDescription))
             {
                 var storeItems = await _communityClient.GetStorePaginated(new SteamStorePaginatedJsonRequest()
                 {

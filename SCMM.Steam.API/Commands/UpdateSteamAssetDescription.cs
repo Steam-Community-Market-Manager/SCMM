@@ -98,7 +98,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse asset description (if any)
-                if (assetClass.Descriptions != null && string.IsNullOrEmpty(assetDescription.Description))
+                if (assetClass.Descriptions != null)
                 {
                     var itemDescription = assetClass.Descriptions
                         .Where(x =>
@@ -118,7 +118,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Parse asset tags (if any)
-                if (assetClass.Tags != null && assetDescription.Tags.Any())
+                if (assetClass.Tags != null)
                 {
                     assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
                     foreach (var tag in assetClass.Tags)
@@ -333,65 +333,57 @@ namespace SCMM.Steam.API.Commands
             // Parse asset description and name id from the market list page (if available)
             if (!string.IsNullOrEmpty(request.MarketListingPageHtml))
             {
-                if (string.IsNullOrEmpty(assetDescription.Description))
-                {
-                    var listingAssetMatchGroup = Regex.Match(request.MarketListingPageHtml, Constants.SteamMarketListingAssetJsonRegex).Groups;
-                    var listingAssetJson = (listingAssetMatchGroup.Count > 1)
-                        ? listingAssetMatchGroup[1].Value.Trim()
-                        : null;
+                var listingAssetMatchGroup = Regex.Match(request.MarketListingPageHtml, Constants.SteamMarketListingAssetJsonRegex).Groups;
+                var listingAssetJson = (listingAssetMatchGroup.Count > 1)
+                    ? listingAssetMatchGroup[1].Value.Trim()
+                    : null;
 
-                    if (!string.IsNullOrEmpty(listingAssetJson))
+                if (!string.IsNullOrEmpty(listingAssetJson))
+                {
+                    try
                     {
-                        try
+                        // NOTE: This is a bit hacky, but the data we need is inside a JavaScript variable within a <script> element, so we try to parse the JSON value of the variable
+                        var listingAsset = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>>>(listingAssetJson);
+                        var itemDescriptionHtml = listingAsset?
+                            .FirstOrDefault().Value?
+                            .FirstOrDefault().Value?
+                            .FirstOrDefault().Value?
+                            .Descriptions?
+                            .Where(x => string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase))
+                            .Select(x => x.Value)
+                            .FirstOrDefault();
+                        if (!string.IsNullOrEmpty(itemDescriptionHtml))
                         {
-                            // NOTE: This is a bit hacky, but the data we need is inside a JavaScript variable within a <script> element, so we try to parse the JSON value of the variable
-                            var listingAsset = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>>>(listingAssetJson);
-                            var itemDescriptionHtml = listingAsset?
-                                .FirstOrDefault().Value?
-                                .FirstOrDefault().Value?
-                                .FirstOrDefault().Value?
-                                .Descriptions?
-                                .Where(x => string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase))
-                                .Select(x => x.Value)
-                                .FirstOrDefault();
-                            if (!string.IsNullOrEmpty(itemDescriptionHtml))
-                            {
-                                // Strip any HTML tags, just get the plain-text
-                                assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
-                            }
+                            // Strip any HTML tags, just get the plain-text
+                            assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
                         }
-                        catch (Exception)
-                        {
-                            // Likely because page says "no listings for item"
-                            // The item probably isn't available on the community market
-                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Likely because page says "no listings for item"
+                        // The item probably isn't available on the community market
                     }
                 }
-                if (assetDescription.NameId == null)
-                {
-                    var itemNameIdMatchGroup = Regex.Match(request.MarketListingPageHtml, Constants.SteamMarketListingItemNameIdRegex).Groups;
-                    var itemNameId = (itemNameIdMatchGroup.Count > 1)
-                        ? itemNameIdMatchGroup[1].Value.Trim()
-                        : null;
 
-                    if (!string.IsNullOrEmpty(itemNameId))
-                    {
-                        assetDescription.NameId = ulong.Parse(itemNameId);
-                    }
+                var itemNameIdMatchGroup = Regex.Match(request.MarketListingPageHtml, Constants.SteamMarketListingItemNameIdRegex).Groups;
+                var itemNameId = (itemNameIdMatchGroup.Count > 1)
+                    ? itemNameIdMatchGroup[1].Value.Trim()
+                    : null;
+
+                if (!string.IsNullOrEmpty(itemNameId))
+                {
+                    assetDescription.NameId = ulong.Parse(itemNameId);
                 }
             }
 
             // Parse asset description from the store page (if available)
             if (request.StoreItemPageHtml != null)
             {
-                if (string.IsNullOrEmpty(assetDescription.Description))
+                var itemDescriptionHtml = request.StoreItemPageHtml.Descendants("div").FirstOrDefault(x => x?.Attribute("class")?.Value == Constants.SteamStoreItemDescriptionName).Value;
+                if (!string.IsNullOrEmpty(itemDescriptionHtml))
                 {
-                    var itemDescriptionHtml = request.StoreItemPageHtml.Descendants("div").FirstOrDefault(x => x?.Attribute("class")?.Value == Constants.SteamStoreItemDescriptionName).Value;
-                    if (!string.IsNullOrEmpty(itemDescriptionHtml))
-                    {
-                        // Strip any HTML tags, just get the plain-text
-                        assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
-                    }
+                    // Strip any HTML tags, just get the plain-text
+                    assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
                 }
             }
 
