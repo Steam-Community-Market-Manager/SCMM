@@ -241,7 +241,7 @@ namespace SCMM.Steam.Data.Store
             var last168hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(168))).ToArray();
             var last168hrSales = last168hrs.Sum(x => x.Quantity);
             var last168hrValue = (long)Math.Round(last168hrs.Length > 0 ? last168hrs.Average(x => x.Price) : 0, 0);
-            var lastSaleValue = salesSorted.LastOrDefault()?.Price;
+            var lastSaleValue = (salesSorted.LastOrDefault()?.Price ?? 0);
             var lastSaleOn = salesSorted.LastOrDefault()?.Timestamp;
 
             FirstSeenOn = firstSaleOn;
@@ -249,7 +249,7 @@ namespace SCMM.Steam.Data.Store
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
             Last1hrValue = last1hrValue;
-            Open24hrValue = (stable24hrAverageValue > 0 ? stable24hrAverageValue : (lastSaleValue ?? 0));
+            Open24hrValue = (stable24hrAverageValue > 0 ? stable24hrAverageValue : lastSaleValue);
             Last24hrSales = last24hrSales;
             Last24hrValue = last24hrValue;
             Last48hrSales = last48hrSales;
