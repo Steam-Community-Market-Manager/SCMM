@@ -13,11 +13,9 @@ else
               ServerData="@LoadItems" RowsPerPage="25" CommitEditTooltip="Save Changes" AllowUnsorted="false">
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
-                <span>Track your investment performance by clicking on an item and entering the price you paid for it.</span><br/>
-                <span class="mud-secondary-text">Your return on investment (RoI) is calculated by deducting the purchase price and Steam market seller fees from the list price of each item.</span>
+                <span>Track your investment returns against the latest market value.</span><br/>
+                <span class="mud-secondary-text">Click on an items "Purchase Price" column to edit the purhcase information, your return on investment (RoI) will then be automatically calculated.</span>
             </MudText>
-            <MudSpacer />
-            <MudTextField T="string" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Class="mt-n2 mx-2" />
         </ToolBarContent>
         <HeaderContent>
             <MudTh Class="mud-primary-text">
@@ -32,7 +30,7 @@ else
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The price you could reasonably expect to sell the item for right now by undercutting the lowest 'buy now' price">
-                    <MudTableSortLabel SortLabel="ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">List Price</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Market Price</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
@@ -74,7 +72,7 @@ else
                         }
                         else
                         {
-                            <span class="mud-secondary-text">Unknown</span>
+                            <span class="mud-secondary-text">(click to modify)</span>
                         }
                         break;
                     }
@@ -298,6 +296,13 @@ else
     
     private Exception LoadingError { get; set; }
     
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Table != null)
+        {
+            await Table.ReloadServerData();
+        }    }
+
     private async Task<TableData<InventoryInvestmentItemDTO>> LoadItems(TableState state)
     {
         try
@@ -401,10 +406,4 @@ else
         return null;
     }
     
-    private void OnSearch(string text)
-    {
-        Filter = text;
-        Table.ReloadServerData();
-    }
-
 }

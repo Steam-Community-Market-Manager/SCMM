@@ -11,6 +11,12 @@
 <PageContainer Title="@(Profile != null ? $"Inventory - {Profile.Name}" : "Inventory")">
     <MudGrid Spacing="2">
         <InventoryHeaderPanel Profile="@Profile" InventoryTotal="@InventoryTotals" SynchroniseInventory="@OnSynchroniseInventory" />
+        <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+            <MudItem xs="12" sm="6" lg="4" xl="2" Class="d-flex flex-row justify-start align-center">
+                <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="ma-0"
+                              Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Variant="MudBlazor.Variant.Outlined" />
+            </MudItem>
+		</MudHidden>
         <MudItem xs="12">
             @if (Profile == null || InventoryTotals == null)
             {
@@ -37,26 +43,34 @@
             else
             {
                 <MudTabs Elevation="0" ActivePanelIndex="PanelIndex" ActivePanelIndexChanged="OnSelectedPanelChanged" Class="mud-transparent-tabs">
-                    <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory">
-                        <MudPaper Outlined="true">
-                            <InventoryItemsPanel SteamId="@SteamId" Filter="@Filter" />
-                        </MudPaper>
-                    </MudTabPanel>
-                    <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Movement">
-                        <MudPaper Outlined="true">
-                            <InventoryMarketPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
-                        </MudPaper>
-                    </MudTabPanel>
-                    <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Returns" Disabled="@(!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator))">
-                        <MudPaper Outlined="true">
-                            <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!State.Is(Profile?.SteamId))"/>
-                        </MudPaper>
-                    </MudTabPanel>
-                    <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics" Disabled="true">
-                        <MudPaper Outlined="true">
-                            <InventoryStatisticsPanel SteamId="@SteamId" InventoryTotals="@InventoryTotals" />
-                        </MudPaper>
-                    </MudTabPanel>
+                    <ChildContent>
+                        <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory">
+                            <MudPaper Outlined="true">
+                                <InventoryItemsPanel SteamId="@SteamId" Filter="@Filter" />
+                            </MudPaper>
+                        </MudTabPanel>
+                        <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Movement">
+                            <MudPaper Outlined="true">
+                                <InventoryMarketPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
+                            </MudPaper>
+                        </MudTabPanel>
+                        <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Returns" Disabled="@(!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator))">
+                            <MudPaper Outlined="true">
+                                <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!State.Is(Profile?.SteamId))"/>
+                            </MudPaper>
+                        </MudTabPanel>
+                        <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics" Disabled="true">
+                            <MudPaper Outlined="true">
+                                <InventoryStatisticsPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
+                            </MudPaper>
+                        </MudTabPanel>
+					</ChildContent>
+	                <Header>
+                        <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
+                            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mt-0 mr-1"
+                                          Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
+					    </MudHidden>
+	                </Header>
                 </MudTabs>
             }
         </MudItem>
@@ -112,15 +126,23 @@
         }
     }
     
+    private void OnSearch(string text)
+    {
+        Filter = text;
+        StateHasChanged();
+    }
+
     private void OnSelectedPanelChanged(int index)
     {
+        var filter = !String.IsNullOrEmpty(Filter) ? $"&filter={Uri.EscapeDataString(Filter)}" : String.Empty;
+
         PanelIndex = index;
         switch (index)
         {
-            case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=items"); break;
-            case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market"); break;
-            case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment"); break;
-            case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics"); break;
+            case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=items{filter}"); break;
+            case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market{filter}"); break;
+            case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment{filter}"); break;
+            case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics{filter}"); break;
         }
     }
     

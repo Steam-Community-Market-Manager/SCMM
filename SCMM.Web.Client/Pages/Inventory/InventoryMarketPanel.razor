@@ -18,9 +18,9 @@
         <Loading Message="Loading market movement..." />
     }
 }
-else if (InventoryMovement?.Any() != true)
+else if (!InventoryMovement.FilterBy(Filter).Any())
 {
-    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="Inventory is empty, nothing to see here." />
+    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="No market movement was observed, check back later." Class="pa-8" />
 }
 else 
 {
@@ -167,57 +167,65 @@ else
                     </SfAccumulationChart>
                 </div>
             </MudItem>
-            }
-        <MudItem xs="12" lg="6">
-            <div class="d-flex flex-wrap flex-row align-start justify-center pa-4">
-                @foreach (var item in InventoryMovement.Where(x => x.Movement > 0).OrderByDescending(x => x.Movement * x.Quantity))
-                {
-                    <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => OnItemClicked(item.Item))">
-                        <img src="@(item.Item.IconUrl)" class="mx-1" style="max-width:3em" />
-                        <div class="d-flex flex-column">
-                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
-                                <span>@(item.Item.Name)</span>
-                                @if (item.Quantity > 1 ) {
-                                    <span class="mud-secondary-text"> (@item.Quantity.ToQuantityString()) </span>
-                                }
-					        </MudText>
-                            <small class="mud-success-text">
-                                <i class="fas fa-fw fa-arrow-up"></i> 
-                                <span>@State.Currency.ToPriceString(item.Movement * item.Quantity)</span>
-                                @if (item.Quantity > 1 ) {
-                                    <span class="mud-secondary-text"> (@State.Currency.ToPriceString(item.Movement) each) </span>
-                                }
-                            </small>
-				        </div>
-			        </div>
-                }
-            </div>
-		</MudItem>
-        <MudItem xs="12" lg="6">
-            <div class="d-flex flex-wrap flex-row align-start justify-center pa-4">
-                @foreach (var item in InventoryMovement.Where(x => x.Movement < 0).OrderBy(x => x.Movement * x.Quantity))
-                {
-                    <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => OnItemClicked(item.Item))">
-                        <img src="@(item.Item.IconUrl)" class="mx-1" style="max-width:3em" />
-                        <div class="d-flex flex-column">
-                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
-                                <span>@(item.Item.Name)</span>
-                                @if (item.Quantity > 1 ) {
-                                    <span class="mud-secondary-text"> (@item.Quantity.ToQuantityString())</span>
-                                }
-					        </MudText>
-                            <small class="mud-error-text">
-                                <i class="fas fa-fw fa-arrow-down"></i> 
-                                <span>@State.Currency.ToPriceString(item.Movement * item.Quantity)</span>
-                                @if (item.Quantity > 1 ) {
-                                    <span class="mud-secondary-text"> (@State.Currency.ToPriceString(item.Movement) each) </span>
-                                }
-                            </small>
-				        </div>
-			        </div>
-                }
-            </div>
-		</MudItem>
+        }
+        @if (InventoryMovementFilteredPositive?.Any() == true)
+        {
+            <MudItem xs="12" lg="6">
+                <div class="d-flex flex-wrap flex-row align-start justify-center pa-4">
+                    @foreach (var item in InventoryMovementFilteredPositive)
+                    {
+                        <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => OnItemClicked(item.Item))">
+                            <img src="@(item.Item.IconUrl)" class="mx-1" style="max-width:3em" />
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
+                                    <span>@(item.Item.Name)</span>
+                                    @if (item.Quantity > 1 ) {
+                                        <span class="mud-secondary-text"> (@item.Quantity.ToQuantityString()) </span>
+                                    }
+					            </MudText>
+                                <small class="mud-success-text">
+                                    <i class="fas fa-fw fa-arrow-up"></i> 
+                                    <span>@State.Currency.ToPriceString(item.Movement * item.Quantity)</span>
+                                    @if (item.Quantity > 1 ) {
+                                        <span class="mud-secondary-text"> (@State.Currency.ToPriceString(item.Movement) each) </span>
+                                    }
+                                </small>
+				            </div>
+			            </div>
+                    }
+                </div>
+		    </MudItem>
+        }
+        
+        @if (InventoryMovementFilteredNegative?.Any() == true)
+        {
+            <MudItem xs="12" lg="6">
+                <div class="d-flex flex-wrap flex-row align-start justify-center pa-4">
+                    @foreach (var item in InventoryMovementFilteredNegative)
+                    {
+                        <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => OnItemClicked(item.Item))">
+                            <img src="@(item.Item.IconUrl)" class="mx-1" style="max-width:3em" />
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
+                                    <span>@(item.Item.Name)</span>
+                                    @if (item.Quantity > 1 ) {
+                                        <span class="mud-secondary-text"> (@item.Quantity.ToQuantityString())</span>
+                                    }
+					            </MudText>
+                                <small class="mud-error-text">
+                                    <i class="fas fa-fw fa-arrow-down"></i> 
+                                    <span>@State.Currency.ToPriceString(item.Movement * item.Quantity)</span>
+                                    @if (item.Quantity > 1 ) {
+                                        <span class="mud-secondary-text"> (@State.Currency.ToPriceString(item.Movement) each) </span>
+                                    }
+                                </small>
+				            </div>
+			            </div>
+                    }
+                </div>
+		    </MudItem>
+        }
+
     </MudGrid>
 }
 
@@ -233,11 +241,15 @@ else
     public ProfileInventoryTotalsDTO InventoryTotals { get; set; }
 
     private IEnumerable<ProfileInventoryItemMovementDTO> InventoryMovement { get; set; }
+
+    private IEnumerable<ProfileInventoryItemMovementDTO> InventoryMovementFilteredPositive { get; set; }
+
+    private IEnumerable<ProfileInventoryItemMovementDTO> InventoryMovementFilteredNegative { get; set; }
     
     private IEnumerable<object> InventoryMovementChartData { get; set; }
     
     private IEnumerable<object> InventoryMovementPositiveDistributionChartData { get; set;}
-
+    
     private IEnumerable<object> InventoryMovementNegativeDistributionChartData { get; set;}
 
     private double[] InventoryMovementChartSumIndexes { get; set; }
@@ -249,6 +261,14 @@ else
         await LoadInventoryMovement();
     }
     
+    protected override void OnParametersSet()
+    {
+        if (InventoryMovement != null)
+        {
+            RebuildInventoryMovementChartData();
+        }
+    }
+
     private void OnItemClicked(ItemDescriptionDTO item)
     {
         ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
@@ -266,7 +286,8 @@ else
             InventoryMovement = await Http.GetFromJsonAsync<IEnumerable<ProfileInventoryItemMovementDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/movement"
             );
-            RecalculateInventoryMovementChartData();
+
+            RebuildInventoryMovementChartData();
         }
         catch (Exception ex)
         {
@@ -281,35 +302,34 @@ else
         }
     }
     
-    private void RecalculateInventoryMovementChartData()
+    private void RebuildInventoryMovementChartData()
     {
+        var movementFiltered = InventoryMovement.FilterBy(Filter).ToList();
+        InventoryMovementFilteredPositive = movementFiltered.Where(x => x.Movement > 0).OrderByDescending(x => x.Movement * x.Quantity).ToList();
+        InventoryMovementFilteredNegative = movementFiltered.Where(x => x.Movement < 0).OrderBy(x => x.Movement * x.Quantity).ToList();
+
         var movementChartData = new List<ChartData>();
         movementChartData.Add(new ChartData() 
         {
             Name = $"Value {(DateTimeOffset.Now - InventoryTotals.MarketMovementTime).ToDurationString(suffix: "ago", zero: "moments ago", maxGranularity: 1)}",
-            Value =  (double) State.Currency.ToPrice(InventoryTotals.MarketValue - InventoryMovement.Sum(x => x.Movement * x.Quantity))
+            Value =  (double) State.Currency.ToPrice(InventoryTotals.MarketValue - movementFiltered.Sum(x => x.Movement * x.Quantity))
         });
-        
-        var positiveMovement = InventoryMovement.Where(x => x.Movement > 0).OrderByDescending(x => x.Movement * x.Quantity);
-        if (positiveMovement.Any())
+        if (InventoryMovementFilteredPositive.Any())
         {
             movementChartData.Add(new ChartData() 
             {
                 Name = $"Positive movement",
-                Value = (double) State.Currency.ToPrice(positiveMovement.Sum(x => x.Movement * x.Quantity))
+                Value = (double) State.Currency.ToPrice(InventoryMovementFilteredPositive.Sum(x => x.Movement * x.Quantity))
             });
         }
-        
-        var negativeMovement = InventoryMovement.Where(x => x.Movement < 0).OrderBy(x => x.Movement * x.Quantity);
-        if (negativeMovement.Any())
+        if (InventoryMovementFilteredNegative.Any())
         {
             movementChartData.Add(new ChartData() 
             {
                 Name = $"Negative movement",
-                Value = (double) State.Currency.ToPrice(negativeMovement.Sum(x => x.Movement * x.Quantity))
+                Value = (double) State.Currency.ToPrice(InventoryMovementFilteredNegative.Sum(x => x.Movement * x.Quantity))
             });
         }
-        
         movementChartData.Add(new ChartData() 
         {
             Name = "Value now"
@@ -318,21 +338,19 @@ else
         InventoryMovementChartSumIndexes = new double[] { movementChartData.Count() - 1 };
         InventoryMovementChartData = movementChartData;
         
-        var distributionChartData = InventoryMovement.Select(x => new ChartData()
+        var distributionChartData = movementFiltered.Select(x => new ChartData()
         {
             Name = $"{x.Item.Name}",
-            Icon = x.Item.IconUrl,
             Value = (double) State.Currency.ToPrice(x.Movement * x.Quantity),
         });
 
         var positiveMovementDistribution = new List<ChartData>();
-        var topPositiveMovement = positiveMovement.Take(9);
-        var otherPositiveMovement = positiveMovement.Except(topPositiveMovement);
+        var topPositiveMovement = InventoryMovementFilteredPositive.Take(9);
+        var otherPositiveMovement = InventoryMovementFilteredPositive.Except(topPositiveMovement);
         positiveMovementDistribution.AddRange(
             topPositiveMovement.Select(x => new ChartData()
             {
                 Name = $"{x.Item.Name}",
-                Icon = x.Item.IconUrl,
                 Value = (double) State.Currency.ToPrice(x.Movement * x.Quantity),
             })
         );
@@ -348,13 +366,12 @@ else
         InventoryMovementPositiveDistributionChartData = positiveMovementDistribution;
         
         var negativeMovementDistribution = new List<ChartData>();
-        var topNegativeMovement = negativeMovement.Take(9);
-        var otherNegativeMovement = negativeMovement.Except(topNegativeMovement);
+        var topNegativeMovement = InventoryMovementFilteredNegative.Take(9);
+        var otherNegativeMovement = InventoryMovementFilteredNegative.Except(topNegativeMovement);
         negativeMovementDistribution.AddRange(
             topNegativeMovement.Select(x => new ChartData()
             {
                 Name = $"{x.Item.Name}",
-                Icon = x.Item.IconUrl,
                 Value = (double) State.Currency.ToPrice(x.Movement * x.Quantity),
             })
         );
@@ -370,11 +387,9 @@ else
         InventoryMovementNegativeDistributionChartData = negativeMovementDistribution;
     }
 
-    public class ChartData
+    private class ChartData
     {
         public string Name {get; set; }
-
-        public string Icon { get; set; }
 
         public double Value {get; set; }
     }

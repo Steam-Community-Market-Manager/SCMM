@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {
-    public class ProfileInventoryItemMovementDTO
+    public class ProfileInventoryItemMovementDTO : ICanBeFiltered
     {
         public ItemDescriptionDTO Item { get; set; }
 
@@ -11,5 +11,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
         public long Movement { get; set; }
 
         public long Quantity { get; set; }
+
+        public string[] Filters => Item?.Filters;
     }
 }

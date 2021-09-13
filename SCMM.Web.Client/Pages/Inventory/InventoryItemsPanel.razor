@@ -14,14 +14,14 @@
         <Loading Message="Loading inventory items..." />
     }
 }
-else if (!InventoryItems.Any())
+else if (!InventoryItems.FilterBy(Filter).Any())
 {
-    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="Inventory is empty, nothing to see here." />
+    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="Inventory is empty, nothing to see here." Class="pa-8" />
 }
 else 
 {
     <div class="d-flex flex-wrap flex-row align-start justify-center">
-        @foreach (var item in InventoryItems)
+        @foreach (var item in InventoryItems.FilterBy(Filter))
         {
             @if (item.Quantity > 1)
             {
@@ -75,5 +75,4 @@ else
             StateHasChanged();
         }
     }
-    
 }
