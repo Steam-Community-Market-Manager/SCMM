@@ -1,0 +1,80 @@
+﻿@using SCMM.Web.Data.Models.UI.Item
+@inject IDialogService Dialogs
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
+
+<div class="grid" style="grid-template-columns: auto auto auto auto">
+
+    <ItemCollectionLayoutTile ItemType="Metal Facemask" Item="@GetItem("Metal Facemask")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Coffee Can Helmet" Item="@GetItem("Coffee Can Helmet")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Riot Helmet" Item="@GetItem("Riot Helmet")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Bucket Helmet" Item="@GetItem("Bucket Helmet")" class="grid-item" />
+
+    <ItemCollectionLayoutTile ItemType="Metal Chest Plate" Item="@GetItem("Metal Chest Plate")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Road Sign Jacket" Item="@GetItem("Road Sign Jacket")" class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+
+    <ItemCollectionLayoutTile ItemType="Roadsign Gloves" Item="@GetItem("Roadsign Gloves")"class="grid-item"  />
+    <ItemCollectionLayoutTile ItemType="Road Sign Kilt" Item="@GetItem("Road Sign Kilt")"class="grid-item"  />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+
+</div>
+
+
+<div class="grid" style="grid-template-columns: auto auto auto auto auto auto auto auto">
+
+    <ItemCollectionLayoutTile ItemType="Beenie Hat" Item="@GetItem("Beenie Hat")" class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Baseball Cap" Item="@GetItem("Baseball Cap")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Boonie Hat" Item="@GetItem("Boonie Hat")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Miners Hat" Item="@GetItem("Miners Hat")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Improvised Balaclava" Item="@GetItem("Improvised Balaclava")" class="grid-item" />
+    
+    <ItemCollectionLayoutTile ItemType="Snow Jacket" Item="@GetItem("Snow Jacket")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Jacket" Item="@GetItem("Jacket")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Hoodie" Item="@GetItem("Hoodie")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Longsleeve T-Shirt" Item="@GetItem("Longsleeve T-Shirt")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Shirt" Item="@GetItem("Shirt")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="T-Shirt" Item="@GetItem("T-Shirt")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Bandana Mask" Item="@GetItem("Bandana Mask")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Tank Top" Item="@GetItem("Tank Top")" class="grid-item" />
+
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Leather Gloves" Item="@GetItem("Leather Gloves")" class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Pants" Item="@GetItem("Pants")" class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Shorts" Item="@GetItem("Shorts")" class="grid-item" />
+
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile ItemType="Boots" Item="@GetItem("Boots")" class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+    <ItemCollectionLayoutTile class="grid-item" />
+
+</div>
+
+@code {
+
+    [Parameter]
+    public IEnumerable<ItemDescriptionWithPriceDTO> Items { get; set; }
+
+    private ItemDescriptionWithPriceDTO GetItem(string type)
+    {
+        return Items.FirstOrDefault(x => x.ItemType == type);
+    }
+}

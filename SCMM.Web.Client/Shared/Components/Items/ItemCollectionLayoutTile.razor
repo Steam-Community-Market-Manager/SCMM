@@ -1,0 +1,41 @@
+﻿@using SCMM.Web.Data.Models.UI.Item
+@inject IDialogService Dialogs
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject AppState State
+
+<div @attributes="AdditionalAttributes">
+    <div class="item mud-paper mud-paper-outlined pa-1" >
+        @if(!String.IsNullOrEmpty(ItemType))
+        {
+            @if(Item != null)
+            {
+                <div class="item-icon hover-zoom hover-zoom-extra">
+                    <img src="@Item.IconUrl" />
+                </div>
+            }
+            else
+            {
+                <div class="item-icon-missing">
+                    <img src="@($"/images/rust/items/{ItemType.Replace(' ', '-').ToLower().Trim()}.png")" />
+                </div>
+            }
+        }
+        else
+        {
+            <div class="item-empty"></div>
+        }
+    </div>
+</div>
+
+@code {
+    
+    [Parameter]
+    public string ItemType { get; set; }
+
+    [Parameter]
+    public ItemDescriptionWithPriceDTO Item { get; set; }
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+
+}

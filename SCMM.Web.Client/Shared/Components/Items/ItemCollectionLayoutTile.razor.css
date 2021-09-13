@@ -1,0 +1,21 @@
+﻿
+.item > div {
+    text-align: center;
+    width: 79px;
+    height: 79px;
+}
+
+.item:hover {
+    background-color: var(--mud-palette-overlay-dark);
+    border: 1px solid var(--mud-palette-lines-default);
+}
+
+.item-icon img {
+    width: 100%;
+}
+
+.item-icon-missing img {
+    width: 100%;
+    opacity: 0.5;
+    filter: grayscale(1);
+}
