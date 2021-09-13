@@ -1,4 +1,4 @@
-﻿<div class="tumble-weed-container ma-2" @attributes="@AdditionalAttributes">
+﻿<div class="tumble-weed-container ma-2">
     <div class="bounce"></div>
     <div class="pebble1"></div>
     <div class="pebble2"></div>
@@ -7,9 +7,6 @@
 
 @code {
 
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object> AdditionalAttributes { get; set; }
-    
     protected override bool ShouldRender() => false;
 
 }

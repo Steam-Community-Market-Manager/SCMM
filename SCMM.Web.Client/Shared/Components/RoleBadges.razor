@@ -32,8 +32,6 @@
     [Parameter]
     public IEnumerable<string> Roles { get; set; }
 
-    protected override bool ShouldRender() => false;
-    
     public bool IsInRole(string role)
     {
         return Roles?.Any(x => String.Equals(x, role, StringComparison.OrdinalIgnoreCase)) == true;
