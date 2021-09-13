@@ -46,25 +46,23 @@
                 <div id="wasm-unsupported" class="wasm-unsupported-root hidden">
                     <img src="images/webassembly.png" />
                     <p>
-                        <span class="preloader-text">Sorry, your web browser does not support WebAssembly (Wasm).</span><br />
-                        <span>See: <a href="https://caniuse.com/wasm" class="preloader-subtext">https://caniuse.com/wasm</a>.</span>
+                        <span class="preloader-text">Your browser does not support WebAssembly (Wasm).</span><br />
+                        <span><a href="https://caniuse.com/wasm" class="preloader-subtext">https://caniuse.com/wasm</a></span>
                     </p>
                 </div>
                 <div id="wasm-loading" class="wasm-loading-root hidden">
-                    <p class="preloader-text loading-text">
-                        <span class="letter">L</span>
-                        <span class="letter">o</span>
-                        <span class="letter">a</span>
-                        <span class="letter">d</span>
-                        <span class="letter">i</span>
-                        <span class="letter">n</span>
-                        <span class="letter">g</span>
+                    <p class="preloader-animation">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="height: 8em; width: 8em;">
+                            <circle cx="50" cy="50" fill="none" stroke="#fff" stroke-width="5" r="35" stroke-dasharray="150 50">
+                                <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 50 50; 360 50 50" keyTimes="0;1"></animateTransform>
+                            </circle>
+                        </svg>
                     </p>
-                    <div id="progress-bar" class="progress-bar-root hidden">
-                        <div id="progress" style="width:0%"></div>
+                    <div id="preloader-progress" class="preloader-progress-bar-root hidden">
+                        <div style="width:0%"></div>
                     </div>
-                    <p class="preloader-subtext">
-                        <span>Initialising Blazor, please wait...</span>
+                    <p class="preloader-text">
+                        <span>Initialising Blazor...</span>
                     </p>
                 </div>
                 <script type="text/javascript">
@@ -107,8 +105,8 @@
 
             let resourceIndex = 0;
             let resourcesLoaded = [];
-            let progressBarElement = document.getElementById('progress-bar');
-            let progressElement = document.getElementById('progress');
+            let progressBarElement = document.getElementById('preloader-progress');
+            let progressElement = progressBarElement.children[0];
             Blazor.start({
 
                 loadBootResource: (type, name, defaultUri, integrity) => {
