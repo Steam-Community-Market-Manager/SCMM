@@ -1,24 +1,24 @@
-﻿@using SCMM.Web.Data.Models.UI.Item
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Item
 @inject IDialogService Dialogs
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
 
 <div @attributes="AdditionalAttributes">
-    <div class="item mud-paper mud-paper-outlined pa-1" >
-        @if(!String.IsNullOrEmpty(ItemType))
+    <div class="item mud-paper mud-paper-outlined pa-1" style="@GetBackgroundStyles()">
+        @if (Item != null)
         {
-            @if(Item != null)
-            {
-                <div class="item-icon hover-zoom hover-zoom-extra">
+            <div class="item-icon clickable hover-zoom hover-zoom-extra" @onclick="@(() => OnItemClicked())">
+                <MudTooltip Text="@Item.Name">
                     <img src="@Item.IconUrl" />
-                </div>
-            }
-            else
-            {
-                <div class="item-icon-missing">
-                    <img src="@($"/images/rust/items/{ItemType.Replace(' ', '-').ToLower().Trim()}.png")" />
-                </div>
-            }
+			    </MudTooltip>
+            </div>
+        }
+        else if (!String.IsNullOrEmpty(ItemType))
+        {
+            <div class="item-icon-missing">
+                <img src="@($"/images/rust/items/{ItemType.Replace(' ', '-').ToLower().Trim()}.png")" />
+            </div>
         }
         else
         {
@@ -30,12 +30,37 @@
 @code {
     
     [Parameter]
+    public ItemDescriptionDTO Item { get; set; }
+    
+    [Parameter]
     public string ItemType { get; set; }
 
     [Parameter]
-    public ItemDescriptionWithPriceDTO Item { get; set; }
+    public bool? ItemIsAcquired { get; set; }
     
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object> AdditionalAttributes { get; set; }
+
+    private string GetBackgroundStyles()
+    {
+        if (Item != null && ItemIsAcquired == true)
+        {
+            return $"background-color: #1b5e2044";
+        }
+        else if (Item != null && ItemIsAcquired == false)
+        {
+            return $"background-color: #b71c1c44";
+        }
+        return null;
+    }
+
+    private void OnItemClicked()
+    {
+        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
+        {
+            AppId = Item.AppId.ToString(),
+            MarketHashName = Item.Name
+        });
+    }
 
 }

@@ -2,7 +2,7 @@
 {
     public static class RustExtensions
     {
-        public static string RustItemTypeToItemId(this string itemType)
+        public static string ToRustItemId(this string itemType)
         {
             switch (itemType)
             {
@@ -102,6 +102,141 @@
                 case "Wooden Door": return "door.hinged.wood";
                 default: return null;
             }
+        }
+
+        public static bool IsRustAttireItem(this string itemType)
+        {
+            switch (itemType)
+            {
+                case "Bandana Mask": 
+                case "Baseball Cap":
+                case "Beenie Hat": 
+                case "Bone Helmet": 
+                case "Boonie Hat": 
+                case "Boots": 
+                case "Bucket Helmet": 
+                case "Burlap Headwrap": 
+                case "Burlap Shirt": 
+                case "Burlap Shoes": 
+                case "Burlap Trousers":
+                case "Coffee Can Helmet":
+                case "Hide Boots":
+                case "Hide Halterneck":
+                case "Hide Pants": 
+                case "Hide Poncho": 
+                case "Hide Skirt":
+                case "Hide Vest": 
+                case "Hoodie":
+                case "Improvised Balaclava": 
+                case "Jacket":
+                case "Leather Gloves":
+                case "Longsleeve T-Shirt": 
+                case "Metal Chest Plate":
+                case "Metal Facemask":
+                case "Miners Hat":
+                case "Pants":
+                case "Riot Helmet": 
+                case "Road Sign Jacket": 
+                case "Road Sign Kilt": 
+                case "Roadsign Gloves": 
+                case "Shirt": 
+                case "Shorts": 
+                case "Snow Jacket": 
+                case "Tank Top": 
+                case "T-Shirt": return true;
+                default: return false;
+            }
+        }
+
+        public static bool IsRustWeaponItem(this string itemType)
+        {
+            switch (itemType)
+            {
+                case "Assault Rifle": 
+                case "Bolt Action Rifle": 
+                case "Crossbow":
+                case "Custom SMG": 
+                case "Double Barrel Shotgun": 
+                case "Eoka Pistol": 
+                case "Hunting Bow":
+                case "L96 Rifle":
+                case "LR300":
+                case "M249": 
+                case "M39 Rifle":
+                case "MP5A4": 
+                case "Pump Shotgun": 
+                case "Python Revolver":
+                case "Revolver": 
+                case "Rocket Launcher": 
+                case "Semi-Automatic Pistol":
+                case "Semi-Automatic Rifle": 
+                case "Thompson": 
+                case "Waterpipe Shotgun":
+                case "F1 Grenade": 
+                case "Satchel Charge":
+                case "Bone Club": 
+                case "Bone Knife": 
+                case "Combat Knife": 
+                case "Longsword": 
+                case "Salvaged Sword": return true;
+                default: return false;
+            }
+        }
+
+        public static bool IsRustToolItem(this string itemType)
+        {
+            switch (itemType)
+            {
+                case "Hammer": 
+                case "Hatchet": 
+                case "Pickaxe": 
+                case "Jackhammer": 
+                case "Rock":
+                case "Salvaged Icepick": 
+                case "Stone Hatchet": 
+                case "Stone Pickaxe": return true;
+                default: return false;
+            }
+        }
+
+        public static bool IsRustDeployableItem(this string itemType)
+        {
+            switch (itemType)
+            {
+                case "Armored Door": 
+                case "Armored Double Door": 
+                case "Garage Door":
+                case "Chair": 
+                case "Concrete Barricade": 
+                case "Fridge":
+                case "Furnace": 
+                case "Large Wood Box":
+                case "Locker": 
+                case "Reactive Target":
+                case "Rug": 
+                case "Rug Bear Skin": 
+                case "Sheet Metal Door": 
+                case "Sheet Metal Double Door":
+                case "Sandbag Barricade": 
+                case "Sleeping Bag": 
+                case "Table": 
+                case "Vending Machine": 
+                case "Water Purifier":
+                case "Wood Double Door":
+                case "Wood Storage Box": 
+                case "Wooden Door": return true;
+                default: return false;
+            }
+        }
+
+        public static bool IsRustUniqueItem(this string itemType)
+        {
+            return (
+                !itemType.IsRustAttireItem() &&
+                !itemType.IsRustWeaponItem() &&
+                !itemType.IsRustToolItem() &&
+                !itemType.IsRustDeployableItem()
+            );
         }
     }
 }

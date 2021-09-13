@@ -1,13 +1,8 @@
 ﻿
 .item > div {
     text-align: center;
-    width: 8em;
-    height: 8em;
-}
-
-.item:hover {
-    background-color: var(--mud-palette-overlay-dark);
-    border: 1px solid var(--mud-palette-lines-default);
+    width: 5rem;
+    height: 5rem;
 }
 
 .item-icon img {

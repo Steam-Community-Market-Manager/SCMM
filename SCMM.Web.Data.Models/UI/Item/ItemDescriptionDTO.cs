@@ -1,4 +1,6 @@
-﻿namespace SCMM.Web.Data.Models.UI.Item
+﻿using System.Text.Json.Serialization;
+
+namespace SCMM.Web.Data.Models.UI.Item
 {
     public class ItemDescriptionDTO : IItemDescription, ICanBeFiltered
     {
@@ -16,7 +18,8 @@
 
         public string IconUrl { get; set; }
 
-        public string[] Filters => new string[]
+        [JsonIgnore]
+        public string[] Filters => new[]
         {
             Id.ToString(), Name, ItemType
         };

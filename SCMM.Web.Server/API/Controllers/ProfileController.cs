@@ -441,6 +441,86 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get profile inventory item collection information
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
+        /// <response code="200">Profile inventory item collection information.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}/inventory/collections")]
+        [ProducesResponseType(typeof(IEnumerable<ProfileInventoryCollectionDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetInventoryCollections([FromRoute] string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("ID is invalid");
+            }
+
+            var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
+            {
+                Id = id
+            });
+            if (resolvedId?.Exists != true)
+            {
+                return NotFound("Profile not found");
+            }
+
+            var profileItemsInCollection = await _db.SteamProfileInventoryItems
+                .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => !String.IsNullOrEmpty(x.Description.ItemCollection))
+                .Select(x => new
+                {
+                    ClassId = x.Description.ClassId,
+                    CreatorId = x.Description.CreatorId,
+                    ItemCollection = x.Description.ItemCollection
+                })
+                .ToListAsync();
+            if (profileItemsInCollection?.Any() != true)
+            {
+                return NotFound("No item collections found");
+            }
+
+            var itemCollections = profileItemsInCollection.Select(x => x.ItemCollection).Distinct().ToArray();
+            var profileCollections = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => itemCollections.Contains(x.ItemCollection))
+                .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
+                //.Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()))
+                .Include(x => x.App)
+                //.Include(x => x.CreatorProfile)
+                //.Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                //.Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                //.OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
+                .ToListAsync();
+
+            var profileCollectionsGrouped = profileCollections
+                .GroupBy(x => new {
+                    CreatorId = x.CreatorId,
+                    ItemCollection = x.ItemCollection
+                })
+                .Select(x => new ProfileInventoryCollectionDTO()
+                {
+                    Name = x.Key.ItemCollection,
+                    Items = x.Select(y => new ProfileInventoryCollectionItemDTO()
+                    {
+                        Item = _mapper.Map<SteamAssetDescription, ItemDescriptionDTO>(y, this),
+                        IsMissing = !profileItemsInCollection.Any(z => z.ClassId == y.ClassId)
+                    }).ToList()
+                })
+                .OrderByDescending(x => x.Items.Count())
+                .ToList();
+
+            return Ok(
+                profileCollectionsGrouped
+            );
+        }
+
+        /// <summary>
         /// Get profile inventory market movement
         /// </summary>
         /// <remarks>

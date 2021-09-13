@@ -49,6 +49,11 @@
                                 <InventoryItemsPanel SteamId="@SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
+                        <MudTabPanel Icon="fas fa-fw fa-tshirt mr-2" Text="Collections">
+                            <MudPaper Outlined="true">
+                                <InventoryCollectionsPanel SteamId="@SteamId" Filter="@Filter" />
+                            </MudPaper>
+                        </MudTabPanel>
                         <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Movement">
                             <MudPaper Outlined="true">
                                 <InventoryMarketPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
@@ -107,9 +112,10 @@
         switch (Panel)
         {
             case "items": PanelIndex = 0; break;
-            case "market": PanelIndex = 1; break;
-            case "investment": PanelIndex = 2; break;
-            case "statistics": PanelIndex = 3; break;
+            case "collections": PanelIndex = 1; break;
+            case "market": PanelIndex = 2; break;
+            case "investment": PanelIndex = 3; break;
+            case "statistics": PanelIndex = 4; break;
         }
         
         await LoadProfileAndInventory();
@@ -140,9 +146,10 @@
         switch (index)
         {
             case 0: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=items{filter}"); break;
-            case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market{filter}"); break;
-            case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment{filter}"); break;
-            case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics{filter}"); break;
+            case 1: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=collections{filter}"); break;
+            case 2: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=market{filter}"); break;
+            case 3: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=investment{filter}"); break;
+            case 4: NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(SteamId)}?panel=statistics{filter}"); break;
         }
     }
     

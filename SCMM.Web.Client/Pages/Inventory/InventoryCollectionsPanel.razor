@@ -1,0 +1,97 @@
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Item
+@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@using SCMM.Web.Client.Shared.Components.Items
+@inject ILogger<InventoryCollectionsPanel> Logger
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+@inject AppState State
+
+@if (InventoryCollections == null)
+{
+    @if (LoadingError != null)
+    {
+        <Alert Exception="@LoadingError" />
+    }
+    else
+    {
+        <Loading Message="Loading item collections..." />
+    }
+}
+else if (!InventoryCollections.FilterBy(Filter).Any())
+{
+    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="No item collections found" Class="pa-8" />
+}
+else 
+{
+    <MudExpansionPanels>
+        @foreach (var collection in InventoryCollections.FilterBy(Filter))
+        {
+            <MudExpansionPanel>
+                <TitleContent>
+                    <div class="d-flex flex-row justify-start align-center">
+                        <img src="@collection.Items.FirstOrDefault()?.Item?.IconUrl" class="mr-2" style="max-width:3em" />
+                        <MudText Typo="Typo.body1" Color="Color.Default">
+                            <span>@collection.Name</span>
+                            <span class="mud-secondary-text">(@collection.Items.Count(x => !x.IsMissing)/@collection.Items.Count())</span>
+                        </MudText>
+                    </div>
+                </TitleContent>
+                <ChildContent>
+                    <ItemCollectionLayout Items="@collection.Items.Select(x => x.Item)" AcquiredItems="@collection.Items.Where(x => !x.IsMissing).Select(x => x.Item)" />
+                </ChildContent>
+            </MudExpansionPanel>
+        }
+    </MudExpansionPanels>
+}
+
+@code {
+
+    [Parameter]
+    public string SteamId { get; set; }
+    
+    [Parameter]
+    public string Filter { get; set; }
+    
+    private IEnumerable<ProfileInventoryCollectionDTO> InventoryCollections { get; set; }
+
+    private Exception LoadingError { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInventoryCollections();
+    }
+    
+    private void OnItemClicked(ItemDescriptionDTO item)
+    {
+        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
+        {
+            AppId = item.AppId.ToString(),
+            MarketHashName = item.Name
+        });
+    }
+
+    private async Task LoadInventoryCollections()
+    {
+        try
+        {
+            Logger.LogInformation("Fetching inventory collections...");
+            InventoryCollections = await Http.GetFromJsonAsync<IEnumerable<ProfileInventoryCollectionDTO>>(
+                $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/collections"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error fetching inventory collections for '{SteamId}'");
+            InventoryCollections = null;
+            LoadingError = ex;
+            throw;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+    
+}
