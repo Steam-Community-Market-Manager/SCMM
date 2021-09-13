@@ -14,7 +14,7 @@ else
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
                 <span>Track your investment returns against the latest market value.</span><br/>
-                <span class="mud-secondary-text">Click on an items "Purchase Price" column to edit the purhcase information, your return on investment (RoI) will then be automatically calculated.</span>
+                <span class="mud-secondary-text">Click on an items "Purchase Price" column to edit the purchase information. Your return on investment (RoI) will then be automatically calculated.</span>
             </MudText>
         </ToolBarContent>
         <HeaderContent>
@@ -273,7 +273,9 @@ else
             </MudTd>
         </RowEditingTemplate>
         <NoRecordsContent>
-            <MudText Class="pa-4">No items found</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="pa-8">
+                <span>No items found</span>
+			</MudText>
         </NoRecordsContent>
         <PagerContent>
             <MudTablePager />

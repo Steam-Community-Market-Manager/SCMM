@@ -20,7 +20,7 @@
 }
 else if (!InventoryMovement.FilterBy(Filter).Any())
 {
-    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="No market movement was observed, check back later." Class="pa-8" />
+    <Alert Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-frown" SubTitle="No market movement was observed, check back later" Class="pa-8" />
 }
 else 
 {
@@ -71,20 +71,6 @@ else
                                         <ChartDataLabelFont Color="#eeeeee" />
                                         <ChartDataLabelMargin Left="5" Right="5" Top="5" Bottom="5" />
 									</ChartDataLabel>
-                                    @*
-                                    <ChartDataLabel Visible="true" Name="Icon">
-                                        <Template>
-                                            @{
-                                                var data = context as ChartDataPointInfo;
-                                            }
-                                            @if (!String.IsNullOrEmpty(data.Text))
-                                            {
-                                                <img src="@data.Text" style="max-width:3em" />
-                                            }                                            
-                                            
-                                        </Template>
-                                    </ChartDataLabel>
-                                    *@
                                 </ChartMarker>
                             </ChartSeries>
                         </ChartSeriesCollection>
@@ -160,7 +146,7 @@ else
                                     var data = (context as AccumulationChartDataPointInfo);
                                 }
                                 <MudPaper Outlined="true" Class="pa-2">
-                                    <span>@(data.X?.ToString()) : <strong>@State.Currency.ToPriceString((decimal)((double)data.Y))</strong> (@Math.Round(data.Percentage, 0)%)</span>
+                                    <span>@(data.X?.ToString()) : <strong>@State.Currency.ToPriceString(-((decimal)((double)data.Y)))</strong> (@Math.Round(data.Percentage, 0)%)</span>
 								</MudPaper>
 							</Template>
                         </AccumulationChartTooltipSettings>
