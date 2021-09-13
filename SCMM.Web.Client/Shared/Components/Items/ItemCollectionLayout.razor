@@ -3,69 +3,180 @@
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
 
-<div class="grid" style="grid-template-columns: auto auto auto auto">
+<div class="d-flex flex-wrap flex-row align-center justify-center">
 
-    <ItemCollectionLayoutTile ItemType="Metal Facemask" Item="@GetItem("Metal Facemask")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Coffee Can Helmet" Item="@GetItem("Coffee Can Helmet")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Riot Helmet" Item="@GetItem("Riot Helmet")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Bucket Helmet" Item="@GetItem("Bucket Helmet")" class="grid-item" />
-
-    <ItemCollectionLayoutTile ItemType="Metal Chest Plate" Item="@GetItem("Metal Chest Plate")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Road Sign Jacket" Item="@GetItem("Road Sign Jacket")" class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-
-    <ItemCollectionLayoutTile ItemType="Roadsign Gloves" Item="@GetItem("Roadsign Gloves")"class="grid-item"  />
-    <ItemCollectionLayoutTile ItemType="Road Sign Kilt" Item="@GetItem("Road Sign Kilt")"class="grid-item"  />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-
-</div>
-
-
-<div class="grid" style="grid-template-columns: auto auto auto auto auto auto auto auto">
-
-    <ItemCollectionLayoutTile ItemType="Beenie Hat" Item="@GetItem("Beenie Hat")" class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Baseball Cap" Item="@GetItem("Baseball Cap")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Boonie Hat" Item="@GetItem("Boonie Hat")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Miners Hat" Item="@GetItem("Miners Hat")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Improvised Balaclava" Item="@GetItem("Improvised Balaclava")" class="grid-item" />
+    @if (AreAllItemsAvailable("Metal Facemask", "Metal Chest Plate"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
     
-    <ItemCollectionLayoutTile ItemType="Snow Jacket" Item="@GetItem("Snow Jacket")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Jacket" Item="@GetItem("Jacket")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Hoodie" Item="@GetItem("Hoodie")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Longsleeve T-Shirt" Item="@GetItem("Longsleeve T-Shirt")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Shirt" Item="@GetItem("Shirt")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="T-Shirt" Item="@GetItem("T-Shirt")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Bandana Mask" Item="@GetItem("Bandana Mask")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Tank Top" Item="@GetItem("Tank Top")" class="grid-item" />
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-info text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Armor (Tier 3)</MudText>
+            </div>
 
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Leather Gloves" Item="@GetItem("Leather Gloves")" class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Pants" Item="@GetItem("Pants")" class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Shorts" Item="@GetItem("Shorts")" class="grid-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Metal Facemask" Item="@GetItem("Metal Facemask")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+    
+            <ItemCollectionLayoutTile ItemType="Hoodie" Item="@GetItem("Hoodie")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Metal Chest Plate" Item="@GetItem("Metal Chest Plate")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+    
+            <ItemCollectionLayoutTile ItemType="Pants" Item="@GetItem("Pants")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Road Sign Kilt" Item="@GetItem("Road Sign Kilt")"class="collection-item" />
+            @if (!AreAnyItemsAvailable("Roadsign Gloves") && AreAnyItemsAvailable("Leather Gloves"))
+            {
+                <ItemCollectionLayoutTile ItemType="Leather Gloves" Item="@GetItem("Leather Gloves")" class="collection-item" />
+            }
+            else
+            {
+                <ItemCollectionLayoutTile ItemType="Roadsign Gloves" Item="@GetItem("Roadsign Gloves")"class="collection-item" />
+            }
 
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile ItemType="Boots" Item="@GetItem("Boots")" class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
-    <ItemCollectionLayoutTile class="grid-item" />
+            <ItemCollectionLayoutTile ItemType="Boots" Item="@GetItem("Boots")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
 
+        </div>
+    }
+
+    @if (AreAllItemsAvailable("Coffee Can Helmet", "Road Sign Jacket"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+    
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-info text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Armor (Tier 2)</MudText>
+            </div>
+
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Coffee Can Helmet" Item="@GetItem("Coffee Can Helmet")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+    
+            <ItemCollectionLayoutTile ItemType="Hoodie" Item="@GetItem("Hoodie")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Road Sign Jacket" Item="@GetItem("Road Sign Jacket")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+    
+            <ItemCollectionLayoutTile ItemType="Pants" Item="@GetItem("Pants")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Road Sign Kilt" Item="@GetItem("Road Sign Kilt")"class="collection-item" />
+            @if (!AreAnyItemsAvailable("Roadsign Gloves") && AreAnyItemsAvailable("Leather Gloves"))
+            {
+                <ItemCollectionLayoutTile ItemType="Leather Gloves" Item="@GetItem("Leather Gloves")" class="collection-item" />
+            }
+            else
+            {
+                <ItemCollectionLayoutTile ItemType="Roadsign Gloves" Item="@GetItem("Roadsign Gloves")"class="collection-item" />
+            }
+
+            <ItemCollectionLayoutTile ItemType="Boots" Item="@GetItem("Boots")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+
+        </div>
+    }
+
+    @if (AreAnyItemsAvailable("Beenie Hat", "Riot Helmet", "Bucket Helment") && AreAnyItemsAvailable("Snow Jacket", "Jacket", "Longsleeve T-Shirt") && AreAnyItemsAvailable("Leather Gloves", "Pants"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+    
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-info text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Outfit (Tier 1)</MudText>
+            </div>
+    
+            <ItemCollectionLayoutTile ItemType="Beenie Hat" Item="@GetItem("Beenie Hat")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Riot Helmet" Item="@GetItem("Riot Helmet")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Bucket Helmet" Item="@GetItem("Bucket Helmet")" class="collection-item" />
+    
+            <ItemCollectionLayoutTile ItemType="Snow Jacket" Item="@GetItem("Snow Jacket")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Jacket" Item="@GetItem("Jacket")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Longsleeve T-Shirt" Item="@GetItem("Longsleeve T-Shirt")" class="collection-item" />
+
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Pants" Item="@GetItem("Pants")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Leather Gloves" Item="@GetItem("Leather Gloves")" class="collection-item" />
+
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+
+        </div>
+    }
+
+    @if (AreAnyItemsAvailable("Baseball Cap", "Boonie Hat", "Miners Hat", "Improvised Balaclava", "Shirt", "T-Shirt", "Bandana Mask", "Tank Top", "Shorts"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto auto">
+    
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-info text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Clothing</MudText>
+            </div>
+    
+            <ItemCollectionLayoutTile ItemType="Baseball Cap" Item="@GetItem("Baseball Cap")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Boonie Hat" Item="@GetItem("Boonie Hat")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Miners Hat" Item="@GetItem("Miners Hat")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Improvised Balaclava" Item="@GetItem("Improvised Balaclava")" class="collection-item" />
+    
+            <ItemCollectionLayoutTile ItemType="Shirt" Item="@GetItem("Shirt")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="T-Shirt" Item="@GetItem("T-Shirt")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Bandana Mask" Item="@GetItem("Bandana Mask")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Tank Top" Item="@GetItem("Tank Top")" class="collection-item" />
+
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Shorts" Item="@GetItem("Shorts")" class="collection-item" />
+
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+
+        </div>
+    }
+    
+    @if (AreAnyItemsAvailable("Bone Helmet", "Hide Poncho", "Hide Vest", "Hide Halterneck", "Hide Pants", "Hide Skirt", "Hide Boots"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+    
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-info text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Hide</MudText>
+            </div>
+    
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Bone Helmet" Item="@GetItem("Bone Helmet")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+    
+            <ItemCollectionLayoutTile ItemType="Hide Poncho" Item="@GetItem("Hide Poncho")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hide Vest" Item="@GetItem("Hide Vest")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hide Halterneck" Item="@GetItem("Hide Halterneck")" class="collection-item" />
+
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hide Pants" Item="@GetItem("Hide Pants")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hide Skirt" Item="@GetItem("Hide Skirt")" class="collection-item" />
+
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hide Boots" Item="@GetItem("Hide Boots")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+
+        </div>
+    }
+    
+    @if (AreAnyItemsAvailable("Burlap Headwrap", "Burlap Shirt", "Burlap Trousers", "Burlap Shoes"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto">
+    
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-info text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Burlap</MudText>
+            </div>
+    
+            <ItemCollectionLayoutTile ItemType="Burlap Headwrap" Item="@GetItem("Burlap Headwrap")" class="collection-item" />
+            
+            <ItemCollectionLayoutTile ItemType="Burlap Shirt" Item="@GetItem("Burlap Shirt")" class="collection-item" />
+          
+            <ItemCollectionLayoutTile ItemType="Burlap Trousers" Item="@GetItem("Burlap Trousers")" class="collection-item" />
+           
+            <ItemCollectionLayoutTile ItemType="Burlap Shoes" Item="@GetItem("Burlap Shoes")" class="collection-item" />
+           
+        </div>
+    }
+    
 </div>
 
 @code {
@@ -77,4 +188,19 @@
     {
         return Items.FirstOrDefault(x => x.ItemType == type);
     }
+    
+    private bool AreAllItemsAvailable(params string[] requiredItemTypes)
+    {
+        return requiredItemTypes.All(x => 
+            Items.Select(y => y.ItemType).ToArray().Contains(x, StringComparer.OrdinalIgnoreCase)
+        );
+    }
+
+    private bool AreAnyItemsAvailable(params string[] requiredItemTypes)
+    {
+        return requiredItemTypes.Any(x => 
+            Items.Select(y => y.ItemType).ToArray().Contains(x, StringComparer.OrdinalIgnoreCase)
+        );
+    }
+
 }

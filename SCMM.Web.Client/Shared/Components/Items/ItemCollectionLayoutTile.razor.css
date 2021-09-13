@@ -1,8 +1,8 @@
 ﻿
 .item > div {
     text-align: center;
-    width: 79px;
-    height: 79px;
+    width: 8em;
+    height: 8em;
 }
 
 .item:hover {
