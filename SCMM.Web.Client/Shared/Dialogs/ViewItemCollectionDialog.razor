@@ -30,6 +30,10 @@
                         </MudText>
                     }
                 </div>
+                <MudDivider FlexItem="true" />
+                <MudToggleIconButton @bind-Toggled="@UseCollectionLayout" Size="Size.Medium" Class="mr-12"
+                        Icon="fas fa-fw fa-tshirt" Color="@Color.Default" Title="Item Layout"
+                        ToggledIcon="fas fa-fw fa-th" ToggledColor="@Color.Default" ToggledTitle="Grid Layout" />
             </div>
         }
     </TitleContent>
@@ -40,16 +44,23 @@
         } 
         else
         {
-            <div class="py-4">
-                <MudGrid>
-                    @foreach (var item in Collection.Items)
-                    {
-                        <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
-                            <ItemDescriptionSummary Item="@item" />
-                        </MudItem>
-                    }
-                </MudGrid>
-            </div>
+            @if (UseCollectionLayout)
+            {
+                <ItemCollectionLayout Items="@Collection.Items" />
+            }
+            else 
+            {  
+                <div class="py-4">
+                    <MudGrid>
+                        @foreach (var item in Collection.Items)
+                        {
+                            <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
+                                <ItemDescriptionSummary Item="@item" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </div>
+            }
         }
     </DialogContent>
 </MudDialog>
@@ -64,6 +75,8 @@
 
     private ItemCollectionDTO Collection { get; set; }
     
+    private bool UseCollectionLayout { get; set; } = false;
+
     protected override void OnConfigure(ResponsiveDialogOptions options)
     {
         options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
