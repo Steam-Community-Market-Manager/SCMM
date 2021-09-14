@@ -4,103 +4,132 @@
 @inject AppState State
 
 <div class="d-flex flex-wrap flex-row align-start justify-center">
-
-    @if (AreAnyItemsAvailable("Metal Facemask", "Metal Chest Plate"))
+    
+    @if (AreAnyItemsAvailable("M249", "L96 Rifle", "Bolt Action Rifle", "M39 Rifle", "LR300", "Assault Rifle", "Semi-Automatic Rifle", "MP5A4", "Thompson", "Custom SMG", "Semi-Automatic Pistol", "Python Revolver", "Revolver", "Pump Shotgun", "Double Barrel Shotgun", "Waterpipe Shotgun", "Eoka Pistol"))
     {
-        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto auto">
     
             <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                <MudText Typo="MudBlazor.Typo.subtitle2">Attire - Tier 3</MudText>
+                <MudText Typo="MudBlazor.Typo.subtitle2">Gun</MudText>
             </div>
+    
+            <ItemCollectionLayoutTile ItemType="M249" Item="@FindItem("M249")" ItemIsAcquired="@IsItemAquired("M249")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            
+            <ItemCollectionLayoutTile ItemType="L96 Rifle" Item="@FindItem("L96 Rifle")" ItemIsAcquired="@IsItemAquired("L96 Rifle")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Bolt Action Rifle" Item="@FindItem("Bolt Action Rifle")" ItemIsAcquired="@IsItemAquired("Bolt Action Rifle")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            
+            <ItemCollectionLayoutTile ItemType="M39 Rifle" Item="@FindItem("M39 Rifle")" ItemIsAcquired="@IsItemAquired("M39 Rifle")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            
+            <ItemCollectionLayoutTile ItemType="LR300" Item="@FindItem("LR300")" ItemIsAcquired="@IsItemAquired("LR300")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Assault Rifle" Item="@FindItem("Assault Rifle")" ItemIsAcquired="@IsItemAquired("Assault Rifle")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Semi-Automatic Rifle" Item="@FindItem("Semi-Automatic Rifle")" ItemIsAcquired="@IsItemAquired("Semi-Automatic Rifle")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+    
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="MP5A4" Item="@FindItem("MP5A4")" ItemIsAcquired="@IsItemAquired("MP5A4")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Thompson" Item="@FindItem("Thompson")" ItemIsAcquired="@IsItemAquired("Thompson")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Custom SMG" Item="@FindItem("Custom SMG")" ItemIsAcquired="@IsItemAquired("Custom SMG")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Semi-Automatic Pistol" Item="@FindItem("Semi-Automatic Pistol")" ItemIsAcquired="@IsItemAquired("Semi-Automatic Pistol")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
 
             <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Python Revolver" Item="@FindItem("Python Revolver")" ItemIsAcquired="@IsItemAquired("Python Revolver")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Revolver" Item="@FindItem("Revolver")" ItemIsAcquired="@IsItemAquired("Revolver")" class="collection-item" />
+            
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Pump Shotgun" Item="@FindItem("Pump Shotgun")" ItemIsAcquired="@IsItemAquired("Pump Shotgun")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Double Barrel Shotgun" Item="@FindItem("Double Barrel Shotgun")" ItemIsAcquired="@IsItemAquired("Double Barrel Shotgun")" class="collection-item" />
+            
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Waterpipe Shotgun" Item="@FindItem("Waterpipe Shotgun")" ItemIsAcquired="@IsItemAquired("Waterpipe Shotgun")" class="collection-item" />
+            
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Eoka Pistol" Item="@FindItem("Eoka Pistol")" ItemIsAcquired="@IsItemAquired("Eoka Pistol")" class="collection-item" />
+
+        </div>
+    }
+    
+    @if (AreAnyItemsAvailable("Metal Facemask", "Metal Chest Plate", "Coffee Can Helmet", "Road Sign Jacket", "Road Sign Kilt", "Roadsign Gloves", "Riot Helmet", "Bucket Helmet"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto auto">
+    
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Armor</MudText>
+            </div>
+
             <ItemCollectionLayoutTile ItemType="Metal Facemask" Item="@FindItem("Metal Facemask")" ItemIsAcquired="@IsItemAquired("Metal Facemask")" class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
-    
-            <ItemCollectionLayoutTile ItemType="Hoodie" Item="@FindItem("Hoodie")" ItemIsAcquired="@IsItemAquired("Hoodie")"class="collection-item" />
-            <ItemCollectionLayoutTile ItemType="Metal Chest Plate" Item="@FindItem("Metal Chest Plate")" ItemIsAcquired="@IsItemAquired("Metal Chest Plate")"class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
-    
-            <ItemCollectionLayoutTile ItemType="Pants" Item="@FindItem("Pants")" ItemIsAcquired="@IsItemAquired("Pants")" class="collection-item" />
-            <ItemCollectionLayoutTile ItemType="Road Sign Kilt" Item="@FindItem("Road Sign Kilt")" ItemIsAcquired="@IsItemAquired("Road Sign Kilt")" class="collection-item" />
-            @if (!AreAnyItemsAvailable("Roadsign Gloves") && AreAnyItemsAvailable("Leather Gloves"))
-            {
-                <ItemCollectionLayoutTile ItemType="Leather Gloves" Item="@FindItem("Leather Gloves")" ItemIsAcquired="@IsItemAquired("Leather Gloves")" class="collection-item" />
-            }
-            else
-            {
-                <ItemCollectionLayoutTile ItemType="Roadsign Gloves" Item="@FindItem("Roadsign Gloves")" ItemIsAcquired="@IsItemAquired("Roadsign Gloves")" class="collection-item" />
-            }
-
-            <ItemCollectionLayoutTile ItemType="Boots" Item="@FindItem("Boots")" ItemIsAcquired="@IsItemAquired("Boots")" class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
-
-        </div>
-    }
-
-    @if (AreAnyItemsAvailable("Coffee Can Helmet", "Road Sign Jacket", "Hoodie"))
-    {
-        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
-    
-            <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                <MudText Typo="MudBlazor.Typo.subtitle2">Attire - Tier 2</MudText>
-            </div>
-
-            <ItemCollectionLayoutTile class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Coffee Can Helmet" Item="@FindItem("Coffee Can Helmet")" ItemIsAcquired="@IsItemAquired("Coffee Can Helmet")" class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
-    
-            <ItemCollectionLayoutTile ItemType="Hoodie" Item="@FindItem("Hoodie")" ItemIsAcquired="@IsItemAquired("Hoodie")" class="collection-item" />
-            <ItemCollectionLayoutTile ItemType="Road Sign Jacket" Item="@FindItem("Road Sign Jacket")" ItemIsAcquired="@IsItemAquired("Road Sign Jacket")" class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
-    
-            <ItemCollectionLayoutTile ItemType="Pants" Item="@FindItem("Pants")" ItemIsAcquired="@IsItemAquired("Pants")" class="collection-item" />
-            <ItemCollectionLayoutTile ItemType="Road Sign Kilt" Item="@FindItem("Road Sign Kilt")" ItemIsAcquired="@IsItemAquired("Road Sign Kilt")" class="collection-item" />
-            @if (!AreAnyItemsAvailable("Roadsign Gloves") && AreAnyItemsAvailable("Leather Gloves"))
-            {
-                <ItemCollectionLayoutTile ItemType="Leather Gloves" Item="@FindItem("Leather Gloves")" ItemIsAcquired="@IsItemAquired("Leather Gloves")" class="collection-item" />
-            }
-            else
-            {
-                <ItemCollectionLayoutTile ItemType="Roadsign Gloves" Item="@FindItem("Roadsign Gloves")" ItemIsAcquired="@IsItemAquired("Roadsign Gloves")" class="collection-item" />
-            }
-
-            <ItemCollectionLayoutTile ItemType="Boots" Item="@FindItem("Boots")" ItemIsAcquired="@IsItemAquired("Boots")" class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
-
-        </div>
-    }
-
-    @if (AreAnyItemsAvailable("Beenie Hat", "Riot Helmet", "Bucket Helment", "Snow Jacket", "Jacket", "Longsleeve T-Shirt", "Leather Gloves", "Pants"))
-    {
-        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
-    
-            <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                <MudText Typo="MudBlazor.Typo.subtitle2">Attire - Tier 1</MudText>
-            </div>
-    
-            <ItemCollectionLayoutTile ItemType="Beenie Hat" Item="@FindItem("Beenie Hat")" ItemIsAcquired="@IsItemAquired("Beenie Hat")" class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Riot Helmet" Item="@FindItem("Riot Helmet")" ItemIsAcquired="@IsItemAquired("Riot Helmet")" class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Bucket Helmet" Item="@FindItem("Bucket Helmet")" ItemIsAcquired="@IsItemAquired("Bucket Helmet")" class="collection-item" />
     
+            <ItemCollectionLayoutTile ItemType="Metal Chest Plate" Item="@FindItem("Metal Chest Plate")" ItemIsAcquired="@IsItemAquired("Metal Chest Plate")"class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Road Sign Jacket" Item="@FindItem("Road Sign Jacket")" ItemIsAcquired="@IsItemAquired("Road Sign Jacket")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+    
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Road Sign Kilt" Item="@FindItem("Road Sign Kilt")" ItemIsAcquired="@IsItemAquired("Road Sign Kilt")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Roadsign Gloves" Item="@FindItem("Roadsign Gloves")" ItemIsAcquired="@IsItemAquired("Roadsign Gloves")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+
+        </div>
+    }
+    
+    @if (AreAnyItemsAvailable("Beenie Hat", "Boonie Hat", "Bandana Mask", "Snow Jacket", "Hoodie", "Pants", "Boots",  "Leather Gloves", "Jacket", "Longsleeve T-Shirt"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+    
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Clothing</MudText>
+            </div>
+            
+            <ItemCollectionLayoutTile ItemType="Beenie Hat" Item="@FindItem("Beenie Hat")" ItemIsAcquired="@IsItemAquired("Beenie Hat")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Boonie Hat" Item="@FindItem("Boonie Hat")" ItemIsAcquired="@IsItemAquired("Boonie Hat")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Bandana Mask" Item="@FindItem("Bandana Mask")" ItemIsAcquired="@IsItemAquired("Bandana Mask")" class="collection-item" />
+    
             <ItemCollectionLayoutTile ItemType="Snow Jacket" Item="@FindItem("Snow Jacket")" ItemIsAcquired="@IsItemAquired("Snow Jacket")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hoodie" Item="@FindItem("Hoodie")" ItemIsAcquired="@IsItemAquired("Hoodie")"class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Jacket" Item="@FindItem("Jacket")" ItemIsAcquired="@IsItemAquired("Jacket")" class="collection-item" />
-            <ItemCollectionLayoutTile ItemType="Longsleeve T-Shirt" Item="@FindItem("Longsleeve T-Shirt")" ItemIsAcquired="@IsItemAquired("Longsleeve T-Shirt")" class="collection-item" />
 
             <ItemCollectionLayoutTile class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Pants" Item="@FindItem("Pants")" ItemIsAcquired="@IsItemAquired("Pants")" class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Leather Gloves" Item="@FindItem("Leather Gloves")" ItemIsAcquired="@IsItemAquired("Leather Gloves")" class="collection-item" />
 
             <ItemCollectionLayoutTile class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Boots" Item="@FindItem("Boots")" ItemIsAcquired="@IsItemAquired("Boots")" class="collection-item" />
             <ItemCollectionLayoutTile class="collection-item" />
 
         </div>
     }
 
-    @if (AreAnyItemsAvailable("Baseball Cap", "Boonie Hat", "Miners Hat", "Improvised Balaclava", "Shirt", "T-Shirt", "Bandana Mask", "Tank Top", "Shorts"))
+    @if (AreAnyItemsAvailable("Baseball Cap", "Miners Hat", "Improvised Balaclava", "Shirt", "Longsleeve T-Shirt", "T-Shirt", "Tank Top", "Shorts"))
     {
         <div class="collection pa-4" style="grid-template-columns: auto auto auto auto">
     
@@ -109,19 +138,19 @@
             </div>
     
             <ItemCollectionLayoutTile ItemType="Baseball Cap" Item="@FindItem("Baseball Cap")" ItemIsAcquired="@IsItemAquired("Baseball Cap")" class="collection-item" />
-            <ItemCollectionLayoutTile ItemType="Boonie Hat" Item="@FindItem("Boonie Hat")" ItemIsAcquired="@IsItemAquired("Boonie Hat")" class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Miners Hat" Item="@FindItem("Miners Hat")" ItemIsAcquired="@IsItemAquired("Miners Hat")" class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Improvised Balaclava" Item="@FindItem("Improvised Balaclava")" ItemIsAcquired="@IsItemAquired("Improvised Balaclava")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
     
             <ItemCollectionLayoutTile ItemType="Shirt" Item="@FindItem("Shirt")" ItemIsAcquired="@IsItemAquired("Shirt")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Longsleeve T-Shirt" Item="@FindItem("Longsleeve T-Shirt")" ItemIsAcquired="@IsItemAquired("Longsleeve T-Shirt")" class="collection-item" />
             <ItemCollectionLayoutTile ItemType="T-Shirt" Item="@FindItem("T-Shirt")" ItemIsAcquired="@IsItemAquired("T-Shirt")" class="collection-item" />
-            <ItemCollectionLayoutTile ItemType="Bandana Mask" Item="@FindItem("Bandana Mask")" ItemIsAcquired="@IsItemAquired("Bandana Mask")" class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Tank Top" Item="@FindItem("Tank Top")" ItemIsAcquired="@IsItemAquired("Tank Top")" class="collection-item" />
 
             <ItemCollectionLayoutTile class="collection-item" />
             <ItemCollectionLayoutTile class="collection-item" />
-            <ItemCollectionLayoutTile class="collection-item" />
             <ItemCollectionLayoutTile ItemType="Shorts" Item="@FindItem("Shorts")" ItemIsAcquired="@IsItemAquired("Shorts")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
 
             <ItemCollectionLayoutTile class="collection-item" />
             <ItemCollectionLayoutTile class="collection-item" />
@@ -177,44 +206,95 @@
         </div>
     }
     
-    @if (Items.Any(x => x.ItemType.IsRustWeaponItem()))
+    @if (AreAnyItemsAvailable("Rocket Launcher", "Crossbow", "Longsword", "Combat Knife", "F1 Grenade", "Hunting Bow", "Salvaged Sword", "Bone Knife", "Satchel Charge", "Bone Club"))
     {
-        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto auto">
     
             <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                <MudText Typo="MudBlazor.Typo.subtitle2">Weapons</MudText>
+                <MudText Typo="MudBlazor.Typo.subtitle2">Weapon</MudText>
             </div>
+    
+            <ItemCollectionLayoutTile ItemType="Rocket Launcher" Item="@FindItem("Rocket Launcher")" ItemIsAcquired="@IsItemAquired("Rocket Launcher")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+    
+            <ItemCollectionLayoutTile ItemType="F1 Grenade" Item="@FindItem("F1 Grenade")" ItemIsAcquired="@IsItemAquired("F1 Grenade")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Crossbow" Item="@FindItem("Crossbow")" ItemIsAcquired="@IsItemAquired("Crossbow")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Longsword" Item="@FindItem("Longsword")" ItemIsAcquired="@IsItemAquired("Longsword")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Combat Knife" Item="@FindItem("Combat Knife")" ItemIsAcquired="@IsItemAquired("Combat Knife")" class="collection-item" />
             
-            @foreach (var item in Items.Where(x => x.ItemType.IsRustWeaponItem()).OrderBy(x => x.ItemType).ThenByDescending(x => x.Id))
-            {
-                <ItemCollectionLayoutTile Item="@item" ItemIsAcquired="IsItemAquired(item.Id)" class="collection-item" />
-            }
+            <ItemCollectionLayoutTile ItemType="Satchel Charge" Item="@FindItem("Satchel Charge")" ItemIsAcquired="@IsItemAquired("Satchel Charge")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hunting Bow" Item="@FindItem("Hunting Bow")" ItemIsAcquired="@IsItemAquired("Hunting Bow")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Salvaged Sword" Item="@FindItem("Salvaged Sword")" ItemIsAcquired="@IsItemAquired("Salvaged Sword")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Bone Knife" Item="@FindItem("Bone Knife")" ItemIsAcquired="@IsItemAquired("Bone Knife")" class="collection-item" />
+            
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Bone Club" Item="@FindItem("Bone Club")" ItemIsAcquired="@IsItemAquired("Bone Club")" class="collection-item" />
             
         </div>
     }
     
-    @if (Items.Any(x => x.ItemType.IsRustToolItem()))
+    @if (AreAnyItemsAvailable("Jackhammer", "Salvaged Icepick", "Pickaxe", "Stone Pickaxe", "Hatchet", "Stone Hatchet", "Rock", "Hammer"))
     {
-        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto auto">
     
             <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                <MudText Typo="MudBlazor.Typo.subtitle2">Tools</MudText>
+                <MudText Typo="MudBlazor.Typo.subtitle2">Tool</MudText>
             </div>
-            
-            @foreach (var item in Items.Where(x => x.ItemType.IsRustToolItem()).OrderBy(x => x.ItemType).ThenByDescending(x => x.Id))
-            {
-                <ItemCollectionLayoutTile Item="@item" ItemIsAcquired="IsItemAquired(item.Id)" class="collection-item" />
-            }
-            
-        </div>
-    }
+    
+            <ItemCollectionLayoutTile ItemType="Jackhammer" Item="@FindItem("Jackhammer")" ItemIsAcquired="@IsItemAquired("Jackhammer")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
 
+            <ItemCollectionLayoutTile ItemType="Salvaged Icepick" Item="@FindItem("Salvaged Icepick")" ItemIsAcquired="@IsItemAquired("Salvaged Icepick")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+
+            <ItemCollectionLayoutTile ItemType="Pickaxe" Item="@FindItem("Pickaxe")" ItemIsAcquired="@IsItemAquired("Pickaxe")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hatchet" Item="@FindItem("Hatchet")" ItemIsAcquired="@IsItemAquired("Hatchet")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+
+            <ItemCollectionLayoutTile ItemType="Stone Pickaxe" Item="@FindItem("Stone Pickaxe")" ItemIsAcquired="@IsItemAquired("Stone Pickaxe")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Stone Hatchet" Item="@FindItem("Stone Hatchet")" ItemIsAcquired="@IsItemAquired("Stone Hatchet")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Rock" Item="@FindItem("Rock")" ItemIsAcquired="@IsItemAquired("Rock")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Hammer" Item="@FindItem("Hammer")" ItemIsAcquired="@IsItemAquired("Hammer")" class="collection-item" />
+    
+        </div>
+    }
+    
+    @if (AreAnyItemsAvailable("Armored Double Door", "Armored Door", "Garage Door", "Sheet Metal Double Door", "Sheet Metal Door", "Wood Double Door", "Wooden Door"))
+    {
+        <div class="collection pa-4" style="grid-template-columns: auto auto auto auto">
+    
+            <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
+                <MudText Typo="MudBlazor.Typo.subtitle2">Door</MudText>
+            </div>
+    
+            <ItemCollectionLayoutTile ItemType="Armored Double Door" Item="@FindItem("Armored Double Door")" ItemIsAcquired="@IsItemAquired("Armored Double Door")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Garage Door" Item="@FindItem("Garage Door")" ItemIsAcquired="@IsItemAquired("Garage Door")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Sheet Metal Double Door" Item="@FindItem("Sheet Metal Double Door")" ItemIsAcquired="@IsItemAquired("Sheet Metal Double Door")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Wood Double Door" Item="@FindItem("Wood Double Door")" ItemIsAcquired="@IsItemAquired("Wood Double Door")" class="collection-item" />
+
+            <ItemCollectionLayoutTile ItemType="Armored Door" Item="@FindItem("Armored Door")" ItemIsAcquired="@IsItemAquired("Armored Door")" class="collection-item" />
+            <ItemCollectionLayoutTile class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Sheet Metal Door" Item="@FindItem("Sheet Metal Door")" ItemIsAcquired="@IsItemAquired("Sheet Metal Door")" class="collection-item" />
+            <ItemCollectionLayoutTile ItemType="Wooden Door" Item="@FindItem("Wooden Door")" ItemIsAcquired="@IsItemAquired("Wooden Door")" class="collection-item" />
+            
+        </div>
+    }
+    
     @if (Items.Any(x => x.ItemType.IsRustDeployableItem()))
     {
-        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+        <div class="collection pa-4" style="@(Items.Count(x => x.ItemType.IsRustDeployableItem()) > 4 ? "grid-template-columns: auto auto auto auto" : null)">
     
             <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                <MudText Typo="MudBlazor.Typo.subtitle2">Deployables</MudText>
+                <MudText Typo="MudBlazor.Typo.subtitle2">Deployable</MudText>
             </div>
             
             @foreach (var item in Items.Where(x => x.ItemType.IsRustDeployableItem()).OrderBy(x => x.ItemType).ThenByDescending(x => x.Id))
@@ -227,7 +307,7 @@
     
     @if (Items.Any(x => x.ItemType.IsRustUniqueItem()))
     {
-        <div class="collection pa-4" style="grid-template-columns: auto auto auto">
+        <div class="collection pa-4" style="@(Items.Count(x => x.ItemType.IsRustUniqueItem()) > 4 ? "grid-template-columns: auto auto auto auto" : null)">
     
             <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
                 <MudText Typo="MudBlazor.Typo.subtitle2">Unique</MudText>

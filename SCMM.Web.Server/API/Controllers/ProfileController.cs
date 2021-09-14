@@ -490,28 +490,29 @@ namespace SCMM.Web.Server.API.Controllers
             var profileCollections = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => itemCollections.Contains(x.ItemCollection))
                 .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
-                //.Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
-                //.Include(x => x.CreatorProfile)
-                //.Include(x => x.StoreItem).ThenInclude(x => x.Currency)
-                //.Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                //.OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
+                .Include(x => x.CreatorProfile)
                 .ToListAsync();
 
             var profileCollectionsGrouped = profileCollections
-                .GroupBy(x => new {
-                    CreatorId = x.CreatorId,
-                    ItemCollection = x.ItemCollection
+                .GroupBy(x => new 
+                {
+                    Collection = x.ItemCollection,
+                    CreatorName = x.CreatorProfile?.Name,
+                    CreatorAvatarUrl = x.CreatorProfile?.AvatarUrl
                 })
                 .Select(x => new ProfileInventoryCollectionDTO()
                 {
-                    Name = x.Key.ItemCollection,
+                    Name = x.Key.Collection,
+                    CreatorName = x.Key.CreatorName,
+                    CreatorAvatarUrl = x.Key.CreatorAvatarUrl,
                     Items = x.Select(y => new ProfileInventoryCollectionItemDTO()
                     {
                         Item = _mapper.Map<SteamAssetDescription, ItemDescriptionDTO>(y, this),
-                        IsMissing = !profileItemsInCollection.Any(z => z.ClassId == y.ClassId)
+                        IsOwned = profileItemsInCollection.Any(z => z.ClassId == y.ClassId)
                     }).ToList()
                 })
+                .Where(x => x.Items.Any(y => y.IsOwned))
                 .OrderByDescending(x => x.Items.Count())
                 .ToList();
 

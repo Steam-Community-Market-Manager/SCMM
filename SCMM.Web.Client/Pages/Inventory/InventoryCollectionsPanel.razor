@@ -34,12 +34,12 @@ else
                         <img src="@collection.Items.FirstOrDefault()?.Item?.IconUrl" class="icon mr-2" />
                         <MudText Typo="Typo.body1" Color="Color.Default">
                             <span>@collection.Name</span>
-                            <span class="mud-secondary-text">(@collection.Items.Count(x => !x.IsMissing)/@collection.Items.Count())</span>
+                            <span class="mud-secondary-text">(@collection.Items.Count(x => x.IsOwned)/@collection.Items.Count())</span>
                         </MudText>
                     </div>
                 </TitleContent>
                 <ChildContent>
-                    <ItemCollectionLayout Items="@collection.Items.Select(x => x.Item)" AcquiredItems="@collection.Items.Where(x => !x.IsMissing).Select(x => x.Item)" />
+                    <ItemCollectionLayout Items="@collection.Items.Select(x => x.Item)" AcquiredItems="@collection.Items.Where(x => x.IsOwned).Select(x => x.Item)" />
                 </ChildContent>
             </MudExpansionPanel>
         }

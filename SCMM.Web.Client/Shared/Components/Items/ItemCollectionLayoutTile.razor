@@ -9,15 +9,28 @@
         @if (Item != null)
         {
             <div class="icon clickable hover-zoom hover-zoom-extra" @onclick="@(() => OnItemClicked())">
-                <MudTooltip Text="@Item.Name">
-                    <img src="@Item.IconUrl" class="full-width" />
+                <MudTooltip>
+                    <TooltipContent>
+                        <strong>@Item.Name</strong><br/>
+                        <span>(@Item.ItemType)</span>
+					</TooltipContent>
+                    <ChildContent>
+                        <img src="@Item.IconUrl" class="full-width" />
+					</ChildContent>
 			    </MudTooltip>
             </div>
         }
         else if (!String.IsNullOrEmpty(ItemType))
         {
             <div class="icon-missing">
-                <img src="@($"/images/rust/items/{ItemType.Replace(' ', '-').ToLower().Trim()}.png")" class="full-width" />
+                <MudTooltip>
+                    <TooltipContent>
+                        <span>The collection does not have a @ItemType yet</span>
+					</TooltipContent>
+                    <ChildContent>
+                        <img src="@($"/images/rust/items/{ItemType.ToRustItemId()}.png")" class="full-width" />
+					</ChildContent>
+			    </MudTooltip>
             </div>
         }
         else
