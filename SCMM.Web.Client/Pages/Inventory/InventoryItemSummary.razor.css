@@ -10,6 +10,6 @@
 }
 
 .item-summary img {
-    max-width: 6em;
-    max-height: 6em;
+    width: 6em;
+    height: 6em;
 }
