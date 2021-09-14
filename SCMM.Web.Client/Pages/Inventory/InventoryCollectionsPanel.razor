@@ -31,7 +31,7 @@ else
             <MudExpansionPanel>
                 <TitleContent>
                     <div class="d-flex flex-row justify-start align-center">
-                        <img src="@collection.Items.FirstOrDefault()?.Item?.IconUrl" class="mr-2" style="max-width:3em" />
+                        <img src="@collection.Items.FirstOrDefault()?.Item?.IconUrl" class="icon mr-2" />
                         <MudText Typo="Typo.body1" Color="Color.Default">
                             <span>@collection.Name</span>
                             <span class="mud-secondary-text">(@collection.Items.Count(x => !x.IsMissing)/@collection.Items.Count())</span>

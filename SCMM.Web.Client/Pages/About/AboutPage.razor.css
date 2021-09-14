@@ -21,8 +21,8 @@
 }
 
 .donator > img, .contributor > img {
-    max-width: 24px;
-    max-height: 24px;
+    max-width: 2em;
+    max-height: 2em;
 }
 
 .donator > span, .contributor> span {

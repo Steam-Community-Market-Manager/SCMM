@@ -10,14 +10,14 @@
                   Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
                   Overlap="true" Bordered="true" Bottom="true" Class="mud-badge-center">
             <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                <img src="@Item.IconUrl" class="full-width" />
+                <img src="@Item.IconUrl" class="icon full-width" />
             </div>
         </MudBadge>
     }
     else
     {
-        <div class="hover-zoom">
-            <img src="@Item.IconUrl" class="full-width" />
+        <div class="d-flex flex-grow-1 justify-center align-center hover-zoom">
+            <img src="@Item.IconUrl" class="icon full-width" />
         </div>
     }
     <div class="ma-2 d-flex flex-column justify-center align-center text-centered">
@@ -26,7 +26,7 @@
         </MudText>
         @if (PurchasableItem?.BuyNowPrice != null)
         {
-            <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap d-flex flex-row justify-center align-center">
+            <MudText Typo="MudBlazor.Typo.body2" Class="d-flex flex-row flex-wrap justify-center align-center">
                 <img src="@($"/images/price/{PurchasableItem.BuyNowFrom.ToString().ToLower()}.png")" class="mr-1" style="width:1.1em; height:1.1em" />
                 <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
                 @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowFrom != PriceType.SteamStore)

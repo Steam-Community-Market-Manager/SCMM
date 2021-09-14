@@ -8,8 +8,9 @@
     bottom: 0px;
 }
 
-.item-icon img {
-    max-width: 25rem;
+.icon {
+    max-width: 24em;
+    max-height: 24em;
 }
 
 .quote-box {

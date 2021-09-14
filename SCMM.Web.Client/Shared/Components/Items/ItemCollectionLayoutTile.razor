@@ -8,16 +8,16 @@
     <div class="item mud-paper mud-paper-outlined pa-1" style="@GetBackgroundStyles()">
         @if (Item != null)
         {
-            <div class="item-icon clickable hover-zoom hover-zoom-extra" @onclick="@(() => OnItemClicked())">
+            <div class="icon clickable hover-zoom hover-zoom-extra" @onclick="@(() => OnItemClicked())">
                 <MudTooltip Text="@Item.Name">
-                    <img src="@Item.IconUrl" />
+                    <img src="@Item.IconUrl" class="full-width" />
 			    </MudTooltip>
             </div>
         }
         else if (!String.IsNullOrEmpty(ItemType))
         {
-            <div class="item-icon-missing">
-                <img src="@($"/images/rust/items/{ItemType.Replace(' ', '-').ToLower().Trim()}.png")" />
+            <div class="icon-missing">
+                <img src="@($"/images/rust/items/{ItemType.Replace(' ', '-').ToLower().Trim()}.png")" class="full-width" />
             </div>
         }
         else

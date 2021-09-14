@@ -166,8 +166,8 @@ else if (StoreList.Any())
                                     <MudGrid Spacing="1" Class="flex-grow-1">
 
                                         <MudItem xs="12" xl="5" Class="d-flex flex-column flex-grow-1">
-                                            <div class="d-flex flex-grow-1 align-center justify-center item-icon">
-                                                <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="@($"{GetItemIconClass(item)} full-width pa-2")" style="@($"{GetItemIconStyles(item)}")" />
+                                            <div class="d-flex flex-grow-1 align-center justify-center">
+                                                <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="@($"{GetItemIconClass(item)} icon full-width pa-2")" style="@($"{GetItemIconStyles(item)}")" />
                                             </div>
                                             <div class="d-flex flex-column flex-grow-0 flex-shrink-1 align-center justify-center">
                                                 @if (item.MarketPrice > 0 && !item.IsBanned)

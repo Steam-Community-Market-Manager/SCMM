@@ -161,7 +161,7 @@ else
                     @foreach (var item in InventoryMovementFilteredPositive)
                     {
                         <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => OnItemClicked(item.Item))">
-                            <img src="@(item.Item.IconUrl)" class="mx-1" style="max-width:3em" />
+                            <img src="@(item.Item.IconUrl)" class="icon mx-1" />
                             <div class="d-flex flex-column">
                                 <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
                                     <span>@(item.Item.Name)</span>
@@ -190,7 +190,7 @@ else
                     @foreach (var item in InventoryMovementFilteredNegative)
                     {
                         <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => OnItemClicked(item.Item))">
-                            <img src="@(item.Item.IconUrl)" class="mx-1" style="max-width:3em" />
+                            <img src="@(item.Item.IconUrl)" class="icon mx-1" />
                             <div class="d-flex flex-column">
                                 <MudText Typo="Typo.body2" Class="mx-1 no-wrap" Style="@($"color: {(item.Item.ForegroundColour)}")">
                                     <span>@(item.Item.Name)</span>

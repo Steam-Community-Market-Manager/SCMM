@@ -8,6 +8,11 @@
     border: 1px solid var(--mud-palette-lines-default);
 }
 
+.icon {
+    max-width: 12em;
+    max-height: 12em;
+}
+
 .highlighted {
     background-color: var(--mud-palette-overlay-dark);
     border: 1px solid var(--mud-palette-lines-default);

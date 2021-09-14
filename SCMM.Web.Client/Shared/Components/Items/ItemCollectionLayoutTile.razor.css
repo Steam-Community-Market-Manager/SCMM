@@ -5,12 +5,7 @@
     height: 5rem;
 }
 
-.item-icon img {
-    width: 100%;
-}
-
-.item-icon-missing img {
-    width: 100%;
+.icon-missing img {
     opacity: 0.5;
     filter: grayscale(1);
 }

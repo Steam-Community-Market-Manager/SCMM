@@ -1,4 +1,5 @@
 ﻿
-.store-item .item-icon img {
-    max-width: 12rem;
+.icon {
+    max-width: 12em;
+    max-height: 12em;
 }

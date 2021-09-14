@@ -1,9 +1,5 @@
 ﻿
 .item-summary {
-    height: 100%;
-}
-
-.item-summary {
     border: 1px solid transparent;
 }
 
@@ -14,6 +10,6 @@
 }
 
 .item-summary img {
-    width: 5rem;
-    height: 5rem;
+    max-width: 6em;
+    max-height: 6em;
 }
