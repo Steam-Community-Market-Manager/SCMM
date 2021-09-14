@@ -25,10 +25,10 @@ else if (!InventoryCollections.FilterBy(Filter).Any())
 }
 else 
 {
-    <MudExpansionPanels>
+    <MudExpansionPanels Dense="true" DisableGutters="true">
         @foreach (var collection in InventoryCollections.FilterBy(Filter))
         {
-            <MudExpansionPanel>
+            <MudExpansionPanel Class="px-1 pb-1">
                 <TitleContent>
                     <div class="d-flex flex-row justify-start align-center">
                         <img src="@collection.Items.FirstOrDefault()?.Item?.IconUrl" class="icon mr-2" />
