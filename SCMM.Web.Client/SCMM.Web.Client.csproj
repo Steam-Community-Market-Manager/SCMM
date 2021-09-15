@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>true</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
@@ -15,11 +16,11 @@
   <ItemGroup>
     <PackageReference Include="BlazorApplicationInsights" Version="1.2.1" />
     <PackageReference Include="Markdig" Version="0.26.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.7.21378.6" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0-preview.7.21377.19" />
-    <PackageReference Include="Syncfusion.Blazor.Charts" Version="19.2.0.56" />
-    <PackageReference Include="MudBlazor" Version="5.1.2" />
-    <PackageReference Include="System.Net.Http.Json" Version="6.0.0-preview.7.21377.19" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-rc.1.21452.15" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0-rc.1.21451.13" />
+    <PackageReference Include="Syncfusion.Blazor.Charts" Version="19.2.0.62" />
+    <PackageReference Include="MudBlazor" Version="5.1.4" />
+    <PackageReference Include="System.Net.Http.Json" Version="6.0.0-rc.1.21451.13" />
 
   </ItemGroup>
 
