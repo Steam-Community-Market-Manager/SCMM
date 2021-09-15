@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using SCMM.Web.Client.Shared.Components;
 
 namespace SCMM.Web.Client.Shared.Dialogs;
 

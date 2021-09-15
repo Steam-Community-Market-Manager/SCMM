@@ -2,14 +2,14 @@
 using MudBlazor;
 using MudBlazor.Services;
 
-namespace SCMM.Web.Client.Shared.Dialogs;
+namespace SCMM.Web.Client.Shared.Components;
 
 public abstract class ResponsiveComponent : ComponentBase
 {
     [Inject]
     protected IResizeListenerService ResizeListener { get; set; }
 
-    protected Breakpoint Breakpoint { get; set; } 
+    protected Breakpoint Breakpoint { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
