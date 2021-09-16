@@ -118,7 +118,7 @@ else if (StoreList.Any())
                             <MudCard Outlined="true" Class="d-flex flex-column full-height">
                                 <MudCardHeader>
                                     <CardHeaderAvatar>
-                                        <MudHidden Breakpoint="Breakpoint.Xl" Invert="true">
+                                        <MudHidden Breakpoint="Breakpoint.XlAndUp" Invert="true">
                                             <MudTooltip Text="@item.CreatorName">
                                                 <MudAvatar Image="@item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" />
                                             </MudTooltip>
@@ -177,17 +177,17 @@ else if (StoreList.Any())
                                                         @if (item.MarketPrice > item.StorePrice)
                                                         {
                                                             <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-up mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
-                                                                     Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Filled" Class="mt-0" />
+                                                                     Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Text" Class="mt-0" />
                                                         }
                                                         else if (item.MarketPrice < item.StorePrice)
                                                         {
                                                             <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-arrow-down mr-1" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
-                                                                     Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Filled" Class="mt-0" />
+                                                                     Color="MudBlazor.Color.Error" Variant="MudBlazor.Variant.Text" Class="mt-0" />
                                                         }
                                                         else
                                                         {
                                                             <MudChip Size="MudBlazor.Size.Small" Text="@item.MarketPrice.Value.ToMovementString(item.StorePrice.Value)" 
-                                                                     Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Filled" Class="mt-0" />
+                                                                     Color="MudBlazor.Color.Secondary" Variant="MudBlazor.Variant.Text" Class="mt-0" />
                                                         }
                                                     }
                                                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="no-wrap">
@@ -314,14 +314,14 @@ else if (StoreList.Any())
                                                 @if (item.IsBanned == true)
                                                 {
                                                     <MudTooltip Text="@($"This item has been trade and market banned due to {item.BanReason.FirstCharToLower()}")">
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Warning" />
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" />
                                                     </MudTooltip>
                                                 }
                                                 <MudTooltip>
                                                     <ChildContent>
                                                         <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsTradable ? "Tradable" : "Not Tradable")" Disabled="@(!item.IsTradable)"
                                                                  Icon="@(item.IsTradable ? "fas fa-fw fa-exchange-alt mr-2" : "fas fa-fw fa-times")" 
-                                                                 Variant="@(item.IsTradable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                                                 Variant="@(item.IsTradable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
                                                                  Color="@(item.IsTradable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
                                                     </ChildContent>
                                                     <TooltipContent>
@@ -344,9 +344,10 @@ else if (StoreList.Any())
                                                 </MudTooltip>
                                                 <MudTooltip>
                                                     <ChildContent>
+                                                        @* // TODO: Marketable after store rotation *@
                                                         <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsMarketable ? "Marketable" : "Not Marketable")" Disabled="@(!item.IsMarketable)"
                                                                  Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : ((item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
-                                                                 Variant="@(item.IsMarketable ? MudBlazor.Variant.Filled : MudBlazor.Variant.Outlined)" 
+                                                                 Variant="@(item.IsMarketable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
                                                                  Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
                                                     </ChildContent>
                                                     <TooltipContent>
@@ -379,7 +380,7 @@ else if (StoreList.Any())
                                                 {
                                                     <MudTooltip>
                                                         <ChildContent>
-                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"Glow {(item.GlowRatio > 0.01m ? "(" + item.GlowRatio + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"Glow {(item.GlowRatio > 0.01m ? "(" + item.GlowRatio + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-moon mr-3" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" />
                                                         </ChildContent>
                                                         <TooltipContent>
                                                             @if (item.GlowRatio > 0.01m)
@@ -396,14 +397,14 @@ else if (StoreList.Any())
                                                 @if (item.HasGlowSights == true)
                                                 {
                                                     <MudTooltip Text="The iron sights of this weapon glow in the dark, making it much easier to aim at night">
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Glow Sight" Icon="fas fa-fw fa-crosshairs mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Glow Sight" Icon="fas fa-fw fa-crosshairs mr-3" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
                                                 @if (item.HasCutout == true)
                                                 {
                                                     <MudTooltip>
                                                         <ChildContent>
-                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"Cutout {(item.CutoutRatio > 0.01m ? "(" + item.CutoutRatio + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                            <MudChip Size="MudBlazor.Size.Small" Text="@($"Cutout {(item.CutoutRatio > 0.01m ? "(" + item.CutoutRatio + "%)" : String.Empty).Trim()}")" Icon="fas fa-fw fa-cut mr-3" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" />
                                                         </ChildContent>
                                                         <TooltipContent>
                                                             @if (item.CutoutRatio > 0.01m)
@@ -420,13 +421,13 @@ else if (StoreList.Any())
                                                 @if (item.IsSpecialDrop == true)
                                                 {
                                                     <MudTooltip Text="This item is a limited-time drop, generally done as part of special event (e.g. charity or promotion)">
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Special Drop" Icon="fas fa-fw fa-crown mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Special Drop" Icon="fas fa-fw fa-crown mr-3" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
                                                 @if (item.HasReturnedToStoreBefore == true)
                                                 {
                                                     <MudTooltip Text="This item has returned from a previous store release">
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="Returning Item" Icon="fas fa-fw fa-redo mr-3" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Default" />
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Returning Item" Icon="fas fa-fw fa-redo mr-3" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" />
                                                     </MudTooltip>
                                                 }
                                             </div>

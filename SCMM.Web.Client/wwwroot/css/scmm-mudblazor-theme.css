@@ -1,8 +1,4 @@
 ﻿
-.mud-toolbar.mud-toolbar-appbar {
-    height: var(--mud-appbar-min-height) !important;
-}
-
 .mud-tooltip {
     max-width: 33vw;
 }
@@ -11,7 +7,9 @@
     flex-wrap: nowrap !important;
 }
 
-.mud-chip-size-small > .mud-icon-size-small {
+.mud-chip-size-small > .mud-icon-size-small,
+.mud-chip-size-medium > .mud-icon-size-medium,
+.mud-chip-size-large > .mud-icon-size-large {
     font-size: inherit;
     margin-right: 8px;
 }

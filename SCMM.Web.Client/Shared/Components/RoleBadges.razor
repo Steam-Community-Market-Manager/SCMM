@@ -2,27 +2,27 @@
 <div class="text-centered">
     @if (IsInRole(SCMM.Shared.Data.Models.Roles.Administrator))
     {
-        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-user" Text="@SCMM.Shared.Data.Models.Roles.Administrator" Variant="MudBlazor.Variant.Outlined" 
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-user" Text="@SCMM.Shared.Data.Models.Roles.Administrator" Variant="MudBlazor.Variant.Text" 
                  Color="MudBlazor.Color.Secondary" />
     }
     @if (IsInRole(SCMM.Shared.Data.Models.Roles.Contributor))
     {
-        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-user" Text="@SCMM.Shared.Data.Models.Roles.Contributor" Variant="MudBlazor.Variant.Outlined" 
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-user" Text="@SCMM.Shared.Data.Models.Roles.Contributor" Variant="MudBlazor.Variant.Text" 
                  Color="MudBlazor.Color.Secondary" />
     }
     @if (IsInRole(SCMM.Shared.Data.Models.Roles.Creator))
     {
-        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-paint-roller" Text="@SCMM.Shared.Data.Models.Roles.Creator" Variant="MudBlazor.Variant.Outlined"
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-paint-roller" Text="@SCMM.Shared.Data.Models.Roles.Creator" Variant="MudBlazor.Variant.Text"
                  Style="border-color: #81c784; color: #81c784;" />
     }
     @if (IsInRole(SCMM.Shared.Data.Models.Roles.Donator))
     {
-        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-crown" Text="@SCMM.Shared.Data.Models.Roles.Donator" Variant="MudBlazor.Variant.Outlined"
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-crown" Text="@SCMM.Shared.Data.Models.Roles.Donator" Variant="MudBlazor.Variant.Text"
                  Style="border-color: gold; color: gold;" />
     }
     @if (IsInRole(SCMM.Shared.Data.Models.Roles.VIP))
     {
-        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-star" Text="@SCMM.Shared.Data.Models.Roles.VIP" Variant="MudBlazor.Variant.Outlined"
+        <MudChip Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-star" Text="@SCMM.Shared.Data.Models.Roles.VIP" Variant="MudBlazor.Variant.Text"
                  Style="border-color: gold; color: gold;" />
     }
 </div>
