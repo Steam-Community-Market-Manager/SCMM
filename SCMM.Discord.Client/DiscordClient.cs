@@ -168,7 +168,7 @@ namespace SCMM.Discord.Client
             }
 
             // Create a DM channel with the user
-            var dm = await user.GetOrCreateDMChannelAsync();
+            var dm = await user.CreateDMChannelAsync();
             if (dm == null)
             {
                 throw new Exception($"Unable to create DM channel for message \"{message ?? title}\" (username: {username})");
@@ -268,7 +268,7 @@ namespace SCMM.Discord.Client
 
         public IDisposable SubscribeToReactions(ulong messageId, Func<IUser, IReaction, bool> filter, Func<IMessage, IReaction, Task> onReaction)
         {
-            var reactionCallback = (Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task>)(
+            var reactionCallback = (Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task>)(
                 (msg, channel, reaction) =>
                 {
                     if (reaction.MessageId == messageId)

@@ -19,6 +19,6 @@ namespace SCMM.Discord.Client
 
         public string Status => _user?.Status.ToString();
 
-        public string Activity => $"{_user?.Activity?.Type.ToString()} {_user?.Activity?.Name}";
+        public string Activity => String.Join(", ", _user?.Activities.Select(x => $"{x.Type} {x.Name}"));
     }
 }
