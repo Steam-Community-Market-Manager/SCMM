@@ -11,7 +11,8 @@ namespace SCMM.Web.Data.Models.Extensions
             {
                 return source;
             }
-            return source.Where(x => x.Filters?.Any(y => y.Contains(filterBy, StringComparison.InvariantCultureIgnoreCase)) == true);
+            var filterWords = filterBy.Split(" ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            return source.Where(x => filterWords.All(word => x.Filters?.Any(f => f?.Contains(word, StringComparison.InvariantCultureIgnoreCase) == true) == true));
         }
     }
 }
