@@ -68,6 +68,7 @@ namespace SCMM.Steam.Data.Store
         public long Last24hrValue { get; set; }
 
         // Was was the price starting at todays open (UTC)
+        // TODO: Rename to "Stable24hrValue"
         public long Open24hrValue { get; set; }
 
         // What was the total number of sales from the last 48hrs (2 days)
@@ -107,6 +108,7 @@ namespace SCMM.Steam.Data.Store
         public long Last168hrValue { get; set; }
 
         // What was the price from the last sale (at any time range)
+        // TODO: Make not nullable
         public long? LastSaleValue { get; set; }
 
         public DateTimeOffset? LastSaleOn { get; set; }
@@ -125,6 +127,7 @@ namespace SCMM.Steam.Data.Store
         public DateTimeOffset? AllTimeLowestValueOn { get; set; }
 
         // When was the very first sale
+        // TODO: Rename to "FirstSaleOn"
         public DateTimeOffset? FirstSeenOn { get; set; }
 
         // How long since orders were last checked
