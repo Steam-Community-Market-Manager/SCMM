@@ -11,8 +11,9 @@
 <PageContainer Title="Settings">
 
     <MudGrid Spacing="4" Justify="MudBlazor.Justify.Center">
-        <MudItem xs="12" xl="6">
-            <MudCard>
+
+        <MudItem xs="12" lg="6">
+            <MudCard class="full-height d-flex flex-column mud-card">
                 <MudCardHeader>
                     <CardHeaderContent>
                         <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
@@ -48,10 +49,10 @@
                 </MudCardHeader>
                 <MudCardContent>
                     <MudGrid Spacing="2">
-                        <MudItem xs="3">
-                            <MudAvatar Image="@State.Profile.AvatarLargeUrl" Style="height:152px; width:152px; " />
+                        <MudItem xs="12" sm="3" class="d-flex justify-center align-center">
+                            <MudAvatar Image="@State.Profile.AvatarLargeUrl" Class="full-width full-height" Style="max-width:8rem; max-height:8rem;" />
                         </MudItem>
-                        <MudItem xs="9">
+                        <MudItem xs="12" sm="9">
                             <MudGrid Spacing="2">
                                 <MudItem xs="12">
                                   <MudTextField Label="Name" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
@@ -68,20 +69,12 @@
                                           @bind-Value="@Update.TradeUrl" DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProfile"
                                           HelperText="We use this to offer trades to anybody that is interested in trading with you." />
                         </MudItem>
-                        <MudItem xs="6">
-                            <MudTextField Label="Language" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
-                                          Value="@State.Profile.Language.Name" />
-                        </MudItem>
-                        <MudItem xs="6">
-                            <MudTextField Label="Currency" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
-                                          Value="@State.Profile.Currency.Name" />
-                        </MudItem>
-                        <MudItem xs="6">
+                        <MudItem xs="12" sm="6">
                             <MudTextField Label="Discord ID" Variant="MudBlazor.Variant.Outlined" FullWidth
                                           @bind-Value="@Update.DiscordId" DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProfile"
                                           HelperText="If you have item alerts setup, we'll use this to PM you on Discord. You'll also be able to use your Discord name with the SCMM bot instead of your Steam Id." />
                         </MudItem>
-                        <MudItem xs="6">
+                        <MudItem xs="12" sm="6">
                             <MudTextField Label="Gambling Offset" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
                                           Value="@State.Profile.Currency.ToPriceString(State.Profile.GamblingOffset)" 
                                           HelperText="If you use gambling sites, enter your total win/lose amount here. We use this to calculate your inventory total profit." />
@@ -90,8 +83,9 @@
                 </MudCardContent>
             </MudCard>
         </MudItem>
-        <MudItem xs="12" xl="6">
-            <MudCard>
+
+        <MudItem xs="12" lg="6">
+            <MudCard class="full-height d-flex flex-column mud-card">
                 <MudCardHeader>
                     <CardHeaderContent>
                         <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
@@ -116,7 +110,7 @@
                         <span><strong>NOTE:</strong> If you are an accepted workshop creator and you choose to delete your data, we will still retain a copy of your basic Steam profile information (i.e. id, name, avatar). This is nessecary for completeness of the Steam item database.</span>
                     </MudText>
                 </MudCardContent>
-                <MudCardActions>
+                <MudCardActions class="mt-auto">
                     <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download" Disabled="true">
                         Download Your Data
                     </MudButton>
@@ -126,6 +120,46 @@
                 </MudCardActions>
             </MudCard>
         </MudItem>
+        
+        <MudItem xs="12" lg="6">
+            <MudCard class="full-height d-flex flex-column mud-card">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                            Your Preferences
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="Language" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
+                                          Value="@State.Profile.Language.Name" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="Currency" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
+                                          Value="@State.Profile.Currency.Name" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard class="full-height d-flex flex-column mud-card">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                            Your Webhooks
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
     </MudGrid>
 
 </PageContainer>
