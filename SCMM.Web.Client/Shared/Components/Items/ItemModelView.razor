@@ -1,4 +1,5 @@
 ﻿@using MudBlazor.Utilities
+@implements IAsyncDisposable
 @inject ILogger<ViewItemModelDialog> Logger
 @inject IJSRuntime JS
 
@@ -226,7 +227,7 @@
         StateHasChanged();
     }
 
-    public class ThreeJsScene : IDisposable
+    public class ThreeJsScene : IAsyncDisposable
     {
         private readonly IJSInProcessObjectReference _threejsWrapper;
         private readonly IJSObjectReference _threejsScene;
@@ -253,10 +254,25 @@
         
         public async Task SetEmissionIntensityAsync(double intensity) => await _threejsWrapper.InvokeVoidAsync("setEmissionIntensity", _threejsScene, intensity);
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             _modelViewComponent?.Dispose();
+            if (_threejsScene != null)
+            {
+                await _threejsScene.DisposeAsync().AsTask();
+            }
+            if (_threejsWrapper != null)
+            {
+                await _threejsWrapper.DisposeAsync().AsTask();
+            }
         }
     }
-
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (Scene != null)
+        {
+            await Scene.DisposeAsync().AsTask();
+        }
+    }
 }

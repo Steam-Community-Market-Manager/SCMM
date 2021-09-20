@@ -33,7 +33,7 @@ public class DocumentManager
                 }
             });
 
-            timer.Change(((int?)delay?.TotalMilliseconds) ?? 0, Timeout.Infinite);
+            timer?.Change(((int?)delay?.TotalMilliseconds) ?? 0, Timeout.Infinite);
         }
         else
         {
