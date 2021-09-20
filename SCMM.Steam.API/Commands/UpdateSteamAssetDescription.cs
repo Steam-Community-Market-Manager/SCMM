@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Client;
@@ -21,6 +21,7 @@ using SteamWebAPI2.Utilities;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using System.Text.Json;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -343,7 +344,7 @@ namespace SCMM.Steam.API.Commands
                     try
                     {
                         // NOTE: This is a bit hacky, but the data we need is inside a JavaScript variable within a <script> element, so we try to parse the JSON value of the variable
-                        var listingAsset = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>>>(listingAssetJson);
+                        var listingAsset = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>>>(listingAssetJson);
                         var itemDescriptionHtml = listingAsset?
                             .FirstOrDefault().Value?
                             .FirstOrDefault().Value?

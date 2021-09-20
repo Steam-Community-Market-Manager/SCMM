@@ -3,7 +3,7 @@ using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using SCMM.Azure.AI;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
@@ -15,6 +15,7 @@ using SCMM.Steam.Functions.Extensions;
 using System.Drawing;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 
 namespace SCMM.Steam.Functions
 {
@@ -129,7 +130,7 @@ namespace SCMM.Steam.Functions
                 if (manifestFile != null)
                 {
                     using var manifestStream = new StreamReader(manifestFile.Open());
-                    var manifest = JsonConvert.DeserializeObject<SteamWorkshopFileManifest>(manifestStream.ReadToEnd());
+                    var manifest = JsonSerializer.Deserialize<SteamWorkshopFileManifest>(manifestStream.ReadToEnd());
                     if (manifest != null)
                     {
                         mainTextureFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))

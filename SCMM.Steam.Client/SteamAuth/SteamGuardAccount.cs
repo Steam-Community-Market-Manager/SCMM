@@ -1,51 +1,52 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Collections.Specialized;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 
 namespace SteamAuth
 {
     public class SteamGuardAccount
     {
-        [JsonProperty("shared_secret")]
+        [JsonPropertyName("shared_secret")]
         public string SharedSecret { get; set; }
 
-        [JsonProperty("serial_number")]
+        [JsonPropertyName("serial_number")]
         public string SerialNumber { get; set; }
 
-        [JsonProperty("revocation_code")]
+        [JsonPropertyName("revocation_code")]
         public string RevocationCode { get; set; }
 
-        [JsonProperty("uri")]
+        [JsonPropertyName("uri")]
         public string URI { get; set; }
 
-        [JsonProperty("server_time")]
+        [JsonPropertyName("server_time")]
         public long ServerTime { get; set; }
 
-        [JsonProperty("account_name")]
+        [JsonPropertyName("account_name")]
         public string AccountName { get; set; }
 
-        [JsonProperty("token_gid")]
+        [JsonPropertyName("token_gid")]
         public string TokenGID { get; set; }
 
-        [JsonProperty("identity_secret")]
+        [JsonPropertyName("identity_secret")]
         public string IdentitySecret { get; set; }
 
-        [JsonProperty("secret_1")]
+        [JsonPropertyName("secret_1")]
         public string Secret1 { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public int Status { get; set; }
 
-        [JsonProperty("device_id")]
+        [JsonPropertyName("device_id")]
         public string DeviceID { get; set; }
 
         /// <summary>
         /// Set to true if the authenticator has actually been applied to the account.
         /// </summary>
-        [JsonProperty("fully_enrolled")]
+        [JsonPropertyName("fully_enrolled")]
         public bool FullyEnrolled { get; set; }
 
         public SessionData Session { get; set; }
@@ -65,7 +66,7 @@ namespace SteamAuth
             try
             {
                 var response = SteamWeb.MobileLoginRequest(APIEndpoints.STEAMAPI_BASE + "/ITwoFactorService/RemoveAuthenticator/v0001", "POST", postData);
-                var removeResponse = JsonConvert.DeserializeObject<RemoveAuthenticatorResponse>(response);
+                var removeResponse = JsonSerializer.Deserialize<RemoveAuthenticatorResponse>(response);
 
                 if (removeResponse == null || removeResponse.Response == null || !removeResponse.Response.Success)
                 {
@@ -258,7 +259,7 @@ namespace SteamAuth
 
             try
             {
-                var refreshResponse = JsonConvert.DeserializeObject<RefreshSessionDataResponse>(response);
+                var refreshResponse = JsonSerializer.Deserialize<RefreshSessionDataResponse>(response);
                 if (refreshResponse == null || refreshResponse.Response == null || string.IsNullOrEmpty(refreshResponse.Response.Token))
                 {
                     return false;
@@ -306,7 +307,7 @@ namespace SteamAuth
 
             try
             {
-                var refreshResponse = JsonConvert.DeserializeObject<RefreshSessionDataResponse>(response);
+                var refreshResponse = JsonSerializer.Deserialize<RefreshSessionDataResponse>(response);
                 if (refreshResponse == null || refreshResponse.Response == null || string.IsNullOrEmpty(refreshResponse.Response.Token))
                 {
                     return false;
@@ -341,7 +342,7 @@ namespace SteamAuth
                 return null;
             }
 
-            var confResponse = JsonConvert.DeserializeObject<ConfirmationDetailsResponse>(response);
+            var confResponse = JsonSerializer.Deserialize<ConfirmationDetailsResponse>(response);
             if (confResponse == null)
             {
                 return null;
@@ -368,7 +369,7 @@ namespace SteamAuth
                 return false;
             }
 
-            var confResponse = JsonConvert.DeserializeObject<SendConfirmationResponse>(response);
+            var confResponse = JsonSerializer.Deserialize<SendConfirmationResponse>(response);
             return confResponse.Success;
         }
 
@@ -392,7 +393,7 @@ namespace SteamAuth
                 return false;
             }
 
-            var confResponse = JsonConvert.DeserializeObject<SendConfirmationResponse>(response);
+            var confResponse = JsonSerializer.Deserialize<SendConfirmationResponse>(response);
             return confResponse.Success;
         }
 
@@ -497,42 +498,42 @@ namespace SteamAuth
 
         private class RefreshSessionDataResponse
         {
-            [JsonProperty("response")]
+            [JsonPropertyName("response")]
             public RefreshSessionDataInternalResponse Response { get; set; }
             internal class RefreshSessionDataInternalResponse
             {
-                [JsonProperty("token")]
+                [JsonPropertyName("token")]
                 public string Token { get; set; }
 
-                [JsonProperty("token_secure")]
+                [JsonPropertyName("token_secure")]
                 public string TokenSecure { get; set; }
             }
         }
 
         private class RemoveAuthenticatorResponse
         {
-            [JsonProperty("response")]
+            [JsonPropertyName("response")]
             public RemoveAuthenticatorInternalResponse Response { get; set; }
 
             internal class RemoveAuthenticatorInternalResponse
             {
-                [JsonProperty("success")]
+                [JsonPropertyName("success")]
                 public bool Success { get; set; }
             }
         }
 
         private class SendConfirmationResponse
         {
-            [JsonProperty("success")]
+            [JsonPropertyName("success")]
             public bool Success { get; set; }
         }
 
         private class ConfirmationDetailsResponse
         {
-            [JsonProperty("success")]
+            [JsonPropertyName("success")]
             public bool Success { get; set; }
 
-            [JsonProperty("html")]
+            [JsonPropertyName("html")]
             public string HTML { get; set; }
         }
     }

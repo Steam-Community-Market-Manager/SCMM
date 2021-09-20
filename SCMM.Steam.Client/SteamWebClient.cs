@@ -1,6 +1,6 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using SCMM.Shared.Data.Models;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
@@ -10,6 +10,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using System.Text.Json;
 
 namespace SCMM.Steam.Client
 {
@@ -165,7 +166,7 @@ namespace SCMM.Steam.Client
                 return default;
             }
 
-            return JsonConvert.DeserializeObject<TResponse>(json);
+            return JsonSerializer.Deserialize<TResponse>(json);
         }
     }
 }

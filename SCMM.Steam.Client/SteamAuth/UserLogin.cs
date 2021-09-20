@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Collections.Specialized;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace SteamAuth
 {
@@ -66,7 +67,7 @@ namespace SteamAuth
                 return LoginResult.GeneralFailure;
             }
 
-            var rsaResponse = JsonConvert.DeserializeObject<RSAResponse>(response);
+            var rsaResponse = JsonSerializer.Deserialize<RSAResponse>(response);
 
             if (!rsaResponse.Success)
             {
@@ -113,7 +114,7 @@ namespace SteamAuth
                 return LoginResult.GeneralFailure;
             }
 
-            var loginResponse = JsonConvert.DeserializeObject<LoginResponse>(response);
+            var loginResponse = JsonSerializer.Deserialize<LoginResponse>(response);
 
             if (loginResponse.Message != null)
             {
@@ -186,69 +187,69 @@ namespace SteamAuth
 
         private class LoginResponse
         {
-            [JsonProperty("success")]
+            [JsonPropertyName("success")]
             public bool Success { get; set; }
 
-            [JsonProperty("login_complete")]
+            [JsonPropertyName("login_complete")]
             public bool LoginComplete { get; set; }
 
-            [JsonProperty("oauth")]
+            [JsonPropertyName("oauth")]
             public string OAuthDataString { get; set; }
 
-            public OAuth OAuthData => OAuthDataString != null ? JsonConvert.DeserializeObject<OAuth>(OAuthDataString) : null;
+            public OAuth OAuthData => OAuthDataString != null ? JsonSerializer.Deserialize<OAuth>(OAuthDataString) : null;
 
-            [JsonProperty("captcha_needed")]
+            [JsonPropertyName("captcha_needed")]
             public bool CaptchaNeeded { get; set; }
 
-            [JsonProperty("captcha_gid")]
+            [JsonPropertyName("captcha_gid")]
             public string CaptchaGID { get; set; }
 
-            [JsonProperty("emailsteamid")]
+            [JsonPropertyName("emailsteamid")]
             public ulong EmailSteamID { get; set; }
 
-            [JsonProperty("emailauth_needed")]
+            [JsonPropertyName("emailauth_needed")]
             public bool EmailAuthNeeded { get; set; }
 
-            [JsonProperty("requires_twofactor")]
+            [JsonPropertyName("requires_twofactor")]
             public bool TwoFactorNeeded { get; set; }
 
-            [JsonProperty("message")]
+            [JsonPropertyName("message")]
             public string Message { get; set; }
 
             internal class OAuth
             {
-                [JsonProperty("steamid")]
+                [JsonPropertyName("steamid")]
                 public ulong SteamID { get; set; }
 
-                [JsonProperty("oauth_token")]
+                [JsonPropertyName("oauth_token")]
                 public string OAuthToken { get; set; }
 
-                [JsonProperty("wgtoken")]
+                [JsonPropertyName("wgtoken")]
                 public string SteamLogin { get; set; }
 
-                [JsonProperty("wgtoken_secure")]
+                [JsonPropertyName("wgtoken_secure")]
                 public string SteamLoginSecure { get; set; }
 
-                [JsonProperty("webcookie")]
+                [JsonPropertyName("webcookie")]
                 public string Webcookie { get; set; }
             }
         }
 
         private class RSAResponse
         {
-            [JsonProperty("success")]
+            [JsonPropertyName("success")]
             public bool Success { get; set; }
 
-            [JsonProperty("publickey_exp")]
+            [JsonPropertyName("publickey_exp")]
             public string Exponent { get; set; }
 
-            [JsonProperty("publickey_mod")]
+            [JsonPropertyName("publickey_mod")]
             public string Modulus { get; set; }
 
-            [JsonProperty("timestamp")]
+            [JsonPropertyName("timestamp")]
             public string Timestamp { get; set; }
 
-            [JsonProperty("steamid")]
+            [JsonPropertyName("steamid")]
             public ulong SteamID { get; set; }
         }
     }

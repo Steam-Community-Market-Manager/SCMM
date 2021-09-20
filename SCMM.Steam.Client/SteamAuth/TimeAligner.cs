@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Net;
+using System.Text.Json;
 
 namespace SteamAuth
 {
@@ -38,7 +39,7 @@ namespace SteamAuth
                 try
                 {
                     var response = client.UploadString(APIEndpoints.TWO_FACTOR_TIME_QUERY, "steamid=0");
-                    var query = JsonConvert.DeserializeObject<TimeQuery>(response);
+                    var query = JsonSerializer.Deserialize<TimeQuery>(response);
                     TimeAligner._timeDifference = (int)(query.Response.ServerTime - currentTime);
                     TimeAligner._aligned = true;
                 }
@@ -56,7 +57,7 @@ namespace SteamAuth
             try
             {
                 var response = await client.UploadStringTaskAsync(new Uri(APIEndpoints.TWO_FACTOR_TIME_QUERY), "steamid=0");
-                var query = JsonConvert.DeserializeObject<TimeQuery>(response);
+                var query = JsonSerializer.Deserialize<TimeQuery>(response);
                 TimeAligner._timeDifference = (int)(query.Response.ServerTime - currentTime);
                 TimeAligner._aligned = true;
             }
@@ -68,12 +69,12 @@ namespace SteamAuth
 
         internal class TimeQuery
         {
-            [JsonProperty("response")]
+            [JsonPropertyName("response")]
             internal TimeQueryResponse Response { get; set; }
 
             internal class TimeQueryResponse
             {
-                [JsonProperty("server_time")]
+                [JsonPropertyName("server_time")]
                 public long ServerTime { get; set; }
             }
 

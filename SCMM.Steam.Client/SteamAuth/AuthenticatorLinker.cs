@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.Collections.Specialized;
 using System.Net;
+using System.Text.Json;
 
 namespace SteamAuth
 {
@@ -90,7 +91,7 @@ namespace SteamAuth
                 return LinkResult.GeneralFailure;
             }
 
-            var addAuthenticatorResponse = JsonConvert.DeserializeObject<AddAuthenticatorResponse>(response);
+            var addAuthenticatorResponse = JsonSerializer.Deserialize<AddAuthenticatorResponse>(response);
             if (addAuthenticatorResponse == null || addAuthenticatorResponse.Response == null)
             {
                 return LinkResult.GeneralFailure;
@@ -141,7 +142,7 @@ namespace SteamAuth
                     return FinalizeResult.GeneralFailure;
                 }
 
-                var finalizeResponse = JsonConvert.DeserializeObject<FinalizeAuthenticatorResponse>(response);
+                var finalizeResponse = JsonSerializer.Deserialize<FinalizeAuthenticatorResponse>(response);
 
                 if (finalizeResponse == null || finalizeResponse.Response == null)
                 {
@@ -196,7 +197,7 @@ namespace SteamAuth
                 return false;
             }
 
-            var addPhoneNumberResponse = JsonConvert.DeserializeObject<AddPhoneResponse>(response);
+            var addPhoneNumberResponse = JsonSerializer.Deserialize<AddPhoneResponse>(response);
 
             if (!addPhoneNumberResponse.Success)
             {
@@ -222,7 +223,7 @@ namespace SteamAuth
                 return false;
             }
 
-            var addPhoneNumberResponse = JsonConvert.DeserializeObject<AddPhoneResponse>(response);
+            var addPhoneNumberResponse = JsonSerializer.Deserialize<AddPhoneResponse>(response);
             return addPhoneNumberResponse.Success;
         }
 
@@ -241,7 +242,7 @@ namespace SteamAuth
                 return false;
             }
 
-            var emailConfirmationResponse = JsonConvert.DeserializeObject<AddPhoneResponse>(response);
+            var emailConfirmationResponse = JsonSerializer.Deserialize<AddPhoneResponse>(response);
             return emailConfirmationResponse.Success;
         }
 
@@ -260,7 +261,7 @@ namespace SteamAuth
                 return false;
             }
 
-            var hasPhoneResponse = JsonConvert.DeserializeObject<HasPhoneResponse>(response);
+            var hasPhoneResponse = JsonSerializer.Deserialize<HasPhoneResponse>(response);
             return hasPhoneResponse.HasPhone;
         }
 
@@ -284,40 +285,40 @@ namespace SteamAuth
 
         private class AddAuthenticatorResponse
         {
-            [JsonProperty("response")]
+            [JsonPropertyName("response")]
             public SteamGuardAccount Response { get; set; }
         }
 
         private class FinalizeAuthenticatorResponse
         {
-            [JsonProperty("response")]
+            [JsonPropertyName("response")]
             public FinalizeAuthenticatorInternalResponse Response { get; set; }
 
             internal class FinalizeAuthenticatorInternalResponse
             {
-                [JsonProperty("status")]
+                [JsonPropertyName("status")]
                 public int Status { get; set; }
 
-                [JsonProperty("server_time")]
+                [JsonPropertyName("server_time")]
                 public long ServerTime { get; set; }
 
-                [JsonProperty("want_more")]
+                [JsonPropertyName("want_more")]
                 public bool WantMore { get; set; }
 
-                [JsonProperty("success")]
+                [JsonPropertyName("success")]
                 public bool Success { get; set; }
             }
         }
 
         private class HasPhoneResponse
         {
-            [JsonProperty("has_phone")]
+            [JsonPropertyName("has_phone")]
             public bool HasPhone { get; set; }
         }
 
         private class AddPhoneResponse
         {
-            [JsonProperty("success")]
+            [JsonPropertyName("success")]
             public bool Success { get; set; }
         }
 
