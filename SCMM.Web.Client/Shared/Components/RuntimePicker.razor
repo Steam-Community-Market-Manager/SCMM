@@ -1,0 +1,43 @@
+﻿@inject ILogger<RuntimePicker> Logger
+@inject ICookieManager CookieManager
+@inject NavigationManager NavigationManager
+
+@if (Runtime != null)
+{
+    <div @attributes="AdditionalAttributes">
+        <MudToggleIconButton Toggled="@(Runtime == RuntimeType.Server)" ToggledChanged="@OnToggleRuntimeChanged" Size="Size.Medium"
+                             Icon="fas fa-fw fa-desktop" Color="@Color.Inherit" Title="Switch to Blazor server-side"
+                             ToggledIcon="fas fa-fw fa-server" ToggledColor="@Color.Inherit" ToggledTitle="Switch to Blazor WebAssembly" />
+    </div>
+}
+
+@code
+{
+    private RuntimeType? Runtime { get; set; }
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Runtime = await CookieManager.GetAsync<RuntimeType?>("Runtime", RuntimeType.WebAssembly);
+            Logger.LogInformation($"Runtime is '{Runtime}'");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading runtime option from cookies");
+        }
+    }
+
+    private async Task OnToggleRuntimeChanged(bool isRuntimeServer)
+    {
+        Runtime = (isRuntimeServer ? RuntimeType.Server : RuntimeType.WebAssembly);
+        Logger.LogInformation($"Runtime was changed to '{Runtime}'");
+        await CookieManager.SetAsync("Runtime", Runtime.Value.ToString());
+
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
+    }
+
+}

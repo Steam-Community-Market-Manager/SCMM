@@ -39,5 +39,27 @@
                     : $"{value}s";
             }
         }
+
+        public static T As<T>(this string value)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(typeof(T));
+            if (underlyingType != null && value == null)
+            {
+                return default(T);
+            }
+            var baseType = (underlyingType == null ? typeof(T) : underlyingType);
+            if (baseType.IsEnum)
+            {
+                return ((T)Enum.Parse(baseType, value));
+            }
+            else if (baseType.IsPrimitive)
+            {
+                return ((T)Convert.ChangeType(value, baseType));
+            }
+            else
+            {
+                return default(T);
+            }
+        }
     }
 }

@@ -47,3 +47,64 @@
     }
 
 }
+
+.component-error-banner, #blazor-error-ui {
+    position: fixed;
+    top: 0;
+    bottom: unset;
+    left: 0;
+    right: unset;
+    background: #d32f2f;
+    box-shadow: 0 -1px 2px rgb(0 0 0 / 20%);
+    width: 100%;
+    z-index: 9999;
+}
+
+.component-error-banner i, #blazor-error-ui i {
+    font-size: 1.5em;
+}
+
+.components-reconnect-modal, #components-reconnect-modal {
+    position: fixed;
+    inset: 0px;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: #dddddd;
+    background-color: #333333;
+    opacity: 0.9;
+    text-align: center;
+    font-weight: bold;
+    z-index: 1050;
+}
+
+.components-reconnect-hide {
+    display: none !important;
+}
+
+.components-reconnect-show > div {
+    display: none;
+}
+
+.components-reconnect-show > .show {
+    display: block;
+}
+
+.components-reconnect-failed > div {
+    display: none;
+}
+
+.components-reconnect-failed > .failed {
+    display: block;
+}
+
+.components-reconnect-rejected > div {
+    display: none;
+}
+
+.components-reconnect-rejected > .rejected {
+    display: block;
+}

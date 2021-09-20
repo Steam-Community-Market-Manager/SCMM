@@ -39,17 +39,15 @@ else
 
     private DateTimeOffset? StoreNextUpdateTime { get; set; }
     
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         NavigationMenuItems = RebuildMenuItems();
-        Task.Run(async () =>
-        {
-            /// Do in background...
-            await RefreshInventoryTotals();
-            await RefreshStoreTimeRemaining();
-            NavigationMenuItems = RebuildMenuItems();
-            StateHasChanged();
-        });
+        StateHasChanged();
+
+        await RefreshInventoryTotals();
+        await RefreshStoreTimeRemaining();
+        NavigationMenuItems = RebuildMenuItems();
+        StateHasChanged();
     }
 
     private async Task RefreshInventoryTotals()
@@ -232,23 +230,6 @@ else
                 }
             }
         });
-        if (State.IsAuthenticated && State.IsInRole(Roles.Administrator))
-        {
-            if (items.Any())
-            {
-                items.Add(null);
-            }
-            items.AddRange(new List<INavigationMenuItem>
-            {
-                new NavigationMenuItemLink
-                {
-                    Icon = "fas fa-fw fa-cog",
-                    Title = "Administration",
-                    Path = "/admin",
-                    Prefix = true
-                },
-            });
-        }
 
         return items;
     }

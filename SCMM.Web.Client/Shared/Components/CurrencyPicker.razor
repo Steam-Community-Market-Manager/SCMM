@@ -6,14 +6,16 @@
 
 @if (State.Currency != null && Currencies != null)
 {
-    <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.Currency.Name" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Dense="true" MaxHeight="500" UserAttributes="@AdditionalAttributes">
-        @foreach (var currency in Currencies)
-        {
-            <MudMenuItem OnClick="@(() => ChangeCurrency(currency))">
-                @currency.Name
-            </MudMenuItem>
-        }
-    </MudMenu>
+    <div @attributes="AdditionalAttributes">
+        <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.Currency.Name" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Dense="true" MaxHeight="500" title="Change currency">
+            @foreach (var currency in Currencies)
+            {
+                <MudMenuItem OnClick="@(() => ChangeCurrency(currency))">
+                    @currency.Name
+                </MudMenuItem>
+            }
+        </MudMenu>
+    </div>
 }
 
 @code

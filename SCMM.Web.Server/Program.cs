@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging.ApplicationInsights;
-using SCMM.Shared.Web;
-using AspNet.Security.OpenId;
+﻿using AspNet.Security.OpenId;
 using CommandQuery;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -20,10 +18,13 @@ using SCMM.Steam.Data.Store;
 using System.Reflection;
 using System.Security.Claims;
 using SCMM.Web.Server;
+using SCMM.Shared.Web;
+using Microsoft.AspNetCore.Components;
 
 await WebApplication.CreateBuilder(args)
     .ConfigureLogging()
     .ConfigureServices()
+    .ConfigureClientServices()
     .Build()
     .Configure()
     .RunAsync();
@@ -35,9 +36,8 @@ public static class WebApplicationExtensions
         builder.Logging.ClearProviders();
         builder.Logging.AddDebug();
         builder.Logging.AddConsole();
-        builder.Logging.AddHtmlLogger();
         builder.Logging.AddApplicationInsights();
-        builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+        builder.Logging.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
         return builder;
     }
 
@@ -87,13 +87,6 @@ public static class WebApplicationExtensions
                     }
                 };
             });
-            /* TODO: Get this to work alongside Steam OpenID
-            .AddMicrosoftIdentityWebApp(
-                openIdConnectScheme: OpenIdConnectDefaults.AuthenticationScheme,
-                cookieScheme: $"{OpenIdConnectDefaults.AuthenticationScheme}{CookieAuthenticationDefaults.AuthenticationScheme}",
-                configurationSection: Configuration.GetSection("AzureAd")
-            );
-            */
 
         // Authorization
         builder.Services.AddAuthorization(options =>
@@ -156,9 +149,10 @@ public static class WebApplicationExtensions
             .AddCsvSerializerFormatters();
 
         // Views
-        builder.Services.AddRazorPages(options =>
+        builder.Services.AddRazorPages();
+        builder.Services.AddServerSideBlazor(options =>
         {
-            options.Conventions.AuthorizePage("/admin", AuthorizationPolicies.Administrator);
+            options.DetailedErrors = builder.Environment.IsDevelopment();
         });
 
         // Auto-documentation
@@ -189,6 +183,44 @@ public static class WebApplicationExtensions
                     TermsOfService = new Uri($"{builder.Configuration.GetWebsiteUrl()}/tos")
                 }
             );
+        });
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder ConfigureClientServices(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddUIServices();
+
+        builder.Services.AddScoped<ICookieManager, HttpCookieManager>();
+        builder.Services.AddScoped<HttpClient>(sp =>
+        {
+            var navigationManager = sp.GetRequiredService<NavigationManager>();
+            var client = new HttpClient()
+            {
+                BaseAddress = new Uri(navigationManager.BaseUri)
+            };
+
+            var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+            var cookies = httpContextAccessor.HttpContext.Request.Cookies;
+            if (cookies.Any())
+            {
+                var cks = new List<string>();
+                foreach (var cookie in cookies)
+                {
+                    cks.Add($"{cookie.Key}={cookie.Value}");
+                }
+
+                client.DefaultRequestHeaders.Add("Cookie", string.Join(';', cks));
+            }
+
+            var state = sp.GetService<AppState>();
+            if (state != null)
+            {
+                state.AddHeadersTo(client);
+            }
+
+            return client;
         });
 
         return builder;
@@ -232,7 +264,8 @@ public static class WebApplicationExtensions
         });
 
         app.UseHttpsRedirection();
-        app.UseBlazorFrameworkFiles();
+
+        app.UseBlazorFrameworkFiles(); // Wasm
         app.UseStaticFiles();
 
         app.UseRouting();
@@ -242,16 +275,11 @@ public static class WebApplicationExtensions
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapRazorPages()
-                .RequireAuthorization(AuthorizationPolicies.Administrator);
-
             endpoints.MapControllers();
-            endpoints.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}"
-            );
+            endpoints.MapDefaultControllerRoute();
 
-            endpoints.MapFallbackToFile("index.html");
+            endpoints.MapBlazorHub();
+            endpoints.MapFallbackToPage("/_Index");
         });
 
         app.UseAzureServiceBusProcessor();

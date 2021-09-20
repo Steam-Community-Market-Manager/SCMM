@@ -12,15 +12,14 @@
                 <span>Steam Community Market Manager</span>
                 <MudChip Variant="MudBlazor.Variant.Text" Size="MudBlazor.Size.Small" OnClick="@ViewAboutPage" Class="mud-chip-outlined">@AppTag</MudChip>
             </MudHidden>
-            <MudHidden Breakpoint="MudBlazor.Breakpoint.SmAndDown" Invert="true">
+            <MudHidden Breakpoint="MudBlazor.Breakpoint.Sm" Invert="true">
                 <span>SCMM</span>
-                <MudHidden Breakpoint="MudBlazor.Breakpoint.Xs">
-                    <MudChip Variant="MudBlazor.Variant.Text" Size="MudBlazor.Size.Small" OnClick="@ViewAboutPage" Class="mud-chip-outlined">@AppTag</MudChip>
-                </MudHidden>
+                <MudChip Variant="MudBlazor.Variant.Text" Size="MudBlazor.Size.Small" OnClick="@ViewAboutPage" Class="mud-chip-outlined">@AppTag</MudChip>
             </MudHidden >
         </MudText>
         <MudSpacer />
-        <CurrencyPicker />
+        <RuntimePicker class="mx-2" />
+        <CurrencyPicker class="ml-2" />
     </MudAppBar>
     <MudDrawer @bind-Open="IsDrawerOpen" Variant="MudBlazor.DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always" Breakpoint="MudBlazor.Breakpoint.Md" Elevation="2">
         <AppNavigationMenu />
