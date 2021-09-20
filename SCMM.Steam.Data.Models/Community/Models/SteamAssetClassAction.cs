@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamAssetClassAction
     {
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("link")]
+        [JsonPropertyName("link")]
         public string Link { get; set; }
     }
 }

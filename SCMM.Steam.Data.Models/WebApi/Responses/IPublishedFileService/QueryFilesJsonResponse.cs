@@ -1,14 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using SCMM.Steam.Data.Models.WebApi.Models;
 
 namespace SCMM.Steam.Data.Models.WebApi.Responses.IPublishedFileService
 {
     public class QueryFilesJsonResponse
     {
-        [JsonProperty("total")]
+        [JsonPropertyName("total")]
         public int Total { get; set; }
 
-        [JsonProperty("publishedfiledetails")]
+        [JsonPropertyName("publishedfiledetails")]
         public List<PublishedFileDetails> PublishedFileDetails { get; set; }
     }
 }

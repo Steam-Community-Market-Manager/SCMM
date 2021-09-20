@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 
 namespace SCMM.Fixer.Client
 {
@@ -22,7 +22,7 @@ namespace SCMM.Fixer.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonConvert.DeserializeObject<FixerHistoricalRatesResponseJson>(textJson);
+                var responseJson = JsonSerializer.Deserialize<FixerHistoricalRatesResponseJson>(textJson);
                 return responseJson?.Rates;
             }
         }

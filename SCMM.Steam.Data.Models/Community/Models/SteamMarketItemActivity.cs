@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using SCMM.Steam.Data.Models.Extensions;
 
 namespace SCMM.Steam.Data.Models.Community.Models
@@ -8,13 +8,13 @@ namespace SCMM.Steam.Data.Models.Community.Models
         /// <summary>
         /// SellOrder, BuyOrder
         /// </summary>
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
         public long Price { get; private set; }
 
         private string _priceText;
-        [JsonProperty("price")]
+        [JsonPropertyName("price")]
         public string PriceText
         {
             get => _priceText;
@@ -28,7 +28,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public int Quantity { get; private set; }
 
         private string _quantityText;
-        [JsonProperty("quantity")]
+        [JsonPropertyName("quantity")]
         public string QuantityText
         {
             get => _quantityText;
@@ -39,25 +39,25 @@ namespace SCMM.Steam.Data.Models.Community.Models
             }
         }
 
-        [JsonProperty("time")]
+        [JsonPropertyName("time")]
         public long Time { get; set; }
 
-        [JsonProperty("avatar_buyer")]
+        [JsonPropertyName("avatar_buyer")]
         public string AvatarBuyer { get; set; }
 
-        [JsonProperty("avatar_medium_buyer")]
+        [JsonPropertyName("avatar_medium_buyer")]
         public string AvatarMediumBuyer { get; set; }
 
-        [JsonProperty("persona_buyer")]
+        [JsonPropertyName("persona_buyer")]
         public string PersonaBuyer { get; set; }
 
-        [JsonProperty("avatar_seller")]
+        [JsonPropertyName("avatar_seller")]
         public string AvatarSeller { get; set; }
 
-        [JsonProperty("avatar_medium_seller")]
+        [JsonPropertyName("avatar_medium_seller")]
         public string AvatarMediumSeller { get; set; }
 
-        [JsonProperty("persona_seller")]
+        [JsonPropertyName("persona_seller")]
         public string PersonaSeller { get; set; }
 
     }

@@ -1,20 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using SCMM.Steam.Data.Models.Community.Models;
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {
     public class SteamInventoryPaginatedJsonResponse
     {
-        [JsonProperty("success")]
+        [JsonPropertyName("success")]
         public bool Success { get; set; }
 
-        [JsonProperty("total_inventory_count")]
+        [JsonPropertyName("total_inventory_count")]
         public int TotalInventoryCount { get; set; }
 
-        [JsonProperty("assets")]
+        [JsonPropertyName("assets")]
         public List<SteamInventoryAsset> Assets { get; set; }
 
-        [JsonProperty("descriptions")]
+        [JsonPropertyName("descriptions")]
         public List<SteamAssetClass> Descriptions { get; set; }
     }
 }

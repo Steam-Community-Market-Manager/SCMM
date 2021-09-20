@@ -1,25 +1,25 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Fixer.Client
 {
     public class FixerHistoricalRatesResponseJson
     {
-        [JsonProperty("success")]
+        [JsonPropertyName("success")]
         public bool Success { get; set; }
 
-        [JsonProperty("historical")]
+        [JsonPropertyName("historical")]
         public bool Historical { get; set; }
 
-        [JsonProperty("date")]
+        [JsonPropertyName("date")]
         public DateTime Date { get; set; }
 
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public long Timestamp { get; set; }
 
-        [JsonProperty("base")]
+        [JsonPropertyName("base")]
         public string Base { get; set; }
 
-        [JsonProperty("rates")]
+        [JsonPropertyName("rates")]
         public IDictionary<string, decimal> Rates { get; set; }
     }
 }

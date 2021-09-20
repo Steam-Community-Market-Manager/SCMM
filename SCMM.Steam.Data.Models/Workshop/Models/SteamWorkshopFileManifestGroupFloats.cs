@@ -1,31 +1,31 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Workshop.Models
 {
     public class SteamWorkshopFileManifestGroupFloats
     {
-        [JsonProperty("_Cutoff")]
+        [JsonPropertyName("_Cutoff")]
         public decimal Cutoff { get; set; }
 
-        [JsonProperty("_BumpScale")]
+        [JsonPropertyName("_BumpScale")]
         public decimal BumpScale { get; set; }
 
-        [JsonProperty("_Glossiness")]
+        [JsonPropertyName("_Glossiness")]
         public decimal Glossiness { get; set; }
 
-        [JsonProperty("_OcclusionStrength")]
+        [JsonPropertyName("_OcclusionStrength")]
         public decimal OcclusionStrength { get; set; }
 
-        [JsonProperty("_MicrofiberFuzzIntensity")]
+        [JsonPropertyName("_MicrofiberFuzzIntensity")]
         public decimal MicrofiberFuzzIntensity { get; set; }
 
-        [JsonProperty("_MicrofiberFuzzScatter")]
+        [JsonPropertyName("_MicrofiberFuzzScatter")]
         public decimal MicrofiberFuzzScatter { get; set; }
 
-        [JsonProperty("_MicrofiberFuzzOcclusion")]
+        [JsonPropertyName("_MicrofiberFuzzOcclusion")]
         public decimal MicrofiberFuzzOcclusion { get; set; }
 
-        [JsonProperty("_DirtAmount")]
+        [JsonPropertyName("_DirtAmount")]
         public decimal DirtAmount { get; set; }
     }
 }

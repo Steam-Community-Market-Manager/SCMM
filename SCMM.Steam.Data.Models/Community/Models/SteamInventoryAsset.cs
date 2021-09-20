@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamInventoryAsset
     {
-        [JsonProperty("assetid")]
+        [JsonPropertyName("assetid")]
         public ulong AssetId { get; set; }
 
-        [JsonProperty("classid")]
+        [JsonPropertyName("classid")]
         public ulong ClassId { get; set; }
 
-        [JsonProperty("amount")]
+        [JsonPropertyName("amount")]
         public uint Amount { get; set; }
     }
 }

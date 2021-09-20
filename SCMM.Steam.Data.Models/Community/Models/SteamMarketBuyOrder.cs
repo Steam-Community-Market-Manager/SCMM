@@ -1,31 +1,31 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamMarketBuyOrder
     {
-        [JsonProperty("appid")]
+        [JsonPropertyName("appid")]
         public ulong AppId { get; set; }
 
-        [JsonProperty("hash_name")]
+        [JsonPropertyName("hash_name")]
         public string HashName { get; set; }
 
-        [JsonProperty("wallet_currency")]
+        [JsonPropertyName("wallet_currency")]
         public string WalletCurrency { get; set; }
 
-        [JsonProperty("price")]
+        [JsonPropertyName("price")]
         public string Price { get; set; }
 
-        [JsonProperty("quantity")]
+        [JsonPropertyName("quantity")]
         public string Quantity { get; set; }
 
-        [JsonProperty("quantity_remaining")]
+        [JsonPropertyName("quantity_remaining")]
         public string QuantityRemaining { get; set; }
 
-        [JsonProperty("buy_orderid")]
+        [JsonPropertyName("buy_orderid")]
         public string BuyOrderId { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public SteamAssetClass Description { get; set; }
     }
 }

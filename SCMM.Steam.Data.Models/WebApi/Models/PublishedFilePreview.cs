@@ -1,31 +1,31 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.WebApi.Models
 {
     public class PublishedFilePreview
     {
-        [JsonProperty("previewid")]
+        [JsonPropertyName("previewid")]
         public string PreviewId { get; set; }
 
-        [JsonProperty("preview_type")]
+        [JsonPropertyName("preview_type")]
         public uint PreviewType { get; set; }
 
-        [JsonProperty("youtubevideoid")]
+        [JsonPropertyName("youtubevideoid")]
         public string YouTubeVideoId { get; set; }
 
-        [JsonProperty("external_reference")]
+        [JsonPropertyName("external_reference")]
         public string ExternalReference { get; set; }
 
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
         public string Url { get; set; }
 
-        [JsonProperty("size")]
+        [JsonPropertyName("size")]
         public ulong Size { get; set; }
 
-        [JsonProperty("filename")]
+        [JsonPropertyName("filename")]
         public string Filename { get; set; }
 
-        [JsonProperty("sortorder")]
+        [JsonPropertyName("sortorder")]
         public uint SortOrder { get; set; }
     }
 }

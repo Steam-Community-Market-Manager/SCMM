@@ -1,25 +1,25 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Workshop.Requests
 {
     public class SteamWorkshopDownloaderJsonRequest
     {
-        [JsonProperty("publishedFileId")]
+        [JsonPropertyName("publishedFileId")]
         public ulong PublishedFileId { get; set; }
 
-        [JsonProperty("collectionId")]
+        [JsonPropertyName("collectionId")]
         public ulong? CollectionId { get; set; }
 
-        [JsonProperty("extract")]
+        [JsonPropertyName("extract")]
         public bool Extract { get; set; } = false;
 
-        [JsonProperty("hidden")]
+        [JsonPropertyName("hidden")]
         public bool Hidden { get; set; } = true;
 
-        [JsonProperty("direct")]
+        [JsonPropertyName("direct")]
         public bool direct { get; set; } = false;
 
-        [JsonProperty("autodownload")]
+        [JsonPropertyName("autodownload")]
         public bool AutoDownload { get; set; } = true;
     }
 }

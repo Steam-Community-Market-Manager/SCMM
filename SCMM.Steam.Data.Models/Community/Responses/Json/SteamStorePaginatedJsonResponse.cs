@@ -1,22 +1,22 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {
     public class SteamStorePaginatedJsonResponse
     {
-        [JsonProperty("success")]
+        [JsonPropertyName("success")]
         public bool Success { get; set; }
 
-        [JsonProperty("pagesize")]
+        [JsonPropertyName("pagesize")]
         public int PageSize { get; set; }
 
-        [JsonProperty("start")]
+        [JsonPropertyName("start")]
         public int Start { get; set; }
 
-        [JsonProperty("total_count")]
+        [JsonPropertyName("total_count")]
         public int TotalCount { get; set; }
 
-        [JsonProperty("results_html")]
+        [JsonPropertyName("results_html")]
         public string ResultsHtml { get; set; }
     }
 }

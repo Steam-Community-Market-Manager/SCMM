@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.WebApi.Models
 {
     public class PublishedFilePlaytimeStats
     {
-        [JsonProperty("playtime_seconds")]
+        [JsonPropertyName("playtime_seconds")]
         public ulong PlaytimeSeconds { get; set; }
 
-        [JsonProperty("num_sessions")]
+        [JsonPropertyName("num_sessions")]
         public ulong NumSessions { get; set; }
     }
 }

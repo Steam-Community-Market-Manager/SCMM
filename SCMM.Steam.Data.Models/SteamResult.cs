@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models
 {
     public class SteamResult<T>
     {
-        [JsonProperty("result")]
+        [JsonPropertyName("result")]
         public T Result { get; set; }
     }
 }

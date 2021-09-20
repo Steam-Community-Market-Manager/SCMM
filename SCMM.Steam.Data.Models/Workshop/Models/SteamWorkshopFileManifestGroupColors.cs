@@ -1,19 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Workshop.Models
 {
     public class SteamWorkshopFileManifestGroupColors
     {
-        [JsonProperty("_Color")]
+        [JsonPropertyName("_Color")]
         public SteamWorkshopFileManifestGroupColorsRgb Color { get; set; }
 
-        [JsonProperty("_SpecColor")]
+        [JsonPropertyName("_SpecColor")]
         public SteamWorkshopFileManifestGroupColorsRgb SpecColor { get; set; }
 
-        [JsonProperty("_EmissionColor")]
+        [JsonPropertyName("_EmissionColor")]
         public SteamWorkshopFileManifestGroupColorsRgb EmissionColor { get; set; }
 
-        [JsonProperty("_MicrofiberFuzzColor")]
+        [JsonPropertyName("_MicrofiberFuzzColor")]
         public SteamWorkshopFileManifestGroupColorsRgb MicrofiberFuzzColor { get; set; }
     }
 }

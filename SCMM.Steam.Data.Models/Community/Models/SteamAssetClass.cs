@@ -1,67 +1,67 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamAssetClass
     {
-        [JsonProperty("classid")]
+        [JsonPropertyName("classid")]
         public ulong ClassId { get; set; }
 
-        [JsonProperty("contextid")]
+        [JsonPropertyName("contextid")]
         public ulong ContextId { get; set; }
 
-        [JsonProperty("instanceid")]
+        [JsonPropertyName("instanceid")]
         public ulong InstanceId { get; set; }
 
-        [JsonProperty("appid")]
+        [JsonPropertyName("appid")]
         public ulong AppId { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
-        [JsonProperty("market_name")]
+        [JsonPropertyName("market_name")]
         public string MarketName { get; set; }
 
-        [JsonProperty("market_hash_name")]
+        [JsonPropertyName("market_hash_name")]
         public string MarketHashName { get; set; }
 
-        [JsonProperty("marketable")]
+        [JsonPropertyName("marketable")]
         public bool Marketable { get; set; }
 
-        [JsonProperty("market_marketable_restriction")]
+        [JsonPropertyName("market_marketable_restriction")]
         public string MarketMarketableRestriction { get; set; }
 
-        [JsonProperty("market_tradable_restriction")]
+        [JsonPropertyName("market_tradable_restriction")]
         public string MarketTradableRestriction { get; set; }
 
-        [JsonProperty("tradable")]
+        [JsonPropertyName("tradable")]
         public bool Tradable { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("name_color")]
+        [JsonPropertyName("name_color")]
         public string NameColor { get; set; }
 
-        [JsonProperty("background_color")]
+        [JsonPropertyName("background_color")]
         public string BackgroundColor { get; set; }
 
-        [JsonProperty("icon_url")]
+        [JsonPropertyName("icon_url")]
         public string IconUrl { get; set; }
 
-        [JsonProperty("icon_url_large")]
+        [JsonPropertyName("icon_url_large")]
         public string IconUrlLarge { get; set; }
 
-        [JsonProperty("descriptions")]
+        [JsonPropertyName("descriptions")]
         public List<SteamAssetClassDescription> Descriptions { get; set; }
 
-        [JsonProperty("commodity")]
+        [JsonPropertyName("commodity")]
         public bool Commodity { get; set; }
 
-        [JsonProperty("actions")]
+        [JsonPropertyName("actions")]
         public List<SteamAssetClassAction> Actions { get; set; }
 
-        [JsonProperty("tags")]
+        [JsonPropertyName("tags")]
         public List<SteamAssetClassTag> Tags { get; set; }
     }
 }

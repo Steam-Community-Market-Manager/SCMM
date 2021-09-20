@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.WebApi.Models
 {
     public class PublishedFileTag
     {
-        [JsonProperty("tag")]
+        [JsonPropertyName("tag")]
         public string Tag { get; set; }
 
-        [JsonProperty("display_name")]
+        [JsonPropertyName("display_name")]
         public string DisplayName { get; set; }
     }
 }

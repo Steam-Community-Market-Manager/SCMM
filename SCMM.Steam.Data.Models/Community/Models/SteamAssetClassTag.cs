@@ -1,19 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamAssetClassTag
     {
-        [JsonProperty("category")]
+        [JsonPropertyName("category")]
         public string Category { get; set; }
 
-        [JsonProperty("internal_name")]
+        [JsonPropertyName("internal_name")]
         public string InternalName { get; set; }
 
-        [JsonProperty("localized_category_name")]
+        [JsonPropertyName("localized_category_name")]
         public string LocalizedCategoryName { get; set; }
 
-        [JsonProperty("localized_tag_name")]
+        [JsonPropertyName("localized_tag_name")]
         public string LocalizedTagName { get; set; }
     }
 }

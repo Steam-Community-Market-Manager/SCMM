@@ -1,28 +1,28 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamMarketEvent
     {
-        [JsonProperty("listingid")]
+        [JsonPropertyName("listingid")]
         public string ListingId { get; set; }
 
-        [JsonProperty("purchaseid")]
+        [JsonPropertyName("purchaseid")]
         public string PurchaseId { get; set; }
 
-        [JsonProperty("event_type")]
+        [JsonPropertyName("event_type")]
         public SteamMarketEventType EventType { get; set; }
 
-        [JsonProperty("time_event")]
+        [JsonPropertyName("time_event")]
         public long TimeEvent { get; set; }
 
-        [JsonProperty("time_event_fraction")]
+        [JsonPropertyName("time_event_fraction")]
         public long TimeEventFraction { get; set; }
 
-        [JsonProperty("steamid_actor")]
+        [JsonPropertyName("steamid_actor")]
         public string SteamIdActor { get; set; }
 
-        [JsonProperty("date_event")]
+        [JsonPropertyName("date_event")]
         public string DateEvent { get; set; }
     }
 }

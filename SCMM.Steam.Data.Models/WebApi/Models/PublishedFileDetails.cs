@@ -1,163 +1,163 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.WebApi.Models
 {
     public class PublishedFileDetails
     {
-        [JsonProperty("result")]
+        [JsonPropertyName("result")]
         public int Result { get; set; }
 
-        [JsonProperty("publishedfileid")]
+        [JsonPropertyName("publishedfileid")]
         public ulong PublishedFileId { get; set; }
 
-        [JsonProperty("creator")]
+        [JsonPropertyName("creator")]
         public ulong Creator { get; set; }
 
-        [JsonProperty("creator_appid")]
+        [JsonPropertyName("creator_appid")]
         public ulong CreatorAppId { get; set; }
 
-        [JsonProperty("consumer_appid")]
+        [JsonPropertyName("consumer_appid")]
         public ulong ConsumerAppId { get; set; }
 
-        [JsonProperty("consumer_shortcutid")]
+        [JsonPropertyName("consumer_shortcutid")]
         public ulong ConsumerShortcutId { get; set; }
 
-        [JsonProperty("filename")]
+        [JsonPropertyName("filename")]
         public string Filename { get; set; }
 
-        [JsonProperty("file_size")]
+        [JsonPropertyName("file_size")]
         public ulong FileSize { get; set; }
 
-        [JsonProperty("preview_file_size")]
+        [JsonPropertyName("preview_file_size")]
         public ulong PreviewFileSize { get; set; }
 
-        [JsonProperty("preview_url")]
+        [JsonPropertyName("preview_url")]
         public string PreviewUrl { get; set; }
 
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
         public string Url { get; set; }
 
-        [JsonProperty("hcontent_file")]
+        [JsonPropertyName("hcontent_file")]
         public string HandleContentFile { get; set; }
 
-        [JsonProperty("hcontent_preview")]
+        [JsonPropertyName("hcontent_preview")]
         public string HandleContentPreview { get; set; }
 
-        [JsonProperty("title")]
+        [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        [JsonProperty("file_description")]
+        [JsonPropertyName("file_description")]
         public string FileDescription { get; set; }
 
-        [JsonProperty("short_description")]
+        [JsonPropertyName("short_description")]
         public string ShortDescription { get; set; }
 
-        [JsonProperty("time_created")]
+        [JsonPropertyName("time_created")]
         public ulong TimeCreated { get; set; }
 
-        [JsonProperty("time_updated")]
+        [JsonPropertyName("time_updated")]
         public ulong TimeUpdated { get; set; }
 
-        [JsonProperty("visibility")]
+        [JsonPropertyName("visibility")]
         public uint Visibility { get; set; }
 
-        [JsonProperty("flags")]
+        [JsonPropertyName("flags")]
         public ulong Flags { get; set; }
 
-        [JsonProperty("workshop_file")]
+        [JsonPropertyName("workshop_file")]
         public bool WorkshopFile { get; set; }
 
-        [JsonProperty("workshop_accepted")]
+        [JsonPropertyName("workshop_accepted")]
         public bool WorkshopAccepted { get; set; }
 
-        [JsonProperty("show_subscribe_all")]
+        [JsonPropertyName("show_subscribe_all")]
         public bool ShowSubscribeAll { get; set; }
 
-        [JsonProperty("num_comments_public")]
+        [JsonPropertyName("num_comments_public")]
         public ulong NumCommentsPublic { get; set; }
 
-        [JsonProperty("banned")]
+        [JsonPropertyName("banned")]
         public bool Banned { get; set; }
 
-        [JsonProperty("ban_reason")]
+        [JsonPropertyName("ban_reason")]
         public string BanReason { get; set; }
 
-        [JsonProperty("banner")]
+        [JsonPropertyName("banner")]
         public ulong Banner { get; set; }
 
-        [JsonProperty("can_be_deleted")]
+        [JsonPropertyName("can_be_deleted")]
         public bool CanBeDeleted { get; set; }
 
-        [JsonProperty("app_name")]
+        [JsonPropertyName("app_name")]
         public string AppName { get; set; }
 
-        [JsonProperty("file_type")]
+        [JsonPropertyName("file_type")]
         public uint FileType { get; set; }
 
-        [JsonProperty("can_subscribe")]
+        [JsonPropertyName("can_subscribe")]
         public bool CanSubscribe { get; set; }
 
-        [JsonProperty("subscriptions")]
+        [JsonPropertyName("subscriptions")]
         public ulong Subscriptions { get; set; }
 
-        [JsonProperty("favorited")]
+        [JsonPropertyName("favorited")]
         public ulong Favorited { get; set; }
 
-        [JsonProperty("followers")]
+        [JsonPropertyName("followers")]
         public ulong Followers { get; set; }
 
-        [JsonProperty("lifetime_subscriptions")]
+        [JsonPropertyName("lifetime_subscriptions")]
         public ulong LifetimeSubscriptions { get; set; }
 
-        [JsonProperty("lifetime_favorited")]
+        [JsonPropertyName("lifetime_favorited")]
         public ulong LifetimeFavorited { get; set; }
 
-        [JsonProperty("lifetime_followers")]
+        [JsonPropertyName("lifetime_followers")]
         public ulong LifetimeFollowers { get; set; }
 
-        [JsonProperty("lifetime_playtime")]
+        [JsonPropertyName("lifetime_playtime")]
         public ulong LifetimePlaytime { get; set; }
 
-        [JsonProperty("lifetime_playtime_sessions")]
+        [JsonPropertyName("lifetime_playtime_sessions")]
         public ulong LifetimePlaytimeSessions { get; set; }
 
-        [JsonProperty("views")]
+        [JsonPropertyName("views")]
         public ulong Views { get; set; }
 
-        [JsonProperty("num_children")]
+        [JsonPropertyName("num_children")]
         public ulong NumChildren { get; set; }
 
-        [JsonProperty("num_reports")]
+        [JsonPropertyName("num_reports")]
         public ulong NumReports { get; set; }
 
-        [JsonProperty("previews")]
+        [JsonPropertyName("previews")]
         public List<PublishedFilePreview> Previews { get; set; }
 
-        [JsonProperty("tags")]
+        [JsonPropertyName("tags")]
         public List<PublishedFileTag> Tags { get; set; }
 
-        [JsonProperty("vote_data")]
+        [JsonPropertyName("vote_data")]
         public PublishedFileVoteData VoteData { get; set; }
 
-        [JsonProperty("playtime_stats")]
+        [JsonPropertyName("playtime_stats")]
         public PublishedFilePlaytimeStats PlaytimeStats { get; set; }
 
-        [JsonProperty("language")]
+        [JsonPropertyName("language")]
         public uint Language { get; set; }
 
-        [JsonProperty("maybe_inappropriate_sex")]
+        [JsonPropertyName("maybe_inappropriate_sex")]
         public bool MaybeInappropriateSex { get; set; }
 
-        [JsonProperty("maybe_inappropriate_violence")]
+        [JsonPropertyName("maybe_inappropriate_violence")]
         public bool MaybeInappropriateViolence { get; set; }
 
-        [JsonProperty("revision_change_number")]
+        [JsonPropertyName("revision_change_number")]
         public uint RevisionChangeNumber { get; set; }
 
-        [JsonProperty("revision")]
+        [JsonPropertyName("revision")]
         public uint Revision { get; set; }
 
-        [JsonProperty("ban_text_check_result")]
+        [JsonPropertyName("ban_text_check_result")]
         public bool Ban_TextCheckResult { get; set; }
     }
 }

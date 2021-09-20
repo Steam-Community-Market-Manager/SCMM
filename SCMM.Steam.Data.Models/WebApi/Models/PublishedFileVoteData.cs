@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.WebApi.Models
 {
     public class PublishedFileVoteData
     {
-        [JsonProperty("score")]
+        [JsonPropertyName("score")]
         public decimal Score { get; set; }
 
-        [JsonProperty("votes_up")]
+        [JsonPropertyName("votes_up")]
         public uint VotesUp { get; set; }
 
-        [JsonProperty("votes_down")]
+        [JsonPropertyName("votes_down")]
         public uint VotesDown { get; set; }
     }
 }

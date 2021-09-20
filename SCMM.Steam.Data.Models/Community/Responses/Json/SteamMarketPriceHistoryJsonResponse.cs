@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {
     public class SteamMarketPriceHistoryJsonResponse
     {
-        [JsonProperty("success")]
+        [JsonPropertyName("success")]
         public bool Success { get; set; }
 
-        [JsonProperty("price_prefix")]
+        [JsonPropertyName("price_prefix")]
         public string PricePrefix { get; set; }
 
-        [JsonProperty("price_suffix")]
+        [JsonPropertyName("price_suffix")]
         public string PriceSuffix { get; set; }
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace SCMM.Steam.Data.Models.Community.Responses.Json
         /// x[1] = Price, e.g. "2.562"
         /// x[2] = Quantity, e.g. "46"
         /// </summary>
-        [JsonProperty("prices")]
+        [JsonPropertyName("prices")]
         public string[][] Prices { get; set; }
     }
 }

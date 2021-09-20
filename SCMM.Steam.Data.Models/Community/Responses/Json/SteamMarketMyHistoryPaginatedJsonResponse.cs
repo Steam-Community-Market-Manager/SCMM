@@ -1,20 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using SCMM.Steam.Data.Models.Community.Models;
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {
     public class SteamMarketMyHistoryPaginatedJsonResponse
     {
-        [JsonProperty("success")]
+        [JsonPropertyName("success")]
         public bool Success { get; set; }
 
-        [JsonProperty("start")]
+        [JsonPropertyName("start")]
         public int Start { get; set; }
 
-        [JsonProperty("pagesize")]
+        [JsonPropertyName("pagesize")]
         public int PageSize { get; set; }
 
-        [JsonProperty("total_count")]
+        [JsonPropertyName("total_count")]
         public int TotalCount { get; set; }
 
         /// <summary>
@@ -22,16 +22,16 @@ namespace SCMM.Steam.Data.Models.Community.Responses.Json
         /// n1: ContextId
         /// n2: AssetId
         /// </summary>
-        [JsonProperty("assets")]
+        [JsonPropertyName("assets")]
         public Dictionary<string, Dictionary<string, Dictionary<string, SteamAssetClass>>> Assets { get; set; }
 
-        [JsonProperty("events")]
+        [JsonPropertyName("events")]
         public List<SteamMarketEvent> Events { get; set; }
 
-        [JsonProperty("purchases")]
+        [JsonPropertyName("purchases")]
         public Dictionary<string, SteamMarketPurchase> Purchases { get; set; }
 
-        [JsonProperty("listings")]
+        [JsonPropertyName("listings")]
         public Dictionary<string, SteamMarketListing> Listings { get; set; }
     }
 }

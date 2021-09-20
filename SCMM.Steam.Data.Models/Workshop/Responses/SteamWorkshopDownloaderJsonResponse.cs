@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Workshop.Responses
 {
     public class SteamWorkshopDownloaderJsonResponse
     {
-        [JsonProperty("uuid")]
+        [JsonPropertyName("uuid")]
         public Guid Uuid { get; set; }
     }
 }

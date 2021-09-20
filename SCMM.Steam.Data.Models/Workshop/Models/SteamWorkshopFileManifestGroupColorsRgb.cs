@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Workshop.Models
 {
     public class SteamWorkshopFileManifestGroupColorsRgb
     {
-        [JsonProperty("r")]
+        [JsonPropertyName("r")]
         public decimal R { get; set; }
 
-        [JsonProperty("g")]
+        [JsonPropertyName("g")]
         public decimal G { get; set; }
 
-        [JsonProperty("b")]
+        [JsonPropertyName("b")]
         public decimal B { get; set; }
     }
 }

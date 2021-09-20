@@ -1,17 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using SCMM.Steam.Data.Models.Community.Models;
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {
     public class SteamMarketItemOrdersActivityJsonResponse
     {
-        [JsonProperty("success")]
+        [JsonPropertyName("success")]
         public bool Success { get; set; }
 
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public long Timestamp { get; set; }
 
-        [JsonProperty("activity")]
+        [JsonPropertyName("activity")]
         public SteamMarketItemActivity[] Activity { get; set; }
 
     }

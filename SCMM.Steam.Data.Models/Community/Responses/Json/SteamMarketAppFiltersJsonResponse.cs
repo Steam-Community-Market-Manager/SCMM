@@ -1,14 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using SCMM.Steam.Data.Models.Community.Models;
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {
     public class SteamMarketAppFiltersJsonResponse
     {
-        [JsonProperty("success")]
+        [JsonPropertyName("success")]
         public bool Success { get; set; }
 
-        [JsonProperty("facets")]
+        [JsonPropertyName("facets")]
         public Dictionary<string, SteamAppFilter> Facets { get; set; }
     }
 }

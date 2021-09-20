@@ -1,31 +1,31 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamMarketAsset : SteamAssetClass
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public ulong Id { get; set; }
 
-        [JsonProperty("amount")]
+        [JsonPropertyName("amount")]
         public uint Amount { get; set; }
 
-        [JsonProperty("currency")]
+        [JsonPropertyName("currency")]
         public uint Currency { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public uint Status { get; set; }
 
-        [JsonProperty("unowned_id")]
+        [JsonPropertyName("unowned_id")]
         public ulong UnownedId { get; set; }
 
-        [JsonProperty("unowned_contextid")]
+        [JsonPropertyName("unowned_contextid")]
         public ulong UnownedContextId { get; set; }
 
-        [JsonProperty("new_id")]
+        [JsonPropertyName("new_id")]
         public ulong NewId { get; set; }
 
-        [JsonProperty("new_contextid")]
+        [JsonPropertyName("new_contextid")]
         public ulong NewContextId { get; set; }
     }
 }

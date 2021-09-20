@@ -1,22 +1,22 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Workshop.Responses
 {
     public class SteamWorkshopDownloaderStatusJsonResponse
     {
-        [JsonProperty("age")]
+        [JsonPropertyName("age")]
         public uint Age { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public string Status { get; set; }
 
-        [JsonProperty("progress")]
+        [JsonPropertyName("progress")]
         public uint Progress { get; set; }
 
-        [JsonProperty("progressText")]
+        [JsonPropertyName("progressText")]
         public string ProgressText { get; set; }
 
-        [JsonProperty("downloadError")]
+        [JsonPropertyName("downloadError")]
         public string DownloadError { get; set; }
     }
 }

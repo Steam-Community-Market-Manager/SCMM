@@ -1,46 +1,46 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamMarketListing
     {
-        [JsonProperty("listingid")]
+        [JsonPropertyName("listingid")]
         public string ListingId { get; set; }
 
-        [JsonProperty("time_created")]
+        [JsonPropertyName("time_created")]
         public long TimeCreated { get; set; }
 
-        [JsonProperty("steamid_lister")]
+        [JsonPropertyName("steamid_lister")]
         public string SteamIdLister { get; set; }
 
-        [JsonProperty("asset")]
+        [JsonPropertyName("asset")]
         public SteamMarketAsset Asset { get; set; }
 
-        [JsonProperty("original_amount_listed")]
+        [JsonPropertyName("original_amount_listed")]
         public int OriginalAmountListed { get; set; }
 
-        [JsonProperty("original_price")]
+        [JsonPropertyName("original_price")]
         public int OriginalPrice { get; set; }
 
-        [JsonProperty("price")]
+        [JsonPropertyName("price")]
         public int Price { get; set; }
 
-        [JsonProperty("fee")]
+        [JsonPropertyName("fee")]
         public int Fee { get; set; }
 
-        [JsonProperty("currencyid")]
+        [JsonPropertyName("currencyid")]
         public string CurrencyId { get; set; }
 
-        [JsonProperty("steam_fee")]
+        [JsonPropertyName("steam_fee")]
         public int SteamFee { get; set; }
 
-        [JsonProperty("publisher_fee")]
+        [JsonPropertyName("publisher_fee")]
         public int PublisherFee { get; set; }
 
-        [JsonProperty("publisher_fee_percent")]
+        [JsonPropertyName("publisher_fee_percent")]
         public string PublisherFeePercent { get; set; }
 
-        [JsonProperty("publisher_fee_app")]
+        [JsonPropertyName("publisher_fee_app")]
         public int PublisherFeeApp { get; set; }
     }
 }

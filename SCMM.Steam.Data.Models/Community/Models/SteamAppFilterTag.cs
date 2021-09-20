@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Models
 {
     public class SteamAppFilterTag
     {
-        [JsonProperty("localized_name")]
+        [JsonPropertyName("localized_name")]
         public string Localized_Name { get; set; }
 
-        [JsonProperty("matches")]
+        [JsonPropertyName("matches")]
         public string Matches { get; set; }
     }
 }

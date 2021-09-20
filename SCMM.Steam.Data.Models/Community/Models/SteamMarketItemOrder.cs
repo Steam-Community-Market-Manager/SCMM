@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using SCMM.Steam.Data.Models.Extensions;
 
 namespace SCMM.Steam.Data.Models.Community.Models
@@ -10,7 +10,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
 
         public long Price { get; private set; }
 
-        [JsonProperty("price")]
+        [JsonPropertyName("price")]
         public string PriceText
         {
             get => _priceText;
@@ -23,7 +23,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
 
         public int Quantity { get; private set; }
 
-        [JsonProperty("quantity")]
+        [JsonPropertyName("quantity")]
         public string QuantityText
         {
             get => _quantityText;

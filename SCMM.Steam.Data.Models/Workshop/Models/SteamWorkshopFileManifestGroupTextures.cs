@@ -1,28 +1,28 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Workshop.Models
 {
     public class SteamWorkshopFileManifestGroupTextures
     {
-        [JsonProperty("_MainTex")]
+        [JsonPropertyName("_MainTex")]
         public string MainTex { get; set; }
 
-        [JsonProperty("_OcclusionMap")]
+        [JsonPropertyName("_OcclusionMap")]
         public string OcclusionMap { get; set; }
 
-        [JsonProperty("_SpecGlossMap")]
+        [JsonPropertyName("_SpecGlossMap")]
         public string SpecGlossMap { get; set; }
 
-        [JsonProperty("_BumpMap")]
+        [JsonPropertyName("_BumpMap")]
         public string BumpMap { get; set; }
 
-        [JsonProperty("_EmissionMap")]
+        [JsonPropertyName("_EmissionMap")]
         public string EmissionMap { get; set; }
 
-        [JsonProperty("_MicrofiberFuzzMask")]
+        [JsonPropertyName("_MicrofiberFuzzMask")]
         public string MicrofiberFuzzMask { get; set; }
 
-        [JsonProperty("_DirtColor")]
+        [JsonPropertyName("_DirtColor")]
         public string DirtColor { get; set; }
     }
 }
