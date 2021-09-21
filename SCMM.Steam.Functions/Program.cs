@@ -6,11 +6,14 @@ using Microsoft.Extensions.Hosting;
 using SCMM.Azure.AI;
 using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus.Extensions;
+using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Reflection;
+
+JsonSerializerOptionsExtensions.SetDefaultOptions();
 
 await new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()

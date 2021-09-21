@@ -135,7 +135,7 @@
     {
         try
         {
-            Contributors = await Http.GetFromJsonAsync<ProfileDTO[]>($"api/stats/contributors");
+            Contributors = await Http.GetFromJsonWithDefaultsAsync<ProfileDTO[]>($"api/stats/contributors");
         }
         catch (Exception ex)
         {
@@ -144,7 +144,7 @@
         }
         try
         {
-            Donators = await Http.GetFromJsonAsync<ProfileDTO[]>($"api/stats/donators");
+            Donators = await Http.GetFromJsonWithDefaultsAsync<ProfileDTO[]>($"api/stats/donators");
         }
         catch (Exception ex)
         {

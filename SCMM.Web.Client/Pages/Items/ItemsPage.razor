@@ -164,7 +164,7 @@
     {
         try
         {
-            ItemTypes = await Http.GetFromJsonAsync<string[]>($"api/item/types");
+            ItemTypes = await Http.GetFromJsonWithDefaultsAsync<string[]>($"api/item/types");
         }
         catch (Exception ex)
         {
@@ -182,7 +182,7 @@
         {
             Items = null;
             StateHasChanged();
-            Items = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
+            Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
                 $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
             );
         }

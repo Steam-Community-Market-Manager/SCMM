@@ -18,8 +18,10 @@ using SCMM.Steam.Data.Store;
 using System.Reflection;
 using System.Security.Claims;
 using SCMM.Web.Server;
-using SCMM.Shared.Web;
 using Microsoft.AspNetCore.Components;
+using SCMM.Shared.Data.Models.Json;
+
+JsonSerializerOptionsExtensions.SetDefaultOptions();
 
 await WebApplication.CreateBuilder(args)
     .ConfigureLogging()
@@ -141,8 +143,7 @@ public static class WebApplicationExtensions
             })
             .AddJsonOptions(options =>
             {
-                // TODO: Figure out how to also enable this on client-side
-                //options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.JsonSerializerOptions.UseDefaults();
             })
             .AddXmlSerializerFormatters()
             .AddXlsxSerializerFormatters()

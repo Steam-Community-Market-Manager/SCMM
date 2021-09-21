@@ -1,4 +1,5 @@
-﻿using SCMM.Web.Data.Models.UI.Currency;
+﻿using SCMM.Shared.Data.Models.Json;
+using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
 using SCMM.Web.Data.Models.UI.Profile;
 using System.Net.Http.Json;
@@ -124,7 +125,7 @@ public class AppState
         try
         {
             AddHeadersTo(http);
-            Profile = await http.GetFromJsonAsync<MyProfileDTO>(
+            Profile = await http.GetFromJsonWithDefaultsAsync<MyProfileDTO>(
                 $"api/profile"
             );
         }

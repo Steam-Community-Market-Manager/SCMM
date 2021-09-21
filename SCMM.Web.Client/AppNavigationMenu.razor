@@ -58,7 +58,7 @@ else
         }
         try
         {
-            InventoryTotals = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
+            InventoryTotals = await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
                 $"api/profile/{State.Profile?.SteamId}/inventory/total"
             );
         }
@@ -72,7 +72,7 @@ else
     {
         try
         {
-            StoreNextUpdateTime = await Http.GetFromJsonAsync<DateTimeOffset>(
+            StoreNextUpdateTime = await Http.GetFromJsonWithDefaultsAsync<DateTimeOffset>(
                 $"api/store/nextUpdateTime"
             );
         }

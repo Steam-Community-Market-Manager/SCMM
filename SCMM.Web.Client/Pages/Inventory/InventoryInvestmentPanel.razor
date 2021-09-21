@@ -310,7 +310,7 @@ else
         try
         {
             LoadingError = null;
-            var response = await Http.GetFromJsonAsync<PaginatedResult<InventoryInvestmentItemDTO>>(
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<InventoryInvestmentItemDTO>>(
                 $"api/profile/{SteamId}/inventory/investment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={state.Page * state.PageSize}&count={state.PageSize}&sortBy={state.SortLabel}&sortDirection={state.SortDirection}"
             );
 
@@ -343,7 +343,7 @@ else
             item.BuyPriceLocal = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             
             Logger.LogInformation($"Updating buy price for '{item.Guid}' (aquired: '{item.AcquiredBy}', price: '{item.BuyPrice}', currency: '{item.BuyCurrency?.CultureName}')");
-            await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
+            await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = item.AcquiredBy,
                 CurrencyGuid = item.BuyCurrency?.Guid,
@@ -373,7 +373,7 @@ else
                 item.BuyPriceLocal = buyPrice;
 
                 Logger.LogInformation($"Updating buy price for '{item.Guid}' (raw: '{value}', old: '{oldBuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
-                await Http.PutAsJsonAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
+                await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
                 {
                     CurrencyGuid = State.Currency.Guid,
                     BuyPrice = buyPrice

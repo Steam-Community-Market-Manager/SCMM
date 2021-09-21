@@ -77,7 +77,7 @@ else
         try
         {
             Logger.LogInformation("Fetching inventory collections...");
-            InventoryCollections = await Http.GetFromJsonAsync<IEnumerable<ProfileInventoryCollectionDTO>>(
+            InventoryCollections = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ProfileInventoryCollectionDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/collections"
             );
         }

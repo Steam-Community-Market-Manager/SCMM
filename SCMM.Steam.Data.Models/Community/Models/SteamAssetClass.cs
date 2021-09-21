@@ -26,7 +26,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public string MarketHashName { get; set; }
 
         [JsonPropertyName("marketable")]
-        public bool Marketable { get; set; }
+        public string Marketable { get; set; }
 
         [JsonPropertyName("market_marketable_restriction")]
         public string MarketMarketableRestriction { get; set; }
@@ -35,7 +35,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public string MarketTradableRestriction { get; set; }
 
         [JsonPropertyName("tradable")]
-        public bool Tradable { get; set; }
+        public string Tradable { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
@@ -56,7 +56,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
         public List<SteamAssetClassDescription> Descriptions { get; set; }
 
         [JsonPropertyName("commodity")]
-        public bool Commodity { get; set; }
+        public string Commodity { get; set; }
 
         [JsonPropertyName("actions")]
         public List<SteamAssetClassAction> Actions { get; set; }

@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
+using SCMM.Shared.Data.Models.Json;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
+
+JsonSerializerOptionsExtensions.SetDefaultOptions();
 
 await WebAssemblyHostBuilder.CreateDefault(args)
     .ConfigureServices()

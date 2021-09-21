@@ -122,7 +122,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionDTO>>($"api/stats/market/activityTopItems?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionDTO>>($"api/stats/market/activityTopItems?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemDescriptionDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -136,7 +136,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemActivityStatisticDTO>>($"api/stats/market/activity?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemActivityStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)

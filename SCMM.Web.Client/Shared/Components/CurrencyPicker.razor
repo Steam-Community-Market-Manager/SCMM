@@ -29,7 +29,7 @@
     {
         try
         {
-            Currencies = await Http.GetFromJsonAsync<CurrencyDetailedDTO[]>($"api/currency?detailed=true");
+            Currencies = await Http.GetFromJsonWithDefaultsAsync<CurrencyDetailedDTO[]>($"api/currency?detailed=true");
         }
         catch (Exception ex)
         {

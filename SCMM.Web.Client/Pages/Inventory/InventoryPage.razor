@@ -202,7 +202,7 @@
         try
         {
             Logger.LogInformation("Fetching inventory profile...");
-            Profile = await Http.GetFromJsonAsync<ProfileDetailedDTO>(
+            Profile = await Http.GetFromJsonWithDefaultsAsync<ProfileDetailedDTO>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/summary"
             );
         }
@@ -275,7 +275,7 @@
         try
         {
             Logger.LogInformation("Fetching inventory totals...");
-            InventoryTotals = await Http.GetFromJsonAsync<ProfileInventoryTotalsDTO>(
+            InventoryTotals = await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/total"
             );
         }

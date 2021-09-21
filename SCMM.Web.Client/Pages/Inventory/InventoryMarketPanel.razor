@@ -269,7 +269,7 @@ else
         try
         {
             Logger.LogInformation("Fetching inventory market movement...");
-            InventoryMovement = await Http.GetFromJsonAsync<IEnumerable<ProfileInventoryItemMovementDTO>>(
+            InventoryMovement = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ProfileInventoryItemMovementDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/movement"
             );
 

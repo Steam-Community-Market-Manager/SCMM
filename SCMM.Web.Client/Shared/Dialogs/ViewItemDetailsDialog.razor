@@ -63,7 +63,7 @@
 
         try
         {
-            Item = await Http.GetFromJsonAsync<ItemDetailedDTO>(ItemUrl);
+            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>(ItemUrl);
             Dialog.ForceRender();
         }
         catch (Exception ex)

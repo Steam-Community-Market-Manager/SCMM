@@ -80,7 +80,7 @@
 
         try
         {
-            List = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(ListUrl);
+            List = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(ListUrl);
             Dialog.ForceRender();
             StateHasChanged();
 

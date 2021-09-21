@@ -70,7 +70,7 @@ namespace SteamAuth
         internal class TimeQuery
         {
             [JsonPropertyName("response")]
-            internal TimeQueryResponse Response { get; set; }
+            public TimeQueryResponse Response { get; set; }
 
             internal class TimeQueryResponse
             {

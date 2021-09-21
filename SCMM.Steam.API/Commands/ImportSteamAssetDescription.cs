@@ -119,9 +119,9 @@ namespace SCMM.Steam.API.Commands
                     NameColor = request.AssetClass.NameColor,
                     BackgroundColor = request.AssetClass.BackgroundColor,
                     Type = request.AssetClass.Type,
-                    Tradable = request.AssetClass.Tradable ? "1" : "0",
-                    Marketable = request.AssetClass.Marketable ? "1" : "0",
-                    Commodity = request.AssetClass.Commodity ? "1" : "0",
+                    Tradable = request.AssetClass.Tradable,
+                    Marketable = request.AssetClass.Marketable,
+                    Commodity = request.AssetClass.Commodity,
                     MarketTradableRestriction = request.AssetClass.MarketTradableRestriction,
                     MarketMarketableRestriction = request.AssetClass.MarketMarketableRestriction,
                     Descriptions = new ReadOnlyCollection<AssetClassDescriptionModel>(

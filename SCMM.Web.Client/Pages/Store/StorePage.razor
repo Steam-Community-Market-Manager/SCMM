@@ -552,7 +552,7 @@ else if (StoreList.Any())
             StateHasChanged();
 
             // Load the store list
-            StoreList = await Http.GetFromJsonAsync<StoreIdentifierDTO[]>($"api/store");
+            StoreList = await Http.GetFromJsonWithDefaultsAsync<StoreIdentifierDTO[]>($"api/store");
    
             StateHasChanged();
         }
@@ -576,7 +576,7 @@ else if (StoreList.Any())
             if (!String.IsNullOrEmpty(StoreId))
             {
                 // Load the new store (if any)
-                Store = await Http.GetFromJsonAsync<StoreDetailsDTO>($"api/store/{StoreId}");
+                Store = await Http.GetFromJsonWithDefaultsAsync<StoreDetailsDTO>($"api/store/{StoreId}");
                 StoreId = Store.Id;
                 
                 // The selected store should show as the active tab in the store tab list
@@ -719,7 +719,7 @@ else if (StoreList.Any())
     {
         try
         {
-            var search = await Http.GetFromJsonAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
+            var search = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
                 $"api/item?filter={Uri.EscapeDataString(value ?? String.Empty)}&count=30"
             );
 
@@ -737,7 +737,7 @@ else if (StoreList.Any())
         try
         {
             var storePriceText = Math.Round(LinkedItemStorePrice, 2).ToString();
-            var response = await Http.PostAsJsonAsync(
+            var response = await Http.PostAsJsonWithDefaultsAsync(
                 $"api/store/{Store.Guid}/linkItem",
                 new LinkStoreItemCommand()
                 {
@@ -746,7 +746,7 @@ else if (StoreList.Any())
                 }
             );
 
-            var item = await response.Content.ReadFromJsonAsync<StoreItemDetailsDTO>();
+            var item = await response.Content.ReadFromJsonWithDefaultsAsync<StoreItemDetailsDTO>();
             if (item != null && !Store.Items.Any(x => x.AssetDescriptionId == item.AssetDescriptionId))
             {
                 Store.Items.Add(item);
@@ -769,7 +769,7 @@ else if (StoreList.Any())
     {
         try
         {
-            var response = await Http.PostAsJsonAsync(
+            var response = await Http.PostAsJsonWithDefaultsAsync(
                 $"api/store/{Store.Guid}/unlinkItem/",
                 new UnlinkStoreItemCommand()
                 {

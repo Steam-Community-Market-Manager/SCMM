@@ -622,7 +622,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/stats/items/mostDemanded?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/stats/items/mostDemanded?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -636,7 +636,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/stats/items/mostSaturated?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemSupplyDemandStatisticDTO>>($"api/stats/items/mostSaturated?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemSupplyDemandStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -650,7 +650,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/allTimeHigh?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/allTimeHigh?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -664,7 +664,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/allTimeLow?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/allTimeLow?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -678,7 +678,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemBuySellOrderStatisticDTO>>($"api/stats/items/profitableFlips?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemBuySellOrderStatisticDTO>>($"api/stats/items/profitableFlips?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemBuySellOrderStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -692,7 +692,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemManipulationStatisticDTO>>($"api/stats/items/manipulated?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemManipulationStatisticDTO>>($"api/stats/items/manipulated?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemManipulationStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -706,7 +706,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/mostExpensive?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemValueStatisticDTO>>($"api/stats/items/mostExpensive?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemValueStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -720,7 +720,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemSalesStatisticDTO>>($"api/stats/items/mostSales?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemSalesStatisticDTO>>($"api/stats/items/mostSales?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemSalesStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -734,7 +734,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<DashboardAssetCollectionDTO>>($"api/stats/items/largestCollections?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<DashboardAssetCollectionDTO>>($"api/stats/items/largestCollections?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<DashboardAssetCollectionDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -748,7 +748,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemResourceCostStatisticDTO>>($"api/stats/items/cheapestResourcesCosts?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemResourceCostStatisticDTO>>($"api/stats/items/cheapestResourcesCosts?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemResourceCostStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -762,7 +762,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ItemCraftingCostStatisticDTO>>($"api/stats/items/cheapestCraftingCosts?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemCraftingCostStatisticDTO>>($"api/stats/items/cheapestCraftingCosts?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ItemCraftingCostStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -776,7 +776,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonAsync<PaginatedResult<ProfileAcceptedItemsStatisticDTO>>($"api/stats/profiles/largestCreators?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileAcceptedItemsStatisticDTO>>($"api/stats/profiles/largestCreators?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<ProfileAcceptedItemsStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)

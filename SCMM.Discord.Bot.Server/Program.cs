@@ -25,6 +25,9 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Reflection;
+using SCMM.Shared.Data.Models.Json;
+
+JsonSerializerOptionsExtensions.SetDefaultOptions();
 
 await WebApplication.CreateBuilder(args)
     .ConfigureLogging()
@@ -126,14 +129,19 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamService>();
 
         // Controllers
-        builder.Services.AddControllersWithViews(options =>
-        {
-            var policy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build();
+        builder.Services
+            .AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
 
-            options.Filters.Add(new AuthorizeFilter(policy));
-        });
+                options.Filters.Add(new AuthorizeFilter(policy));
+            })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.UseDefaults();
+            });
 
         // Views
         builder.Services.AddRazorPages()

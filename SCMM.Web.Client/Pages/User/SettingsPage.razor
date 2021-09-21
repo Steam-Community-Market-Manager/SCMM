@@ -200,7 +200,7 @@
         {
             Updating = true;
             StateHasChanged();
-            await Http.PutAsJsonAsync($"api/profile", Update);
+            await Http.PutAsJsonWithDefaultsAsync($"api/profile", Update);
             UpdateMessage = "Updated!";
             UpdateException = null;
         }

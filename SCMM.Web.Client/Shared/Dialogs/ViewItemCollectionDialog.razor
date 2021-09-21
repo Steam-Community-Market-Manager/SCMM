@@ -91,7 +91,7 @@
 
         try
         {
-            Collection = await Http.GetFromJsonAsync<ItemCollectionDTO>(CollectionUrl);
+            Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>(CollectionUrl);
             Dialog.ForceRender();
         }
         catch (Exception ex)
