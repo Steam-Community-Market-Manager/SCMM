@@ -7,6 +7,8 @@
 @inject ICookieManager CookieManager
 @{
     var runtime = await CookieManager.GetAsync<RuntimeType>("Runtime", RuntimeType.WebAssembly);
+    var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssembly);
+    var prerenderMode = (runtime == RuntimeType.Server ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered);
 }
 <!DOCTYPE html>
 <html>
@@ -34,7 +36,10 @@
     <link href="scmm.web.client.styles.css" rel="stylesheet" />
     <link href="icon-512.png" rel="icon" type="image/png" />
     <link href="icon-512.png" rel="apple-touch-icon" type="image/png" sizes="512x512" />
+@if (runtime == RuntimeType.WebAssembly)
+{
     <link href="manifest.json" rel="manifest" />
+}
     <script type="text/javascript">
         !function (T, l, y) { var S = T.location, k = "script", D = "instrumentationKey", C = "ingestionendpoint", I = "disableExceptionTracking", E = "ai.device.", b = "toLowerCase", w = "crossOrigin", N = "POST", e = "appInsightsSDK", t = y.name || "appInsights"; (y.name || T[e]) && (T[e] = t); var n = T[t] || function (d) { var g = !1, f = !1, m = { initialize: !0, queue: [], sv: "5", version: 2, config: d }; function v(e, t) { var n = {}, a = "Browser"; return n[E + "id"] = a[b](), n[E + "type"] = a, n["ai.operation.name"] = S && S.pathname || "_unknown_", n["ai.internal.sdkVersion"] = "javascript:snippet_" + (m.sv || m.version), { time: function () { var e = new Date; function t(e) { var t = "" + e; return 1 === t.length && (t = "0" + t), t } return e.getUTCFullYear() + "-" + t(1 + e.getUTCMonth()) + "-" + t(e.getUTCDate()) + "T" + t(e.getUTCHours()) + ":" + t(e.getUTCMinutes()) + ":" + t(e.getUTCSeconds()) + "." + ((e.getUTCMilliseconds() / 1e3).toFixed(3) + "").slice(2, 5) + "Z" }(), iKey: e, name: "Microsoft.ApplicationInsights." + e.replace(/-/g, "") + "." + t, sampleRate: 100, tags: n, data: { baseData: { ver: 2 } } } } var h = d.url || y.src; if (h) { function a(e) { var t, n, a, i, r, o, s, c, u, p, l; g = !0, m.queue = [], f || (f = !0, t = h, s = function () { var e = {}, t = d.connectionString; if (t) for (var n = t.split(";"), a = 0; a < n.length; a++) { var i = n[a].split("="); 2 === i.length && (e[i[0][b]()] = i[1]) } if (!e[C]) { var r = e.endpointsuffix, o = r ? e.location : null; e[C] = "https://" + (o ? o + "." : "") + "dc." + (r || "services.visualstudio.com") } return e }(), c = s[D] || d[D] || "", u = s[C], p = u ? u + "/v2/track" : d.endpointUrl, (l = []).push((n = "SDK LOAD Failure: Failed to load Application Insights SDK script (See stack for details)", a = t, i = p, (o = (r = v(c, "Exception")).data).baseType = "ExceptionData", o.baseData.exceptions = [{ typeName: "SDKLoadFailed", message: n.replace(/\./g, "-"), hasFullStack: !1, stack: n + "\nSnippet failed to load [" + a + "] -- Telemetry is disabled\nHelp Link: https://go.microsoft.com/fwlink/?linkid=2128109\nHost: " + (S && S.pathname || "_unknown_") + "\nEndpoint: " + i, parsedStack: [] }], r)), l.push(function (e, t, n, a) { var i = v(c, "Message"), r = i.data; r.baseType = "MessageData"; var o = r.baseData; return o.message = 'AI (Internal): 99 message:"' + ("SDK LOAD Failure: Failed to load Application Insights SDK script (See stack for details) (" + n + ")").replace(/\"/g, "") + '"', o.properties = { endpoint: a }, i }(0, 0, t, p)), function (e, t) { if (JSON) { var n = T.fetch; if (n && !y.useXhr) n(t, { method: N, body: JSON.stringify(e), mode: "cors" }); else if (XMLHttpRequest) { var a = new XMLHttpRequest; a.open(N, t), a.setRequestHeader("Content-type", "application/json"), a.send(JSON.stringify(e)) } } }(l, p)) } function i(e, t) { f || setTimeout(function () { !t && m.core || a() }, 500) } var e = function () { var n = l.createElement(k); n.src = h; var e = y[w]; return !e && "" !== e || "undefined" == n[w] || (n[w] = e), n.onload = i, n.onerror = a, n.onreadystatechange = function (e, t) { "loaded" !== n.readyState && "complete" !== n.readyState || i(0, t) }, n }(); y.ld < 0 ? l.getElementsByTagName("head")[0].appendChild(e) : setTimeout(function () { l.getElementsByTagName(k)[0].parentNode.appendChild(e) }, y.ld || 0) } try { m.cookie = l.cookie } catch (p) { } function t(e) { for (; e.length;)!function (t) { m[t] = function () { var e = arguments; g || m.queue.push(function () { m[t].apply(m, e) }) } }(e.pop()) } var n = "track", r = "TrackPage", o = "TrackEvent"; t([n + "Event", n + "PageView", n + "Exception", n + "Trace", n + "DependencyData", n + "Metric", n + "PageViewPerformance", "start" + r, "stop" + r, "start" + o, "stop" + o, "addTelemetryInitializer", "setAuthenticatedUserContext", "clearAuthenticatedUserContext", "flush"]), m.SeverityLevel = { Verbose: 0, Information: 1, Warning: 2, Error: 3, Critical: 4 }; var s = (d.extensionConfig || {}).ApplicationInsightsAnalytics || {}; if (!0 !== d[I] && !0 !== s[I]) { var c = "onerror"; t(["_" + c]); var u = T[c]; T[c] = function (e, t, n, a, i) { var r = u && u(e, t, n, a, i); return !0 !== r && m["_" + c]({ message: e, url: t, lineNumber: n, columnNumber: a, error: i }), r }, d.autoExceptionInstrumented = !0 } return m }(y.cfg); function a() { y.onInit && y.onInit(n) } (T[t] = n).queue && 0 === n.queue.length ? (n.queue.push(a), n.trackPageView({})) : a() }(window, document, {
             src: "https://js.monitor.azure.com/scripts/b/ai.2.min.js", // The SDK URL Source
@@ -48,21 +53,12 @@
             }
         });
     </script>
-@if (runtime == RuntimeType.Server)
-{
-    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
-}
-else
-{
-    <component type="typeof(HeadOutlet)" render-mode="WebAssemblyPrerendered" />
-}
+    <component type="typeof(HeadOutlet)" render-mode="@prerenderMode" />
 </head>
 <body>
-    
-@if (runtime == RuntimeType.Server)
-{
+ 
     <div id="app">
-        <component type="typeof(App)" render-mode="Server" />
+        <component type="typeof(App)" render-mode="@renderMode" />
         <persist-component-state />
         <div id="blazor-error-ui" class="component-error-banner hidden pa-2">
             <div class="d-flex flex-row align-center">
@@ -71,9 +67,11 @@ else
                 <a href="" class="reload mud-button-root mud-button mud-button-outlined mud-button-outlined-size-small ml-auto" title="Reload the application">Reload</a>
             </div>
         </div>
-        <div id="components-reconnect-modal" class="components-reconnect-modal components-reconnect-hide pa-4">
+@if (runtime == RuntimeType.Server)
+{
+        <div id="blazor-components-reconnect-modal" class="components-reconnect-modal components-reconnect-hide pa-4">
             <div class="show">
-                <h5>Connection with server was lost, attempting to reconnect...</h5>
+                <h5>Server connection was lost, attempting to reconnect...</h5>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="height: 4em; width: 4em;">
                     <circle cx="50" cy="50" fill="none" stroke="#fff" stroke-width="5" r="35" stroke-dasharray="150 50">
                         <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 50 50; 360 50 50" keyTimes="0;1"></animateTransform>
@@ -81,22 +79,18 @@ else
                 </svg>
             </div>
             <div class="failed">
-                <h5>Could not reconnect to the server. Reconnect to try again.</h5>
+                <h5>Server connection failed after several attempts. Reconnect to try again.</h5>
                 <a href="" onclick="window.Blazor.reconnect()" class="mud-button-root mud-button mud-button-outlined mud-button-outlined-size-medium mt-2" title="Attempt to reconnect with the server">Reconnect</a>
             </div>
             <div class="rejected">
-                <h5>Server refused to connect. Reload the page to restore functionality.</h5>
+                <h5>Server connection was lost. Reload to restore functionality.</h5>
                 <a href="" onclick="location.reload()" class="mud-button-root mud-button mud-button-outlined mud-button-outlined-size-medium mt-2" title="Reload the application">Reload</a>
             </div>
         </div>
-    </div>
 }
 else
 {
-    <div id="app">
-        <component type="typeof(App)" render-mode="WebAssembly" />
-        <persist-component-state />
-        <div class="preloader">
+        <div id="blazor-preloader-ui" class="preloader">
             <div id="wasm-unsupported" class="wasm-unsupported-root hidden">
                 <img src="images/webassembly.png" />
                 <p>
@@ -180,20 +174,15 @@ else
                             return fetchResource;
                         }
 
+                    }).then(function () {
+                        document.getElementById("blazor-preloader-ui").style.display = "none";
                     });
                 });
 
             </script>
         </div>
-        <div id="blazor-error-ui" class="component-error-banner hidden pa-2">
-            <div class="d-flex flex-row align-center">
-                <i class="fa fa-fw fa-bug mr-2"></i>
-                <span>An error has occurred. The application may no longer respond until reloaded.</span>
-                <a href="" class="reload mud-button-root mud-button mud-button-outlined mud-button-outlined-size-small ml-auto" title="Reload the application">Reload</a>
-            </div>
-        </div>
-    </div>
 }
+    </div>
 
 @if (runtime == RuntimeType.Server)
 {
@@ -210,7 +199,9 @@ else
     <script src="https://cdn.syncfusion.com/blazor/syncfusion-blazor-base.min.js"></script>
     <script src="/js/azure-storage.blob.min.js"></script>
     <script src="/js/interops.js"></script>
-
+    
+@if (runtime == RuntimeType.WebAssembly)
+{
     <script type="text/javascript">
 
         /* Register PWA service worker and send update notifications to Blazor */
@@ -256,6 +247,7 @@ else
         }
 
     </script>
+}
 
 </body>
 </html>
