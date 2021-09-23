@@ -12,6 +12,7 @@ using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
+using System.Text;
 using DiscordConfiguration = SCMM.Steam.Data.Store.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -197,17 +198,20 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .WithIconUrl(profile.AvatarUrl)
                 .WithUrl($"{_configuration.GetWebsiteUrl()}/inventory/{profile.SteamId}");
 
+            var marketIcon = (inventoryTotals.MarketMovementValue > 0) ? "📈" : "📉";
+            var marketDirection = (inventoryTotals.MarketMovementValue > 0) ? "Up" : "Down";
+            var marketMovement = $"{marketDirection} {currency.ToPriceString(inventoryTotals.MarketMovementValue, dense: true)} {(DateTimeOffset.Now - inventoryTotals.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1)}";
             var fields = new List<EmbedFieldBuilder>
             {
                 new EmbedFieldBuilder()
-                .WithName("📈 Market Value")
-                .WithValue(currency.ToPriceString(inventoryTotals.MarketValue))
+                .WithName($"{marketIcon} {currency.ToPriceString(inventoryTotals.MarketValue)}")
+                .WithValue(marketMovement)
                 .WithIsInline(false)
             };
 
             var embed = new EmbedBuilder()
                 .WithAuthor(author)
-                .WithDescription($"Inventory of **{inventoryTotals.Items.ToQuantityString()} item(s)**.")
+                .WithDescription($"Inventory contains **{inventoryTotals.Items.ToQuantityString()}** item(s).")
                 .WithFields(fields)
                 .WithThumbnailUrl(profile.AvatarUrl)
                 .WithColor(color)
