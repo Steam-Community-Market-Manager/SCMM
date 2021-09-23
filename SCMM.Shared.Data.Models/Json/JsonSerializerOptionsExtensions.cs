@@ -37,7 +37,8 @@ public static class JsonSerializerOptionsExtensions
         options.PropertyNameCaseInsensitive = true;
         options.ReadCommentHandling = JsonCommentHandling.Skip;
 #if DEBUG
-        options.WriteIndented = true;
+        // TODO: This causes a JSON parsing error in Swagger UI, reenable after they fix it
+        //options.WriteIndented = true;
 #endif
         return options;
     }
