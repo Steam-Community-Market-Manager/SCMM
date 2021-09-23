@@ -71,11 +71,9 @@ public static class WebApplicationExtensions
                     options.CallbackPath = config.CallbackPath;
                     options.NonceCookie.IsEssential = true;
                     options.NonceCookie.HttpOnly = false;
-                    options.NonceCookie.SameSite = SameSiteMode.None;
                     options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.CorrelationCookie.IsEssential = true;
                     options.CorrelationCookie.HttpOnly = false;
-                    options.CorrelationCookie.SameSite = SameSiteMode.None;
                     options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
                 }, 
                 configureCookieAuthenticationOptions: options =>
@@ -84,7 +82,6 @@ public static class WebApplicationExtensions
                     options.ExpireTimeSpan = TimeSpan.FromDays(1);
                     options.Cookie.IsEssential = true;
                     options.Cookie.HttpOnly = false;
-                    options.Cookie.SameSite = SameSiteMode.Strict;
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 });
 
