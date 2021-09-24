@@ -11,6 +11,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
         [JsonPropertyName("type")]
         public string Type { get; set; }
 
+        [JsonIgnore]
         public long Price { get; private set; }
 
         private string _priceText;
@@ -25,6 +26,7 @@ namespace SCMM.Steam.Data.Models.Community.Models
             }
         }
 
+        [JsonIgnore]
         public int Quantity { get; private set; }
 
         private string _quantityText;

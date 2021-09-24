@@ -31,8 +31,9 @@ public static class JsonSerializerOptionsExtensions
         options.Converters.Add(new JsonNumberBooleanConverter());
         options.Converters.Add(new JsonNumberStringConverter());
         options.AllowTrailingCommas = true;
-        options.IgnoreReadOnlyFields = true;
         options.IgnoreReadOnlyProperties = true;
+        options.IgnoreReadOnlyFields = true;
+        options.IncludeFields = false;
         options.NumberHandling = JsonNumberHandling.AllowReadingFromString;
         options.PropertyNameCaseInsensitive = true;
         options.ReadCommentHandling = JsonCommentHandling.Skip;
