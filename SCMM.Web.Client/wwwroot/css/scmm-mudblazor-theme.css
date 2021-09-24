@@ -18,15 +18,15 @@
     background: black;
 }
 
-.mud-transparent-tabs .mud-tabs-toolbar {
+.mud-tabs-transparent .mud-tabs-toolbar {
     background: none;
 }
 
-.mud-transparent-tabs .mud-tab:hover {
+.mud-tabs-transparent .mud-tab:hover {
     background: none;
 }
 
-.mud-transparent-tabs .mud-tab-active:hover {
+.mud-tabs-transparent .mud-tab-active:hover {
     background: none;
 }
 

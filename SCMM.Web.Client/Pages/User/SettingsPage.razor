@@ -8,159 +8,175 @@
 @inject IJSRuntime JSRuntime
 @inject AppState State
 
-<PageContainer Title="Settings">
+<PageContainer Title="Settings" class="mt-3 mb-6 mx-6">
 
-    <MudGrid Spacing="4" Justify="MudBlazor.Justify.Center">
-
-        <MudItem xs="12" lg="6">
-            <MudCard class="full-height d-flex flex-column mud-card">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                            Your Profile
-                        </MudText>
-                    </CardHeaderContent>
-                    <CardHeaderActions>
-                        @if (Updating)
-                        {
-                            <MudProgressCircular Size="MudBlazor.Size.Medium" Color="MudBlazor.Color.Primary" Indeterminate="true"/>
-                        }
-                        else 
-                        {
-                            @if (!String.IsNullOrEmpty(UpdateMessage))
-                            {
-                                @if (UpdateException == null)
-                                {
-                                    <MudText Typo="@MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Success">
-                                        <span>@UpdateMessage</span>
-                                        <i class="fa fa-fw fa-check-circle"></i>
+    <MudTabs Elevation="0" Class="mud-tabs-transparent">
+        <MudTabPanel Icon="fas fa-fw fa-user mr-2" Text="General">
+            <MudGrid Spacing="4">
+                <MudItem xs="12">
+                    <MudCard class="full-height d-flex flex-column mud-card">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                    <i class="fab fa-fw fa-steam mr-2"></i><span>Steam Profile</span>
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent class="d-flex flex-column justify-center align-center">
+                            <MudGrid Spacing="4">
+                                <MudItem xs="12" md="3" xl="2" xxl="1" class="d-flex flex-column justify-center align-center">
+                                    <MudAvatar Image="@State.Profile.AvatarLargeUrl" Class="full-width full-height text-centered mx-2 mb-4" Style="max-width:8rem; max-height:8rem;" />
+                                    <MudText Typo="@MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
+                                        <span>@State.Profile.Name</span>
                                     </MudText>
-                                }
-                                else
-                                {
-                                    <MudText Typo="@MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Error">
-                                        <span>@UpdateMessage</span>
-                                        <i class="fa fa-fw fa-times-circle"></i>
+                                    <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
+                                        <span>@State.Profile.SteamId</span>
                                     </MudText>
-                                }
-                            }
-                        }
-                    </CardHeaderActions>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudGrid Spacing="2">
-                        <MudItem xs="12" sm="3" class="d-flex justify-center align-center">
-                            <MudAvatar Image="@State.Profile.AvatarLargeUrl" Class="full-width full-height" Style="max-width:8rem; max-height:8rem;" />
-                        </MudItem>
-                        <MudItem xs="12" sm="9">
-                            <MudGrid Spacing="2">
-                                <MudItem xs="12">
-                                  <MudTextField Label="Name" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
-                                                Value="@State.Profile.Name" />
                                 </MudItem>
-                                <MudItem xs="12">
-                                  <MudTextField Label="Steam ID" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
-                                                Value="@State.Profile.SteamId" />
+                                <MudItem xs="12" md="9" xl="10" xxl="11">
+                                    <MudGrid Spacing="2">
+                                        <MudItem xs="12">
+                                            <MudTextField Label="Steam Trade URL" Variant="MudBlazor.Variant.Outlined" FullWidth
+                                                            @bind-Value="@Update.TradeUrl" DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProfile"
+                                                            HelperText="We use this to offer trades to anybody that is interested in trading with you." />
+                                        </MudItem>
+                                        <MudItem xs="12" lg="6" xl="4" xxl="3">
+                                            <MudTextField Label="Gambling Balance" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
+                                                            Value="@State.Profile.Currency.ToPriceString(State.Profile.GamblingOffset)" 
+                                                            HelperText="If you use gambling sites, enter your total win/lose amount here. We use this to calculate your inventory total profit." />
+                                        </MudItem>
+                                    </MudGrid>
                                 </MudItem>
                             </MudGrid>
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudTextField Label="Steam Trade URL" Variant="MudBlazor.Variant.Outlined" FullWidth
-                                          @bind-Value="@Update.TradeUrl" DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProfile"
-                                          HelperText="We use this to offer trades to anybody that is interested in trading with you." />
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudTextField Label="Discord ID" Variant="MudBlazor.Variant.Outlined" FullWidth
-                                          @bind-Value="@Update.DiscordId" DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProfile"
-                                          HelperText="If you have item alerts setup, we'll use this to PM you on Discord. You'll also be able to use your Discord name with the SCMM bot instead of your Steam Id." />
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudTextField Label="Gambling Offset" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
-                                          Value="@State.Profile.Currency.ToPriceString(State.Profile.GamblingOffset)" 
-                                          HelperText="If you use gambling sites, enter your total win/lose amount here. We use this to calculate your inventory total profit." />
-                        </MudItem>
-                    </MudGrid>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <MudItem xs="12" lg="6">
-            <MudCard class="full-height d-flex flex-column mud-card">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                            Your Data
-                        </MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                        <span>This is where you can manage all data SCMM collects about you. You may download a copy, or delete it.</span><br/>
-                        <span>Your data includes things like:</span>
-                    </MudText>
-                    <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                        <ul class="fa-ul">
-                            <li><span class="fa-li">-</span>Your Steam profile details</li>
-                            <li><span class="fa-li">-</span>Your Steam inventory item details (including quantities and purchase prices)</li>
-                            <li><span class="fa-li">-</span>Your marketplace item wishlist</li>
-                            <li><span class="fa-li">-</span>All of the information shown on this page</li>
-                        </ul>
-                    </MudText>
-                    <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                        <span><strong>NOTE:</strong> If you are an accepted workshop creator and you choose to delete your data, we will still retain a copy of your basic Steam profile information (i.e. id, name, avatar). This is nessecary for completeness of the Steam item database.</span>
-                    </MudText>
-                </MudCardContent>
-                <MudCardActions class="mt-auto">
-                    <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download" Disabled="true">
-                        Download Your Data
-                    </MudButton>
-                    <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash" Disabled="true">
-                        Delete Your Data
-                    </MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
-        
-        <MudItem xs="12" lg="6">
-            <MudCard class="full-height d-flex flex-column mud-card">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                            Your Preferences
-                        </MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudGrid Spacing="2">
-                        <MudItem xs="12" sm="6">
-                            <MudTextField Label="Language" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
-                                          Value="@State.Profile.Language.Name" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudTextField Label="Currency" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
-                                          Value="@State.Profile.Currency.Name" />
-                        </MudItem>
-                    </MudGrid>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <MudItem xs="12" lg="6">
-            <MudCard class="full-height d-flex flex-column mud-card">
-                <MudCardHeader>
-                    <CardHeaderContent>
-                        <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                            Your Webhooks
-                        </MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-    </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Icon="fas fa-fw fa-sliders-h mr-2" Text="Preferences">
+            <MudGrid Spacing="4">
+                <MudItem xs="12">
+                    <MudCard class="full-height d-flex flex-column mud-card">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                    <i class="fas fa-fw fa-language mr-2"></i><span>Locale</span>
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid Spacing="4">
+                                <MudItem xs="12" sm="6" lg="4" xl="3" xxl="2">
+                                    <MudTextField Label="Preferred Language" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
+                                                  Value="@State.Profile.Language.Name" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6" lg="4" xl="3" xxl="2">
+                                    <MudTextField Label="Preferred Currency" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true"
+                                                  Value="@State.Profile.Currency.Name" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCard class="full-height d-flex flex-column mud-card">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                    <i class="fas fa-fw fa-star mr-2"></i><span>Customisation</span>
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid Spacing="4">
+                                Coming soon...
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Icon="fas fa-fw fa-bell mr-4" Text="Notifications">
+            <MudGrid Spacing="4">
+                <MudItem xs="12">
+                    <MudCard class="full-height d-flex flex-column mud-card">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                    <i class="fab fa-fw fa-discord mr-2"></i><span>Discord</span>
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid Spacing="4">
+                                <MudItem xs="12" lg="6" xl="4" xxl="3">
+                                    <MudTextField Label="Discord ID" Variant="MudBlazor.Variant.Outlined" FullWidth
+                                                  @bind-Value="@Update.DiscordId" DebounceInterval="500" OnDebounceIntervalElapsed="UpdateProfile"
+                                                  HelperText="If you have item alerts setup, we'll use this to PM you on Discord. You'll also be able to use your Discord name with the SCMM bot instead of your Steam Id." />
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCard class="full-height d-flex flex-column mud-card">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="d-flex align-center">
+                                    <WebHookIcon /><span class="ml-2">Webhooks</span>
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid Spacing="4">
+                                Coming soon...
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Icon="fas fa-fw fa-database mr-3" Text="Data">
+            <MudGrid Spacing="4">
+                <MudItem xs="12">
+                    <MudCard class="full-height d-flex flex-column mud-card">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="@MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                    <i class="fas fa-fw fa-key mr-2"></i><span>Your Data</span>
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                                <span>This is where you can manage all data SCMM collects about you. You may download a copy, or delete it.</span><br/>
+                                <span>Your data includes things like:</span>
+                            </MudText>
+                            <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                                <ul class="fa-ul">
+                                    <li><span class="fa-li">-</span>Your Steam profile details</li>
+                                    <li><span class="fa-li">-</span>Your Steam inventory item details (including quantities and purchase prices)</li>
+                                    <li><span class="fa-li">-</span>Your marketplace item wishlist</li>
+                                    <li><span class="fa-li">-</span>All of the information shown on this page</li>
+                                </ul>
+                            </MudText>
+                            <MudText Typo="@MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                                <span><strong>NOTE:</strong> If you are an accepted workshop creator and you choose to delete your data, we will still retain a copy of your basic Steam profile information (i.e. id, name, avatar). This is nessecary for completeness of the Steam item database.</span>
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions class="mt-auto">
+                            <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download" Disabled="true">
+                                Download Your Data
+                            </MudButton>
+                            <MudButton Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash" Disabled="true">
+                                Delete Your Data
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+    </MudTabs>
 
 </PageContainer>
 
