@@ -46,8 +46,8 @@
                                                           HelperText="Optional. If set, we'll allow other users to send you trade requests if they are looking for items that you've flagged as available for trade." />
                                         </MudItem>
                                         <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                            <MudSelect T="string" Value="@("Participate anonymously")" Label="Item Analytics Participation" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Disabled="true"
-                                                       HelperText="Can we use public information about your inventory items to improve the accuracy of our item analytics? Some item analytics shown on SCMM are only visible to users that are participating, it's only fair.">
+                                            <MudSelect T="string" Value="@("Participate anonymously")" Label="Item Analytics" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Disabled="true"
+                                                       HelperText="Participation allows SCMM to use public information about the items in your inventory to improve the accuracy of item analytics. Some analytics may only be available to users that choose to participate, fair is fair.">
                                                <MudSelectItem Value="@("Exclude me from item analytics")" />
                                                <MudSelectItem Value="@("Participate anonymously")" />
                                                <MudSelectItem Value="@($"Participate as {State.Profile.Name}")" />

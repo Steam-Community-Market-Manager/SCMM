@@ -1,11 +1,10 @@
-﻿@inherits ResponsiveComponent
-@using MudBlazor.Services
+﻿@using MudBlazor.Services
 @using SCMM.Web.Data.Models.UI.Item
 @inject IDialogService Dialogs
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
 
-<div class="@($"d-flex flex-row {(IsMediaSize(Breakpoint.SmAndDown) ? "flex-wrap align-center justify-center" : "align-start justify-start")}")">
+<div class="d-flex flex-row flex-wrap align-center justify-center flex-md-nowrap align-md-start justify-md-start">
     <div class="d-flex flex-wrap flex-row align-start justify-start">
     
         @if (AreAnyItemsAvailable("M249", "L96 Rifle", "Bolt Action Rifle", "M39 Rifle", "LR300", "Assault Rifle", "Semi-Automatic Rifle", "MP5A4", "Thompson", "Custom SMG", "Semi-Automatic Pistol", "Python Revolver", "Revolver", "Pump Shotgun", "Double Barrel Shotgun", "Waterpipe Shotgun", "Eoka Pistol"))
