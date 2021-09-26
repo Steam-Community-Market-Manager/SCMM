@@ -11,5 +11,9 @@
         public string Currency { get; set; }
 
         public long? GamblingOffset { get; set; }
+
+        public bool? ShowItemDrops { get; set; }
+
+        public bool? IncludeSteamTax { get; set; }
     }
 }

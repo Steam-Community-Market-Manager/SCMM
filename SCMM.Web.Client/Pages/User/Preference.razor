@@ -1,0 +1,27 @@
+@inherits ResponsiveComponent
+
+<MudItem xs="12" md="6" lg="5" xl="4" xxl="3">
+    <MudText Typo="Typo.body1" Color="Color.Primary" GutterBottom Class="mt-2">@Title</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" GutterBottom>@Description</MudText>
+</MudItem>
+<MudItem xs="12" md="6" lg="5" xl="4" xxl="3">
+    @ChildContent
+</MudItem>
+@if (IsMediaSize(Breakpoint.LgAndUp))
+{
+<MudItem lg="2" xl="4" xxl="6">
+</MudItem>
+}
+
+@code {
+    
+    [Parameter]
+    public string Title { get; set; }
+    
+    [Parameter]
+    public string Description { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    
+}
