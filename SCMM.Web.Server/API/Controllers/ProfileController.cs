@@ -17,6 +17,7 @@ using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
+using System.Text.Json;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -140,6 +141,96 @@ namespace SCMM.Web.Server.API.Controllers
             if (command.GamblingOffset != null)
             {
                 profile.GamblingOffset = command.GamblingOffset.Value;
+            }
+
+            await _db.SaveChangesAsync();
+            return Ok();
+        }
+
+        /// <summary>
+        /// Download a copy of all data related to your profile
+        /// </summary>
+        /// <remarks>This API requires authentication</remarks>
+        /// <response code="200">Steam profile data.</response>
+        /// <response code="400">If profile cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [Authorize(AuthorizationPolicies.User)]
+        [HttpGet("data")]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMyProfileData()
+        {
+            var profileId = User.Id();
+            var profile = await _db.SteamProfiles
+                .Include(x => x.InventoryItems)
+                .Include(x => x.MarketItems)
+                .Include(x => x.AssetDescriptions)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == profileId);
+
+            if (profile == null)
+            {
+                return BadRequest($"Profile not found");
+            }
+
+            // Null out all loopback properties to prevent cyclic references when serialising
+            foreach (var item in profile.InventoryItems)
+            {
+                item.Profile = null;
+            }
+            foreach (var item in profile.MarketItems)
+            {
+                item.Profile = null;
+            }
+            foreach (var item in profile.AssetDescriptions)
+            {
+                item.CreatorProfile = null;
+            }
+
+            return File(
+                JsonSerializer.SerializeToUtf8Bytes(profile),
+                "text/json",
+                $"{profileId}.{DateTime.UtcNow.Ticks}.data.json"
+            );
+        }
+
+        /// <summary>
+        /// Delete all data related to your profile
+        /// </summary>
+        /// <remarks>This API requires authentication</remarks>
+        /// <response code="200">If the deletion was successful.</response>
+        /// <response code="400">If the profile cannot be deleted.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [Authorize(AuthorizationPolicies.User)]
+        [HttpDelete("data")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteMyProfileData()
+        {
+            var profileId = User.Id();
+            var profile = await _db.SteamProfiles
+                .Include(x => x.InventoryItems)
+                .Include(x => x.MarketItems)
+                .Include(x => x.AssetDescriptions)
+                .FirstOrDefaultAsync(x => x.Id == profileId);
+
+            if (profile == null)
+            {
+                return BadRequest($"Profile not found");
+            }
+
+            // Does this profile own accepted asset descriptions?
+            if (profile.AssetDescriptions.Where(x => x.IsAccepted).Any())
+            {
+                // Strip the profile back to the minimum, but don't delete it
+                profile.RemoveNonEssentialData();
+            }
+            else
+            {
+                // Delete the profile
+                _db.SteamProfiles.Remove(profile);
             }
 
             await _db.SaveChangesAsync();

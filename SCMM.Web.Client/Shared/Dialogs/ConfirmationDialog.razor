@@ -1,0 +1,51 @@
+﻿@inherits ResponsiveDialog
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6" Color="Color.Default">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@Description</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text" Class="ma-2">@CancelText</MudButton>
+        <MudButton OnClick="Confirm" Variant="Variant.Filled" Color="@ConfirmColor" Class="ma-2">@ConfirmText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; } = "Are you sure?";
+
+    [Parameter]
+    public string Description { get; set; } = "Do you really want to proceed? This process cannot be undone";
+
+    [Parameter] 
+    public string CancelText { get; set; } = "Cancel";
+
+    [Parameter]
+    public string ConfirmText { get; set; } = "Confirm";
+
+    [Parameter]
+    public Color ConfirmColor { get; set; } = Color.Error;
+
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.MaxWidth = MudBlazor.MaxWidth.Small;
+        options.CloseButton = true;
+    }
+    
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+
+    private void Confirm() 
+    {
+        Dialog.Close(MudBlazor.DialogResult.Ok(true));
+    }
+    
+    protected override bool ShouldRender() => false;
+
+}

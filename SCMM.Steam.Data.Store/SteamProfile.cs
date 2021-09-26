@@ -29,16 +29,19 @@ namespace SCMM.Steam.Data.Store
 
         public Guid? AvatarId { get; set; }
 
+        // TODO: Delete this
         public FileData Avatar { get; set; }
 
         public string AvatarLargeUrl { get; set; }
 
         public Guid? AvatarLargeId { get; set; }
 
+        // TODO: Delete this
         public FileData AvatarLarge { get; set; }
 
         public string TradeUrl { get; set; }
 
+        // TODO: Delete this
         public string Country { get; set; }
 
         public Guid? LanguageId { get; set; }
@@ -53,6 +56,7 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
 
+        // TODO: Delete this
         public DateTimeOffset? LastSnapshotInventoryOn { get; set; }
 
         public DateTimeOffset? LastSignedInOn { get; set; }
@@ -75,5 +79,26 @@ namespace SCMM.Steam.Data.Store
 
         public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
 
+        public void RemoveNonEssentialData()
+        {
+            ProfileId = null;
+            DiscordId = null;
+            ProfileId = null;
+            TradeUrl = null;
+            Country = null;
+            LanguageId = null;
+            CurrencyId = null;
+            LastViewedInventoryOn = null;
+            LastUpdatedInventoryOn = null;
+            LastSnapshotInventoryOn = null;
+            LastSignedInOn = null;
+            DonatorLevel = 0;
+            GamblingOffset = 0;
+            Privacy = SteamVisibilityType.Unknown;
+            Roles?.Clear();
+            Preferences?.Clear();
+            InventoryItems?.Clear();
+            MarketItems?.Clear();
+        }
     }
 }

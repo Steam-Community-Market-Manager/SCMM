@@ -2,6 +2,7 @@
 @using SCMM.Web.Data.Models.UI.Profile
 @inject ILogger<SettingsPage> Logger
 @inject ISnackbar Snackbar
+@inject IDialogService Dialogs
 @inject NavigationManager Navigation
 @inject ExternalNavigationManager ExternalNavigation
 @inject HttpClient Http
@@ -125,12 +126,12 @@
                         </MudCardHeader>
                         <MudCardContent class="pt-0">
                             <MudGrid Spacing="4">
-                                <MudItem xs="12" sm="6" lg="4" xl="3" xxl="2">
+                                <MudItem xs="12" lg="6" xl="4" xxl="3">
                                     <MudTextField Label="Preferred Language" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true" 
                                                   Value="@State.Profile.Language.Name"
                                                   HelperText="Some underlying Steam data is only available in English and therefore we may not be able to show all text in your preferred language." />
                                 </MudItem>
-                                <MudItem xs="12" sm="6" lg="4" xl="3" xxl="2">
+                                <MudItem xs="12" lg="6" xl="4" xxl="3">
                                     <MudTextField Label="Preferred Currency" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="true" 
                                                   Value="@State.Profile.Currency.Name"
                                                   HelperText="To change currency, use the currency picker in the top-right corner of the page." />
@@ -305,7 +306,7 @@
                             <MudAlert Severity="MudBlazor.Severity.Normal" ContentAlignment="HorizontalAlignment.Center" NoIcon="true" Class="pa-8">Empty</MudAlert>
                         </MudCardContent>
                         <MudCardActions class="pa-4">
-                            <MudButton Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-plus" Disabled="true">
+                            <MudButton Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-plus" Disabled="true">
                                 Add Webhook
                             </MudButton>
                         </MudCardActions>
@@ -350,10 +351,10 @@
                             }
                         </MudCardContent>
                         <MudCardActions class="d-flex flex-wrap pt-4 px-4">
-                            <MudButton Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download" Class="mr-4 mb-4" Disabled="true">
+                            <MudButton OnClick="@DownloadProfileData" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download" Class="mr-4 mb-4">
                                 Download Your Data
                             </MudButton>
-                            <MudButton Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash" Class="mr-4 mb-4" Disabled="true">
+                            <MudButton OnClick="@ShowDeleteProfileDataConfirmationDialog" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash" Class="mr-4 mb-4">
                                 Delete Your Data
                             </MudButton>
                         </MudCardActions>
@@ -425,5 +426,44 @@
             StateHasChanged();
         }
     }
+    
+    private void DownloadProfileData()
+    {
+        ExternalNavigation.NavigateTo("/api/profile/data");
+    }
+    
+    private async Task ShowDeleteProfileDataConfirmationDialog()
+    {
+        var confirmation = Dialogs.Show<ConfirmationDialog>(null, parameters: new DialogParameters()
+        {
+            ["Title"] = "Are you sure?",
+            ["Description"] = "Do you really want to delete your profile from SCMM? This process cannot be undone.",
+            ["ConfirmText"] = "Yes, delete all my data"
+        });
 
+        var result = await confirmation.Result;
+        if (!result.Cancelled && (bool) result.Data == true)
+        {
+            await DeleteProfileDataAndSignout();
+        }
+    }
+
+    private async Task DeleteProfileDataAndSignout()
+    {
+        try 
+        {
+            var response = await Http.DeleteAsync($"api/profile/data");
+            response.EnsureSuccessStatusCode();
+            ExternalNavigation.NavigateTo("/signout");
+        }
+        catch (Exception)
+        {
+            Snackbar.Add($"Unable to delete profile, try again later.", MudBlazor.Severity.Error, options =>
+            {
+                options.Icon = "fas fa-fw fa-exclamation-triangle";
+                options.RequireInteraction = true;
+                options.ShowCloseIcon = true;
+            });
+        }
+    }
 }

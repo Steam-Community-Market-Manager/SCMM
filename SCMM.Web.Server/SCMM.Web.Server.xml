@@ -168,6 +168,24 @@
             <response code="401">If the request is unauthenticated (login first).</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetMyProfileData">
+            <summary>
+            Download a copy of all data related to your profile
+            </summary>
+            <remarks>This API requires authentication</remarks>
+            <response code="200">Steam profile data.</response>
+            <response code="400">If profile cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.DeleteMyProfileData">
+            <summary>
+            Delete all data related to your profile
+            </summary>
+            <remarks>This API requires authentication</remarks>
+            <response code="200">If the deletion was successful.</response>
+            <response code="400">If the profile cannot be deleted.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.GetProfileSummary(System.String)">
             <summary>
             Get profile information
