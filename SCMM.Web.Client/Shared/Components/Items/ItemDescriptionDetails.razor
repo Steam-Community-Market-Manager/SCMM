@@ -1098,11 +1098,11 @@
                 Subtitle = !String.IsNullOrEmpty(change.Value) ? change.Value : "An unknown file change was made."
             });
         }
-        if (Item.TimeMarketFirstListed != null)
+        if (Item.TimeMarketFirstSold != null)
         {
             events.Add(new TimelineEvent()
             {
-                Timestamp = Item.TimeMarketFirstListed.Value,
+                Timestamp = Item.TimeMarketFirstSold.Value,
                 Color = Color.Primary,
                 Icon = "fas fa-fw fa-balance-scale-left",
                 Title = "First Market Listing",

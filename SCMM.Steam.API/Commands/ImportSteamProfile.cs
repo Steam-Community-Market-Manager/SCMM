@@ -91,7 +91,6 @@ namespace SCMM.Steam.API.Commands
                     profile.Name = response.Data.Nickname?.Trim();
                     profile.AvatarUrl = response.Data.AvatarMediumUrl;
                     profile.AvatarLargeUrl = response.Data.AvatarFullUrl;
-                    profile.Country = response.Data.CountryCode;
                 }
 
                 // Else, if we know the custom profile id, fetch using the legacy XML API
@@ -123,7 +122,6 @@ namespace SCMM.Steam.API.Commands
                     profile.Name = response.SteamID.Trim();
                     profile.AvatarUrl = response.AvatarMedium;
                     profile.AvatarLargeUrl = response.AvatarFull;
-                    profile.Country = response.Location;
                 }
 
                 // Save the new profile to the datbase

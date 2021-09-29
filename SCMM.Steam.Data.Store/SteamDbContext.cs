@@ -19,7 +19,6 @@ namespace SCMM.Steam.Data.Store
         public DbSet<SteamMarketItemSale> SteamMarketItemSale { get; set; }
         public DbSet<SteamMarketItemActivity> SteamMarketItemActivity { get; set; }
         public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
-        public DbSet<SteamAssetWorkshopFile> SteamAssetWorkshopFiles { get; set; }
         public DbSet<SteamProfile> SteamProfiles { get; set; }
         public DbSet<SteamProfileInventoryItem> SteamProfileInventoryItems { get; set; }
         public DbSet<SteamProfileMarketItem> SteamProfileMarketItems { get; set; }
@@ -55,14 +54,8 @@ namespace SCMM.Steam.Data.Store
                 .HasIndex(x => x.SteamId)
                 .IsUnique(true);
             builder.Entity<SteamApp>()
-                .HasOne(x => x.Icon);
-            builder.Entity<SteamApp>()
                 .HasMany(x => x.Filters)
                 .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-            builder.Entity<SteamApp>()
-                .HasMany(x => x.WorkshopFiles)
-                .WithOne(x => x.App)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamApp>()
                 .HasMany(x => x.AssetDescriptions)
@@ -117,12 +110,6 @@ namespace SCMM.Steam.Data.Store
                 .HasOne(x => x.MarketItem)
                 .WithOne(x => x.Description)
                 .HasForeignKey<SteamMarketItem>(x => x.DescriptionId);
-
-            builder.Entity<SteamAssetWorkshopFile>()
-                .HasIndex(x => x.WorkshopFileId)
-                .IsUnique(true);
-            builder.Entity<SteamAssetWorkshopFile>()
-                .HasOne(x => x.Image);
 
             builder.Entity<SteamCurrency>()
                 .HasIndex(x => x.SteamId)
@@ -184,15 +171,11 @@ namespace SCMM.Steam.Data.Store
                 .HasIndex(x => x.DiscordId)
                 .IsUnique(true);
             builder.Entity<SteamProfile>()
-                .HasOne(x => x.Avatar);
-            builder.Entity<SteamProfile>()
                 .HasOne(x => x.Language);
             builder.Entity<SteamProfile>()
                 .HasOne(x => x.Currency);
             builder.Entity<SteamProfile>()
                 .OwnsOne(x => x.Roles);
-            builder.Entity<SteamProfile>()
-                .OwnsOne(x => x.Preferences);
             builder.Entity<SteamProfile>()
                 .HasMany(x => x.InventoryItems)
                 .WithOne(x => x.Profile)

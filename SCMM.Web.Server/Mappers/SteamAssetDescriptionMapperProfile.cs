@@ -35,7 +35,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.MarketLowestValue, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.AllTimeLowestValue : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
                 .ForMember(x => x.TimeMarketHighestValue, o => o.MapFrom(p => (p.MarketItem != null ? p.MarketItem.AllTimeHighestValueOn : null)))
                 .ForMember(x => x.TimeMarketLowestValue, o => o.MapFrom(p => (p.MarketItem != null ? p.MarketItem.AllTimeLowestValueOn : null)))
-                .ForMember(x => x.TimeMarketFirstListed, o => o.MapFrom(p => (p.MarketItem != null ? p.MarketItem.FirstSeenOn : null)))
+                .ForMember(x => x.TimeMarketFirstSold, o => o.MapFrom(p => (p.MarketItem != null ? p.MarketItem.FirstSaleOn : null)))
                 .ForMember(x => x.IsAvailableOnStore, o => o.MapFrom(p => (p.StoreItem != null ? p.StoreItem.IsAvailable : false)))
                 .ForMember(x => x.HasReturnedToStoreBefore, o => o.MapFrom(p => (p.StoreItem != null ? p.StoreItem.HasReturnedToStore : false)))
                 .ForMember(x => x.StoreId, o => o.MapFrom(p => (p.StoreItem != null ? p.StoreItem.SteamId : null)))

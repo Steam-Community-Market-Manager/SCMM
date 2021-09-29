@@ -9,7 +9,6 @@ namespace SCMM.Steam.Data.Store
         public SteamApp()
         {
             Filters = new Collection<SteamAssetFilter>();
-            WorkshopFiles = new Collection<SteamAssetWorkshopFile>();
             AssetDescriptions = new Collection<SteamAssetDescription>();
             MarketItems = new Collection<SteamMarketItem>();
             StoreItems = new Collection<SteamStoreItem>();
@@ -24,15 +23,7 @@ namespace SCMM.Steam.Data.Store
 
         public string IconUrl { get; set; }
 
-        public Guid? IconId { get; set; }
-
-        public FileData Icon { get; set; }
-
         public string IconLargeUrl { get; set; }
-
-        public Guid? IconLargeId { get; set; }
-
-        public FileData IconLarge { get; set; }
 
         public string PrimaryColor { get; set; }
 
@@ -41,8 +32,6 @@ namespace SCMM.Steam.Data.Store
         public string BackgroundColor { get; set; }
 
         public ICollection<SteamAssetFilter> Filters { get; set; }
-
-        public ICollection<SteamAssetWorkshopFile> WorkshopFiles { get; set; }
 
         public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
 

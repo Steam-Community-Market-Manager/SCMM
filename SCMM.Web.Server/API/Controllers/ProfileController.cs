@@ -650,7 +650,7 @@ namespace SCMM.Web.Server.API.Controllers
                     App = x.App,
                     Description = x.Description,
                     LastSaleValue = (x.Description.MarketItem.LastSaleValue > 0 ? ((decimal)x.Description.MarketItem.LastSaleValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
-                    Open24hrValue = (x.Description.MarketItem.Open24hrValue > 0 ? ((decimal)x.Description.MarketItem.Open24hrValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
+                    Stable24hrValue = (x.Description.MarketItem.Stable24hrValue > 0 ? ((decimal)x.Description.MarketItem.Stable24hrValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
                     Quantity = x.Quantity
                 })
                 .ToListAsync();
@@ -665,7 +665,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Item = _mapper.Map<SteamAssetDescription, ItemDescriptionDTO>(x.Key, this),
                     MovementTime = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset),
-                    Movement = x.Any() ? (this.Currency().CalculateExchange(x.FirstOrDefault()?.LastSaleValue ?? 0m) - this.Currency().CalculateExchange(x.FirstOrDefault()?.Open24hrValue ?? 0m)) : 0,
+                    Movement = x.Any() ? (this.Currency().CalculateExchange(x.FirstOrDefault()?.LastSaleValue ?? 0m) - this.Currency().CalculateExchange(x.FirstOrDefault()?.Stable24hrValue ?? 0m)) : 0,
                     Quantity = x.Sum(y => y.Quantity)
                 })
                 .OrderByDescending(x => x.Movement)

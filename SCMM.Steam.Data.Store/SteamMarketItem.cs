@@ -67,9 +67,8 @@ namespace SCMM.Steam.Data.Store
         // What was the average price from the last 24hrs (1 day)
         public long Last24hrValue { get; set; }
 
-        // Was was the price starting at todays open (UTC)
-        // TODO: Rename to "Stable24hrValue"
-        public long Open24hrValue { get; set; }
+        // Was was the price starting at todays open (UTC) or the last time it was sold (if no sales in last 24hrs)
+        public long Stable24hrValue { get; set; }
 
         // What was the total number of sales from the last 48hrs (2 days)
         public long Last48hrSales { get; set; }
@@ -108,8 +107,7 @@ namespace SCMM.Steam.Data.Store
         public long Last168hrValue { get; set; }
 
         // What was the price from the last sale (at any time range)
-        // TODO: Make not nullable
-        public long? LastSaleValue { get; set; }
+        public long LastSaleValue { get; set; }
 
         public DateTimeOffset? LastSaleOn { get; set; }
 
@@ -127,8 +125,7 @@ namespace SCMM.Steam.Data.Store
         public DateTimeOffset? AllTimeLowestValueOn { get; set; }
 
         // When was the very first sale
-        // TODO: Rename to "FirstSaleOn"
-        public DateTimeOffset? FirstSeenOn { get; set; }
+        public DateTimeOffset? FirstSaleOn { get; set; }
 
         // How long since orders were last checked
         public DateTimeOffset? LastCheckedOrdersOn { get; set; }
@@ -247,12 +244,12 @@ namespace SCMM.Steam.Data.Store
             var lastSaleValue = (salesSorted.LastOrDefault()?.Price ?? 0);
             var lastSaleOn = salesSorted.LastOrDefault()?.Timestamp;
 
-            FirstSeenOn = firstSaleOn;
+            FirstSaleOn = firstSaleOn;
             First24hrSales = first24hrSales;
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
             Last1hrValue = last1hrValue;
-            Open24hrValue = (stable24hrAverageValue > 0 ? stable24hrAverageValue : lastSaleValue);
+            Stable24hrValue = (stable24hrAverageValue > 0 ? stable24hrAverageValue : lastSaleValue);
             Last24hrSales = last24hrSales;
             Last24hrValue = last24hrValue;
             Last48hrSales = last48hrSales;

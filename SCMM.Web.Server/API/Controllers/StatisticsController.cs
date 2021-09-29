@@ -261,11 +261,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .Where(x => ((x.LastSaleValue ?? 0) - x.AllTimeHighestValue) >= 0)
+                .Where(x => (x.LastSaleValue - x.AllTimeHighestValue) >= 0)
                 .Where(x => x.Supply > 0)
                 .Where(x => x.AllTimeHighestValue > 0)
-                .OrderBy(x => Math.Abs((x.LastSaleValue ?? 0) - x.AllTimeHighestValue))
-                .ThenByDescending(x => (x.LastSaleValue ?? 0) - x.Last24hrValue);
+                .OrderBy(x => Math.Abs(x.LastSaleValue - x.AllTimeHighestValue))
+                .ThenByDescending(x => x.LastSaleValue - x.Last24hrValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
@@ -304,11 +304,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .Where(x => ((x.LastSaleValue ?? 0) - x.AllTimeLowestValue) <= 0)
+                .Where(x => (x.LastSaleValue - x.AllTimeLowestValue) <= 0)
                 .Where(x => x.Supply > 0)
                 .Where(x => x.AllTimeLowestValue > 0)
-                .OrderBy(x => Math.Abs((x.LastSaleValue ?? 0) - x.AllTimeLowestValue))
-                .ThenBy(x => (x.LastSaleValue ?? 0) - x.Last24hrValue);
+                .OrderBy(x => Math.Abs(x.LastSaleValue - x.AllTimeLowestValue))
+                .ThenBy(x => x.LastSaleValue - x.Last24hrValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()

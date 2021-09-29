@@ -173,7 +173,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public DateTimeOffset? TimeMarketLowestValue { get; set; }
 
-        public DateTimeOffset? TimeMarketFirstListed { get; set; }
+        public DateTimeOffset? TimeMarketFirstSold { get; set; }
 
         #endregion
 

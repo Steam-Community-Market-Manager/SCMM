@@ -132,10 +132,6 @@ namespace SCMM.Steam.API.Commands
             {
                 claims.AddIfMissing(new Claim(ClaimTypes.AvatarLargeUrl, profile.AvatarLargeUrl)); ;
             }
-            if (!string.IsNullOrEmpty(profile.Country))
-            {
-                claims.AddIfMissing(new Claim(ClaimTypes.Country, profile.Country));
-            }
             if (profile.Language != null)
             {
                 claims.AddIfMissing(new Claim(ClaimTypes.Language, profile.Language.Name));
