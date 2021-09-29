@@ -14,7 +14,7 @@
                           Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudSelect T="string" Value="@Type" ValueChanged="@(async (x) => { Type = x; RefreshItems(); })" Label="Item Type" Clearable="true"
+            <MudSelect T="string" Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Label="Item Type" Clearable="true"
                        Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0">
                 @if (ItemTypes != null)
                 {
@@ -27,16 +27,16 @@
         </MudItem>
         <MudItem xs="12">
             <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@(async (x) => { Glow = x; RefreshItems(); })" Label="Glow" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@(async (x) => { Glowsight = x; RefreshItems(); })" Label="Glowsight" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@(async (x) => { Cutout = x; RefreshItems(); })" Label="Cutout" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@(async (x) => { Craftable = x; RefreshItems(); })" Label="Craftable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@(async (x) => { SpecialDrop = x; RefreshItems(); })" Label="Special Drop" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@(async (x) => { TwitchDrop = x; RefreshItems(); })" Label="Twitch Drop" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@(async (x) => { Tradeable = x; RefreshItems(); })" Label="Tradeable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@(async (x) => { Marketable = x; RefreshItems(); })" Label="Marketable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@(async (x) => { Returning = x; RefreshItems(); })" Label="Returning" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@(async (x) => { Banned = x; RefreshItems(); })" Label="Banned" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Info" />
             </MudPaper>
         </MudItem>
         @if (Items == null)

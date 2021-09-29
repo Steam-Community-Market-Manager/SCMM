@@ -138,10 +138,8 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 profile.TradeUrl = command.TradeUrl;
             }
-            if (command.GamblingOffset != null)
-            {
-                profile.GamblingOffset = command.GamblingOffset.Value;
-            }
+
+            profile.GamblingOffset = command.GamblingOffset;
 
             await _db.SaveChangesAsync();
             return Ok();
