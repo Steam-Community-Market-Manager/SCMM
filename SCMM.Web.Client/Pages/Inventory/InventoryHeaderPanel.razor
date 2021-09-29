@@ -122,7 +122,7 @@
     </MudItem>
 }
 
-@if (InventoryTotal == null || InventoryTotal?.InvestmentNetReturn > 0)
+@if (InventoryTotal == null || (InventoryTotal?.InvestmentNetReturn != null && InventoryTotal?.InvestmentNetReturn != 0))
 {
     <MudItem xs="12" sm="6" lg="4" xl="2">
         <MudTooltip Text="The total amount of investment gains and losses for this inventory. Calculated by subtracting the cost of purchasing all items (where purchase price is known) from the last median sales price">
