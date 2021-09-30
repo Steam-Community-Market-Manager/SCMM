@@ -10,44 +10,41 @@ namespace SCMM.Steam.Data.Store
     {
         public SteamMarketItem()
         {
+            Activity = new Collection<SteamMarketItemActivity>();
             BuyOrders = new Collection<SteamMarketItemBuyOrder>();
             SellOrders = new Collection<SteamMarketItemSellOrder>();
             SalesHistory = new Collection<SteamMarketItemSale>();
-            Activity = new Collection<SteamMarketItemActivity>();
         }
 
         public Guid? CurrencyId { get; set; }
 
         public SteamCurrency Currency { get; set; }
 
+        public ICollection<SteamMarketItemActivity> Activity { get; set; }
+
         public ICollection<SteamMarketItemBuyOrder> BuyOrders { get; set; }
+
+        // What is the total quantity of all buy orders
+        public int BuyOrderCount { get; set; }
+
+        // What is the most expensive buy order
+        public long BuyOrderHighestPrice { get; set; }
 
         public ICollection<SteamMarketItemSellOrder> SellOrders { get; set; }
 
-        public ICollection<SteamMarketItemSale> SalesHistory { get; set; }
-
-        public ICollection<SteamMarketItemActivity> Activity { get; set; }
-
         // What is the total quantity of all sell orders
-        public int Supply { get; set; }
-
-        // What is the total quantity of all buy orders
-        public int Demand { get; set; }
-
-        // What is the cheapest buy order
-        public long BuyAskingPrice { get; set; }
+        public int SellOrderCount { get; set; }
 
         // What is the cheapest sell order
-        public long BuyNowPrice { get; set; }
+        public long SellOrderLowestPrice { get; set; }
 
-        // What is the price you could reasonably flip this for given the current buy orders
+        // What is the price you could reasonably flip this for given the current sell orders
         public long ResellPrice { get; set; }
 
         // What tax is owed on resell price
         public long ResellTax { get; set; }
 
-        // What is the difference between buy now and resell prices
-        public long ResellProfit { get; set; }
+        public ICollection<SteamMarketItemSale> SalesHistory { get; set; }
 
         // What was the total number of sales from the first 24hrs (1 day)
         public long First24hrSales { get; set; }
@@ -147,14 +144,14 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var buyOrdersSorted = BuyOrders.OrderByDescending(y => y.Price).ToArray();
-                var highestPrice = (buyOrdersSorted.Length > 0)
+                var highestBuyOrderPrice = (buyOrdersSorted.Length > 0)
                     ? buyOrdersSorted.First().Price
                     : 0;
 
-                // NOTE: Steam only returns the top 100 orders, so the true demand can't be calculated from sell orders list
-                //Demand = buyOrdersSorted.Sum(y => y.Quantity);
-                Demand = (buyOrderCount ?? Demand);
-                BuyAskingPrice = highestPrice;
+                // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
+                //BuyOrderCount = buyOrdersSorted.Sum(y => y.Quantity);
+                BuyOrderCount = (buyOrderCount ?? BuyOrderCount);
+                BuyOrderHighestPrice = highestBuyOrderPrice;
             }
 
             // Recalculate sell order stats
@@ -169,25 +166,18 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
-                var lowestBuyNowPrice = (sellOrdersSorted.Length > 0)
+                var lowestSellOrderPrice = (sellOrdersSorted.Length > 0)
                     ? sellOrdersSorted.First().Price
                     : 0;
-                var secondLowestBuyNowPrice = (sellOrdersSorted.Length > 1)
-                    ? sellOrdersSorted.Skip(1).First().Price
-                    : lowestBuyNowPrice;
-                var averageBuyNowPrice = (sellOrdersSorted.Length > 1)
-                    ? (long)Math.Ceiling((decimal)sellOrdersSorted.Skip(1).Sum(y => y.Price) / (sellOrdersSorted.Length - 1))
-                    : 0;
-                var resellPrice = secondLowestBuyNowPrice;
+                var resellPrice = lowestSellOrderPrice;
                 var resellTax = resellPrice.SteamFeeAsInt();
 
-                // NOTE: Steam only returns the top 100 orders, so the true supply can't be calculated from sell orders list
-                //Supply = sellOrdersSorted.Sum(y => y.Quantity);
-                Supply = (sellOrderCount ?? Supply);
-                BuyNowPrice = lowestBuyNowPrice;
+                // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
+                //SellOrderCount = sellOrdersSorted.Sum(y => y.Quantity);
+                SellOrderCount = (sellOrderCount ?? SellOrderCount);
+                SellOrderLowestPrice = lowestSellOrderPrice;
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
-                ResellProfit = (resellPrice - resellTax - lowestBuyNowPrice);
             }
         }
 

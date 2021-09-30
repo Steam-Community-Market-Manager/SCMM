@@ -145,13 +145,15 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public int? MarketBuyOrderCount { get; set; }
 
-        public long? MarketBuyPrice { get; set; }
+        public long? MarketBuyOrderHighestPrice { get; set; }
 
         public int? MarketSellOrderCount { get; set; }
 
-        public long? MarketSellPrice { get; set; }
+        public long? MarketSellOrderLowestPrice { get; set; }
 
-        public long? MarketSellTax { get; set; }
+        public long? MarketResellPrice { get; set; }
+
+        public long? MarketResellTax { get; set; }
 
         public long? Market1hrSales { get; set; }
 

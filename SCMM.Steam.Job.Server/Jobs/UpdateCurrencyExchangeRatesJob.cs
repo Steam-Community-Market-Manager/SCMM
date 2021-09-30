@@ -60,7 +60,7 @@ namespace SCMM.Steam.Job.Server.Jobs
             var mostExpensiveItem = db.SteamMarketItems
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .OrderByDescending(x => x.BuyNowPrice)
+                .OrderByDescending(x => x.SellOrderLowestPrice)
                 .FirstOrDefault();
 
             if (mostExpensiveItem == null)

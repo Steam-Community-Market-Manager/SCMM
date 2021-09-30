@@ -192,7 +192,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BackgroundColour = x.Description.BackgroundColour,
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
-                    Supply = x.Supply,
+                    Supply = x.SellOrderCount,
                     Demand = x.Last24hrSales
                 });
 
@@ -218,8 +218,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
-                .Where(x => x.Supply > 0)
-                .OrderByDescending(x => x.Supply)
+                .Where(x => x.SellOrderCount > 0)
+                .OrderByDescending(x => x.SellOrderCount)
                 .Select(x => new ItemSupplyDemandStatisticDTO()
                 {
                     Id = x.Description.ClassId,
@@ -228,7 +228,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BackgroundColour = x.Description.BackgroundColour,
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
-                    Supply = x.Supply,
+                    Supply = x.SellOrderCount,
                     Demand = x.Last24hrSales
                 });
 
@@ -262,7 +262,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .Where(x => (x.LastSaleValue - x.AllTimeHighestValue) >= 0)
-                .Where(x => x.Supply > 0)
+                .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeHighestValue > 0)
                 .OrderBy(x => Math.Abs(x.LastSaleValue - x.AllTimeHighestValue))
                 .ThenByDescending(x => x.LastSaleValue - x.Last24hrValue);
@@ -276,7 +276,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BackgroundColour = x.Description.BackgroundColour,
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
+                    BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency)
                 })
             );
         }
@@ -305,7 +305,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .Where(x => (x.LastSaleValue - x.AllTimeLowestValue) <= 0)
-                .Where(x => x.Supply > 0)
+                .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeLowestValue > 0)
                 .OrderBy(x => Math.Abs(x.LastSaleValue - x.AllTimeLowestValue))
                 .ThenBy(x => x.LastSaleValue - x.Last24hrValue);
@@ -319,7 +319,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BackgroundColour = x.Description.BackgroundColour,
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
+                    BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency)
                 })
             );
         }
@@ -348,13 +348,13 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => x.Last24hrValue > x.Last168hrValue)
-                .Where(x => x.BuyAskingPrice < x.Last24hrValue)
-                .Where(x => x.BuyAskingPrice > x.AllTimeLowestValue)
-                .Where(x => x.BuyNowPrice > x.Last24hrValue)
-                .Where(x => x.BuyNowPrice < x.AllTimeHighestValue)
-                .Where(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * EconomyExtensions.FeeMultiplier)) > 300) // more than $3 profit
+                .Where(x => x.BuyOrderHighestPrice < x.Last24hrValue)
+                .Where(x => x.BuyOrderHighestPrice > x.AllTimeLowestValue)
+                .Where(x => x.SellOrderLowestPrice > x.Last24hrValue)
+                .Where(x => x.SellOrderLowestPrice < x.AllTimeHighestValue)
+                .Where(x => (x.SellOrderLowestPrice - x.BuyOrderHighestPrice - Math.Floor(x.SellOrderLowestPrice * EconomyExtensions.FeeMultiplier)) > 300) // more than $3 profit
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .OrderByDescending(x => (x.BuyNowPrice - x.BuyAskingPrice - Math.Floor(x.BuyNowPrice * EconomyExtensions.FeeMultiplier)));
+                .OrderByDescending(x => (x.SellOrderLowestPrice - x.BuyOrderHighestPrice - Math.Floor(x.SellOrderLowestPrice * EconomyExtensions.FeeMultiplier)));
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemBuySellOrderStatisticDTO()
@@ -365,8 +365,8 @@ namespace SCMM.Web.Server.API.Controllers
                     BackgroundColour = x.Description.BackgroundColour,
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
-                    BuyAskingPrice = this.Currency().CalculateExchange(x.BuyAskingPrice, x.Currency)
+                    BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
+                    BuyAskingPrice = this.Currency().CalculateExchange(x.BuyOrderHighestPrice, x.Currency)
                 })
             );
         }
@@ -394,10 +394,10 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.BuyNowPrice > 0 && x.AllTimeAverageValue > 0)
-                .Where(x => x.BuyNowPrice / x.AllTimeAverageValue > 5) // more than 5x average price
+                .Where(x => x.SellOrderLowestPrice > 0 && x.AllTimeAverageValue > 0)
+                .Where(x => x.SellOrderLowestPrice / x.AllTimeAverageValue > 5) // more than 5x average price
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .OrderByDescending(x => x.BuyNowPrice / x.AllTimeAverageValue);
+                .OrderByDescending(x => x.SellOrderLowestPrice / x.AllTimeAverageValue);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemManipulationStatisticDTO()
@@ -409,7 +409,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
                     AverageMarketValue = this.Currency().CalculateExchange(x.AllTimeAverageValue, x.Currency),
-                    BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
+                    BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency)
                 })
             );
         }
@@ -435,8 +435,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
-                .Where(x => x.BuyNowPrice > 0)
-                .OrderByDescending(x => x.BuyNowPrice);
+                .Where(x => x.SellOrderLowestPrice > 0)
+                .OrderByDescending(x => x.SellOrderLowestPrice);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
@@ -447,7 +447,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BackgroundColour = x.Description.BackgroundColour,
                     ForegroundColour = x.Description.ForegroundColour,
                     IconUrl = x.Description.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency)
+                    BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency)
                 })
             );
         }
@@ -523,7 +523,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Name = x.ItemCollection,
                     IconUrl = x.IconLargeUrl,
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
-                    BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.BuyNowPrice : (x.StoreItem != null ? (long?)x.StoreItem.Price : null),
+                    BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.SellOrderLowestPrice : (x.StoreItem != null ? (long?)x.StoreItem.Price : null),
                     Currency = x.MarketItem != null ? x.MarketItem.Currency : (x.StoreItem != null ? x.StoreItem.Currency : null)
                 })
                 .ToList()
@@ -571,17 +571,17 @@ namespace SCMM.Web.Server.API.Controllers
                     Resource = x,
                     CheapestItem = x.App.AssetDescriptions
                         .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
-                        .Where(y => y.MarketItem != null && y.MarketItem.BuyNowPrice > 0)
-                        .OrderBy(y => y.MarketItem.BuyNowPrice)
+                        .Where(y => y.MarketItem != null && y.MarketItem.SellOrderLowestPrice > 0)
+                        .OrderBy(y => y.MarketItem.SellOrderLowestPrice)
                         .Select(y => new
                         {
                             Item = y,
                             Currency = y.MarketItem.Currency,
-                            BuyNowPrice = y.MarketItem.BuyNowPrice,
+                            BuyNowPrice = y.MarketItem.SellOrderLowestPrice,
                         })
                         .FirstOrDefault()
                 })
-                .OrderBy(x => x.Resource.MarketItem.BuyNowPrice);
+                .OrderBy(x => x.Resource.MarketItem.SellOrderLowestPrice);
 
             return Ok(
                 query.Paginate(start, count, x => new ItemResourceCostStatisticDTO
@@ -592,7 +592,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BackgroundColour = x.Resource.BackgroundColour,
                     ForegroundColour = x.Resource.ForegroundColour,
                     IconUrl = x.Resource.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.Resource.MarketItem.BuyNowPrice, x.Resource.MarketItem.Currency),
+                    BuyNowPrice = this.Currency().CalculateExchange(x.Resource.MarketItem.SellOrderLowestPrice, x.Resource.MarketItem.Currency),
                     CheapestItem = new ItemValueStatisticDTO()
                     {
                         Id = x.CheapestItem.Item.ClassId,
@@ -628,20 +628,20 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => new
                 {
                     Resource = x,
-                    ResourcePrice = (x.MarketItem.BuyNowPrice > 0 ? (x.MarketItem.BuyNowPrice / x.MarketItem.Currency.ExchangeRateMultiplier) : 0),
+                    ResourcePrice = (x.MarketItem.SellOrderLowestPrice > 0 ? (x.MarketItem.SellOrderLowestPrice / x.MarketItem.Currency.ExchangeRateMultiplier) : 0),
                     CheapestItem = x.App.AssetDescriptions
                         .Where(y => y.IsBreakable && y.BreaksIntoComponents.Serialised.Contains(x.Name))
-                        .Where(y => y.MarketItem != null && y.MarketItem.BuyNowPrice > 0)
-                        .OrderBy(y => y.MarketItem.BuyNowPrice)
+                        .Where(y => y.MarketItem != null && y.MarketItem.SellOrderLowestPrice > 0)
+                        .OrderBy(y => y.MarketItem.SellOrderLowestPrice)
                         .Select(y => new
                         {
                             Item = y,
-                            ItemPrice = (y.MarketItem.BuyNowPrice / y.MarketItem.Currency.ExchangeRateMultiplier),
+                            ItemPrice = (y.MarketItem.SellOrderLowestPrice / y.MarketItem.Currency.ExchangeRateMultiplier),
                             MarketItem = y.MarketItem
                         })
                         .FirstOrDefault()
                 })
-                .OrderBy(x => x.Resource.MarketItem.BuyNowPrice)
+                .OrderBy(x => x.Resource.MarketItem.SellOrderLowestPrice)
                 .ToListAsync();
 
             var query = _db.SteamAssetDescriptions
@@ -649,7 +649,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .Where(x => x.IsCraftable)
                 .Where(x => x.MarketItem != null)
-                .OrderBy(x => x.MarketItem.BuyNowPrice);
+                .OrderBy(x => x.MarketItem.SellOrderLowestPrice);
 
             return Ok(
                 query.Paginate(start, count, x => new ItemCraftingCostStatisticDTO
@@ -660,7 +660,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BackgroundColour = x.BackgroundColour,
                     ForegroundColour = x.ForegroundColour,
                     IconUrl = x.IconUrl,
-                    BuyNowPrice = this.Currency().CalculateExchange(x.MarketItem.BuyNowPrice, x.MarketItem.Currency),
+                    BuyNowPrice = this.Currency().CalculateExchange(x.MarketItem.SellOrderLowestPrice, x.MarketItem.Currency),
                     CraftingComponents = x.CraftingComponents
                         .Join(resources, x => x.Key, x => x.Resource.Name, (x, y) => new
                         {

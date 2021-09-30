@@ -110,8 +110,8 @@ namespace SCMM.Steam.API
                 AppId = app.Id,
                 Description = assetDescription,
                 Currency = currency,
-                Supply = marketPriceOverview.Volume.SteamQuantityValueAsInt(),
-                BuyNowPrice = marketPriceOverview.LowestPrice.SteamPriceAsInt()
+                SellOrderCount = marketPriceOverview.Volume.SteamQuantityValueAsInt(),
+                SellOrderLowestPrice = marketPriceOverview.LowestPrice.SteamPriceAsInt()
             });
 
             return dbItem;

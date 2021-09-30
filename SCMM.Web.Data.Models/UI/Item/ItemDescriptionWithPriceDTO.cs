@@ -14,9 +14,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? Subscriptions { get; set; }
 
-        public long? Demand  { get; set; }
-
         public long? Supply { get; set; }
 
+        public long? Demand  { get; set; }
     }
 }

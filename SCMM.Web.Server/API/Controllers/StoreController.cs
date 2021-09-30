@@ -140,7 +140,7 @@ namespace SCMM.Web.Server.API.Controllers
                     .Select(x => new
                     {
                         ItemType = x.ItemType,
-                        MarketPrice = (x.MarketItem != null ? x.MarketItem.BuyNowPrice : 0),
+                        MarketPrice = (x.MarketItem != null ? x.MarketItem.SellOrderLowestPrice : 0),
                         MarketCurrency = (x.MarketItem != null ? x.MarketItem.Currency : null),
                         StorePrices = (x.StoreItem != null && x.StoreItem.IsAvailable ? x.StoreItem.Prices : null)
                     })

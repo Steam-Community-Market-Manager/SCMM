@@ -603,10 +603,10 @@
                             {
                                 <span>@((Item.MarketSellOrderCount ?? 0).ToQuantityString())</span>
                                 <span class="mud-secondary-text"> for sale </span>
-                                @if (Item.MarketBuyPrice > 0)
+                                @if (Item.MarketSellOrderLowestPrice > 0)
                                 {
                                     <span class="mud-secondary-text"> starting at </span>
-                                    <span>@State.Currency.ToPriceString(Item.MarketBuyPrice.Value)</span>
+                                    <span>@State.Currency.ToPriceString(Item.MarketSellOrderLowestPrice.Value)</span>
                                 }
                             }
                             else
@@ -672,10 +672,10 @@
                             {
                                 <span>@((Item.MarketBuyOrderCount ?? 0).ToQuantityString())</span>
                                 <span class="mud-secondary-text"> requests to buy </span>
-                                @if (Item.MarketSellPrice > 0)
+                                @if (Item.MarketBuyOrderHighestPrice > 0)
                                 {
                                     <span class="mud-secondary-text"> at </span>
-                                    <span>@State.Currency.ToPriceString(Item.MarketSellPrice.Value)</span>
+                                    <span>@State.Currency.ToPriceString(Item.MarketBuyOrderHighestPrice.Value)</span>
                                     <span class="mud-secondary-text"> or lower </span>
                                 }
                             }

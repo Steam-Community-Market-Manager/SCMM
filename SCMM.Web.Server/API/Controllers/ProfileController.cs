@@ -748,7 +748,7 @@ namespace SCMM.Web.Server.API.Controllers
                 case nameof(InventoryInvestmentItemDTO.ResellTax):
                     query = query.OrderBy(x => x.Description.MarketItem.ResellTax, sortDirection);
                     break;
-                case nameof(InventoryInvestmentItemDTO.ResellProfit):
+                case "ResellProfit":
                     query = query.OrderBy(x =>
                         ((x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) != 0 && x.BuyPrice > 0 && x.Currency != null)
                             ? ((x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) - (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
