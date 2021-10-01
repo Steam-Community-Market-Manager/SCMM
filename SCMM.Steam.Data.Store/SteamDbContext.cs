@@ -16,6 +16,7 @@ namespace SCMM.Steam.Data.Store
         public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
         public DbSet<SteamMarketItemBuyOrder> SteamMarketItemBuyOrder { get; set; }
         public DbSet<SteamMarketItemSellOrder> SteamMarketItemSellOrder { get; set; }
+        public DbSet<SteamMarketItemOrderSummary> SteamMarketItemOrderSummaries { get; set; }
         public DbSet<SteamMarketItemSale> SteamMarketItemSale { get; set; }
         public DbSet<SteamMarketItemActivity> SteamMarketItemActivity { get; set; }
         public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
@@ -143,6 +144,10 @@ namespace SCMM.Steam.Data.Store
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.SellOrders)
+                .WithOne(x => x.Item)
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<SteamMarketItem>()
+                .HasMany(x => x.OrdersHistory)
                 .WithOne(x => x.Item)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamMarketItem>()

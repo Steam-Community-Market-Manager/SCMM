@@ -13,6 +13,7 @@ namespace SCMM.Steam.Data.Store
             Activity = new Collection<SteamMarketItemActivity>();
             BuyOrders = new Collection<SteamMarketItemBuyOrder>();
             SellOrders = new Collection<SteamMarketItemSellOrder>();
+            OrdersHistory = new Collection<SteamMarketItemOrderSummary>();
             SalesHistory = new Collection<SteamMarketItemSale>();
         }
 
@@ -27,6 +28,9 @@ namespace SCMM.Steam.Data.Store
         // What is the total quantity of all buy orders
         public int BuyOrderCount { get; set; }
 
+        // What is the total price of all buy orders added together
+        public long BuyOrderCumulativePrice { get; set; }
+
         // What is the most expensive buy order
         public long BuyOrderHighestPrice { get; set; }
 
@@ -34,6 +38,9 @@ namespace SCMM.Steam.Data.Store
 
         // What is the total quantity of all sell orders
         public int SellOrderCount { get; set; }
+
+        // What is the total price of all sell orders added together
+        public long SellOrderCumulativePrice { get; set; }
 
         // What is the cheapest sell order
         public long SellOrderLowestPrice { get; set; }
@@ -43,6 +50,8 @@ namespace SCMM.Steam.Data.Store
 
         // What tax is owed on resell price
         public long ResellTax { get; set; }
+        
+        public ICollection<SteamMarketItemOrderSummary> OrdersHistory { get; set; }
 
         public ICollection<SteamMarketItemSale> SalesHistory { get; set; }
 
@@ -144,13 +153,13 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var buyOrdersSorted = BuyOrders.OrderByDescending(y => y.Price).ToArray();
-                var highestBuyOrderPrice = (buyOrdersSorted.Length > 0)
-                    ? buyOrdersSorted.First().Price
-                    : 0;
+                var cumulativeBuyOrderPrice = buyOrdersSorted.Sum(x => x.Price * x.Quantity);
+                var highestBuyOrderPrice = (buyOrdersSorted.FirstOrDefault()?.Price ?? 0);
 
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //BuyOrderCount = buyOrdersSorted.Sum(y => y.Quantity);
                 BuyOrderCount = (buyOrderCount ?? BuyOrderCount);
+                BuyOrderCumulativePrice = cumulativeBuyOrderPrice;
                 BuyOrderHighestPrice = highestBuyOrderPrice;
             }
 
@@ -166,18 +175,38 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
-                var lowestSellOrderPrice = (sellOrdersSorted.Length > 0)
-                    ? sellOrdersSorted.First().Price
-                    : 0;
+                var lowestSellOrderPrice = (sellOrdersSorted.FirstOrDefault()?.Price ?? 0);
+                var cumulativeSellOrderPrice = sellOrdersSorted.Sum(x => x.Price * x.Quantity);
                 var resellPrice = lowestSellOrderPrice;
                 var resellTax = resellPrice.SteamFeeAsInt();
 
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //SellOrderCount = sellOrdersSorted.Sum(y => y.Quantity);
                 SellOrderCount = (sellOrderCount ?? SellOrderCount);
+                SellOrderCumulativePrice = cumulativeSellOrderPrice;
                 SellOrderLowestPrice = lowestSellOrderPrice;
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
+            }
+
+            // Update the latest order summary for the hour
+            var hourOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date.AddHours(DateTime.UtcNow.Hour), TimeZoneInfo.Utc.BaseUtcOffset);
+            var latestOrderSummary = OrdersHistory.FirstOrDefault(x => x.Timestamp == hourOpenTimestamp);
+            if (latestOrderSummary == null)
+            {
+                OrdersHistory.Add(latestOrderSummary = new SteamMarketItemOrderSummary()
+                {
+                    Timestamp = hourOpenTimestamp
+                });
+            }
+            if (latestOrderSummary != null)
+            {
+                latestOrderSummary.BuyCount = BuyOrderCount;
+                latestOrderSummary.BuyCumulativePrice = BuyOrderCumulativePrice;
+                latestOrderSummary.BuyHighestPrice = BuyOrderHighestPrice;
+                latestOrderSummary.SellCount = SellOrderCount;
+                latestOrderSummary.SellCumulativePrice = SellOrderCumulativePrice;
+                latestOrderSummary.SellLowestPrice = SellOrderLowestPrice;
             }
         }
 
