@@ -49,8 +49,8 @@ namespace SCMM.Web.Server.Mappers
 
             CreateMap<List<SteamAssetDescription>, ItemCollectionDTO>()
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Count > 0 ? p.FirstOrDefault().ItemCollection : null))
-                .ForMember(x => x.CreatorName, o => o.MapFrom(p => p.Count(x => x.CreatorProfile != null) > 0 ? p.FirstOrDefault(x => x.CreatorProfile != null).CreatorProfile.Name : null))
-                .ForMember(x => x.CreatorAvatarUrl, o => o.MapFrom(p => p.Count(x => x.CreatorProfile != null) > 0 ? p.FirstOrDefault(x => x.CreatorProfile != null).CreatorProfile.AvatarUrl : null))
+                .ForMember(x => x.CreatorName, o => o.MapFrom(p => p.Where(x => x.CreatorProfile != null).GroupBy(x => x.CreatorProfile).Count() == 1 ? p.FirstOrDefault(x => x.CreatorProfile != null).CreatorProfile.Name : null))
+                .ForMember(x => x.CreatorAvatarUrl, o => o.MapFrom(p => p.Where(x => x.CreatorProfile != null).GroupBy(x => x.CreatorProfile).Count() == 1 ? p.FirstOrDefault(x => x.CreatorProfile != null).CreatorProfile.AvatarUrl : null))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingCurrencyExchange(p => p.Count > 0 ? p.Select(x => x[null]).Where(x => x != null).Sum(x => x.LowestPrice) : null, p => p.Count > 0 ? p.Select(x => x[null]).Where(x => x != null).Select(x => x.Currency).FirstOrDefault() : null))
                 .ForMember(x => x.Items, o => o.MapFrom(p => p));
 
