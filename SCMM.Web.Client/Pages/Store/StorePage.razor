@@ -111,7 +111,7 @@ else if (StoreList.Any())
                     </MudItem>
                 }
                 
-                @foreach (var item in Store.Items.OrderBy(x => (x.TopSellerIndex ?? 0)).ThenByDescending(x => (x.SalesMinimum ?? 0) * (x.StorePrice ?? 0)).ThenByDescending(x => x.Subscriptions))
+                @foreach (var item in Store.Items.OrderByDescending(x => (x.SalesMinimum ?? 0)).ThenByDescending(x => x.Subscriptions))
                 {
                     <MudItem xs="12" sm="6" lg="3">
                         <div class="store-item full-height">
@@ -149,7 +149,7 @@ else if (StoreList.Any())
                                                         </MudText>
                                                     </ChildContent>
                                                     <TooltipContent>
-                                                        <span>This item is currently @(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix()) on the store top-sellers list</span>
+                                                        <span>This item is currently the @(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix()) top seller for sales made in the last few hours</span>
                                                     </TooltipContent>
                                                 </MudTooltip>
                                             }
