@@ -773,10 +773,10 @@
                                 <span>@State.Currency.ToPriceString(Item.Market24hrValue.Value)</span>
                             </MudText>
                         }
-                        <div class="d-flex flex-column justify-center align-center">
+                        <div class="d-flex flex-column justify-stretch align-stretch relative">
                             @if (!SalesHistoryChartLoaded)
                             {
-                                <div class="fixed">
+                                <div class="absolute d-flex align-center justify-center full-width full-height">
                                     <Loading Message="Loading sales history..." />
                                 </div>
                             }
