@@ -871,6 +871,24 @@
 				    </MudPaper>
                 </MudItem>
             }
+            
+            @if (!Item.IsAvailableOnMarket)
+            {
+                <MudItem xs="12">
+                    @if (Item.MarketableRestrictionDays > 0)
+                    {
+                        <Alert Variant="MudBlazor.Variant.Outlined" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-balance-scale-left mt-1" 
+                                Title="This item is not available on the market yet" 
+                                Subtitle="More information will become available when this item becomes marketable" />
+                    }
+                    else
+                    {
+                        <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Warning" Icon="fas fa-fw fa-balance-scale-left mt-1" 
+                               Title="This item is not available on the market" 
+                               Subtitle="Only limited information is available for this item as it is unmarketable" />
+                    }
+                </MudItem>
+            }
 
 		</MudGrid>
     </MudItem>
