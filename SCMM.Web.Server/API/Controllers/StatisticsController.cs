@@ -517,6 +517,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Where(x => x.ItemCollection != null)
+                .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
                 .Select(x => new
                 {
                     CreatorId = x.CreatorId,
