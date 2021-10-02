@@ -60,6 +60,8 @@
     <div id="app">
         <component type="typeof(App)" render-mode="@renderMode" />
         <persist-component-state />
+@if (runtime == RuntimeType.Server)
+{
         <div id="blazor-error-ui" class="component-error-banner hidden pa-2">
             <div class="d-flex flex-row align-center">
                 <i class="fa fa-fw fa-bug mr-2"></i>
@@ -67,8 +69,6 @@
                 <a href="" class="reload mud-button-root mud-button mud-button-outlined mud-button-outlined-size-small ml-auto" title="Reload the application">Reload</a>
             </div>
         </div>
-@if (runtime == RuntimeType.Server)
-{
         <div id="components-reconnect-modal" class="components-reconnect-modal components-reconnect-hide pa-4">
             <div class="show">
                 <h5>Server connection was lost, attempting to reconnect...</h5>
