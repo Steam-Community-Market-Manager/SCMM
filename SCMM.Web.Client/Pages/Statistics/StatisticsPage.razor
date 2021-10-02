@@ -1,5 +1,6 @@
 ﻿@page "/stats"
 @page "/steam/marketstatistics"
+@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Statistic
 @inject ILogger<StatisticsPage> Logger
@@ -592,7 +593,11 @@
 
     private void ViewItem(ItemDescriptionDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");
+        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
+        {
+            AppId = item.AppId.ToString(),
+            MarketHashName = item.Name
+        });
     }
     
     private void ShowProfileItemsDialog(ProfileAcceptedItemsStatisticDTO profile)
