@@ -1,5 +1,4 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
-using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Store
 {
@@ -15,7 +14,6 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public long Total => ((Subscriptions ?? 0) + (KnownInventoryDuplicates ?? 0) + (EstimatedOtherDuplicates ?? 0));
 
-        [JsonIgnore]
-        public string TotalText => $"{Total.ToQuantityString()}+ sold";
+        public string TotalText => $"More than {Total.ToQuantityString()} sold";
     }
 }

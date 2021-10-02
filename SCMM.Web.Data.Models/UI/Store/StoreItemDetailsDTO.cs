@@ -1,4 +1,6 @@
-﻿namespace SCMM.Web.Data.Models.UI.Store
+﻿using System.Text.Json.Serialization;
+
+namespace SCMM.Web.Data.Models.UI.Store
 {
     public class StoreItemDetailsDTO : IItemDescription, ICanBeSubscribed
     {
@@ -14,10 +16,12 @@
 
         public string WorkshopFileUrl { get; set; }
 
+        [JsonIgnore]
         public bool HasWorkshopFile => (WorkshopFileId != null);
 
         public string MarketListingId { get; set; }
 
+        [JsonIgnore]
         public bool HasMarketListing => !string.IsNullOrEmpty(MarketListingId);
 
         public ulong? CreatorId { get; set; }
