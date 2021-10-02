@@ -6,7 +6,7 @@ namespace SCMM.Steam.Data.Store
     {
         public DateTimeOffset Timestamp { get; set; }
 
-        public long Price { get; set; }
+        public long MedianPrice { get; set; }
 
         public int Quantity { get; set; }
 

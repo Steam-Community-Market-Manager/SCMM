@@ -166,7 +166,7 @@ namespace SCMM.Steam.API
             {
                 foreach (var sale in itemSales)
                 {
-                    sale.Price = item.Currency.CalculateExchange(sale.Price, salesCurrency);
+                    sale.MedianPrice = item.Currency.CalculateExchange(sale.MedianPrice, salesCurrency);
                 }
             }
 
@@ -223,12 +223,12 @@ namespace SCMM.Steam.API
             for (var i = 0; i < salesGraph.Length; i++)
             {
                 var timeStamp = DateTime.ParseExact(salesGraph[i][0], "MMM dd yyyy HH: z", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
-                var price = salesGraph[i][1].SteamPriceAsInt();
+                var medianPrice = salesGraph[i][1].SteamPriceAsInt();
                 var quantity = salesGraph[i][2].SteamQuantityValueAsInt();
                 sales.Add(new SteamMarketItemSale()
                 {
                     Timestamp = timeStamp,
-                    Price = price,
+                    MedianPrice = medianPrice,
                     Quantity = quantity,
                 });
                 totalQuantity += quantity;

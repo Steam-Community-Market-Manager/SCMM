@@ -150,7 +150,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Date = x.Key,
                     // TODO: Snapshot these for faster querying
                     Sales = x.Sum(y => y.Quantity),
-                    Revenue = x.Sum(y => y.Quantity * y.Price)
+                    Revenue = x.Sum(y => y.Quantity * y.MedianPrice)
                 });
 
             var salesPerDay = (await query.ToListAsync()).Select(

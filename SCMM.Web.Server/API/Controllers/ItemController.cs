@@ -406,7 +406,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => new
                 {
                     Date = x.Key,
-                    Price = x.Average(y => y.Price),
+                    MedianPrice = x.Average(y => y.MedianPrice),
                     Quantity = x.Sum(y => y.Quantity)
                 });
 
@@ -414,7 +414,7 @@ namespace SCMM.Web.Server.API.Controllers
                 x => new ItemSaleChartDTO
                 {
                     Date = x.Date,
-                    Price = this.Currency().ToPrice(this.Currency().CalculateExchange((long) Math.Round(x.Price, 0))),
+                    Price = this.Currency().ToPrice(this.Currency().CalculateExchange((long) Math.Round(x.MedianPrice, 0))),
                     Quantity = x.Quantity
                 }
             );

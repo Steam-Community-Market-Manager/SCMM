@@ -1,6 +1,8 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Extensions;
+using SCMM.Steam.Data.Store.Types;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
@@ -12,9 +14,12 @@ namespace SCMM.Steam.Data.Store
         {
             Activity = new Collection<SteamMarketItemActivity>();
             BuyOrders = new Collection<SteamMarketItemBuyOrder>();
+            BuyOrderHighestPriceRolling24hrs = new PersistablePriceCollection();
             SellOrders = new Collection<SteamMarketItemSellOrder>();
+            SellOrderLowestPriceRolling24hrs = new PersistablePriceCollection();
             OrdersHistory = new Collection<SteamMarketItemOrderSummary>();
             SalesHistory = new Collection<SteamMarketItemSale>();
+            SalesPriceRolling24hrs = new PersistablePriceCollection();
         }
 
         public Guid? CurrencyId { get; set; }
@@ -34,6 +39,9 @@ namespace SCMM.Steam.Data.Store
         // What is the most expensive buy order
         public long BuyOrderHighestPrice { get; set; }
 
+        [Required]
+        public PersistablePriceCollection BuyOrderHighestPriceRolling24hrs { get; set; }
+
         public ICollection<SteamMarketItemSellOrder> SellOrders { get; set; }
 
         // What is the total quantity of all sell orders
@@ -45,6 +53,9 @@ namespace SCMM.Steam.Data.Store
         // What is the cheapest sell order
         public long SellOrderLowestPrice { get; set; }
 
+        [Required]
+        public PersistablePriceCollection SellOrderLowestPriceRolling24hrs { get; set; }
+
         // What is the price you could reasonably flip this for given the current sell orders
         public long ResellPrice { get; set; }
 
@@ -54,6 +65,9 @@ namespace SCMM.Steam.Data.Store
         public ICollection<SteamMarketItemOrderSummary> OrdersHistory { get; set; }
 
         public ICollection<SteamMarketItemSale> SalesHistory { get; set; }
+
+        [Required]
+        public PersistablePriceCollection SalesPriceRolling24hrs { get; set; }
 
         // What was the total number of sales from the first 24hrs (1 day)
         public long First24hrSales { get; set; }
@@ -233,34 +247,34 @@ namespace SCMM.Steam.Data.Store
             var firstSaleOn = salesSorted.FirstOrDefault()?.Timestamp;
             var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24))).ToArray();
             var first24hrSales = first24hrs.Sum(x => x.Quantity);
-            var first24hrValue = (long)Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.Price) : 0, 0);
+            var first24hrValue = (long)Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.MedianPrice) : 0, 0);
             var stable24hrs = salesSorted.Where(x => x.Timestamp >= dayOpenTimestamp.AddDays(-1) && x.Timestamp <= dayOpenTimestamp).ToArray();
-            var stable24hrAverageValue = (long)Math.Round(stable24hrs.Length > 0 ? stable24hrs.Average(x => x.Price) : 0, 0);
+            var stable24hrAverageValue = (long)Math.Round(stable24hrs.Length > 0 ? stable24hrs.Average(x => x.MedianPrice) : 0, 0);
             var last1hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(1))).ToArray();
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
-            var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.Price) : 0, 0);
+            var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.MedianPrice) : 0, 0);
             var last24hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(24))).ToArray();
             var last24hrSales = last24hrs.Sum(x => x.Quantity);
-            var last24hrValue = (long)Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.Price) : 0, 0);
+            var last24hrValue = (long)Math.Round(last24hrs.Length > 0 ? last24hrs.Average(x => x.MedianPrice) : 0, 0);
             var last48hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(48))).ToArray();
             var last48hrSales = last48hrs.Sum(x => x.Quantity);
-            var last48hrValue = (long)Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.Price) : 0, 0);
+            var last48hrValue = (long)Math.Round(last48hrs.Length > 0 ? last48hrs.Average(x => x.MedianPrice) : 0, 0);
             var last72hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(72))).ToArray();
             var last72hrSales = last72hrs.Sum(x => x.Quantity);
-            var last72hrValue = (long)Math.Round(last72hrs.Length > 0 ? last72hrs.Average(x => x.Price) : 0, 0);
+            var last72hrValue = (long)Math.Round(last72hrs.Length > 0 ? last72hrs.Average(x => x.MedianPrice) : 0, 0);
             var last96hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(96))).ToArray();
             var last96hrSales = last96hrs.Sum(x => x.Quantity);
-            var last96hrValue = (long)Math.Round(last96hrs.Length > 0 ? last96hrs.Average(x => x.Price) : 0, 0);
+            var last96hrValue = (long)Math.Round(last96hrs.Length > 0 ? last96hrs.Average(x => x.MedianPrice) : 0, 0);
             var last120hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(120))).ToArray();
             var last120hrSales = last120hrs.Sum(x => x.Quantity);
-            var last120hrValue = (long)Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.Price) : 0, 0);
+            var last120hrValue = (long)Math.Round(last120hrs.Length > 0 ? last120hrs.Average(x => x.MedianPrice) : 0, 0);
             var last144hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(144))).ToArray();
             var last144hrSales = last144hrs.Sum(x => x.Quantity);
-            var last144hrValue = (long)Math.Round(last144hrs.Length > 0 ? last144hrs.Average(x => x.Price) : 0, 0);
+            var last144hrValue = (long)Math.Round(last144hrs.Length > 0 ? last144hrs.Average(x => x.MedianPrice) : 0, 0);
             var last168hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(168))).ToArray();
             var last168hrSales = last168hrs.Sum(x => x.Quantity);
-            var last168hrValue = (long)Math.Round(last168hrs.Length > 0 ? last168hrs.Average(x => x.Price) : 0, 0);
-            var lastSaleValue = (salesSorted.LastOrDefault()?.Price ?? 0);
+            var last168hrValue = (long)Math.Round(last168hrs.Length > 0 ? last168hrs.Average(x => x.MedianPrice) : 0, 0);
+            var lastSaleValue = (salesSorted.LastOrDefault()?.MedianPrice ?? 0);
             var lastSaleOn = salesSorted.LastOrDefault()?.Timestamp;
 
             FirstSaleOn = firstSaleOn;
@@ -290,13 +304,13 @@ namespace SCMM.Steam.Data.Store
             var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
             if (salesAfterFirstSevenDays.Any())
             {
-                var allTimeAverage = (long)Math.Round(salesAfterFirstSevenDays.Length > 0 ? salesAfterFirstSevenDays.Average(x => x.Price) : 0, 0);
-                var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.Price == salesAfterFirstSevenDays.Min(x => x.Price));
-                var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.Price == salesAfterFirstSevenDays.Max(x => x.Price));
+                var allTimeAverage = (long)Math.Round(salesAfterFirstSevenDays.Length > 0 ? salesAfterFirstSevenDays.Average(x => x.MedianPrice) : 0, 0);
+                var allTimeLow = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Min(x => x.MedianPrice));
+                var allTimeHigh = salesAfterFirstSevenDays.FirstOrDefault(x => x.MedianPrice == salesAfterFirstSevenDays.Max(x => x.MedianPrice));
                 AllTimeAverageValue = allTimeAverage;
-                AllTimeHighestValue = (allTimeHigh?.Price ?? 0);
+                AllTimeHighestValue = (allTimeHigh?.MedianPrice ?? 0);
                 AllTimeHighestValueOn = allTimeHigh?.Timestamp;
-                AllTimeLowestValue = (allTimeLow?.Price ?? 0);
+                AllTimeLowestValue = (allTimeLow?.MedianPrice ?? 0);
                 AllTimeLowestValueOn = allTimeLow?.Timestamp;
             }
         }

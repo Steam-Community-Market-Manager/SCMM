@@ -143,9 +143,13 @@ namespace SCMM.Steam.Data.Store
                 .WithOne(x => x.Item)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<SteamMarketItem>()
+                .OwnsOne(x => x.BuyOrderHighestPriceRolling24hrs);
+            builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.SellOrders)
                 .WithOne(x => x.Item)
                 .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<SteamMarketItem>()
+                .OwnsOne(x => x.SellOrderLowestPriceRolling24hrs);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.OrdersHistory)
                 .WithOne(x => x.Item)
@@ -154,6 +158,8 @@ namespace SCMM.Steam.Data.Store
                 .HasMany(x => x.SalesHistory)
                 .WithOne(x => x.Item)
                 .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<SteamMarketItem>()
+                .OwnsOne(x => x.SalesPriceRolling24hrs);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.Activity)
                 .WithOne(x => x.Item)
