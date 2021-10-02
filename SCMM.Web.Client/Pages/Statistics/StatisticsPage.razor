@@ -17,6 +17,12 @@
         <MudItem xs="12" xl="12">
             <StatisticsPanel Icon="fas fa-fw fa-chart-line" Title="Daily Market Activity" Subtitle="How many items are bought and sold on the market each day? How much money is traded each day? Is the market becoming more active, or less active?">
                 <ChildContent>
+                    @if (!MarketSalesChartLoaded)
+                    {
+                        <div class="fixed">
+                            <Loading Message="Loading daily market activity..." />
+                        </div>
+                    }
                     <style>
                         #MarketSalesPerDay_Series_1_TrendLine_0 {
                             stroke-dasharray: 10px 10px;
@@ -38,6 +44,7 @@
                     </style>
                     <SfChart ID="MarketSalesPerDay" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
                         <SfDataManager Url="api/stats/market/activityTimeline" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
+                        <ChartEvents Loaded="((x) => { MarketSalesChartLoaded = true; StateHasChanged(); })"></ChartEvents>
                         <ChartArea>
                             <ChartAreaBorder Width="0"></ChartAreaBorder>
                         </ChartArea>
@@ -590,6 +597,8 @@
 </PageContainer>
 
 @code {
+
+    private bool MarketSalesChartLoaded { get; set; }
 
     private void ViewItem(ItemDescriptionDTO item)
     {
