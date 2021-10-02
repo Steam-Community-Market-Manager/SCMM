@@ -47,7 +47,7 @@
                                                           HelperText="Optional. If set, we'll allow other users to send you trade requests if they are looking for items that you've flagged as available for trade." />
                                         </MudItem>
                                         <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                            <MudSelect T="ItemAnalyticsParticipationType" Value="@Update.ItemAnalytics" ValueChanged="((x) => { Update.ItemAnalytics = x; _ = UpdateProfile(); })" Label="Item Analytics" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true"
+                                            <MudSelect T="ItemAnalyticsParticipationType" Value="@Update.ItemAnalytics" ValueChanged="((x) => { Update.ItemAnalytics = x; _ = UpdateProfile(); })" Label="Item Analytics" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Disabled="true"
                                                        HelperText="Participation allows SCMM to use public information about the items in your inventory to improve the accuracy of item analytics. Some analytics may only be available to users that choose to participate, fair is fair.">
                                                @foreach (var value in Enum.GetValues<ItemAnalyticsParticipationType>())
                                                {
@@ -154,7 +154,7 @@
                             <MudGrid Spacing="4">
                                 <Preference Title="Store 'Top Sellers'" 
                                             Description="Control how item store 'top sellers' are calculated.">
-                                    <MudSelect T="StoreTopSellerRankingType" Value="@Update.StoreTopSellers" ValueChanged="((x) => { Update.StoreTopSellers = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0">
+                                    <MudSelect T="StoreTopSellerRankingType" Value="@Update.StoreTopSellers" ValueChanged="((x) => { Update.StoreTopSellers = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="true">
                                         @foreach (var value in Enum.GetValues<StoreTopSellerRankingType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
@@ -163,7 +163,7 @@
                                 </Preference>
                                 <Preference Title="Market 'Value'" 
                                             Description="Control how market items value is calculated.">
-                                    <MudSelect T="MarketValueType" Value="@Update.MarketValue" ValueChanged="((x) => { Update.MarketValue = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0">
+                                    <MudSelect T="MarketValueType" Value="@Update.MarketValue" ValueChanged="((x) => { Update.MarketValue = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="true">
                                         @foreach (var value in Enum.GetValues<MarketValueType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
@@ -172,11 +172,11 @@
                                 </Preference>
                                 <Preference Title="Market Tax" 
                                             Description="Control whether the 13% Steam Community Market tax should be included in all resell profit and investment gain/loss calculations. Recommended if you primarily buy and sell your items from the Steam Community Market.">  
-                                    <MudSwitch T="bool" Checked="@Update.IncludeMarketTax" CheckedChanged="((x) => { Update.IncludeMarketTax = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0">@(Update.IncludeMarketTax ? "Include" : "Exclude")</MudSwitch>
+                                    <MudSwitch T="bool" Checked="@Update.IncludeMarketTax" CheckedChanged="((x) => { Update.IncludeMarketTax = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.IncludeMarketTax ? "Include" : "Exclude")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Item Info Summary" 
                                             Description="Control what information is shown when viewing item summaries.">
-                                    <MudSelect T="ItemInfoType" SelectedValues="@(new HashSet<ItemInfoType>(Update.ItemInfo))" SelectedValuesChanged="((x) => { Update.ItemInfo = x; _ = UpdateProfile(); })" MultiSelection="true" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0">
+                                    <MudSelect T="ItemInfoType" SelectedValues="@(new HashSet<ItemInfoType>(Update.ItemInfo))" SelectedValuesChanged="((x) => { Update.ItemInfo = x; _ = UpdateProfile(); })" MultiSelection="true" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="true">
                                         @foreach (var value in Enum.GetValues<ItemInfoType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
@@ -185,7 +185,7 @@
                                 </Preference>
                                 <Preference Title="Item Info Website" 
                                             Description="Control which website you'd prefer to view more detailed information about items you click on.">
-                                    <MudSelect T="ItemInfoWebsiteType" Value="@Update.ItemInfoWebsite" ValueChanged="((x) => { Update.ItemInfoWebsite = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0">
+                                    <MudSelect T="ItemInfoWebsiteType" Value="@Update.ItemInfoWebsite" ValueChanged="((x) => { Update.ItemInfoWebsite = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" Disabled="true">
                                         @foreach (var value in Enum.GetValues<ItemInfoWebsiteType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
@@ -194,7 +194,7 @@
                                 </Preference>
                                 <Preference Title="Item Drops" 
                                             Description="Control whether 'free' item drops from Twitch and Facepunch should be shown or hidden when viewing your inventory items.">  
-                                    <MudSwitch T="bool" Checked="@Update.ShowItemDrops" CheckedChanged="((x) => { Update.ShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0">@(Update.ShowItemDrops ? "Show" : "Hide")</MudSwitch>
+                                    <MudSwitch T="bool" Checked="@Update.ShowItemDrops" CheckedChanged="((x) => { Update.ShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.ShowItemDrops ? "Show" : "Hide")</MudSwitch>
                                 </Preference>
                             </MudGrid>
                         </MudCardContent>
