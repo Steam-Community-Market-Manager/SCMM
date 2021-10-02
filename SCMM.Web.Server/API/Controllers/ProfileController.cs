@@ -602,7 +602,7 @@ namespace SCMM.Web.Server.API.Controllers
                     }).ToList()
                 })
                 .Where(x => x.Items.Any(y => y.IsOwned))
-                .OrderByDescending(x => x.Items.Count())
+                .OrderByDescending(x => x.Items.Where(x => x.IsOwned).Count())
                 .ToList();
 
             return Ok(
