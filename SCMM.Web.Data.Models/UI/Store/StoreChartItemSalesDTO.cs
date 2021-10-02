@@ -14,6 +14,6 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public long Total => ((Subscriptions ?? 0) + (KnownInventoryDuplicates ?? 0) + (EstimatedOtherDuplicates ?? 0));
 
-        public string TotalText => $"More than {Total.ToQuantityString()} sold";
+        public string TotalText => $"more than {Total.ToQuantityString()} sold";
     }
 }
