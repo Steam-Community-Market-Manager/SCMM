@@ -230,8 +230,9 @@
             var httpErrorCode = (ex as HttpRequestException)?.StatusCode;
             if (httpErrorCode == HttpStatusCode.Unauthorized)
             {
-                var snackBarMessage = (
-                    $"<strong>This inventory is currently private.</strong><br/>You are viewing an old snapshot from {Profile?.LastUpdatedInventoryOn.Value.ToString("g")} as we are unable to show you the latest information at this time. "
+                var snackBarMessage = (Profile?.LastUpdatedInventoryOn != null
+                    ? $"<strong>This inventory is currently private.</strong><br/>You are viewing an old snapshot from {Profile.LastUpdatedInventoryOn.Value.ToString("g")} as we are unable to show you the latest information at this time. "
+                    : $"<strong>This inventory is currently private.</strong><br/>We are unable to show you the contents of this inventory. "
                 );
 
                 var thisIsMyInventory = State.Is(Profile?.SteamId);
