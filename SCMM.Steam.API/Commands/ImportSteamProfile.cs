@@ -58,9 +58,10 @@ namespace SCMM.Steam.API.Commands
                 // If we know the exact steam id, fetch using the Steam API
                 if (resolvedId.SteamId64 != null)
                 {
+                    var steamId = resolvedId.SteamId64.Value;
                     var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
                     var steamUser = steamWebInterfaceFactory.CreateSteamWebInterface<SteamUser>();
-                    var response = await steamUser.GetPlayerSummaryAsync(resolvedId.SteamId64.Value);
+                    var response = await steamUser.GetPlayerSummaryAsync(steamId);
                     if (response?.Data == null)
                     {
                         throw new ArgumentException(nameof(request), "SteamID is invalid, or profile no longer exists");
@@ -83,10 +84,10 @@ namespace SCMM.Steam.API.Commands
 
                     profile = resolvedId.Profile ?? new SteamProfile()
                     {
-                        SteamId = response.Data.SteamId.ToString()
+                        SteamId = steamId.ToString()
                     };
 
-                    profile.SteamId = response.Data.SteamId.ToString();
+                    profile.SteamId = steamId.ToString();
                     profile.ProfileId = profileId;
                     profile.Name = response.Data.Nickname?.Trim();
                     profile.AvatarUrl = response.Data.AvatarMediumUrl;
@@ -96,9 +97,10 @@ namespace SCMM.Steam.API.Commands
                 // Else, if we know the custom profile id, fetch using the legacy XML API
                 else if (!string.IsNullOrEmpty(resolvedId.CustomUrl))
                 {
+                    var profileId = resolvedId.CustomUrl;
                     var response = await _communityClient.GetCustomProfile(new SteamCustomProfilePageRequest()
                     {
-                        ProfileId = resolvedId.CustomUrl,
+                        ProfileId = profileId,
                         Xml = true
                     });
                     if (response == null)
@@ -121,11 +123,11 @@ namespace SCMM.Steam.API.Commands
 
                     profile = resolvedId.Profile ?? new SteamProfile()
                     {
-                        ProfileId = response.CustomUrl
+                        ProfileId = profileId
                     };
 
                     profile.SteamId = response.SteamID64.ToString();
-                    profile.ProfileId = response.CustomUrl;
+                    profile.ProfileId = profileId;
                     profile.Name = response.SteamID.Trim();
                     profile.AvatarUrl = response.AvatarMedium;
                     profile.AvatarLargeUrl = response.AvatarFull;
