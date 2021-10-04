@@ -83,10 +83,10 @@ namespace SCMM.Steam.API.Commands
 
                     profile = resolvedId.Profile ?? new SteamProfile()
                     {
-                        SteamId = resolvedId.SteamId64.ToString()
+                        SteamId = response.Data.SteamId.ToString()
                     };
 
-                    profile.SteamId = resolvedId.SteamId64.ToString();
+                    profile.SteamId = response.Data.SteamId.ToString();
                     profile.ProfileId = profileId;
                     profile.Name = response.Data.Nickname?.Trim();
                     profile.AvatarUrl = response.Data.AvatarMediumUrl;
@@ -112,13 +112,20 @@ namespace SCMM.Steam.API.Commands
                         throw new ArgumentException(nameof(request), "SteamID is invalid");
                     }
 
+                    // Resolve the profile again using the steam id.
+                    // This handles the case where an existing profile has changed their custom url name
+                    resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
+                    {
+                        Id = steamId
+                    });
+
                     profile = resolvedId.Profile ?? new SteamProfile()
                     {
-                        ProfileId = resolvedId.CustomUrl
+                        ProfileId = response.CustomUrl
                     };
 
                     profile.SteamId = response.SteamID64.ToString();
-                    profile.ProfileId = resolvedId.CustomUrl;
+                    profile.ProfileId = response.CustomUrl;
                     profile.Name = response.SteamID.Trim();
                     profile.AvatarUrl = response.AvatarMedium;
                     profile.AvatarLargeUrl = response.AvatarFull;
