@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.0-rc.2.21480.10" />
     <PackageReference Include="Cronos" Version="0.7.1" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.17.0" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.19.0-preview" />
   </ItemGroup>
 
   <ItemGroup>
