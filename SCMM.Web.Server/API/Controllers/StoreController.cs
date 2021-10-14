@@ -135,6 +135,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 var allItemTypes = storeItems.Select(x => x.ItemType).Distinct();
                 var allItemPrices = await _db.SteamAssetDescriptions
+                    .AsNoTracking()
                     .Where(x => allItemTypes.Contains(x.ItemType))
                     .Where(x => x.IsMarketable || x.MarketableRestrictionDays > 0)
                     .Select(x => new
