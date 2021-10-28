@@ -21,7 +21,7 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public bool IncludeMarketTax { get; set; }
 
-        public HashSet<ItemInfoType> ItemInfo { get; set; }
+        public IEnumerable<ItemInfoType> ItemInfo { get; set; }
 
         public ItemInfoWebsiteType ItemInfoWebsite { get; set; }
 

@@ -6,7 +6,7 @@
 <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
     @if (PurchasableItem.BuyNowFrom == PriceType.SteamStore)
     {
-        <MudBadge Color="MudBlazor.Color.Primary" Content="@("New")" Overlap="true" Bordered="false" Bottom="true" Class="mud-badge-center">
+        <MudBadge Color="MudBlazor.Color.Primary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter">
             <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
                 <img src="@Item.IconUrl" class="icon full-width" />
             </div>
@@ -16,7 +16,7 @@
     {
         <MudBadge Color="@((PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice) ? MudBlazor.Color.Success : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? MudBlazor.Color.Error : MudBlazor.Color.Secondary)" 
                   Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
-                  Overlap="true" Bordered="false" Bottom="true" Class="mud-badge-center">
+                  Overlap="true" Bordered="false" Origin="Origin.BottomCenter">
             <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
                 <img src="@Item.IconUrl" class="icon full-width" />
             </div>
