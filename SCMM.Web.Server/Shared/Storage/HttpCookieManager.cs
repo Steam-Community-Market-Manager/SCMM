@@ -10,7 +10,7 @@ public class HttpCookieManager : CookieManager
         _accessor = accessor;
     }
 
-    public override async Task<T> GetAsync<T>(string name, T defaultValue = default(T))
+    public override async Task<T> GetAsync<T>(string name, T defaultValue = default)
     {
         var cookie = _accessor.HttpContext.Request.Cookies.FirstOrDefault(x => String.Equals(x.Key, name, StringComparison.InvariantCultureIgnoreCase));
         if (!String.IsNullOrEmpty(cookie.Value))

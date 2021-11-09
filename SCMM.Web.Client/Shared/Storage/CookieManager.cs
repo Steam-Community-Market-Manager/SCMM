@@ -14,7 +14,7 @@ public class CookieManager : ICookieManager
         await _jsRuntime.InvokeVoidAsync("CookieInterop.setCookie", name, value, days);
     }
 
-    public virtual async Task<T> GetAsync<T>(string name, T defaultValue = default(T))
+    public virtual async Task<T> GetAsync<T>(string name, T defaultValue = default)
     {
         try
         {

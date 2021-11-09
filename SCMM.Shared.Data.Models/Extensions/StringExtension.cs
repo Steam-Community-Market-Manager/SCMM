@@ -45,7 +45,7 @@
             var underlyingType = Nullable.GetUnderlyingType(typeof(T));
             if (underlyingType != null && value == null)
             {
-                return default(T);
+                return default;
             }
             var baseType = (underlyingType == null ? typeof(T) : underlyingType);
             if (baseType.IsEnum)
@@ -58,7 +58,7 @@
             }
             else
             {
-                return default(T);
+                return default;
             }
         }
     }

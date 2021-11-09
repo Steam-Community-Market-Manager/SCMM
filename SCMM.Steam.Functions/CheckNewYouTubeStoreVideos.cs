@@ -29,8 +29,8 @@ public class CheckNewYouTubeStoreVideos
 
     public CheckNewYouTubeStoreVideos(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient)
     {
-        _db = _db;
-        _googleClient = _googleClient;
+        _db = db;
+        _googleClient = googleClient;
         _configuration = configuration.GetSection("StoreVideos").Get<CheckNewYouTubeStoreVideosConfiguration>();
     }
 

@@ -289,6 +289,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List item sell orders
         /// </summary>
+        /// <param name="id">Item GUID, ID64, or name</param>
         /// <param name="start">Return item sell orders starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
@@ -330,6 +331,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List item buy orders
         /// </summary>
+        /// <param name="id">Item GUID, ID64, or name</param>
         /// <param name="start">Return item buy orders starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>

@@ -14,7 +14,7 @@ public class LocalStorageService
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", name, value);
     }
 
-    public async Task<T> GetAsync<T>(string name, T defaultValue = default(T))
+    public async Task<T> GetAsync<T>(string name, T defaultValue = default)
     {
         try
         {

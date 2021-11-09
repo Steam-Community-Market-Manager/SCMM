@@ -165,32 +165,32 @@ namespace SCMM.Web.Server.Extensions
                 {
                     if (!context.Items.ContainsKey(ContextKeyCurrency))
                     {
-                        return default(TValue);
+                        return default;
                     }
 
                     var currency = (CurrencyDetailedDTO)context.Items[ContextKeyCurrency];
                     if (currency == null)
                     {
-                        return default(TValue);
+                        return default;
                     }
 
                     var assetDescription = assetDescriptionExpression.Compile().Invoke(src);
                     if (assetDescription == null)
                     {
-                        return default(TValue);
+                        return default;
                     }
 
                     var price = assetDescription[currency];
                     if (price == null)
                     {
-                        return default(TValue);
+                        return default;
                     }
 
                     return propertyExpression.Compile().Invoke(price);
                 }
                 catch (Exception)
                 {
-                    return default(TValue);
+                    return default;
                 }
             });
         }

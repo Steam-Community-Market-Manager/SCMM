@@ -15,7 +15,7 @@ namespace SCMM.Azure.ServiceBus
 
         public string ReplyTo { get; set; }
 
-        public async Task ReplyAsync<T>(T message, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IMessage
+        public async Task ReplyAsync<T>(T message, CancellationToken cancellationToken = default) where T : class, IMessage
         {
             if (string.IsNullOrEmpty(ReplyTo))
             {

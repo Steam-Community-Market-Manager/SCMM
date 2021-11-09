@@ -76,7 +76,6 @@ namespace SteamAuth
 
             Thread.Sleep(350); //Sleep for a bit to give Steam a chance to catch up??
 
-            var secureRandom = new RNGCryptoServiceProvider();
             byte[] encryptedPasswordBytes;
             using (var rsaEncryptor = new RSACryptoServiceProvider())
             {

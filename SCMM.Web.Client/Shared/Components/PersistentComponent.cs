@@ -30,7 +30,7 @@ public abstract class PersistentComponent : ComponentBase, IDisposable
 
     protected T LoadFromState<T>(string name)
     {
-        T value = default(T);
+        T value = default;
         ApplicationState.TryTakeFromJson(name, out value);
         return value;
     }

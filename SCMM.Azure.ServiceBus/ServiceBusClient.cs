@@ -15,7 +15,7 @@ namespace SCMM.Azure.ServiceBus
             _administrationClient = administrationClient;
         }
 
-        public async Task SendMessageAsync<T>(T message, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IMessage
+        public async Task SendMessageAsync<T>(T message, CancellationToken cancellationToken = default) where T : class, IMessage
         {
             await using var sender = _client.CreateSender<T>();
             await sender.SendMessageAsync(
@@ -24,7 +24,7 @@ namespace SCMM.Azure.ServiceBus
             );
         }
 
-        public async Task SendMessagesAsync<T>(IEnumerable<T> messages, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IMessage
+        public async Task SendMessagesAsync<T>(IEnumerable<T> messages, CancellationToken cancellationToken = default) where T : class, IMessage
         {
             await using var messageSender = _client.CreateSender<T>();
             using var messageBatch = await messageSender.CreateMessageBatchAsync(cancellationToken);
@@ -38,7 +38,7 @@ namespace SCMM.Azure.ServiceBus
             await messageSender.SendMessagesAsync(messageBatch, cancellationToken);
         }
 
-        public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken = default)
             where TRequest : class, IMessage
             where TResponse : class, IMessage
         {
