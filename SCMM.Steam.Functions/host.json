@@ -7,5 +7,51 @@
         "excludedTypes": "Request"
       }
     }
+  },
+  "WorkshopFilesStorage": null,
+  "ServiceBusConnection": null,
+  "SteamDbConnection": null,
+  "Steam": {
+    "ApplicationKey": null,
+    "Username": null,
+    "Password": null
+  },
+  "AzureAi": {
+    "ComputerVision": {
+      "Endpoint": null,
+      "ApiKey": null
+    }
+  },
+  "StoreVideos": {
+    "Channels": [
+      {
+        "ChannelId": "UCvCBuwbtKRwM0qMi7rc7CUw", // ThatGermanGuy (English)
+        "Query": "Rust Skins"
+      },
+      {
+        "ChannelId": "UCH8QsQqm-IHaEg5lS92cseg", // OMIGHTY The King (English)
+        "Query": "Rust Skins"
+      },
+      //{
+      //  "ChannelId": "UCqUcx9jWmi0VmoRIA7jvt4Q", // 40year old man (Russian)
+      //  "Query": "NEW SKINS RUST"
+      //},
+      {
+        "ChannelId": "UC0zFe_m1T6t9w_11ZU13vaQ", // King Rust (Russian)
+        "Query": "НОВЫЕ СКИНЫ RUST"
+      },
+      {
+        "ChannelId": "UC6-5vQ1hxcGzsKjkxmTr1zQ", // Iam_Dangeross (English)
+        "Query": "Rust Skins"
+      },
+      {
+        "ChannelId": "UCgrFLe5VEITfoQKvwMRHNpw", // 77Hz
+        "Query": "Rust Skin"
+      },
+      {
+        "ChannelId": "UCM0Lx9b_SVXznNulb8cLlPw", // NAiJi (Russian)
+        "Query": "NEW SKINS IN RUST"
+      }
+    ]
   }
 }

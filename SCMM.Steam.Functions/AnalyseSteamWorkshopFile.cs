@@ -3,7 +3,6 @@ using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Text.Json.Serialization;
 using SCMM.Azure.AI;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
@@ -17,261 +16,260 @@ using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 
-namespace SCMM.Steam.Functions
+namespace SCMM.Steam.Functions;
+
+public class AnalyseSteamWorkshopFile
 {
-    public class AnalyseSteamWorkshopFile
+    private readonly SteamDbContext _db;
+    private readonly AzureAiClient _azureAiClient;
+
+    public AnalyseSteamWorkshopFile(SteamDbContext db, AzureAiClient azureAiClient)
     {
-        private readonly SteamDbContext _db;
-        private readonly AzureAiClient _azureAiClient;
+        _db = db;
+        _azureAiClient = azureAiClient;
+    }
 
-        public AnalyseSteamWorkshopFile(SteamDbContext db, AzureAiClient azureAiClient)
+    [Function("Analyse-Steam-Workshop-File")]
+    public async Task Run([ServiceBusTrigger("steam-workshop-file-analyse", Connection = "ServiceBusConnection")] AnalyseSteamWorkshopFileMessage message, FunctionContext context)
+    {
+        var logger = context.GetLogger("Analyse-Steam-Workshop-File");
+        var hasGlow = (bool?)null;
+        var glowRatio = (decimal?)null;
+        var hasCutout = (bool?)null;
+        var cutoutRatio = (decimal?)null;
+        var dominantColour = (string)null;
+        var tags = new Dictionary<string, string>();
+
+        // Get the workshop file from blob storage
+        logger.LogInformation($"Reading workshop file '{message.BlobName}' from blob storage");
+        var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), Constants.BlobContainerWorkshopFiles);
+        await blobContainer.CreateIfNotExistsAsync();
+        var blob = blobContainer.GetBlobClient(message.BlobName);
+        var blobProperties = await blob.GetPropertiesAsync();
+        var blobMetadata = blobProperties.Value.Metadata;
+
+        // Inspect the contents of the workshop file
+        logger.LogInformation($"Analysing workshop file contents");
+        using var workshopFileDataStream = await blob.OpenReadAsync();
+        using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
         {
-            _db = db;
-            _azureAiClient = azureAiClient;
-        }
+            var mainTextureFiles = new Dictionary<ZipArchiveEntry, decimal>();
+            var emissionMapFiles = new List<ZipArchiveEntry>();
 
-        [Function("Analyse-Steam-Workshop-File")]
-        public async Task Run([ServiceBusTrigger("steam-workshop-file-analyse", Connection = "ServiceBusConnection")] AnalyseSteamWorkshopFileMessage message, FunctionContext context)
-        {
-            var logger = context.GetLogger("Analyse-Steam-Workshop-File");
-            var hasGlow = (bool?)null;
-            var glowRatio = (decimal?)null;
-            var hasCutout = (bool?)null;
-            var cutoutRatio = (decimal?)null;
-            var dominantColour = (string)null;
-            var tags = new Dictionary<string, string>();
-
-            // Get the workshop file from blob storage
-            logger.LogInformation($"Reading workshop file '{message.BlobName}' from blob storage");
-            var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), Constants.BlobContainerWorkshopFiles);
-            await blobContainer.CreateIfNotExistsAsync();
-            var blob = blobContainer.GetBlobClient(message.BlobName);
-            var blobProperties = await blob.GetPropertiesAsync();
-            var blobMetadata = blobProperties.Value.Metadata;
-
-            // Inspect the contents of the workshop file
-            logger.LogInformation($"Analysing workshop file contents");
-            using var workshopFileDataStream = await blob.OpenReadAsync();
-            using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
+            // Analyse the icon file (if present)
+            var iconFile = workshopFileZip.Entries.FirstOrDefault(
+                x => Regex.IsMatch(x.Name, @"(icon[^\.]*|thumb|thumbnail|template|preview)\s*[0-9]*\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase)
+            );
+            if (iconFile != null)
             {
-                var mainTextureFiles = new Dictionary<ZipArchiveEntry, decimal>();
-                var emissionMapFiles = new List<ZipArchiveEntry>();
-
-                // Analyse the icon file (if present)
-                var iconFile = workshopFileZip.Entries.FirstOrDefault(
-                    x => Regex.IsMatch(x.Name, @"(icon[^\.]*|thumb|thumbnail|template|preview)\s*[0-9]*\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase)
-                );
-                if (iconFile != null)
+                var iconAlreadyAnalysed = (blobMetadata.ContainsKey(Constants.BlobMetadataIconAnalysed) && !message.Force);
+                if (!iconAlreadyAnalysed)
                 {
-                    var iconAlreadyAnalysed = (blobMetadata.ContainsKey(Constants.BlobMetadataIconAnalysed) && !message.Force);
-                    if (!iconAlreadyAnalysed)
+                    try
                     {
-                        try
+                        // Determine the icons dominant colour and any captions/tags that help describe the image
+                        using var iconStream = iconFile.Open();
+                        var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
+                        if (!String.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
                         {
-                            // Determine the icons dominant colour and any captions/tags that help describe the image
-                            using var iconStream = iconFile.Open();
-                            var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
-                            if (!String.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
+                            dominantColour = $"#{iconAnalysis.Color.AccentColor}";
+                        }
+                        else
+                        {
+                            logger.LogWarning("Icon analyse failed to identify the dominant colour");
+                        }
+                        if (iconAnalysis?.Description?.Captions?.Any() == true)
+                        {
+                            var captionIndex = 0;
+                            foreach (var caption in iconAnalysis.Description.Captions)
                             {
-                                dominantColour = $"#{iconAnalysis.Color.AccentColor}";
+                                var tagName = $"{Constants.AssetTagAiCaption}.{(char)('a' + captionIndex++)}";
+                                tags[tagName] = $"{caption.Text.FirstCharToUpper()} ({Math.Round(caption.Confidence * 100, 0)}%)";
                             }
-                            else
+                        }
+                        else
+                        {
+                            logger.LogWarning("Icon analyse failed to identify any captions");
+                        }
+                        if (iconAnalysis?.Description?.Tags?.Any() == true)
+                        {
+                            var tagIndex = 0;
+                            foreach (var tag in iconAnalysis.Description.Tags)
                             {
-                                logger.LogWarning("Icon analyse failed to identify the dominant colour");
+                                var tagName = $"{Constants.AssetTagAiTag}.{(char)('a' + tagIndex++)}";
+                                tags[tagName] = tag.FirstCharToUpper();
                             }
-                            if (iconAnalysis?.Description?.Captions?.Any() == true)
-                            {
-                                var captionIndex = 0;
-                                foreach (var caption in iconAnalysis.Description.Captions)
-                                {
-                                    var tagName = $"{Constants.AssetTagAiCaption}.{(char)('a' + captionIndex++)}";
-                                    tags[tagName] = $"{caption.Text.FirstCharToUpper()} ({Math.Round(caption.Confidence * 100, 0)}%)";
-                                }
-                            }
-                            else
-                            {
-                                logger.LogWarning("Icon analyse failed to identify any captions");
-                            }
-                            if (iconAnalysis?.Description?.Tags?.Any() == true)
-                            {
-                                var tagIndex = 0;
-                                foreach (var tag in iconAnalysis.Description.Tags)
-                                {
-                                    var tagName = $"{Constants.AssetTagAiTag}.{(char)('a' + tagIndex++)}";
-                                    tags[tagName] = tag.FirstCharToUpper();
-                                }
-                            }
-                            else
-                            {
-                                logger.LogWarning("Icon analyse failed to identify any tags");
-                            }
+                        }
+                        else
+                        {
+                            logger.LogWarning("Icon analyse failed to identify any tags");
+                        }
 
-                            blobMetadata[Constants.BlobMetadataIconAnalysed] = Boolean.TrueString;
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogWarning(ex, $"Failed to analyse icon: {iconFile.Name}. {ex.Message}");
-                        }
+                        blobMetadata[Constants.BlobMetadataIconAnalysed] = Boolean.TrueString;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        logger.LogWarning("Icon analyse was skipped, already completed and force was not specified");
+                        logger.LogWarning(ex, $"Failed to analyse icon: {iconFile.Name}. {ex.Message}");
                     }
                 }
                 else
                 {
-                    logger.LogWarning("No icon file present");
+                    logger.LogWarning("Icon analyse was skipped, already completed and force was not specified");
                 }
+            }
+            else
+            {
+                logger.LogWarning("No icon file present");
+            }
 
-                // Analyse the mainfest file (if present) to locate texture files
-                var manifestFile = workshopFileZip.Entries.FirstOrDefault(
-                    x => string.Equals(x.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase)
-                );
-                if (manifestFile != null)
+            // Analyse the mainfest file (if present) to locate texture files
+            var manifestFile = workshopFileZip.Entries.FirstOrDefault(
+                x => string.Equals(x.Name, "manifest.txt", StringComparison.InvariantCultureIgnoreCase)
+            );
+            if (manifestFile != null)
+            {
+                using var manifestStream = new StreamReader(manifestFile.Open());
+                var manifest = JsonSerializer.Deserialize<SteamWorkshopFileManifest>(manifestStream.ReadToEnd());
+                if (manifest != null)
                 {
-                    using var manifestStream = new StreamReader(manifestFile.Open());
-                    var manifest = JsonSerializer.Deserialize<SteamWorkshopFileManifest>(manifestStream.ReadToEnd());
-                    if (manifest != null)
-                    {
-                        mainTextureFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))
-                            .ToDictionary(x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)), x => x.Floats.Cutoff);
-                        emissionMapFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.EmissionMap))
-                            .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
-                            .Select(x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
-                            .Where(x => x != null)
-                            .ToList();
-                    }
-                }
-                else
-                {
-                    // No manifest present, try manually locate texture files
-                    logger.LogWarning("No manifest file present");
-                    mainTextureFiles = workshopFileZip.Entries
-                        .Where(x => Regex.IsMatch(x.Name, @"(diffuse|albedo|color|colour)\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase))
-                        .ToDictionary(x => x, x => 1m);
-                    emissionMapFiles = workshopFileZip.Entries
-                        .Where(x => Regex.IsMatch(x.Name, @"(emission)\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase))
+                    mainTextureFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))
+                        .ToDictionary(x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)), x => x.Floats.Cutoff);
+                    emissionMapFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.EmissionMap))
+                        .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
+                        .Select(x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
+                        .Where(x => x != null)
                         .ToList();
                 }
-
-                // Check main textures to see if the item has a cutout (i.e. contain transparent pixels)
-                var texturesCutout = new List<decimal>();
-                foreach (var textureFile in mainTextureFiles)
-                {
-                    try
-                    {
-                        using var textureStream = textureFile.Key.Open();
-                        using var textureImage = Image.FromStream(textureStream);
-                        texturesCutout.Add(
-                            textureImage.GetAlphaCuttoffRatio(
-                                alphaCutoff: textureFile.Value
-                            )
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarning(ex, $"Failed to detect cutout: {textureFile.Key.Name}. {ex.Message}");
-                        continue;
-                    }
-                }
-                if (texturesCutout.Any() && texturesCutout.Average() > 0m)
-                {
-                    hasCutout = true;
-                    cutoutRatio = texturesCutout.Average();
-                }
-                else
-                {
-                    hasCutout = false;
-                }
-
-                // Check emission map textures to see if the item glows (i.e. contains non-black pixels)
-                var emissionMapsGlow = new List<decimal>();
-                foreach (var emissionMapFile in emissionMapFiles)
-                {
-                    try
-                    {
-                        using var emissionMapStream = emissionMapFile.Open();
-                        using var emissionMapImage = Image.FromStream(emissionMapStream);
-                        emissionMapsGlow.Add(
-                            emissionMapImage.GetEmissionRatio()
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarning(ex, $"Failed to detect glow: {emissionMapFile.Name}. {ex.Message}");
-                        continue;
-                    }
-                }
-                if (emissionMapsGlow.Any() && emissionMapsGlow.Average() > 0m)
-                {
-                    hasGlow = true;
-                    glowRatio = emissionMapsGlow.Average();
-                }
-                else
-                {
-                    hasGlow = false;
-                }
+            }
+            else
+            {
+                // No manifest present, try manually locate texture files
+                logger.LogWarning("No manifest file present");
+                mainTextureFiles = workshopFileZip.Entries
+                    .Where(x => Regex.IsMatch(x.Name, @"(diffuse|albedo|color|colour)\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase))
+                    .ToDictionary(x => x, x => 1m);
+                emissionMapFiles = workshopFileZip.Entries
+                    .Where(x => Regex.IsMatch(x.Name, @"(emission)\.(png|jpg|jpeg|jpe|bmp|tga)$", RegexOptions.IgnoreCase))
+                    .ToList();
             }
 
-            logger.LogInformation($"Analyse complete");
-            logger.LogInformation($"hasGlow = {hasGlow}");
-            logger.LogInformation($"glowRatio = {glowRatio}");
-            logger.LogInformation($"hasCutout = {hasCutout}");
-            logger.LogInformation($"cutoutRatio = {cutoutRatio}");
-            logger.LogInformation($"dominantColour = {dominantColour}");
-            foreach (var tag in tags)
+            // Check main textures to see if the item has a cutout (i.e. contain transparent pixels)
+            var texturesCutout = new List<decimal>();
+            foreach (var textureFile in mainTextureFiles)
             {
-                logger.LogInformation($"{tag.Key} = {tag.Value}");
-            }
-
-            // Update asset descriptions details
-            var publishedFileId = ulong.Parse(blobMetadata[Constants.BlobMetadataPublishedFileId]);
-            var assetDescriptions = await _db.SteamAssetDescriptions
-                .Where(x => x.WorkshopFileId == publishedFileId)
-                .ToListAsync();
-
-            foreach (var assetDescription in assetDescriptions)
-            {
-                if (hasGlow != null)
+                try
                 {
-                    assetDescription.HasGlow = hasGlow;
-                }
-                if (glowRatio != null)
-                {
-                    assetDescription.GlowRatio = glowRatio;
-                }
-                if (hasCutout != null)
-                {
-                    assetDescription.HasCutout = hasCutout;
-                }
-                if (cutoutRatio != null)
-                {
-                    assetDescription.CutoutRatio = cutoutRatio;
-                }
-                if (dominantColour != null)
-                {
-                    assetDescription.DominantColour = dominantColour;
-                }
-                if (tags.Any())
-                {
-                    assetDescription.Tags = new PersistableStringDictionary(
-                        assetDescription.Tags
-                            .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.AssetTagAiCaption) || x.Key.StartsWith(Constants.AssetTagAiTag)))
-                            .ToDictionary(x => x.Key, x => x.Value)
+                    using var textureStream = textureFile.Key.Open();
+                    using var textureImage = Image.FromStream(textureStream);
+                    texturesCutout.Add(
+                        textureImage.GetAlphaCuttoffRatio(
+                            alphaCutoff: textureFile.Value
+                        )
                     );
-                    foreach (var tag in tags)
-                    {
-                        assetDescription.Tags[tag.Key] = tag.Value;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, $"Failed to detect cutout: {textureFile.Key.Name}. {ex.Message}");
+                    continue;
                 }
             }
+            if (texturesCutout.Any() && texturesCutout.Average() > 0m)
+            {
+                hasCutout = true;
+                cutoutRatio = texturesCutout.Average();
+            }
+            else
+            {
+                hasCutout = false;
+            }
 
-            await _db.SaveChangesAsync();
-            logger.LogInformation($"Asset descriptions updated (count: {assetDescriptions.Count})");
-
-            // Update workshop file metadata
-            await blob.SetMetadataAsync(blobMetadata);
-            logger.LogInformation($"Blob metadata updated");
+            // Check emission map textures to see if the item glows (i.e. contains non-black pixels)
+            var emissionMapsGlow = new List<decimal>();
+            foreach (var emissionMapFile in emissionMapFiles)
+            {
+                try
+                {
+                    using var emissionMapStream = emissionMapFile.Open();
+                    using var emissionMapImage = Image.FromStream(emissionMapStream);
+                    emissionMapsGlow.Add(
+                        emissionMapImage.GetEmissionRatio()
+                    );
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, $"Failed to detect glow: {emissionMapFile.Name}. {ex.Message}");
+                    continue;
+                }
+            }
+            if (emissionMapsGlow.Any() && emissionMapsGlow.Average() > 0m)
+            {
+                hasGlow = true;
+                glowRatio = emissionMapsGlow.Average();
+            }
+            else
+            {
+                hasGlow = false;
+            }
         }
+
+        logger.LogInformation($"Analyse complete");
+        logger.LogInformation($"hasGlow = {hasGlow}");
+        logger.LogInformation($"glowRatio = {glowRatio}");
+        logger.LogInformation($"hasCutout = {hasCutout}");
+        logger.LogInformation($"cutoutRatio = {cutoutRatio}");
+        logger.LogInformation($"dominantColour = {dominantColour}");
+        foreach (var tag in tags)
+        {
+            logger.LogInformation($"{tag.Key} = {tag.Value}");
+        }
+
+        // Update asset descriptions details
+        var publishedFileId = ulong.Parse(blobMetadata[Constants.BlobMetadataPublishedFileId]);
+        var assetDescriptions = await _db.SteamAssetDescriptions
+            .Where(x => x.WorkshopFileId == publishedFileId)
+            .ToListAsync();
+
+        foreach (var assetDescription in assetDescriptions)
+        {
+            if (hasGlow != null)
+            {
+                assetDescription.HasGlow = hasGlow;
+            }
+            if (glowRatio != null)
+            {
+                assetDescription.GlowRatio = glowRatio;
+            }
+            if (hasCutout != null)
+            {
+                assetDescription.HasCutout = hasCutout;
+            }
+            if (cutoutRatio != null)
+            {
+                assetDescription.CutoutRatio = cutoutRatio;
+            }
+            if (dominantColour != null)
+            {
+                assetDescription.DominantColour = dominantColour;
+            }
+            if (tags.Any())
+            {
+                assetDescription.Tags = new PersistableStringDictionary(
+                    assetDescription.Tags
+                        .Except(assetDescription.Tags.Where(x => x.Key.StartsWith(Constants.AssetTagAiCaption) || x.Key.StartsWith(Constants.AssetTagAiTag)))
+                        .ToDictionary(x => x.Key, x => x.Value)
+                );
+                foreach (var tag in tags)
+                {
+                    assetDescription.Tags[tag.Key] = tag.Value;
+                }
+            }
+        }
+
+        await _db.SaveChangesAsync();
+        logger.LogInformation($"Asset descriptions updated (count: {assetDescriptions.Count})");
+
+        // Update workshop file metadata
+        await blob.SetMetadataAsync(blobMetadata);
+        logger.LogInformation($"Blob metadata updated");
     }
 }

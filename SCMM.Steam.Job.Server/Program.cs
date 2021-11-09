@@ -123,7 +123,6 @@ public static class WebApplicationExtensions
         builder.Services.AddHostedService<UpdateAssetDescriptionsJob>();
         builder.Services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
         builder.Services.AddHostedService<CheckForNewMarketItemsJob>();
-        builder.Services.AddHostedService<CheckYouTubeForNewStoreVideosJobs>();
 
         // Controllers
         builder.Services

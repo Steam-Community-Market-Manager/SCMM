@@ -6,6 +6,8 @@ using Microsoft.Extensions.Hosting;
 using SCMM.Azure.AI;
 using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus.Extensions;
+using SCMM.Google.Client;
+using SCMM.Google.Client.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
@@ -48,8 +50,14 @@ public static class HostExtensions
                 var configuration = services.GetService<IConfiguration>();
                 return configuration.GetAzureAiConfiguration();
             });
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetGoogleConfiguration();
+            });
             services.AddSingleton<SteamSession>();
             services.AddSingleton<AzureAiClient>();
+            services.AddSingleton<GoogleClient>();
             services.AddScoped<SteamWebClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
