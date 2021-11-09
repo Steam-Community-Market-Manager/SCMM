@@ -316,7 +316,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
         /// <response code="404">If the store or item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize(Roles = Roles.Contributor)]
+        [Authorize(Roles = $"{Roles.Administrator},{Roles.Contributor}")]
         [HttpPost("{id}/linkItem")]
         [ProducesResponseType(typeof(SteamStoreItemItemStore), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -340,6 +340,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (store == null)
             {
                 return NotFound("Store not found");
+            }
+            if (!store.IsDraft && !this.User.IsInRole(Roles.Administrator))
+            {
+                return Unauthorized("Store is not a draft and cannot be modified");
             }
 
             var assetDescription = await _db.SteamAssetDescriptions
@@ -427,7 +431,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
         /// <response code="404">If the store or item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize(Roles = Roles.Contributor)]
+        [Authorize(Roles = $"{Roles.Administrator},{Roles.Contributor}")]
         [HttpPost("{id}/unlinkItem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -452,6 +456,10 @@ namespace SCMM.Web.Server.API.Controllers
             if (store == null)
             {
                 return NotFound("Store not found");
+            }
+            if (!store.IsDraft && !this.User.IsInRole(Roles.Administrator))
+            {
+                return Unauthorized("Store is not a draft and cannot be modified");
             }
 
             var storeItemLink = store.Items.FirstOrDefault(x => x.Item.Description.ClassId == command.AssetDescriptionId);

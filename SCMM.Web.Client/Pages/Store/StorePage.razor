@@ -75,7 +75,7 @@ else if (StoreList.Any())
                     <StoreAnalyticsPanel Store="@Store" />
                 </MudItem>
                 
-                @if (Store.IsDraft && State.IsInRole(Roles.Contributor))
+                @if (State.IsInRole(Roles.Administrator) || (Store.IsDraft && State.IsInRole(Roles.Contributor)))
                 {
                     <MudItem xs="12">
                         <MudPaper Outlined="true" Class="d-flex flex-row justify-center align-center full-height pa-2">
@@ -103,7 +103,7 @@ else if (StoreList.Any())
                         <MudPaper Outlined="true" Class="d-flex flex-column justify-center align-center full-height pa-4">
                             <TumbleWeed />
                             <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">No items found!</MudText>
-                            @if (State.IsInRole(Roles.Contributor))
+                            @if (State.IsInRole(Roles.Administrator) || (Store.IsDraft && State.IsInRole(Roles.Contributor)))
                             {
                                 <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can help by contributing a suggestion.</MudText>
                             }
@@ -136,9 +136,16 @@ else if (StoreList.Any())
                                         }
                                     </CardHeaderContent>
                                     <CardHeaderActions>
-                                        <div class="pa-1 text-centered">
+                                        <div class="pa-1 d-flex align-center justify-center">
+                                            @if (State.IsInRole(Roles.Administrator) || (Store.IsDraft && item.IsDraft && State.IsInRole(Roles.Contributor)))
+                                            {
+                                                <MudTooltip Text="Remove this item from the store">
+                                                    <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" Icon="fas fa-fw fa-trash-alt" Class="mr-3"></MudFab>
+                                                </MudTooltip>
+                                            }
                                             @if (Store.End == null && item.IsStillAvailableFromStore && item.TopSellerIndex != null)
                                             {
+                                                <div class="text-centered">
                                                 <MudTooltip>
                                                     <ChildContent>
                                                         <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary" Style="@GetItemTopSellerStyles(item.TopSellerIndex)">
@@ -152,12 +159,7 @@ else if (StoreList.Any())
                                                         <span>This item is currently the @(item.TopSellerIndex.Value + 1)@((item.TopSellerIndex.Value + 1).GetPositionSuffix()) highest top seller for sales made in the last few hours</span>
                                                     </TooltipContent>
                                                 </MudTooltip>
-                                            }
-                                            @if (Store.IsDraft && item.IsDraft && State.IsInRole(Roles.Contributor))
-                                            {
-                                                <MudTooltip Text="Remove this item from the store">
-                                                    <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" Icon="fas fa-fw fa-trash-alt"></MudFab>
-                                                </MudTooltip>
+                                                </div>
                                             }
                                         </div>
                                     </CardHeaderActions>
