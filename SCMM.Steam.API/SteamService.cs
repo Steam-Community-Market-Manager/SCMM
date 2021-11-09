@@ -125,12 +125,12 @@ namespace SCMM.Steam.API
             }
 
             // Lazy-load buy/sell order history if missing, required for recalculation
-            if (item.BuyOrders?.Any() != true || item.SellOrders?.Any() != true || item.OrdersHistory?.Any() != true)
+            if (item.BuyOrders?.Any() != true || item.SellOrders?.Any() != true)// || item.OrdersHistory?.Any() != true)
             {
                 item = await _db.SteamMarketItems
                     .Include(x => x.BuyOrders)
                     .Include(x => x.SellOrders)
-                    .Include(x => x.OrdersHistory)
+                    //.Include(x => x.OrdersHistory)
                     .SingleOrDefaultAsync(x => x.Id == item.Id);
             }
 

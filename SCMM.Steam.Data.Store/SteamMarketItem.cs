@@ -202,7 +202,7 @@ namespace SCMM.Steam.Data.Store
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
             }
-
+            /*
             // Update the latest order summary for the hour
             var hourOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date.AddHours(DateTime.UtcNow.Hour), TimeZoneInfo.Utc.BaseUtcOffset);
             var latestOrderSummary = OrdersHistory.FirstOrDefault(x => x.Timestamp == hourOpenTimestamp);
@@ -222,6 +222,7 @@ namespace SCMM.Steam.Data.Store
                 latestOrderSummary.SellCumulativePrice = SellOrderCumulativePrice;
                 latestOrderSummary.SellLowestPrice = SellOrderLowestPrice;
             }
+            */
         }
 
         public void RecalculateSales(SteamMarketItemSale[] newSales = null)
