@@ -118,7 +118,7 @@ else if (StoreList.Any())
                             <MudCard Outlined="true" Class="d-flex flex-column full-height">
                                 <MudCardHeader>
                                     <CardHeaderAvatar>
-                                        <MudHidden Breakpoint="Breakpoint.XlAndUp" Invert="true">
+                                        <MudHidden Breakpoint="Breakpoint.LgAndDown">
                                             <MudTooltip Text="@item.CreatorName">
                                                 <MudAvatar Image="@item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" />
                                             </MudTooltip>
@@ -684,7 +684,9 @@ else if (StoreList.Any())
             }
         }
 
-        return result.Trim();    }
+        return result.Trim();
+    }
+
     private string GetItemIconStyles(StoreItemDetailsDTO item)
     {
         if (item.HasGlow == true)
@@ -694,7 +696,10 @@ else if (StoreList.Any())
                 return $"filter: drop-shadow(0px 0px 16px {item.DominantColour});";
             }
         }
-        return null;    }    private string GetItemTopSellerStyles(int? topSellerIndex)
+        return null;
+    }
+
+    private string GetItemTopSellerStyles(int? topSellerIndex)
     {
         switch(topSellerIndex)
         {
