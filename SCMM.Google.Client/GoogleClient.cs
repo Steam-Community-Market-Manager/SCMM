@@ -24,8 +24,8 @@ namespace SCMM.Google.Client
             _configuration = configuration;
             _service = new YouTubeService(new BaseClientService.Initializer()
             {
-                ApiKey = _configuration.ApiKey,
-                ApplicationName = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyTitleAttribute>()?.Title
+                ApiKey = _configuration?.ApiKey,
+                ApplicationName = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyTitleAttribute>()?.Title
             });
         }
 
