@@ -1,3 +1,4 @@
+using Azure.Identity;
 using CommandQuery.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,7 @@ using System.Reflection;
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
 await new HostBuilder()
+    .ConfigureAppConfiguration()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices()
     .Build()
@@ -25,6 +27,19 @@ await new HostBuilder()
 
 public static class HostExtensions
 {
+    public static IHostBuilder ConfigureAppConfiguration(this IHostBuilder builder)
+    {
+        return builder.ConfigureAppConfiguration(config =>
+        {
+            config.AddEnvironmentVariables()
+                .AddAzureAppConfiguration(options =>
+                {
+                    options.Connect(Environment.GetEnvironmentVariable("AppConfigurationConnection"))
+                        .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()));
+                });
+        });
+    }
+
     public static IHostBuilder ConfigureServices(this IHostBuilder builder)
     {
         return builder.ConfigureServices(services =>
@@ -70,7 +85,6 @@ public static class HostExtensions
 
             // Services
             services.AddScoped<SteamService>();
-
         });
     }
 }

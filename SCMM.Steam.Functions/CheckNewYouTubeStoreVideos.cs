@@ -7,7 +7,7 @@ using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Store;
 using System.Text.RegularExpressions;
 
-namespace SCMM.Steam.Job.Server.Jobs;
+namespace SCMM.Steam.Functions;
 
 public class CheckNewYouTubeStoreVideosConfiguration
 {
