@@ -26,11 +26,14 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Reflection;
 using SCMM.Shared.Data.Models.Json;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using Azure.Identity;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
 await WebApplication.CreateBuilder(args)
     .ConfigureLogging()
+    .ConfigureAppConfiguration()
     .ConfigureServices()
     .Build()
     .Configure()
@@ -46,6 +49,24 @@ public static class WebApplicationExtensions
         builder.Logging.AddHtmlLogger();
         builder.Logging.AddApplicationInsights();
         builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+        return builder;
+    }
+
+    public static WebApplicationBuilder ConfigureAppConfiguration(this WebApplicationBuilder builder)
+    {
+        builder.Configuration.AddEnvironmentVariables();
+        builder.Configuration.AddAzureAppConfiguration(
+            options =>
+            {
+                options.Connect(builder.Configuration.GetConnectionString("AppConfigurationConnection"))
+                    .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
+                    .Select(KeyFilter.Any, LabelFilter.Null)
+                    .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+                    .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+            },
+            optional: true
+        );
+
         return builder;
     }
 
