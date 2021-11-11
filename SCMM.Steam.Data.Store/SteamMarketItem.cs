@@ -220,6 +220,19 @@ namespace SCMM.Steam.Data.Store
                 latestOrderSummary.SellCumulativePrice = SellOrderCumulativePrice;
                 latestOrderSummary.SellLowestPrice = SellOrderLowestPrice;
             }
+
+            // Update the rolling 24hr values
+            var orderHistorySorted = OrdersHistory.OrderByDescending(x => x.Timestamp);
+            var buyOrderHighestPriceRolling24hrs = new List<long>();
+            var sellOrderLowestPriceRolling24hrs = new List<long>();
+            for (int i = 0; i < 24; i++)
+            {
+                var summary = orderHistorySorted.FirstOrDefault(x => x.Timestamp == hourOpenTimestamp.Subtract(TimeSpan.FromHours(i)));
+                buyOrderHighestPriceRolling24hrs.Add(summary?.BuyHighestPrice ?? buyOrderHighestPriceRolling24hrs.LastOrDefault());
+                sellOrderLowestPriceRolling24hrs.Add(summary?.SellLowestPrice ?? sellOrderLowestPriceRolling24hrs.LastOrDefault());
+            }
+            BuyOrderHighestPriceRolling24hrs = new PersistablePriceCollection(buyOrderHighestPriceRolling24hrs);
+            SellOrderLowestPriceRolling24hrs = new PersistablePriceCollection(sellOrderLowestPriceRolling24hrs);
             */
         }
 
@@ -312,6 +325,9 @@ namespace SCMM.Steam.Data.Store
                 AllTimeLowestValue = (allTimeLow?.MedianPrice ?? 0);
                 AllTimeLowestValueOn = allTimeLow?.Timestamp;
             }
+
+            // Update the rolling 24hr values
+            // TODO: This...
         }
     }
 }
