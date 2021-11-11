@@ -32,18 +32,17 @@ public static class HostExtensions
     {
         return builder.ConfigureAppConfiguration(config =>
         {
-            config.AddEnvironmentVariables()
-                .AddAzureAppConfiguration(
-                    options =>
-                    {
-                        options.Connect(Environment.GetEnvironmentVariable("AppConfigurationConnection"))
-                            .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
-                            .Select(KeyFilter.Any, LabelFilter.Null)
-                            .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
-                            .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
-                    },
-                    optional: true
-                );
+            config.AddAzureAppConfiguration(
+                options =>
+                {
+                    options.Connect(Environment.GetEnvironmentVariable("AppConfigurationConnection"))
+                        .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
+                        .Select(KeyFilter.Any, LabelFilter.Null)
+                        .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+                        .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+                },
+                optional: true
+            );
         });
     }
 

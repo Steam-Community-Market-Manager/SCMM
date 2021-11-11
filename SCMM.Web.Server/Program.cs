@@ -48,7 +48,6 @@ public static class WebApplicationExtensions
 
     public static WebApplicationBuilder ConfigureAppConfiguration(this WebApplicationBuilder builder)
     {
-        builder.Configuration.AddEnvironmentVariables();
         builder.Configuration.AddAzureAppConfiguration(
             options =>
             {
