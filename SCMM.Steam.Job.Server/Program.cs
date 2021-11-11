@@ -138,7 +138,6 @@ public static class WebApplicationExtensions
         builder.Services.AddHostedService<UpdateMarketItemSalesJob>();
         builder.Services.AddHostedService<UpdateMarketItemOrdersJob>();
         builder.Services.AddHostedService<UpdateMarketItemActivityJob>();
-        builder.Services.AddHostedService<DeleteExpiredFileDataJob>();
         builder.Services.AddHostedService<UpdateCurrentStoreStatisticsJob>();
         builder.Services.AddHostedService<UpdateAssetDescriptionsJob>();
         builder.Services.AddHostedService<UpdateCurrencyExchangeRatesJob>();
