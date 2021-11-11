@@ -1,16 +1,15 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
-using System.Text.Json.Serialization;
 using SCMM.Shared.Data.Models;
 using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Responses.Xml;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using System.Text.Json;
 
 namespace SCMM.Steam.Client
 {

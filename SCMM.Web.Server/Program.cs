@@ -1,12 +1,16 @@
 ﻿using AspNet.Security.OpenId;
+using Azure.Identity;
 using CommandQuery;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.OpenApi.Models;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Formatters;
 using SCMM.Shared.Web.Middleware;
@@ -15,13 +19,9 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Server;
 using System.Reflection;
 using System.Security.Claims;
-using SCMM.Web.Server;
-using Microsoft.AspNetCore.Components;
-using SCMM.Shared.Data.Models.Json;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
-using Azure.Identity;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -56,7 +56,7 @@ public static class WebApplicationExtensions
                     .Select(KeyFilter.Any, LabelFilter.Null)
                     .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
                     .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
-            }, 
+            },
             optional: true
         );
 

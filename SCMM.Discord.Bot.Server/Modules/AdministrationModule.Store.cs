@@ -8,11 +8,7 @@ using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
-using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Store;
 using System.Globalization;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {

@@ -2,6 +2,7 @@ using Azure.Storage.Blobs;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.AI;
 using SCMM.Shared.Data.Models.Extensions;
@@ -13,9 +14,8 @@ using SCMM.Steam.Data.Store;
 using SCMM.Steam.Functions.Extensions;
 using System.Drawing;
 using System.IO.Compression;
-using System.Text.RegularExpressions;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
+using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions;
 

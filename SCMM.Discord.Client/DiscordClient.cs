@@ -203,7 +203,7 @@ namespace SCMM.Discord.Client
             {
                 throw new Exception($"Unable to find guild (id: {guildId})");
             }
-            
+
             // Find channels that match our pattern (and that we have permission to post in)
             channelPatterns = channelPatterns?.Where(x => !String.IsNullOrEmpty(x))?.ToArray();
             foreach (var channelPattern in channelPatterns)

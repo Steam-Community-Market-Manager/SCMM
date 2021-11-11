@@ -53,7 +53,7 @@ namespace SCMM.Steam.API.Commands
                 .Take(1)
                 .Include(x => x.Items)
                 .FirstOrDefaultAsync();
-            
+
             // Find all item definitions in the page ("top sellers" and "new releases")
             var itemGridDefinitions = storePageHtml.Descendants("div").Where(x => x?.Attribute("class")?.Value == "item_def_grid_item").ToList();
             var itemRowDefinitions = storePageHtml.Descendants("div").Where(x => x?.Attribute("class")?.Value?.Contains("item_def_row_item") == true).ToList();

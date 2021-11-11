@@ -528,10 +528,10 @@ namespace SCMM.Web.Server.API.Controllers
                     Currency = x.MarketItem != null ? x.MarketItem.Currency : (x.StoreItem != null ? x.StoreItem.Currency : null)
                 })
                 .ToList()
-                .GroupBy(x => new 
-                { 
-                    CreatorId = x.CreatorId, 
-                    Name = x.Name 
+                .GroupBy(x => new
+                {
+                    CreatorId = x.CreatorId,
+                    Name = x.Name
                 })
                 .OrderByDescending(x => x.Count())
                 .ThenByDescending(x => x.Sum(y => y.BuyNowPrice ?? 0))

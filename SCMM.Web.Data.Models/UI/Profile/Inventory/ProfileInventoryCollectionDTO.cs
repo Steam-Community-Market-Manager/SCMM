@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using SCMM.Web.Data.Models.UI.Item;
 
 namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {
@@ -16,8 +15,8 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
         [JsonIgnore]
         public string[] Filters => Items
             .SelectMany(x => x.Filters)
-            .Union(new[] { 
-                Name, CreatorName 
+            .Union(new[] {
+                Name, CreatorName
             })
             .ToArray();
     }

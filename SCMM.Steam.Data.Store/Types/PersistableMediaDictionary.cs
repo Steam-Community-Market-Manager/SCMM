@@ -24,7 +24,7 @@ namespace SCMM.Steam.Data.Store.Types
 
         protected override SteamMediaType ConvertSingleValueToRuntime(string rawValue)
         {
-            return (SteamMediaType) Enum.Parse(typeof(SteamMediaType), rawValue, true);
+            return (SteamMediaType)Enum.Parse(typeof(SteamMediaType), rawValue, true);
         }
 
         protected override string ConvertSingleKeyToPersistable(string key)

@@ -1,16 +1,19 @@
-using Microsoft.Extensions.Logging.ApplicationInsights;
-using SCMM.Shared.Web;
+using Azure.Identity;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Shared.Data.Models.Json;
+using SCMM.Shared.Web;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
@@ -19,9 +22,6 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Job.Server.Jobs;
 using System.Reflection;
-using SCMM.Shared.Data.Models.Json;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
-using Azure.Identity;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 

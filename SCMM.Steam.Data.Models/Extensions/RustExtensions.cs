@@ -138,10 +138,10 @@
                 case "Boonie Hat":
                 case "T-Shirt":
                 case "Miners Hat":
-                case "Bandana Mask": 
+                case "Bandana Mask":
                 case "Improvised Balaclava":
                 case "Tank Top":
-                case "Shorts": 
+                case "Shorts":
                 case "Hide Boots":
                 case "Hide Halterneck":
                 case "Hide Pants":
@@ -194,7 +194,7 @@
                 case "Salvaged Sword":
                 case "Combat Knife":
                 case "Bone Knife":
-                case "Bone Club":  return true;
+                case "Bone Club": return true;
                 default: return false;
             }
         }
@@ -247,7 +247,7 @@
                 case "Rug":
                 case "Rug Bear Skin":
                 case "Sandbag Barricade":
-                case "Concrete Barricade": 
+                case "Concrete Barricade":
                 case "Reactive Target": return true;
                 default: return false;
             }

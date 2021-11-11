@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text.Json.Serialization;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Client;
@@ -19,9 +18,9 @@ using Steam.Models;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Utilities;
 using System.Globalization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using System.Text.Json;
 
 namespace SCMM.Steam.API.Commands
 {
@@ -259,7 +258,7 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.Previews = new PersistableMediaDictionary();
                 foreach (var preview in request.PublishedFilePreviews.OrderBy(x => x.SortOrder))
                 {
-                    switch(preview.PreviewType)
+                    switch (preview.PreviewType)
                     {
                         case 0: assetDescription.Previews[preview.Url] = SteamMediaType.Image; break;
                         case 1: assetDescription.Previews[preview.YouTubeVideoId] = SteamMediaType.YouTube; break;
@@ -580,7 +579,7 @@ namespace SCMM.Steam.API.Commands
             if (!assetDescription.IsTwitchDrop && !assetDescription.IsSpecialDrop)
             {
                 // Does this look like a publisher item twitch drop?
-                if (assetDescription.WorkshopFileId == null && assetDescription.TimeAccepted == null && !assetDescription.IsMarketable && !string.IsNullOrEmpty(assetDescription.Description) && 
+                if (assetDescription.WorkshopFileId == null && assetDescription.TimeAccepted == null && !assetDescription.IsMarketable && !string.IsNullOrEmpty(assetDescription.Description) &&
                          Regex.IsMatch(assetDescription.Description, @"Twitch", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
                 {
                     assetDescription.IsTwitchDrop = true;

@@ -584,7 +584,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .ToListAsync();
 
             var profileCollectionsGrouped = profileCollections
-                .GroupBy(x => new 
+                .GroupBy(x => new
                 {
                     Collection = x.ItemCollection,
                     CreatorName = x.CreatorProfile?.Name,
@@ -640,6 +640,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 return NotFound("Profile not found");
             }
+
 
             var profileItemMovements = await _db.SteamProfileInventoryItems
                 .Where(x => x.ProfileId == resolvedId.ProfileId)

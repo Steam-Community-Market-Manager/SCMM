@@ -114,7 +114,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     AssetDescription = x,
                     TimeAccepted = x.TimeAccepted,
                     TimeStore = (x.StoreItem != null ? (DateTimeOffset?)x.StoreItem.Stores.Min(y => y.Store.Start) : null),
-                    TimeMarket = (x.MarketItem != null ? (DateTimeOffset?) x.MarketItem.SalesHistory.Min(y => y.Timestamp) : null)
+                    TimeMarket = (x.MarketItem != null ? (DateTimeOffset?)x.MarketItem.SalesHistory.Min(y => y.Timestamp) : null)
                 })
                 .ToListAsync();
 

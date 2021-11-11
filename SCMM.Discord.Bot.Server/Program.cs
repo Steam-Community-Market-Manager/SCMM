@@ -1,10 +1,11 @@
-using Microsoft.Extensions.Logging.ApplicationInsights;
-using SCMM.Shared.Web;
+using Azure.Identity;
 using CommandQuery.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using SCMM.Azure.AI;
@@ -18,6 +19,8 @@ using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Shared.Data.Models.Json;
+using SCMM.Shared.Web;
 using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
@@ -25,9 +28,6 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using System.Reflection;
-using SCMM.Shared.Data.Models.Json;
-using Microsoft.Extensions.Configuration.AzureAppConfiguration;
-using Azure.Identity;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -81,7 +81,7 @@ public static class WebApplicationExtensions
         // Authentication
         builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApp(
-                options => 
+                options =>
                 {
                     var config = builder.Configuration.GetSection("AzureAd").Get<MicrosoftIdentityOptions>();
                     options.Instance = config.Instance;
@@ -95,7 +95,7 @@ public static class WebApplicationExtensions
                     options.CorrelationCookie.IsEssential = true;
                     options.CorrelationCookie.HttpOnly = false;
                     options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-                }, 
+                },
                 configureCookieAuthenticationOptions: options =>
                 {
                     options.SlidingExpiration = true;

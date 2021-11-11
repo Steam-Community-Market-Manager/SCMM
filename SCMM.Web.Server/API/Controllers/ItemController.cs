@@ -416,7 +416,7 @@ namespace SCMM.Web.Server.API.Controllers
                 x => new ItemSaleChartDTO
                 {
                     Date = x.Date,
-                    Price = this.Currency().ToPrice(this.Currency().CalculateExchange((long) Math.Round(x.MedianPrice, 0))),
+                    Price = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.MedianPrice, 0))),
                     Quantity = x.Quantity
                 }
             );

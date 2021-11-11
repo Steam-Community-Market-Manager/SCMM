@@ -198,7 +198,7 @@ namespace SCMM.Steam.API.Commands
 
                 publishedFile = publishedFileDetails.Data;
                 publishedFileHasChanged = (assetDescription.TimeUpdated == null || assetDescription.TimeUpdated < publishedFile.TimeUpdated);
-                
+
                 // Get file vote data (if missing or item is not yet accepted, votes don't change once accepted)
                 if ((assetDescription.VotesDown == null || assetDescription.VotesUp == null || !assetDescription.IsAccepted) && !string.IsNullOrEmpty(publishedFile.Title))
                 {
@@ -240,7 +240,7 @@ namespace SCMM.Steam.API.Commands
                         Id = publishedFile.PublishedFileId.ToString()
                     });
                 }
-                
+
                 // Queue a download of the workshop file data for analyse (if missing or changed since our last check)
                 if (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
                 {

@@ -12,7 +12,6 @@ using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
-using System.Text;
 using DiscordConfiguration = SCMM.Steam.Data.Store.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Modules

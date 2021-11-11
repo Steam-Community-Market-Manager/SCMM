@@ -7,7 +7,6 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store.Types;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace SCMM.Steam.Data.Store

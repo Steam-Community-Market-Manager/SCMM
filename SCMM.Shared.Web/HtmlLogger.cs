@@ -44,7 +44,7 @@ namespace SCMM.Shared.Web
             if (exception != null)
             {
                 var innerException = exception;
-                while(innerException != null)
+                while (innerException != null)
                 {
                     log += $"<span style=\"color:{gray}\">[{timestamp}]</span> <strong><samp>{exception.GetType().Name}</samp></strong><span> @ {innerException.Source ?? "Unknown"}:</span> <span>{innerException.Message}</span>";
                     if (!string.IsNullOrEmpty(innerException?.StackTrace))

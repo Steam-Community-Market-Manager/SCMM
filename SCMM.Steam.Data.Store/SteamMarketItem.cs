@@ -3,8 +3,6 @@ using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store.Types;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -61,7 +59,7 @@ namespace SCMM.Steam.Data.Store
 
         // What tax is owed on resell price
         public long ResellTax { get; set; }
-        
+
         public ICollection<SteamMarketItemOrderSummary> OrdersHistory { get; set; }
 
         public ICollection<SteamMarketItemSale> SalesHistory { get; set; }

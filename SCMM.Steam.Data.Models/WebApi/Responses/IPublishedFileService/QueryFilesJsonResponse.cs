@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using SCMM.Steam.Data.Models.WebApi.Models;
+﻿using SCMM.Steam.Data.Models.WebApi.Models;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.WebApi.Responses.IPublishedFileService
 {

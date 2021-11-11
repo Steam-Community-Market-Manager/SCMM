@@ -9,7 +9,6 @@ using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
-using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models.UI.Store;
 using SCMM.Web.Server.Extensions;
 using System.Globalization;
@@ -154,7 +153,7 @@ namespace SCMM.Web.Server.API.Controllers
                         : storeItem.MarketPrice
                     );
                     var allItems = allItemPrices.Where(x => x.ItemType == storeItem.ItemType).ToList();
-                    var cheaperItems = allItems.Where(x => 
+                    var cheaperItems = allItems.Where(x =>
                         (x.MarketPrice > 0 && this.Currency().CalculateExchange(x.MarketPrice, x.MarketCurrency) < cheapestPrice) ||
                         (x.StorePrices != null && x.StorePrices.ContainsKey(this.Currency().Name) && x.StorePrices[this.Currency().Name] < cheapestPrice)
                     );

@@ -1,7 +1,7 @@
-﻿using System.Text.Json.Serialization;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SteamAuth
 {

@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using SCMM.Steam.Data.Models.Community.Models;
+﻿using SCMM.Steam.Data.Models.Community.Models;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {

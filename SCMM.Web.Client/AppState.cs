@@ -2,7 +2,6 @@
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
 using SCMM.Web.Data.Models.UI.Profile;
-using System.Net.Http.Json;
 
 public class AppState
 {
