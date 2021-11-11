@@ -15,6 +15,7 @@ using System.Drawing;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace SCMM.Steam.Functions;
 
@@ -22,11 +23,13 @@ public class AnalyseSteamWorkshopFile
 {
     private readonly SteamDbContext _db;
     private readonly AzureAiClient _azureAiClient;
+    private readonly string _workshopFilesStorageConnectionString;
 
-    public AnalyseSteamWorkshopFile(SteamDbContext db, AzureAiClient azureAiClient)
+    public AnalyseSteamWorkshopFile(IConfiguration configuration, SteamDbContext db, AzureAiClient azureAiClient)
     {
         _db = db;
         _azureAiClient = azureAiClient;
+        _workshopFilesStorageConnectionString = configuration.GetConnectionString("WorkshopFilesStorageConnection");
     }
 
     [Function("Analyse-Steam-Workshop-File")]
@@ -42,7 +45,7 @@ public class AnalyseSteamWorkshopFile
 
         // Get the workshop file from blob storage
         logger.LogInformation($"Reading workshop file '{message.BlobName}' from blob storage");
-        var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), Constants.BlobContainerWorkshopFiles);
+        var blobContainer = new BlobContainerClient(_workshopFilesStorageConnectionString, Constants.BlobContainerWorkshopFiles);
         await blobContainer.CreateIfNotExistsAsync();
         var blob = blobContainer.GetBlobClient(message.BlobName);
         var blobProperties = await blob.GetPropertiesAsync();

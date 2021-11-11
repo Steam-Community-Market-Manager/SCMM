@@ -1,6 +1,7 @@
 using Azure.Storage.Blobs;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
@@ -14,11 +15,13 @@ public class DownloadSteamWorkshopFile
 {
     private readonly SteamDbContext _db;
     private readonly SteamWorkshopDownloaderWebClient _workshopDownloaderClient;
+    private readonly string _workshopFilesStorageConnectionString;
 
-    public DownloadSteamWorkshopFile(SteamDbContext db, SteamWorkshopDownloaderWebClient workshopDownloaderClient)
+    public DownloadSteamWorkshopFile(IConfiguration configuration, SteamDbContext db, SteamWorkshopDownloaderWebClient workshopDownloaderClient)
     {
         _db = db;
         _workshopDownloaderClient = workshopDownloaderClient;
+        _workshopFilesStorageConnectionString = configuration.GetConnectionString("WorkshopFilesStorageConnection");
     }
 
     [Function("Download-Steam-Workshop-File")]
@@ -27,7 +30,7 @@ public class DownloadSteamWorkshopFile
     {
         var logger = context.GetLogger("Download-Steam-Workshop-File");
 
-        var blobContainer = new BlobContainerClient(Environment.GetEnvironmentVariable("WorkshopFilesStorage"), Constants.BlobContainerWorkshopFiles);
+        var blobContainer = new BlobContainerClient(_workshopFilesStorageConnectionString, Constants.BlobContainerWorkshopFiles);
         await blobContainer.CreateIfNotExistsAsync();
 
         // If this workshop file is known to be missing, skip over it
