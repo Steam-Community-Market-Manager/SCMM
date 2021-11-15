@@ -257,11 +257,7 @@ else
 
     private void OnItemClicked(ItemDescriptionDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
-        {
-            AppId = item.AppId.ToString(),
-            MarketHashName = item.Name
-        });
+        ExternalNavigationManager.NavigateToItem(item);
     }
 
     private async Task LoadInventoryMovement()

@@ -2,6 +2,10 @@
 {
     public interface IItemDescription
     {
+        public ulong Id { get; set; }
+
+        public ulong AppId { get; set; }
+
         public string Name { get; }
 
         public string ItemType { get; }

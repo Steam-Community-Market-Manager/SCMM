@@ -122,10 +122,15 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest($"Profile not found");
             }
 
-            if (command.DiscordId != null)
+            // General
+            if (command.TradeUrl != null)
             {
-                profile.DiscordId = command.DiscordId;
+                profile.TradeUrl = command.TradeUrl;
             }
+            profile.ItemAnalyticsParticipation = command.ItemAnalyticsParticipation;
+            profile.GamblingOffset = command.GamblingOffset;
+
+            // Preferences
             if (command.Language != null)
             {
                 profile.Language = _db.SteamLanguages.FirstOrDefault(x => x.Name == command.Language);
@@ -134,12 +139,18 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 profile.Currency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == command.Currency);
             }
-            if (command.TradeUrl != null)
-            {
-                profile.TradeUrl = command.TradeUrl;
-            }
+            profile.StoreTopSellers = command.StoreTopSellers;
+            profile.MarketValue = command.MarketValue;
+            profile.IncludeMarketTax = command.IncludeMarketTax;
+            profile.ItemInfo = command.ItemInfo;
+            profile.ItemInfoWebsite = command.ItemInfoWebsite;
+            profile.ShowItemDrops = command.ShowItemDrops;
 
-            profile.GamblingOffset = command.GamblingOffset;
+            // Notifications
+            if (command.DiscordId != null)
+            {
+                profile.DiscordId = command.DiscordId;
+            }
 
             await _db.SaveChangesAsync();
             return Ok();

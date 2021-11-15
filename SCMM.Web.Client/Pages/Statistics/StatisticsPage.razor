@@ -602,11 +602,7 @@
 
     private void ViewItem(ItemDescriptionDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
-        {
-            AppId = item.AppId.ToString(),
-            MarketHashName = item.Name
-        });
+        ExternalNavigationManager.NavigateToItem(item);
     }
     
     private void ShowProfileItemsDialog(ProfileAcceptedItemsStatisticDTO profile)

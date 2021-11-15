@@ -4,6 +4,7 @@
 @using SCMM.Web.Data.Models.UI.Item
 @inject ILogger<ItemsPage> Logger
 @inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
 
 <PageContainer Title="Items">
@@ -138,7 +139,7 @@
     
     private void OnItemClicked(IItemDescription item)
     {
-        NavigationManager.NavigateTo($"/item/{item.Name}");  
+        ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");  
     }
 
     private void OnSearch(string text)

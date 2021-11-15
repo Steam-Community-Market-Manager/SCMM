@@ -25,6 +25,7 @@ namespace SCMM.Web.Server.Mappers
             CreateMap<SteamProfileInventoryItem, InventoryInvestmentItemDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Description.ClassId))
+                .ForMember(x => x.AppId, o => o.MapFrom(p => p.Description.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
                 .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Description.ItemType))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))

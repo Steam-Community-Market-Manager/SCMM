@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Shared.Data.Store
 {
@@ -8,6 +9,7 @@ namespace SCMM.Shared.Data.Store
         [Key]
         public Guid Id { get; set; }
 
+        [JsonIgnore]
         [NotMapped]
         public bool IsTransient => Id == Guid.Empty;
     }

@@ -9,6 +9,8 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 
         public ulong Id { get; set; }
 
+        public ulong AppId { get; set; }
+
         public string Name { get; set; }
 
         public string ItemType { get; set; }

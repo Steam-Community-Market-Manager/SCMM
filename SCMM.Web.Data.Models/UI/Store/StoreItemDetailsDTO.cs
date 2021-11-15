@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Data.Models.UI.Store
 {
-    public class StoreItemDetailsDTO : IItemDescription, ICanBeSubscribed
+    public class StoreItemDetailsDTO : IItemDescription
     {
         public Guid Guid { get; set; }
 

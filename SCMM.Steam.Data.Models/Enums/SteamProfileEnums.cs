@@ -16,8 +16,8 @@ public enum ItemAnalyticsParticipationType
 
 public enum StoreTopSellerRankingType
 {
-    [Display(Name = "Highest Recent Revenue")]
-    HighestRecentRevenue = 0,
+    [Display(Name = "Use Steam Store Ranking")]
+    SteamStoreRanking = 0,
 
     [Display(Name = "Highest Total Revenue")]
     HighestTotalRevenue,
@@ -41,21 +41,24 @@ public enum MarketValueType
 [Flags]
 public enum ItemInfoType
 {
+    [Display(Name = "Original Price")]
+    StorePrice = 0x01,
+
     [Display(Name = "Supply")]
-    Supply = 0x01,
+    Supply = 0x02,
 
     [Display(Name = "Demand")]
-    Demand = 0x02,
+    Demand = 0x04,
 
     [Display(Name = "Subscriptions")]
-    Subscriptions = 0x04
+    Subscriptions = 0x08
 }
 
 public enum ItemInfoWebsiteType
 {
-    [Display(Name = "View in SCMM")]
+    [Display(Name = "SCMM")]
     Internal = 0,
 
-    [Display(Name = "View on Steam")]
-    Steam
+    [Display(Name = "Steam")]
+    External
 }

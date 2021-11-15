@@ -69,11 +69,7 @@
 
     private void OnItemClicked()
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
-        {
-            AppId = Item.AppId.ToString(),
-            MarketHashName = Item.Name
-        });
+        ExternalNavigationManager.NavigateToItem(Item);
     }
 
 }

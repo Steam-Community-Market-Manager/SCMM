@@ -97,7 +97,7 @@ public class CheckNewYouTubeStoreVideos
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError(ex, $"Failed to channel (id: {channel.ChannelId}) for new store videos, skipping...");
+                        logger.LogError(ex, $"Failed to check channel (id: {channel.ChannelId}) for new store videos, skipping...");
                     }
                 }
 

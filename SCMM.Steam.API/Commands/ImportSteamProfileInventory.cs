@@ -120,7 +120,7 @@ namespace SCMM.Steam.API.Commands
                 if (inventory == null)
                 {
                     // Inventory is probably private
-                    profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Private;
+                    profile.Privacy = SteamVisibilityType.Private;
                     return;
                 }
                 if (inventory.Assets?.Any() != true)
@@ -193,13 +193,13 @@ namespace SCMM.Steam.API.Commands
 
                 // Update last inventory update timestamp and privacy state
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
-                profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Public;
+                profile.Privacy = SteamVisibilityType.Public;
             }
             catch (SteamRequestException ex)
             {
                 if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
-                    profile.Privacy = SCMM.Steam.Data.Models.Enums.SteamVisibilityType.Private;
+                    profile.Privacy = SteamVisibilityType.Private;
                 }
                 else
                 {

@@ -7,6 +7,7 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Store;
@@ -159,6 +160,39 @@ namespace SCMM.Web.Server.API.Controllers
                     );
                     storeItem.MarketRankIndex = cheaperItems.Count();
                     storeItem.MarketRankTotal = allItems.Count();
+                }
+            }
+
+            // Sort items based on users preferences (if any)
+            var profileId = this.User.Id();
+            if (profileId != default)
+            {
+                var profile = await _db.SteamProfiles.FirstOrDefaultAsync(x => x.Id == profileId);
+                if (profile != null)
+                {
+                    switch (profile.StoreTopSellers)
+                    {
+                        case StoreTopSellerRankingType.SteamStoreRanking:
+                            itemStoreDetail.Items = itemStoreDetail.Items
+                                .OrderByDescending(x => x.TopSellerIndex != null)
+                                .ThenBy(x => x.TopSellerIndex)
+                                .ThenByDescending(x => (x.SalesMinimum ?? 0) * x.StorePrice)
+                                .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
+                                .ToList();
+                            break;
+                        case StoreTopSellerRankingType.HighestTotalRevenue:
+                            itemStoreDetail.Items = itemStoreDetail.Items
+                                .OrderByDescending(x => (x.SalesMinimum ?? 0) * x.StorePrice)
+                                .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
+                                .ToList();
+                            break;
+                        case StoreTopSellerRankingType.HighestTotalSales:
+                            itemStoreDetail.Items = itemStoreDetail.Items
+                                .OrderByDescending(x => (x.SalesMinimum ?? 0))
+                                .ThenByDescending(x => (x.Subscriptions ?? 0))
+                                .ToList();
+                            break;
+                    }
                 }
             }
 

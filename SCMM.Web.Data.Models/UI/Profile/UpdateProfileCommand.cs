@@ -6,7 +6,7 @@ namespace SCMM.Web.Data.Models.UI.Profile
     {
         public string TradeUrl { get; set; }
 
-        public ItemAnalyticsParticipationType ItemAnalytics { get; set; }
+        public ItemAnalyticsParticipationType ItemAnalyticsParticipation { get; set; }
 
         public long GamblingOffset { get; set; }
 
