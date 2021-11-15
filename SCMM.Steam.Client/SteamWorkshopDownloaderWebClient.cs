@@ -12,11 +12,13 @@ namespace SCMM.Steam.Client
     {
         private readonly ILogger<SteamWorkshopDownloaderWebClient> _logger;
         private readonly HttpClientHandler _httpHandler;
+        private readonly string _workshopDownloaderNodeUrl;
 
-        public SteamWorkshopDownloaderWebClient(ILogger<SteamWorkshopDownloaderWebClient> logger)
+        public SteamWorkshopDownloaderWebClient(ILogger<SteamWorkshopDownloaderWebClient> logger, SteamConfiguration configuration)
         {
             _logger = logger;
             _httpHandler = new HttpClientHandler();
+            _workshopDownloaderNodeUrl = configuration.WorkshopDownloaderNodeUrl;
         }
 
         public async Task<WebFileData> DownloadWorkshopFile(SteamWorkshopDownloaderJsonRequest request)
@@ -27,8 +29,7 @@ namespace SCMM.Steam.Client
                 {
                     // Request the file
                     request.AutoDownload = true;
-                    const string downloadUrl = "https://backend-02-prd.steamworkshopdownloader.io/api/download/request";
-                    var downloadResponse = await client.PostAsJsonAsync(downloadUrl, request);
+                    var downloadResponse = await client.PostAsJsonAsync($"{_workshopDownloaderNodeUrl}/api/download/request", request);
                     if (!downloadResponse.IsSuccessStatusCode)
                     {
                         throw new HttpRequestException($"{downloadResponse.StatusCode}: {downloadResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
@@ -50,7 +51,6 @@ namespace SCMM.Steam.Client
                     var downloadIsPrepared = false;
                     while (!downloadIsPrepared)
                     {
-                        const string statusUrl = $"https://backend-02-prd.steamworkshopdownloader.io/api/download/status";
                         var statusRequest = new SteamWorkshopDownloaderStatusJsonRequest()
                         {
                             Uuids = new Guid[]
@@ -58,7 +58,7 @@ namespace SCMM.Steam.Client
                                 downloadId.Uuid
                             }
                         };
-                        var statusResponse = await client.PostAsJsonAsync(statusUrl, statusRequest);
+                        var statusResponse = await client.PostAsJsonAsync($"{_workshopDownloaderNodeUrl}/api/download/status", statusRequest);
                         if (!statusResponse.IsSuccessStatusCode)
                         {
                             throw new HttpRequestException($"{downloadResponse.StatusCode}: {downloadResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
@@ -80,7 +80,7 @@ namespace SCMM.Steam.Client
                     }
 
                     // Download the file
-                    var transmitUrl = $"https://backend-02-prd.steamworkshopdownloader.io/api/download/transmit?uuid={downloadId.Uuid}";
+                    var transmitUrl = $"{_workshopDownloaderNodeUrl}/api/download/transmit?uuid={downloadId.Uuid}";
                     var transmitResponse = await client.GetAsync(transmitUrl);
                     if (!transmitResponse.IsSuccessStatusCode)
                     {
