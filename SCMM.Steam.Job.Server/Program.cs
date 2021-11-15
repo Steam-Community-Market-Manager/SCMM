@@ -51,11 +51,15 @@ public static class WebApplicationExtensions
         builder.Configuration.AddAzureAppConfiguration(
             options =>
             {
-                options.Connect(builder.Configuration.GetConnectionString("AppConfigurationConnection"))
-                    .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
-                    .Select(KeyFilter.Any, LabelFilter.Null)
-                    .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
-                    .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+                var connectionString = builder.Configuration.GetConnectionString("AppConfigurationConnection");
+                if (!String.IsNullOrEmpty(connectionString))
+                {
+                    options.Connect(builder.Configuration.GetConnectionString("AppConfigurationConnection"))
+                        .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
+                        .Select(KeyFilter.Any, LabelFilter.Null)
+                        .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
+                        .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+                }
             },
             optional: true
         );
