@@ -15,5 +15,7 @@
         public string ForegroundColour { get; }
 
         public string IconUrl { get; }
+
+        public DateTimeOffset? TimeAccepted { get; set; }
     }
 }

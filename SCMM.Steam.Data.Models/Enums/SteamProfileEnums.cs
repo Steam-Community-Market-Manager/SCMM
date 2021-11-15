@@ -51,7 +51,10 @@ public enum ItemInfoType
     Demand = 0x04,
 
     [Display(Name = "Subscriptions")]
-    Subscriptions = 0x08
+    Subscriptions = 0x08,
+
+    [Display(Name = "Age")]
+    Age = 0x10
 }
 
 public enum ItemInfoWebsiteType

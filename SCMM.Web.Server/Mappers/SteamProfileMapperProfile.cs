@@ -31,6 +31,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))
+                .ForMember(x => x.TimeAccepted, o => o.MapFrom(p => p.Description.TimeAccepted))
                 .ForMember(x => x.AcquiredBy, o => o.MapFrom(p => p.AcquiredBy))
                 .ForMember(x => x.BuyCurrency, o => o.MapFrom(p => p.Currency))
                 .ForMember(x => x.BuyPrice, o => o.MapFrom(p => p.BuyPrice))

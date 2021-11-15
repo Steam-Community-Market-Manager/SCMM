@@ -21,6 +21,8 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 
         public string IconUrl { get; set; }
 
+        public DateTimeOffset? TimeAccepted { get; set; }
+
         public SteamProfileInventoryItemAcquisitionType AcquiredBy { get; set; }
 
         /// <summary>

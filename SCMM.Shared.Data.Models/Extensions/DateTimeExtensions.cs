@@ -54,6 +54,7 @@ namespace SCMM.Shared.Data.Models.Extensions
 
                 text.AppendFormat("{0} week{1}", weeks.ToString("#,##"), weeks > 1 ? "s" : string.Empty);
                 days -= weeks * 7;
+                granularity--;
             }
             if (days > 0 && showDays && granularity > 0)
             {

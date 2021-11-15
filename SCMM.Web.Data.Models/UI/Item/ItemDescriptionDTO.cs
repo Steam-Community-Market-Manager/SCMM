@@ -18,6 +18,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string IconUrl { get; set; }
 
+        public DateTimeOffset? TimeAccepted { get; set; }
+
         [JsonIgnore]
         public string[] Filters => new[]
         {

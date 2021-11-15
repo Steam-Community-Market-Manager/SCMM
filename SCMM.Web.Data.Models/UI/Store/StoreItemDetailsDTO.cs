@@ -56,6 +56,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string IconUrl { get; set; }
 
+        public DateTimeOffset? TimeAccepted { get; set; }
+
         public long? StorePrice { get; set; }
 
         public int? TopSellerIndex { get; set; }
