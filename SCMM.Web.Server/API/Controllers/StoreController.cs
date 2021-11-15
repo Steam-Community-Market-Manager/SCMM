@@ -163,37 +163,41 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
-            // Sort items based on users preferences (if any)
+            // Get users item sorting preferences (if any)
+            var topSellersRanking = StoreTopSellerRankingType.HighestTotalSales;
             var profileId = this.User.Id();
             if (profileId != default)
             {
                 var profile = await _db.SteamProfiles.FirstOrDefaultAsync(x => x.Id == profileId);
                 if (profile != null)
                 {
-                    switch (profile.StoreTopSellers)
-                    {
-                        case StoreTopSellerRankingType.SteamStoreRanking:
-                            itemStoreDetail.Items = itemStoreDetail.Items
-                                .OrderByDescending(x => x.TopSellerIndex != null)
-                                .ThenBy(x => x.TopSellerIndex)
-                                .ThenByDescending(x => (x.SalesMinimum ?? 0) * x.StorePrice)
-                                .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
-                                .ToList();
-                            break;
-                        case StoreTopSellerRankingType.HighestTotalRevenue:
-                            itemStoreDetail.Items = itemStoreDetail.Items
-                                .OrderByDescending(x => (x.SalesMinimum ?? 0) * x.StorePrice)
-                                .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
-                                .ToList();
-                            break;
-                        case StoreTopSellerRankingType.HighestTotalSales:
-                            itemStoreDetail.Items = itemStoreDetail.Items
-                                .OrderByDescending(x => (x.SalesMinimum ?? 0))
-                                .ThenByDescending(x => (x.Subscriptions ?? 0))
-                                .ToList();
-                            break;
-                    }
+                    topSellersRanking = profile.StoreTopSellers;
                 }
+            }
+
+            // Sort items
+            switch (topSellersRanking)
+            {
+                case StoreTopSellerRankingType.SteamStoreRanking:
+                    itemStoreDetail.Items = itemStoreDetail.Items
+                        .OrderByDescending(x => x.TopSellerIndex != null)
+                        .ThenBy(x => x.TopSellerIndex)
+                        .ThenByDescending(x => (x.SalesMinimum ?? 0) * x.StorePrice)
+                        .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
+                        .ToList();
+                    break;
+                case StoreTopSellerRankingType.HighestTotalRevenue:
+                    itemStoreDetail.Items = itemStoreDetail.Items
+                        .OrderByDescending(x => (x.SalesMinimum ?? 0) * x.StorePrice)
+                        .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
+                        .ToList();
+                    break;
+                case StoreTopSellerRankingType.HighestTotalSales:
+                    itemStoreDetail.Items = itemStoreDetail.Items
+                        .OrderByDescending(x => (x.SalesMinimum ?? 0))
+                        .ThenByDescending(x => (x.Subscriptions ?? 0))
+                        .ToList();
+                    break;
             }
 
             return Ok(itemStoreDetail);
