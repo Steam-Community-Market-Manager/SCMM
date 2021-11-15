@@ -57,12 +57,10 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMyProfile()
         {
-            var defaultProfile = new MyProfileDTO()
-            {
-                Name = "Guest",
-                Language = this.Language(),
-                Currency = this.Currency()
-            };
+            var defaultProfile = _mapper.Map<SteamProfile, MyProfileDTO>(new SteamProfile(), this);
+            defaultProfile.Name = "Guest";
+            defaultProfile.Language = this.Language();
+            defaultProfile.Currency = this.Currency();
 
             // If the user is authenticated, use their database profile
             if (User.Identity.IsAuthenticated)

@@ -44,7 +44,7 @@ public class ExternalNavigationManager
                     {
                         AppId = item.AppId.ToString(),
                         MarketHashName = item.Name
-                    });
+                    }.ToString());
                 }
                 break;
         }
