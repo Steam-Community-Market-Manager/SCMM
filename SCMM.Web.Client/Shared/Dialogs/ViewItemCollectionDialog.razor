@@ -15,9 +15,12 @@
         else
         {
             <div class="d-flex">
-                <MudTooltip Text="@Collection.CreatorName">
-                    <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="mt-2" />
-                </MudTooltip>
+                @if (!String.IsNullOrEmpty(Collection.CreatorAvatarUrl))
+                {
+                    <MudTooltip Text="@Collection.CreatorName">
+                        <MudAvatar Image="@Collection.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="mt-2" />
+                    </MudTooltip>
+                }
                 <div class="ml-4">
                     <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@Collection.Name Collection</MudText>
                     <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
