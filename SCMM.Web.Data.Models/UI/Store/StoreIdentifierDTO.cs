@@ -6,6 +6,6 @@
 
         public string Name { get; set; }
 
-        public DateTimeOffset Start { get; set; }
+        public DateTimeOffset? Start { get; set; }
     }
 }

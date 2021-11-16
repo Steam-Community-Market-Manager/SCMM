@@ -30,14 +30,23 @@ else if (StoreList.Any())
         <ChildContent>
 		    @foreach (var store in StoreList)
             {
-                <MudTabPanel ID="@store.Id" Tag="@store" Text="@GetStoreTitle(store)" />
+                <MudTabPanel ID="@store.Id" Tag="@store" Text="@GetStoreTitle(store)" Disabled="@(store.Start == null)" />
             }
 	    </ChildContent>
 	    <TabPanelHeader>
-            @if (!String.IsNullOrEmpty((context.Tag as StoreIdentifierDTO).Name))
+            @if ((context.Tag as StoreIdentifierDTO).Start != null)
             {
+                if (!String.IsNullOrEmpty((context.Tag as StoreIdentifierDTO).Name))
+                {
                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pl-2">@((context.Tag as StoreIdentifierDTO).Name)</MudText>
+                }
             }
+            @*
+            else
+            {
+                <MudChip Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Class="pl-2 mud-chip-text">New</MudChip>
+            }
+            *@
         </TabPanelHeader>
 	    <Header>
             <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" Class="pa-2 pr-4" />
@@ -496,18 +505,18 @@ else if (StoreList.Any())
 @code {
 
     private StoreIdentifierDTO[] StoreList { get; set; }
-    
+
     private StoreDetailsDTO Store { get; set; }
-    
+
     [Parameter]
     public string StoreId { get; set; }
-    
+
     private int StoreIndex { get; set; }
 
     private Exception StoreException { get; set; }
-    
+
     private ItemDescriptionWithPriceDTO LinkedItem { get; set; }
-    
+
     private double LinkedItemStorePrice { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -530,7 +539,7 @@ else if (StoreList.Any())
             await LoadStore();
         }
     }
-    
+
     private void OnSelectedStoreChanged(int index)
     {
         var oldStore = StoreList.ElementAtOrDefault(StoreIndex);
@@ -555,7 +564,7 @@ else if (StoreList.Any())
 
             // Load the store list
             StoreList = await Http.GetFromJsonWithDefaultsAsync<StoreIdentifierDTO[]>($"api/store");
-   
+
             StateHasChanged();
         }
         catch (Exception ex)
@@ -580,7 +589,7 @@ else if (StoreList.Any())
                 // Load the new store (if any)
                 Store = await Http.GetFromJsonWithDefaultsAsync<StoreDetailsDTO>($"api/store/{StoreId}");
                 StoreId = Store.Id;
-                
+
                 // The selected store should show as the active tab in the store tab list
                 StoreIndex = Array.IndexOf(StoreList, StoreList.FirstOrDefault(x => x.Id == StoreId));
 
@@ -595,7 +604,7 @@ else if (StoreList.Any())
             StateHasChanged();
         }
     }
-    
+
     private void BuyItemFromStore(StoreItemDetailsDTO item)
     {
         ExternalNavigationManager.NavigateToNewTab(new SteamStoreItemPageRequest() 
@@ -604,7 +613,7 @@ else if (StoreList.Any())
             ItemId = item.Id.ToString()
         });
     }
-    
+
     private void BuyItemFromMarket(StoreItemDetailsDTO item)
     {
         ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest() 
@@ -624,7 +633,7 @@ else if (StoreList.Any())
             });
         }
     }
-    
+
     private void ShowItemModelDialog(StoreItemDetailsDTO item)
     {
         Dialogs.Show<ViewItemModelDialog>(null, parameters: new DialogParameters()
@@ -664,7 +673,7 @@ else if (StoreList.Any())
             ["CollectionUrl"] = $"api/item/collection/{item.ItemCollection}?creatorId={item.CreatorId}"
         });
     }
-    
+
     private string GetItemIconClass(StoreItemDetailsDTO item)
     {
         var result = String.Empty;
@@ -713,10 +722,17 @@ else if (StoreList.Any())
     private string GetStoreTitle(StoreIdentifierDTO store)
     {
         var title = new StringBuilder();
-        title.Append(store.Start.ToString("MMMM d"));
-        if (store.Id == StoreId)
+        if (store.Start != null)
         {
-            title.Append(store.Start.ToString(" yyyy"));
+            title.Append(store.Start.Value.ToString("MMMM d"));
+            if (store.Id == StoreId)
+            {
+                title.Append(store.Start.Value.ToString(" yyyy"));
+            }
+        }
+        else
+        {
+            title.Append(store.Name);
         }
 
         return title.ToString().Trim();

@@ -54,8 +54,19 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.Start)
                 .ToListAsync();
 
+            var fixedStores = new List<StoreIdentifierDTO>()
+            {
+                new StoreIdentifierDTO()
+                {
+                    Id = "general",
+                    Name = "General",
+                    Start = null
+                }
+            };
             return Ok(
-                itemStores.Select(x => _mapper.Map<SteamItemStore, StoreIdentifierDTO>(x, this)).ToList()
+                fixedStores.Union(
+                    itemStores.Select(x => _mapper.Map<SteamItemStore, StoreIdentifierDTO>(x, this))
+                ).ToList()
             );
         }
 

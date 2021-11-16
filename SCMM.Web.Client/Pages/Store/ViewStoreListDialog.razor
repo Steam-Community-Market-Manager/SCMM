@@ -7,13 +7,13 @@
     </TitleContent>
     <DialogContent>
         <MudNavMenu>
-            @foreach (var group in List.GroupBy(x => x.Start.Year))
+            @foreach (var group in List.Where(x => x.Start != null).GroupBy(x => x.Start.Value.Year))
             {
                 <MudNavGroup Icon="fas fa-fw fa-calendar-alt mr-1" Title="@group.Key.ToString()">
                     @foreach (var item in group.OrderByDescending(x => x.Start))
                     {
                         <MudNavLink Href="@($"/store/{item.Id}")">
-                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" Class="no-wrap">@item.Start.ToString("MMMM d")@item.Start.GetDaySuffix()</MudText>
+                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default" Class="no-wrap">@item.Start.Value.ToString("MMMM d")@item.Start.Value.GetDaySuffix()</MudText>
                             @if(!String.IsNullOrEmpty(item.Name))
                             {
                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="">@item.Name</MudText>
