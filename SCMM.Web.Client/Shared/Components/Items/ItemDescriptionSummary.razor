@@ -8,7 +8,7 @@
     {
         <MudBadge Color="MudBlazor.Color.Primary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
             <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                <img src="@Item.IconUrl" class="icon full-width" />
+                <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
             </div>
         </MudBadge>
     }
@@ -18,14 +18,14 @@
                   Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
                   Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
             <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                <img src="@Item.IconUrl" class="icon full-width" />
+                <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
             </div>
         </MudBadge>
     }
     else
     {
         <div class="d-flex flex-grow-1 justify-center align-center hover-zoom">
-            <img src="@Item.IconUrl" class="icon full-width" />
+            <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
         </div>
     }
     <div class="ma-2 d-flex flex-column justify-center align-center text-centered">
@@ -77,7 +77,7 @@
             <MudTooltip Text="Age">
                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
                     <i class="fas fa-fw fa-clock"></i>
-                    <span>@((DateTimeOffset.Now - Item.TimeAccepted.Value).ToDurationString(showHours: false, showMinutes: false, showSeconds: false, maxGranularity: 1, zero: "today", suffix: "ago"))</span>
+                    <span>@((DateTimeOffset.Now - Item.TimeAccepted.Value).ToDurationString(showHours: false, showMinutes: false, showSeconds: false, maxGranularity: 1, zero: "just accepted", suffix: "old"))</span>
                 </MudText>
             </MudTooltip>
         }
@@ -114,6 +114,34 @@
             classNames.Add("flash highlighted");
         }
         return String.Join(' ', classNames);
+    }
+    
+    private string GetGlowClass()
+    {
+        if (Item.HasGlow == true)
+        {
+            if (!String.IsNullOrEmpty(Item.DominantColour))
+            {
+                return $"glow-transparent";
+            }
+            else
+            {
+                return $"glow";
+            }
+        }
+        return null;
+    }
+
+    private string GetGlowStyles()
+    {
+        if (Item.HasGlow == true)
+        {
+            if (!String.IsNullOrEmpty(Item.DominantColour))
+            {
+                return $"filter: drop-shadow(0px 0px 16px {Item.DominantColour});";
+            }
+        }
+        return null;
     }
     
     private void OnItemClicked()

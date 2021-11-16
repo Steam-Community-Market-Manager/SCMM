@@ -696,7 +696,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="filter">Optional search filter. Matches against item name or description</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <param name="sortBy">Sort item property name from <see cref="InventoryInvestmentItemDTO"/></param>
+        /// <param name="sortBy">Sort item property name from <see cref="ProfileInventoryInvestmentItemDTO"/></param>
         /// <param name="sortDirection">Sort item direction</param>
         /// <response code="200">Profile inventory investment information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
@@ -704,7 +704,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(AuthorizationPolicies.User)]
         [HttpGet("{id}/inventory/investment")]
-        [ProducesResponseType(typeof(PaginatedResult<InventoryInvestmentItemDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryInvestmentItemDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -747,16 +747,16 @@ namespace SCMM.Web.Server.API.Controllers
 
             switch (sortBy)
             {
-                case nameof(InventoryInvestmentItemDTO.Name):
+                case nameof(ProfileInventoryInvestmentItemDTO.Name):
                     query = query.OrderBy(x => x.Description.Name, sortDirection);
                     break;
-                case nameof(InventoryInvestmentItemDTO.BuyPrice):
+                case nameof(ProfileInventoryInvestmentItemDTO.BuyPrice):
                     query = query.OrderBy(x => x.BuyPrice, sortDirection);
                     break;
-                case nameof(InventoryInvestmentItemDTO.ResellPrice):
+                case nameof(ProfileInventoryInvestmentItemDTO.ResellPrice):
                     query = query.OrderBy(x => x.Description.MarketItem.ResellPrice, sortDirection);
                     break;
-                case nameof(InventoryInvestmentItemDTO.ResellTax):
+                case nameof(ProfileInventoryInvestmentItemDTO.ResellTax):
                     query = query.OrderBy(x => x.Description.MarketItem.ResellTax, sortDirection);
                     break;
                 case "ResellProfit":
@@ -776,7 +776,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             var results = await query.PaginateAsync(start, count,
-                x => _mapper.Map<SteamProfileInventoryItem, InventoryInvestmentItemDTO>(x, this)
+                x => _mapper.Map<SteamProfileInventoryItem, ProfileInventoryInvestmentItemDTO>(x, this)
             );
 
             return Ok(results);

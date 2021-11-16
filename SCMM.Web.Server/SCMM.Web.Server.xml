@@ -291,7 +291,7 @@
             <param name="filter">Optional search filter. Matches against item name or description</param>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <param name="sortBy">Sort item property name from <see cref="T:SCMM.Web.Data.Models.UI.Profile.Inventory.InventoryInvestmentItemDTO"/></param>
+            <param name="sortBy">Sort item property name from <see cref="T:SCMM.Web.Data.Models.UI.Profile.Inventory.ProfileInventoryInvestmentItemDTO"/></param>
             <param name="sortDirection">Sort item direction</param>
             <response code="200">Profile inventory investment information.</response>
             <response code="400">If the request data is malformed/invalid.</response>

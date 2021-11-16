@@ -1,27 +1,12 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
 using SCMM.Web.Data.Models.UI.Currency;
+using SCMM.Web.Data.Models.UI.Item;
 
 namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {
-    public class InventoryInvestmentItemDTO : IItemDescription
+    public class ProfileInventoryInvestmentItemDTO : ItemDescriptionDTO
     {
         public Guid Guid { get; set; }
-
-        public ulong Id { get; set; }
-
-        public ulong AppId { get; set; }
-
-        public string Name { get; set; }
-
-        public string ItemType { get; set; }
-
-        public string BackgroundColour { get; set; }
-
-        public string ForegroundColour { get; set; }
-
-        public string IconUrl { get; set; }
-
-        public DateTimeOffset? TimeAccepted { get; set; }
 
         public SteamProfileInventoryItemAcquisitionType AcquiredBy { get; set; }
 

@@ -22,12 +22,14 @@ namespace SCMM.Web.Server.Mappers
 
             CreateMap<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>();
 
-            CreateMap<SteamProfileInventoryItem, InventoryInvestmentItemDTO>()
+            CreateMap<SteamProfileInventoryItem, ProfileInventoryInvestmentItemDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Description.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.Description.App.SteamId))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Description.Name))
                 .ForMember(x => x.ItemType, o => o.MapFrom(p => p.Description.ItemType))
+                .ForMember(x => x.HasGlow, o => o.MapFrom(p => p.Description.HasGlow))
+                .ForMember(x => x.DominantColour, o => o.MapFrom(p => p.Description.DominantColour))
                 .ForMember(x => x.BackgroundColour, o => o.MapFrom(p => p.Description.BackgroundColour))
                 .ForMember(x => x.ForegroundColour, o => o.MapFrom(p => p.Description.ForegroundColour))
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Description.IconUrl))

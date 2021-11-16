@@ -46,7 +46,7 @@ namespace SCMM.Web.Server.Extensions
         public static T Preference<T>(this ClaimsPrincipal user, SteamDbContext db, Expression<Func<SteamProfile, T>> preference)
         {
             var profile = new SteamProfile();
-            if (!Guid.TryParse(user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Id)?.Value, out var profileId))
+            if (!Guid.TryParse(user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Id)?.Value, out var profileId) && profileId != Guid.Empty)
             {
                 profile = db.SteamProfiles.Local.FirstOrDefault(x => x.Id == profileId) ?? 
                           db.SteamProfiles.FirstOrDefault(x => x.Id == profileId);

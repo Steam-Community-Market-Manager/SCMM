@@ -38,7 +38,7 @@ public class ExternalNavigationManager
                 {
                     _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", purchasableItem.BuyNowUrl);
                 }
-                else
+                else // TODO: if (item.IsMarketable)
                 {
                     _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", new SteamMarketListingPageRequest()
                     {

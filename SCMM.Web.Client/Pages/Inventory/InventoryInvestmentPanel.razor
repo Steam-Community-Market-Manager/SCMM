@@ -20,32 +20,32 @@ else
         <HeaderContent>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The name of the item. These are a 1:1 mirror of your inventory items; If you have a stack of items, they'll show as a stack here too">
-                    <MudTableSortLabel SortLabel="Name" T="InventoryInvestmentItemDTO">Item</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="Name" T="ProfileInventoryInvestmentItemDTO">Item</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The price that you paid for the item">
-                    <MudTableSortLabel SortLabel="BuyPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Purchase Price</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="BuyPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Purchase Price</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The price you could reasonably expect to sell the item for right now by undercutting the lowest 'buy now' price">
-                    <MudTableSortLabel SortLabel="ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Market Price</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Price</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The fees Steam charge when selling items on the Steam Community Market (~12% of sale price)">
-                    <MudTableSortLabel SortLabel="ResellTax" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="ResellTax" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and Steam seller fees">
-                    <MudTableSortLabel SortLabel="ResellProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">Profit / Loss</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="ResellProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Profit / Loss</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="Your return on investment, as a percentage. 0% is break-even, a positive number is profit, negative is a loss">
-                    <MudTableSortLabel SortLabel="ResellRoI" InitialDirection="MudBlazor.SortDirection.Descending" T="InventoryInvestmentItemDTO">RoI %</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="ResellRoI" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">RoI %</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
         </HeaderContent>
@@ -294,7 +294,7 @@ else
     [Parameter]
     public bool ReadOnly { get; set; }
 
-    private MudTable<InventoryInvestmentItemDTO> Table { get; set; }
+    private MudTable<ProfileInventoryInvestmentItemDTO> Table { get; set; }
     
     private Exception LoadingError { get; set; }
     
@@ -305,16 +305,16 @@ else
             await Table.ReloadServerData();
         }    }
 
-    private async Task<TableData<InventoryInvestmentItemDTO>> LoadItems(TableState state)
+    private async Task<TableData<ProfileInventoryInvestmentItemDTO>> LoadItems(TableState state)
     {
         try
         {
             LoadingError = null;
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<InventoryInvestmentItemDTO>>(
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryInvestmentItemDTO>>(
                 $"api/profile/{SteamId}/inventory/investment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={state.Page * state.PageSize}&count={state.PageSize}&sortBy={state.SortLabel}&sortDirection={state.SortDirection}"
             );
 
-            return new TableData<InventoryInvestmentItemDTO>() 
+            return new TableData<ProfileInventoryInvestmentItemDTO>() 
             {
                 TotalItems = response.Total, 
                 Items = response.Items
@@ -332,7 +332,7 @@ else
         }
     }
     
-    private async Task UpdateItemAcquired(InventoryInvestmentItemDTO item, SteamProfileInventoryItemAcquisitionType value)
+    private async Task UpdateItemAcquired(ProfileInventoryInvestmentItemDTO item, SteamProfileInventoryItemAcquisitionType value)
     {
         try 
         {
@@ -360,7 +360,7 @@ else
         }
     }
     
-    private async Task UpdateItemPrice(InventoryInvestmentItemDTO item, string value)
+    private async Task UpdateItemPrice(ProfileInventoryInvestmentItemDTO item, string value)
     {
         var oldBuyPrice = item.BuyPrice;
         var buyPrice = value.SteamPriceAsInt(culture: CultureInfo.InvariantCulture, useDecimalShortCircuit: false);
@@ -390,7 +390,7 @@ else
         }
     }
     
-    private string GetItemClass(InventoryInvestmentItemDTO item, int index = 0)
+    private string GetItemClass(ProfileInventoryInvestmentItemDTO item, int index = 0)
     {
         if (item.BuyPrice == null || item.BuyPriceLocal <= 0 || item.ResellPrice == null || item.ResellTax == null)
         {
