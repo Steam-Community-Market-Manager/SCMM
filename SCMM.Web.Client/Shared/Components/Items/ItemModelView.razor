@@ -81,8 +81,8 @@
         }
         else if (!String.IsNullOrEmpty(Error))
         {
-            <div class="scene-controls position-top d-flex flex-row align-center justify-center full-width full-height">
-                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Error" Icon="fas fa-fw fa-exclamation-triangle" Title="Unable to load item model" SubTitle="@Error" Elevation="12" />
+            <div class="scene-controls position-top d-flex flex-row align-center justify-center full-width full-height pa-10">
+                <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Error" Icon="fas fa-fw fa-exclamation-triangle" Title="3D model viewer is unavailable" SubTitle="@Error" Elevation="12" />
             </div>
         }
 
@@ -147,8 +147,9 @@
             catch(Exception ex)
             {
                 Logger.LogError(ex, "Failed to initialise the model viewer");
-                Error = "Unable to initialise the model viewer. {ex.Message}";
+                Error = $"Unable to initialise the model viewer. {ex.Message}";
                 StateHasChanged();
+                throw ex;
             }
         }
     }
@@ -156,7 +157,7 @@
     private async Task<ThreeJsScene> CreateSceneFromWorkshopFileAsync(ElementReference sceneContainer, object sceneOptions)
     {
         var modelViewComponent = DotNetObjectReference.Create(this);
-        var threejsWrapper = await JS.InvokeAsync<IJSInProcessObjectReference>("import", "./js/threejs-wrapper.js");
+        var threejsWrapper = await JS.InvokeAsync<IJSObjectReference>("import", "./js/threejs-wrapper.js");
         var threejsScene = await threejsWrapper.InvokeAsync<IJSObjectReference>("createSceneFromWorkshopFile", sceneContainer, sceneOptions, modelViewComponent);
         return new ThreeJsScene(threejsWrapper, threejsScene, modelViewComponent);
     }
@@ -229,11 +230,11 @@
 
     public class ThreeJsScene : IAsyncDisposable
     {
-        private readonly IJSInProcessObjectReference _threejsWrapper;
+        private readonly IJSObjectReference _threejsWrapper;
         private readonly IJSObjectReference _threejsScene;
         private readonly DotNetObjectReference<ItemModelView> _modelViewComponent;
         
-        public ThreeJsScene(IJSInProcessObjectReference threejsWrapper, IJSObjectReference threejsScene, DotNetObjectReference<ItemModelView> modelViewComponent)
+        public ThreeJsScene(IJSObjectReference threejsWrapper, IJSObjectReference threejsScene, DotNetObjectReference<ItemModelView> modelViewComponent)
         {
             _threejsWrapper = threejsWrapper;
             _threejsScene = threejsScene;
