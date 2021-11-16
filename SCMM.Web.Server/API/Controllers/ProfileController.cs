@@ -502,11 +502,12 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
+            var showDrops = this.User.Preference(_db, x => x.ShowItemDrops);
             var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
-                .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
+                .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
                 .Include(x => x.Description.StoreItem)
@@ -584,10 +585,11 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("No item collections found");
             }
 
+            var showDrops = this.User.Preference(_db, x => x.ShowItemDrops);
             var itemCollections = profileItemsInCollection.Select(x => x.ItemCollection).Distinct().ToArray();
             var profileCollections = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => itemCollections.Contains(x.ItemCollection))
-                .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
+                .Where(x => showDrops || (!x.IsSpecialDrop && !x.IsTwitchDrop))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .ToListAsync();
@@ -596,8 +598,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .GroupBy(x => new
                 {
                     Collection = x.ItemCollection,
-                    CreatorName = x.CreatorProfile?.Name,
-                    CreatorAvatarUrl = x.CreatorProfile?.AvatarUrl
+                    CreatorName = (!x.IsSpecialDrop && !x.IsTwitchDrop) ? x.CreatorProfile?.Name : null,
+                    CreatorAvatarUrl = (!x.IsSpecialDrop && !x.IsTwitchDrop) ? x.CreatorProfile?.AvatarUrl : null
                 })
                 .Select(x => new ProfileInventoryCollectionDTO()
                 {
@@ -649,7 +651,6 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 return NotFound("Profile not found");
             }
-
 
             var profileItemMovements = await _db.SteamProfileInventoryItems
                 .Where(x => x.ProfileId == resolvedId.ProfileId)

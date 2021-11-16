@@ -44,11 +44,12 @@ namespace SCMM.Steam.API.Commands
                 Id = request.ProfileId
             });
 
+            var showDrops = (resolvedId.Profile?.ShowItemDrops ?? false);
             var inventoryItemIcons = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
-                .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
+                .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))
                 .Select(x => new
                 {
                     IconUrl = x.Description.IconUrl,

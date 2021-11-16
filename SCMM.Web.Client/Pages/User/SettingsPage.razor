@@ -195,8 +195,8 @@
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="'Free' Item Drops" 
-                                            Description="Should 'free' item drops from Twitch and Facepunch be shown when viewing item inventories.">  
-                                    <MudSwitch T="bool" Checked="@Update.ShowItemDrops" CheckedChanged="((x) => { Update.ShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.ShowItemDrops ? "Show" : "Hide")</MudSwitch>
+                                            Description="Should 'free' item drops from Twitch and Facepunch be shown when viewing item inventories and item collections.">  
+                                    <MudSwitch T="bool" Checked="@Update.ShowItemDrops" CheckedChanged="((x) => { Update.ShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0">@(Update.ShowItemDrops ? "Show" : "Hide")</MudSwitch>
                                 </Preference>
                             </MudGrid>
                         </MudCardContent>

@@ -174,19 +174,8 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
-            // Get users item sorting preferences (if any)
-            var topSellersRanking = StoreTopSellerRankingType.HighestTotalSales;
-            var profileId = this.User.Id();
-            if (profileId != default)
-            {
-                var profile = await _db.SteamProfiles.FirstOrDefaultAsync(x => x.Id == profileId);
-                if (profile != null)
-                {
-                    topSellersRanking = profile.StoreTopSellers;
-                }
-            }
-
-            // Sort items
+            // Sort items based on users preference (if an)
+            var topSellersRanking = this.User.Preference(_db, x => x.StoreTopSellers);
             switch (topSellersRanking)
             {
                 case StoreTopSellerRankingType.SteamStoreRanking:
