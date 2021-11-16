@@ -59,8 +59,8 @@ namespace SCMM.Steam.API.Queries
             return new GetStoreNextUpdateTimeResponse
             {
                 Timestamp = nextStoreUpdate,
-                TimeRemaining = nextStoreRemaining,
-                TimeDescription = nextStoreRemaining.ToDurationString(
+                TimeRemaining = nextStoreRemaining.Duration(),
+                TimeDescription = nextStoreRemaining.Duration().ToDurationString(
                     prefix: (nextStoreIsOverdue ? "overdue by" : "due in"), zero: "due now", showSeconds: false, maxGranularity: 2
                 ),
                 IsOverdue = nextStoreIsOverdue

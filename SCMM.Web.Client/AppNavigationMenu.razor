@@ -94,7 +94,7 @@ else
         if (StoreNextUpdateTime != null)
         {
             var nextStoreIsOverdue = (StoreNextUpdateTime.Value <= DateTimeOffset.Now);
-            storeUpdateTimeRemaining = (StoreNextUpdateTime.Value - DateTimeOffset.Now).ToDurationString(
+            storeUpdateTimeRemaining = (StoreNextUpdateTime.Value - DateTimeOffset.Now).Duration().ToDurationString(
                 suffix: (nextStoreIsOverdue ? "overdue" : "remaining"), zero: "due now", showSeconds: false, maxGranularity: 2
             );
         }
