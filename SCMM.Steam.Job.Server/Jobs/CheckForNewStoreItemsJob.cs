@@ -75,7 +75,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                     .OrderBy(x => x)
                     .ToList();
                 var ourStoreItemIds = db.SteamItemStores
-                    .Where(x => x.End == null)
+                    .Where(x => x.Start != null && x.End == null)
                     .OrderByDescending(x => x.Start)
                     .SelectMany(x => x.Items.Select(i => i.Item.SteamId))
                     .ToList();
@@ -91,7 +91,7 @@ namespace SCMM.Steam.Job.Server.Jobs
                 // Load all of our active stores and their items
                 var activeItemStores = db.SteamItemStores
                     .Include(x => x.ItemsThumbnail)
-                    .Where(x => x.End == null)
+                    .Where(x => x.Start != null && x.End == null)
                     .OrderByDescending(x => x.Start)
                     .Include(x => x.Items).ThenInclude(x => x.Item)
                     .Include(x => x.Items).ThenInclude(x => x.Item.Description)
@@ -261,14 +261,14 @@ namespace SCMM.Steam.Job.Server.Jobs
                     GuidId = ulong.Parse(guild.DiscordId),
                     ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
-                    Title = $"{app.Name} Store - {store.Start.ToString("yyyy MMMM d")}{store.Start.GetDaySuffix()}",
+                    Title = $"{app.Name} Store - {store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}",
                     Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
                     Fields = newStoreItems.ToDictionary(
                         x => x.Item?.Description?.Name,
                         x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
                     FieldsInline = true,
-                    Url = $"{_configuration.GetWebsiteUrl()}/store/{store.Start.ToString(Constants.SCMMStoreIdDateFormat)}",
+                    Url = $"{_configuration.GetWebsiteUrl()}/store/{store.Start.Value.ToString(Constants.SCMMStoreIdDateFormat)}",
                     ThumbnailUrl = app.IconUrl,
                     ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}",
                     Colour = app.PrimaryColor

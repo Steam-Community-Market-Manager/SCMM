@@ -30,7 +30,7 @@ else if (StoreList.Any())
         <ChildContent>
 		    @foreach (var store in StoreList)
             {
-                <MudTabPanel ID="@store.Id" Tag="@store" Text="@GetStoreTitle(store)" Disabled="@(store.Start == null)" />
+                <MudTabPanel ID="@store.Id" Tag="@store" Text="@GetStoreTitle(store)" />
             }
 	    </ChildContent>
 	    <TabPanelHeader>
@@ -38,21 +38,19 @@ else if (StoreList.Any())
             {
                 if (!String.IsNullOrEmpty((context.Tag as StoreIdentifierDTO).Name))
                 {
-                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pl-2">@((context.Tag as StoreIdentifierDTO).Name)</MudText>
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pl-2">@((context.Tag as StoreIdentifierDTO).Name)</MudText>
                 }
             }
-            @*
             else
             {
-                <MudChip Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Class="pl-2 mud-chip-text">New</MudChip>
+                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pl-2"><i class="fas fa-thumbtack"></i></MudText>
             }
-            *@
         </TabPanelHeader>
 	    <Header>
             <MudIconButton Size="MudBlazor.Size.Small" Icon="fa fa-fw fa-history" OnClick="@(() => ShowStoreListDialog(StoreList))" Class="pa-2 pr-4" />
 	    </Header>
     </MudTabs>
-    <PageContainer Title="@(Store != null ? $"Store - {Store.Start.ToString("d")}" : "Store")" Class="mb-6 ml-6 mr-6">
+    <PageContainer Title="@(Store != null ? $"Store - {Store.Start?.ToString("d") ?? Store.Name}" : "Store")" Class="mb-6 ml-6 mr-6">
 
         <MudGrid Spacing="2">
             @if (Store == null)
@@ -80,9 +78,12 @@ else if (StoreList.Any())
                     }
                 }
                 
-                <MudItem xs="12">
-                    <StoreAnalyticsPanel Store="@Store" />
-                </MudItem>
+                @if (Store.Start != null)
+                {
+                    <MudItem xs="12">
+                        <StoreAnalyticsPanel Store="@Store" />
+                    </MudItem>
+                }
                 
                 @if (State.IsInRole(Roles.Administrator) || (Store.IsDraft && State.IsInRole(Roles.Contributor)))
                 {
@@ -108,14 +109,10 @@ else if (StoreList.Any())
 
                 @if (!Store.Items.Any())
                 {
-                    <MudItem xs="12" sm="6" lg="3">
+                    <MudItem xs="12">
                         <MudPaper Outlined="true" Class="d-flex flex-column justify-center align-center full-height pa-4">
                             <TumbleWeed />
-                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">No items found!</MudText>
-                            @if (State.IsInRole(Roles.Administrator) || (Store.IsDraft && State.IsInRole(Roles.Contributor)))
-                            {
-                                <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can help by contributing a suggestion.</MudText>
-                            }
+                            <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">empty, check back later</MudText>
                         </MudPaper>
                     </MudItem>
                 }
@@ -375,9 +372,9 @@ else if (StoreList.Any())
                                                         }
                                                         else
                                                         {
-                                                            @if (item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0)
+                                                            @if (item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0 && Store.Start != null)
                                                             {
-                                                                <span>This item <strong>cannot</strong> currently be listed on the Steam Community Market once purchased, but <strong>probably</strong> will be marketable when the next store is released in about @((Store.Start.AddDays(7) - DateTimeOffset.Now).ToDurationString(showMinutes: false, showSeconds: false, maxGranularity: 2)) from now.</span>
+                                                                <span>This item <strong>cannot</strong> currently be listed on the Steam Community Market once purchased, but <strong>probably</strong> will be marketable when the next store is released in about @((Store.Start.Value.AddDays(7) - DateTimeOffset.Now).ToDurationString(showMinutes: false, showSeconds: false, maxGranularity: 2)) from now.</span>
                                                                 <span>This is a common Steam issue with some store items and it generally fixes itself when the store changes. If you have ever noticed that some items are available on the market early but others are not, this is the reason why.</span>
                                                             }
                                                             else

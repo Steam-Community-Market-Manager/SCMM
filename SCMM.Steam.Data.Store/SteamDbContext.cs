@@ -120,7 +120,7 @@ namespace SCMM.Steam.Data.Store
                 .HasKey(x => new { x.CurrencyId, x.Timestamp });
 
             builder.Entity<SteamItemStore>()
-                .HasIndex(x => new { x.AppId, x.Start, x.End })
+                .HasIndex(x => new { x.AppId, x.Start, x.End, x.Name })
                 .IsUnique(true);
             builder.Entity<SteamItemStore>()
                 .OwnsOne(x => x.Media);

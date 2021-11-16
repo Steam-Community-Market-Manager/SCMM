@@ -512,7 +512,7 @@
             <summary>
             Get item store information at a specific date
             </summary>
-            <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
+            <param name="id">Store GUID, Name, or UTC start date time (formatted as <code>yyyy-MM-dd-HHmm</code>).</param>
             <returns>The item store details</returns>
             <remarks>
             If there are multiple active stores at the specified date time, only the most recent will be returned.

@@ -93,7 +93,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
             // Display a countdown until the next store update using the last cached timestamp
             var nextStoreIsOverdue = (_statusNextStoreUpdate <= DateTimeOffset.Now);
             var nextStoreTimeRemaining = (_statusNextStoreUpdate - DateTimeOffset.Now);
-            var nextStoreTimeDescription = nextStoreTimeRemaining.ToDurationString(
+            var nextStoreTimeDescription = nextStoreTimeRemaining.Duration().ToDurationString(
                 prefix: (nextStoreIsOverdue ? "overdue by" : "due in"), zero: "due now", showSeconds: false, maxGranularity: 2
             );
 

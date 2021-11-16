@@ -48,7 +48,7 @@ public class CheckNewYouTubeStoreVideos
         foreach (var app in steamApps)
         {
             var activeItemStores = await _db.SteamItemStores
-                .Where(x => x.End == null)
+                .Where(x => x.Start != null && x.End == null)
                 .OrderByDescending(x => x.Start)
                 .ToListAsync();
 
@@ -69,11 +69,11 @@ public class CheckNewYouTubeStoreVideos
                         */
 
                         // Find the earliest video that matches our store data period.
-                        logger.LogInformation($"Checking channel (id: {channel.ChannelId}) for new store videos since {itemStore.Start.UtcDateTime}...");
+                        logger.LogInformation($"Checking channel (id: {channel.ChannelId}) for new store videos since {itemStore.Start.Value.UtcDateTime}...");
                         var videos = await _googleClient.ListChannelVideosAsync(channel.ChannelId, GoogleClient.PageMaxResults);
                         var firstStoreVideo = videos
                             .Where(x => Regex.IsMatch(x.Title, channel.Query, RegexOptions.IgnoreCase))
-                            .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.UtcDateTime && x.PublishedAt.Value.UtcDateTime <= itemStore.Start.UtcDateTime.AddDays(7))
+                            .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.Value.UtcDateTime && x.PublishedAt.Value.UtcDateTime <= itemStore.Start.Value.UtcDateTime.AddDays(7))
                             .OrderBy(x => x.PublishedAt.Value)
                             .FirstOrDefault();
 
@@ -108,17 +108,17 @@ public class CheckNewYouTubeStoreVideos
 
                 if (newMedia.Any())
                 {
-                    logger.LogInformation($"{newMedia.Count} new video(s) were found for store {itemStore.Start.UtcDateTime}");
+                    logger.LogInformation($"{newMedia.Count} new video(s) were found for store {itemStore.Start.Value.UtcDateTime}");
                     itemStore.Media = new PersistableStringCollection(
                         itemStore.Media.Union(newMedia.Select(x => x.Value))
                     );
 
                     _db.SaveChanges();
-                    logger.LogInformation($"{itemStore.Media.Count} total video(s) are now recorded for store {itemStore.Start.UtcDateTime}");
+                    logger.LogInformation($"{itemStore.Media.Count} total video(s) are now recorded for store {itemStore.Start.Value.UtcDateTime}");
                 }
                 else
                 {
-                    logger.LogInformation($"No new videos were found for store {itemStore.Start.UtcDateTime}");
+                    logger.LogInformation($"No new videos were found for store {itemStore.Start.Value.UtcDateTime}");
                 }
             }
         }

@@ -16,11 +16,11 @@ namespace SCMM.Web.Server.Mappers
             var config = new ConfigurationManager().AddJsonFile("appsettings.json").Build();
 
             CreateMap<SteamItemStore, StoreIdentifierDTO>()
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)));
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start != null ? p.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : p.Name.ToLower()));
 
             CreateMap<SteamItemStore, StoreDetailsDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
-                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)))
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Start != null ? p.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : p.Name.ToLower()))
                 .ForMember(x => x.ItemsMosaicUrl, o => o.MapFrom(p => p.ItemsThumbnailId != null ? $"{config.GetWebsiteUrl()}/api/image/{p.ItemsThumbnailId}" : null))
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
 
@@ -72,6 +72,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
 
             CreateMap<SteamStoreItemItemStore, ItemStoreInstanceDTO>()
+                .ForMember(x => x.Id, o => o.MapFrom(p => p.Store.Start != null ? p.Store.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : p.Store.Name.ToLower()))
                 .ForMember(x => x.Date, o => o.MapFrom(p => p.Store.Start))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Store.Name))
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyTable(p => p.Prices));

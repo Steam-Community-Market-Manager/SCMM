@@ -51,22 +51,12 @@ namespace SCMM.Web.Server.API.Controllers
             var itemStores = await _db.SteamItemStores
                 .AsNoTracking()
                 .Where(x => x.App.SteamId == appId)
-                .OrderByDescending(x => x.Start)
+                .OrderByDescending(x => x.Start == null)
+                .ThenByDescending(x => x.Start)
                 .ToListAsync();
 
-            var fixedStores = new List<StoreIdentifierDTO>()
-            {
-                new StoreIdentifierDTO()
-                {
-                    Id = "general",
-                    Name = "General",
-                    Start = null
-                }
-            };
             return Ok(
-                fixedStores.Union(
-                    itemStores.Select(x => _mapper.Map<SteamItemStore, StoreIdentifierDTO>(x, this))
-                ).ToList()
+                itemStores.Select(x => _mapper.Map<SteamItemStore, StoreIdentifierDTO>(x, this)).ToList()
             );
         }
 
@@ -94,7 +84,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// Get item store information at a specific date
         /// </summary>
-        /// <param name="dateTime">UTC date time to load the item store for. Formatted as <code>yyyy-MM-dd-HHmm</code>.</param>
+        /// <param name="id">Store GUID, Name, or UTC start date time (formatted as <code>yyyy-MM-dd-HHmm</code>).</param>
         /// <returns>The item store details</returns>
         /// <remarks>
         /// If there are multiple active stores at the specified date time, only the most recent will be returned.
@@ -105,26 +95,31 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the store cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{dateTime}")]
+        [HttpGet("{id}")]
         [ProducesResponseType(typeof(StoreDetailsDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetStore([FromRoute] string dateTime)
+        public async Task<IActionResult> GetStore([FromRoute] string id)
         {
-            var storeDate = DateTime.UtcNow;
-            if (!DateTime.TryParseExact(dateTime, Constants.SCMMStoreIdDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+            var guid = Guid.Empty;
+            var storeStartDate = DateTime.MinValue;
+            var storeName = (string)null;
+            if (!Guid.TryParse(id, out guid))
             {
-                if (!DateTime.TryParse(dateTime, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+                if (!DateTime.TryParseExact(id, Constants.SCMMStoreIdDateFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeStartDate))
                 {
-                    return BadRequest("Store date is invalid and cannot be parsed");
+                    if (!DateTime.TryParse(id, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeStartDate))
+                    {
+                        storeName = id;
+                    }
                 }
             }
 
             var itemStore = await _db.SteamItemStores
                 .AsNoTracking()
                 .OrderByDescending(x => x.Start)
-                .Where(x => storeDate >= x.Start)
+                .Where(x => (guid != Guid.Empty && guid == x.Id) || (storeStartDate > DateTime.MinValue && storeStartDate >= x.Start) || (!String.IsNullOrEmpty(storeName) && storeName == x.Name))
                 .Take(1)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.App)
@@ -423,7 +418,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Update the store price (if specified)
-            if (command.StorePrice > 0)
+            if (command.StorePrice > 0 && store.Start != null)
             {
                 // NOTE: This assumes the input price is supplied in USD
                 var currencies = await _db.SteamCurrencies.ToListAsync();
@@ -434,7 +429,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     var exchangeRate = await _db.SteamCurrencyExchangeRates
                         .Where(x => x.CurrencyId == currency.Name)
-                        .Where(x => x.Timestamp > store.Start)
+                        .Where(x => x.Timestamp > store.Start.Value)
                         .OrderBy(x => x.Timestamp)
                         .Take(1)
                         .Select(x => x.ExchangeRateMultiplier)

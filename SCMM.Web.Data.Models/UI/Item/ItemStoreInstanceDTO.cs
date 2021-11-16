@@ -2,7 +2,9 @@
 {
     public class ItemStoreInstanceDTO
     {
-        public DateTimeOffset Date { get; set; }
+        public string Id { get; set; }
+
+        public DateTimeOffset? Date { get; set; }
 
         public string Name { get; set; }
 

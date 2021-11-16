@@ -39,6 +39,11 @@ namespace SCMM.Steam.Data.Store
         public bool IsAvailable { get; set; }
 
         /// <summary>
+        /// If true, the item is only available for a limited period time. Otherwise, this item is expected to always be available (i.e. "General Item").
+        /// </summary>
+        public bool IsLimited { get; set; }
+
+        /// <summary>
         /// If true, this item has returned from a previous store release
         /// </summary>
         public bool HasReturnedToStore { get; set; }
@@ -64,6 +69,7 @@ namespace SCMM.Steam.Data.Store
                 Prices = new PersistablePriceDictionary(latestStore.Prices);
             }
 
+            RecalculateIsLimited();
             RecalculateHasReturnedToStore();
         }
 
@@ -142,6 +148,13 @@ namespace SCMM.Steam.Data.Store
             */
         }
 
+        public void RecalculateIsLimited()
+        {
+
+            // If the item doesn't belong to any fixed period stores, we assume it is a limited item
+            IsLimited = !Stores.Any(x => x.Store.Start == null);
+        }
+
         public void RecalculateHasReturnedToStore()
         {
             if (!Stores.Any())
@@ -149,9 +162,17 @@ namespace SCMM.Steam.Data.Store
                 return;
             }
 
-            var firstTimeSeen = Stores.Min(x => x.Store.Start);
-            var lastTimeSeen = Stores.Max(x => (x.Store.End ?? x.Store.Start.AddDays(7)));
-            var totalTimeInStore = Stores.Select(x => ((x.Store.End ?? x.Store.Start.AddDays(7)) - x.Store.Start)).Aggregate(TimeSpan.Zero, (t1, t2) => t1 + t2);
+            // If the item doesn't belong to any fixed period stores, it can't have returned before
+            var limitedStores = Stores.Where(x => x.Store.Start != null).ToList();
+            if (!limitedStores.Any())
+            {
+                return;
+            }
+
+            // Calculate the different between time in store vs. time in existance to see if there was any period where the item was not available
+            var firstTimeSeen = limitedStores.Min(x => x.Store.Start.Value);
+            var lastTimeSeen = limitedStores.Max(x => (x.Store.End ?? x.Store.Start.Value.AddDays(7)));
+            var totalTimeInStore = limitedStores.Select(x => ((x.Store.End ?? x.Store.Start.Value.AddDays(7)) - x.Store.Start.Value)).Aggregate(TimeSpan.Zero, (t1, t2) => t1 + t2);
             var totalTimeInExistance = (lastTimeSeen - firstTimeSeen).Subtract(TimeSpan.FromHours(1));
             HasReturnedToStore = (totalTimeInExistance > totalTimeInStore);
         }

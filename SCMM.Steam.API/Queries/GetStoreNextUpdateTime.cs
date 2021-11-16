@@ -32,8 +32,9 @@ namespace SCMM.Steam.API.Queries
         public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request)
         {
             var recentStoreStarts = await _db.SteamItemStores
+                .Where(x => x.Start != null)
                 .OrderByDescending(x => x.Start).Take(5)
-                .Select(x => x.Start)
+                .Select(x => x.Start.Value)
                 .ToListAsync();
 
             // Average out the last month or so of store start times

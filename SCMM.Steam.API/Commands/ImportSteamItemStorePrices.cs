@@ -48,8 +48,8 @@ namespace SCMM.Steam.API.Commands
 
             // Find the most appropriate store
             var store = await _db.SteamItemStores
+                .Where(x => x.Start != null && request.Timestamp >= x.Start)
                 .OrderByDescending(x => x.Start)
-                .Where(x => request.Timestamp >= x.Start)
                 .Take(1)
                 .Include(x => x.Items)
                 .FirstOrDefaultAsync();

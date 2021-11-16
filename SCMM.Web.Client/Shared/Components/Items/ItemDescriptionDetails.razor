@@ -111,7 +111,7 @@
                                     }
                                     @if(Item.Stores?.Any() == true)
                                     {
-                                        <MudLink @onclick="@(() => ViewStorePage(Item.Stores.Min(x => x.Date)))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@Item.Stores.Min(x => x.Date).ToString("d")</MudLink>
+                                        <MudLink @onclick="@(() => ViewStorePage(Item.Stores.MinBy(x => x.Date).Id))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@(Item.Stores.MinBy(x => x.Date).Date?.ToString("d") ?? Item.Stores.MinBy(x => x.Date).Name)</MudLink>
                                     }
                                     else
                                     {
@@ -463,16 +463,16 @@
                 <MudItem xs="12" sm="6" lg="12">
                     <MudPaper Outlined="true" Class="full-height">
                         <div class="d-flex flex-column align-stretch">
-                            @foreach (var store in Item.Stores.OrderByDescending(x => x.Date))
+                            @foreach (var store in Item.Stores.Where(x => x.Date != null).OrderByDescending(x => x.Date))
                             {
-                                <MudTooltip Text="@($"View the store from {store.Date.ToString("d")}")">
-                                    <div @onclick="@(() => ViewStorePage(store.Date))" class="d-flex flex-row align-center justify-start full-width clickable hover-darken px-4 py-2">
+                                <MudTooltip Text="@($"View the store from {store.Date.Value.ToString("d")}")">
+                                    <div @onclick="@(() => ViewStorePage(store.Id))" class="d-flex flex-row align-center justify-start full-width clickable hover-darken px-4 py-2">
                                         <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary">
                                             <i class="fa fa-fw fa-shopping-cart mr-4" />
                                         </MudText>
                                         <div class="d-flex flex-column">
                                             <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
-                                                <span>@store.Date.ToString("d")</span>
+                                                <span>@store.Date.Value.ToString("d")</span>
                                             </MudText>
                                             @if(!String.IsNullOrEmpty(store.Name))
                                             {
@@ -579,7 +579,7 @@
                                             <span>@price.Type.GetDisplayName()</span>
                                             @if (price.Type == PriceType.SteamStore && Item.Stores?.Any() == true)
                                             {
-                                                <span> (@Item.Stores.Max(x => x.Date).ToString("d"))</span>
+                                                <span> (@Item.Stores.Max(x => x.Date)?.ToString("d"))</span>
                                             }
                                             else if (price.Type != PriceType.SteamStore && price.QuantityAvailable > 0)
                                             {
@@ -976,10 +976,10 @@
         }
     }
     
-    private void ViewStorePage(DateTimeOffset storeDate)
+    private void ViewStorePage(string storeId)
     {
         ExternalNavigationManager.NavigateToNewTab(
-            $"/store/{storeDate.Add(TimeSpan.FromHours(1)).UtcDateTime.ToString(SCMM.Steam.Data.Models.Constants.SCMMStoreIdDateFormat)}"
+            $"/store/{storeId}"
         );
     }
     
