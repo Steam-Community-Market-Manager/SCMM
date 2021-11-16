@@ -43,7 +43,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("options")]
         [Alias("names")]
         [Summary("Show a list of all supported configuration options you can personalise for this server")]
-        public RuntimeResult GetConfigNames()
+        public async Task<RuntimeResult> GetConfigNames()
         {
             var fields = new List<EmbedFieldBuilder>();
             var configurationDefinitions = DiscordConfiguration.Definitions;

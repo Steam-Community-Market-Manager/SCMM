@@ -19,7 +19,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("help")]
         [Alias("?")]
         [Summary("Show this command help text")]
-        public RuntimeResult SayHelp()
+        public async Task<RuntimeResult> SayHelp()
         {
             var embed = new EmbedBuilder();
             var modules = _commandService.Modules
@@ -142,7 +142,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
         [Command("invite")]
         [Summary("Show the Discord invite link for this bot")]
-        public RuntimeResult SayInviteUrl()
+        public async Task<RuntimeResult> SayInviteUrl()
         {
             var name = Context.Client.CurrentUser.Username;
             return CommandResult.Success(
