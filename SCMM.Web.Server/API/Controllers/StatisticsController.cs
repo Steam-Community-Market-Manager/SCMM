@@ -517,10 +517,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Where(x => x.ItemCollection != null)
-                .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
                 .Select(x => new
                 {
-                    CreatorId = x.CreatorId,
+                    CreatorId = (!x.IsSpecialDrop && !x.IsTwitchDrop) ? x.CreatorId : null,
                     Name = x.ItemCollection,
                     IconUrl = x.IconLargeUrl,
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
