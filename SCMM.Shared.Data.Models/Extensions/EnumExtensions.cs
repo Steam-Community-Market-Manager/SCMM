@@ -9,8 +9,8 @@ namespace SCMM.Shared.Data.Models.Extensions
         {
             return enumValue.GetType()
                             .GetMember(enumValue.ToString())
-                            .First()
-                            .GetCustomAttribute<DisplayAttribute>()
+                            .FirstOrDefault()?
+                            .GetCustomAttribute<DisplayAttribute>()?
                             .GetName();
         }
     }

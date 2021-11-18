@@ -176,8 +176,9 @@
                                 </Preference>
                                 <Preference Title="Item Summary Information" 
                                             Description="What additional information to show when viewing item summaries.">
-                                    <MudSelect T="ItemInfoType"  Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true"
-                                               SelectedValues="@Update.ItemInfo" SelectedValuesChanged="((x) => { Update.ItemInfo = x; _ = UpdateProfile(); })" ToStringFunc="@((x) => x.GetDisplayName())" 
+                                    <MudSelect T="ItemInfoType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true"
+                                               AdornmentIcon="fas fa-fw fa-check-square" AdornmentColor="Color.Primary" Adornment="Adornment.End" OnAdornmentClick="@(() => UpdateProfile())"
+                                               @bind-SelectedValues="@Update.ItemInfo" ToStringFunc="@((x) => x.GetDisplayName())" OnInternalInputChanged="@((x) => UpdateProfile())"
                                                MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No additional info"))">
                                         @foreach (var value in Enum.GetValues<ItemInfoType>())
                                         {
