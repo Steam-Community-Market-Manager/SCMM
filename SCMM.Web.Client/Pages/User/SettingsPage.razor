@@ -423,6 +423,8 @@
                 options.ShowCloseIcon = false;
             });
             UpdateException = null;
+
+            await State.RefreshAsync(Http);
         }
         catch (Exception ex)
         {
