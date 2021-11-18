@@ -524,14 +524,14 @@ else if (StoreList.Any())
 
     protected override async Task OnParametersSetAsync()
     {
-        // If there is no store selected yet, navigate to the current one
+        // If there is no store selected yet, use the current one
         if (String.IsNullOrEmpty(StoreId))
         {
-            NavigationManager.NavigateTo($"/store/current");
+            StoreId = "current";
         }
 
-        // Otherwise, load the selected store details
-        else if (!String.Equals(StoreId, Store?.Id.ToString(), StringComparison.InvariantCultureIgnoreCase))
+        // If the store id has changed, reload the store details
+        if (!String.Equals(StoreId, Store?.Id.ToString(), StringComparison.InvariantCultureIgnoreCase))
         {
             await LoadStore();
         }
