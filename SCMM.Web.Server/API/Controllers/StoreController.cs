@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models.UI.Store;
 using SCMM.Web.Server.Extensions;
 using System.Globalization;
@@ -417,9 +418,10 @@ namespace SCMM.Web.Server.API.Controllers
                 );
             }
 
-            // Update the store price (if specified)
+            // Set the store item link price
             if (command.StorePrice > 0 && store.Start != null)
             {
+                // Use the user supplied store price info
                 // NOTE: This assumes the input price is supplied in USD
                 var currencies = await _db.SteamCurrencies.ToListAsync();
                 var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
@@ -442,6 +444,13 @@ namespace SCMM.Web.Server.API.Controllers
 
                 // Update the store items "latest price"
                 storeItem.UpdateLatestPrice();
+            }
+            else
+            {
+                // Copy the store price from previous store instances (if any)
+                storeItemLink.Currency = storeItem.Currency;
+                storeItemLink.Price = storeItem.Price;
+                storeItemLink.Prices = new PersistablePriceDictionary(storeItem.Prices);
             }
 
             await _db.SaveChangesAsync();

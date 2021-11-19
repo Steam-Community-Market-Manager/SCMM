@@ -4,7 +4,7 @@
 @inject AppState State
 
 <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
-    @if (PurchasableItem.BuyNowFrom == PriceType.SteamStore)
+    @if (PurchasableItem.BuyNowFrom == PriceType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)
     {
         <MudBadge Color="MudBlazor.Color.Primary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
             <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">

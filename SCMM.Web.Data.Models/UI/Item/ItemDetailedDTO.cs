@@ -45,6 +45,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public IDictionary<string, string> Tags { get; set; }
 
+        public bool IsPermanent { get; set; }
+
         public bool? HasGlow { get; set; }
 
         public bool? HasGlowSights { get; set; }
@@ -126,8 +128,6 @@ namespace SCMM.Web.Data.Models.UI.Item
         #region Store Item 
 
         public bool IsAvailableOnStore { get; set; }
-
-        public bool IsLimitedStoreItem { get; set; }
 
         public bool HasReturnedToStoreBefore { get; set; }
 

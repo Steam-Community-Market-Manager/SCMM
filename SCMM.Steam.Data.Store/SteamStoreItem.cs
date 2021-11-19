@@ -39,11 +39,6 @@ namespace SCMM.Steam.Data.Store
         public bool IsAvailable { get; set; }
 
         /// <summary>
-        /// If true, the item is only available for a limited period time. Otherwise, this item is expected to always be available (i.e. "General Item").
-        /// </summary>
-        public bool IsLimited { get; set; }
-
-        /// <summary>
         /// If true, this item has returned from a previous store release
         /// </summary>
         public bool HasReturnedToStore { get; set; }
@@ -69,7 +64,6 @@ namespace SCMM.Steam.Data.Store
                 Prices = new PersistablePriceDictionary(latestStore.Prices);
             }
 
-            RecalculateIsLimited();
             RecalculateHasReturnedToStore();
         }
 
@@ -146,13 +140,6 @@ namespace SCMM.Steam.Data.Store
             // Maximum sales should be null if we are unsure
             TotalSalesMax = (afterItem != null) ? newTotalSalesMax : null;
             */
-        }
-
-        public void RecalculateIsLimited()
-        {
-
-            // If the item doesn't belong to any fixed period stores, we assume it is a limited item
-            IsLimited = !Stores.Any(x => x.Store.Start == null);
         }
 
         public void RecalculateHasReturnedToStore()

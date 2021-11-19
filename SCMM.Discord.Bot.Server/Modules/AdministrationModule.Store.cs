@@ -15,12 +15,12 @@ namespace SCMM.Discord.Bot.Server.Modules
     public partial class AdministrationModule
     {
         [Command("set-store-name")]
-        public async Task<RuntimeResult> SetStoreNameAsync(DateTime storeDate, [Remainder] string storeName)
+        public async Task<RuntimeResult> SetStoreNameAsync(string storeId, [Remainder] string storeName)
         {
-            var itemStore = await _db.SteamItemStores
-                .Where(x => x.Start != null && storeDate >= x.Start)
+            var itemStore = _db.SteamItemStores.ToList()
+                .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
-                .FirstOrDefaultAsync();
+                .FirstOrDefault();
 
             if (itemStore != null)
             {
@@ -35,12 +35,12 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("add-store-media")]
-        public async Task<RuntimeResult> AddStoreMediaAsync(DateTime storeDate, params string[] media)
+        public async Task<RuntimeResult> AddStoreMediaAsync(string storeId, params string[] media)
         {
-            var itemStore = await _db.SteamItemStores
-                .Where(x => x.Start != null && storeDate >= x.Start)
+            var itemStore = _db.SteamItemStores.ToList()
+                .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
-                .FirstOrDefaultAsync();
+                .FirstOrDefault();
 
             if (itemStore != null)
             {
@@ -63,12 +63,12 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("remove-store-media")]
-        public async Task<RuntimeResult> RemoveStoreMediaAsync(DateTime storeDate, params string[] media)
+        public async Task<RuntimeResult> RemoveStoreMediaAsync(string storeId, params string[] media)
         {
-            var itemStore = await _db.SteamItemStores
-                .Where(x => x.Start != null && storeDate >= x.Start)
+            var itemStore = _db.SteamItemStores.ToList()
+                .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
-                .FirstOrDefaultAsync();
+                .FirstOrDefault();
 
             if (itemStore != null)
             {
@@ -91,12 +91,12 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("add-store-note")]
-        public async Task<RuntimeResult> AddStoreNoteAsync(DateTime storeDate, [Remainder] string note)
+        public async Task<RuntimeResult> AddStoreNoteAsync(string storeId, [Remainder] string note)
         {
-            var itemStore = await _db.SteamItemStores
-                .Where(x => x.Start != null && storeDate >= x.Start)
+            var itemStore = _db.SteamItemStores.ToList()
+                .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
-                .FirstOrDefaultAsync();
+                .FirstOrDefault();
 
             if (itemStore != null)
             {
@@ -115,12 +115,12 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("remove-store-note")]
-        public async Task<RuntimeResult> RemoveStoreNoteAsync(DateTime storeDate, int index = 0)
+        public async Task<RuntimeResult> RemoveStoreNoteAsync(string storeId, int index = 0)
         {
-            var itemStore = await _db.SteamItemStores
-                .Where(x => x.Start != null && storeDate >= x.Start)
+            var itemStore = _db.SteamItemStores.ToList()
+                .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
-                .FirstOrDefaultAsync();
+                .FirstOrDefault();
 
             if (itemStore != null)
             {
@@ -215,7 +215,6 @@ namespace SCMM.Discord.Bot.Server.Modules
             {
                 foreach (var item in batch)
                 {
-                    item.RecalculateIsLimited();
                     item.RecalculateHasReturnedToStore();
                 }
 

@@ -393,6 +393,22 @@ namespace SCMM.Steam.API.Commands
             // Parse asset crafting components from the description text (if available)
             if (!string.IsNullOrEmpty(assetDescription.Description))
             {
+                // Is this asset a permanent item?
+                var isPermanentDescription = @"This item will be permanently bound to your steam account";
+                if (Regex.IsMatch(assetDescription.Description, isPermanentDescription))
+                {
+                    assetDescription.Description = assetDescription.Description.Replace(isPermanentDescription, string.Empty).Trim();
+                    assetDescription.IsPermanent = true;
+                }
+
+                // Is this asset a glowing item?
+                var hasGlowDescription = @"This skin glows in the dark";
+                if (Regex.IsMatch(assetDescription.Description, hasGlowDescription))
+                {
+                    assetDescription.Description = assetDescription.Description.Replace(hasGlowDescription, string.Empty).Trim();
+                    assetDescription.HasGlow = true;
+                }
+
                 // Is this asset a crafting component?
                 // e.g. "Cloth can be combined to craft"
                 var craftingComponentMatchGroup = Regex.Match(assetDescription.Description, @"(.*) can be combined to craft").Groups;
@@ -441,6 +457,9 @@ namespace SCMM.Steam.API.Commands
                 {
                     assetDescription.IsCraftable = true;
                 }
+
+                // Cleanup the asset description text
+                assetDescription.Description = assetDescription.Description.Trim(' ', '.', '\t', '\n', '\r');
             }
 
             // Parse asset item type (if missing)

@@ -70,18 +70,19 @@ namespace SCMM.Steam.Job.Server.Jobs
                 }
 
                 // We want to compare the Steam item store with our most recent store
+                
                 var theirStoreItemIds = response.Data.Assets
                     .Select(x => x.Name)
                     .OrderBy(x => x)
                     .ToList();
                 var ourStoreItemIds = db.SteamItemStores
-                    .Where(x => x.Start != null && x.End == null)
+                    .Where(x => x.End == null)
                     .OrderByDescending(x => x.Start)
                     .SelectMany(x => x.Items.Select(i => i.Item.SteamId))
                     .ToList();
 
                 // If both stores contain the same items, then there is no need to update anything
-                var storesAreTheSame = (ourStoreItemIds != null && theirStoreItemIds.All(x => ourStoreItemIds.Contains(x)));
+                var storesAreTheSame = (ourStoreItemIds != null && theirStoreItemIds.All(x => ourStoreItemIds.Contains(x)) && ourStoreItemIds.All(x => theirStoreItemIds.Contains(x)));
                 if (storesAreTheSame)
                 {
                     continue;
@@ -91,13 +92,15 @@ namespace SCMM.Steam.Job.Server.Jobs
                 // Load all of our active stores and their items
                 var activeItemStores = db.SteamItemStores
                     .Include(x => x.ItemsThumbnail)
-                    .Where(x => x.Start != null && x.End == null)
+                    .Where(x => x.End == null)
                     .OrderByDescending(x => x.Start)
                     .Include(x => x.Items).ThenInclude(x => x.Item)
                     .Include(x => x.Items).ThenInclude(x => x.Item.Description)
                     .ToList();
-
-                // End any items and stores that are no longer available
+                
+                // Check if there are any items or stores that are no longer available
+                var generalItemsWereRemoved = false;
+                var limitedItemsWereRemoved = false;
                 foreach (var itemStore in activeItemStores.ToList())
                 {
                     var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
@@ -110,34 +113,49 @@ namespace SCMM.Steam.Job.Server.Jobs
                             if (missingStoreItem != null)
                             {
                                 missingStoreItem.Item.IsAvailable = false;
+                                if (missingStoreItem.Item.Description.IsPermanent)
+                                {
+                                    generalItemsWereRemoved = true;
+                                }
+                                else
+                                {
+                                    limitedItemsWereRemoved = true;
+                                }
                             }
                         }
-
-                        if (itemStore.Items.All(x => !x.Item.IsAvailable))
-                        {
-                            itemStore.End = DateTimeOffset.UtcNow;
-                            activeItemStores.Remove(itemStore);
-                        }
+                    }
+                    if (itemStore.Start != null && itemStore.Items.All(x => !x.Item.IsAvailable))
+                    {
+                        itemStore.End = DateTimeOffset.UtcNow;
+                        activeItemStores.Remove(itemStore);
                     }
                 }
 
-                // If there are no active item stores or some items were removed from the store, create a new store
-                var storeItemsWereRemoved = (ourStoreItemIds != null && ourStoreItemIds.Any(x => !theirStoreItemIds.Contains(x)));
-                var newItemStore = activeItemStores.FirstOrDefault();
-                if (newItemStore == null || storeItemsWereRemoved)
+                // Ensure that an active "general" and "limited" item store exists
+                var generalItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
+                if (generalItemStore == null)
                 {
-                    db.SteamItemStores.Add(
-                        newItemStore = new SteamItemStore()
-                        {
-                            App = app,
-                            AppId = app.Id,
-                            Start = DateTimeOffset.UtcNow
-                        }
-                    );
+                    generalItemStore = new SteamItemStore()
+                    {
+                        App = app,
+                        AppId = app.Id,
+                        Name = "General"
+                    };
+                }
+                var limitedItemStore = activeItemStores.FirstOrDefault(x => x.Start != null);
+                if (limitedItemStore == null || limitedItemsWereRemoved)
+                {
+                    limitedItemStore = new SteamItemStore()
+                    {
+                        App = app,
+                        AppId = app.Id,
+                        Start = DateTimeOffset.UtcNow
+                    };
                 }
 
-                // Add all the items to the new store
-                var newStoreItems = new List<SteamStoreItemItemStore>();
+                // Check if there are any new items to be added to the stores
+                var newGeneralStoreItems = new List<SteamStoreItemItemStore>();
+                var newLimitedStoreItems = new List<SteamStoreItemItemStore>();
                 foreach (var asset in response.Data.Assets)
                 {
                     // Ensure that the item is available in the database (create them if missing)
@@ -149,13 +167,19 @@ namespace SCMM.Steam.Job.Server.Jobs
                         continue;
                     }
 
-                    // Ensure that the item is linked to the active store
-                    if (!storeItem.Stores.Any(x => activeItemStores.Select(x => x.Id).Contains(x.StoreId)))
+                    var itemStore = (storeItem.Description.IsPermanent) ? generalItemStore : limitedItemStore;
+                    if (itemStore == null)
+                    {
+                        continue;
+                    }
+
+                    // Ensure that the item is linked to the store
+                    if (!storeItem.Stores.Any(x => x.StoreId == itemStore.Id))
                     {
                         var prices = steamService.ParseStoreItemPriceTable(asset.Prices);
                         var storeItemLink = new SteamStoreItemItemStore()
                         {
-                            Store = newItemStore,
+                            Store = itemStore,
                             Item = storeItem,
                             Currency = usdCurrency,
                             Price = prices.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
@@ -163,35 +187,70 @@ namespace SCMM.Steam.Job.Server.Jobs
                             IsPriceVerified = true
                         };
                         storeItem.Stores.Add(storeItemLink);
-                        newItemStore.Items.Add(storeItemLink);
-                        newStoreItems.Add(storeItemLink);
+                        itemStore.Items.Add(storeItemLink);
+                        if (storeItem.Description.IsPermanent)
+                        {
+                            newGeneralStoreItems.Add(storeItemLink);
+                        }
+                        else
+                        {
+                            newLimitedStoreItems.Add(storeItemLink);
+                        }
                     }
 
                     // Update the store items "latest price"
                     storeItem.UpdateLatestPrice();
                 }
 
-                // Recalculate store statistics
-                var orderedStoreItems = newItemStore.Items.OrderBy(x => x.TopSellerIndex).ToList();
-                foreach (var storeItem in orderedStoreItems)
+                // Regenerate store thumbnails (if items have changed)
+                if (newGeneralStoreItems.Any())
                 {
-                    storeItem.Item.RecalculateTotalSales(newItemStore);
-                }
-
-                // Regenerate store thumbnail (if missing)
-                if (newItemStore.ItemsThumbnail == null)
-                {
-                    var thumbnail = await GenerateStoreItemsThumbnailImage(queryProcessor, newItemStore.Items.Select(x => x.Item));
+                    if (generalItemStore.IsTransient)
+                    {
+                        db.SteamItemStores.Add(generalItemStore);
+                    }
+                    if (generalItemStore.ItemsThumbnail != null)
+                    {
+                        db.FileData.Remove(generalItemStore.ItemsThumbnail);
+                        generalItemStore.ItemsThumbnail = null;
+                        generalItemStore.ItemsThumbnailId = null;
+                    }
+                    var thumbnail = await GenerateStoreItemsThumbnailImage(queryProcessor, generalItemStore.Items.Select(x => x.Item));
                     if (thumbnail != null)
                     {
-                        newItemStore.ItemsThumbnail = thumbnail;
+                        generalItemStore.ItemsThumbnail = thumbnail;
+                    }
+                }
+                if (newLimitedStoreItems.Any())
+                {
+                    if (limitedItemStore.IsTransient)
+                    {
+                        db.SteamItemStores.Add(limitedItemStore);
+                    }
+                    if (limitedItemStore.ItemsThumbnail != null)
+                    {
+                        db.FileData.Remove(limitedItemStore.ItemsThumbnail);
+                        limitedItemStore.ItemsThumbnail = null;
+                        limitedItemStore.ItemsThumbnailId = null;
+                    }
+                    var thumbnail = await GenerateStoreItemsThumbnailImage(queryProcessor, limitedItemStore.Items.Select(x => x.Item));
+                    if (thumbnail != null)
+                    {
+                        limitedItemStore.ItemsThumbnail = thumbnail;
                     }
                 }
 
                 db.SaveChanges();
 
                 // Send out a broadcast about any "new" items that weren't already in our store
-                await BroadcastNewStoreItemsNotification(commandProcessor, db, app, newItemStore, newStoreItems, currencies);
+                if (newGeneralStoreItems.Any())
+                {
+                    await BroadcastNewStoreItemsNotification(commandProcessor, db, app, generalItemStore, newGeneralStoreItems, currencies);
+                }
+                if (newLimitedStoreItems.Any())
+                {
+                    await BroadcastNewStoreItemsNotification(commandProcessor, db, app, limitedItemStore, newLimitedStoreItems, currencies);
+                }
 
                 // TODO: Wait 1min, then trigger CheckForNewMarketItemsJob
             }
@@ -256,19 +315,27 @@ namespace SCMM.Steam.Job.Server.Jobs
                     filteredCurrencies = currencies.Where(x => x.Name == Constants.SteamCurrencyUSD).ToList();
                 }
 
+                var storeId = (store.Start != null)
+                    ? store.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)
+                    : store.Name.ToLower();
+
+                var storeName = (store.Start != null)
+                    ? $"{store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}"
+                    : store.Name;
+
                 await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuidId = ulong.Parse(guild.DiscordId),
                     ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
-                    Title = $"{app.Name} Store - {store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}",
-                    Description = $"{newStoreItems.Count()} new item(s) have been added to the {app.Name} store.",
+                    Title = $"{app.Name} Store - {storeName}",
+                    Description = $"{newStoreItems.Count()} new item(s) have been added to the store.",
                     Fields = newStoreItems.ToDictionary(
                         x => x.Item?.Description?.Name,
                         x => GenerateStoreItemPriceList(x, filteredCurrencies)
                     ),
                     FieldsInline = true,
-                    Url = $"{_configuration.GetWebsiteUrl()}/store/{store.Start.Value.ToString(Constants.SCMMStoreIdDateFormat)}",
+                    Url = $"{_configuration.GetWebsiteUrl()}/store/{storeId}",
                     ThumbnailUrl = app.IconUrl,
                     ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}",
                     Colour = app.PrimaryColor

@@ -38,6 +38,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string Description { get; set; }
 
+        public bool IsPermanent { get; set; }
+
         public bool? HasGlow { get; set; }
 
         public bool? HasGlowSights { get; set; }

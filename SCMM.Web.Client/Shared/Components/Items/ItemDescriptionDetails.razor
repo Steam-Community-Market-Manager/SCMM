@@ -39,28 +39,31 @@
                                 <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} icon full-width pa-8")" style="@GetGlowStyles()" />
                             </div>
                         }
-                        <div class="d-flex align-center justify-center full-width item-preview-controls">
-                            <MudButtonGroup Color="Color.Default" Size="Size.Medium" Variant="Variant.Filled" DisableElevation="true">
-                                <MudTooltip Text="View the workshop page">
-                                    <MudButton OnClick="@ViewItemWorkshopPage" Disabled="Item.WorkshopFileId == null">
-                                        <i class="fas fa-fw fa-tools mr-1"></i>
-                                        <span class="no-wrap">Workshop</span>
-                                    </MudButton>
-								</MudTooltip>
-                                <MudTooltip Text="View an interactive 3D render of this item">
-                                    <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
-                                        <i class="fab fa-fw fa-unity mr-1"></i>
-                                        <span class="no-wrap">3D</span>
-                                    </MudButton>
-								</MudTooltip>
-                                <MudTooltip Text="Download the workshop file for this item">
-                                    <MudButton OnClick="@DownloadItemWorkshopFile" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
-                                        <i class="fas fa-fw fa-download"></i>
-                                        <span class="no-wrap">&nbsp;</span>
-                                    </MudButton>
-								</MudTooltip>
-                            </MudButtonGroup>
-                        </div>
+                        @if (Item.WorkshopFileId != null)
+                        {
+                            <div class="d-flex align-center justify-center full-width item-preview-controls">
+                                <MudButtonGroup Color="Color.Default" Size="Size.Medium" Variant="Variant.Filled" DisableElevation="true">
+                                    <MudTooltip Text="View the workshop page">
+                                        <MudButton OnClick="@ViewItemWorkshopPage" Disabled="Item.WorkshopFileId == null">
+                                            <i class="fas fa-fw fa-tools mr-1"></i>
+                                            <span class="no-wrap">Workshop</span>
+                                        </MudButton>
+								    </MudTooltip>
+                                    <MudTooltip Text="View an interactive 3D render of this item">
+                                        <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
+                                            <i class="fab fa-fw fa-unity mr-1"></i>
+                                            <span class="no-wrap">3D</span>
+                                        </MudButton>
+								    </MudTooltip>
+                                    <MudTooltip Text="Download the workshop file for this item">
+                                        <MudButton OnClick="@DownloadItemWorkshopFile" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
+                                            <i class="fas fa-fw fa-download"></i>
+                                            <span class="no-wrap">&nbsp;</span>
+                                        </MudButton>
+								    </MudTooltip>
+                                </MudButtonGroup>
+                            </div>
+                        }
                     </div>
 				</MudPaper>
 			</MudItem>
@@ -111,7 +114,7 @@
                                     }
                                     @if(Item.Stores?.Any() == true)
                                     {
-                                        <MudLink @onclick="@(() => ViewStorePage(Item.Stores.MinBy(x => x.Date).Id))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@(Item.Stores.MinBy(x => x.Date).Date?.ToString("d") ?? Item.Stores.MinBy(x => x.Date).Name)</MudLink>
+                                        <MudLink @onclick="@(() => ViewStorePage(Item.Stores.MinBy(x => x.Date).Id))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@((Item.Stores.MinBy(x => x.Date).Date ?? Item.TimeAccepted)?.ToString("d"))</MudLink>
                                     }
                                     else
                                     {
@@ -251,6 +254,12 @@
                         {
                             <MudTooltip Text="@($"This item has been trade and market banned due to {Item.BanReason.FirstCharToLower()}")">
                                 <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Class="mud-chip-outlined" />
+                            </MudTooltip>
+                        }
+                        @if (Item.IsPermanent == true)
+                        {
+                            <MudTooltip Text="@($"This item will be permanently bound to your Steam account after purchase and it cannot be traded or sold")">
+                                <MudChip Size="MudBlazor.Size.Small" Text="Permanent" Icon="fas fa-fw fa-thumbtack mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                             </MudTooltip>
                         }
                         <MudTooltip>
@@ -579,7 +588,7 @@
                                             <span>@price.Type.GetDisplayName()</span>
                                             @if (price.Type == PriceType.SteamStore && Item.Stores?.Any() == true)
                                             {
-                                                <span> (@Item.Stores.Max(x => x.Date)?.ToString("d"))</span>
+                                                <span> (@(Item.Stores.Max(x => x.Date)?.ToString("d") ?? Item.Stores.MaxBy(x => x.Date)?.Name))</span>
                                             }
                                             else if (price.Type != PriceType.SteamStore && price.QuantityAvailable > 0)
                                             {

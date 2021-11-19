@@ -90,7 +90,7 @@ else if (StoreList.Any())
                     <MudItem xs="12">
                         <MudPaper Outlined="true" Class="d-flex flex-row justify-center align-center full-height pa-2">
                             <MudAutocomplete T="ItemDescriptionWithPriceDTO" @bind-Value="LinkedItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" 
-                                             Placeholder="Suggest an item for this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2">
+                                             Placeholder=Add an item to this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2">
                                 <ItemTemplate Context="item">
                                     <div class="d-flex flex-row justify-start align-center">
                                         <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
@@ -98,8 +98,11 @@ else if (StoreList.Any())
                                     </div>
                                 </ItemTemplate>
                             </MudAutocomplete>
-                            <MudNumericField @bind-Value="LinkedItemStorePrice" Format="F2" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-dollar-sign" Variant="Variant.Outlined" Margin="Margin.Dense" 
-                                             HideSpinButtons="true" Class="flex-grow-0 flex-shrink-0 pl-1 pr-2" />
+                            @if (Store.Start != null)
+                            {
+                                <MudNumericField @bind-Value="LinkedItemStorePrice" Format="F2" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-dollar-sign" Variant="Variant.Outlined" Margin="Margin.Dense" 
+                                                 HideSpinButtons="true" Class="flex-grow-0 flex-shrink-0 pl-1 pr-2" />
+                            }
                             <MudTooltip Text="Add this item to the store">
                                 <MudButton OnClick="@LinkItem" Variant="Variant.Text" Color="Color.Primary" StartIcon="fas fa-fw fa-plus" Class="flex-grow-0 flex-shrink-0 pa-2">Add</MudButton>
                             </MudTooltip>
@@ -259,20 +262,26 @@ else if (StoreList.Any())
                                             }
                                             @if (item.IsMarketable && !item.IsBanned && !item.IsStillAvailableFromStore)
                                             {
-                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                                    <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
-                                                    <span>
-                                                        <span>@item.MarketDemand24hrs.Value.ToQuantityString() demand</span>
-                                                        <span class="mud-secondary-text"> from the market (last 24hrs)</span>
-                                                    </span>
-                                                </MudText>
-                                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                                    <i class="fas fa-fw fa-parachute-box mud-secondary-text"></i>
-                                                    <span>
-                                                        <span>@item.MarketSupply.Value.ToQuantityString() supply</span>
-                                                        <span class="mud-secondary-text"> on the market</span>
-                                                    </span>
-                                                </MudText>
+                                                @if (item.MarketDemand24hrs != null)
+                                                {
+                                                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                        <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
+                                                        <span>
+                                                            <span>@item.MarketDemand24hrs.Value.ToQuantityString() demand</span>
+                                                            <span class="mud-secondary-text"> from the market (last 24hrs)</span>
+                                                        </span>
+                                                    </MudText>
+                                                }
+                                                @if (item.MarketSupply != null)
+                                                {
+                                                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                                            <i class="fas fa-fw fa-parachute-box mud-secondary-text"></i>
+                                                            <span>
+                                                                <span>@item.MarketSupply.Value.ToQuantityString() supply</span>
+                                                                <span class="mud-secondary-text"> on the market</span>
+                                                            </span>
+                                                        </MudText>
+                                                }
                                             }
                                             @if (item.MarketRankTotal > 0 && !item.IsBanned)
                                             {
@@ -323,6 +332,12 @@ else if (StoreList.Any())
                                                 {
                                                     <MudTooltip Text="@($"This item has been trade and market banned due to {item.BanReason.FirstCharToLower()}")">
                                                         <MudChip Size="MudBlazor.Size.Small" Text="Banned" Icon="fas fa-fw fa-ban mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Class="mud-chip-outlined" />
+                                                    </MudTooltip>
+                                                }
+                                                @if (item.IsPermanent == true)
+                                                {
+                                                    <MudTooltip Text="@($"This item will be permanently bound to your Steam account after purchase and it cannot be traded or sold")">
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="Permanent" Icon="fas fa-fw fa-thumbtack mr-2" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
                                                     </MudTooltip>
                                                 }
                                                 <MudTooltip>

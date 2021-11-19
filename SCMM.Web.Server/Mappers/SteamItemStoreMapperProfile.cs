@@ -39,6 +39,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.ItemCollection, o => o.MapFrom(p => p.Item.Description.ItemCollection))
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Item.Description.Name))
                 .ForMember(x => x.Description, o => o.MapFrom(p => p.Item.Description.Description))
+                .ForMember(x => x.IsPermanent, o => o.MapFrom(p => p.Item.Description.IsPermanent))
                 .ForMember(x => x.HasGlow, o => o.MapFrom(p => p.Item.Description.HasGlow))
                 .ForMember(x => x.HasGlowSights, o => o.MapFrom(p => p.Item.Description.HasGlowSights))
                 .ForMember(x => x.GlowRatio, o => o.MapFrom(p => Math.Round((p.Item.Description.GlowRatio ?? 0) * 100, 0)))

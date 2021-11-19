@@ -77,6 +77,11 @@ namespace SCMM.Steam.Data.Store
         [Required]
         public PersistableStringDictionary Tags { get; set; }
 
+        /// <summary>
+        /// If true, the item is from the "general" (permanent) item store. Otherwise, it is assumed to be a limited time item.
+        /// </summary>
+        public bool IsPermanent { get; set; }
+
         public bool? HasGlow { get; set; }
 
         /// <summary>
