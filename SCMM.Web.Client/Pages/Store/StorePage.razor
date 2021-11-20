@@ -90,7 +90,7 @@ else if (StoreList.Any())
                     <MudItem xs="12">
                         <MudPaper Outlined="true" Class="d-flex flex-row justify-center align-center full-height pa-2">
                             <MudAutocomplete T="ItemDescriptionWithPriceDTO" @bind-Value="LinkedItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" 
-                                             Placeholder=Add an item to this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2">
+                                             Placeholder="Add an item to this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2">
                                 <ItemTemplate Context="item">
                                     <div class="d-flex flex-row justify-start align-center">
                                         <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
