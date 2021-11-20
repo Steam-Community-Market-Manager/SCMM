@@ -41,4 +41,10 @@
     <ProjectReference Include="..\SCMM.Web.Data.Models\SCMM.Web.Data.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="runtimeconfig.template.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
