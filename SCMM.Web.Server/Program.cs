@@ -177,7 +177,7 @@ public static class WebApplicationExtensions
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor(options =>
         {
-            options.DetailedErrors = builder.Environment.IsDevelopment();
+            options.DetailedErrors = true;
         });
 
         // Auto-documentation
