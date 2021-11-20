@@ -1,4 +1,3 @@
-using BlazorApplicationInsights;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
@@ -47,8 +46,6 @@ public static class WebAssemblyHostExtensions
         services.AddScoped<ExternalNavigationManager>();
         services.AddScoped<DocumentManager>();
         services.AddScoped<UpdateManager>();
-
-        services.AddBlazorApplicationInsights();
 
         services.AddMudServices(config =>
         {

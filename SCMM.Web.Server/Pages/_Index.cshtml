@@ -6,7 +6,7 @@
 @using SCMM.Web.Data.Models
 @inject ICookieManager CookieManager
 @{
-    var runtime = await CookieManager.GetAsync<RuntimeType>("Runtime", RuntimeType.WebAssembly);
+    var runtime = RuntimeType.Server;// await CookieManager.GetAsync<RuntimeType>("Runtime", RuntimeType.Server);
     var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssembly);
     var prerenderMode = (runtime == RuntimeType.Server ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered);
 }
@@ -49,7 +49,11 @@
             crossOrigin: "anonymous", // When supplied this will add the provided value as the cross origin attribute on the script tag
             // onInit: null, // Once the application insights instance has loaded and initialized this callback function will be called with 1 argument -- the sdk instance (DO NOT ADD anything to the sdk.queue -- As they won't get called)
             cfg: { // Application Insights Configuration
-                instrumentationKey: "2b12c131-a146-4333-b11c-0abdc79c5c54"
+                instrumentationKey: "2b12c131-a146-4333-b11c-0abdc79c5c54",
+                disableFetchTracking: false,
+                enableCorsCorrelation: true,
+                enableRequestHeaderTracking: true,
+                enableResponseHeaderTracking: true
             }
         });
     </script>
@@ -193,7 +197,6 @@ else
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
 }
 
-    <script src="_content/BlazorApplicationInsights/JsInterop.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js" integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww==" crossorigin="anonymous"></script>
     <script src="https://cdn.syncfusion.com/blazor/syncfusion-blazor-base.min.js"></script>
