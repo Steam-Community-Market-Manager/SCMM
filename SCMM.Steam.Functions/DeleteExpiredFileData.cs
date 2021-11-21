@@ -16,7 +16,7 @@ public class DeleteExpiredFileData
     }
 
     [Function("Delete-Expired-File-Data")]
-    public async Task Run([TimerTrigger("0 0/15 * * * *")] /* every 15mins */ object timer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0/5 * * * *")] /* every 5mins */ object timer, FunctionContext context)
     {
         var logger = context.GetLogger("Delete-Expired-File-Data");
 
@@ -25,7 +25,7 @@ public class DeleteExpiredFileData
         var expiredFileData = await _db.FileData
             .Where(x => x.ExpiresOn != null && x.ExpiresOn <= now)
             .OrderByDescending(x => x.ExpiresOn)
-            .Take(100) // batch 100 at a time to avoid timing out
+            .Take(10) // batch 10 at a time to avoid timing out
             .ToListAsync();
 
         if (expiredFileData?.Any() == true)
