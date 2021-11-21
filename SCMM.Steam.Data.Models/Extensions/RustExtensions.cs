@@ -2,7 +2,7 @@
 {
     public static class RustExtensions
     {
-        public static string ToRustItemId(this string itemType)
+        public static string ToRustItemShortName(this string itemType)
         {
             switch (itemType)
             {

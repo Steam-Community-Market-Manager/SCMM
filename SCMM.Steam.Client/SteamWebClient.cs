@@ -94,7 +94,8 @@ namespace SCMM.Steam.Client
             where TRequest : SteamRequest
         {
             var response = await GetWithRetry(request);
-            return await response.Content.ReadAsStringAsync();
+            var text = await response.Content.ReadAsStringAsync();
+            return text?.Trim('\0'); // Steam has been known to sometimes put a null character at the end of the response :\
         }
 
         public async Task<XElement> GetHtml<TRequest>(TRequest request)

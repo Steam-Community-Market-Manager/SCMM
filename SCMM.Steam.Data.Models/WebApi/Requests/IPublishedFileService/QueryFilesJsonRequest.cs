@@ -1,5 +1,8 @@
 ﻿namespace SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService
 {
+    /// <summary>
+    /// https://steamapi.xpaw.me/#IPublishedFileService/QueryFiles
+    /// </summary>
     public class QueryFilesJsonRequest : SteamRequest
     {
         public const int QueryTypeRankedByTextSearch = 12;
@@ -34,8 +37,14 @@
 
         public bool ReturnPlaytimeStats { get; set; }
 
+        public bool ReturnDetails { get; set; }
+
+        public bool ReturnReactions { get; set; }
+
+        public bool StripDescriptionBBCode { get; set; }
+
         public override Uri Uri => new Uri(
-            $"{Constants.SteamWebApiUrl}/IPublishedFileService/QueryFiles/v1/?key={Uri.EscapeDataString(Key)}&query_type={QueryType}&page={Page}&numperpage={NumPerPage}&appid={AppId}&search_text={Uri.EscapeDataString(SearchText)}&return_vote_data={(ReturnVoteData ? 1 : 0)}&return_tags={(ReturnTags ? 1 : 0)}&return_kv_tags={(ReturnKVTags ? 1 : 0)}&return_previews={(ReturnPreviews ? 1 : 0)}&return_children={(ReturnChildren ? 1 : 0)}&return_short_description={(ReturnShortDescription ? 1 : 0)}&return_for_sale_data={(ReturnForSaleData ? 1 : 0)}&return_metadata={(ReturnMetadata ? 1 : 0)}&return_playtime_stats={(ReturnPlaytimeStats ? 1 : 0)}"
+            $"{Constants.SteamWebApiUrl}/IPublishedFileService/QueryFiles/v1/?key={Uri.EscapeDataString(Key)}&query_type={QueryType}&page={Page}&numperpage={NumPerPage}&appid={AppId}&search_text={Uri.EscapeDataString(SearchText)}&return_vote_data={(ReturnVoteData ? 1 : 0)}&return_tags={(ReturnTags ? 1 : 0)}&return_kv_tags={(ReturnKVTags ? 1 : 0)}&return_previews={(ReturnPreviews ? 1 : 0)}&return_children={(ReturnChildren ? 1 : 0)}&return_short_description={(ReturnShortDescription ? 1 : 0)}&return_for_sale_data={(ReturnForSaleData ? 1 : 0)}&return_metadata={(ReturnMetadata ? 1 : 0)}&return_playtime_stats={(ReturnPlaytimeStats ? 1 : 0)}&return_details={(ReturnDetails ? 1 : 0)}&return_reactions={(ReturnReactions ? 1 : 0)}&strip_description_bbcode={(StripDescriptionBBCode ? 1 : 0)}"
         );
     }
 }

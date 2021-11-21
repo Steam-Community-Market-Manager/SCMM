@@ -405,43 +405,40 @@
 				</MudPaper>
 			</MudItem>
             
-            @if (Item.Tags.Any(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi)) || !String.IsNullOrEmpty(Item.DominantColour))
-            {
-                <MudItem xs="12" sm="6" lg="12">
-                    @if (Item.Tags.Any(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)))
-                    {
-                        <div class="quote-box text-centered pa-2 mb-2">
-                            @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)).Take(1))
+            <MudItem xs="12" sm="6" lg="12">
+                @if (Item.Tags.Any(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)))
+                {
+                    <div class="quote-box text-centered pa-2 mb-2">
+                        @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)).Take(1))
+                        {
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Dark">
+                                <span>Looks like a</span>
+                                <span>@tag.Value.FirstCharToLower().TrimStart('a', ' ')</span>
+                            </MudText>
+                        }
+				    </div>
+                }
+                <MudPaper Outlined="true" Class="py-2 px-3">
+                    <div class="d-flex flex-row align-center">
+                        <MudIcon Icon="fas fa-robot" Size="MudBlazor.Size.Large" Class="my-1" />
+                        <div class="ml-5">
+                            @if (!String.IsNullOrEmpty(Item.DominantColour))
                             {
-                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Dark">
-                                    <span>Looks like a</span>
-                                    <span>@tag.Value.FirstCharToLower().TrimStart('a', ' ')</span>
-                                </MudText>
+                                <MudChip Size="MudBlazor.Size.Small" Text="@Item.DominantColour" Variant="MudBlazor.Variant.Text" Icon="fas fa-fw fa-tint" 
+                                            Class="mud-chip-outlined" Style="@($"background-color: {Item.DominantColour}; color: white")" />
                             }
-				        </div>
-                    }
-                    <MudPaper Outlined="true" Class="py-2 px-3">
-                        <div class="d-flex flex-row align-center">
-                            <MudIcon Icon="fas fa-robot" Size="MudBlazor.Size.Large" Class="my-1" />
-                            <div class="ml-5">
-                                @if (!String.IsNullOrEmpty(Item.DominantColour))
-                                {
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@Item.DominantColour" Variant="MudBlazor.Variant.Text" Icon="fas fa-fw fa-tint" 
-                                             Class="mud-chip-outlined" Style="@($"background-color: {Item.DominantColour}; color: white")" />
-                                }
-                                @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiTag)))
-                                {
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
-                                }
-                                @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi) && !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop)))
-                                {
-                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
-                                }
-						    </div>
-                        </div>
-				    </MudPaper>
-			    </MudItem>
-            }
+                            @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiTag)))
+                            {
+                                <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                            }
+                            @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi) && !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop)))
+                            {
+                                <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                            }
+						</div>
+                    </div>
+				</MudPaper>
+			</MudItem>
             
             @if (Item.CreatorId != null && !String.IsNullOrEmpty(Item.CreatorName))
             {

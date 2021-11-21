@@ -166,8 +166,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .OrderByDescending(x => x.TimeAccepted)
-                .ThenByDescending(x => x.TimeCreated);
+                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
 
             // TODO: Sorting...
 

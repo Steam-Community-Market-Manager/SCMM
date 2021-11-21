@@ -4,6 +4,16 @@ namespace SCMM.Shared.Data.Models.Extensions
 {
     public static class DateTimeExtensions
     {
+        public static DateTimeOffset? Earliest(this DateTimeOffset? a, DateTimeOffset? b)
+        {
+            return (a != null && b != null && a <= b) ? (a ?? b) : (b ?? a);
+        }
+
+        public static DateTimeOffset? Latest(this DateTimeOffset? a, DateTimeOffset? b)
+        {
+            return (a != null && b != null && a >= b) ? (a ?? b) : (b ?? a);
+        }
+
         public static string GetDaySuffix(this DateTimeOffset dateTime)
         {
             return dateTime.Day.GetPositionSuffix();

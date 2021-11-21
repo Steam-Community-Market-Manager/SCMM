@@ -28,6 +28,8 @@ namespace SCMM.Steam.API.Commands
     {
         public SteamAssetDescription AssetDescription { get; set; }
 
+        public ItemDefinition AssetItemDefinition { get; set; }
+
         public AssetClassInfoModel AssetClass { get; set; }
 
         public PublishedFileDetailsModel PublishedFile { get; set; }
@@ -74,10 +76,75 @@ namespace SCMM.Steam.API.Commands
                 throw new ArgumentNullException(nameof(request.AssetDescription));
             }
 
+            // Parse asset item definition details
+            if (request.AssetItemDefinition != null)
+            {
+                var itemDefinition = request.AssetItemDefinition;
+                assetDescription.AssetType = (assetDescription.WorkshopFileId > 0 || itemDefinition.WorkshopId > 0 ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
+                assetDescription.WorkshopFileId = (assetDescription.WorkshopFileId == null && itemDefinition.WorkshopId > 0) ? itemDefinition.WorkshopId : assetDescription.WorkshopFileId;
+                assetDescription.ItemDefinitionId = itemDefinition.ItemDefId;
+                assetDescription.ItemShortName = (String.IsNullOrEmpty(assetDescription.ItemShortName) ? itemDefinition.ItemShortName : assetDescription.ItemShortName);
+                assetDescription.Name = (String.IsNullOrEmpty(assetDescription.Name) ? (itemDefinition.Name ?? itemDefinition.MarketName) : assetDescription.Name);
+                assetDescription.NameHash = (String.IsNullOrEmpty(assetDescription.NameHash) ? itemDefinition.MarketHashName : assetDescription.NameHash);
+                assetDescription.IconUrl = (String.IsNullOrEmpty(assetDescription.IconUrl) && !String.IsNullOrEmpty(itemDefinition.IconUrl)) ? new SteamBlobRequest(itemDefinition.IconUrl) : assetDescription.IconUrl;
+                assetDescription.IconLargeUrl = (String.IsNullOrEmpty(assetDescription.IconLargeUrl) && !String.IsNullOrEmpty(itemDefinition.IconUrlLarge)) ? new SteamBlobRequest(itemDefinition.IconUrlLarge ?? itemDefinition.IconUrl) : assetDescription.IconLargeUrl;
+                assetDescription.BackgroundColour = (String.IsNullOrEmpty(assetDescription.BackgroundColour) ? itemDefinition.BackgroundColor?.SteamColourToWebHexString() : assetDescription.BackgroundColour);
+                assetDescription.ForegroundColour = (String.IsNullOrEmpty(assetDescription.ForegroundColour) ? itemDefinition.NameColor?.SteamColourToWebHexString() : assetDescription.ForegroundColour);
+                assetDescription.IsCommodity = itemDefinition.Commodity;
+                assetDescription.IsMarketable = itemDefinition.Marketable;
+                assetDescription.IsTradable = itemDefinition.Tradable;
+                assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
+                assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(itemDefinition.Modified.SteamTimestampToDateTimeOffset());
+                assetDescription.TimeAccepted = assetDescription.TimeAccepted.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
+                assetDescription.IsAccepted = true;
+
+                // Parse asset description (if any)
+                if (!String.IsNullOrEmpty(itemDefinition.Description))
+                {
+                    // Strip any HTML and BBCode tags, just get the plain-text
+                    itemDefinition.Description = Regex.Replace(itemDefinition.Description, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
+                    itemDefinition.Description = Regex.Replace(itemDefinition.Description, Constants.SteamAssetClassDescriptionStripBBCodeRegex, string.Empty).Trim();
+                    assetDescription.Description = itemDefinition.Description;
+                }
+
+                // Parse asset tags (if any)
+                if (itemDefinition.Tags != null)
+                {
+                    assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                    foreach (var tag in itemDefinition.Tags.Split(";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var tagKeyValuePair = tag.Split(":", StringSplitOptions.TrimEntries);
+                        if (tagKeyValuePair.Length > 1)
+                        {
+                            assetDescription.Tags[tagKeyValuePair.FirstOrDefault()] = tagKeyValuePair.LastOrDefault();
+                        }
+                    }
+                }
+
+                // Parse asset store tags
+                if (itemDefinition.StoreTags != null)
+                {
+                    var existingNonStoreTags = assetDescription.Tags.Where(x => !x.Key.StartsWith(Constants.SteamAssetTagStore)).ToDictionary(x => x.Key, x => x.Value);
+                    assetDescription.Tags = new PersistableStringDictionary(existingNonStoreTags);
+                    foreach (var tag in itemDefinition.StoreTags.Split(";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var tagKey = $"{Constants.SteamAssetTagStore}.{tag}";
+                        assetDescription.Tags[tagKey] = tag;
+                    }
+                }
+
+                // TODO: Promo
+                // TODO: Exchange
+                // TODO: Price Category (https://partner.steamgames.com/doc/features/inventory/schema)
+
+            }
+
             // Parse asset description details
             if (request.AssetClass != null)
             {
                 var assetClass = request.AssetClass;
+                assetDescription.ClassId = assetClass.ClassId;
+                assetDescription.AssetType = (String.Equals(assetClass.Type == Constants.SteamAssetClassTypeWorkshopItem, StringComparison.OrdinalIgnoreCase) ? SteamAssetDescriptionType.WorkshopItem : SteamAssetDescriptionType.PublisherItem);
                 assetDescription.Name = assetClass.MarketName;
                 assetDescription.NameHash = assetClass.MarketHashName;
                 assetDescription.IconUrl = !string.IsNullOrEmpty(assetClass.IconUrl) ? new SteamEconomyImageBlobRequest(assetClass.IconUrl) : null;
@@ -90,12 +157,6 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.IsTradable = string.Equals(assetClass.Tradable, "1", StringComparison.InvariantCultureIgnoreCase);
                 assetDescription.TradableRestrictionDays = string.IsNullOrEmpty(assetClass.MarketTradableRestriction) ? (int?)null : int.Parse(assetClass.MarketTradableRestriction);
                 assetDescription.IsAccepted = true;
-
-                // Parse asset type
-                switch (assetClass.Type)
-                {
-                    case Constants.SteamAssetClassTypeWorkshopItem: assetDescription.AssetType = SteamAssetDescriptionType.WorkshopItem; break;
-                }
 
                 // Parse asset description (if any)
                 if (assetClass.Descriptions != null)
@@ -143,8 +204,8 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.CurrentFavourited = (long?)publishedFile.Favorited;
                 assetDescription.LifetimeFavourited = (long?)publishedFile.LifetimeFavorited;
                 assetDescription.Views = (long?)publishedFile.Views;
-                assetDescription.TimeCreated = publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null;
-                assetDescription.TimeUpdated = publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null;
+                assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null);
+                assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null);
 
                 // Parse ban details
                 if (publishedFile.Banned)
@@ -182,11 +243,12 @@ namespace SCMM.Steam.API.Commands
                     var interestingTags = publishedFile.Tags.Where(x => !Constants.SteamIgnoredWorkshopTags.Any(y => x == y));
                     if (interestingTags.Any())
                     {
-                        assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
+                        var existingNonWorkshopTags = assetDescription.Tags.Where(x => !x.Key.StartsWith(Constants.SteamAssetTagWorkshop)).ToDictionary(x => x.Key, x => x.Value);
+                        assetDescription.Tags = new PersistableStringDictionary(existingNonWorkshopTags);
                         foreach (var tag in interestingTags)
                         {
                             var tagTrimmed = tag.Replace(" ", string.Empty).Trim();
-                            var tagKey = $"{Constants.SteamAssetTagWorkshop}.{char.ToLowerInvariant(tagTrimmed[0]) + tagTrimmed.Substring(1)}";
+                            var tagKey = $"{Constants.SteamAssetTagWorkshop}.{tagTrimmed.ToLowerInvariant()}";
                             assetDescription.Tags[tagKey] = tag;
                         }
                     }
@@ -267,7 +329,7 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
             }
-
+            
             // Parse asset icon and image data
             if (assetDescription.IconId == null && !string.IsNullOrEmpty(assetDescription.IconUrl))
             {
@@ -329,7 +391,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogWarning(ex, $"Unable to import asset description preview image. {ex.Message}");
                 }
             }
-
+            
             // Parse asset description and name id from the market list page (if available)
             if (!string.IsNullOrEmpty(request.MarketListingPageHtml))
             {
@@ -509,12 +571,18 @@ namespace SCMM.Steam.API.Commands
                 }
                 else
                 {
-                    // HACK: Facepunch messed up the LR300 skins. The item descriptions are always empty so try fill in the blanks
-                    if (assetDescription.Tags.Any(x => x.Value == Constants.RustItemTypeLR300))
+                    // HACK: Facepunch messed up the LR300 item descriptions (they are empty), so try fill in the blanks
+                    if (assetDescription.ItemShortName == Constants.RustItemShortNameLR300 || assetDescription.Tags.Any(x => x.Value == Constants.RustItemShortNameLR300 || x.Value == Constants.RustItemTypeLR300))
                     {
                         assetDescription.ItemType = Constants.RustItemTypeLR300;
                     }
                 }
+            }
+            
+            // Parse asset item type (if missing)
+            if (string.IsNullOrEmpty(assetDescription.ItemShortName) && !string.IsNullOrEmpty(assetDescription.ItemType))
+            {
+                assetDescription.ItemShortName = assetDescription.ItemType.ToRustItemShortName();
             }
 
             // Parse asset item collection (if missing and is a user created item)

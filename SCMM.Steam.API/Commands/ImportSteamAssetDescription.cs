@@ -202,6 +202,7 @@ namespace SCMM.Steam.API.Commands
                 // Get file vote data (if missing or item is not yet accepted, votes don't change once accepted)
                 if ((assetDescription.VotesDown == null || assetDescription.VotesUp == null || !assetDescription.IsAccepted) && !string.IsNullOrEmpty(publishedFile.Title))
                 {
+                    // NOTE: We have to do two seperate calls to "QueryFiles" as for some strange reason Steam only returns vote counts if requested in isolation
                     var queryVoteData = await _apiClient.PublishedFileServiceQueryFiles(new QueryFilesJsonRequest()
                     {
                         QueryType = QueryFilesJsonRequest.QueryTypeRankedByTextSearch,
@@ -218,7 +219,7 @@ namespace SCMM.Steam.API.Commands
                 // Get file previews (if missing or changed since our last check)
                 if ((publishedFileHasChanged || !assetDescription.Previews.Any()) && !string.IsNullOrEmpty(publishedFile.Title))
                 {
-                    // NOTE: We have to do two seperate calls here as for some strange reason Steam only returns vote counts if requested in isolation
+                    // NOTE: We have to do two seperate calls to "QueryFiles" as for some strange reason Steam only returns vote counts if requested in isolation
                     var queryPreviews = await _apiClient.PublishedFileServiceQueryFiles(new QueryFilesJsonRequest()
                     {
                         QueryType = QueryFilesJsonRequest.QueryTypeRankedByTextSearch,

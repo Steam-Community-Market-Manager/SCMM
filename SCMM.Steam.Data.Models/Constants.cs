@@ -10,6 +10,7 @@
         public const string SteamAssetTagCategory = "steamcat";
         public const string SteamAssetTagItemType = "itemclass";
         public const string SteamAssetTagWorkshop = "workshop";
+        public const string SteamAssetTagStore = "store";
 
         public static readonly string[] SteamIgnoredWorkshopTags = {
             "Skin", "Version3"
@@ -55,6 +56,7 @@
         public const string RustItemTypeMiscellaneous = "Miscellaneous";
         public const string RustItemTypeUnderwear = "Underwear";
 
+        public const string RustItemShortNameLR300 = "lr300.item";
         public const string RustItemTypeLR300 = "LR300";
         public const string RustItemTypeFurnace = "Furnace";
 

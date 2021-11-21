@@ -31,6 +31,10 @@ namespace SCMM.Steam.Data.Store
 
         public string BackgroundColor { get; set; }
 
+        public string ItemDefinitionsDigest { get; set; }
+
+        public DateTimeOffset? TimeUpdated { get; set; }
+
         public ICollection<SteamAssetFilter> Filters { get; set; }
 
         public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }

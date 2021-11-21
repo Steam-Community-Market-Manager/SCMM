@@ -46,10 +46,17 @@ namespace SCMM.Steam.Data.Store
 
         public SteamProfile CreatorProfile { get; set; }
 
+        public ulong? ItemDefinitionId { get; set; }
+
         /// <summary>
         /// e.g. Large Wood Box, Sheet Metal Door, etc
         /// </summary>
         public string ItemType { get; set; }
+
+        /// <summary>
+        /// e.g. door.hinged.metal, wall.frame.garagedoor, etc
+        /// </summary>
+        public string ItemShortName { get; set; }
 
         /// <summary>
         /// e.g. Blackout, Whiteout, etc

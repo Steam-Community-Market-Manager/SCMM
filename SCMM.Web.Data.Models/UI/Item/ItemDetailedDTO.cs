@@ -23,7 +23,11 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string CreatorAvatarUrl { get; set; }
 
+        public ulong? ItemDefinitionId { get; set; }
+
         public string ItemType { get; set; }
+
+        public string ItemShortName { get; set; }
 
         public string ItemCollection { get; set; }
 

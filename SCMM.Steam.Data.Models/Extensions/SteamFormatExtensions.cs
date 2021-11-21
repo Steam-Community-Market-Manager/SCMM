@@ -1,4 +1,6 @@
-﻿namespace SCMM.Steam.Data.Models.Extensions
+﻿using System.Globalization;
+
+namespace SCMM.Steam.Data.Models.Extensions
 {
     public static class SteamFormatExtensions
     {
@@ -6,6 +8,17 @@
         {
             var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return new DateTimeOffset(epoch.AddSeconds(timestamp), TimeZoneInfo.Utc.BaseUtcOffset);
+        }
+
+        public static DateTimeOffset SteamTimestampToDateTimeOffset(this string timestamp)
+        {
+            DateTimeOffset result;
+            if (DateTimeOffset.TryParseExact(timestamp, "yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out result))
+            {
+                return result;
+            }
+
+            return default;
         }
 
         public static string SteamColourToWebHexString(this string colour)
