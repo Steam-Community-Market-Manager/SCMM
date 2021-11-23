@@ -3,9 +3,6 @@
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
-#trigger:
-#- master
-
 pool:
   vmImage: 'windows-2022' # required to get Visual Studio 2022
 
@@ -13,19 +10,19 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  frameworkTargetVersion: '6.0.x' # .NET 6
-  visualStudioVersion: '17.0' # VS2022
+  buildTargetFramework: '6.0.x'
 
 steps:
 - task: UseDotNet@2
   displayName: 'Use .NET 6'
   inputs:
     packageType: 'sdk'
-    version: '$(frameworkTargetVersion)'
+    version: '$(buildTargetFramework)'
+    includePreviewVersions: true
 - task: NuGetToolInstaller@1
   displayName: 'Use NuGet 6'
   inputs:
-    versionSpec: '$(frameworkTargetVersion)'
+    versionSpec: '$(buildTargetFramework)'
     checkLatest: true
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
@@ -35,7 +32,6 @@ steps:
   displayName: 'Build Solution'
   inputs:
     solution: '$(solution)'
-    vsVersion: '$(visualStudioVersion)'
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
@@ -50,7 +46,6 @@ steps:
       !**\*TestAdapter.dll
       !**\obj\**
     searchFolder: '$(System.DefaultWorkingDirectory)'
-    vsTestVersion: '$(visualStudioVersion)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 - task: PublishBuildArtifacts@1
