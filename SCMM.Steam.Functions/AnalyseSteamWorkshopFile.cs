@@ -12,7 +12,8 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Workshop.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Functions.Extensions;
-using System.Drawing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -163,7 +164,7 @@ public class AnalyseSteamWorkshopFile
                 try
                 {
                     using var textureStream = textureFile.Key.Open();
-                    using var textureImage = Image.FromStream(textureStream);
+                    using var textureImage = await Image.LoadAsync<Rgba32>(textureStream);
                     texturesCutout.Add(
                         textureImage.GetAlphaCuttoffRatio(
                             alphaCutoff: textureFile.Value
@@ -193,7 +194,7 @@ public class AnalyseSteamWorkshopFile
                 try
                 {
                     using var emissionMapStream = emissionMapFile.Open();
-                    using var emissionMapImage = Image.FromStream(emissionMapStream);
+                    using var emissionMapImage = await Image.LoadAsync<Rgba32>(emissionMapStream);
                     emissionMapsGlow.Add(
                         emissionMapImage.GetEmissionRatio()
                     );
