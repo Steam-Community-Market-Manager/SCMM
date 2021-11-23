@@ -13,17 +13,19 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  frameworkTargetVersion: '6.0.x'
+  visualStudioVersion: '17.0'
 
 steps:
 - task: UseDotNet@2
   displayName: 'Use .NET 6'
   inputs:
     packageType: 'sdk'
-    version: '6.0.x'
+    version: '$(frameworkTargetVersion)'
 - task: NuGetToolInstaller@1
   displayName: 'Use NuGet 6'
   inputs:
-    versionSpec: '6.0.x'
+    versionSpec: '$(frameworkTargetVersion)'
     checkLatest: true
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
@@ -33,12 +35,22 @@ steps:
   displayName: 'Build Solution'
   inputs:
     solution: '$(solution)'
+    vsVersion: '$(visualStudioVersion)'
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+    clean: true
+    msbuildArchitecture: 'x64'
 - task: VSTest@2
   displayName: 'Run Unit Tests'
   inputs:
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\*test*.dll
+      !**\*TestAdapter.dll
+      !**\obj\**
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+    vsTestVersion: '$(visualStudioVersion)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 - task: PublishBuildArtifacts@1
