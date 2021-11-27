@@ -89,8 +89,8 @@ public static class HostExtensions
             services.AddScoped<SteamWorkshopDownloaderWebClient>();
 
             // Command/query/message handlers
-            services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Steam.API"));
-            services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Steam.API"));
+            services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
             services.AddMessages(Assembly.GetEntryAssembly());
 
             // Services

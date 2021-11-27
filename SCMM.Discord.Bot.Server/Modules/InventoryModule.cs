@@ -7,7 +7,7 @@ using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Web.Extensions;
+using SCMM.Shared.API.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
