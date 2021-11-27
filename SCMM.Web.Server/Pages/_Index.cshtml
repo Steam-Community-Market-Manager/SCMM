@@ -6,7 +6,7 @@
 @using SCMM.Web.Data.Models
 @inject ICookieManager CookieManager
 @{
-    var runtime = RuntimeType.Server;// await CookieManager.GetAsync<RuntimeType>("Runtime", RuntimeType.Server);
+    var runtime = await CookieManager.GetAsync<RuntimeType>("Runtime", RuntimeType.WebAssembly);
     var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssembly);
     var prerenderMode = (runtime == RuntimeType.Server ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered);
 }

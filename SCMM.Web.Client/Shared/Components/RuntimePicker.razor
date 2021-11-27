@@ -22,7 +22,7 @@
     {
         try
         {
-            Runtime = await CookieManager.GetAsync<RuntimeType?>("Runtime", RuntimeType.Server);
+            Runtime = await CookieManager.GetAsync<RuntimeType?>("Runtime", RuntimeType.WebAssembly);
             Logger.LogInformation($"Runtime is '{Runtime}'");
         }
         catch (Exception ex)
