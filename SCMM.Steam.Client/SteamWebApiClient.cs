@@ -4,6 +4,7 @@ using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Requests.IInventoryService;
 using SCMM.Steam.Data.Models.WebApi.Requests.IPublishedFileService;
 using SCMM.Steam.Data.Models.WebApi.Responses.IGameInventory;
+using SCMM.Steam.Data.Models.WebApi.Responses.IInventoryService;
 using SCMM.Steam.Data.Models.WebApi.Responses.IPublishedFileService;
 
 namespace SCMM.Steam.Client
