@@ -18,7 +18,7 @@ using SCMM.Steam.Data.Store.Types;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 
-namespace SCMM.Steam.Functions.Jobs;
+namespace SCMM.Steam.Functions.Timer;
 
 public class CheckForNewStoreItemsJob
 {

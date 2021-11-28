@@ -10,7 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 
-namespace SCMM.Steam.Functions.Jobs;
+namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemActivityJob
 {

@@ -18,7 +18,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace SCMM.Steam.Functions;
+namespace SCMM.Steam.Functions.ServiceBus;
 
 public class AnalyseSteamWorkshopFile
 {
@@ -66,7 +66,7 @@ public class AnalyseSteamWorkshopFile
             );
             if (iconFile != null)
             {
-                var iconAlreadyAnalysed = (blobMetadata.ContainsKey(Constants.BlobMetadataIconAnalysed) && !message.Force);
+                var iconAlreadyAnalysed = blobMetadata.ContainsKey(Constants.BlobMetadataIconAnalysed) && !message.Force;
                 if (!iconAlreadyAnalysed)
                 {
                     try
@@ -74,7 +74,7 @@ public class AnalyseSteamWorkshopFile
                         // Determine the icons dominant colour and any captions/tags that help describe the image
                         using var iconStream = iconFile.Open();
                         var iconAnalysis = await _azureAiClient.AnalyseImageAsync(iconStream, VisualFeatureTypes.Color, VisualFeatureTypes.Description);
-                        if (!String.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
+                        if (!string.IsNullOrEmpty(iconAnalysis?.Color?.AccentColor))
                         {
                             dominantColour = $"#{iconAnalysis.Color.AccentColor}";
                         }
@@ -109,7 +109,7 @@ public class AnalyseSteamWorkshopFile
                             logger.LogWarning("Icon analyse failed to identify any tags");
                         }
 
-                        blobMetadata[Constants.BlobMetadataIconAnalysed] = Boolean.TrueString;
+                        blobMetadata[Constants.BlobMetadataIconAnalysed] = bool.TrueString;
                     }
                     catch (Exception ex)
                     {
@@ -139,7 +139,7 @@ public class AnalyseSteamWorkshopFile
                     mainTextureFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.MainTex))
                         .ToDictionary(x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.MainTex, StringComparison.InvariantCultureIgnoreCase)), x => x.Floats.Cutoff);
                     emissionMapFiles = manifest.Groups.Where(x => !string.IsNullOrEmpty(x.Textures.EmissionMap))
-                        .Where(x => (x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0))
+                        .Where(x => x.Colors.EmissionColor.R > 0 || x.Colors.EmissionColor.G > 0 || x.Colors.EmissionColor.B > 0)
                         .Select(x => workshopFileZip.Entries.FirstOrDefault(f => string.Equals(f.Name, x.Textures.EmissionMap, StringComparison.InvariantCultureIgnoreCase)))
                         .Where(x => x != null)
                         .ToList();

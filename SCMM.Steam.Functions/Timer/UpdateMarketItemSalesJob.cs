@@ -6,7 +6,7 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 
-namespace SCMM.Steam.Functions.Jobs;
+namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateMarketItemSalesJob
 {
@@ -58,8 +58,8 @@ public class UpdateMarketItemSalesJob
                     {
                         AppId = item.App.SteamId,
                         MarketHashName = item.Description.Name,
-                            //CurrencyId = item.Currency.SteamId
-                        }
+                        //CurrencyId = item.Currency.SteamId
+                    }
                 );
 
                 // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency

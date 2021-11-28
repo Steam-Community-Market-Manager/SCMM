@@ -12,7 +12,7 @@ using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System.Text.RegularExpressions;
 
-namespace SCMM.Steam.Functions.Jobs;
+namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateCurrentStoreStatisticsJob
 {

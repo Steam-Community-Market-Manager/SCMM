@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 
-namespace SCMM.Steam.Functions;
+namespace SCMM.Steam.Functions.Timer;
 
 public class DeleteExpiredFileData
 {

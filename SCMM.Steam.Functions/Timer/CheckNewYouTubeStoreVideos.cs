@@ -7,7 +7,7 @@ using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Store;
 using System.Text.RegularExpressions;
 
-namespace SCMM.Steam.Functions;
+namespace SCMM.Steam.Functions.Timer;
 
 public class CheckNewYouTubeStoreVideosConfiguration
 {

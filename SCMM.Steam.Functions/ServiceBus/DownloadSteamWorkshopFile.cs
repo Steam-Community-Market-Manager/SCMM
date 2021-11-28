@@ -9,7 +9,7 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Workshop.Requests;
 using SCMM.Steam.Data.Store;
 
-namespace SCMM.Steam.Functions;
+namespace SCMM.Steam.Functions.ServiceBus;
 
 public class DownloadSteamWorkshopFile
 {

@@ -176,16 +176,12 @@ namespace SCMM.Steam.Data.Store
                 var buyOrdersSorted = BuyOrders.OrderByDescending(y => y.Price).ToArray();
                 var cumulativeBuyOrderPrice = (buyOrdersSorted.Any() ? buyOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
                 var highestBuyOrderPrice = (buyOrdersSorted.Any() ? buyOrdersSorted.Max(x => x.Price) : 0);
-                var stable24hrHighestBuyOrderPrice = ((now > dayOpenTimestamp && (now - dayOpenTimestamp).Duration() <= TimeSpan.FromMinutes(75)) || Stable24hrBuyOrderHighestPrice == 0)
-                    ? highestBuyOrderPrice
-                    : Stable24hrBuyOrderHighestPrice;
-
+                
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //BuyOrderCount = buyOrdersSorted.Sum(y => y.Quantity);
                 BuyOrderCount = (buyOrderCount ?? BuyOrderCount);
                 BuyOrderCumulativePrice = cumulativeBuyOrderPrice;
                 BuyOrderHighestPrice = highestBuyOrderPrice;
-                Stable24hrBuyOrderHighestPrice = stable24hrHighestBuyOrderPrice;
             }
 
             // Recalculate sell order stats
@@ -202,9 +198,6 @@ namespace SCMM.Steam.Data.Store
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
                 var cumulativeSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
                 var lowestSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Min(x => x.Price) : 0);
-                var stable24hrLowestSellOrderPrice = ((now > dayOpenTimestamp && (now - dayOpenTimestamp).Duration() <= TimeSpan.FromMinutes(75)) || Stable24hrSellOrderLowestPrice == 0)
-                    ? lowestSellOrderPrice
-                    : Stable24hrSellOrderLowestPrice;
                 var resellPrice = (lowestSellOrderPrice - 1);
                 var resellTax = resellPrice.SteamFeeAsInt();
 
@@ -213,7 +206,6 @@ namespace SCMM.Steam.Data.Store
                 SellOrderCount = (sellOrderCount ?? SellOrderCount);
                 SellOrderCumulativePrice = cumulativeSellOrderPrice;
                 SellOrderLowestPrice = lowestSellOrderPrice;
-                Stable24hrSellOrderLowestPrice = stable24hrLowestSellOrderPrice;
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
             }
@@ -270,15 +262,12 @@ namespace SCMM.Steam.Data.Store
 
             // Recalculate sales stats
             var now = DateTimeOffset.UtcNow;
-            var dayOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset);
             var earliestTimestamp = salesSorted.Min(x => x.Timestamp);
             var latestTimestamp = salesSorted.Max(x => x.Timestamp);
             var firstSaleOn = salesSorted.FirstOrDefault()?.Timestamp;
             var first24hrs = salesSorted.Where(x => x.Timestamp <= earliestTimestamp.Add(TimeSpan.FromHours(24))).ToArray();
             var first24hrSales = first24hrs.Sum(x => x.Quantity);
             var first24hrValue = (long)Math.Round(first24hrs.Length > 0 ? first24hrs.Average(x => x.MedianPrice) : 0, 0);
-            var stable24hrs = salesSorted.Where(x => x.Timestamp >= dayOpenTimestamp.AddDays(-1) && x.Timestamp <= dayOpenTimestamp).ToArray();
-            var stable24hrAverageValue = (long)Math.Round(stable24hrs.Length > 0 ? stable24hrs.Average(x => x.MedianPrice) : 0, 0);
             var last1hrs = salesSorted.Where(x => x.Timestamp >= now.Subtract(TimeSpan.FromHours(1))).ToArray();
             var last1hrSales = last1hrs.Sum(x => x.Quantity);
             var last1hrValue = (long)Math.Round(last1hrs.Length > 0 ? last1hrs.Average(x => x.MedianPrice) : 0, 0);
@@ -311,7 +300,6 @@ namespace SCMM.Steam.Data.Store
             First24hrValue = first24hrValue;
             Last1hrSales = last1hrSales;
             Last1hrValue = last1hrValue;
-            Stable24hrValue = (stable24hrAverageValue > 0 ? stable24hrAverageValue : lastSaleValue);
             Last24hrSales = last24hrSales;
             Last24hrValue = last24hrValue;
             Last48hrSales = last48hrSales;
@@ -342,9 +330,6 @@ namespace SCMM.Steam.Data.Store
                 AllTimeLowestValue = (allTimeLow?.MedianPrice ?? 0);
                 AllTimeLowestValueOn = allTimeLow?.Timestamp;
             }
-
-            // Update the rolling 24hr values
-            // TODO: This...
         }
     }
 }

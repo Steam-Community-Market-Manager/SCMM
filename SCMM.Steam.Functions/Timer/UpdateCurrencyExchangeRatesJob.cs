@@ -9,7 +9,7 @@ using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 
-namespace SCMM.Steam.Functions.Jobs;
+namespace SCMM.Steam.Functions.Timer;
 
 public class UpdateCurrencyExchangeRatesJob
 {
