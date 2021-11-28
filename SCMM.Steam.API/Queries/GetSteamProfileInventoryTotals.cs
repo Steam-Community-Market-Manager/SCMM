@@ -62,6 +62,7 @@ namespace SCMM.Steam.API.Queries
             }
 
             // Load the profile inventory
+            var dayOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset);
             var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
@@ -73,8 +74,8 @@ namespace SCMM.Steam.API.Queries
                     BuyPrice = x.BuyPrice,
                     ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
-                    ItemValue = (x.Description.MarketItem != null ? x.Description.MarketItem.LastSaleValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
-                    ItemValue24hrStable = (x.Description.MarketItem != null ? x.Description.MarketItem.Stable24hrValue : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
+                    ItemValue = (x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
+                    ItemValue24hrStable = (x.Description.MarketItem != null ? x.Description.MarketItem.Stable24hrSellOrderLowestPrice : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
                     ItemExchangeRateMultiplier = (x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : (x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0))
                 })
                 .ToListAsync();
@@ -121,7 +122,7 @@ namespace SCMM.Steam.API.Queries
                 InvestmentNetReturn = (hasSetupInvestment ? (profileInventory.TotalInvestmentGains + profileInventory.TotalInvestmentLosses) : null),
                 MarketValue = profileInventory.TotalValue,
                 MarketMovementValue = (profileInventory.TotalValue - profileInventory.TotalValue24hrStable),
-                MarketMovementTime = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset), // start of today (UTC)
+                MarketMovementTime = dayOpenTimestamp
             };
         }
     }

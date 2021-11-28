@@ -37,6 +37,9 @@ namespace SCMM.Steam.Data.Store
         // What is the most expensive buy order
         public long BuyOrderHighestPrice { get; set; }
 
+        // What was the most expensive buy order starting at todays open (UTC)
+        public long Stable24hrBuyOrderHighestPrice { get; set; }
+
         [Required]
         public PersistablePriceCollection BuyOrderHighestPriceRolling24hrs { get; set; }
 
@@ -50,6 +53,9 @@ namespace SCMM.Steam.Data.Store
 
         // What is the cheapest sell order
         public long SellOrderLowestPrice { get; set; }
+
+        // What was the cheapest sell order starting at todays open (UTC)
+        public long Stable24hrSellOrderLowestPrice { get; set; }
 
         [Required]
         public PersistablePriceCollection SellOrderLowestPriceRolling24hrs { get; set; }
@@ -85,7 +91,7 @@ namespace SCMM.Steam.Data.Store
         // What was the average price from the last 24hrs (1 day)
         public long Last24hrValue { get; set; }
 
-        // Was was the price starting at todays open (UTC) or the last time it was sold (if no sales in last 24hrs)
+        // What was the price starting at todays open (UTC) or the last time it was sold (if no sales in last 24hrs)
         public long Stable24hrValue { get; set; }
 
         // What was the total number of sales from the last 48hrs (2 days)
@@ -153,6 +159,9 @@ namespace SCMM.Steam.Data.Store
 
         public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
         {
+            var now = DateTimeOffset.UtcNow;
+            var dayOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset);
+
             // Recalculate buy order stats
             if (buyOrders != null)
             {
@@ -167,12 +176,16 @@ namespace SCMM.Steam.Data.Store
                 var buyOrdersSorted = BuyOrders.OrderByDescending(y => y.Price).ToArray();
                 var cumulativeBuyOrderPrice = buyOrdersSorted.Sum(x => x.Price * x.Quantity);
                 var highestBuyOrderPrice = (buyOrdersSorted.FirstOrDefault()?.Price ?? 0);
+                var stable24hrHighestBuyOrderPrice = (now > dayOpenTimestamp && (now - dayOpenTimestamp).Duration() <= TimeSpan.FromMinutes(90))
+                    ? highestBuyOrderPrice
+                    : Stable24hrBuyOrderHighestPrice;
 
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //BuyOrderCount = buyOrdersSorted.Sum(y => y.Quantity);
                 BuyOrderCount = (buyOrderCount ?? BuyOrderCount);
                 BuyOrderCumulativePrice = cumulativeBuyOrderPrice;
                 BuyOrderHighestPrice = highestBuyOrderPrice;
+                Stable24hrBuyOrderHighestPrice = stable24hrHighestBuyOrderPrice;
             }
 
             // Recalculate sell order stats
@@ -187,9 +200,12 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
-                var lowestSellOrderPrice = (sellOrdersSorted.FirstOrDefault()?.Price ?? 0);
                 var cumulativeSellOrderPrice = sellOrdersSorted.Sum(x => x.Price * x.Quantity);
-                var resellPrice = lowestSellOrderPrice;
+                var lowestSellOrderPrice = (sellOrdersSorted.FirstOrDefault()?.Price ?? 0);
+                var stable24hrLowestSellOrderPrice = (now > dayOpenTimestamp && (now - dayOpenTimestamp).Duration() <= TimeSpan.FromMinutes(90))
+                    ? lowestSellOrderPrice
+                    : Stable24hrSellOrderLowestPrice;
+                var resellPrice = (lowestSellOrderPrice - 1);
                 var resellTax = resellPrice.SteamFeeAsInt();
 
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
@@ -197,6 +213,7 @@ namespace SCMM.Steam.Data.Store
                 SellOrderCount = (sellOrderCount ?? SellOrderCount);
                 SellOrderCumulativePrice = cumulativeSellOrderPrice;
                 SellOrderLowestPrice = lowestSellOrderPrice;
+                Stable24hrSellOrderLowestPrice = stable24hrLowestSellOrderPrice;
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
             }

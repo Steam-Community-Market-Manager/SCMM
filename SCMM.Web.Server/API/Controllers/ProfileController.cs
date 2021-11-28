@@ -653,6 +653,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
+            var dayOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset);
             var profileItemMovements = await _db.SteamProfileInventoryItems
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
@@ -661,8 +662,8 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     App = x.App,
                     Description = x.Description,
-                    LastSaleValue = (x.Description.MarketItem.LastSaleValue > 0 ? ((decimal)x.Description.MarketItem.LastSaleValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
-                    Stable24hrValue = (x.Description.MarketItem.Stable24hrValue > 0 ? ((decimal)x.Description.MarketItem.Stable24hrValue / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
+                    CurrentValue = (x.Description.MarketItem.SellOrderLowestPrice > 0 ? ((decimal)x.Description.MarketItem.SellOrderLowestPrice / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
+                    Stable24hrValue = (x.Description.MarketItem.Stable24hrSellOrderLowestPrice > 0 ? ((decimal)x.Description.MarketItem.Stable24hrSellOrderLowestPrice / x.Description.MarketItem.Currency.ExchangeRateMultiplier) : 0),
                     Quantity = x.Quantity
                 })
                 .ToListAsync();
@@ -676,8 +677,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .Select(x => new ProfileInventoryItemMovementDTO
                 {
                     Item = _mapper.Map<SteamAssetDescription, ItemDescriptionDTO>(x.Key, this),
-                    MovementTime = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset),
-                    Movement = x.Any() ? (this.Currency().CalculateExchange(x.FirstOrDefault()?.LastSaleValue ?? 0m) - this.Currency().CalculateExchange(x.FirstOrDefault()?.Stable24hrValue ?? 0m)) : 0,
+                    MovementTime = dayOpenTimestamp,
+                    Movement = x.Any() ? (this.Currency().CalculateExchange(x.FirstOrDefault()?.CurrentValue ?? 0m) - this.Currency().CalculateExchange(x.FirstOrDefault()?.Stable24hrValue ?? 0m)) : 0,
+                    Value = this.Currency().CalculateExchange(x.FirstOrDefault()?.CurrentValue ?? 0m),
                     Quantity = x.Sum(y => y.Quantity)
                 })
                 .OrderByDescending(x => x.Movement)
