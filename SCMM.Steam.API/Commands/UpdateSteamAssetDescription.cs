@@ -93,9 +93,10 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.IsCommodity = itemDefinition.Commodity;
                 assetDescription.IsMarketable = itemDefinition.Marketable;
                 assetDescription.IsTradable = itemDefinition.Tradable;
-                assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
-                assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(itemDefinition.Modified.SteamTimestampToDateTimeOffset());
-                assetDescription.TimeAccepted = assetDescription.TimeAccepted.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
+                // TODO: Test this properly, might make dates less accurate
+                //assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
+                //assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(itemDefinition.Modified.SteamTimestampToDateTimeOffset());
+                //assetDescription.TimeAccepted = assetDescription.TimeAccepted.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
                 assetDescription.IsAccepted = true;
 
                 // Parse asset description (if any)
