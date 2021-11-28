@@ -174,9 +174,9 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var buyOrdersSorted = BuyOrders.OrderByDescending(y => y.Price).ToArray();
-                var cumulativeBuyOrderPrice = buyOrdersSorted.Sum(x => x.Price * x.Quantity);
-                var highestBuyOrderPrice = (buyOrdersSorted.FirstOrDefault()?.Price ?? 0);
-                var stable24hrHighestBuyOrderPrice = (now > dayOpenTimestamp && (now - dayOpenTimestamp).Duration() <= TimeSpan.FromMinutes(90))
+                var cumulativeBuyOrderPrice = (buyOrdersSorted.Any() ? buyOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
+                var highestBuyOrderPrice = (buyOrdersSorted.Any() ? buyOrdersSorted.Max(x => x.Price) : 0);
+                var stable24hrHighestBuyOrderPrice = ((now > dayOpenTimestamp && (now - dayOpenTimestamp).Duration() <= TimeSpan.FromMinutes(75)) || Stable24hrBuyOrderHighestPrice == 0)
                     ? highestBuyOrderPrice
                     : Stable24hrBuyOrderHighestPrice;
 
@@ -200,9 +200,9 @@ namespace SCMM.Steam.Data.Store
                 }
 
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
-                var cumulativeSellOrderPrice = sellOrdersSorted.Sum(x => x.Price * x.Quantity);
-                var lowestSellOrderPrice = (sellOrdersSorted.FirstOrDefault()?.Price ?? 0);
-                var stable24hrLowestSellOrderPrice = (now > dayOpenTimestamp && (now - dayOpenTimestamp).Duration() <= TimeSpan.FromMinutes(90))
+                var cumulativeSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
+                var lowestSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Min(x => x.Price) : 0);
+                var stable24hrLowestSellOrderPrice = ((now > dayOpenTimestamp && (now - dayOpenTimestamp).Duration() <= TimeSpan.FromMinutes(75)) || Stable24hrSellOrderLowestPrice == 0)
                     ? lowestSellOrderPrice
                     : Stable24hrSellOrderLowestPrice;
                 var resellPrice = (lowestSellOrderPrice - 1);
