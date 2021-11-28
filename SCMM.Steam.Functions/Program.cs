@@ -64,6 +64,11 @@ public static class HostExtensions
                 });
             });
 
+            // Service bus
+            services.AddAzureServiceBus(
+                Environment.GetEnvironmentVariable("ServiceBusConnection")
+            );
+
             // 3rd party clients
             services.AddSingleton((services) =>
             {
