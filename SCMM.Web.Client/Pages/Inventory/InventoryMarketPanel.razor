@@ -1,6 +1,7 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Profile.Inventory
+@using Syncfusion.Blazor.Charts
 @inject ILogger<InventoryMarketPanel> Logger
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
@@ -82,7 +83,7 @@ else
                                     var data = (context as ChartDataPointInfo);
                                 }
                                 <MudPaper Outlined="true" Class="pa-2">
-                                    <span>@(data.X?.ToString()) : <strong>@State.Currency.ToPriceString((decimal)((double)data.Y))</strong></span>
+                                    <span class="no-wrap">@(data.X?.ToString()) : <strong>@State.Currency.ToPriceString((decimal)((double)data.Y))</strong></span>
 								</MudPaper>
 							</Template>
                         </ChartTooltipSettings>
@@ -114,7 +115,7 @@ else
                                     var data = (context as AccumulationChartDataPointInfo);
                                 }
                                 <MudPaper Outlined="true" Class="pa-2">
-                                    <span>@(data.X?.ToString()) : <strong>@State.Currency.ToPriceString((decimal)((double)data.Y))</strong> (@Math.Round(data.Percentage, 0)%)</span>
+                                    <span class="no-wrap">@(data.X?.ToString()) : <strong>@State.Currency.ToPriceString((decimal)((double)data.Y))</strong> (@Math.Round(data.Percentage, 0)%)</span>
 								</MudPaper>
 							</Template>
                         </AccumulationChartTooltipSettings>
@@ -146,7 +147,7 @@ else
                                     var data = (context as AccumulationChartDataPointInfo);
                                 }
                                 <MudPaper Outlined="true" Class="pa-2">
-                                    <span>@(data.X?.ToString()) : <strong>@State.Currency.ToPriceString(-((decimal)((double)data.Y)))</strong> (@Math.Round(data.Percentage, 0)%)</span>
+                                    <span class="no-wrap">@(data.X?.ToString()) : <strong>@State.Currency.ToPriceString(-((decimal)((double)data.Y)))</strong> (@Math.Round(data.Percentage, 0)%)</span>
 								</MudPaper>
 							</Template>
                         </AccumulationChartTooltipSettings>

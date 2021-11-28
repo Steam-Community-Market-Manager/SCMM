@@ -682,6 +682,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Value = this.Currency().CalculateExchange(x.FirstOrDefault()?.CurrentValue ?? 0m),
                     Quantity = x.Sum(y => y.Quantity)
                 })
+                .Where(x => x.Movement != 0)
                 .OrderByDescending(x => x.Movement)
                 .ToList();
 

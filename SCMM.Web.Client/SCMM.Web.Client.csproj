@@ -20,6 +20,7 @@
     <PackageReference Include="MudBlazor" Version="6.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Syncfusion.Blazor.Charts" Version="19.3.0.55" />
+    <PackageReference Include="Syncfusion.Blazor.TreeMap" Version="19.3.0.55" />
   </ItemGroup>
 
   <ItemGroup>
