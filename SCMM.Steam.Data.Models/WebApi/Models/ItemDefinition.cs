@@ -12,10 +12,10 @@ namespace SCMM.Steam.Data.Models.WebApi.Models
 
         [JsonPropertyName("Timestamp")]
         public string Timestamp { get; set; }
-      
+
         [JsonPropertyName("modified")]
         public string Modified { get; set; }
-        
+
         [JsonPropertyName("date_created")]
         public string DateCreated { get; set; }
 

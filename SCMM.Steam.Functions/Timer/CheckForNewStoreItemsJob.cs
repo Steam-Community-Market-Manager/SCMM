@@ -99,9 +99,6 @@ public class CheckForNewStoreItemsJob
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.Description)
                 .ToList();
-
-            // Check if there are any items or stores that are no longer available
-            var generalItemsWereRemoved = false;
             var limitedItemsWereRemoved = false;
             foreach (var itemStore in activeItemStores.ToList())
             {
@@ -115,11 +112,7 @@ public class CheckForNewStoreItemsJob
                         if (missingStoreItem != null)
                         {
                             missingStoreItem.Item.IsAvailable = false;
-                            if (missingStoreItem.Item.Description.IsPermanent)
-                            {
-                                generalItemsWereRemoved = true;
-                            }
-                            else
+                            if (!missingStoreItem.Item.Description.IsPermanent)
                             {
                                 limitedItemsWereRemoved = true;
                             }

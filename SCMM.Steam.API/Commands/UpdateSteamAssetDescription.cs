@@ -329,7 +329,7 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
             }
-            
+
             // Parse asset icon and image data
             if (assetDescription.IconId == null && !string.IsNullOrEmpty(assetDescription.IconUrl))
             {
@@ -391,7 +391,7 @@ namespace SCMM.Steam.API.Commands
                     _logger.LogWarning(ex, $"Unable to import asset description preview image. {ex.Message}");
                 }
             }
-            
+
             // Parse asset description and name id from the market list page (if available)
             if (!string.IsNullOrEmpty(request.MarketListingPageHtml))
             {
@@ -578,7 +578,7 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
             }
-            
+
             // Parse asset item type (if missing)
             if (string.IsNullOrEmpty(assetDescription.ItemShortName) && !string.IsNullOrEmpty(assetDescription.ItemType))
             {

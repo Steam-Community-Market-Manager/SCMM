@@ -176,7 +176,7 @@ namespace SCMM.Steam.Data.Store
                 var buyOrdersSorted = BuyOrders.OrderByDescending(y => y.Price).ToArray();
                 var cumulativeBuyOrderPrice = (buyOrdersSorted.Any() ? buyOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
                 var highestBuyOrderPrice = (buyOrdersSorted.Any() ? buyOrdersSorted.Max(x => x.Price) : 0);
-                
+
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //BuyOrderCount = buyOrdersSorted.Sum(y => y.Quantity);
                 BuyOrderCount = (buyOrderCount ?? BuyOrderCount);

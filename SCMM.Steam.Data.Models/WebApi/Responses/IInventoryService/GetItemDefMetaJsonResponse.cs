@@ -1,5 +1,4 @@
-﻿using SCMM.Steam.Data.Models.WebApi.Models;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Models.WebApi.Responses.IInventoryService
 {

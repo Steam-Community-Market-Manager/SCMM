@@ -90,8 +90,8 @@ namespace SCMM.Steam.API.Commands
                     var assetDescription = assetDescriptions.FirstOrDefault(x =>
                         (x.ItemDefinitionId != null && x.ItemDefinitionId == itemDefinition.ItemDefId) ||
                         (x.WorkshopFileId != null && x.WorkshopFileId == itemDefinition.WorkshopId) ||
-                        x.NameHash == itemDefinition.MarketHashName || 
-                        x.Name == itemDefinition.MarketName || 
+                        x.NameHash == itemDefinition.MarketHashName ||
+                        x.Name == itemDefinition.MarketName ||
                         x.Name == itemDefinition.Name
                     );
                     if (assetDescription == null)

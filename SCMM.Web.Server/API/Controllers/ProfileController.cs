@@ -7,7 +7,6 @@ using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
-using SCMM.Shared.Web.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models.Enums;
