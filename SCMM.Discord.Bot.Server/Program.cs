@@ -19,9 +19,8 @@ using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web;
-using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
@@ -44,11 +43,16 @@ public static class WebApplicationExtensions
     public static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
     {
         builder.Logging.ClearProviders();
-        builder.Logging.AddDebug();
-        builder.Logging.AddConsole();
-        builder.Logging.AddHtmlLogger();
-        builder.Logging.AddApplicationInsights();
-        builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Logging.AddDebug();
+            builder.Logging.AddConsole();
+        }
+        else
+        {
+            builder.Logging.AddApplicationInsights();
+            builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+        }
         return builder;
     }
 

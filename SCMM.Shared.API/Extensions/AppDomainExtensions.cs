@@ -1,4 +1,4 @@
-﻿namespace SCMM.Shared.Web.Extensions
+﻿namespace SCMM.Shared.API.Extensions
 {
     public static class AppDomainExtensions
     {

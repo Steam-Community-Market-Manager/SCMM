@@ -12,7 +12,6 @@ using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
-using SCMM.Shared.Web.Extensions;
 using SCMM.Shared.Web.Formatters;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
@@ -40,10 +39,16 @@ public static class WebApplicationExtensions
     public static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
     {
         builder.Logging.ClearProviders();
-        builder.Logging.AddDebug();
-        builder.Logging.AddConsole();
-        builder.Logging.AddApplicationInsights();
-        builder.Logging.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Logging.AddDebug();
+            builder.Logging.AddConsole();
+        }
+        else
+        {
+            builder.Logging.AddApplicationInsights();
+            builder.Logging.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+        }
         return builder;
     }
 

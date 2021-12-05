@@ -5,11 +5,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using SCMM.Azure.AI;
 using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
@@ -20,6 +23,7 @@ using System.Reflection;
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
 await new HostBuilder()
+    .ConfigureLogging()
     .ConfigureAppConfiguration()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices()
@@ -28,6 +32,23 @@ await new HostBuilder()
 
 public static class HostExtensions
 {
+    public static IHostBuilder ConfigureLogging(this IHostBuilder builder)
+    {
+        return builder.ConfigureLogging(logging =>
+        {
+            logging.ClearProviders();
+            if (AppDomain.CurrentDomain.IsDebugBuild())
+            {
+                logging.AddDebug();
+                logging.AddConsole();
+            }
+            {
+                logging.AddApplicationInsights();
+                logging.AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
+            }
+        });
+    }
+
     public static IHostBuilder ConfigureAppConfiguration(this IHostBuilder builder)
     {
         return builder.ConfigureAppConfiguration(config =>
@@ -62,6 +83,8 @@ public static class HostExtensions
                     //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     sql.EnableRetryOnFailure();
                 });
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
 
             // Service bus
