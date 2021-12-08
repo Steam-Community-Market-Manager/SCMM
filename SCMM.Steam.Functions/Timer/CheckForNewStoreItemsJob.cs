@@ -210,7 +210,7 @@ public class CheckForNewStoreItemsJob
                     generalItemStore.ItemsThumbnail = null;
                     generalItemStore.ItemsThumbnailId = null;
                 }
-                var thumbnail = await GenerateStoreItemsThumbnailImage(_queryProcessor, generalItemStore.Items.Select(x => x.Item));
+                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, generalItemStore.Items.Select(x => x.Item));
                 if (thumbnail != null)
                 {
                     generalItemStore.ItemsThumbnail = thumbnail;
@@ -228,7 +228,7 @@ public class CheckForNewStoreItemsJob
                     limitedItemStore.ItemsThumbnail = null;
                     limitedItemStore.ItemsThumbnailId = null;
                 }
-                var thumbnail = await GenerateStoreItemsThumbnailImage(_queryProcessor, limitedItemStore.Items.Select(x => x.Item));
+                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, limitedItemStore.Items.Select(x => x.Item));
                 if (thumbnail != null)
                 {
                     limitedItemStore.ItemsThumbnail = thumbnail;
@@ -240,105 +240,121 @@ public class CheckForNewStoreItemsJob
             // Send out a broadcast about any "new" items that weren't already in our store
             if (newGeneralStoreItems.Any())
             {
-                await BroadcastNewStoreItemsNotification(_commandProcessor, _db, app, generalItemStore, newGeneralStoreItems, currencies);
+                await BroadcastNewStoreItemsNotification(logger, _commandProcessor, _db, app, generalItemStore, newGeneralStoreItems, currencies);
             }
             if (newLimitedStoreItems.Any())
             {
-                await BroadcastNewStoreItemsNotification(_commandProcessor, _db, app, limitedItemStore, newLimitedStoreItems, currencies);
+                await BroadcastNewStoreItemsNotification(logger, _commandProcessor, _db, app, limitedItemStore, newLimitedStoreItems, currencies);
             }
 
             // TODO: Wait 1min, then trigger CheckForNewMarketItemsJob
         }
     }
 
-    private async Task<FileData> GenerateStoreItemsThumbnailImage(IQueryProcessor queryProcessor, IEnumerable<SteamStoreItem> storeItems)
+    private async Task<FileData> GenerateStoreItemsThumbnailImage(ILogger logger, IQueryProcessor queryProcessor, IEnumerable<SteamStoreItem> storeItems)
     {
-        // Generate store thumbnail
-        var items = storeItems.OrderBy(x => x.Description?.Name);
-        var itemImageSources = items
-            .Where(x => x.Description != null)
-            .Select(x => new ImageSource()
+        try
+        {
+            // Generate store thumbnail
+            var items = storeItems.OrderBy(x => x.Description?.Name);
+            var itemImageSources = items
+                .Where(x => x.Description != null)
+                .Select(x => new ImageSource()
+                {
+                    Title = x.Description.Name,
+                    ImageUrl = x.Description.IconUrl,
+                    ImageData = x.Description.Icon?.Data,
+                })
+                .ToList();
+
+            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
-                Title = x.Description.Name,
-                ImageUrl = x.Description.IconUrl,
-                ImageData = x.Description.Icon?.Data,
-            })
-            .ToList();
+                ImageSources = itemImageSources,
+                TileSize = 256,
+                Columns = 3
+            });
 
-        var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
-        {
-            ImageSources = itemImageSources,
-            TileSize = 256,
-            Columns = 3
-        });
+            if (thumbnail == null)
+            {
+                return null;
+            }
 
-        if (thumbnail == null)
+            return new FileData()
+            {
+                MimeType = thumbnail.MimeType,
+                Data = thumbnail.Data
+            };
+        }
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Failed to generate store item thumbnail image");
             return null;
         }
-
-        return new FileData()
-        {
-            MimeType = thumbnail.MimeType,
-            Data = thumbnail.Data
-        };
     }
 
-    private async Task BroadcastNewStoreItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
+    private async Task BroadcastNewStoreItemsNotification(ILogger logger, ICommandProcessor commandProcessor, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
     {
         newStoreItems = newStoreItems?.OrderBy(x => x.Item?.Description?.Name);
         var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
         foreach (var guild in guilds)
         {
-            if (guild.IsSet(DiscordConfiguration.Alerts) && !guild.Get(DiscordConfiguration.Alerts).Value.Contains(DiscordConfiguration.AlertsStore))
+            try
             {
-                continue;
-            }
+                if (guild.IsSet(DiscordConfiguration.Alerts) && !guild.Get(DiscordConfiguration.Alerts).Value.Contains(DiscordConfiguration.AlertsStore))
+                {
+                    continue;
+                }
 
-            var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
                     "announcement", "store", "skin", app.Name, "general", "chat", "bot"
                 });
 
-            var filteredCurrencies = currencies;
-            var guildCurrencies = guild.List(DiscordConfiguration.Currency).Value;
-            if (guildCurrencies?.Any() == true)
-            {
-                filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
+                var filteredCurrencies = currencies;
+                var guildCurrencies = guild.List(DiscordConfiguration.Currency).Value;
+                if (guildCurrencies?.Any() == true)
+                {
+                    filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
+                }
+                else
+                {
+                    filteredCurrencies = currencies.Where(x => x.Name == Constants.SteamCurrencyUSD).ToList();
+                }
+
+                var storeId = store.Start != null
+                    ? store.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)
+                    : store.Name.ToLower();
+
+                var storeName = store.Start != null
+                    ? $"{store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}"
+                    : store.Name;
+
+                await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
+                {
+                    GuidId = ulong.Parse(guild.DiscordId),
+                    ChannelPatterns = guildChannels?.ToArray(),
+                    Message = null,
+                    Title = $"{app.Name} Store - {storeName}",
+                    Description = $"{newStoreItems.Count()} new item(s) have been added to the store.",
+                    Fields = newStoreItems.ToDictionary(
+                        x => x.Item?.Description?.Name,
+                        x => GetStoreItemPriceList(x, filteredCurrencies)
+                    ),
+                    FieldsInline = true,
+                    Url = $"{_configuration.GetWebsiteUrl()}/store/{storeId}",
+                    ThumbnailUrl = app.IconUrl,
+                    ImageUrl = (store.ItemsThumbnailId != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}" : null),
+                    Colour = app.PrimaryColor
+                });
             }
-            else
+            catch (Exception ex)
             {
-                filteredCurrencies = currencies.Where(x => x.Name == Constants.SteamCurrencyUSD).ToList();
+                logger.LogError(ex, $"Failed to send new store item notification to guild (id: {guild.Id})");
+                continue;
             }
-
-            var storeId = store.Start != null
-                ? store.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)
-                : store.Name.ToLower();
-
-            var storeName = store.Start != null
-                ? $"{store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}"
-                : store.Name;
-
-            await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
-            {
-                GuidId = ulong.Parse(guild.DiscordId),
-                ChannelPatterns = guildChannels?.ToArray(),
-                Message = null,
-                Title = $"{app.Name} Store - {storeName}",
-                Description = $"{newStoreItems.Count()} new item(s) have been added to the store.",
-                Fields = newStoreItems.ToDictionary(
-                    x => x.Item?.Description?.Name,
-                    x => GenerateStoreItemPriceList(x, filteredCurrencies)
-                ),
-                FieldsInline = true,
-                Url = $"{_configuration.GetWebsiteUrl()}/store/{storeId}",
-                ThumbnailUrl = app.IconUrl,
-                ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}",
-                Colour = app.PrimaryColor
-            });
         }
     }
 
-    private string GenerateStoreItemPriceList(SteamStoreItemItemStore storeItem, IEnumerable<SteamCurrency> currencies)
+    private string GetStoreItemPriceList(SteamStoreItemItemStore storeItem, IEnumerable<SteamCurrency> currencies)
     {
         var prices = new List<string>();
         foreach (var currency in currencies.OrderBy(x => x.Name))

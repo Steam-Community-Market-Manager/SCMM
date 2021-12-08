@@ -106,7 +106,7 @@ public class CheckForNewMarketItemsJob
         if (newMarketItems.Any())
         {
             var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
-            var thumbnail = await GenerateMarketItemsThumbnailImage(_queryProcessor, newMarketItems, thumbnailExpiry);
+            var thumbnail = await GenerateMarketItemsThumbnailImage(logger, _queryProcessor, newMarketItems, thumbnailExpiry);
             if (thumbnail != null)
             {
                 _db.FileData.Add(thumbnail);
@@ -114,109 +114,125 @@ public class CheckForNewMarketItemsJob
 
             _db.SaveChanges();
 
-            await BroadcastNewMarketItemsNotification(_commandProcessor, _db, newMarketItems, thumbnail);
+            await BroadcastNewMarketItemsNotification(logger, _commandProcessor, _db, newMarketItems, thumbnail);
         }
     }
 
-    private async Task<FileData> GenerateMarketItemsThumbnailImage(IQueryProcessor queryProcessor, IEnumerable<SteamMarketItem> marketItems, DateTimeOffset expiresOn)
+    private async Task<FileData> GenerateMarketItemsThumbnailImage(ILogger logger, IQueryProcessor queryProcessor, IEnumerable<SteamMarketItem> marketItems, DateTimeOffset expiresOn)
     {
-        var items = marketItems.OrderBy(x => x.Description?.Name);
-        var itemImageSources = items
-            .Where(x => x.Description != null)
-            .Select(x => new ImageSource()
+        try
+        {
+            var items = marketItems.OrderBy(x => x.Description?.Name);
+            var itemImageSources = items
+                .Where(x => x.Description != null)
+                .Select(x => new ImageSource()
+                {
+                    Title = x.Description.Name,
+                    ImageUrl = x.Description.IconUrl,
+                    ImageData = x.Description.Icon?.Data,
+                })
+                .ToList();
+
+            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
-                Title = x.Description.Name,
-                ImageUrl = x.Description.IconUrl,
-                ImageData = x.Description.Icon?.Data,
-            })
-            .ToList();
+                ImageSources = itemImageSources,
+                TileSize = 256,
+                Columns = 3
+            });
 
-        var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
-        {
-            ImageSources = itemImageSources,
-            TileSize = 256,
-            Columns = 3
-        });
+            if (thumbnail == null)
+            {
+                return null;
+            }
 
-        if (thumbnail == null)
+            return new FileData()
+            {
+                MimeType = thumbnail.MimeType,
+                Data = thumbnail.Data,
+                ExpiresOn = expiresOn
+            };
+        }
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Failed to generate market item thumbnail image");
             return null;
         }
-
-        return new FileData()
-        {
-            MimeType = thumbnail.MimeType,
-            Data = thumbnail.Data,
-            ExpiresOn = expiresOn
-        };
     }
 
-    private async Task BroadcastNewMarketItemsNotification(ICommandProcessor commandProcessor, SteamDbContext db, IEnumerable<SteamMarketItem> newMarketItems, FileData thumbnailImage)
+    private async Task BroadcastNewMarketItemsNotification(ILogger logger, ICommandProcessor commandProcessor, SteamDbContext db, IEnumerable<SteamMarketItem> newMarketItems, FileData thumbnailImage)
     {
         newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name);
         var app = newMarketItems.Where(x => x.App != null).FirstOrDefault()?.App;
         var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
         foreach (var guild in guilds)
         {
-            if (guild.IsSet(DiscordConfiguration.Alerts) && !guild.Get(DiscordConfiguration.Alerts).Value.Contains(DiscordConfiguration.AlertsMarket))
+            try
             {
+                if (guild.IsSet(DiscordConfiguration.Alerts) && !guild.Get(DiscordConfiguration.Alerts).Value.Contains(DiscordConfiguration.AlertsMarket))
+                {
+                    continue;
+                }
+
+                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                    "announcement", "market", "skin", app.Name, "general", "chat", "bot"
+                });
+
+                var fields = new Dictionary<string, string>();
+                foreach (var marketItem in newMarketItems)
+                {
+                    var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
+                    var description = marketItem.Description?.ItemType;
+                    if (string.IsNullOrEmpty(description))
+                    {
+                        description = marketItem.Description?.Description ?? marketItem.SteamId;
+                    }
+                    if (storeItem != null)
+                    {
+                        var estimateSales = string.Empty;
+                        if (storeItem.TotalSalesMax == null && storeItem.TotalSalesMin > 0)
+                        {
+                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} or more";
+                        }
+                        else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax && storeItem.TotalSalesMin > 0)
+                        {
+                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()}";
+                        }
+                        else if (storeItem.TotalSalesMin > 0 && storeItem.TotalSalesMax > 0)
+                        {
+                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
+                        }
+                        if (!string.IsNullOrEmpty(estimateSales))
+                        {
+                            description = $"{estimateSales} estimated sales";
+                        }
+                    }
+                    fields.Add(marketItem.Description.Name, description);
+                }
+
+                var itemImageIds = newMarketItems
+                    .Where(x => x.Description?.IconId != null)
+                    .Select(x => x.Description.IconId);
+
+                await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
+                {
+                    GuidId = ulong.Parse(guild.DiscordId),
+                    ChannelPatterns = guildChannels?.ToArray(),
+                    Message = null,
+                    Title = $"{app?.Name} Market - New Listings",
+                    Description = $"{newMarketItems.Count()} new item(s) have just appeared in the {app?.Name} marketplace.",
+                    Fields = fields,
+                    FieldsInline = true,
+                    Url = $"{_configuration.GetWebsiteUrl()}/items",
+                    ThumbnailUrl = app?.IconUrl,
+                    ImageUrl = (thumbnailImage != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnailImage.Id}" : null),
+                    Colour = app?.PrimaryColor
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to send new market item notification to guild (id: {guild.Id})");
                 continue;
             }
-
-            var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
-                "announcement", "market", "skin", app.Name, "general", "chat", "bot"
-            });
-
-            var fields = new Dictionary<string, string>();
-            foreach (var marketItem in newMarketItems)
-            {
-                var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
-                var description = marketItem.Description?.ItemType;
-                if (string.IsNullOrEmpty(description))
-                {
-                    description = marketItem.Description?.Description ?? marketItem.SteamId;
-                }
-                if (storeItem != null)
-                {
-                    var estimateSales = string.Empty;
-                    if (storeItem.TotalSalesMax == null && storeItem.TotalSalesMin > 0)
-                    {
-                        estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} or more";
-                    }
-                    else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax && storeItem.TotalSalesMin > 0)
-                    {
-                        estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()}";
-                    }
-                    else if (storeItem.TotalSalesMin > 0 && storeItem.TotalSalesMax > 0)
-                    {
-                        estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
-                    }
-                    if (!string.IsNullOrEmpty(estimateSales))
-                    {
-                        description = $"{estimateSales} estimated sales";
-                    }
-                }
-                fields.Add(marketItem.Description.Name, description);
-            }
-
-            var itemImageIds = newMarketItems
-                .Where(x => x.Description?.IconId != null)
-                .Select(x => x.Description.IconId);
-
-            await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
-            {
-                GuidId = ulong.Parse(guild.DiscordId),
-                ChannelPatterns = guildChannels?.ToArray(),
-                Message = null,
-                Title = $"{app?.Name} Market - New Listings",
-                Description = $"{newMarketItems.Count()} new item(s) have just appeared in the {app?.Name} marketplace.",
-                Fields = fields,
-                FieldsInline = true,
-                Url = $"{_configuration.GetWebsiteUrl()}/items",
-                ThumbnailUrl = app?.IconUrl,
-                ImageUrl = $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnailImage?.Id}",
-                Colour = app?.PrimaryColor
-            });
         }
     }
 }
