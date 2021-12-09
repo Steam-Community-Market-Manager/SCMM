@@ -4,10 +4,12 @@ using Microsoft.Extensions.Caching.Memory;
 using SCMM.Shared.Data.Models;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Store;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.Drawing.Processing;
 
 namespace SCMM.Steam.API.Queries
 {
@@ -22,17 +24,6 @@ namespace SCMM.Steam.API.Queries
         public int? Rows { get; set; } = null;
     }
 
-    public class GetTradeImageMosaicRequest : IQuery<GetImageMosaicResponse>
-    {
-        public IEnumerable<ImageSource> HaveImageSources { get; set; }
-
-        public IEnumerable<ImageSource> WantImageSources { get; set; }
-
-        public int TileSize { get; set; } = 256;
-
-        public int Columns { get; set; } = 3;
-    }
-
     public class GetImageMosaicResponse
     {
         public byte[] Data { get; set; }
@@ -41,8 +32,7 @@ namespace SCMM.Steam.API.Queries
     }
 
     public class GetImageMosaic :
-        IQueryHandler<GetImageMosaicRequest, GetImageMosaicResponse>,
-        IQueryHandler<GetTradeImageMosaicRequest, GetImageMosaicResponse>
+        IQueryHandler<GetImageMosaicRequest, GetImageMosaicResponse>
     {
         private static readonly IMemoryCache Cache = new MemoryCache(new MemoryCacheOptions());
 
@@ -74,14 +64,14 @@ namespace SCMM.Steam.API.Queries
             var indicatorSize = (int)Math.Ceiling(tileSize * 0.25f);
             var fontSize = 24;
             var fontLineHeight = (fontSize + (padding * 3));
-            var fontFamily = new FontFamily(GenericFontFamilies.SansSerif);
-            var font = new Font(fontFamily, fontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-            var solidBlackOutlinePen = new Pen(new SolidBrush(Color.FromArgb(128, 0, 0, 0)), 3);
-            var solidBlack = new SolidBrush(Color.FromArgb(255, 0, 0, 0));
-            var solidWhite = new SolidBrush(Color.FromArgb(255, 255, 255, 255));
-            var solidRed = new SolidBrush(Color.FromArgb(255, 244, 67, 54));
-            var solidGreen = new SolidBrush(Color.FromArgb(255, 76, 175, 80));
-            var solidBlue = new SolidBrush(Color.FromArgb(255, 144, 202, 249));
+            var fontFamily = SystemFonts.Find("Microsoft Sans Serif");
+            var font = new Font(fontFamily, fontSize, FontStyle.Regular);
+            var solidBlackOutlinePen = Pens.Solid(Color.FromRgba(0, 0, 0, 128), 3);
+            var solidBlack = Brushes.Solid(Color.FromRgba(0, 0, 0, 255));
+            var solidWhite = Brushes.Solid(Color.FromRgba(255, 255, 255, 255));
+            var solidRed = Brushes.Solid(Color.FromRgba(244, 67, 54, 255));
+            var solidGreen = Brushes.Solid(Color.FromRgba(76, 175, 80, 255));
+            var solidBlue = Brushes.Solid(Color.FromRgba(144, 202, 249, 255));
             var imageSize = tileSize;
 
             var renderTitles = imageSources.Any(x => !string.IsNullOrEmpty(x.Title));
@@ -99,12 +89,14 @@ namespace SCMM.Steam.API.Queries
             imageSources = imageSources.Take(maxTiles).ToList();
             await HydrateImageData(imageSources);
 
-            var mosaic = new Bitmap(columns * tileSize, rows * tileSize);
+            var mosaic = new Image<Rgba32>(columns * tileSize, rows * tileSize);
             var imageSourceQueue = new Queue<ImageSource>(imageSources);
-            using var graphics = Graphics.FromImage(mosaic);
-
-            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            graphics.CompositingQuality = CompositingQuality.HighQuality;
+            mosaic.Mutate(ctx => ctx
+                .SetGraphicsOptions(new GraphicsOptions()
+                {
+                    Antialias = true
+                })
+            );
 
             y = 0;
             for (var r = 0; r < rows; r++)
@@ -118,19 +110,25 @@ namespace SCMM.Steam.API.Queries
                         continue;
                     }
 
-                    var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
-                    graphics.DrawImage(
-                        image,
-                        x + ((Math.Max(2, tileSize - imageSize) / 2) - 1),
-                        y,
-                        imageSize,
-                        imageSize
+                    var image = Image.Load<Rgba32>(new MemoryStream(imageSource.ImageData));
+                    image.Mutate(ctx => ctx
+                        .Resize(imageSize, imageSize, KnownResamplers.Bicubic)
+                    );
+                    mosaic.Mutate(ctx => ctx
+                        .DrawImage(
+                            image,
+                            new Point(
+                                x + ((Math.Max(2, tileSize - imageSize) / 2) - 1), 
+                                y
+                            ),
+                            ctx.GetGraphicsOptions()
+                        )
                     );
 
                     if (imageSource.Badge > 1)
                     {
-                        var badge = $"{imageSource.Badge}";
-                        var badgeWidth = (int)Math.Max(indicatorSize, graphics.MeasureString(badge, font).Width + padding);
+                        var badgeText = $"{imageSource.Badge}";
+                        var badgeWidth = (int)Math.Max(indicatorSize, TextMeasurer.Measure(badgeText, new RendererOptions(font)).Width + padding);
                         var badgeHeight = indicatorSize;
                         var badgeRect = new Rectangle(
                             x + tileSize - badgeWidth - padding,
@@ -139,23 +137,18 @@ namespace SCMM.Steam.API.Queries
                             badgeHeight
                         );
 
-                        using var badgePath = GetRoundedRectPath(badgeRect, badgeHeight / 2);
-                        graphics.FillPath(
-                            solidBlue,
-                            badgePath
-                        );
-                        graphics.DrawPath(
-                            solidBlackOutlinePen,
-                            badgePath
-                        );
-
-                        graphics.DrawString(
-                            badge,
-                            font,
-                            solidBlack,
-                            new PointF(
-                                badgeRect.Left + (padding / 1.5f),
-                                badgeRect.Top + (padding / 3)
+                        var badgeIconPath = new RectangularPolygon(badgeRect);
+                        mosaic.Mutate(ctx => ctx
+                            .Fill(solidBlue, badgeIconPath)
+                            .Draw(solidBlackOutlinePen, badgeIconPath)
+                            .DrawText(
+                                badgeText, 
+                                font, 
+                                solidBlack,
+                                new PointF(
+                                    badgeRect.Left + (padding / 1.5f),
+                                    badgeRect.Top + (padding / 3)
+                                )
                             )
                         );
                     }
@@ -166,59 +159,41 @@ namespace SCMM.Steam.API.Queries
                     switch (imageSource.Symbol)
                     {
                         case ImageSymbol.ChevronUp:
-                            graphics.FillPolygon(
-                                solidGreen,
-                                GetChevronUpPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
-                            );
-                            graphics.DrawPolygon(
-                                solidBlackOutlinePen,
-                                GetChevronUpPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
-                            );
-                            graphics.FillPolygon(
-                                solidGreen,
-                                GetChevronUpPoints(symbolX, symbolY, indicatorSize)
-                            );
-                            graphics.DrawPolygon(
-                                solidBlackOutlinePen,
-                                GetChevronUpPoints(symbolX, symbolY, indicatorSize)
+                            mosaic.Mutate(ctx => ctx
+                                .FillPolygon(solidGreen, GetChevronUpPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize))
+                                .DrawPolygon(solidBlackOutlinePen, GetChevronUpPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize))
+                                .FillPolygon(solidGreen, GetChevronUpPoints(symbolX, symbolY, indicatorSize))
+                                .DrawPolygon(solidBlackOutlinePen, GetChevronUpPoints(symbolX, symbolY, indicatorSize))
                             );
                             break;
 
                         case ImageSymbol.ChevronDown:
-                            graphics.FillPolygon(
-                                solidRed,
-                                GetChevronDownPoints(symbolX, symbolY, indicatorSize)
-                            );
-                            graphics.DrawPolygon(
-                                solidBlackOutlinePen,
-                                GetChevronDownPoints(symbolX, symbolY, indicatorSize)
-                            );
-                            graphics.FillPolygon(
-                                solidRed,
-                                GetChevronDownPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
-                            );
-                            graphics.DrawPolygon(
-                                solidBlackOutlinePen,
-                                GetChevronDownPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize)
+                            mosaic.Mutate(ctx => ctx
+                                .FillPolygon(solidRed, GetChevronDownPoints(symbolX, symbolY, indicatorSize))
+                                .DrawPolygon(solidBlackOutlinePen, GetChevronDownPoints(symbolX, symbolY, indicatorSize))
+                                .FillPolygon(solidRed, GetChevronDownPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize))
+                                .DrawPolygon(solidBlackOutlinePen, GetChevronDownPoints(symbolX, symbolY - (indicatorSize / 4), indicatorSize))
                             );
                             break;
 
                         case ImageSymbol.Cross:
                             var lineWidth = (indicatorSize / 6);
-                            var lineFill = new Pen(solidRed, lineWidth);
-                            graphics.DrawLine(lineFill, symbolRect.Left, symbolRect.Top, symbolRect.Right, symbolRect.Bottom);
-                            graphics.DrawLine(lineFill, symbolRect.Right, symbolRect.Top, symbolRect.Left, symbolRect.Bottom);
+                            var lineFill = Pens.Solid(solidRed, lineWidth);
+                            mosaic.Mutate(ctx => ctx
+                                .DrawLines(lineFill, new PointF(symbolRect.Left, symbolRect.Top), new PointF(symbolRect.Right, symbolRect.Bottom))
+                                .DrawLines(lineFill, new PointF(symbolRect.Right, symbolRect.Top), new PointF(symbolRect.Left, symbolRect.Bottom))
+                            );
                             break;
                     }
 
                     if (!string.IsNullOrEmpty(imageSource.Title))
                     {
                         var title = imageSource.Title;
-                        var titleWidth = graphics.MeasureString(title, font).Width;
+                        var titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
                         while (titleWidth >= imageSize && title.Length > 0)
                         {
                             title = title.Substring(0, title.Length - 1);
-                            titleWidth = graphics.MeasureString(title, font).Width;
+                            titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
                         }
                         if (title.Length != imageSource.Title.Length)
                         {
@@ -226,13 +201,15 @@ namespace SCMM.Steam.API.Queries
                         }
                         if (!string.IsNullOrEmpty(title) && titleWidth > 0)
                         {
-                            graphics.DrawString(
-                                title,
-                                font,
-                                solidWhite,
-                                new PointF(
-                                    x + ((Math.Max(2, tileSize - titleWidth) / 2) - 1),
-                                    y + imageSize + padding
+                            mosaic.Mutate(ctx => ctx
+                                .DrawText(
+                                    title,
+                                    font,
+                                    solidWhite,
+                                    new PointF(
+                                        x + ((Math.Max(2, tileSize - titleWidth) / 2) - 1),
+                                        y + imageSize + padding
+                                    )
                                 )
                             );
                         }
@@ -243,122 +220,7 @@ namespace SCMM.Steam.API.Queries
             }
 
             using var mosaicStream = new MemoryStream();
-            mosaic.Save(mosaicStream, ImageFormat.Png);
-            var mosaicRaw = mosaicStream.ToArray();
-            return new GetImageMosaicResponse
-            {
-                Data = mosaicRaw,
-                MimeType = "image/png"
-            };
-        }
-
-        public async Task<GetImageMosaicResponse> HandleAsync(GetTradeImageMosaicRequest request)
-        {
-            var haveImageSources = request.HaveImageSources.ToList();
-            var haveTileCount = haveImageSources.Count();
-
-            var wantImageSources = request.WantImageSources.ToList();
-            var wantTileCount = wantImageSources.Count();
-            if (wantTileCount < 1)
-            {
-                return null;
-            }
-
-            var columns = Math.Max(1, request.Columns);
-            var rows = (int)Math.Ceiling((float)Math.Max(haveTileCount, wantTileCount) / columns);
-            var fontSize = 24;
-            var textPadding = (int)Math.Ceiling(fontSize * 0.5);
-            var tileSize = Math.Max(8, request.TileSize);
-
-            // Hydrate the image sources (but only as many as we need to render)
-            var maxHaveTiles = Math.Min(haveTileCount, (columns * rows));
-            var maxWantTiles = Math.Min(wantTileCount, (columns * rows));
-            haveImageSources = haveImageSources.Take(maxHaveTiles).ToList();
-            wantImageSources = wantImageSources.Take(maxWantTiles).ToList();
-            await HydrateImageData(haveImageSources);
-            await HydrateImageData(wantImageSources);
-
-            var mosaic = new Bitmap((columns + 1 + columns) * tileSize, (rows * tileSize) + fontSize + (textPadding * 2));
-            using var graphics = Graphics.FromImage(mosaic);
-            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-            var sansSerif = new FontFamily(GenericFontFamilies.SansSerif);
-            var gradientTop = Color.FromArgb(133, 133, 133);
-            var gradientBottom = Color.FromArgb(99, 99, 99);
-            var bluePen = new Pen(Color.FromArgb(66, 66, 66), 3)
-            {
-                LineJoin = LineJoin.Round
-            };
-
-            var x = 0;
-            var y = 0;
-
-            if (haveImageSources.Any())
-            {
-                var path = new GraphicsPath();
-                path.AddString(
-                    $"Have", sansSerif, (int)FontStyle.Bold, fontSize, new PointF(x + textPadding, y + textPadding), StringFormat.GenericTypographic
-                );
-                graphics.DrawPath(bluePen, path);
-                graphics.FillPath(
-                    new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical),
-                    path
-                );
-
-                y += (fontSize + (textPadding * 2));
-                var haveImageQueue = new Queue<ImageSource>(haveImageSources);
-                for (var r = 0; r < rows; r++)
-                {
-                    for (var c = 0; c < columns; c++)
-                    {
-                        var imageSource = (haveImageQueue.Any() ? haveImageQueue.Dequeue() : null);
-                        if (imageSource?.ImageData == null)
-                        {
-                            continue;
-                        }
-
-                        var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
-                        graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
-                    }
-                }
-                x += ((columns * tileSize) + tileSize);
-                y = 0;
-            }
-
-            if (wantImageSources.Any())
-            {
-                var path = new GraphicsPath();
-                path.AddString(
-                    $"Want", sansSerif, (int)FontStyle.Bold, fontSize, new PointF(x + textPadding, y + textPadding), StringFormat.GenericTypographic
-                );
-                graphics.DrawPath(bluePen, path);
-                graphics.FillPath(
-                    new LinearGradientBrush(new Rectangle(x + textPadding, y + textPadding, fontSize, fontSize), gradientTop, gradientBottom, LinearGradientMode.Vertical),
-                    path
-                );
-
-                y += (fontSize + (textPadding * 2));
-                var wantImageQueue = new Queue<ImageSource>(wantImageSources);
-                for (var r = 0; r < rows; r++)
-                {
-                    for (var c = 0; c < columns; c++)
-                    {
-                        var imageSource = (wantImageQueue.Any() ? wantImageQueue.Dequeue() : null);
-                        if (imageSource?.ImageData == null)
-                        {
-                            continue;
-                        }
-
-                        var image = Image.FromStream(new MemoryStream(imageSource.ImageData));
-                        graphics.DrawImage(image, x + (c * tileSize), y + (r * tileSize), tileSize, tileSize);
-                    }
-                }
-                x += ((columns * tileSize) + tileSize);
-                y = 0;
-            }
-
-            using var mosaicStream = new MemoryStream();
-            mosaic.Save(mosaicStream, ImageFormat.Png);
+            await mosaic.SaveAsPngAsync(mosaicStream);
             var mosaicRaw = mosaicStream.ToArray();
             return new GetImageMosaicResponse
             {
@@ -428,38 +290,6 @@ namespace SCMM.Steam.API.Queries
                     imageSource.ImageData = importedImage.File.Data;
                 }
             }
-        }
-
-        private static GraphicsPath GetRoundedRectPath(Rectangle bounds, int radius)
-        {
-            var diameter = radius * 2;
-            var size = new Size(diameter, diameter);
-            var arc = new Rectangle(bounds.Location, size);
-            var path = new GraphicsPath();
-
-            if (radius == 0)
-            {
-                path.AddRectangle(bounds);
-                return path;
-            }
-
-            // Top left arc  
-            path.AddArc(arc, 180, 90);
-
-            // Top right arc  
-            arc.X = bounds.Right - diameter;
-            path.AddArc(arc, 270, 90);
-
-            // Bottom right arc  
-            arc.Y = bounds.Bottom - diameter;
-            path.AddArc(arc, 0, 90);
-
-            // Bottom left arc 
-            arc.X = bounds.Left;
-            path.AddArc(arc, 90, 90);
-
-            path.CloseFigure();
-            return path;
         }
 
         private static PointF[] GetChevronUpPoints(float x, float y, int size)

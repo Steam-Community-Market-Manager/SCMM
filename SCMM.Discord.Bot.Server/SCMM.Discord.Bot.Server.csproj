@@ -31,10 +31,4 @@
     <ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="runtimeconfig.template.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>

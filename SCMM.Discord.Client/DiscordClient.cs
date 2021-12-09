@@ -155,7 +155,7 @@ namespace SCMM.Discord.Client
             );
         }
 
-        public async Task<ulong> SendMessageAsync(string username, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null, string[] reactions = null)
+        public async Task<ulong> SendMessageAsync(string username, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null, string[] reactions = null)
         {
             WaitUntilClientIsConnected();
 
@@ -193,7 +193,7 @@ namespace SCMM.Discord.Client
             return msg.Id;
         }
 
-        public async Task<ulong> SendMessageAsync(ulong guildId, string[] channelPatterns, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        public async Task<ulong> SendMessageAsync(ulong guildId, string[] channelPatterns, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null)
         {
             WaitUntilClientIsConnected();
 
@@ -289,7 +289,7 @@ namespace SCMM.Discord.Client
             );
         }
 
-        private Embed BuildEmbed(string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, System.Drawing.Color? color = null)
+        private Embed BuildEmbed(string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null)
         {
             // Pre-build the embed content (so we can share it across all messages)
             // If the title is not null, we assume the message has emdeded content
@@ -312,7 +312,7 @@ namespace SCMM.Discord.Client
                     .WithUrl(url)
                     .WithImageUrl(imageUrl)
                     .WithThumbnailUrl(thumbnailUrl)
-                    .WithColor((color != null ? (Color)color.Value : Color.Default))
+                    .WithColor((color != null ? color.Value : Color.Default))
                     .WithFooter(x => x.Text = "https://scmm.app")
                     .Build();
             }

@@ -26,6 +26,6 @@ namespace SCMM.Discord.API.Messages
 
         public string ImageUrl { get; set; }
 
-        public string Colour { get; set; }
+        public uint Colour { get; set; }
     }
 }

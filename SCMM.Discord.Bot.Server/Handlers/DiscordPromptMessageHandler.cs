@@ -3,7 +3,6 @@ using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Messages;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
-using System.Drawing;
 
 namespace SCMM.Discord.Bot.Server.Handlers
 {
@@ -28,7 +27,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 url: message.Url,
                 thumbnailUrl: message.ThumbnailUrl,
                 imageUrl: message.ImageUrl,
-                color: ColorTranslator.FromHtml(message.Colour),
+                color: message.Colour,
                 reactions: message.Reactions
             );
 

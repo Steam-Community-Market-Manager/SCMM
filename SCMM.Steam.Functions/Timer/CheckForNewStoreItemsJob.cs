@@ -17,6 +17,7 @@ using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
+using System.Globalization;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -343,7 +344,7 @@ public class CheckForNewStoreItemsJob
                     Url = $"{_configuration.GetWebsiteUrl()}/store/{storeId}",
                     ThumbnailUrl = app.IconUrl,
                     ImageUrl = (store.ItemsThumbnailId != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}" : null),
-                    Colour = app.PrimaryColor
+                    Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
                 });
             }
             catch (Exception ex)

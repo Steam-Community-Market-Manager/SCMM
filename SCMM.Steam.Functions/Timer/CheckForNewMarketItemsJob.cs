@@ -15,6 +15,7 @@ using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
+using System.Globalization;
 
 namespace SCMM.Steam.Functions.Timer;
 
@@ -225,7 +226,7 @@ public class CheckForNewMarketItemsJob
                     Url = $"{_configuration.GetWebsiteUrl()}/items",
                     ThumbnailUrl = app?.IconUrl,
                     ImageUrl = (thumbnailImage != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnailImage.Id}" : null),
-                    Colour = app?.PrimaryColor
+                    Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
                 });
             }
             catch (Exception ex)

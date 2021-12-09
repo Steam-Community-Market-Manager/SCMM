@@ -17,7 +17,6 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="4.2.1" />
     <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="4.5.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
