@@ -64,7 +64,14 @@ namespace SCMM.Steam.API.Queries
             var indicatorSize = (int)Math.Ceiling(tileSize * 0.25f);
             var fontSize = 24;
             var fontLineHeight = (fontSize + (padding * 3));
-            var fontFamily = SystemFonts.Find("Microsoft Sans Serif");
+            var fontFamily = (FontFamily)null;
+            if (!SystemFonts.TryFind("Segoe UI", out fontFamily) && 
+                !SystemFonts.TryFind("DejaVu Sans", out fontFamily) &&
+                !SystemFonts.TryFind("Noto Sans", out fontFamily) &&
+                !SystemFonts.TryFind("Liberation Sans", out fontFamily))
+            {
+                throw new Exception($"Unable to find a suitable font. Available options are: {String.Join(", ", SystemFonts.Families.Select(x => x.Name))}");
+            }
             var font = new Font(fontFamily, fontSize, FontStyle.Regular);
             var solidBlackOutlinePen = Pens.Solid(Color.FromRgba(0, 0, 0, 128), 3);
             var solidBlack = Brushes.Solid(Color.FromRgba(0, 0, 0, 255));
@@ -128,7 +135,7 @@ namespace SCMM.Steam.API.Queries
                     if (imageSource.Badge > 1)
                     {
                         var badgeText = $"{imageSource.Badge}";
-                        var badgeWidth = (int)Math.Max(indicatorSize, TextMeasurer.Measure(badgeText, new RendererOptions(font)).Width + padding);
+                        var badgeWidth = (int)(TextMeasurer.Measure(badgeText, new RendererOptions(font)).Width + padding);
                         var badgeHeight = indicatorSize;
                         var badgeRect = new Rectangle(
                             x + tileSize - badgeWidth - padding,
@@ -146,7 +153,7 @@ namespace SCMM.Steam.API.Queries
                                 font, 
                                 solidBlack,
                                 new PointF(
-                                    badgeRect.Left + (padding / 1.5f),
+                                    badgeRect.Left + (padding / 2),
                                     badgeRect.Top + (padding / 3)
                                 )
                             )
