@@ -48,8 +48,8 @@ namespace SCMM.Steam.Client
                     }
 
                     // Poll until the file is ready
-                    var downloadIsPrepared = false;
-                    while (!downloadIsPrepared)
+                    var downloadUrl = String.Empty;
+                    while (String.IsNullOrEmpty(downloadUrl))
                     {
                         var statusRequest = new SteamWorkshopDownloaderStatusJsonRequest()
                         {
@@ -72,26 +72,30 @@ namespace SCMM.Steam.Client
                             case "dequeued":
                             case "retrieving":
                             case "retrieved":
-                            case "preparing": Thread.Sleep(3000); break; // avoid spamming the server
-                            case "prepared": downloadIsPrepared = true; break;
-                            case "transmitted": downloadIsPrepared = true; break;
-                            default: throw new Exception($"Unexpected status '{downloadStatus?.Status}' {downloadStatus.DownloadError}");
+                            case "preparing": 
+                                Thread.Sleep(3000); 
+                                break; // avoid spamming the server
+                            case "prepared": 
+                            case "transmitted":
+                                downloadUrl = $"https://{downloadStatus.StorageNode}/prod/storage/{downloadStatus.StoragePath}?uuid={downloadId.Uuid}";
+                                break;
+                            default: 
+                                throw new Exception($"Unexpected status '{downloadStatus?.Status}' {downloadStatus.DownloadError}");
                         }
                     }
 
                     // Download the file
-                    var transmitUrl = $"{_workshopDownloaderNodeUrl}/api/download/transmit?uuid={downloadId.Uuid}";
-                    var transmitResponse = await client.GetAsync(transmitUrl);
-                    if (!transmitResponse.IsSuccessStatusCode)
+                    var storageResponse = await client.GetAsync(downloadUrl);
+                    if (!storageResponse.IsSuccessStatusCode)
                     {
-                        throw new HttpRequestException($"{transmitResponse.StatusCode}: {transmitResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
+                        throw new HttpRequestException($"{storageResponse.StatusCode}: {storageResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
                     }
 
                     return new WebFileData()
                     {
-                        Name = transmitResponse.Content.Headers?.ContentDisposition?.FileName,
-                        MimeType = transmitResponse.Content.Headers?.ContentType?.MediaType,
-                        Data = await transmitResponse.Content.ReadAsByteArrayAsync()
+                        Name = storageResponse.Content.Headers?.ContentDisposition?.FileName,
+                        MimeType = storageResponse.Content.Headers?.ContentType?.MediaType,
+                        Data = await storageResponse.Content.ReadAsByteArrayAsync()
                     };
                 }
                 catch (Exception ex)

@@ -10,14 +10,14 @@ namespace SCMM.Steam.Data.Models.Workshop.Requests
         [JsonPropertyName("collectionId")]
         public ulong? CollectionId { get; set; }
 
-        [JsonPropertyName("extract")]
-        public bool Extract { get; set; } = false;
-
         [JsonPropertyName("hidden")]
         public bool Hidden { get; set; } = true;
 
         [JsonPropertyName("direct")]
         public bool direct { get; set; } = false;
+
+        [JsonPropertyName("downloadFormat")]
+        public string DownloadFormat { get; set; } = "raw";
 
         [JsonPropertyName("autodownload")]
         public bool AutoDownload { get; set; } = true;

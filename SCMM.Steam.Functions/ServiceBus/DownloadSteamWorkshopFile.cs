@@ -58,8 +58,7 @@ public class DownloadSteamWorkshopFile
             var publishedFileData = await _workshopDownloaderClient.DownloadWorkshopFile(
                 new SteamWorkshopDownloaderJsonRequest()
                 {
-                    PublishedFileId = message.PublishedFileId,
-                    Extract = false
+                    PublishedFileId = message.PublishedFileId
                 }
             );
             if (publishedFileData?.Data == null)
