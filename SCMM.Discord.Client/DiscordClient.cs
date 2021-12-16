@@ -14,7 +14,6 @@ namespace SCMM.Discord.Client
         private readonly DiscordConfiguration _configuration;
         private readonly DiscordShardedClient _client;
         private readonly ManualResetEvent _clientIsConnected;
-        private readonly CommandService _commands;
         private readonly DiscordCommandHandler _commandHandler;
         private bool disposedValue;
 
@@ -35,8 +34,7 @@ namespace SCMM.Discord.Client
             _client.JoinedGuild += (x) => Task.Run(() => GuildJoined?.Invoke(new DiscordGuild(x)));
             _client.LeftGuild += (x) => Task.Run(() => GuildLeft?.Invoke(new DiscordGuild(x)));
             _clientIsConnected = new ManualResetEvent(false);
-            _commands = new CommandService();
-            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _commands, _client, configuration);
+            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _client, configuration);
         }
 
         private Task OnClientLogAsync(LogMessage message)
@@ -132,6 +130,7 @@ namespace SCMM.Discord.Client
             await _client.LoginAsync(TokenType.Bot, _configuration.BotToken);
             await _client.StartAsync();
             await _commandHandler.AddCommandsAsync();
+            await _commandHandler.AddSlashCommandsAsync();
         }
 
         public async Task DisconnectAsync()

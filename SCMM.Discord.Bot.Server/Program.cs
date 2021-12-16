@@ -13,6 +13,7 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Discord.Bot.Server.Middleware;
+using SCMM.Discord.Bot.Server.SlashCommands;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Fixer.Client;
@@ -149,6 +150,8 @@ public static class WebApplicationExtensions
         builder.Services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
         builder.Services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
         builder.Services.AddMessages(Assembly.GetEntryAssembly());
+
+        builder.Services.AddScoped<UserSlashCommandHandler>();
 
         // Services
         builder.Services.AddScoped<SteamService>();
