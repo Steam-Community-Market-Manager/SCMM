@@ -51,18 +51,21 @@ namespace SCMM.Web.Server.API.Controllers
                     IconUrl = x.IconUrl,
                     ItemDefinitionsDigest = x.ItemDefinitionsDigest,
                     ItemDefinitionsLastModified = x.TimeUpdated,
-                    LastCheckedAssetDescriptions = new Tuple<DateTimeOffset?, DateTimeOffset?>(
-                        x.AssetDescriptions.Min(y => y.TimeRefreshed),
-                        x.AssetDescriptions.Max(y => y.TimeRefreshed)
-                    ),
-                    LastCheckedMarketOrders = new Tuple<DateTimeOffset?, DateTimeOffset?>(
-                        x.MarketItems.Min(y => y.LastCheckedOrdersOn),
-                        x.MarketItems.Max(y => y.LastCheckedOrdersOn)
-                    ),
-                    LastCheckedMarketSales = new Tuple<DateTimeOffset?, DateTimeOffset?>(
-                        x.MarketItems.Min(y => y.LastCheckedSalesOn),
-                        x.MarketItems.Max(y => y.LastCheckedSalesOn)
-                    )
+                    LastCheckedAssetDescriptions = new TimeRangeDTO()
+                    {
+                        Oldest = x.AssetDescriptions.Min(y => y.TimeRefreshed),
+                        Newest = x.AssetDescriptions.Max(y => y.TimeRefreshed),
+                    },
+                    LastCheckedMarketOrders = new TimeRangeDTO()
+                    {
+                        Oldest = x.MarketItems.Min(y => y.LastCheckedOrdersOn),
+                        Newest = x.MarketItems.Max(y => y.LastCheckedOrdersOn),
+                    },
+                    LastCheckedMarketSales = new TimeRangeDTO()
+                    {
+                        Oldest = x.MarketItems.Min(y => y.LastCheckedSalesOn),
+                        Newest = x.MarketItems.Max(y => y.LastCheckedSalesOn),
+                    }
                 })
                 .FirstOrDefaultAsync();
 

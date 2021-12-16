@@ -14,9 +14,9 @@ public class AppStatusDTO
 
     public DateTimeOffset? ItemDefinitionsLastModified { get; set; }
 
-    public Tuple<DateTimeOffset?, DateTimeOffset?> LastCheckedAssetDescriptions { get; set; }
+    public TimeRangeDTO LastCheckedAssetDescriptions { get; set; }
 
-    public Tuple<DateTimeOffset?, DateTimeOffset?> LastCheckedMarketOrders { get; set; }
+    public TimeRangeDTO LastCheckedMarketOrders { get; set; }
 
-    public Tuple<DateTimeOffset?, DateTimeOffset?> LastCheckedMarketSales { get; set; }
+    public TimeRangeDTO LastCheckedMarketSales { get; set; }
 }
