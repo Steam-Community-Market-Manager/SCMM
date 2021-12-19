@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 
-namespace SCMM.Discord.Client
+namespace SCMM.Discord.Client.Commands
 {
     public class CommandResult : RuntimeResult
     {
@@ -26,12 +26,12 @@ namespace SCMM.Discord.Client
 
         public static CommandResult Success(string message = null, Embed embed = null, Emoji reaction = null)
         {
-            return new CommandResult(reaction: (reaction ?? new Emoji("👌") /* ok */), message: message, embed: embed);
+            return new CommandResult(reaction: reaction ?? new Emoji("👌") /* ok */, message: message, embed: embed);
         }
 
         public static CommandResult Fail(string reason, string explaination = null, string helpUrl = null, string helpImageUrl = null, Emoji reaction = null)
         {
-            return new CommandResult(error: CommandError.Unsuccessful, reaction: (reaction ?? new Emoji("😢") /* cry */), message: reason, explaination: explaination, helpUrl: helpUrl, helpImageUrl: helpImageUrl);
+            return new CommandResult(error: CommandError.Unsuccessful, reaction: reaction ?? new Emoji("😢") /* cry */, message: reason, explaination: explaination, helpUrl: helpUrl, helpImageUrl: helpImageUrl);
         }
     }
 }

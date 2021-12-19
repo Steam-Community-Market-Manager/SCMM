@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.AI;
+using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
 using System.Reflection;
 
@@ -15,7 +16,6 @@ namespace SCMM.Discord.Client
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
         private readonly CommandService _commands;
-        private readonly HashSet<SlashCommandCallback> _slashCommands;
         private readonly DiscordShardedClient _client;
         private readonly DiscordConfiguration _configuration;
 
@@ -24,7 +24,6 @@ namespace SCMM.Discord.Client
             _logger = logger;
             _services = services;
             _commands = new CommandService();
-            _slashCommands = new HashSet<SlashCommandCallback>();
             _client = client;
             _configuration = configuration;
         }
@@ -33,7 +32,7 @@ namespace SCMM.Discord.Client
         {
             _client.MessageReceived += OnMessageReceivedAsync;
             _commands.CommandExecuted += OnCommandExecutedAsync;
-            _commands.Log += OnCommandLogAsync;
+            _commands.Log += OnLogAsync;
 
             try
             {
@@ -58,127 +57,27 @@ namespace SCMM.Discord.Client
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialise command handlers, likely due to invalid dependencies");
+                _logger.LogError(ex, "Failed to initialise command modules, likely due to invalid dependencies");
             }
         }
 
-        public async Task AddSlashCommandsAsync(params Assembly[] assemblies)
+        private Task OnLogAsync(LogMessage message)
         {
-            _client.SlashCommandExecuted += OnSlashCommandExecutedAsync;
-            
-            try
+            if (message.Exception is CommandException commandException)
             {
-                if (!assemblies.Any())
-                {
-                    assemblies = new Assembly[]
-                    {
-                        Assembly.GetEntryAssembly()
-                    };
-                }
-
-                foreach (var assembly in assemblies)
-                {
-                    // Discover command modules
-                    var slashCommandModules = assembly.GetTypes()
-                        .Where(x => typeof(ISlashCommandModule).IsAssignableFrom(x)).Select(x => new
-                        {
-                            Type = x,
-                            Group = x.GetCustomAttribute<GroupAttribute>(),
-                            Summary = x.GetCustomAttribute<SummaryAttribute>()
-                        })
-                        .ToList();
-
-                    // Discover commands
-                    foreach (var slashCommandModule in slashCommandModules)
-                    {
-                        var moduleSlashCommands = slashCommandModule.Type.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                            .Where(x => x.GetCustomAttribute<CommandAttribute>() != null)
-                            .Select(x => new
-                            {
-                                Module = slashCommandModule.Type,
-                                Method = x,
-                                Command = x.GetCustomAttribute<CommandAttribute>(),
-                                Summary = x.GetCustomAttribute<SummaryAttribute>()
-                            })
-                            .ToList();
-
-                        // Command group
-                        if (slashCommandModule.Group != null)
-                        {
-                            var subcommandBuilders = new List<SlashCommandOptionBuilder>();
-                            foreach (var moduleSlashCommand in moduleSlashCommands)
-                            {
-                                var parameterBuilders = moduleSlashCommand.Method.GetParameters()
-                                    .Where(x => x.GetCustomAttribute<NameAttribute>() != null)
-                                    .Select(x => new SlashCommandOptionBuilder()
-                                        .WithName(x.GetCustomAttribute<NameAttribute>()?.Text ?? String.Empty)
-                                        .WithDescription(x.GetCustomAttribute<SummaryAttribute>()?.Text ?? String.Empty)
-                                        .WithType(x.ParameterType.ToCommandOptionType())
-                                    );
-
-                                subcommandBuilders.Add(new SlashCommandOptionBuilder()
-                                    .WithName(moduleSlashCommand.Command.Text)
-                                    .WithDescription(moduleSlashCommand.Summary?.Text ?? String.Empty)
-                                    .WithType(ApplicationCommandOptionType.SubCommand)
-                                    //.AddOptions(parameterBuilders.ToArray())
-                                );
-                            }
-
-                            var commandBuilder = new SlashCommandBuilder()
-                                .WithName(slashCommandModule.Group.Prefix)
-                                .WithDescription(slashCommandModule.Summary?.Text ?? String.Empty)
-                                .AddOptions(subcommandBuilders.ToArray());
-
-                            _slashCommands.Add(new SlashCommandCallback()
-                            {
-                                CommandName = commandBuilder.Name,
-                                Command = commandBuilder.Build(),
-                                Module = slashCommandModule.Type
-                            });
-                        }
-
-                        // Root commands
-                        else
-                        {
-                            foreach (var moduleSlashCommand in moduleSlashCommands)
-                            {
-                                var parameterBuilders = moduleSlashCommand.Method.GetParameters()
-                                    .Where(x => x.GetCustomAttribute<NameAttribute>() != null)
-                                    .Select(x => new SlashCommandOptionBuilder()
-                                        .WithName(x.GetCustomAttribute<NameAttribute>()?.Text ?? String.Empty)
-                                        .WithDescription(x.GetCustomAttribute<SummaryAttribute>()?.Text ?? String.Empty)
-                                        .WithType(x.ParameterType.ToCommandOptionType())
-                                        .WithRequired(!x.IsOptional)
-                                    );
-
-                                var commandBuilder = new SlashCommandBuilder()
-                                    .WithName(moduleSlashCommand.Command.Text)
-                                    .WithDescription(moduleSlashCommand.Summary?.Text ?? String.Empty)
-                                    .AddOptions(parameterBuilders.ToArray());
-
-                                _slashCommands.Add(new SlashCommandCallback()
-                                {
-                                    CommandName = commandBuilder.Name,
-                                    Command = commandBuilder.Build(),
-                                    Module = slashCommandModule.Type
-                                });
-                            }
-                        }
-                    }
-
-                    // Update global command registrations
-                    /*await _client.Rest.DeleteAllGlobalCommandsAsync();
-                    foreach (var globalCommand in _slashCommands)
-                    {
-                        await _client.Rest.CreateGlobalCommand(globalCommand.Command);
-                    }*/
-                }
-
+                var context = commandException.Context;
+                var command = commandException.Command;
+                var commandName = ($"{command?.Module?.Name} {command?.Name}").Trim();
+                var userName = context.User.GetFullUsername();
+                var guildName = (context.Guild != null ? $"{context.Guild.Name} #{context.Guild.Id}" : "n/a");
+                var channelName = (context.Channel != null ? context.Channel.Name : "n/a");
+                _logger.LogError(
+                    commandException,
+                    $"Command '{commandName}' triggered an exception (guild: {guildName}, channel: {channelName}, user: {userName})"
+                );
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to initialise slash command handlers, likely due to invalid dependencies");
-            }
+
+            return Task.CompletedTask;
         }
 
         private Task OnMessageReceivedAsync(SocketMessage msg)
@@ -189,8 +88,15 @@ namespace SCMM.Discord.Client
             {
                 return Task.CompletedTask;
             }
+
             // Ignore messages from other robots
             if (message.Author.IsBot || message.Author.IsWebhook)
+            {
+                return Task.CompletedTask;
+            }
+
+            // Ignore messages we don't have permission to view
+            if (String.IsNullOrEmpty(message.Content))
             {
                 return Task.CompletedTask;
             }
@@ -223,121 +129,27 @@ namespace SCMM.Discord.Client
             return Task.CompletedTask;
         }
 
-        public Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        private Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
-            return RespondToCommand(
+            return RespondToCommandResult(
                 (command.IsSpecified ? ($"{command.Value?.Module?.Name} {command.Value?.Name}").Trim() : "unspecified"),
                 (context.User.GetFullUsername()),
                 (context.Guild != null ? $"{context.Guild.Name} #{context.Guild.Id}" : "n/a"),
                 (context.Channel != null ? context.Channel.Name : "n/a"),
                 (result as CommandResult),
                 (text, embed) => context.Message.ReplyAsync(text: text, embed: embed),
-                (emote) => context.Message.AddReactionSafeAsync(emote)
+                (emote) => context.Message.TryAddReactionAsync(emote)
             );
         }
 
-        public Task OnCommandLogAsync(LogMessage message)
-        {
-            if (message.Exception is CommandException commandException)
-            {
-                var context = commandException.Context;
-                var command = commandException.Command;
-                var commandName = ($"{command?.Module?.Name} {command?.Name}").Trim();
-                var userName = context.User.GetFullUsername();
-                var guildName = (context.Guild != null ? $"{context.Guild.Name} #{context.Guild.Id}" : "n/a");
-                var channelName = (context.Channel != null ? context.Channel.Name : "n/a");
-                _logger.LogError(
-                    commandException,
-                    $"Command '{commandName}' triggered an exception (guild: {guildName}, channel: {channelName}, user: {userName})"
-                );
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private Task OnSlashCommandExecutedAsync(SocketSlashCommand cmd)
-        {
-            // Ignore commands from other robots
-            if (cmd.User.IsBot || cmd.User.IsWebhook)
-            {
-                return Task.CompletedTask;
-            }
-
-            // Find the callback for this command
-            var callback = _slashCommands.FirstOrDefault(x => x.CommandName == cmd.CommandName);
-            if (callback == null)
-            {
-                return Task.CompletedTask;
-            }
-
-            // Execute the command in a background thread to avoid clogging the gateway thread
-            _ = Task.Run(async () =>
-            {
-                await cmd.DeferAsync();
-                try
-                {
-                    using var scope = _services.CreateScope();
-                    {
-                        var handler = scope.ServiceProvider.GetRequiredService(callback.Module);
-                        var handlerMethod = callback.Module.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                            .FirstOrDefault(x => x.GetCustomAttribute<CommandAttribute>()?.Text == cmd.CommandName);
-
-                        var parameters = new List<object>();
-                        foreach (var parameter in handlerMethod.GetParameters())
-                        {
-                            var parameterName = parameter.GetCustomAttribute<NameAttribute>()?.Text;
-                            var parameterData = cmd.Data.Options.FirstOrDefault(x => x.Name == parameterName);
-                            if (parameterData != null)
-                            {
-                                parameters.Add(parameterData.Value);
-                            }
-                            else if (parameter.ParameterType == typeof(SocketSlashCommand))
-                            {
-                                parameters.Add(cmd);
-                            }
-                            else
-                            {
-                                parameters.Add(parameter.DefaultValue);
-                            }
-                        }
-
-                        var result = await ((Task<RuntimeResult>)handlerMethod.Invoke(handler, parameters.ToArray()));
-                        await RespondToCommand(
-                            (cmd.CommandName),
-                            (cmd.User.GetFullUsername()),
-                            null,//(cmd.Guild != null ? $"{cmd.Guild.Name} #{cmd.Guild.Id}" : "n/a"),
-                            (cmd.Channel != null ? cmd.Channel.Name : "n/a"),
-                            (result as CommandResult),
-                            (text, embed) => cmd.FollowupAsync(text: text, embed: embed, ephemeral: true),
-                            null
-                        );
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(
-                       ex,
-                       $"Command '{cmd.CommandName}' triggered an exception (user: {cmd.User.GetFullUsername()})"
-                   );
-                    await cmd.FollowupAsync(
-                        text: $"Sorry, something terrible went wrong your command cannot be completed right now 😵 try again later",
-                        ephemeral: true
-                    );
-                }
-            });
-
-            return Task.CompletedTask;
-        }
-
-        private async Task RespondToCommand<T>(string commandName, string userName, string guildName, string channelName, IResult result, Func<string, Embed, Task<T>> replyFunc, Func<Emoji, Task> reactFunc)
+        private async Task RespondToCommandResult<T>(string commandName, string userName, string guildName, string channelName, IResult result, Func<string, Embed, Task<T>> replyFunc, Func<Emoji, Task> addReactionFunc)
             where T : IUserMessage
         {
+            var commandResult = (result as CommandResult);
             if (result == null)
             {
                 return;
             }
-
-            var commandResult = (result as CommandResult);
 
             // Success
             if (result.IsSuccess)
@@ -348,14 +160,7 @@ namespace SCMM.Discord.Client
 
                 if (commandResult?.Reaction != null)
                 {
-                    if (reactFunc != null)
-                    {
-                        await reactFunc(commandResult.Reaction);
-                    }
-                    else if (commandResult?.Reason == null && commandResult?.Embed == null)
-                    {
-                        await replyFunc(commandResult?.Reaction?.Name, null);
-                    }
+                    await addReactionFunc(commandResult.Reaction);
                 }
                 if (commandResult?.Reason != null || commandResult?.Embed != null)
                 {
@@ -372,14 +177,7 @@ namespace SCMM.Discord.Client
 
                 if (commandResult?.Reaction != null)
                 {
-                    if (reactFunc != null)
-                    {
-                        await reactFunc(commandResult.Reaction);
-                    }
-                    else if (commandResult?.Reason == null && commandResult?.Embed == null)
-                    {
-                        await replyFunc(commandResult?.Reaction?.Name, null);
-                    }
+                    await addReactionFunc(commandResult.Reaction);
                 }
                 if (commandResult?.Reason != null || commandResult?.Explaination != null)
                 {
@@ -405,7 +203,7 @@ namespace SCMM.Discord.Client
                 {
                     case CommandError.UnknownCommand:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, I don't understand that command 😕 use `{_configuration.CommandPrefix}help` for a list of support commands", null);
+                        responseMessage = replyFunc($"Sorry, I don't understand that command 😕", null);
                         break;
 
                     case CommandError.ParseFailed:
@@ -415,7 +213,7 @@ namespace SCMM.Discord.Client
 
                     case CommandError.BadArgCount:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, your command has an invalid number of parameters 😕 use `{_configuration.CommandPrefix}help` for details on command usage", null);
+                        responseMessage = replyFunc($"Sorry, your command has an invalid number of parameters 😕", null);
                         break;
 
                     case CommandError.ObjectNotFound:
@@ -425,7 +223,7 @@ namespace SCMM.Discord.Client
 
                     case CommandError.MultipleMatches:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, your command is ambiguous, try be more specific 😕 use `{_configuration.CommandPrefix}help` for details on command usage", null);
+                        responseMessage = replyFunc($"Sorry, your command is ambiguous, try be more specific 😕", null);
                         break;
 
                     case CommandError.UnmetPrecondition:
@@ -450,11 +248,7 @@ namespace SCMM.Discord.Client
                     $"Command '{commandName}' failed (guild: {guildName}, channel: {channelName}, user: {userName}). Reason: {result.Error.Value} {result.ErrorReason}"
                 );
 
-                if (reactFunc != null)
-                {
-                    await reactFunc(reactionEmoji);
-                }
-
+                await addReactionFunc(reactionEmoji);
                 await responseMessage;
             }
         }
@@ -491,7 +285,7 @@ namespace SCMM.Discord.Client
                         reactions.Add(new Emoji("💔"));
                         break;
                 }
-                _ = message.AddReactionSafeAsync(
+                _ = message.TryAddReactionAsync(
                     reactions.ElementAt(Random.Shared.Next(reactions.Count))
                 );
             }
@@ -500,15 +294,5 @@ namespace SCMM.Discord.Client
                 _logger.LogWarning(ex, "Failed to react to message");
             }
         }
-    }
-
-    internal class SlashCommandCallback
-    {
-        public string CommandName { get; set; }
-
-        public SlashCommandProperties Command { get; set; }
-
-        public Type Module { get; set; }
-
     }
 }

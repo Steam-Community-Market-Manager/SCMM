@@ -15,6 +15,7 @@ namespace SCMM.Discord.Client
         private readonly DiscordShardedClient _client;
         private readonly ManualResetEvent _clientIsConnected;
         private readonly DiscordCommandHandler _commandHandler;
+        private readonly DiscordInteractionHandler _interactionHandler;
         private bool disposedValue;
 
         public DiscordClient(ILogger<DiscordClient> logger, DiscordConfiguration configuration, IServiceProvider serviceProvider)
@@ -35,6 +36,7 @@ namespace SCMM.Discord.Client
             _client.LeftGuild += (x) => Task.Run(() => GuildLeft?.Invoke(new DiscordGuild(x)));
             _clientIsConnected = new ManualResetEvent(false);
             _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _client, configuration);
+            _interactionHandler = new DiscordInteractionHandler(logger, serviceProvider, _client, configuration);
         }
 
         private Task OnClientLogAsync(LogMessage message)
@@ -64,15 +66,16 @@ namespace SCMM.Discord.Client
             return Task.CompletedTask;
         }
 
-        private Task OnShardConnectedAsync(DiscordSocketClient shard)
+        private async Task OnShardConnectedAsync(DiscordSocketClient shard)
         {
             if (IsConnected)
             {
+                await _commandHandler.AddCommandsAsync();
+                await _interactionHandler.AddInteractionsAsync();
+
                 _clientIsConnected.Set();
                 Connected?.Invoke();
             }
-
-            return Task.CompletedTask;
         }
 
         private Task OnShardDisconnectedAsync(Exception ex, DiscordSocketClient shard)
@@ -97,7 +100,7 @@ namespace SCMM.Discord.Client
             if (guild.CurrentUser.GetPermissions(guild.DefaultChannel).SendMessages)
             {
                 await guild.DefaultChannel.SendMessageAsync(
-                    $"Hello! Thanks for adding me. To learn more about my commands, type `{_configuration.CommandPrefix}help`."
+                    $"Hello! Thanks for adding me. Type `/` to learn more about my commands."
                 );
             }
             else
@@ -129,8 +132,6 @@ namespace SCMM.Discord.Client
         {
             await _client.LoginAsync(TokenType.Bot, _configuration.BotToken);
             await _client.StartAsync();
-            await _commandHandler.AddCommandsAsync();
-            await _commandHandler.AddSlashCommandsAsync();
         }
 
         public async Task DisconnectAsync()
@@ -185,7 +186,7 @@ namespace SCMM.Discord.Client
             {
                 foreach (var reaction in reactions)
                 {
-                    await msg.AddReactionSafeAsync(new Emoji(reaction));
+                    await msg.TryAddReactionAsync(new Emoji(reaction));
                 }
             }
 

@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Discord.Client;
+using SCMM.Discord.Client.Commands;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {

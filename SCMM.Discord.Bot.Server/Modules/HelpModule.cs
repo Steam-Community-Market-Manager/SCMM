@@ -1,159 +1,35 @@
 ﻿using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using SCMM.Discord.Client;
-using System.Text;
+using SCMM.Discord.Client.Attributes;
+using SCMM.Discord.Client.Commands;
 
-namespace SCMM.Discord.Bot.Server.Modules
+namespace SCMM.Discord.Bot.Server.Modules;
+
+[Global]
+[Group("help", "Help commands")]
+public class HelpModule : InteractionModuleBase<ShardedInteractionContext>
 {
-    public class HelpModule : ModuleBase<SocketCommandContext>
+    private readonly DiscordConfiguration _configuration;
+
+    public HelpModule(DiscordConfiguration configuration)
     {
-        private readonly DiscordConfiguration _cfg;
-        private readonly CommandService _commandService;
+        _configuration = configuration;
+    }
 
-        public HelpModule(DiscordConfiguration cfg, CommandService commandService)
-        {
-            _cfg = cfg;
-            _commandService = commandService;
-        }
-
-        [Command("help")]
-        [Alias("?")]
-        [Summary("Show this command help text")]
-        public async Task<RuntimeResult> SayHelp()
-        {
-            var embed = new EmbedBuilder();
-            var modules = _commandService.Modules
-                .Where(x => !x.Preconditions.Any(a => a is RequireOwnerAttribute))
-                .ToList();
-
-            foreach (var module in modules)
-            {
-                var commands = module.Commands;
-                foreach (var command in commands)
-                {
-                    // Build the command parameter info
-                    var commandParamSummaries = new List<string>();
-                    var commandParamDetails = new List<string>();
-                    if (command.Parameters.Any())
-                    {
-                        foreach (var param in command.Parameters)
-                        {
-                            var paramSummary = param.Name.ToLower();
-                            if (param.IsOptional)
-                            {
-                                paramSummary = $"?:{paramSummary}";
-                            }
-                            if (param.IsMultiple)
-                            {
-                                paramSummary = $"{paramSummary}...";
-                            }
-                            commandParamSummaries.Add($"{{{paramSummary}}}");
-
-                            var paramDetail = new StringBuilder();
-                            paramDetail.Append($"**{param.Name.ToLower()}**:");
-                            if (param.IsOptional)
-                            {
-                                paramDetail.Append($" *Optional,*");
-                            }
-                            if (!string.IsNullOrEmpty(param.Summary))
-                            {
-                                paramDetail.Append($" *{param.Summary}.*");
-                            }
-                            if (param.IsMultiple)
-                            {
-                                paramDetail.Append($" *Multiple values are accepted.*");
-                            }
-                            if (param.DefaultValue != null)
-                            {
-                                paramDetail.Append($" *Default value is \"{param.DefaultValue}\".*");
-                            }
-                            commandParamDetails.Add($"- {paramDetail}");
-                        }
-                    }
-
-                    // Build the command summary info
-                    var commandSummary = new StringBuilder();
-                    commandSummary.Append("`");
-                    commandSummary.Append(_cfg.CommandPrefix);
-                    if (!string.IsNullOrEmpty(module.Group))
-                    {
-                        commandSummary.Append($"{module.Group.ToLower()} ");
-                    }
-                    if (!string.IsNullOrEmpty(command.Name))
-                    {
-                        commandSummary.Append($"{command.Name.ToLower()}");
-                    }
-                    if (commandParamSummaries.Any())
-                    {
-                        commandSummary.Append(" ");
-                        commandSummary.Append(string.Join(' ', commandParamSummaries));
-                    }
-                    commandSummary.Append("`");
-                    if (command.Preconditions.Any(x => x is RequireContextAttribute))
-                    {
-                        commandSummary.Append($" [{command.Preconditions.OfType<RequireContextAttribute>().FirstOrDefault().Contexts}] ");
-                    }
-                    if (command.Preconditions.Any(x => x is RequireUserPermissionAttribute))
-                    {
-                        commandSummary.Append(" 🔒 ");
-                    }
-
-                    // Build the command detailed info
-                    var commandDescription = new StringBuilder();
-                    if (!string.IsNullOrEmpty(command.Summary))
-                    {
-                        commandDescription.Append(command.Summary);
-                    }
-                    if (!string.IsNullOrEmpty(command.Remarks))
-                    {
-                        if (commandDescription.Length > 0)
-                        {
-                            commandDescription.Append(". ");
-                        }
-                        commandDescription.Append(command.Remarks);
-                    }
-                    if (commandDescription.Length == 0)
-                    {
-                        commandDescription.Append("No information available");
-                    }
-                    if (!commandDescription.ToString().EndsWith("."))
-                    {
-                        commandDescription.Append(".");
-                    }
-                    if (commandParamDetails.Any())
-                    {
-                        commandDescription.AppendLine();
-                        commandDescription.AppendLine(string.Join('\n', commandParamDetails));
-                    }
-
-                    // Add the command to the list
-                    embed.AddField(
-                        commandSummary.ToString(),
-                        commandDescription.ToString()
-                    );
-                }
-            }
-
-            return CommandResult.Success(
-                message: "These are the commands that I support.",
-                embed: embed.Build()
-            );
-        }
-
-        [Command("invite")]
-        [Summary("Show the Discord invite link for this bot")]
-        public async Task<RuntimeResult> SayInviteUrl()
-        {
-            var name = Context.Client.CurrentUser.Username;
-            return CommandResult.Success(
-                embed: new EmbedBuilder()
-                    .WithColor(Color.Red)
-                    .WithTitle($"Invite {name} to your Discord server")
-                    .WithDescription($"{name} is an app for analysing Steam Community Market information. Click the link above to invite {name} to your own Discord server!")
-                    .WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
-                    .WithUrl(_cfg.InviteUrl)
-                    .Build()
-            );
-        }
+    [SlashCommand("invite", "Invite this bot to your own Discord server", runMode: RunMode.Sync)]
+    public async Task<RuntimeResult> GetBotInviteAsync()
+    {
+        var name = Context.Client.CurrentUser.Username;
+        return InteractionResult.Success(
+            ephemeral: true,
+            embed: new EmbedBuilder()
+                .WithColor(Color.Red)
+                .WithTitle($"Invite {name} to your Discord server")
+                .WithDescription($"{name} is an app for analysing Steam Community Market information. Click the link above to invite {name} to your own Discord server!")
+                .WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
+                .WithUrl(_configuration.InviteUrl)
+                .Build()
+        );
     }
 }

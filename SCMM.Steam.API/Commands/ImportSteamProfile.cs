@@ -56,7 +56,7 @@ namespace SCMM.Steam.API.Commands
             try
             {
                 // If we know the exact steam id, fetch using the Steam API
-                if (resolvedId.SteamId64 != null)
+                if (resolvedId?.SteamId64 != null)
                 {
                     var steamId = resolvedId.SteamId64.Value;
                     var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
@@ -95,7 +95,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Else, if we know the custom profile id, fetch using the legacy XML API
-                else if (!string.IsNullOrEmpty(resolvedId.CustomUrl))
+                else if (!string.IsNullOrEmpty(resolvedId?.CustomUrl))
                 {
                     var profileId = resolvedId.CustomUrl;
                     var response = await _communityClient.GetCustomProfile(new SteamCustomProfilePageRequest()
