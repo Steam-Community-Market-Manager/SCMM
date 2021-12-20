@@ -13,7 +13,7 @@ public class StoreModuleLegacyCommands : ModuleBase<ShardedCommandContext>
     {
         return CommandResult.Fail(
             reason: $"Use `/store next` instead",
-            explaination: $"This message command has been deprecated and replaced with a Slash Command. [Discord plans to remove support for message commands in April 2022](https://support-dev.discord.com/hc/en-us/articles/4404772028055)."
+            explaination: $"Message based commands have been deprecated and replaced with Slash Commands because [Discord plans to remove support for unprivledged bots to read message content in April 2022](https://support-dev.discord.com/hc/en-us/articles/4404772028055)."
         );
     }
 }

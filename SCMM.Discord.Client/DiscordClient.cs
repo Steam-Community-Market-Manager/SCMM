@@ -16,6 +16,7 @@ namespace SCMM.Discord.Client
         private readonly ManualResetEvent _clientIsConnected;
         private readonly DiscordCommandHandler _commandHandler;
         private readonly DiscordInteractionHandler _interactionHandler;
+        private bool handlersRegistered;
         private bool disposedValue;
 
         public DiscordClient(ILogger<DiscordClient> logger, DiscordConfiguration configuration, IServiceProvider serviceProvider)
@@ -70,8 +71,15 @@ namespace SCMM.Discord.Client
         {
             if (IsConnected)
             {
-                await _commandHandler.AddCommandsAsync();
-                await _interactionHandler.AddInteractionsAsync();
+                if (!handlersRegistered)
+                {
+                    lock(this)
+                    {
+                        handlersRegistered = true;
+                        _ = _commandHandler.AddCommandsAsync();
+                        _ = _interactionHandler.AddInteractionsAsync();
+                    }
+                }
 
                 _clientIsConnected.Set();
                 Connected?.Invoke();

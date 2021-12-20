@@ -48,6 +48,14 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
                 .FirstOrDefaultAsync();
         }
 
+        if (string.IsNullOrEmpty(steamId))
+        {
+            return InteractionResult.Fail(
+                reason: $"You didn't specify a Steam profile",
+                explaination: $"You need to specify a Steam ID in the command options or link your Steam account using `/config steam`."
+            );
+        }
+
         // Load the profile
         //await message.LoadingAsync("🔍 Finding Steam profile...");
         var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()

@@ -71,7 +71,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
             {
                 var guildUser = Context.Guild.GetUser(user.Id);
                 var guildRoles = guildUser?.Roles;
-                if (guildRoles.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)))
+                if (guildRoles?.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)) == true)
                 {
                     if (string.Equals(profile.DiscordId, discordId, StringComparison.InvariantCultureIgnoreCase))
                     {
