@@ -58,6 +58,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         // Set the discord profile
         profile.DiscordId = discordId;
 
+        var message = (string)null;
         if (Context.Guild != null)
         {
             // Load the discord guild
@@ -69,21 +70,17 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
             // Promote donators from VIP servers to VIP role
             if (guild?.Flags.HasFlag(Steam.Data.Models.Enums.DiscordGuildFlags.VIP) == true)
             {
-                var guildUser = Context.Guild.GetUser(user.Id);
-                var guildRoles = guildUser?.Roles;
-                if (guildRoles?.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)) == true)
+                var guildRoles = Context.Guild.Roles.ToList();
+                var guildUser = await Context.Client.Rest.GetGuildUserAsync(Context.Guild.Id, Context.User.Id);
+                var guildUserRoles = guildRoles.Where(x => guildUser?.RoleIds?.Contains(x.Id) == true).ToList();
+                if (guildUserRoles?.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)) == true)
                 {
                     if (string.Equals(profile.DiscordId, discordId, StringComparison.InvariantCultureIgnoreCase))
                     {
                         if (!profile.Roles.Any(x => x == Roles.VIP))
                         {
                             profile.Roles.Add(Roles.VIP);
-                            /*
-                            await Context.Interaction.AddReactionsAsync(new IEmote[]
-                            {
-                                Emote.Parse(":regional_indicator_v:"), Emote.Parse(":regional_indicator_i:"), Emote.Parse(":regional_indicator_p:"), new Emoji("🎁") // "VIP gift"
-                            });
-                            */
+                            message = $"👌 🎁 Thank you for contributing to the SCMM project and/or the {Context.Guild.Name} community. You've been assigned the {Roles.VIP} role as a small token of our appreciation.";
                         }
                     }
                 }
@@ -93,6 +90,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         await _db.SaveChangesAsync();
 
         return InteractionResult.Success(
+            message: message,
             ephemeral: true
         );
     }
