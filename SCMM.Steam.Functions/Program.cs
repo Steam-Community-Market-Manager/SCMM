@@ -53,21 +53,21 @@ public static class HostExtensions
     {
         return builder.ConfigureAppConfiguration(config =>
         {
-            config.AddAzureAppConfiguration(
-                options =>
-                {
-                    var connectionString = Environment.GetEnvironmentVariable("AppConfigurationConnection");
-                    if (!String.IsNullOrEmpty(connectionString))
+            var appConfigConnectionString = Environment.GetEnvironmentVariable("AppConfigurationConnection");
+            if (!String.IsNullOrEmpty(appConfigConnectionString))
+            {
+                config.AddAzureAppConfiguration(
+                    options =>
                     {
-                        options.Connect(connectionString)
+                        options.Connect(appConfigConnectionString)
                             .ConfigureKeyVault(kv => kv.SetCredential(new DefaultAzureCredential()))
                             .Select(KeyFilter.Any, LabelFilter.Null)
                             .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"))
                             .Select(KeyFilter.Any, Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
-                    }
-                },
-                optional: true
-            );
+                    },
+                    optional: true
+                );
+            }
         });
     }
 
@@ -76,21 +76,29 @@ public static class HostExtensions
         return builder.ConfigureServices(services =>
         {
             // Database
-            services.AddDbContext<SteamDbContext>(options =>
+            var dbConnectionString = Environment.GetEnvironmentVariable("SteamDbConnection");
+            if (!String.IsNullOrEmpty(dbConnectionString))
             {
-                options.UseSqlServer(Environment.GetEnvironmentVariable("SteamDbConnection"), sql =>
+                services.AddDbContext<SteamDbContext>(options =>
                 {
-                    //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                    sql.EnableRetryOnFailure();
+                    options.UseSqlServer(dbConnectionString, sql =>
+                    {
+                        //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                        sql.EnableRetryOnFailure();
+                    });
+                    options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                    options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
                 });
-                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
-                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
-            });
+            }
 
             // Service bus
-            services.AddAzureServiceBus(
-                Environment.GetEnvironmentVariable("ServiceBusConnection")
-            );
+            var serviceBusConnectionString = Environment.GetEnvironmentVariable("ServiceBusConnection");
+            if (!String.IsNullOrEmpty(serviceBusConnectionString))
+            {
+                services.AddAzureServiceBus(
+                    Environment.GetEnvironmentVariable("ServiceBusConnection")
+                );
+            }
 
             // 3rd party clients
             services.AddSingleton((services) =>

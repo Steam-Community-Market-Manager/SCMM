@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SCMM.Steam.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--verbose --csharp",
+      "workingDirectory": "bin\\Debug\\net6.0"
+    }
+  }
+}

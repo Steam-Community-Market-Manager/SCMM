@@ -35,8 +35,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
-	<Content Update="runtimeconfig.template.json">
-		<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	</Content>
   </ItemGroup>
 </Project>
