@@ -73,15 +73,16 @@ public class CheckForNewStoreItemsJob
             }
 
             // We want to compare the Steam item store with our most recent store
-
             var theirStoreItemIds = response.Data.Assets
                 .Select(x => x.Name)
                 .OrderBy(x => x)
+                .Distinct()
                 .ToList();
             var ourStoreItemIds = _db.SteamItemStores
                 .Where(x => x.End == null)
                 .OrderByDescending(x => x.Start)
-                .SelectMany(x => x.Items.Select(i => i.Item.SteamId))
+                .SelectMany(x => x.Items.Where(i => i.Item.IsAvailable).Select(i => i.Item.SteamId))
+                .Distinct()
                 .ToList();
 
             // If both stores contain the same items, then there is no need to update anything
@@ -120,7 +121,7 @@ public class CheckForNewStoreItemsJob
                         }
                     }
                 }
-                if (itemStore.Start != null && itemStore.Items.All(x => !x.Item.IsAvailable))
+                if (itemStore.Start != null && itemStore.Items.Any(x => !x.Item.IsAvailable) && limitedItemsWereRemoved)
                 {
                     itemStore.End = DateTimeOffset.UtcNow;
                     activeItemStores.Remove(itemStore);
