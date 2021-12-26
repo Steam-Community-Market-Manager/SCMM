@@ -23,7 +23,7 @@ public class UpdateMarketItemOrdersJob
     }
 
     [Function("Update-Market-Item-Orders")]
-    public async Task Run([TimerTrigger("0 */2 * * * *")] /* every even minute */ object timer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 */2 * * * *")] /* every even minute */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Orders");
 

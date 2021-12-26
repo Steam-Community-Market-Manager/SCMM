@@ -25,7 +25,7 @@ public class UpdateCurrencyExchangeRatesJob
     }
 
     [Function("Update-Currency-Exchange-Rates")]
-    public async Task Run([TimerTrigger("0 55 * * * *")] /* every hour, 5 minutes before the hour */ object timer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 55 * * * *")] /* every hour, 5 minutes before the hour */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Currency-Exchange-Rates");
 

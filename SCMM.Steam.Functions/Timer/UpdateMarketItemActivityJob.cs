@@ -26,7 +26,7 @@ public class UpdateMarketItemActivityJob
     }
 
     [Function("Update-Market-Item-Activity")]
-    public async Task Run([TimerTrigger("0 0/5 * * * *")] /* every 5 minutes */ object timer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0/5 * * * *")] /* every 5 minutes */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Activity");
 

@@ -41,7 +41,7 @@ public class CheckForNewStoreItemsJob
     }
 
     [Function("Check-New-Store-Items")]
-    public async Task Run([TimerTrigger("0 * * * * *")] /* every minute */ object timer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 * * * * *")] /* every minute */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Check-New-Store-Items");
 

@@ -19,7 +19,7 @@ public class UpdateAssetDescriptionsJob
     }
 
     [Function("Update-Asset-Descriptions")]
-    public async Task Run([TimerTrigger("0 0/15 * * * *")] /* every 15 minutes */ object timer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0/15 * * * *")] /* every 15 minutes */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Asset-Descriptions");
 

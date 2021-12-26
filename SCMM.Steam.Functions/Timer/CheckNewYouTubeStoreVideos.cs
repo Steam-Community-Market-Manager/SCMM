@@ -35,7 +35,7 @@ public class CheckNewYouTubeStoreVideos
     }
 
     [Function("Check-New-YouTube-Store-Videos")]
-    public async Task Run([TimerTrigger("0 0 * * * *")] /* every hour */ object timer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0 * * * *")] /* every hour */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Check-New-YouTube-Store-Videos");
 

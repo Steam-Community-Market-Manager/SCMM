@@ -15,7 +15,7 @@ public class UpdateMarketItem24hrSnapshots
     }
 
     [Function("Update-Market-Item-24hr-Snapshots")]
-    public async Task Run([TimerTrigger("0 0 0 * * *")] /* every day at midnight */ object timer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0 0 * * *")] /* every day at midnight */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-24hr-Value-Snapshots");
 
