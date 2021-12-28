@@ -13,7 +13,7 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
-    public class SteamWebClient
+    public abstract class SteamWebClient
     {
         private readonly ILogger<SteamWebClient> _logger;
         private readonly HttpClientHandler _httpHandler;

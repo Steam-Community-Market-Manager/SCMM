@@ -141,7 +141,6 @@ public static class WebApplicationExtensions
         builder.Services.AddSingleton<SteamSession>();
         builder.Services.AddSingleton<FixerWebClient>();
         builder.Services.AddSingleton<AzureAiClient>();
-        builder.Services.AddScoped<SteamWebClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
 

@@ -148,7 +148,6 @@ public static class WebApplicationExtensions
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetSteamConfiguration());
         builder.Services.AddSingleton<SteamSession>();
-        builder.Services.AddScoped<SteamWebClient>();
         builder.Services.AddScoped<SteamWebApiClient>();
         builder.Services.AddScoped<SteamCommunityWebClient>();
 

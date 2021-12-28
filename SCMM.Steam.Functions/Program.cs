@@ -119,7 +119,6 @@ public static class HostExtensions
             services.AddSingleton<SteamSession>();
             services.AddSingleton<AzureAiClient>();
             services.AddSingleton<GoogleClient>();
-            services.AddScoped<SteamWebClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<SteamWorkshopDownloaderWebClient>();
