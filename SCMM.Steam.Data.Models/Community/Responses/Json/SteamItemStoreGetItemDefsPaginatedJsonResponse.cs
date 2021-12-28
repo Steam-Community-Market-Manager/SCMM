@@ -2,7 +2,7 @@
 
 namespace SCMM.Steam.Data.Models.Community.Responses.Json
 {
-    public class SteamStorePaginatedJsonResponse
+    public class SteamItemStoreGetItemDefsPaginatedJsonResponse
     {
         [JsonPropertyName("success")]
         public bool Success { get; set; }

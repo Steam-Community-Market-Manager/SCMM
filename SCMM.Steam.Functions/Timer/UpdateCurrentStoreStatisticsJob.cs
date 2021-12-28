@@ -56,12 +56,12 @@ public class UpdateCurrentStoreStatisticsJob
     private async Task UpdateItemStoreTopSellers(ILogger logger, SteamDbContext db, SteamCommunityWebClient commnityClient, SteamService service, SteamItemStore itemStore)
     {
         logger.LogInformation($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
-        var storePage = await commnityClient.GetStorePage(new SteamStorePageRequest()
+        var storePage = await commnityClient.GetStorePage(new SteamItemStorePageRequest()
         {
             AppId = itemStore.App.SteamId,
             Start = 0,
-            Count = SteamStorePageRequest.MaxPageSize,
-            Filter = SteamStorePageRequest.FilterFeatured
+            Count = SteamItemStorePageRequest.MaxPageSize,
+            Filter = SteamItemStorePageRequest.FilterFeatured
         });
         if (storePage == null)
         {

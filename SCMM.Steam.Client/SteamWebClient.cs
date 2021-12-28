@@ -63,7 +63,7 @@ namespace SCMM.Steam.Client
             }
             catch (SteamRequestException ex)
             {
-                if (ex.IsSessionStale)
+                if (ex.IsSessionStale && _session != null)
                 {
                     _logger.LogWarning("Steam session is stale, attempting to refresh and try again...");
                     _session.Refresh();

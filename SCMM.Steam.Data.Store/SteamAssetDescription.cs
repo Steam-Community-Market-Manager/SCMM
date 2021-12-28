@@ -242,8 +242,8 @@ namespace SCMM.Steam.Data.Store
                     QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null),
                     IsAvailable = (StoreItem.IsAvailable && lowestPrice > 0),
                     Url = !string.IsNullOrEmpty(StoreItem.SteamId)
-                        ? new SteamStoreItemPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
-                        : new SteamStorePageRequest() { AppId = appId }
+                        ? new SteamItemStoreDetailPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
+                        : new SteamItemStorePageRequest() { AppId = appId }
                 };
             }
 

@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Steam.Data.Models.Community.Requests.Html
 {
-    public class SteamStoreItemPageRequest : SteamRequest
+    public class SteamItemStoreDetailPageRequest : SteamRequest
     {
         public string AppId { get; set; }
 

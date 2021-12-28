@@ -98,7 +98,7 @@ namespace SCMM.Steam.API.Commands
                 else if (!string.IsNullOrEmpty(resolvedId?.CustomUrl))
                 {
                     var profileId = resolvedId.CustomUrl;
-                    var response = await _communityClient.GetCustomProfile(new SteamCustomProfilePageRequest()
+                    var response = await _communityClient.GetProfileById(new SteamProfileByIdPageRequest()
                     {
                         ProfileId = profileId,
                         Xml = true

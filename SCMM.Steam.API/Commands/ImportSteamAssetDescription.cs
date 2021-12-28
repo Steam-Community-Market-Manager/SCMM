@@ -272,10 +272,10 @@ namespace SCMM.Steam.API.Commands
             var assetIsRecentlyAccepted = (assetDescription.TimeAccepted != null && assetDescription.TimeAccepted >= DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14)));
             if (assetIsRecentlyAccepted && (needsDescription))
             {
-                var storeItems = await _communityClient.GetStorePaginated(new SteamStorePaginatedJsonRequest()
+                var storeItems = await _communityClient.GetStorePaginated(new SteamItemStoreGetItemDefsPaginatedJsonRequest()
                 {
                     AppId = request.AppId.ToString(),
-                    Filter = SteamStorePaginatedJsonRequest.FilterAll,
+                    Filter = SteamItemStoreGetItemDefsPaginatedJsonRequest.FilterAll,
                     SearchText = assetClass.MarketHashName,
                     Count = 1
                 });
@@ -288,7 +288,7 @@ namespace SCMM.Steam.API.Commands
                             ? itemIdMatchGroup[1].Value.Trim()
                             : null;
 
-                        storeItemPageHtml = await _communityClient.GetHtml(new SteamStoreItemPageRequest()
+                        storeItemPageHtml = await _communityClient.GetHtml(new SteamItemStoreDetailPageRequest()
                         {
                             AppId = request.AppId.ToString(),
                             ItemId = itemId,

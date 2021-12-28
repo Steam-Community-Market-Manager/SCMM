@@ -14,7 +14,7 @@ namespace SCMM.Steam.Data.Models.Workshop.Requests
         public bool Hidden { get; set; } = true;
 
         [JsonPropertyName("direct")]
-        public bool direct { get; set; } = false;
+        public bool Direct { get; set; } = false;
 
         [JsonPropertyName("downloadFormat")]
         public string DownloadFormat { get; set; } = "raw";

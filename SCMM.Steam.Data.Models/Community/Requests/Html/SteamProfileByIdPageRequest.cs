@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Steam.Data.Models.Community.Requests.Html
 {
-    public class SteamCustomProfilePageRequest : SteamRequest
+    public class SteamProfileByIdPageRequest : SteamRequest
     {
         public string ProfileId { get; set; }
 
