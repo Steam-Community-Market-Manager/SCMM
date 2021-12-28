@@ -10,7 +10,7 @@
 }
 else if (ItemLink != null)
 {
-    <MudNavLink OnClick="@ItemLink.OnClick" Href="@ItemLink.Path" Icon="@ItemLink.Icon" Disabled="@ItemLink.Disabled">
+    <MudNavLink OnClick="@ItemLink.OnClick" Href="@ItemLink.Path" Icon="@ItemLink.Icon" Disabled="@ItemLink.Disabled" Class="mud-nav-item-centered">
         <div>@ItemLink.Title</div>
         @if(ItemLink.SubTitle != null)
         {

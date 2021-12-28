@@ -70,3 +70,7 @@
     overflow-x: hidden;
     overflow-y: auto;
 }
+
+.mud-nav-item-centered > .mud-nav-link {
+    align-items: center !important;
+}
