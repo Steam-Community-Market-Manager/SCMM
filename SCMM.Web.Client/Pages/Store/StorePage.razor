@@ -619,7 +619,7 @@ else if (StoreList.Any())
 
     private void BuyItemFromStore(StoreItemDetailsDTO item)
     {
-        ExternalNavigationManager.NavigateToNewTab(new SteamStoreItemPageRequest() 
+        ExternalNavigationManager.NavigateToNewTab(new SteamItemStoreDetailPageRequest() 
         {
             AppId = item.AppId.ToString(),
             ItemId = item.Id.ToString()
