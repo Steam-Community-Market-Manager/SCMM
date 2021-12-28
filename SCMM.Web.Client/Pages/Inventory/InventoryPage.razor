@@ -49,27 +49,27 @@
                     <ChildContent>
                         <MudTabPanel Icon="fas fa-fw fa-th mr-2" Text="Inventory">
                             <MudPaper Outlined="true">
-                                <InventoryItemsPanel SteamId="@SteamId" Filter="@Filter" />
+                                <InventoryItemsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
                         <MudTabPanel Icon="fas fa-fw fa-tshirt mr-2" Text="Collections">
                             <MudPaper Outlined="true">
-                                <InventoryCollectionsPanel SteamId="@SteamId" Filter="@Filter" />
+                                <InventoryCollectionsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
                         <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Movement">
                             <MudPaper Outlined="true">
-                                <InventoryMarketPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
+                                <InventoryMarketPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
                             </MudPaper>
                         </MudTabPanel>
                         <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Returns" Disabled="@(!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator))">
                             <MudPaper Outlined="true">
-                                <InventoryInvestmentPanel SteamId="@SteamId" Filter="@Filter" ReadOnly="@(!State.Is(Profile?.SteamId))"/>
+                                <InventoryInvestmentPanel SteamId="@Profile?.SteamId" Filter="@Filter" ReadOnly="@(!State.Is(Profile?.SteamId))" />
                             </MudPaper>
                         </MudTabPanel>
                         <MudTabPanel Icon="fas fa-fw fa-chart-pie mr-2" Text="Statistics">
                             <MudPaper Outlined="true">
-                                <InventoryStatisticsPanel SteamId="@SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
+                                <InventoryStatisticsPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
                             </MudPaper>
                         </MudTabPanel>
 					</ChildContent>
@@ -168,7 +168,7 @@
     {
         try
         {
-            Logger.LogInformation($"Loading inventory for '{SteamId}'...");
+            Logger.LogInformation($"Loading inventory for '{Uri.EscapeDataString(SteamId)}'...");
             Profile = null;
             InventoryTotals = null;
 
@@ -189,7 +189,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error loading profile inventory '{SteamId}'");
+            Logger.LogError(ex, $"Error loading profile inventory '{Uri.EscapeDataString(SteamId)}'");
             LoadingMessage = null;
             LoadingError = ex;
             throw;
@@ -211,7 +211,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error fetching inventory profile for '{SteamId}'");
+            Logger.LogError(ex, $"Error fetching inventory profile for '{Uri.EscapeDataString(SteamId)}'");
             Profile = null;
             throw;
         }
@@ -246,7 +246,7 @@
                     );
                 }
 
-                Logger.LogWarning(ex, $"Inventory is currently private for '{SteamId}', unable to synchronise at this time");
+                Logger.LogWarning(ex, $"Inventory is currently private for '{Uri.EscapeDataString(SteamId)}', unable to synchronise at this time");
                 Snackbar.Add(
 				    snackBarMessage,
                     Severity.Warning,
@@ -268,7 +268,7 @@
             }
             else
             {
-                Logger.LogError(ex, $"Error synchronising inventory items for '{SteamId}'");
+                Logger.LogError(ex, $"Error synchronising inventory items for '{Uri.EscapeDataString(SteamId)}'");
                 throw;
             }
         }
@@ -285,7 +285,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error fetching inventory totals for '{SteamId}'");
+            Logger.LogError(ex, $"Error fetching inventory totals for '{Uri.EscapeDataString(SteamId)}'");
             InventoryTotals = null;
             throw;
         }

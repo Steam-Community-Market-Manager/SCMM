@@ -9,7 +9,7 @@
 }
 else
 {
-    <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@ReadOnly" Class="mud-table-dense-extra"
+    <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@(!State.Is(SteamId))" Class="mud-table-dense-extra"
               ServerData="@LoadItems" RowsPerPage="25" CommitEditTooltip="Save Changes" AllowUnsorted="false">
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
@@ -290,9 +290,6 @@ else
     
     [Parameter]
     public string Filter { get; set; }
-
-    [Parameter]
-    public bool ReadOnly { get; set; }
 
     private MudTable<ProfileInventoryInvestmentItemDTO> Table { get; set; }
     

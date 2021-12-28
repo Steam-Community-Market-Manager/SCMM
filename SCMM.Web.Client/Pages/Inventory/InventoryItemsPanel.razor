@@ -26,12 +26,12 @@ else
             @if (item.Quantity > 1)
             {
                 <MudBadge Color="MudBlazor.Color.Primary" Content="@item.Quantity" Max="Int32.MaxValue" Overlap="true" Bordered="true" Class="mud-badge-overlap-extra">
-                    <InventoryItemSummary Item="@item" />
+                    <InventoryItemSummary SteamId="@SteamId" Item="@item" />
                 </MudBadge>
             }
             else
             {
-                <InventoryItemSummary Item="@item" />
+                <InventoryItemSummary SteamId="@SteamId" Item="@item" />
             }
         }
     </div>
@@ -44,7 +44,7 @@ else
     
     [Parameter]
     public string Filter { get; set; }
-
+    
     private IList<ProfileInventoryItemDescriptionDTO> InventoryItems { get; set; }
     
     private Exception LoadingError { get; set; }
