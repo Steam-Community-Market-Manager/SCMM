@@ -69,3 +69,10 @@ CookieInterop. getCookie = (name) => {
 CookieInterop.removeCookie = (name) => {
     document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
 }
+
+// Disable all context menus (i.e. right-click / long-touch)
+window.oncontextmenu = function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    return false;
+};
