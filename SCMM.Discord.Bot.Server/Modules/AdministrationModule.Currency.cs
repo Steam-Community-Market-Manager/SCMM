@@ -13,29 +13,40 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("import-currency-exchange-rates")]
         public async Task<RuntimeResult> RebuildCurrencyExchangeRatesAsync()
         {
+            var message = await Context.Message.ReplyAsync("Importing missing currency exchange rates...");
             var currencies = await _db.SteamCurrencies.ToListAsync();
             var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
 
-            var requiredTimestamps = await _db.SteamMarketItemSale
-                .GroupBy(x => x.Timestamp.Date)
-                .Select(x => x.Key)
+            var requiredCurrencyNames = currencies.Select(x => x.Name).ToArray();
+            var requiredDates = await _db.SteamMarketItemSale
+                .Select(x => x.Timestamp.Date)
+                .Distinct()
                 .ToListAsync();
-            var existingTimestamps = await _db.SteamCurrencyExchangeRates
+            var existingDates = await _db.SteamCurrencyExchangeRates
                 .GroupBy(x => x.Timestamp.Date)
-                .Select(x => x.Key)
+                .Where(x => requiredCurrencyNames.Any(y => !x.Any(z => y == z.CurrencyId)))
+                .Select(x => new
+                {
+                    Date = x.Key,
+                    Currencies = x.Select(x => x.CurrencyId).Distinct()
+                })
                 .ToListAsync();
 
-            var message = await Context.Message.ReplyAsync("Importing currency exchange rates...");
-            var missingTimestamps = requiredTimestamps.Except(existingTimestamps).OrderBy(x => x).ToArray();
-            foreach (var batch in missingTimestamps.Batch(100))
+            var missingDates = requiredDates
+                .Where(x => existingDates.Any(y => x.Date == y.Date))
+                .OrderBy(x => x)
+                .ToArray();
+
+            // Import missing dates
+            foreach (var batch in missingDates.Batch(100))
             {
-                foreach (var timestamp in batch)
+                foreach (var missingDate in batch)
                 {
                     await message.ModifyAsync(
-                       x => x.Content = $"Importing exchange rates for {timestamp.ToString("yyyy-MM-dd")} ({Array.IndexOf(missingTimestamps, timestamp) + 1}/{missingTimestamps.Length})..."
+                       x => x.Content = $"Importing all exchange rates for {missingDate.ToString("yyyy-MM-dd")} ({Array.IndexOf(missingDates, missingDate) + 1}/{missingDates.Length})..."
                     );
 
-                    var exchangeRates = await _fixerWebClient.GetHistoricalRatesAsync(timestamp, usdCurrency.Name, currencies.Select(x => x.Name).ToArray());
+                    var exchangeRates = await _fixerWebClient.GetHistoricalRatesAsync(missingDate, usdCurrency.Name, requiredCurrencyNames);
                     if (exchangeRates != null)
                     {
                         foreach (var exchangeRate in exchangeRates)
@@ -44,7 +55,42 @@ namespace SCMM.Discord.Bot.Server.Modules
                                 new SteamCurrencyExchangeRate()
                                 {
                                     CurrencyId = exchangeRate.Key,
-                                    Timestamp = new DateTimeOffset(timestamp, TimeZoneInfo.Utc.BaseUtcOffset),
+                                    Timestamp = new DateTimeOffset(missingDate, TimeZoneInfo.Utc.BaseUtcOffset),
+                                    ExchangeRateMultiplier = exchangeRate.Value
+                                }
+                            );
+                        }
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+            }
+
+            var missingRates = existingDates
+                .Where(x => requiredCurrencyNames.Any(y => !x.Currencies.Any(z => y == z)))
+                .OrderBy(x => x)
+                .ToArray();
+
+            // Import partially missing currencies
+            foreach (var batch in missingRates.Batch(100))
+            {
+                foreach (var missingRate in batch)
+                {
+                    await message.ModifyAsync(
+                       x => x.Content = $"Importing missing exchange rates for {missingRate.Date.ToString("yyyy-MM-dd")} ({Array.IndexOf(missingDates, missingRate) + 1}/{missingDates.Length})..."
+                    );
+
+                    var missingCurrencies = requiredCurrencyNames.Where(x => !missingRate.Currencies.Any(y => x == y)).ToArray();
+                    var exchangeRates = await _fixerWebClient.GetHistoricalRatesAsync(missingRate.Date, usdCurrency.Name, missingCurrencies);
+                    if (exchangeRates != null)
+                    {
+                        foreach (var exchangeRate in exchangeRates)
+                        {
+                            _db.SteamCurrencyExchangeRates.Add(
+                                new SteamCurrencyExchangeRate()
+                                {
+                                    CurrencyId = exchangeRate.Key,
+                                    Timestamp = new DateTimeOffset(missingRate.Date, TimeZoneInfo.Utc.BaseUtcOffset),
                                     ExchangeRateMultiplier = exchangeRate.Value
                                 }
                             );
@@ -56,7 +102,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
 
             await message.ModifyAsync(
-                x => x.Content = $"Imported {missingTimestamps.Length}/{missingTimestamps.Length} currency exchange rates"
+                x => x.Content = $"Imported {missingDates.Length} missing dates and {missingRates.Length} partially missing currency exchange rates"
             );
 
             return CommandResult.Success();
