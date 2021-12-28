@@ -416,14 +416,20 @@
         {
             IsUpdating = true;
             StateHasChanged();
-            await Http.PutAsJsonWithDefaultsAsync($"api/profile", Update);
+
+            var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile", Update);
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
+            
+            UpdateException = null;
             Snackbar.Add($"Changes saved!", MudBlazor.Severity.Success, options =>
             {
                 options.Icon = "fas fa-fw fa-check";
                 options.RequireInteraction = false;
                 options.ShowCloseIcon = false;
             });
-            UpdateException = null;
 
             await State.RefreshAsync(Http);
         }
@@ -471,7 +477,11 @@
         try 
         {
             var response = await Http.DeleteAsync($"api/profile/data");
-            response.EnsureSuccessStatusCode();
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
+
             ExternalNavigation.NavigateTo("/signout");
         }
         catch (Exception)

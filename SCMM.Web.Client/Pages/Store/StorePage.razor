@@ -781,6 +781,11 @@ else if (StoreList.Any())
                 }
             );
 
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
+            
             var item = await response.Content.ReadFromJsonWithDefaultsAsync<StoreItemDetailsDTO>();
             if (item != null && !Store.Items.Any(x => x.AssetDescriptionId == item.AssetDescriptionId))
             {
@@ -811,6 +816,11 @@ else if (StoreList.Any())
                     AssetDescriptionId = (item.AssetDescriptionId ?? 0)
                 }
             );
+
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
 
             if (Store.Items.Contains(item))
             {

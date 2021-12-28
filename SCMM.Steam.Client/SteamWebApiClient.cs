@@ -44,7 +44,7 @@ namespace SCMM.Steam.Client
         public async Task<IEnumerable<ItemStackModificationOutcome>> InventoryServiceCombineItemStack(CombineItemStacksJsonRequest request)
         {
             request.Key ??= _configuration?.ApplicationKey;
-            var response = await GetJson<CombineItemStacksJsonRequest, SteamResponse< CombineItemStacksJsonResponse>>(request);
+            var response = await PostJson<CombineItemStacksJsonRequest, SteamResponse< CombineItemStacksJsonResponse>>(request);
             return JsonSerializer.Deserialize<IEnumerable<ItemStackModificationOutcome>>(
                 Uri.UnescapeDataString(response?.Response?.ItemJson)
             );
@@ -53,7 +53,7 @@ namespace SCMM.Steam.Client
         public async Task<IEnumerable<ItemStackModificationOutcome>> InventoryServiceSplitItemStack(SplitItemStackJsonRequest request)
         {
             request.Key ??= _configuration?.ApplicationKey;
-            var response = await GetJson<SplitItemStackJsonRequest, SteamResponse< SplitItemStackJsonResponse>>(request);
+            var response = await PostJson<SplitItemStackJsonRequest, SteamResponse< SplitItemStackJsonResponse>>(request);
             return JsonSerializer.Deserialize<IEnumerable<ItemStackModificationOutcome>>(
                 Uri.UnescapeDataString(response?.Response?.ItemJson)
             );

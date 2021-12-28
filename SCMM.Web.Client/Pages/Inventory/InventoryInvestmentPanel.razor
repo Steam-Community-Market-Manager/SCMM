@@ -339,17 +339,22 @@ else
             item.BuyPrice = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             item.BuyPriceLocal = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             
-            Logger.LogInformation($"Updating buy price for '{item.Guid}' (aquired: '{item.AcquiredBy}', price: '{item.BuyPrice}', currency: '{item.BuyCurrency?.CultureName}')");
-            await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
+            Logger.LogInformation($"Updating buy price for '{item.ItemId}' (aquired: '{item.AcquiredBy}', price: '{item.BuyPrice}', currency: '{item.BuyCurrency?.CultureName}')");
+            var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.ItemId}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = item.AcquiredBy,
                 CurrencyGuid = item.BuyCurrency?.Guid,
                 BuyPrice = item.BuyPrice
             });
+            
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error updating item acquired by for '{item.Guid}' (aquired: '{value}')");
+            Logger.LogError(ex, $"Error updating item acquired by for '{item.ItemId}' (aquired: '{value}')");
         }
         finally
         {
@@ -369,16 +374,21 @@ else
                 item.BuyPrice = buyPrice;
                 item.BuyPriceLocal = buyPrice;
 
-                Logger.LogInformation($"Updating buy price for '{item.Guid}' (raw: '{value}', old: '{oldBuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
-                await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.Guid}", new UpdateInventoryItemCommand()
+                Logger.LogInformation($"Updating buy price for '{item.ItemId}' (raw: '{value}', old: '{oldBuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
+                var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.ItemId}", new UpdateInventoryItemCommand()
                 {
                     CurrencyGuid = State.Currency.Guid,
                     BuyPrice = buyPrice
                 });
+                
+                if(!response.IsSuccessStatusCode)
+                {
+                    throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"Error updating item buy price for '{item.Guid}' (value: '{value}')");
+                Logger.LogError(ex, $"Error updating item buy price for '{item.ItemId}' (value: '{value}')");
             }
             finally
             {

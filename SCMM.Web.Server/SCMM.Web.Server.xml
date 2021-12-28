@@ -298,15 +298,15 @@
             <response code="401">If the request is unauthenticated (login first) or the requested inventory does not belong to the authenticated user.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SetInventoryItem(System.String,System.Guid,SCMM.Web.Data.Models.UI.Profile.Inventory.UpdateInventoryItemCommand)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SetInventoryItem(System.String,System.UInt64,SCMM.Web.Data.Models.UI.Profile.Inventory.UpdateInventoryItemCommand)">
             <summary>
             Update profile inventory item information
             </summary>
             <remarks>This API requires authentication</remarks>
-            <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
+            <param name="profileId">Valid Steam ID64, Custom URL, or Profile URL</param>
             <param name="itemId">
-            Inventory item identifier to be updated. 
-            The item must belong to your (currently authenticated) profile
+            Inventory item identifier (Steam ID64) to be updated. 
+            The item must belong to your (currently authenticated) profile or the request will fail
             </param>
             <param name="command">
             Information to be updated for the item. 
@@ -316,6 +316,54 @@
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="401">If the request is unauthenticated (login first) or the requested inventory item does not belong to the authenticated user.</response>
             <response code="404">If the inventory item cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.CombineInventoryItemStacks(System.String,System.String,System.UInt64,System.Collections.Generic.IDictionary{System.UInt64,System.UInt32})">
+            <summary>
+            Combine multiple inventory item stacks together
+            </summary>
+            <remarks>This API requires authentication and a Steam Web API key to use</remarks>
+            <param name="profileId">Valid Steam ID64, Custom URL, or Profile URL</param>
+            <param name="itemId">
+            The destination item id that will receive all source items. 
+            The item must belong to your (currently authenticated) profile or the request will fail
+            </param>
+            <param name="sourceItems">
+            A dictionary of source item ids (key) and quantities (value) that will be combined in to the destination item
+            </param>
+            <param name="apiKey">
+            Valid Steam Web API key with permission to modify the source and destination items.
+            You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
+            Read https://scmm.app/privacy for more about how your Steam API key is handled.
+            </param>
+            <response code="200">If the inventory items were combined successfully.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory items do not belong to the authenticated user.</response>
+            <response code="404">If the inventory items cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SplitInventoryItemStacks(System.String,System.String,System.UInt64,System.UInt32)">
+            <summary>
+            Split inventory item in to multiple stacks
+            </summary>
+            <remarks>This API requires authentication and a Steam Web API key to use</remarks>
+            <param name="profileId">Valid Steam ID64, Custom URL, or Profile URL</param>
+            <param name="itemId">
+            The item id to be split. The item must have a quantity of two or more. 
+            The item must belong to your (currently authenticated) profile or the request will fail
+            </param>
+            <param name="quantity">
+            The number of items to split out in to a new stack
+            </param>
+            <param name="apiKey">
+            Valid Steam Web API key with permission to modify the source and destination items.
+            You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
+            Read https://scmm.app/privacy for more about how your Steam API key is handled.
+            </param>
+            <response code="200">If the inventory items were split successfully, the new item ids and quantities of all items.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory items do not belong to the authenticated user.</response>
+            <response code="404">If the inventory items cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketActivity(System.String,System.String,System.Int32,System.Int32)">

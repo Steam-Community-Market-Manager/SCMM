@@ -32,6 +32,28 @@ namespace SCMM.Steam.Client
 
         public SteamSession Session => _session;
 
+        private async Task<HttpResponseMessage> Post<TRequest>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            using (var client = new HttpClient(_httpHandler, false))
+            {
+                try
+                {
+                    var response = await client.PostAsync(request.Uri, null);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new HttpRequestException($"{response.StatusCode}: {response.ReasonPhrase}", null, response.StatusCode);
+                    }
+
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    throw new SteamRequestException($"POST '{request}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
+                }
+            }
+        }
+
         private async Task<HttpResponseMessage> Get<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
@@ -161,6 +183,19 @@ namespace SCMM.Steam.Client
             where TRequest : SteamRequest
         {
             var json = await GetText(request);
+            if (string.IsNullOrEmpty(json))
+            {
+                return default;
+            }
+
+            return JsonSerializer.Deserialize<TResponse>(json);
+        }
+
+        public async Task<TResponse> PostJson<TRequest, TResponse>(TRequest request)
+            where TRequest : SteamRequest
+        {
+            var response = await Post(request);
+            var json = await response.Content.ReadAsStringAsync();
             if (string.IsNullOrEmpty(json))
             {
                 return default;

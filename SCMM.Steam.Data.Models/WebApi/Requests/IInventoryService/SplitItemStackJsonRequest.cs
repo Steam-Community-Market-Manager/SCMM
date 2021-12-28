@@ -16,7 +16,7 @@
         public uint Quantity { get; set; }
 
         public override Uri Uri => new Uri(
-            $"{Constants.SteamWebApiUrl}/IInventoryService/CombineItemStacks/v1/?key={Uri.EscapeDataString(Key)}&appid={AppId}&steamId={SteamId}&itemid={ItemId}&quantity={Quantity}"
+            $"{Constants.SteamWebApiUrl}/IInventoryService/SplitItemStack/v1/?key={Uri.EscapeDataString(Key)}&appid={AppId}&steamId={SteamId}&itemid={ItemId}&quantity={Quantity}"
         );
     }
 }

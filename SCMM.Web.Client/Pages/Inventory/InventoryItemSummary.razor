@@ -1,31 +1,104 @@
-﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Profile.Inventory
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
+@inject IDialogService Dialogs
 
 <div class="align-self-stretch">
-    <MudTooltip Text="@Item.Name">
-        <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
-            <div class="hover-zoom">
-                <img src="@Item.IconUrl" class="ma-1" />
+    <MudTooltip Text="@Item.Name" Placement="Placement.Top" Class="mud-paper mud-paper-outlined">
+        @if (State.Is(SteamId))
+        {
+            <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="false" Dense="true" OffsetY>
+                <ActivatorContent>
+                    <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
+                        <div class="hover-zoom">
+                            <img src="@Item.IconUrl" class="ma-1" />
+                        </div>
+                        @if (Item.BuyNowPrice != null)
+                        {
+                            <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
+                                @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
+                            </MudText>
+                        }
+                    </div>
+                </ActivatorContent>
+                <ChildContent>
+                    @if (Item.Stacks.Count > 1)
+                    {
+                        <MudMenuItem OnClick="ShowStackCombinerDialog">
+                            <i class="fa fa-fw fa-object-group mr-1"></i>
+                            <span>Combine Stacks</span>
+                        </MudMenuItem>
+                    }
+                    @if (Item.Quantity > 1 && (Item.Stacks.Count < Item.Quantity))
+                    {
+                        <MudMenuItem OnClick="ShowStackSplitterDialog">
+                            <i class="fa fa-fw fa-object-ungroup mr-1"></i>
+                            <span>Split Stacks</span>
+                        </MudMenuItem>
+                    }
+                    <MudMenuItem OnClick="SellItemOnMarket">
+                        <i class="fa fa-fw fa-hand-holding-usd mr-1"></i>
+                        <span>@(Item.Quantity > 1 ? "Multi-Sell" : "Sell")</span>
+                    </MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        }
+        else
+        {
+            <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
+                <div class="hover-zoom">
+                    <img src="@Item.IconUrl" class="ma-1" />
+                </div>
+                @if (Item.BuyNowPrice != null)
+                {
+                    <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
+                        @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
+                    </MudText>
+                }
             </div>
-            @if (Item.BuyNowPrice != null)
-            {
-                <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
-                    @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
-                </MudText>
-            }
-        </div>
+        }
+
     </MudTooltip>
 </div>
 
 @code {
     
     [Parameter]
-    public ProfileInventoryItemDescriptionDTO Item { get; set; }
+    public string SteamId { get; set; }
     
+    [Parameter]
+    public ProfileInventoryItemDescriptionDTO Item { get; set; }
+
     private void OnItemClicked(ProfileInventoryItemDescriptionDTO item)
     {
         ExternalNavigationManager.NavigateToItem(item);
     }
+    
+    private void SellItemOnMarket()
+    {
+        ExternalNavigationManager.NavigateToNewTab(new SteamMarketMultisellPageRequest()
+        {
+            AppId = Item.AppId.ToString(),
+            MarketHashNames = new string[] { Item.Name }
+        });
+    }
 
+    private void ShowStackCombinerDialog()
+    {
+        Dialogs.Show<ItemStackCombinerDialog>(null, parameters: new DialogParameters()
+        {
+            ["SteamId"] = SteamId,
+            ["Item"] = Item
+        });
+    }
+
+    private void ShowStackSplitterDialog()
+    {
+        Dialogs.Show<ItemStackSplitterDialog>(null, parameters: new DialogParameters()
+        {
+            ["SteamId"] = SteamId,
+            ["Item"] = Item
+        });
+    }
 }

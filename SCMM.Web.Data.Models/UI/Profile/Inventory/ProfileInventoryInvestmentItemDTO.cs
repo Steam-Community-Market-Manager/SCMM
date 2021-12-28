@@ -6,7 +6,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 {
     public class ProfileInventoryInvestmentItemDTO : ItemDescriptionDTO
     {
-        public Guid Guid { get; set; }
+        public ulong ItemId { get; set; }
 
         public SteamProfileInventoryItemAcquisitionType AcquiredBy { get; set; }
 

@@ -1,0 +1,197 @@
+﻿@inherits ResponsiveDialog
+@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@inject ILogger<ItemStackCombinerDialog> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject ExternalNavigationManager ExternalNavigationManager
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">
+            <i class="fa fa-fw fa-object-group"></i>
+            <span>Combine Item Stacks</span>
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
+            <span><strong>This action requires your Steam API Key to modify your inventory items.</strong> Make sure you fully understand the implications of sharing your API Key with a 3rd party before proceeding and read our <MudLink Href="/privacy" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Privacy Policy</MudLink> for more on how we handle your key. We recommended that you revoke your key after using it on SCMM, for extra peace of mind. </span>
+        </MudAlert>
+        <div class="d-flex flex-row flex-wrap align-center justify-center pa-4">
+            <div class="d-flex flex-wrap flex-row align-start justify-center">
+                @foreach (var stack in Item.Stacks.OrderByDescending(x => x.Value))
+                {
+                    <MudTooltip Text="Click to include/exclude this item from the stack">
+                        <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => ToggleItemStackSelection(stack))">
+                            @if (SelectedStacks.ContainsKey(stack.Key))
+                            {
+                                <i class="fa fa-fw fa-minus-circle mud-error-text mx-1" />
+                            }
+                            else
+                            {
+                                <i class="far fa-fw fa-circle mud-text-disabled mx-1" />
+                            }
+                            <img src="@(Item.IconUrl)" class="icon mx-1" />
+                            <div class="d-flex flex-column ">
+                                <MudText Typo="Typo.body2" 
+                                         Class="@($"mx-1 {(SelectedStacks.ContainsKey(stack.Key) ? "mud-inherit-text" : "mud-text-disabled")}")"
+                                         Style="@(SelectedStacks.ContainsKey(stack.Key) ? $"color: {(Item.ForegroundColour)}" : null)">
+                                    @if (stack.Value > 1) {
+                                        <span><strong>@stack.Value.ToQuantityString()</strong> @Item.Name</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@Item.Name</span>
+                                    }
+					            </MudText>
+                                <small class="@($"mx-1 no-wrap {(SelectedStacks.ContainsKey(stack.Key) ? "mud-secondary-text" : "mud-text-disabled")}")"> 
+                                    <span>@stack.Key</span>
+                                </small>
+				            </div>
+			            </div>
+                    </MudTooltip>
+                }
+            </div>
+            <MudText Typo="MudBlazor.Typo.h3" Class="full-width text-centered pa-4">
+                @if (!IsCombining)
+                {
+                    <i class="fa fa-fw fa-arrow-down"></i>
+                }
+                else
+                {
+                    <i class="fas fa-fw fa-cog fa-spin mud-secondary-text"></i>
+                }
+            </MudText>
+            <div class="d-flex flex-wrap flex-row align-start justify-center">
+                @if (SelectedStacks.Count() >= 2)
+                {
+                    <div class="d-flex flex-row align-center hover-zoom pa-1">
+                        <i class="fa fa-fw fa-plus-circle mud-success-text mx-1" />
+                        <img src="@(Item.IconUrl)" class="icon mx-1" />
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.body2" Class="mx-1" Style="@($"color: {(Item.ForegroundColour)}")">
+                                <strong>@SelectedStacks.Sum(x => x.Value).ToQuantityString()</strong>
+                                <span>@Item.Name</span>
+					        </MudText>
+                            <small class="mx-1 no-wrap mud-secondary-text"> 
+                                <span>@(SelectedStacks.MaxBy(x => x.Value).Key)</span>
+                            </small>
+				        </div>
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Error" Class="pa-1 text-centered">
+                        <i class="fas fa-fw fa-exclamation-circle"></i>
+                        <span>You must selected at least two item stacks to combine.</span>
+                    </MudText>
+                }
+            </div>
+        </div>
+        <MudTextField T="string" @bind-Text="@SteamApiKey" DebounceInterval="500" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" 
+                      Label="Steam API Key" Placeholder="Paste your Steam API key here..." HelperText="View and manage your key at https://steamcommunity.com/dev/apikey"
+                      Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab("https://steamcommunity.com/dev/apikey"))" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="CombineSelectedItemStacks" Color="MudBlazor.Color.Primary" StartIcon="@(IsCombining ? "fas fa-fw fa-cog fa-spin" : "fa fa-fw fa-check")" 
+                   Disabled="@(IsCombining || (SelectedStacks.Count() < 2) || String.IsNullOrEmpty(SteamApiKey))">
+            @if(IsCombining)
+            {
+                <span>Combining...</span>
+            }
+            else
+            {
+                <span>Combine Items</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Parameter]
+    public string SteamId { get; set; }
+
+    [Parameter]
+    public ProfileInventoryItemDescriptionDTO Item { get; set; }
+
+    private IDictionary<string, int> SelectedStacks { get; set; }
+
+    private string SteamApiKey { get; set; }
+
+    private bool IsCombining { get; set; }
+
+    protected override void OnInitialized()
+    {
+        SelectedStacks = new Dictionary<string, int>(Item.Stacks);
+    }
+
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
+        options.MaxWidth = MudBlazor.MaxWidth.Small;
+        options.FullWidth = true; // force item images to scale equally
+        options.CloseButton = true;
+    }
+
+    private void ToggleItemStackSelection(KeyValuePair<string, int> stack)
+    {
+        if (SelectedStacks.ContainsKey(stack.Key))
+        {
+            SelectedStacks.Remove(stack.Key);
+        }
+        else
+        {
+            SelectedStacks.Add(stack);
+        }
+        StateHasChanged();
+    }
+
+    private async Task CombineSelectedItemStacks()
+    {
+        var destinationItem = SelectedStacks.MaxBy(x => x.Value);
+        var sourceItems = SelectedStacks.Where(x => x.Key != destinationItem.Key).ToDictionary(x => x.Key, x => x.Value);
+
+        try 
+        {
+            Logger.LogInformation($"Combing items {String.Join(" + ", sourceItems.Keys)} => {destinationItem.Key}");
+            IsCombining = true;
+            StateHasChanged();
+
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{destinationItem.Key}/combine"),
+                Method = HttpMethod.Put,
+                Headers = {
+                    { "Steam-Api-Key", SteamApiKey }
+                },
+                Content = JsonContent.Create(sourceItems)
+            };
+
+            var response = await Http.SendAsync(request);
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
+
+            Item.Stacks[destinationItem.Key] = SelectedStacks.Sum(x => x.Value);
+            foreach (var removedItem in sourceItems)
+            {
+                Item.Stacks.Remove(removedItem.Key);
+            }
+
+            Snackbar.Add($"Items were successfully combined.", MudBlazor.Severity.Success, x => x.RequireInteraction = false);
+            Dialog.Close(true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error combining items {String.Join(" + ", sourceItems.Keys)} => {destinationItem.Key}");
+            Snackbar.Add($"Failed to combine items. {ex.Message}", MudBlazor.Severity.Error, x => x.RequireInteraction = false);
+        }
+        finally
+        {
+            IsCombining = false;
+            StateHasChanged();
+        }
+    }
+}

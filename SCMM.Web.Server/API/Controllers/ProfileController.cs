@@ -9,6 +9,7 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models;
@@ -17,6 +18,7 @@ using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
+using System.Net;
 using System.Text.Json;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -790,10 +792,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// Update profile inventory item information
         /// </summary>
         /// <remarks>This API requires authentication</remarks>
-        /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
+        /// <param name="profileId">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <param name="itemId">
-        /// Inventory item identifier to be updated. 
-        /// The item must belong to your (currently authenticated) profile
+        /// Inventory item identifier (Steam ID64) to be updated. 
+        /// The item must belong to your (currently authenticated) profile or the request will fail
         /// </param>
         /// <param name="command">
         /// Information to be updated for the item. 
@@ -805,37 +807,37 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="404">If the inventory item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(AuthorizationPolicies.User)]
-        [HttpPut("{id}/inventory/item/{itemId}")]
+        [HttpPut("{profileId}/inventory/item/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SetInventoryItem([FromRoute] string id, [FromRoute] Guid itemId, [FromBody] UpdateInventoryItemCommand command)
+        public async Task<IActionResult> SetInventoryItem([FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] UpdateInventoryItemCommand command)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(profileId))
             {
-                return BadRequest("ID is invalid");
+                return BadRequest("Profile id is invalid");
             }
-            if (itemId == Guid.Empty)
+            if (itemId <= 0)
             {
-                return BadRequest("Inventory item GUID is invalid");
+                return BadRequest("Item id is invalid");
             }
             if (command == null)
             {
-                return BadRequest($"No data to update");
+                return BadRequest($"Item command is invalid, no data to update");
             }
 
-            var inventoryItem = await _db.SteamProfileInventoryItems.FirstOrDefaultAsync(x => x.Id == itemId);
+            var inventoryItem = await _db.SteamProfileInventoryItems.FirstOrDefaultAsync(x => x.SteamId == itemId.ToString());
             if (inventoryItem == null)
             {
-                _logger.LogError($"Inventory item was not found");
-                return NotFound($"Inventory item  was not found");
+                _logger.LogError($"Item was not found");
+                return NotFound($"Item  was not found");
             }
             if (!User.Is(inventoryItem.ProfileId) && !User.IsInRole(Roles.Administrator))
             {
-                _logger.LogError($"Inventory item does not belong to you and you do not have permission to modify it");
-                return Unauthorized($"Inventory item does not belong to you and you do not have permission to modify it");
+                _logger.LogError($"Item does not belong to you and you do not have permission to modify it");
+                return Unauthorized($"Item does not belong to you and you do not have permission to modify it");
             }
 
             if (command.BuyPrice != null)
@@ -865,6 +867,179 @@ namespace SCMM.Web.Server.API.Controllers
 
             await _db.SaveChangesAsync();
             return Ok();
+        }
+
+        /// <summary>
+        /// Combine multiple inventory item stacks together
+        /// </summary>
+        /// <remarks>This API requires authentication and a Steam Web API key to use</remarks>
+        /// <param name="profileId">Valid Steam ID64, Custom URL, or Profile URL</param>
+        /// <param name="itemId">
+        /// The destination item id that will receive all source items. 
+        /// The item must belong to your (currently authenticated) profile or the request will fail
+        /// </param>
+        /// <param name="sourceItems">
+        /// A dictionary of source item ids (key) and quantities (value) that will be combined in to the destination item
+        /// </param>
+        /// <param name="apiKey">
+        /// Valid Steam Web API key with permission to modify the source and destination items.
+        /// You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
+        /// Read https://scmm.app/privacy for more about how your Steam API key is handled.
+        /// </param>
+        /// <response code="200">If the inventory items were combined successfully.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory items do not belong to the authenticated user.</response>
+        /// <response code="404">If the inventory items cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [Authorize(AuthorizationPolicies.User)]
+        [HttpPut("{profileId}/inventory/item/{itemId}/combine")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CombineInventoryItemStacks([FromHeader(Name = "Steam-Api-Key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] IDictionary<ulong, uint> sourceItems)
+        {
+            if (string.IsNullOrEmpty(profileId))
+            {
+                return BadRequest("Profile id is invalid");
+            }
+            if (itemId <= 0)
+            {
+                return BadRequest("Item id is invalid");
+            }
+            if (sourceItems == null || !sourceItems.Any())
+            {
+                return BadRequest($"Source items are invalid, must specify at least one other item");
+            }
+
+            var destinationItem = await _db.SteamProfileInventoryItems.FirstOrDefaultAsync(x => x.SteamId == itemId.ToString());
+            if (destinationItem == null)
+            {
+                _logger.LogError($"Item was not found");
+                return NotFound($"Item  was not found");
+            }
+            if (!User.Is(destinationItem.ProfileId))
+            {
+                _logger.LogError($"Item does not belong to you and you do not have permission to modify it");
+                return Unauthorized($"Item does not belong to you and you do not have permission to modify it");
+            }
+
+            try
+            {
+                await _commandProcessor.ProcessWithResultAsync(new CombineInventoryItemStacksRequest()
+                {
+                    ProfileId = profileId,
+                    ApiKey = apiKey,
+                    SourceItems = sourceItems,
+                    DestinationItemId = itemId
+                });
+
+                await _db.SaveChangesAsync();
+                return Ok();
+            }
+            catch (SteamRequestException ex)
+            {
+                switch (ex.StatusCode)
+                {
+                    case HttpStatusCode.BadRequest:
+                        return BadRequest(ex.Message);
+                    case HttpStatusCode.Forbidden:
+                        return Unauthorized("Forbidden, please check that your Steam API Key is correct and the items you are combining all belong to you.");
+                    default: throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Split inventory item in to multiple stacks
+        /// </summary>
+        /// <remarks>This API requires authentication and a Steam Web API key to use</remarks>
+        /// <param name="profileId">Valid Steam ID64, Custom URL, or Profile URL</param>
+        /// <param name="itemId">
+        /// The item id to be split. The item must have a quantity of two or more. 
+        /// The item must belong to your (currently authenticated) profile or the request will fail
+        /// </param>
+        /// <param name="quantity">
+        /// The number of items to split out in to a new stack
+        /// </param>
+        /// <param name="apiKey">
+        /// Valid Steam Web API key with permission to modify the source and destination items.
+        /// You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
+        /// Read https://scmm.app/privacy for more about how your Steam API key is handled.
+        /// </param>
+        /// <response code="200">If the inventory items were split successfully, the new item ids and quantities of all items.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory items do not belong to the authenticated user.</response>
+        /// <response code="404">If the inventory items cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [Authorize(AuthorizationPolicies.User)]
+        [HttpPut("{profileId}/inventory/item/{itemId}/split")]
+        [ProducesResponseType(typeof(IDictionary<ulong, uint>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SplitInventoryItemStacks([FromHeader(Name = "Steam-Api-Key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] uint quantity)
+        {
+            if (string.IsNullOrEmpty(profileId))
+            {
+                return BadRequest("Profile id is invalid");
+            }
+            if (itemId <= 0)
+            {
+                return BadRequest("Item id is invalid");
+            }
+            if (quantity <= 0)
+            {
+                return BadRequest($"Item quantity is invalid, must be greater than zero");
+            }
+
+            var item = await _db.SteamProfileInventoryItems.FirstOrDefaultAsync(x => x.SteamId == itemId.ToString());
+            if (item == null)
+            {
+                _logger.LogError($"Item was not found");
+                return NotFound($"Item  was not found");
+            }
+            if (item.Quantity <= quantity)
+            {
+                return BadRequest($"Item quantity is invalid, must be less than {item.Quantity}");
+            }
+            if (!User.Is(item.ProfileId))
+            {
+                _logger.LogError($"Item does not belong to you and you do not have permission to modify it");
+                return Unauthorized($"Item does not belong to you and you do not have permission to modify it");
+            }
+
+            try
+            {
+                var result = await _commandProcessor.ProcessWithResultAsync(new SplitInventoryItemStackRequest()
+                {
+                    ProfileId = profileId,
+                    ApiKey = apiKey,
+                    ItemId = itemId,
+                    Quantity = quantity
+                });
+
+                await _db.SaveChangesAsync();
+                return Ok(
+                    result.Items.ToDictionary(
+                        x => UInt64.Parse(x.SteamId),
+                        x => (uint) x.Quantity
+                    )
+                );
+            }
+            catch (SteamRequestException ex)
+            {
+                switch (ex.StatusCode)
+                {
+                    case HttpStatusCode.BadRequest:
+                        return BadRequest(ex.Message);
+                    case HttpStatusCode.Forbidden:
+                        return Unauthorized("Forbidden, please check that your Steam API Key is correct and the item you are splitting belong to you.");
+                    default: throw;
+                }
+            }
         }
     }
 }
