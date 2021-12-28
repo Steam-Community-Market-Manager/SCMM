@@ -525,11 +525,12 @@ namespace SCMM.Web.Server.API.Controllers
                         item.Description, this
                     );
 
-                    // Calculate the item's quantity
-                    itemSummary.Quantity = profileInventoryItems
-                        .Where(x => x.Description.ClassId == item.Description.ClassId)
-                        .Sum(x => x.Quantity);
+                    var itemInventoryInstances = profileInventoryItems
+                        .Where(x => x.Description.ClassId == item.Description.ClassId);
 
+                    // Calculate the item's quantity and stack sizes
+                    itemSummary.Stacks = itemInventoryInstances.ToDictionary(x => x.SteamId, x => x.Quantity);
+                    itemSummary.Quantity = itemInventoryInstances.Sum(x => x.Quantity);
                     profileInventoryItemsSummaries.Add(itemSummary);
                 }
             }
