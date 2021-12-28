@@ -37,11 +37,21 @@ public class AppState
 
     public bool IsInRole(string role)
     {
+        if (String.IsNullOrEmpty(role))
+        {
+            return false;
+        }
+
         return Profile?.Roles?.Any(x => string.Equals(x, role, StringComparison.OrdinalIgnoreCase)) == true;
     }
 
     public bool Is(string steamId)
     {
+        if (String.IsNullOrEmpty(steamId))
+        {
+            return false;
+        }
+
         return (Profile?.SteamId == steamId || Profile?.ProfileId == steamId) == true;
     }
 
