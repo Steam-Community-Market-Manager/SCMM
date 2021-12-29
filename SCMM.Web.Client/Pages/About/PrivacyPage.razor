@@ -11,6 +11,7 @@
                 <ul class="fa-ul">
                     <li><span class="fa-li">-</span>SCMM collects publicly available info about your Steam profile;</li>
                     <li><span class="fa-li">-</span>SCMM collects anonymous stats about how you use the website, we don't share/sell this to anybody;</li>
+                    <li><span class="fa-li">-</span>SCMM may required your Steam API key for some functionality, we don't log/store/use your key for anything other than the action you supplied it for;</li>
                     <li><span class="fa-li">-</span>SCMM stores cookies on your device to support core website functionality only, we don't share/sell this to anybody;</li>
                     <li><span class="fa-li">-</span>You can obtain a copy of the info SCMM holds about your Steam profile (or request that it be deleted) from your <MudLink Typo="MudBlazor.Typo.body2" Href="/settings">profile preferences</MudLink> page;</li> 
                 </ul>
@@ -34,6 +35,21 @@
                 <li><span class="fa-li">-</span>The right to withdraw consent</li>
             </ul>
         </MudText>
+        
+        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">Steam Web API Key</MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>SCMM features that modify the contents of your Steam inventory will require you to supply your Steam Web API Key. When you supply your API key to SCMM, we do not log it, store it, or use it for any other purpose other than the action you supplied it for.</MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Warning"><strong>Giving your API key to 3rd parties can be dangerous!</strong></MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">Enable <MudLink Typo="MudBlazor.Typo.body2" Href="https://support.steampowered.com/kb_article.php?ref=4440-rtui-9218" Target="_blank">Steam Guard</MudLink> on your account to better protect yourself against scams, do not supply your API key to 3rd parties (including SCMM) without Steam Guard enabled.</MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>3rd parties with your API key can do the following:</MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+            <ul class="fa-ul">
+                <li><span class="fa-li">-</span>Modify your inventory item stacks (e.g. combine, split).</li>
+                <li><span class="fa-li">-</span>Manage your trade offers (e.g. create, cancel, accept, decline).</li> 
+                <li><span class="fa-li">-</span>View your full trade history</li>
+                <li><span class="fa-li">-</span>View your full Steam profile information (regardless of privacy settings).</li>
+            </ul>
+        </MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>It is good practice to revoke your API key immeditately after use if you have no further use for it, this ensures your API key cannot be used again without your permission.</MudText>
 
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>Log Files</MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>SCMM follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, the URL of the page, and any warnings/errors that occur from your browsing session. These are not linked to any information that is personally identifiable. The purpose of the information is for analyzing trends, administering the site, tracking users' movement on the website, and gathering demographic information.</MudText>
