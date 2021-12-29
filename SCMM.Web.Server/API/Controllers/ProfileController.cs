@@ -879,7 +879,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The item must belong to your (currently authenticated) profile or the request will fail
         /// </param>
         /// <param name="sourceItems">
-        /// A dictionary of source item ids (key) and quantities (value) that will be combined in to the destination item
+        /// A dictionary of item ids (keys) and their quantities (values) that will be combined in to the destination item
         /// </param>
         /// <param name="apiKey">
         /// Valid Steam Web API key with permission to modify the source and destination items.
@@ -968,9 +968,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
         /// Read https://scmm.app/privacy for more about how your Steam API key is handled.
         /// </param>
-        /// <response code="200">If the inventory items were split successfully, the new item ids and quantities of all items.</response>
+        /// <response code="200">If the inventory items were split successfully, response contains a dictionary of the new item ids (keys) and their quantities (values).</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory items do not belong to the authenticated user.</response>
+        /// <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory item does not belong to the authenticated user.</response>
         /// <response code="404">If the inventory items cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(AuthorizationPolicies.User)]
