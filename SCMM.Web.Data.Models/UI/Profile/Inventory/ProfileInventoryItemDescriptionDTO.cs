@@ -7,5 +7,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
         public int Quantity { get; set; }
 
         public IDictionary<string, int> Stacks { get; set; }
+
+        public long? AverageBuyPrice { get; set; }
     }
 }

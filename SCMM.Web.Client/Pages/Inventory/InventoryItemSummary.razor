@@ -5,60 +5,71 @@
 @inject IDialogService Dialogs
 
 <div class="align-self-stretch">
-    <MudTooltip Text="@Item.Name" Placement="Placement.Top" Class="mud-paper mud-paper-outlined">
-        @if (State.Is(SteamId))
-        {
-            <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="false" Dense="true" OffsetY>
-                <ActivatorContent>
-                    <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
-                        <div class="hover-zoom">
-                            <img src="@Item.IconUrl" class="ma-1" />
+    <MudTooltip Placement="Placement.Top" Class="mud-paper mud-paper-outlined">
+        <TooltipContent>
+            @if (Item.AverageBuyPrice > 0)
+            {
+                <span>@Item.Name, purchased at @State.Currency.ToPriceString(Item.AverageBuyPrice.Value, dense: true)</span>
+            }
+            else
+            {
+                <span>@Item.Name</span>
+            }
+        </TooltipContent>
+        <ChildContent>
+            @if (State.Is(SteamId))
+            {
+                <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="false" Dense="true" OffsetY>
+                    <ActivatorContent>
+                        <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
+                            <div class="hover-zoom">
+                                <img src="@Item.IconUrl" class="ma-1" />
+                            </div>
+                            @if (Item.BuyNowPrice != null)
+                            {
+                                <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
+                                    @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
+                                </MudText>
+                            }
                         </div>
-                        @if (Item.BuyNowPrice != null)
+                    </ActivatorContent>
+                    <ChildContent>
+                        @if (Item.Stacks.Count > 1)
                         {
-                            <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
-                                @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
-                            </MudText>
+                            <MudMenuItem OnClick="ShowStackCombinerDialog">
+                                <i class="fa fa-fw fa-object-group mr-1"></i>
+                                <span>Combine Stacks</span>
+                            </MudMenuItem>
                         }
+                        @if (Item.Quantity > 1 && (Item.Stacks.Count < Item.Quantity))
+                        {
+                            <MudMenuItem OnClick="ShowStackSplitterDialog">
+                                <i class="fa fa-fw fa-object-ungroup mr-1"></i>
+                                <span>Split Stacks</span>
+                            </MudMenuItem>
+                        }
+                        <MudMenuItem OnClick="SellItemOnMarket">
+                            <i class="fa fa-fw fa-hand-holding-usd mr-1"></i>
+                            <span>@(Item.Quantity > 1 ? "Multi-Sell" : "Sell")</span>
+                        </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            }
+            else
+            {
+                <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
+                    <div class="hover-zoom">
+                        <img src="@Item.IconUrl" class="ma-1" />
                     </div>
-                </ActivatorContent>
-                <ChildContent>
-                    @if (Item.Stacks.Count > 1)
+                    @if (Item.BuyNowPrice != null)
                     {
-                        <MudMenuItem OnClick="ShowStackCombinerDialog">
-                            <i class="fa fa-fw fa-object-group mr-1"></i>
-                            <span>Combine Stacks</span>
-                        </MudMenuItem>
+                        <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
+                            @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
+                        </MudText>
                     }
-                    @if (Item.Quantity > 1 && (Item.Stacks.Count < Item.Quantity))
-                    {
-                        <MudMenuItem OnClick="ShowStackSplitterDialog">
-                            <i class="fa fa-fw fa-object-ungroup mr-1"></i>
-                            <span>Split Stacks</span>
-                        </MudMenuItem>
-                    }
-                    <MudMenuItem OnClick="SellItemOnMarket">
-                        <i class="fa fa-fw fa-hand-holding-usd mr-1"></i>
-                        <span>@(Item.Quantity > 1 ? "Multi-Sell" : "Sell")</span>
-                    </MudMenuItem>
-                </ChildContent>
-            </MudMenu>
-        }
-        else
-        {
-            <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
-                <div class="hover-zoom">
-                    <img src="@Item.IconUrl" class="ma-1" />
                 </div>
-                @if (Item.BuyNowPrice != null)
-                {
-                    <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
-                        @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
-                    </MudText>
-                }
-            </div>
-        }
-
+            }
+        </ChildContent>
     </MudTooltip>
 </div>
 

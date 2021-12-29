@@ -533,6 +533,10 @@ namespace SCMM.Web.Server.API.Controllers
                     // Calculate the item's quantity and stack sizes
                     itemSummary.Stacks = itemInventoryInstances.ToDictionary(x => x.SteamId, x => x.Quantity);
                     itemSummary.Quantity = itemInventoryInstances.Sum(x => x.Quantity);
+                    itemSummary.AverageBuyPrice = itemInventoryInstances.Any(x => x.BuyPrice > 0)
+                        ? (long) Math.Round(itemInventoryInstances.Where(x => x.BuyPrice > 0).Average(x => x.BuyPrice.Value), 0) 
+                        : 0;
+
                     profileInventoryItemsSummaries.Add(itemSummary);
                 }
             }
