@@ -170,10 +170,6 @@
                                         }
                                     </MudSelect>
                                 </Preference>
-                                <Preference Title="Market Tax" 
-                                            Description="Should the 13% Steam Community Market tax be included in all resell profit and investment gain/loss calculations. This is recommended if you primarily buy and sell your items from the Steam Community Market.">  
-                                    <MudSwitch T="bool" Checked="@Update.IncludeMarketTax" CheckedChanged="((x) => { Update.IncludeMarketTax = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.IncludeMarketTax ? "Include" : "Exclude")</MudSwitch>
-                                </Preference>
                                 <Preference Title="Item Summary Information" 
                                             Description="What additional information to show when viewing item summaries.">
                                     <MudSelect T="ItemInfoType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true"
@@ -195,9 +191,26 @@
                                         }
                                     </MudSelect>
                                 </Preference>
-                                <Preference Title="'Free' Item Drops" 
-                                            Description="Should 'free' item drops from Twitch and Facepunch be shown when viewing item inventories and item collections.">  
-                                    <MudSwitch T="bool" Checked="@Update.ShowItemDrops" CheckedChanged="((x) => { Update.ShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0">@(Update.ShowItemDrops ? "Show" : "Hide")</MudSwitch>
+                                <Preference Title="Inventory Item Resell Tax" 
+                                            Description="Should the 13% Steam Community Market tax be included in all resell profit and investment gain/loss calculations. This is recommended if you primarily buy and sell your items from the Steam Community Market.">  
+                                    <MudSwitch T="bool" Checked="@Update.InventoryIncludeMarketTax" CheckedChanged="((x) => { Update.InventoryIncludeMarketTax = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.InventoryIncludeMarketTax ? "Include" : "Exclude")</MudSwitch>
+                                </Preference>
+                                <Preference Title="Inventory Item Drops" 
+                                            Description="Should 'free' item drops (e.g. Twitch and Facepunch items) be shown when viewing item inventories and item collections.">  
+                                    <MudSwitch T="bool" Checked="@Update.InventoryShowItemDrops" CheckedChanged="((x) => { Update.InventoryShowItemDrops = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0">@(Update.InventoryShowItemDrops ? "Show" : "Hide")</MudSwitch>
+                                </Preference>
+                                <Preference Title="Inventory Unmarketable Items" 
+                                            Description="Should unmarketable items (e.g. Permanent store and charity items) be shown when viewing item inventories and item collections.">  
+                                    <MudSwitch T="bool" Checked="@Update.InventoryShowUnmarketableItems" CheckedChanged="((x) => { Update.InventoryShowUnmarketableItems = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0">@(Update.InventoryShowUnmarketableItems ? "Show" : "Hide")</MudSwitch>
+                                </Preference>
+                                <Preference Title="Inventory Value Movement Display" 
+                                            Description="How should inventory value movements be shown.">  
+                                    <MudSelect T="InventoryValueMovementDisplayType" Value="@Update.InventoryValueMovemenDisplay" ValueChanged="((x) => { Update.InventoryValueMovemenDisplay = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0">
+                                        @foreach (var value in Enum.GetValues<InventoryValueMovementDisplayType>())
+                                        {
+                                            <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
+                                        }
+                                    </MudSelect>
                                 </Preference>
                             </MudGrid>
                         </MudCardContent>
@@ -397,10 +410,12 @@
                 GamblingOffset = State.Profile.GamblingOffset,
                 StoreTopSellers = State.Profile.StoreTopSellers,
                 MarketValue = State.Profile.MarketValue,
-                IncludeMarketTax = State.Profile.IncludeMarketTax,
                 ItemInfo = State.Profile.ItemInfo,
                 ItemInfoWebsite = State.Profile.ItemInfoWebsite,
-                ShowItemDrops = State.Profile.ShowItemDrops,
+                InventoryIncludeMarketTax = State.Profile.InventoryIncludeMarketTax,
+                InventoryShowItemDrops = State.Profile.InventoryShowItemDrops,
+                InventoryShowUnmarketableItems = State.Profile.InventoryShowUnmarketableItems,
+                InventoryValueMovemenDisplay = State.Profile.InventoryValueMovementDisplay,
                 DiscordId = State.Profile.DiscordId,
             };
         }

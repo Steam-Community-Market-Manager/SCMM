@@ -77,14 +77,6 @@ namespace SCMM.Steam.Data.Store
 
         [JsonIgnore]
         [NotMapped]
-        public bool IncludeMarketTax
-        {
-            get { return bool.Parse(Preferences.GetOrDefault(nameof(IncludeMarketTax), Boolean.FalseString)); }
-            set { Preferences[nameof(IncludeMarketTax)] = value.ToString(); }
-        }
-
-        [JsonIgnore]
-        [NotMapped]
         public IEnumerable<ItemInfoType> ItemInfo
         {
             get { return Enum.GetValues<ItemInfoType>().Where(x => !Preferences.ContainsKey(nameof(ItemInfo)) || Preferences[nameof(ItemInfo)].Contains(x.ToString())); }
@@ -101,10 +93,34 @@ namespace SCMM.Steam.Data.Store
 
         [JsonIgnore]
         [NotMapped]
-        public bool ShowItemDrops
+        public bool InventoryIncludeMarketTax
         {
-            get { return bool.Parse(Preferences.GetOrDefault(nameof(ShowItemDrops), Boolean.FalseString)); }
-            set { Preferences[nameof(ShowItemDrops)] = value.ToString(); }
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryIncludeMarketTax), Boolean.FalseString)); }
+            set { Preferences[nameof(InventoryIncludeMarketTax)] = value.ToString(); }
+        }
+
+        [JsonIgnore]
+        [NotMapped]
+        public bool InventoryShowItemDrops
+        {
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryShowItemDrops), Boolean.TrueString)); }
+            set { Preferences[nameof(InventoryShowItemDrops)] = value.ToString(); }
+        }
+
+        [JsonIgnore]
+        [NotMapped]
+        public bool InventoryShowUnmarketableItems
+        {
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryShowUnmarketableItems), Boolean.TrueString)); }
+            set { Preferences[nameof(InventoryShowUnmarketableItems)] = value.ToString(); }
+        }
+
+        [JsonIgnore]
+        [NotMapped]
+        public InventoryValueMovementDisplayType InventoryValueMovementDisplay
+        {
+            get { return Enum.Parse<InventoryValueMovementDisplayType>(Preferences.GetOrDefault(nameof(InventoryValueMovementDisplay), InventoryValueMovementDisplayType.Price.ToString())); }
+            set { Preferences[nameof(InventoryValueMovementDisplay)] = value.ToString(); }
         }
 
         [Required]

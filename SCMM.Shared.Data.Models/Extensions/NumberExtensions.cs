@@ -53,34 +53,34 @@
                 : "0";
         }
 
-        public static string ToMovementString(this int value, int max)
+        public static string ToMovementString(this int value, int max, int decimals = 0)
         {
-            return ToMovementString((long)value, (long)max);
+            return ToMovementString((long)value, (long)max, decimals);
         }
 
-        public static string ToMovementString(this long value, long max)
+        public static string ToMovementString(this long value, long max, int decimals = 0)
         {
             if (value == 0 || max == 0)
             {
                 return null;
             }
-            var movement = Math.Abs(100 - (int)Math.Round((decimal)value / max * 100, 0));
-            return $"{movement.ToString("#,##0")}%".Trim();
+            var movement = Math.Abs(100 - Math.Round((decimal)value / max * 100, decimals));
+            return $"{movement.ToString($"#,##0{(decimals > 0 ? "." : string.Empty)}{string.Empty.PadRight(decimals, '0')}")}%".Trim();
         }
 
-        public static string ToPercentageString(this int value, int max)
+        public static string ToPercentageString(this int value, int max, int decimals = 0)
         {
-            return ToPercentageString((long)value, (long)max);
+            return ToPercentageString((long)value, (long)max, decimals);
         }
 
-        public static string ToPercentageString(this long value, long max)
+        public static string ToPercentageString(this long value, long max, int decimals = 0)
         {
             if (value == 0 || max == 0)
             {
                 return null;
             }
-            var percentage = (int)Math.Round((decimal)value / max * 100, 0);
-            return $"{percentage.ToString("#,##0")}%".Trim();
+            var percentage = Math.Round((decimal)value / max * 100, decimals);
+            return $"{percentage.ToString($"#,##0{(decimals > 0 ? "." : string.Empty)}{string.Empty.PadRight(decimals, '0')}")}%".Trim();
         }
 
         public static string ToRoIString(this int percentage)

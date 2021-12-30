@@ -22,13 +22,17 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public MarketValueType MarketValue { get; set; }
 
-        public bool IncludeMarketTax { get; set; }
-
         public IEnumerable<ItemInfoType> ItemInfo { get; set; }
 
         public ItemInfoWebsiteType ItemInfoWebsite { get; set; }
 
-        public bool ShowItemDrops { get; set; }
+        public bool InventoryIncludeMarketTax { get; set; }
+
+        public bool InventoryShowItemDrops { get; set; }
+
+        public bool InventoryShowUnmarketableItems { get; set; }
+
+        public InventoryValueMovementDisplayType InventoryValueMovementDisplay { get; set; }
 
         public string DiscordId { get; set; }
 

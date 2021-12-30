@@ -74,20 +74,18 @@
                         else 
                         {
                             <span>@State.Currency.ToPriceString(InventoryTotal.MarketValue)</span>
-                            @if (InventoryTotal.MarketMovementValue > 0)
-                            {
-                                <small class="mud-success-text ml-1">
-                                    <i class="fas fa-fw fa-arrow-up"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
-                                </small>
-                            }
-                            @if (InventoryTotal.MarketMovementValue < 0)
-                            {
-                                <small class="mud-error-text ml-1">
-                                    <i class="fas fa-fw fa-arrow-down"></i> 
-                                    <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
-                                </small>
-                            }
+                            <small class="@($"ml-1 {(InventoryTotal.MarketMovementValue > 0 ? "mud-success-text" : "mud-error-text")}")">
+                                <i class="@($"fas fa-fw {(InventoryTotal.MarketMovementValue > 0 ? "fa-arrow-up" : "fa-arrow-down")}")"></i>
+                                @switch(@State.Profile.InventoryValueMovementDisplay)
+                                {
+                                    case InventoryValueMovementDisplayType.Price:
+                                        <span>@State.Currency.ToPriceString(InventoryTotal.MarketMovementValue, dense: true) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
+                                        break;
+                                    case InventoryValueMovementDisplayType.Percentage:
+                                        <span>@InventoryTotal.MarketMovementValue.ToPercentageString(InventoryTotal.MarketValue, decimals: 1) @((DateTimeOffset.Now - InventoryTotal.MarketMovementTime).ToDurationString(prefix: "in the last", maxGranularity: 1))</span>
+                                        break;
+                                }
+                            </small>
                         }
                     </MudText>
                 </div>

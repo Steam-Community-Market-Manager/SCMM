@@ -65,3 +65,12 @@ public enum ItemInfoWebsiteType
     [Display(Name = "Steam")]
     External
 }
+
+public enum InventoryValueMovementDisplayType
+{
+    [Display(Name = "Show as price")]
+    Price = 0,
+
+    [Display(Name = "Show as percentage")]
+    Percentage
+}

@@ -141,10 +141,12 @@ namespace SCMM.Web.Server.API.Controllers
             }
             profile.StoreTopSellers = command.StoreTopSellers;
             profile.MarketValue = command.MarketValue;
-            profile.IncludeMarketTax = command.IncludeMarketTax;
             profile.ItemInfo = command.ItemInfo;
             profile.ItemInfoWebsite = command.ItemInfoWebsite;
-            profile.ShowItemDrops = command.ShowItemDrops;
+            profile.InventoryIncludeMarketTax = command.InventoryIncludeMarketTax;
+            profile.InventoryShowItemDrops = command.InventoryShowItemDrops;
+            profile.InventoryShowUnmarketableItems = command.InventoryShowUnmarketableItems;
+            profile.InventoryValueMovementDisplay = command.InventoryValueMovemenDisplay;
 
             // Notifications
             if (command.DiscordId != null)
@@ -504,12 +506,14 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
-            var showDrops = this.User.Preference(_db, x => x.ShowItemDrops);
+            var showDrops = this.User.Preference(_db, x => x.InventoryShowItemDrops);
+            var showUnmarketable = this.User.Preference(_db, x => x.InventoryShowUnmarketableItems);
             var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
                 .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))
+                .Where(x => showUnmarketable || (x.Description.IsMarketable))
                 .Include(x => x.Description)
                 .Include(x => x.Description.App)
                 .Include(x => x.Description.StoreItem)
@@ -592,11 +596,13 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("No item collections found");
             }
 
-            var showDrops = this.User.Preference(_db, x => x.ShowItemDrops);
+            var showDrops = this.User.Preference(_db, x => x.InventoryShowItemDrops);
+            var showUnmarketable = this.User.Preference(_db, x => x.InventoryShowUnmarketableItems);
             var itemCollections = profileItemsInCollection.Select(x => x.ItemCollection).Distinct().ToArray();
             var profileCollections = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => itemCollections.Contains(x.ItemCollection))
                 .Where(x => showDrops || (!x.IsSpecialDrop && !x.IsTwitchDrop))
+                .Where(x => showUnmarketable || (x.IsMarketable))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)

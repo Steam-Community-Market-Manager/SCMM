@@ -48,10 +48,13 @@
                                 <span>Split Stacks</span>
                             </MudMenuItem>
                         }
-                        <MudMenuItem OnClick="SellItemOnMarket">
-                            <i class="fa fa-fw fa-hand-holding-usd mr-1"></i>
-                            <span>@(Item.Quantity > 1 ? "Multi-Sell" : "Sell")</span>
-                        </MudMenuItem>
+                        @if (!String.IsNullOrEmpty(Item.BuyNowUrl))
+                        {
+                            <MudMenuItem OnClick="SellItemOnMarket">
+                                <i class="fa fa-fw fa-hand-holding-usd mr-1"></i>
+                                <span>@(Item.Quantity > 1 ? "Multi-Sell" : "Sell")</span>
+                            </MudMenuItem>
+                        }
                     </ChildContent>
                 </MudMenu>
             }
