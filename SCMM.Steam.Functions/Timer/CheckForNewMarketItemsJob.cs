@@ -106,6 +106,8 @@ public class CheckForNewMarketItemsJob
 
         if (newMarketItems.Any())
         {
+            logger.LogInformation($"New market items detected!");
+
             var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
             var thumbnail = await GenerateMarketItemsThumbnailImage(logger, _queryProcessor, newMarketItems, thumbnailExpiry);
             if (thumbnail != null)

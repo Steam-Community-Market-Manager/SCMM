@@ -92,6 +92,8 @@ public class CheckForNewStoreItemsJob
                 continue;
             }
 
+            logger.LogInformation($"New store change detected! (appId: {app.SteamId})");
+
             // If we got here, then then item store has changed (either added or removed items)
             // Load all of our active stores and their items
             var activeItemStores = _db.SteamItemStores
@@ -129,10 +131,10 @@ public class CheckForNewStoreItemsJob
             }
 
             // Ensure that an active "general" and "limited" item store exists
-            var generalItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
-            if (generalItemStore == null)
+            var permanentItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
+            if (permanentItemStore == null)
             {
-                generalItemStore = new SteamItemStore()
+                permanentItemStore = new SteamItemStore()
                 {
                     App = app,
                     AppId = app.Id,
@@ -151,7 +153,7 @@ public class CheckForNewStoreItemsJob
             }
 
             // Check if there are any new items to be added to the stores
-            var newGeneralStoreItems = new List<SteamStoreItemItemStore>();
+            var newPermanentStoreItems = new List<SteamStoreItemItemStore>();
             var newLimitedStoreItems = new List<SteamStoreItemItemStore>();
             foreach (var asset in response.Data.Assets)
             {
@@ -164,7 +166,7 @@ public class CheckForNewStoreItemsJob
                     continue;
                 }
 
-                var itemStore = storeItem.Description.IsPermanent ? generalItemStore : limitedItemStore;
+                var itemStore = storeItem.Description.IsPermanent ? permanentItemStore : limitedItemStore;
                 if (itemStore == null)
                 {
                     continue;
@@ -187,7 +189,7 @@ public class CheckForNewStoreItemsJob
                     itemStore.Items.Add(storeItemLink);
                     if (storeItem.Description.IsPermanent)
                     {
-                        newGeneralStoreItems.Add(storeItemLink);
+                        newPermanentStoreItems.Add(storeItemLink);
                     }
                     else
                     {
@@ -200,22 +202,22 @@ public class CheckForNewStoreItemsJob
             }
 
             // Regenerate store thumbnails (if items have changed)
-            if (newGeneralStoreItems.Any())
+            if (newPermanentStoreItems.Any())
             {
-                if (generalItemStore.IsTransient)
+                if (permanentItemStore.IsTransient)
                 {
-                    _db.SteamItemStores.Add(generalItemStore);
+                    _db.SteamItemStores.Add(permanentItemStore);
                 }
-                if (generalItemStore.ItemsThumbnail != null)
+                if (permanentItemStore.ItemsThumbnail != null)
                 {
-                    _db.FileData.Remove(generalItemStore.ItemsThumbnail);
-                    generalItemStore.ItemsThumbnail = null;
-                    generalItemStore.ItemsThumbnailId = null;
+                    _db.FileData.Remove(permanentItemStore.ItemsThumbnail);
+                    permanentItemStore.ItemsThumbnail = null;
+                    permanentItemStore.ItemsThumbnailId = null;
                 }
-                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, generalItemStore.Items.Select(x => x.Item));
+                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, permanentItemStore.Items.Select(x => x.Item));
                 if (thumbnail != null)
                 {
-                    generalItemStore.ItemsThumbnail = thumbnail;
+                    permanentItemStore.ItemsThumbnail = thumbnail;
                 }
             }
             if (newLimitedStoreItems.Any())
@@ -240,12 +242,14 @@ public class CheckForNewStoreItemsJob
             _db.SaveChanges();
 
             // Send out a broadcast about any "new" items that weren't already in our store
-            if (newGeneralStoreItems.Any())
+            if (newPermanentStoreItems.Any())
             {
-                await BroadcastNewStoreItemsNotification(logger, _commandProcessor, _db, app, generalItemStore, newGeneralStoreItems, currencies);
+                logger.LogInformation($"New permanent store items detected!");
+                await BroadcastNewStoreItemsNotification(logger, _commandProcessor, _db, app, permanentItemStore, newPermanentStoreItems, currencies);
             }
             if (newLimitedStoreItems.Any())
             {
+                logger.LogInformation($"New limited store items detected!");
                 await BroadcastNewStoreItemsNotification(logger, _commandProcessor, _db, app, limitedItemStore, newLimitedStoreItems, currencies);
             }
 
