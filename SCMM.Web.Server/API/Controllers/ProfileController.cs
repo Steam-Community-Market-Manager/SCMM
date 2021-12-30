@@ -599,6 +599,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => showDrops || (!x.IsSpecialDrop && !x.IsTwitchDrop))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .ToListAsync();
 
             var profileCollectionsGrouped = profileCollections
@@ -615,7 +617,7 @@ namespace SCMM.Web.Server.API.Controllers
                     CreatorAvatarUrl = x.Key.CreatorAvatarUrl,
                     Items = x.Select(y => new ProfileInventoryCollectionItemDTO()
                     {
-                        Item = _mapper.Map<SteamAssetDescription, ItemDescriptionDTO>(y, this),
+                        Item = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(y, this),
                         IsOwned = profileItemsInCollection.Any(z => z.ClassId == y.ClassId)
                     }).ToList()
                 })

@@ -11,9 +11,15 @@
             <div class="icon clickable hover-zoom hover-zoom-extra" @onclick="@(() => OnItemClicked())">
                 <MudTooltip>
                     <TooltipContent>
-                        <strong>@Item.Name</strong><br/>
+                        <strong>@Item.Name</strong>
+                        <br/>
                         <span>(@Item.ItemType)</span>
-					</TooltipContent>
+                        @if (Item.BuyNowPrice > 0)
+                        {
+                            <br/>
+                            <span>@State.Currency.ToPriceString(Item.BuyNowPrice.Value)</span>
+                        }
+                    </TooltipContent>
                     <ChildContent>
                         <img src="@Item.IconUrl" class="full-width" />
 					</ChildContent>
@@ -43,7 +49,7 @@
 @code {
     
     [Parameter]
-    public ItemDescriptionDTO Item { get; set; }
+    public ItemDescriptionWithPriceDTO Item { get; set; }
     
     [Parameter]
     public string ItemType { get; set; }

@@ -12,7 +12,7 @@
             <div class="collection pa-3" style="grid-template-columns: auto auto auto auto">
     
                 <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                    <MudText Typo="MudBlazor.Typo.subtitle2">Gun</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2">Guns</MudText>
                 </div>
     
                 <ItemCollectionLayoutTile ItemType="M249" Item="@FindItem("M249")" ItemIsAcquired="@IsItemAquired("M249")" class="collection-item" />
@@ -81,7 +81,7 @@
             <div class="collection pa-3" style="grid-template-columns: auto auto auto auto">
     
                 <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                    <MudText Typo="MudBlazor.Typo.subtitle2">Weapon</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2">Weapons</MudText>
                 </div>
     
                 <ItemCollectionLayoutTile ItemType="Rocket Launcher" Item="@FindItem("Rocket Launcher")" ItemIsAcquired="@IsItemAquired("Rocket Launcher")" class="collection-item" />
@@ -112,7 +112,7 @@
             <div class="collection pa-3" style="grid-template-columns: auto auto auto auto">
     
                 <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                    <MudText Typo="MudBlazor.Typo.subtitle2">Tool</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2">Tools</MudText>
                 </div>
     
                 <ItemCollectionLayoutTile ItemType="Jackhammer" Item="@FindItem("Jackhammer")" ItemIsAcquired="@IsItemAquired("Jackhammer")" class="collection-item" />
@@ -278,7 +278,7 @@
             <div class="collection pa-3" style="grid-template-columns: auto auto auto auto">
     
                 <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                    <MudText Typo="MudBlazor.Typo.subtitle2">Door</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2">Doors</MudText>
                 </div>
     
                 <ItemCollectionLayoutTile ItemType="Armored Double Door" Item="@FindItem("Armored Double Door")" ItemIsAcquired="@IsItemAquired("Armored Double Door")" class="collection-item" />
@@ -299,7 +299,7 @@
             <div class="collection pa-3" style="@(Items.Count(x => x.ItemType.IsRustDeployableItem()) > 4 ? "grid-template-columns: auto auto auto auto" : null)">
     
                 <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                    <MudText Typo="MudBlazor.Typo.subtitle2">Deployable</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2">Deployables</MudText>
                 </div>
             
                 @foreach (var item in Items.Where(x => x.ItemType.IsRustDeployableItem()).OrderBy(x => x.ItemType).ThenByDescending(x => x.Id))
@@ -332,12 +332,12 @@
 @code {
 
     [Parameter]
-    public IEnumerable<ItemDescriptionDTO> Items { get; set; }
+    public IEnumerable<ItemDescriptionWithPriceDTO> Items { get; set; }
     
     [Parameter]
-    public IEnumerable<ItemDescriptionDTO> AcquiredItems { get; set; }
+    public IEnumerable<ItemDescriptionWithPriceDTO> AcquiredItems { get; set; }
     
-    private ItemDescriptionDTO FindItem(string itemType)
+    private ItemDescriptionWithPriceDTO FindItem(string itemType)
     {
         return Items.FirstOrDefault(x => x.ItemType == itemType);
     }
