@@ -62,7 +62,7 @@ namespace SCMM.Steam.API.Queries
             var y = 0;
             var padding = (int)Math.Ceiling(tileSize * 0.0625f);
             var indicatorSize = (int)Math.Ceiling(tileSize * 0.25f);
-            var fontSize = 24;
+            var fontSize = (int)Math.Ceiling(24 * ((double)tileSize / 128));
             var fontLineHeight = (fontSize + (padding * 3));
             var fontFamily = (FontFamily)null;
             if (!SystemFonts.TryFind("Segoe UI", out fontFamily) && 
@@ -135,13 +135,12 @@ namespace SCMM.Steam.API.Queries
                     if (imageSource.Badge > 1)
                     {
                         var badgeText = $"{imageSource.Badge}";
-                        var badgeWidth = (int)(TextMeasurer.Measure(badgeText, new RendererOptions(font)).Width + padding);
-                        var badgeHeight = indicatorSize;
+                        var badgeTextSize = TextMeasurer.Measure(badgeText, new RendererOptions(font));
                         var badgeRect = new Rectangle(
-                            x + tileSize - badgeWidth - padding,
-                            y + padding,
-                            badgeWidth,
-                            badgeHeight
+                            (int)(x + tileSize - badgeTextSize.Width - (padding / 2)),
+                            (int)(y + (padding / 2)),
+                            (int)(badgeTextSize.Width + padding),
+                            (int)(badgeTextSize.Height + padding)
                         );
 
                         var badgeIconPath = new RectangularPolygon(badgeRect);
@@ -154,7 +153,7 @@ namespace SCMM.Steam.API.Queries
                                 solidBlack,
                                 new PointF(
                                     badgeRect.Left + (padding / 2),
-                                    badgeRect.Top + (padding / 3)
+                                    badgeRect.Top 
                                 )
                             )
                         );
