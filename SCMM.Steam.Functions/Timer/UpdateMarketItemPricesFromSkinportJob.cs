@@ -71,6 +71,7 @@ public class UpdateMarketItemPricesFromSkinportJob
                     var currency = currencies.FirstOrDefault(x => String.Equals(x.Name, skinportItem.Currency, StringComparison.OrdinalIgnoreCase));
                     if (item != null && currency != null)
                     {
+                        item.Prices = new PersistablePriceStockDictionary(item.Prices);
                         item.Prices[PriceType.Skinport] = new PriceStock
                         {
                             Price = item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), currency),
@@ -82,6 +83,7 @@ public class UpdateMarketItemPricesFromSkinportJob
                 var missingItems = items.Where(x => !skinportItems.Any(y => x.Name == y.MarketHashName) && x.Item.Prices.ContainsKey(PriceType.Skinport));
                 foreach (var missingItem in missingItems)
                 {
+                    missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
                     missingItem.Item.Prices.Remove(PriceType.Skinport);
                 }
             }
