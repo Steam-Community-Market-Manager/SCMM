@@ -23,8 +23,7 @@ public class UpdateMarketItemThirdPartyPricesJob
     }
 
     [Function("Update-Market-Item-Third-Party-Prices")]
-    public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Admin, "get", "post")] HttpRequestData req, FunctionContext context)
-    //public async Task Run([TimerTrigger("30 * * * * *")] /* every minute, at 30 seconds past */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("30 * * * * *")] /* every minute, at 30 seconds past */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Third-Party-Prices");
 
@@ -40,7 +39,7 @@ public class UpdateMarketItemThirdPartyPricesJob
 
         if (!items.Any())
         {
-            return null;
+            return;
         }
 
         var id = Guid.NewGuid();
@@ -82,6 +81,5 @@ public class UpdateMarketItemThirdPartyPricesJob
 
         _db.SaveChanges();
         logger.LogTrace($"Updated market item third part price information (id: {id})");
-        return null;
     }
 }
