@@ -75,7 +75,7 @@ public class DownloadSteamWorkshopFile
             }
             else
             {
-                logger.LogInformation($"Download complete, '{publishedFileData.Name}'");
+                logger.LogTrace($"Download complete, '{publishedFileData.Name}'");
             }
 
             // Upload the workshop file to blob storage
@@ -89,7 +89,7 @@ public class DownloadSteamWorkshopFile
                 { Constants.BlobMetadataPublishedFileName, publishedFileData.Name }
             });
 
-            logger.LogInformation($"Upload complete, '{blob.Name}'");
+            logger.LogTrace($"Upload complete, '{blob.Name}'");
         }
         else
         {
@@ -108,7 +108,7 @@ public class DownloadSteamWorkshopFile
         }
 
         await _db.SaveChangesAsync();
-        logger.LogInformation($"Asset description workshop data urls updated (count: {assetDescriptions.Count})");
+        logger.LogTrace($"Asset description workshop data urls updated (count: {assetDescriptions.Count})");
 
         // Queue analyse of the workfshop file
         return new AnalyseSteamWorkshopFileMessage()

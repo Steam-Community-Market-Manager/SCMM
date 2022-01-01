@@ -168,7 +168,7 @@
     {
         try
         {
-            Logger.LogInformation($"Loading inventory for '{Uri.EscapeDataString(SteamId)}'...");
+            Logger.LogTrace($"Loading inventory for '{Uri.EscapeDataString(SteamId)}'...");
             Profile = null;
             InventoryTotals = null;
 
@@ -204,7 +204,7 @@
     {
         try
         {
-            Logger.LogInformation("Fetching inventory profile...");
+            Logger.LogTrace("Fetching inventory profile...");
             Profile = await Http.GetFromJsonWithDefaultsAsync<ProfileDetailedDTO>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/summary"
             );
@@ -221,7 +221,7 @@
     {
         try
         {
-            Logger.LogInformation("Synchronising inventory items...");
+            Logger.LogTrace("Synchronising inventory items...");
             var response = await Http.PostAsync($"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/sync?force={force}", null);
             if(!response.IsSuccessStatusCode)
             {
@@ -278,7 +278,7 @@
     {
         try
         {
-            Logger.LogInformation("Fetching inventory totals...");
+            Logger.LogTrace("Fetching inventory totals...");
             InventoryTotals = await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/total"
             );

@@ -136,7 +136,7 @@
 
             foreach (var sourceItem in SelectedStacks.Where(x => x.Value > 0))
             {
-                Logger.LogInformation($"Splitting item {sourceItem.Key} in to {sourceItem.Value}");
+                Logger.LogTrace($"Splitting item {sourceItem.Key} in to {sourceItem.Value}");
                 var request = new HttpRequestMessage()
                 {
                     RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{sourceItem.Key}/split"),

@@ -48,7 +48,7 @@ public class UpdateMarketItemSalesJob
         }
 
         var id = Guid.NewGuid();
-        logger.LogInformation($"Updating market item sales information (id: {id}, count: {items.Count()})");
+        logger.LogTrace($"Updating market item sales information (id: {id}, count: {items.Count()})");
         foreach (var item in items)
         {
             try
@@ -74,6 +74,6 @@ public class UpdateMarketItemSalesJob
         }
 
         _db.SaveChanges();
-        logger.LogInformation($"Updated market item sales information (id: {id})");
+        logger.LogTrace($"Updated market item sales information (id: {id})");
     }
 }

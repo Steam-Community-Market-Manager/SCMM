@@ -45,7 +45,7 @@ public class AnalyseSteamWorkshopFile
         var tags = new Dictionary<string, string>();
 
         // Get the workshop file from blob storage
-        logger.LogInformation($"Reading workshop file '{message.BlobName}' from blob storage");
+        logger.LogTrace($"Reading workshop file '{message.BlobName}' from blob storage");
         var blobContainer = new BlobContainerClient(_workshopFilesStorageConnectionString, Constants.BlobContainerWorkshopFiles);
         await blobContainer.CreateIfNotExistsAsync();
         var blob = blobContainer.GetBlobClient(message.BlobName);
@@ -53,7 +53,7 @@ public class AnalyseSteamWorkshopFile
         var blobMetadata = blobProperties.Value.Metadata;
 
         // Inspect the contents of the workshop file
-        logger.LogInformation($"Analysing workshop file contents");
+        logger.LogInformation($"Analysing workshop file '{message.BlobName}' contents");
         using var workshopFileDataStream = await blob.OpenReadAsync();
         using (var workshopFileZip = new ZipArchive(workshopFileDataStream, ZipArchiveMode.Read))
         {
@@ -216,15 +216,15 @@ public class AnalyseSteamWorkshopFile
             }
         }
 
-        logger.LogInformation($"Analyse complete");
-        logger.LogInformation($"hasGlow = {hasGlow}");
-        logger.LogInformation($"glowRatio = {glowRatio}");
-        logger.LogInformation($"hasCutout = {hasCutout}");
-        logger.LogInformation($"cutoutRatio = {cutoutRatio}");
-        logger.LogInformation($"dominantColour = {dominantColour}");
+        logger.LogTrace($"Analyse complete");
+        logger.LogDebug($"hasGlow = {hasGlow}");
+        logger.LogDebug($"glowRatio = {glowRatio}");
+        logger.LogDebug($"hasCutout = {hasCutout}");
+        logger.LogDebug($"cutoutRatio = {cutoutRatio}");
+        logger.LogDebug($"dominantColour = {dominantColour}");
         foreach (var tag in tags)
         {
-            logger.LogInformation($"{tag.Key} = {tag.Value}");
+            logger.LogDebug($"{tag.Key} = {tag.Value}");
         }
 
         // Update asset descriptions details
@@ -270,10 +270,10 @@ public class AnalyseSteamWorkshopFile
         }
 
         await _db.SaveChangesAsync();
-        logger.LogInformation($"Asset descriptions updated (count: {assetDescriptions.Count})");
+        logger.LogTrace($"Asset descriptions updated (count: {assetDescriptions.Count})");
 
         // Update workshop file metadata
         await blob.SetMetadataAsync(blobMetadata);
-        logger.LogInformation($"Blob metadata updated");
+        logger.LogTrace($"Blob metadata updated");
     }
 }

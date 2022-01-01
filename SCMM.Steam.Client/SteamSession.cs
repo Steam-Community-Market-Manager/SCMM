@@ -32,12 +32,12 @@ namespace SCMM.Steam.Client
                 try
                 {
                     // Refresh session
-                    _logger.LogInformation($"Refreshing Steam session cookies...");
+                    _logger.LogTrace($"Refreshing Steam session cookies...");
                     var login = new UserLogin(_configuration.Username, _configuration.Password);
                     var result = login.DoLogin();
                     if (result == LoginResult.LoginOkay)
                     {
-                        _logger.LogInformation($"Steam login was successful (result: {result})");
+                        _logger.LogTrace($"Steam login was successful (result: {result})");
                         _session = login.Session;
                     }
                     else

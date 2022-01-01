@@ -37,11 +37,11 @@ public class DeleteExpiredFileData
                 _db.SaveChanges();
             }
 
-            logger.LogInformation($"{expiredFileData.Count} file data records were deleted");
+            logger.LogTrace($"{expiredFileData.Count} file data records were deleted");
         }
         else
         {
-            logger.LogInformation($"No expired file data found");
+            logger.LogTrace($"No expired file data found");
         }
     }
 }

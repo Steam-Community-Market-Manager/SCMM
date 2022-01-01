@@ -154,7 +154,7 @@
 
         try 
         {
-            Logger.LogInformation($"Combing items {String.Join(" + ", sourceItems.Keys)} => {destinationItem.Key}");
+            Logger.LogTrace($"Combing items {String.Join(" + ", sourceItems.Keys)} => {destinationItem.Key}");
             IsCombining = true;
             StateHasChanged();
 

@@ -61,7 +61,7 @@ public class CheckForNewStoreItemsJob
         var steamEconomy = steamWebInterfaceFactory.CreateSteamWebInterface<SteamEconomy>();
         foreach (var app in steamApps)
         {
-            logger.LogInformation($"Checking for new store items (appId: {app.SteamId})");
+            logger.LogTrace($"Checking for new store items (appId: {app.SteamId})");
             var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
             var response = await steamEconomy.GetAssetPricesAsync(
                 uint.Parse(app.SteamId), string.Empty, Constants.SteamDefaultLanguage

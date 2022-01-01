@@ -71,7 +71,7 @@
     {
         try
         {
-            Logger.LogInformation("Fetching inventory items...");
+            Logger.LogTrace("Fetching inventory items...");
             InventoryItems = await Http.GetFromJsonWithDefaultsAsync<IList<ProfileInventoryItemDescriptionDTO>>(
                 $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/items"
             );

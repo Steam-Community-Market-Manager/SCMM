@@ -69,7 +69,7 @@ public class CheckNewYouTubeStoreVideos
                         */
 
                         // Find the earliest video that matches our store data period.
-                        logger.LogInformation($"Checking channel (id: {channel.ChannelId}) for new store videos since {itemStore.Start.Value.UtcDateTime}...");
+                        logger.LogTrace($"Checking channel (id: {channel.ChannelId}) for new store videos since {itemStore.Start.Value.UtcDateTime}...");
                         var videos = await _googleClient.ListChannelVideosAsync(channel.ChannelId, GoogleClient.PageMaxResults);
                         var firstStoreVideo = videos
                             .Where(x => Regex.IsMatch(x.Title, channel.Query, RegexOptions.IgnoreCase))
@@ -114,11 +114,11 @@ public class CheckNewYouTubeStoreVideos
                     );
 
                     _db.SaveChanges();
-                    logger.LogInformation($"{itemStore.Media.Count} total video(s) are now recorded for store {itemStore.Start.Value.UtcDateTime}");
+                    logger.LogTrace($"{itemStore.Media.Count} total video(s) are now recorded for store {itemStore.Start.Value.UtcDateTime}");
                 }
                 else
                 {
-                    logger.LogInformation($"No new videos were found for store {itemStore.Start.Value.UtcDateTime}");
+                    logger.LogTrace($"No new videos were found for store {itemStore.Start.Value.UtcDateTime}");
                 }
             }
         }

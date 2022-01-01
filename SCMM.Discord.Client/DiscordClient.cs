@@ -229,7 +229,7 @@ namespace SCMM.Discord.Client
                 try
                 {
                     // Send the message
-                    _logger.LogInformation($"Sending messsage \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
+                    _logger.LogTrace($"Sending messsage \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
                     var embed = BuildEmbed(title, description, fields, fieldsInline, url, thumbnailUrl, imageUrl, color);
                     var msg = await channel.SendMessageAsync(text: message, embed: embed);
                     if (msg == null)

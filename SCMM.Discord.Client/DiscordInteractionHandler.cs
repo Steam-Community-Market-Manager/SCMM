@@ -172,7 +172,7 @@ namespace SCMM.Discord.Client
             // Success
             if (result.IsSuccess)
             {
-                _logger.LogInformation(
+                _logger.LogTrace(
                     $"Interaction '{interactionName}' executed successfully (guild: {guildName}, channel: {channelName}, user: {userName})"
                 );
 
@@ -185,7 +185,7 @@ namespace SCMM.Discord.Client
             // Error gracefully reported by the interaction handler
             else if (result.Error == InteractionCommandError.Unsuccessful && interactionResult != null)
             {
-                _logger.LogInformation(
+                _logger.LogTrace(
                     $"Interaction '{interactionName}' had an unsuccessful outcome (guild: {guildName}, channel: {channelName}, user: {userName}). {interactionResult.Reason}"
                 );
 

@@ -47,7 +47,6 @@ public static class WebApplicationExtensions
         else
         {
             builder.Logging.AddApplicationInsights();
-            builder.Logging.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
         }
         return builder;
     }

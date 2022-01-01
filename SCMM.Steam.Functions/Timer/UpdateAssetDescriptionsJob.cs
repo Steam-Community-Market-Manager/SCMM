@@ -41,7 +41,7 @@ public class UpdateAssetDescriptionsJob
         }
 
         var id = Guid.NewGuid();
-        logger.LogInformation($"Updating asset description information (id: {id}, count: {assetDescriptions.Count()})");
+        logger.LogTrace($"Updating asset description information (id: {id}, count: {assetDescriptions.Count()})");
         foreach (var assetDescription in assetDescriptions)
         {
             try
@@ -60,6 +60,6 @@ public class UpdateAssetDescriptionsJob
         }
 
         _db.SaveChanges();
-        logger.LogInformation($"Updated asset description information (id: {id})");
+        logger.LogTrace($"Updated asset description information (id: {id})");
     }
 }

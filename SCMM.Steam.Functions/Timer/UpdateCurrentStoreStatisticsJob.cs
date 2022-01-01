@@ -55,7 +55,7 @@ public class UpdateCurrentStoreStatisticsJob
 
     private async Task UpdateItemStoreTopSellers(ILogger logger, SteamDbContext db, SteamCommunityWebClient commnityClient, SteamService service, SteamItemStore itemStore)
     {
-        logger.LogInformation($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
+        logger.LogTrace($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
         var storePage = await commnityClient.GetStorePage(new SteamItemStorePageRequest()
         {
             AppId = itemStore.App.SteamId,
@@ -140,7 +140,7 @@ public class UpdateCurrentStoreStatisticsJob
             return;
         }
 
-        logger.LogInformation($"Updating item store workshop statistics (ids: {workshopFileIds.Count})");
+        logger.LogTrace($"Updating item store workshop statistics (ids: {workshopFileIds.Count})");
         var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamConfiguration.ApplicationKey);
         var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
         var response = await steamRemoteStorage.GetPublishedFileDetailsAsync(workshopFileIds);

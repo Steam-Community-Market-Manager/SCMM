@@ -76,7 +76,7 @@ public class UpdateMarketItemActivityJob
         }
 
         var id = Guid.NewGuid();
-        logger.LogInformation($"Updating market item activity information (id: {id}, count: {assetDescriptions.Count()})");
+        logger.LogTrace($"Updating market item activity information (id: {id}, count: {assetDescriptions.Count()})");
         foreach (var assetDescription in assetDescriptions)
         {
             var progress = assetDescriptions.IndexOf(assetDescription);
@@ -150,6 +150,6 @@ public class UpdateMarketItemActivityJob
             _db.SaveChanges();
         }
 
-        logger.LogInformation($"Updated market item activity information (id: {id})");
+        logger.LogTrace($"Updated market item activity information (id: {id})");
     }
 }

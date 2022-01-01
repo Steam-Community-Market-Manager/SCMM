@@ -62,7 +62,7 @@ public class CheckForNewMarketItemsJob
 
         // TODO: Check up to 5 times with a 1min delay between each attempt
 
-        logger.LogInformation($"Checking for new market items (assets: {assetDescriptions.Count})");
+        logger.LogTrace($"Checking for new market items (assets: {assetDescriptions.Count})");
         var newMarketItems = new List<SteamMarketItem>();
         foreach (var assetDescription in assetDescriptions)
         {

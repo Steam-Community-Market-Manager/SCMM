@@ -45,7 +45,6 @@ public static class HostExtensions
             }
             {
                 logging.AddApplicationInsights();
-                logging.AddFilter<ApplicationInsightsLoggerProvider>(string.Empty, LogLevel.Warning);
             }
         });
     }

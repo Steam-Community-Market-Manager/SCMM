@@ -154,7 +154,7 @@ namespace SCMM.Discord.Client
             // Success
             if (result.IsSuccess)
             {
-                _logger.LogInformation(
+                _logger.LogTrace(
                     $"Command '{commandName}' executed successfully (guild: {guildName}, channel: {channelName}, user: {userName})"
                 );
 
@@ -171,7 +171,7 @@ namespace SCMM.Discord.Client
             // Error gracefully reported by the command handler
             else if (result.Error == CommandError.Unsuccessful && commandResult != null)
             {
-                _logger.LogInformation(
+                _logger.LogTrace(
                     $"Command '{commandName}' had an unsuccessful outcome (guild: {guildName}, channel: {channelName}, user: {userName}). {commandResult.Reason}"
                 );
 
