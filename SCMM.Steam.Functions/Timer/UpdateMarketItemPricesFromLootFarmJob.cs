@@ -44,7 +44,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                     })
                     .ToListAsync();
 
-                var lootFarmItems = await _lootFarmWebClient.GetItemListAsync(app.SteamId);
+                var lootFarmItems = await _lootFarmWebClient.GetItemListAsync(app.Name);
                 if (lootFarmItems?.Any() != true)
                 {
                     continue;
