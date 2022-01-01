@@ -230,62 +230,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get item price list
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <param name="id">Item GUID, ID64, or name</param>
-        /// <response code="200">The item price list.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the request item cannot be found.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("{id}/prices")]
-        [ProducesResponseType(typeof(IEnumerable<ItemPriceDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemPrices([FromRoute] string id)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                return BadRequest("Item id is invalid");
-            }
-
-            var guid = Guid.Empty;
-            var id64 = (ulong)0;
-            Guid.TryParse(id, out guid);
-            ulong.TryParse(id, out id64);
-
-            var item = await _db.SteamAssetDescriptions
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
-                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .FirstOrDefaultAsync(x =>
-                    (guid != Guid.Empty && x.Id == guid) ||
-                    (id64 > 0 && x.ClassId == id64) ||
-                    (x.Name == id)
-                );
-
-            if (item == null)
-            {
-                return NotFound($"Item was not found");
-            }
-
-            return Ok(
-                item.GetPrices(this.Currency())
-                    .OrderByDescending(x => x.Type == PriceType.SteamStore)
-                    .ThenByDescending(x => x.Type == PriceType.SteamCommunityMarket)
-                    .ThenByDescending(x => x.IsAvailable)
-                    .ThenBy(x => x.LowestPrice)
-                    .Select(x => _mapper.Map<Price, ItemPriceDTO>(x, this))
-                    .ToList()
-            );
-        }
-
-        /// <summary>
         /// List item sell orders
         /// </summary>
         /// <param name="id">Item GUID, ID64, or name</param>

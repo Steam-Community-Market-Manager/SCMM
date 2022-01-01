@@ -68,19 +68,6 @@
             <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemPrices(System.String)">
-            <summary>
-            Get item price list
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <param name="id">Item GUID, ID64, or name</param>
-            <response code="200">The item price list.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
-            <response code="404">If the request item cannot be found.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSellOrders(System.String,System.Int32,System.Int32)">
             <summary>
             List item sell orders
