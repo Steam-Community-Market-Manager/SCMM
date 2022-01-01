@@ -78,6 +78,10 @@ public class UpdateMarketItemThirdPartyPricesJob
                 logger.LogError(ex, $"Failed to update market item third party price for '{item.SteamId}'. {ex.Message}");
                 continue;
             }
+            finally
+            {
+                item.LastCheckedThirdPartyPricesOn = DateTimeOffset.Now;
+            }
         }
 
         _db.SaveChanges();
