@@ -64,6 +64,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Steam.Functions", "SCM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Market.Skinport.Client", "SCMM.Market.Skinport.Client\SCMM.Market.Skinport.Client.csproj", "{A299C533-A303-4D91-8DFA-404A0B6DC87F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCMM.Market.LootFarm.Client", "SCMM.Market.LootFarm.Client\SCMM.Market.LootFarm.Client.csproj", "{23C92C44-8893-4279-94BC-31B0B17243DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -350,6 +352,18 @@ Global
 		{A299C533-A303-4D91-8DFA-404A0B6DC87F}.Release|x64.Build.0 = Release|Any CPU
 		{A299C533-A303-4D91-8DFA-404A0B6DC87F}.Release|x86.ActiveCfg = Release|Any CPU
 		{A299C533-A303-4D91-8DFA-404A0B6DC87F}.Release|x86.Build.0 = Release|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Debug|x64.Build.0 = Debug|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Debug|x86.Build.0 = Debug|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Release|x64.ActiveCfg = Release|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Release|x64.Build.0 = Release|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Release|x86.ActiveCfg = Release|Any CPU
+		{23C92C44-8893-4279-94BC-31B0B17243DD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -378,6 +392,7 @@ Global
 		{1F1E9B6D-681E-4607-9049-F054F823232D} = {8AE530FB-A593-4733-AF49-D1AFE5E5C01E}
 		{D0AEAD2F-E9E9-44F8-84D1-A0E1448ADEFA} = {E0FE58D1-3036-485C-9289-38E68D937B94}
 		{A299C533-A303-4D91-8DFA-404A0B6DC87F} = {8AE530FB-A593-4733-AF49-D1AFE5E5C01E}
+		{23C92C44-8893-4279-94BC-31B0B17243DD} = {8AE530FB-A593-4733-AF49-D1AFE5E5C01E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {53C48CAC-8050-44A2-B930-9273F442173C}

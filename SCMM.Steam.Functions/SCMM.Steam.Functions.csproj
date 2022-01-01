@@ -32,6 +32,7 @@
 		<ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
 		<ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
 		<ProjectReference Include="..\SCMM.Google.Client\SCMM.Google.Client.csproj" />
+		<ProjectReference Include="..\SCMM.Market.LootFarm.Client\SCMM.Market.LootFarm.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Market.Skinport.Client\SCMM.Market.Skinport.Client.csproj" />
 		<ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
 		<ProjectReference Include="..\SCMM.Steam.API\SCMM.Steam.API.csproj" />
