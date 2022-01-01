@@ -211,7 +211,7 @@ namespace SCMM.Steam.Data.Store
         public SteamMarketItem MarketItem { get; set; }
 
         public Price this[IExchangeableCurrency currency] =>
-            GetPrices(currency).Where(x => x.IsAvailable).OrderBy(x => x.LowestPrice).FirstOrDefault();
+            GetPrices(currency).Where(x => x.IsFirstPartySource && x.IsAvailable).OrderBy(x => x.LowestPrice).FirstOrDefault();
 
         public IEnumerable<Price> GetPrices(IExchangeableCurrency currency)
         {
@@ -278,6 +278,7 @@ namespace SCMM.Steam.Data.Store
                 };
             }
 
+            // Third party markets
             if (MarketItem != null && MarketItem.Prices != null && MarketItem.Currency != null)
             {
                 var app = (MarketItem.App ?? App);

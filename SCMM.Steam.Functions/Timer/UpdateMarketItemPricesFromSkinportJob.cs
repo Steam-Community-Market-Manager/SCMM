@@ -74,7 +74,7 @@ public class UpdateMarketItemPricesFromSkinportJob
                         item.Prices = new PersistablePriceStockDictionary(item.Prices);
                         item.Prices[PriceType.Skinport] = new PriceStock
                         {
-                            Price = item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), currency),
+                            Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), currency) : 0,
                             Stock = skinportItem.Quantity
                         };
                     }

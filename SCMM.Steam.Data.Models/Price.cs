@@ -18,6 +18,11 @@ namespace SCMM.Steam.Data.Models
 
         public bool IsAvailable { get; set; }
 
+        /// <summary>
+        /// If true, price is from a 1st party market, run by Steam/Value
+        /// </summary>
+        public bool IsFirstPartySource => (Type == PriceType.SteamStore || Type == PriceType.SteamCommunityMarket);
+
         public string Url { get; set; }
     }
 }

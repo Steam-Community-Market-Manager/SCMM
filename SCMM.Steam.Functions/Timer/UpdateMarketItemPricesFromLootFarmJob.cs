@@ -58,7 +58,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                         item.Prices = new PersistablePriceStockDictionary(item.Prices);
                         item.Prices[PriceType.LOOTFarm] = new PriceStock
                         {
-                            Price = lootFarmItem.Price,
+                            Price = lootFarmItem.Have > 0 ? lootFarmItem.Price : 0,
                             Stock = lootFarmItem.Have
                         };
                     }
