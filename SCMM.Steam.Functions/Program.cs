@@ -12,6 +12,7 @@ using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Market.Skinport.Client;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.API;
@@ -119,6 +120,7 @@ public static class HostExtensions
             services.AddSingleton<SteamSession>();
             services.AddSingleton<AzureAiClient>();
             services.AddSingleton<GoogleClient>();
+            services.AddSingleton<SkinportWebClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<SteamWorkshopDownloaderWebClient>();

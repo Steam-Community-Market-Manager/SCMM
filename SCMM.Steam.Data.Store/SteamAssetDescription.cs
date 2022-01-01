@@ -4,10 +4,12 @@ using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Attributes;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store.Types;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -276,33 +278,33 @@ namespace SCMM.Steam.Data.Store
                 };
             }
 
-            if (MarketItem != null && MarketItem.SellOrderLowestPrice > 0 && MarketItem.Currency != null)
+            if (MarketItem != null && MarketItem.Prices != null && MarketItem.Currency != null)
             {
-                // TODO: Implement these properly...
-                yield return new Price
+                foreach (var marketPrice in MarketItem.Prices)
                 {
-                    Type = PriceType.Skinport
-                };
-                yield return new Price
-                {
-                    Type = PriceType.BitSkins
-                };
-                yield return new Price
-                {
-                    Type = PriceType.SwapGG
-                };
-                yield return new Price
-                {
-                    Type = PriceType.TradeitGG
-                };
-                yield return new Price
-                {
-                    Type = PriceType.Dmarket
-                };
-                yield return new Price
-                {
-                    Type = PriceType.CSDeals
-                };
+                    var lowestPrice = (long?)null;
+                    if (currency != null)
+                    {
+                        lowestPrice = currency.CalculateExchange(marketPrice.Value.Price, MarketItem.Currency);
+                    }
+                    else
+                    {
+                        currency = MarketItem.Currency;
+                        lowestPrice = marketPrice.Value.Price;
+                    }
+                    yield return new Price
+                    {
+                        Type = marketPrice.Key,
+                        Currency = currency,
+                        LowestPrice = lowestPrice ?? 0,
+                        QuantityAvailable = marketPrice.Value.Stock,
+                        IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Stock > 0),
+                        Url = String.Format(
+                            (marketPrice.Key.GetType().GetField(marketPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>()?.Url ?? String.Empty),
+                            MarketItem.App?.SteamId, MarketItem.App?.Name, MarketItem.Description?.ClassId, MarketItem.Description?.NameHash
+                        )
+                    };
+                }
             }
         }
 

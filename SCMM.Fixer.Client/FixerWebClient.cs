@@ -27,5 +27,4 @@ namespace SCMM.Fixer.Client
             }
         }
     }
-
 }

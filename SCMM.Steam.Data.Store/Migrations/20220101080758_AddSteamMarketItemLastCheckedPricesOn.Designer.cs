@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
@@ -11,9 +12,10 @@ using SCMM.Steam.Data.Store;
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220101080758_AddSteamMarketItemLastCheckedPricesOn")]
+    partial class AddSteamMarketItemLastCheckedPricesOn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -571,9 +573,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("LastCheckedSalesOn")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("LastCheckedThirdPartyPricesOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("LastSaleOn")
@@ -1379,6 +1378,23 @@ namespace SCMM.Steam.Data.Store.Migrations
                                 .HasForeignKey("SteamMarketItemId");
                         });
 
+                    b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistablePriceCheckedDictionary", "LastCheckedPriceOn", b1 =>
+                        {
+                            b1.Property<Guid>("SteamMarketItemId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Serialised")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SteamMarketItemId");
+
+                            b1.ToTable("SteamMarketItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SteamMarketItemId");
+                        });
+
                     b.OwnsOne("SCMM.Steam.Data.Store.Types.PersistablePriceStockDictionary", "Prices", b1 =>
                         {
                             b1.Property<Guid>("SteamMarketItemId")
@@ -1404,6 +1420,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Navigation("Currency");
 
                     b.Navigation("Description");
+
+                    b.Navigation("LastCheckedPriceOn");
 
                     b.Navigation("Prices");
 

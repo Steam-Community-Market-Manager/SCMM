@@ -1,4 +1,5 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store.Types;
 using System.Collections.ObjectModel;
@@ -10,6 +11,7 @@ namespace SCMM.Steam.Data.Store
     {
         public SteamMarketItem()
         {
+            Prices = new PersistablePriceStockDictionary();
             Activity = new Collection<SteamMarketItemActivity>();
             BuyOrders = new Collection<SteamMarketItemBuyOrder>();
             BuyOrderHighestPriceRolling24hrs = new PersistablePriceCollection();
@@ -23,6 +25,14 @@ namespace SCMM.Steam.Data.Store
         public Guid? CurrencyId { get; set; }
 
         public SteamCurrency Currency { get; set; }
+
+        public PersistablePriceStockDictionary Prices { get; set; }
+
+        // What is the price you could reasonably flip this for given the current sell orders
+        public long ResellPrice { get; set; }
+
+        // What tax is owed on resell price
+        public long ResellTax { get; set; }
 
         public ICollection<SteamMarketItemActivity> Activity { get; set; }
 
@@ -59,12 +69,6 @@ namespace SCMM.Steam.Data.Store
 
         [Required]
         public PersistablePriceCollection SellOrderLowestPriceRolling24hrs { get; set; }
-
-        // What is the price you could reasonably flip this for given the current sell orders
-        public long ResellPrice { get; set; }
-
-        // What tax is owed on resell price
-        public long ResellTax { get; set; }
 
         public ICollection<SteamMarketItemOrderSummary> OrdersHistory { get; set; }
 
@@ -154,8 +158,11 @@ namespace SCMM.Steam.Data.Store
         // How long since orders were last checked
         public DateTimeOffset? LastCheckedOrdersOn { get; set; }
 
-        // How long since prices were last checked
+        // How long since sales were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
+
+        // How long since third party market prices were last checked
+        public DateTimeOffset? LastCheckedThirdPartyPricesOn { get; set; }
 
         public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
         {
