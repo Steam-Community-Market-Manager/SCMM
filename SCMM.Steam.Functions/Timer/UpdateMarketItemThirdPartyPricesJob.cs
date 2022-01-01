@@ -27,9 +27,10 @@ public class UpdateMarketItemThirdPartyPricesJob
     {
         var logger = context.GetLogger("Update-Market-Item-Third-Party-Prices");
 
-        var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(1));
+        var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
         var items = _db.SteamMarketItems
             .Include(x => x.App)
+            .Include(x => x.Description)
             .Include(x => x.Currency)
             .Where(x => x.Description.IsMarketable && !string.IsNullOrEmpty(x.Description.NameHash))
             .Where(x => x.LastCheckedThirdPartyPricesOn == null || x.LastCheckedThirdPartyPricesOn <= cutoff)
