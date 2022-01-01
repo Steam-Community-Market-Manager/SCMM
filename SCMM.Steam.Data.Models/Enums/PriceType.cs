@@ -22,6 +22,11 @@ namespace SCMM.Steam.Data.Models.Enums
         [SalesTax(13)]
         Skinport,
 
+        [Display(Name = "LOOT.Farm")]
+        [BuyFrom(Url = "https://loot.farm/")]
+        [SalesTax(5)]
+        LOOTFarm,
+
         [Display(Name = "swap.gg")]
         [BuyFrom(Url = "https://market.swap.gg/browse/{0}?search={3}")]
         [SalesTax(8)]

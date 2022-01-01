@@ -280,6 +280,7 @@ namespace SCMM.Steam.Data.Store
 
             if (MarketItem != null && MarketItem.Prices != null && MarketItem.Currency != null)
             {
+                var app = (MarketItem.App ?? App);
                 foreach (var marketPrice in MarketItem.Prices)
                 {
                     var lowestPrice = (long?)null;
@@ -301,7 +302,7 @@ namespace SCMM.Steam.Data.Store
                         IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Stock > 0),
                         Url = String.Format(
                             (marketPrice.Key.GetType().GetField(marketPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>()?.Url ?? String.Empty),
-                            MarketItem.App?.SteamId, MarketItem.App?.Name, MarketItem.Description?.ClassId, MarketItem.Description?.NameHash
+                            app?.SteamId, app?.Name?.ToLower(), ClassId, NameHash
                         )
                     };
                 }

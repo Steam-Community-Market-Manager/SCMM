@@ -4,19 +4,19 @@ namespace SCMM.Market.Skinport.Client
 {
     public class SkinportWebClient
     {
-        private const string BaseUri = "https://skinport.com/api/";
+        private const string BaseUri = "https://api.skinport.com/v1/";
 
-        public async Task<IEnumerable<SkinportMarketItem>> BrowseMarketItemsAsync(string appId, string itemName)
+        public async Task<IEnumerable<SkinportItem>> GetItemListAsync(string appId, string currency = null)
         {
             using (var client = new HttpClient())
             {
-                var url = $"{BaseUri}browse/{Uri.EscapeDataString(appId)}?item={Uri.EscapeDataString(itemName)}&sort=price&order=asc";
+                var url = $"{BaseUri}items?app_id={Uri.EscapeDataString(appId)}&currency={Uri.EscapeDataString(currency)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonSerializer.Deserialize<SkinportMarketBrowseResponseJson>(textJson);
-                return responseJson?.Items;
+                var responseJson = JsonSerializer.Deserialize<SkinportItem[]>(textJson);
+                return responseJson;
             }
         }
     }
