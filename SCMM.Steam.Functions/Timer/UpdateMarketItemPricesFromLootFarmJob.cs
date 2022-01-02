@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.LootFarm.Client;
+using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
@@ -20,12 +22,19 @@ public class UpdateMarketItemPricesFromLootFarmtJob
     }
 
     [Function("Update-Market-Item-Prices-From-LootFarm")]
-    public async Task Run([TimerTrigger("0 20 * * * *")] /* every hour, 20 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 31 * * * *")] /* every hour, 31 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
 
         var steamApps = await _db.SteamApps.ToListAsync();
         if (!steamApps.Any())
+        {
+            return;
+        }
+
+        // Prices are returned in USD by default
+        var usdCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+        if (usdCurrency == null)
         {
             return;
         }
@@ -44,7 +53,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                     })
                     .ToListAsync();
 
-                var lootFarmItems = await _lootFarmWebClient.GetItemListAsync(app.Name);
+                var lootFarmItems = await _lootFarmWebClient.GetItemsAsync(app.Name);
                 if (lootFarmItems?.Any() != true)
                 {
                     continue;
@@ -58,7 +67,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                         item.Prices = new PersistablePriceStockDictionary(item.Prices);
                         item.Prices[PriceType.LOOTFarm] = new PriceStock
                         {
-                            Price = lootFarmItem.Have > 0 ? lootFarmItem.Price : 0,
+                            Price = lootFarmItem.Have > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
                             Stock = lootFarmItem.Have
                         };
                     }

@@ -6,7 +6,7 @@ namespace SCMM.Market.LootFarm.Client
     {
         private const string BaseUri = "https://loot.farm/";
 
-        public async Task<IEnumerable<LootFarmItem>> GetItemListAsync(string appName)
+        public async Task<IEnumerable<LootFarmItem>> GetItemsAsync(string appName)
         {
             using (var client = new HttpClient())
             {

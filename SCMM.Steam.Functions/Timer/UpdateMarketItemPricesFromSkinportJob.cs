@@ -23,7 +23,7 @@ public class UpdateMarketItemPricesFromSkinportJob
     }
 
     [Function("Update-Market-Item-Prices-From-Skinport")]
-    public async Task Run([TimerTrigger("0 10 * * * *")] /* every hour, 10 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 32 * * * *")] /* every hour, 32 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Skinport");
 
@@ -33,13 +33,8 @@ public class UpdateMarketItemPricesFromSkinportJob
             return;
         }
 
-        var currencies = await _db.SteamCurrencies.ToListAsync();
-        if (currencies == null)
-        {
-            return;
-        }
-
-        var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+        // Prices are returned in USD by default
+        var usdCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
         if (usdCurrency == null)
         {
             return;
@@ -59,7 +54,7 @@ public class UpdateMarketItemPricesFromSkinportJob
                     })
                     .ToListAsync();
 
-                var skinportItems = await _skinportWebClient.GetItemListAsync(app.SteamId, currency: usdCurrency.Name);
+                var skinportItems = await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name);
                 if (skinportItems?.Any() != true)
                 {
                     continue;
@@ -68,13 +63,12 @@ public class UpdateMarketItemPricesFromSkinportJob
                 foreach (var skinportItem in skinportItems)
                 {
                     var item = items.FirstOrDefault(x => x.Name == skinportItem.MarketHashName)?.Item;
-                    var currency = currencies.FirstOrDefault(x => String.Equals(x.Name, skinportItem.Currency, StringComparison.OrdinalIgnoreCase));
-                    if (item != null && currency != null)
+                    if (item != null)
                     {
                         item.Prices = new PersistablePriceStockDictionary(item.Prices);
                         item.Prices[PriceType.Skinport] = new PriceStock
                         {
-                            Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), currency) : 0,
+                            Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Stock = skinportItem.Quantity
                         };
                     }

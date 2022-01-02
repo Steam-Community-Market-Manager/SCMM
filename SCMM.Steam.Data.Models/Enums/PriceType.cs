@@ -28,7 +28,7 @@ namespace SCMM.Steam.Data.Models.Enums
         LOOTFarm,
 
         [Display(Name = "swap.gg")]
-        [BuyFrom(Url = "https://market.swap.gg/browse/{0}?search={3}")]
+        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}")]
         [SalesTax(8)]
         SwapGG,
 

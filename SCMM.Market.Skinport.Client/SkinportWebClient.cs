@@ -6,7 +6,7 @@ namespace SCMM.Market.Skinport.Client
     {
         private const string BaseUri = "https://api.skinport.com/v1/";
 
-        public async Task<IEnumerable<SkinportItem>> GetItemListAsync(string appId, string currency = null)
+        public async Task<IEnumerable<SkinportItem>> GetItemsAsync(string appId, string currency = null)
         {
             using (var client = new HttpClient())
             {
