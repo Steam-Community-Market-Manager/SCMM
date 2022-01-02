@@ -300,7 +300,7 @@ namespace SCMM.Steam.Data.Store
                         Currency = currency,
                         LowestPrice = lowestPrice ?? 0,
                         QuantityAvailable = marketPrice.Value.Stock,
-                        IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Stock > 0),
+                        IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Stock != 0),
                         Url = String.Format(
                             (marketPrice.Key.GetType().GetField(marketPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>()?.Url ?? String.Empty),
                             app?.SteamId, app?.Name?.ToLower(), ClassId, NameHash

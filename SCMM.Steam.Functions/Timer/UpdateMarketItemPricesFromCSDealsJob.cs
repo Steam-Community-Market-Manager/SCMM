@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Market.Skinport.Client;
+using SCMM.Market.CSDeals.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
@@ -11,21 +11,21 @@ using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemPricesFromSkinportJob
+public class UpdateMarketItemPricesFromCSDealsob
 {
     private readonly SteamDbContext _db;
-    private readonly SkinportWebClient _skinportWebClient;
+    private readonly CSDealsWebClient _csDealsWebClient;
 
-    public UpdateMarketItemPricesFromSkinportJob(SteamDbContext db, SkinportWebClient skinportWebClient)
+    public UpdateMarketItemPricesFromCSDealsob(SteamDbContext db, CSDealsWebClient csDealsWebClient)
     {
         _db = db;
-        _skinportWebClient = skinportWebClient;
+        _csDealsWebClient = csDealsWebClient;
     }
 
-    [Function("Update-Market-Item-Prices-From-Skinport")]
-    public async Task Run([TimerTrigger("0 33 * * * *")] /* every hour, 33 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
+    [Function("Update-Market-Item-Prices-From-CSDeals")]
+    public async Task Run([TimerTrigger("0 31 * * * *")] /* every hour, 31 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
     {
-        var logger = context.GetLogger("Update-Market-Item-Prices-From-Skinport");
+        var logger = context.GetLogger("Update-Market-Item-Prices-From-CSDeals");
 
         var steamApps = await _db.SteamApps.ToListAsync();
         if (!steamApps.Any())
@@ -44,7 +44,7 @@ public class UpdateMarketItemPricesFromSkinportJob
         {
             try
             {
-                logger.LogTrace($"Updating market item price information from Skinport (appId: {app.SteamId})");
+                logger.LogTrace($"Updating market item price information from CS.Deals (appId: {app.SteamId})");
                 var items = await _db.SteamMarketItems
                     .Select(x => new
                     {
@@ -54,36 +54,36 @@ public class UpdateMarketItemPricesFromSkinportJob
                     })
                     .ToListAsync();
 
-                var skinportItems = await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name);
-                if (skinportItems?.Any() != true)
+                var csDealsItems = await _csDealsWebClient.PricingGetLowestPricesAsync(app.SteamId);
+                if (csDealsItems?.Any() != true)
                 {
                     continue;
                 }
 
-                foreach (var skinportItem in skinportItems)
+                foreach (var csDealsItem in csDealsItems)
                 {
-                    var item = items.FirstOrDefault(x => x.Name == skinportItem.MarketHashName)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == csDealsItem.MarketName)?.Item;
                     if (item != null)
                     {
                         item.Prices = new PersistablePriceStockDictionary(item.Prices);
-                        item.Prices[PriceType.Skinport] = new PriceStock
+                        item.Prices[PriceType.CSDeals] = new PriceStock
                         {
-                            Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                            Stock = skinportItem.Quantity
+                            Price = item.Currency.CalculateExchange(csDealsItem.LowestPrice.SteamPriceAsInt(), usdCurrency),
+                            Stock = null
                         };
                     }
                 }
 
-                var missingItems = items.Where(x => !skinportItems.Any(y => x.Name == y.MarketHashName) && x.Item.Prices.ContainsKey(PriceType.Skinport));
+                var missingItems = items.Where(x => !csDealsItems.Any(y => x.Name == y.MarketName) && x.Item.Prices.ContainsKey(PriceType.CSDeals));
                 foreach (var missingItem in missingItems)
                 {
                     missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
-                    missingItem.Item.Prices.Remove(PriceType.Skinport);
+                    missingItem.Item.Prices.Remove(PriceType.CSDeals);
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from Skinport (appId: {app.SteamId}). {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item price information from CS.Deals (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
 

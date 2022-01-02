@@ -27,8 +27,8 @@ namespace SCMM.Steam.Data.Store.Types
             var priceStock = rawValue.Split("@", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             return new PriceStock()
             {
-                Stock = Int32.Parse(priceStock.FirstOrDefault() ?? "0"),
-                Price = Int64.Parse(priceStock.LastOrDefault() ?? "0")
+                Stock = (Int32.TryParse(priceStock.FirstOrDefault(), out _) ? Int32.Parse(priceStock.FirstOrDefault()) : null),
+                Price = (Int32.TryParse(priceStock.LastOrDefault(), out _) ? Int32.Parse(priceStock.LastOrDefault()) : 0)
             };
         }
 
@@ -39,13 +39,13 @@ namespace SCMM.Steam.Data.Store.Types
 
         protected override string ConvertSingleValueToPersistable(PriceStock value)
         {
-            return $"{value.Stock}@{value.Price}";
+            return $"{value.Stock?.ToString() ?? "?"}@{value.Price}";
         }
     }
 
     public struct PriceStock
     {
-        public int Stock { get; set; }
+        public int? Stock { get; set; }
 
         public long Price { get; set; }
     }

@@ -10,7 +10,7 @@ namespace SCMM.Market.SwapGG.Client
         {
             using (var client = new HttpClient())
             {
-                var url = $"{BaseUri}/pricing/lowest?appId={Uri.EscapeDataString(appId)}";
+                var url = $"{BaseUri}pricing/lowest?appId={Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
