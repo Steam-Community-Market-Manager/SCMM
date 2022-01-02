@@ -28,10 +28,22 @@ namespace SCMM.Steam.Data.Store
 
         public PersistablePriceStockDictionary Prices { get; set; }
 
+        public PriceType BuyNowFrom { get; set; }
+
+        public long BuyNowPrice { get; set; }
+
+        // TODO: SellNowTo
+        // TODO: SellNowPrice
+        // TODO: SellNowTax
+
+        // TODO: SellLaterTo
+
         // What is the price you could reasonably flip this for given the current sell orders
+        // TODO: Rename: SellLaterPrice
         public long ResellPrice { get; set; }
 
         // What tax is owed on resell price
+        // TODO: Rename: SellLaterTax
         public long ResellTax { get; set; }
 
         public ICollection<SteamMarketItemActivity> Activity { get; set; }
@@ -161,8 +173,21 @@ namespace SCMM.Steam.Data.Store
         // How long since sales were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
-        // How long since third party market prices were last checked
-        public DateTimeOffset? LastCheckedThirdPartyPricesOn { get; set; }
+        public void UpdateBuyNowPrice()
+        {
+            var stockedPrices = Prices.Where(x => x.Value.Stock != 0).ToArray();
+            if (stockedPrices.Any())
+            {
+                var lowestPrice = Prices.Where(x => x.Value.Stock != 0).MinBy(x => x.Value.Price);
+                BuyNowFrom = lowestPrice.Key;
+                BuyNowPrice = lowestPrice.Value.Price;
+            }
+            else
+            {
+                BuyNowFrom = PriceType.Unknown;
+                BuyNowPrice = 0;
+            }
+        }
 
         public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
         {
@@ -213,6 +238,16 @@ namespace SCMM.Steam.Data.Store
                 SellOrderCount = (sellOrderCount ?? SellOrderCount);
                 SellOrderCumulativePrice = cumulativeSellOrderPrice;
                 SellOrderLowestPrice = lowestSellOrderPrice;
+                
+                Prices = new PersistablePriceStockDictionary(Prices);
+                Prices[PriceType.SteamCommunityMarket] = new PriceStock
+                {
+                    Price = SellOrderCount > 0 ? SellOrderLowestPrice : 0,
+                    Stock = SellOrderCount
+                };
+
+                UpdateBuyNowPrice();
+
                 ResellPrice = resellPrice;
                 ResellTax = resellTax;
             }

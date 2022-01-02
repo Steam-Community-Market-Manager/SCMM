@@ -70,6 +70,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
                             Price = swapggItem.Value.Quantity > 0 ? item.Currency.CalculateExchange(swapggItem.Value.Price, eurCurrency) : 0,
                             Stock = swapggItem.Value.Quantity
                         };
+                        item.UpdateBuyNowPrice();
                     }
                 }
 
@@ -78,6 +79,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
                 {
                     missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
                     missingItem.Item.Prices.Remove(PriceType.SwapGG);
+                    missingItem.Item.UpdateBuyNowPrice();
                 }
             }
             catch (Exception ex)

@@ -250,7 +250,7 @@ namespace SCMM.Steam.Data.Store
             }
 
             // Steam community market
-            if (MarketItem != null && MarketItem.Currency != null)
+            if (MarketItem != null && MarketItem.Currency != null && MarketItem.Prices?.ContainsKey(PriceType.SteamCommunityMarket) != true)
             {
                 var appId = (MarketItem.App?.SteamId ?? App?.SteamId);
                 var lowestPrice = (long?)null;

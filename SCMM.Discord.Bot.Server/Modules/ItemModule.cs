@@ -121,7 +121,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
 
             description.AppendLine();
             description.AppendLine();
-            description.Append($"{(item.StoreItem.Stores.Count > 1 ? "First released" : "Released")} on {item.TimeAccepted.Value.ToString("d")}");
+            description.Append($"{(item.StoreItem.Stores.Count > 1 ? "First released" : "Released")} on {item.TimeAccepted.Value.ToString("dd MMMM yyyy")}");
             if (!storePrice.IsAvailable)
             {
                 description.Append($" for `{currency.ToPriceString(storePrice.LowestPrice)}`");

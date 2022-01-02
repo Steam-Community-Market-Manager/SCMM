@@ -59,7 +59,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                 const int inventoryDataLimit = 200;
                 do
                 {
-                    // NOTE: Items have too be fetched in multiple batches of 200, keep reading until no new items are found
+                    // NOTE: Items have to be fetched in multiple batches of 200, keep reading until no new items are found
                     inventoryDataItems = await _tradeitGGWebClient.GetInventoryDataAsync(app.SteamId, offset: inventoryDataOffset, limit: inventoryDataLimit);
                     if (inventoryDataItems?.Any() == true)
                     {
@@ -87,6 +87,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
                             Stock = tradeitGGItem.Value
                         };
+                        item.UpdateBuyNowPrice();
                     }
                 }
 
@@ -95,6 +96,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                 {
                     missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
                     missingItem.Item.Prices.Remove(PriceType.TradeitGG);
+                    missingItem.Item.UpdateBuyNowPrice();
                 }
             }
             catch (Exception ex)

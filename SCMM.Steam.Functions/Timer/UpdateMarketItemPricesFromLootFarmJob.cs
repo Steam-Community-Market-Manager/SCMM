@@ -70,6 +70,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                             Price = lootFarmItem.Have > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
                             Stock = lootFarmItem.Have
                         };
+                        item.UpdateBuyNowPrice();
                     }
                 }
 
@@ -78,6 +79,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                 {
                     missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
                     missingItem.Item.Prices.Remove(PriceType.LOOTFarm);
+                    missingItem.Item.UpdateBuyNowPrice();
                 }
             }
             catch (Exception ex)

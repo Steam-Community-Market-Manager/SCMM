@@ -548,7 +548,7 @@
             {   
                 <MudItem xs="12">
                     <MudPaper Outlined="true">
-                        <div class="d-flex flex-row align-stretch justify-sm-start flex-wrap">
+                        <div class="d-flex flex-row align-stretch justify-sm-space-around flex-wrap">
                             @foreach (var price in Item.Prices)
                             {
                                 <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.Type.GetDisplayName()}" : $"Currently unavailable from {price.Type.GetDisplayName()}")">
@@ -563,7 +563,7 @@
                                             {
                                                 <span class="pl-2">Sold Out</span>
                                             }
-                                            @if (price.LowestPrice > 0 && Item.StorePrice > 0 && price.Type != PriceType.SteamStore)
+                                            @if (price.LowestPrice > 0 && price.Type != PriceType.SteamStore)
                                             {
                                                 @if (price.LowestPrice == Item.Prices.Where(x => x.IsAvailable).Min(x => x.LowestPrice))
                                                 {

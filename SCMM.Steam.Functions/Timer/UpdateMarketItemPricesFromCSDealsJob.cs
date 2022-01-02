@@ -71,6 +71,7 @@ public class UpdateMarketItemPricesFromCSDealsob
                             Price = item.Currency.CalculateExchange(csDealsItem.LowestPrice.SteamPriceAsInt(), usdCurrency),
                             Stock = null
                         };
+                        item.UpdateBuyNowPrice();
                     }
                 }
 
@@ -79,6 +80,7 @@ public class UpdateMarketItemPricesFromCSDealsob
                 {
                     missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
                     missingItem.Item.Prices.Remove(PriceType.CSDeals);
+                    missingItem.Item.UpdateBuyNowPrice();
                 }
             }
             catch (Exception ex)

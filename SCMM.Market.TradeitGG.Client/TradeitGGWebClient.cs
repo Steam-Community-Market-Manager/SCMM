@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace SCMM.Market.TradeitGG.Client
 {
@@ -6,21 +7,26 @@ namespace SCMM.Market.TradeitGG.Client
     {
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 
+        private HttpClient WebBrowserLikeClient()
+        {
+            // NOTE: We need to pretend we are a web browser as tradeit.gg uses a CloudFlare firewall with some rules that block clients that don't look like typical web browsers.
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.Clear();
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppleWebKit", "537.36"));
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(KHTML, like Gecko)"));
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
+            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Safari", "537.36"));
+            return client;
+
+        }
         public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = 200)
         {
-            using (var client = new HttpClient())
+            using (var client = WebBrowserLikeClient())
             {
                 try
                 {
-                    // NOTE: We need to pretend we are a web browser as tradeit.gg uses a CloudFlare firewall with some rules that block clients that don't look like typical web browsers.
-                    client.DefaultRequestHeaders.UserAgent.Clear();
-                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Mozilla", "5.0"));
-                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
-                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("AppleWebKit", "537.36"));
-                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("(KHTML, like Gecko)"));
-                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
-                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Safari", "537.36"));
-
                     var url = $"{BaseUri}inventory/data?gameId={Uri.EscapeDataString(appId)}&offset={offset}&limit={limit}&fresh=true";
                     var response = await client.GetAsync(url);
                     response.EnsureSuccessStatusCode();

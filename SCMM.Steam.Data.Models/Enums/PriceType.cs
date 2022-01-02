@@ -37,6 +37,9 @@ namespace SCMM.Steam.Data.Models.Enums
         [SalesTax(13)]
         TradeitGG,
 
+        // TODO: Implement this...
+        // https://docs.dmarket.com/v1/swagger.html#/Buy%20items/GetAggregatedPrices
+        // https://api.dmarket.com/price-aggregator/v1/aggregated-prices?Titles=Blackout%20Hoodie&Titles=Blackout%20Pants&Limit=100
         [Display(Name = "Dmarket")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")]
         [SalesTax(7)]

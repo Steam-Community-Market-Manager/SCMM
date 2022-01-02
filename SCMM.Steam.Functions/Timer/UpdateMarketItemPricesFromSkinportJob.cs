@@ -71,6 +71,7 @@ public class UpdateMarketItemPricesFromSkinportJob
                             Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Stock = skinportItem.Quantity
                         };
+                        item.UpdateBuyNowPrice();
                     }
                 }
 
@@ -79,6 +80,7 @@ public class UpdateMarketItemPricesFromSkinportJob
                 {
                     missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
                     missingItem.Item.Prices.Remove(PriceType.Skinport);
+                    missingItem.Item.UpdateBuyNowPrice();
                 }
             }
             catch (Exception ex)
