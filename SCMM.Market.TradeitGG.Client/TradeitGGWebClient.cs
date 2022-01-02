@@ -1,0 +1,54 @@
+﻿using System.Text.Json;
+
+namespace SCMM.Market.TradeitGG.Client
+{
+    public class TradeitGGWebClient
+    {
+        private const string BaseUri = "https://tradeit.gg/api/v2/";
+
+        public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = 200)
+        {
+            using (var client = new HttpClient())
+            {
+                try
+                {
+                    // NOTE: We need to pretend we are a web browser as tradeit.gg uses a CloudFlare firewall with some rules that block clients that don't look like typical web browsers.
+                    client.DefaultRequestHeaders.UserAgent.Clear();
+                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Mozilla", "5.0"));
+                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
+                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("AppleWebKit", "537.36"));
+                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("(KHTML, like Gecko)"));
+                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
+                    client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("Safari", "537.36"));
+
+                    var url = $"{BaseUri}inventory/data?gameId={Uri.EscapeDataString(appId)}&offset={offset}&limit={limit}&fresh=true";
+                    var response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+
+                    var textJson = await response.Content.ReadAsStringAsync();
+                    var responseJson = JsonSerializer.Deserialize<TradeitGGInventoryDataResponse>(textJson);
+                    var inventoryDataJoined = responseJson?.Items?.Join(responseJson.Counts ?? new Dictionary<string, int>(),
+                        x => x.GroupId.ToString(),
+                        x => x.Key,
+                        (item, count) => new
+                        {
+                            Item = item,
+                            Count = count
+                        }
+                    );
+
+                    return inventoryDataJoined?.ToDictionary(
+                        x => x.Item,
+                        x => x.Count.Value
+                    );
+                }
+                catch (JsonException)
+                {
+                    // TODO: If "counts" is empty, it shows as an empty array in the JSON, which cannot be deserialised as a dictionary.
+                    //       Need to add a customer type converter to handle either empty array or populated dictionary
+                    return null;
+                }
+            }
+        }
+    }
+}

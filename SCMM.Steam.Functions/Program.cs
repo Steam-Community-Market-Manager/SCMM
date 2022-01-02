@@ -15,6 +15,7 @@ using SCMM.Market.CSDeals.Client;
 using SCMM.Market.LootFarm.Client;
 using SCMM.Market.Skinport.Client;
 using SCMM.Market.SwapGG.Client;
+using SCMM.Market.TradeitGG.Client;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.API;
@@ -125,6 +126,7 @@ public static class HostExtensions
             services.AddSingleton<LootFarmWebClient>();
             services.AddSingleton<SwapGGWebClient>();
             services.AddSingleton<CSDealsWebClient>();
+            services.AddSingleton<TradeitGGWebClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<SteamWorkshopDownloaderWebClient>();

@@ -33,7 +33,7 @@ namespace SCMM.Steam.Data.Models.Enums
         SwapGG,
 
         [Display(Name = "Tradeit.gg")]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?search={3}")]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")]
         [SalesTax(13)]
         TradeitGG,
 
