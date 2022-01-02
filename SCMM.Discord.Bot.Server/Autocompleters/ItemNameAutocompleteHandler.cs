@@ -5,7 +5,7 @@ using SCMM.Steam.Data.Store;
 
 namespace SCMM.Discord.Bot.Server.Autocompleters;
 
-public class CurrencyAutocompleteHandler : AutocompleteHandler
+public class ItemNameAutocompleteHandler : AutocompleteHandler
 {
     public async override Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
@@ -13,7 +13,7 @@ public class CurrencyAutocompleteHandler : AutocompleteHandler
         using var scope = services.CreateScope();
         {
             var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-            var currencyNames = await db.SteamCurrencies
+            var itemNames = await db.SteamAssetDescriptions
                 .Where(x => x.Name.Contains(value))
                 .Select(x => new AutocompleteResult()
                 {
@@ -25,7 +25,7 @@ public class CurrencyAutocompleteHandler : AutocompleteHandler
                 .ToListAsync();
 
             return AutocompletionResult.FromSuccess(
-                currencyNames
+                itemNames
             );
         }
     }
