@@ -181,7 +181,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
 
         if (inventoryThumbnail?.Image?.Id != null)
         {
-            embed = embed.WithImageUrl($"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image.Id}");
+            embed = embed.WithImageUrl($"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image.Id}.{inventoryThumbnail.Image.MimeType.GetFileExtension()}");
         }
 
         return InteractionResult.Success(

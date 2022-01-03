@@ -209,16 +209,12 @@ public class CheckForNewStoreItemsJob
                 {
                     _db.SteamItemStores.Add(permanentItemStore);
                 }
-                if (permanentItemStore.ItemsThumbnail != null)
-                {
-                    _db.FileData.Remove(permanentItemStore.ItemsThumbnail);
-                    permanentItemStore.ItemsThumbnail = null;
-                    permanentItemStore.ItemsThumbnailId = null;
-                }
                 var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, permanentItemStore.Items.Select(x => x.Item));
                 if (thumbnail != null)
                 {
-                    permanentItemStore.ItemsThumbnail = thumbnail;
+                    permanentItemStore.ItemsThumbnail = (permanentItemStore.ItemsThumbnail ?? thumbnail);
+                    permanentItemStore.ItemsThumbnail.MimeType = thumbnail.MimeType;
+                    permanentItemStore.ItemsThumbnail.Data = thumbnail.Data;
                 }
             }
             if (newLimitedStoreItems.Any())
@@ -227,16 +223,12 @@ public class CheckForNewStoreItemsJob
                 {
                     _db.SteamItemStores.Add(limitedItemStore);
                 }
-                if (limitedItemStore.ItemsThumbnail != null)
-                {
-                    _db.FileData.Remove(limitedItemStore.ItemsThumbnail);
-                    limitedItemStore.ItemsThumbnail = null;
-                    limitedItemStore.ItemsThumbnailId = null;
-                }
                 var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, limitedItemStore.Items.Select(x => x.Item));
                 if (thumbnail != null)
                 {
-                    limitedItemStore.ItemsThumbnail = thumbnail;
+                    limitedItemStore.ItemsThumbnail = (permanentItemStore.ItemsThumbnail ?? thumbnail);
+                    limitedItemStore.ItemsThumbnail.MimeType = thumbnail.MimeType;
+                    limitedItemStore.ItemsThumbnail.Data = thumbnail.Data;
                 }
             }
 
@@ -269,18 +261,16 @@ public class CheckForNewStoreItemsJob
                 .Select(x => new ImageSource()
                 {
                     Title = x.Description.Name,
-                    ImageUrl = x.Description.IconUrl,
-                    ImageData = x.Description.Icon?.Data,
+                    ImageUrl = x.Description.IconLargeUrl ?? x.Description.IconUrl,
+                    ImageData = x.Description.IconLarge?.Data ?? x.Description.Icon?.Data,
                 })
                 .ToList();
 
-            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+            var thumbnail = await queryProcessor.ProcessAsync(new GetImageSlideshowRequest()
             {
                 ImageSources = itemImageSources,
-                TileSize = 256,
-                Columns = 3
+                ImageSize = 256
             });
-
             if (thumbnail == null)
             {
                 return null;
@@ -349,7 +339,7 @@ public class CheckForNewStoreItemsJob
                     FieldsInline = true,
                     Url = $"{_configuration.GetWebsiteUrl()}/store/{storeId}",
                     ThumbnailUrl = app.IconUrl,
-                    ImageUrl = (store.ItemsThumbnailId != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnailId}" : null),
+                    ImageUrl = (store.ItemsThumbnail != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnail.Id}.{store.ItemsThumbnail.MimeType.GetFileExtension()}" : null),
                     Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
                 });
             }

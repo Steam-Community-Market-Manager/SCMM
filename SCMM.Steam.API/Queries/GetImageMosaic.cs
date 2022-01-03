@@ -17,11 +17,11 @@ namespace SCMM.Steam.API.Queries
     {
         public IEnumerable<ImageSource> ImageSources { get; set; }
 
-        public int TileSize { get; set; } = 256;
+        public int ImageSize { get; set; } = 256;
 
-        public int Columns { get; set; } = 3;
+        public int ImageColumns { get; set; } = 3;
 
-        public int? Rows { get; set; } = null;
+        public int? ImageRows { get; set; }
     }
 
     public class GetImageMosaicResponse
@@ -54,9 +54,10 @@ namespace SCMM.Steam.API.Queries
                 return null;
             }
 
-            var columns = Math.Max(1, request.Columns);
-            var rows = Math.Max(1, request.Rows ?? int.MaxValue);
-            var tileSize = Math.Max(8, request.TileSize);
+            var tileColumns = Math.Max(1, request.ImageColumns);
+            var tileRows = Math.Max(1, request.ImageRows ?? int.MaxValue);
+            var tileSize = Math.Max(32, request.ImageSize);
+            var renderTitles = imageSources.Any(x => !string.IsNullOrEmpty(x.Title));
 
             var x = 0;
             var y = 0;
@@ -73,32 +74,31 @@ namespace SCMM.Steam.API.Queries
                 throw new Exception($"Unable to find a suitable font. Available options are: {String.Join(", ", SystemFonts.Families.Select(x => x.Name))}");
             }
             var font = new Font(fontFamily, fontSize, FontStyle.Regular);
-            var solidBlackOutlinePen = Pens.Solid(Color.FromRgba(0, 0, 0, 128), 3);
+            var solidBlackOutlinePen = Pens.Solid(Color.FromRgba(0, 0, 0, 128), 2);
             var solidBlack = Brushes.Solid(Color.FromRgba(0, 0, 0, 255));
             var solidWhite = Brushes.Solid(Color.FromRgba(255, 255, 255, 255));
             var solidRed = Brushes.Solid(Color.FromRgba(244, 67, 54, 255));
             var solidGreen = Brushes.Solid(Color.FromRgba(76, 175, 80, 255));
             var solidBlue = Brushes.Solid(Color.FromRgba(144, 202, 249, 255));
+            var transparent = new Rgba32(255, 255, 255, 0);
             var imageSize = tileSize;
 
-            var renderTitles = imageSources.Any(x => !string.IsNullOrEmpty(x.Title));
-            if (renderTitles)
-            {
-                tileSize += fontLineHeight;
-            }
-
             // If there are rows than we have images for, reduces the row count to the minimum required to render the images
-            var minimumRowsToRenderTiles = (int)Math.Ceiling((float)tileCount / columns);
-            rows = Math.Min(minimumRowsToRenderTiles, rows);
+            var minimumRowsToRenderTiles = (int)Math.Ceiling((float)tileCount / tileColumns);
+            tileRows = Math.Min(minimumRowsToRenderTiles, tileRows);
 
             // Hydrate the image sources (but only as many as we need to render)
-            var maxTiles = Math.Min(tileCount, (columns * rows));
+            var maxTiles = Math.Min(tileCount, (tileColumns * tileRows));
             imageSources = imageSources.Take(maxTiles).ToList();
             await HydrateImageData(imageSources);
 
-            var mosaic = new Image<Rgba32>(columns * tileSize, rows * tileSize);
+            var mosaic = new Image<Rgba32>(tileColumns * tileSize, tileRows * (tileSize + (renderTitles ? fontLineHeight : 0)), transparent);
+            var mosaicMetadata = mosaic.Metadata.GetPngMetadata();
+            mosaicMetadata.HasTransparency = true;
+
             var imageSourceQueue = new Queue<ImageSource>(imageSources);
             mosaic.Mutate(ctx => ctx
+                .BackgroundColor(transparent)
                 .SetGraphicsOptions(new GraphicsOptions()
                 {
                     Antialias = true
@@ -106,10 +106,10 @@ namespace SCMM.Steam.API.Queries
             );
 
             y = 0;
-            for (var r = 0; r < rows; r++)
+            for (var r = 0; r < tileRows; r++)
             {
                 x = 0;
-                for (var c = 0; c < columns; c++)
+                for (var c = 0; c < tileColumns; c++)
                 {
                     var imageSource = (imageSourceQueue.Any() ? imageSourceQueue.Dequeue() : null);
                     if (imageSource?.ImageData == null)
@@ -119,9 +119,11 @@ namespace SCMM.Steam.API.Queries
 
                     var image = Image.Load<Rgba32>(new MemoryStream(imageSource.ImageData));
                     image.Mutate(ctx => ctx
-                        .Resize(imageSize, imageSize, KnownResamplers.Bicubic)
+                        .BackgroundColor(transparent)
+                        .Resize(imageSize, imageSize, KnownResamplers.Lanczos5)
                     );
                     mosaic.Mutate(ctx => ctx
+                        .BackgroundColor(transparent)
                         .DrawImage(
                             image,
                             new Point(
@@ -137,8 +139,8 @@ namespace SCMM.Steam.API.Queries
                         var badgeText = $"{imageSource.Badge}";
                         var badgeTextSize = TextMeasurer.Measure(badgeText, new RendererOptions(font));
                         var badgeRect = new Rectangle(
-                            (int)(x + tileSize - badgeTextSize.Width - (padding / 2)),
-                            (int)(y + (padding / 2)),
+                            (int)(x + tileSize - badgeTextSize.Width - padding),
+                            (int)(y),
                             (int)(badgeTextSize.Width + padding),
                             (int)(badgeTextSize.Height + padding)
                         );
@@ -153,7 +155,7 @@ namespace SCMM.Steam.API.Queries
                                 solidBlack,
                                 new PointF(
                                     badgeRect.Left + (padding / 2),
-                                    badgeRect.Top + (padding / 4)
+                                    badgeRect.Top + (padding / 2)
                                 )
                             )
                         );
@@ -196,14 +198,15 @@ namespace SCMM.Steam.API.Queries
                     {
                         var title = imageSource.Title;
                         var titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
-                        while (titleWidth >= imageSize && title.Length > 0)
+                        while (titleWidth >= (tileSize - (padding * 2)) && title.Length > 0)
                         {
                             title = title.Substring(0, title.Length - 1);
                             titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
                         }
                         if (title.Length != imageSource.Title.Length)
                         {
-                            title += "…";
+                            title = (title.Trim() + "…");
+                            titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
                         }
                         if (!string.IsNullOrEmpty(title) && titleWidth > 0)
                         {
@@ -212,8 +215,9 @@ namespace SCMM.Steam.API.Queries
                                     title,
                                     font,
                                     solidWhite,
+                                    solidBlackOutlinePen,
                                     new PointF(
-                                        x + ((Math.Max(2, tileSize - titleWidth) / 2) - 1),
+                                        x + (tileSize / 2) - (titleWidth / 2),
                                         y + imageSize + padding
                                     )
                                 )
@@ -222,7 +226,7 @@ namespace SCMM.Steam.API.Queries
                     }
                     x += tileSize;
                 }
-                y += tileSize;
+                y += tileSize + (renderTitles ? fontLineHeight : 0);
             }
 
             using var mosaicStream = new MemoryStream();

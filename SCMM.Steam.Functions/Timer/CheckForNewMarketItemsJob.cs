@@ -131,18 +131,16 @@ public class CheckForNewMarketItemsJob
                 .Select(x => new ImageSource()
                 {
                     Title = x.Description.Name,
-                    ImageUrl = x.Description.IconUrl,
-                    ImageData = x.Description.Icon?.Data,
+                    ImageUrl = x.Description.IconLargeUrl ?? x.Description.IconUrl,
+                    ImageData = x.Description.IconLarge?.Data ?? x.Description.Icon?.Data,
                 })
                 .ToList();
 
-            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+            var thumbnail = await queryProcessor.ProcessAsync(new GetImageSlideshowRequest()
             {
                 ImageSources = itemImageSources,
-                TileSize = 256,
-                Columns = 3
+                ImageSize = 256
             });
-
             if (thumbnail == null)
             {
                 return null;
@@ -227,7 +225,7 @@ public class CheckForNewMarketItemsJob
                     FieldsInline = true,
                     Url = $"{_configuration.GetWebsiteUrl()}/items",
                     ThumbnailUrl = app?.IconUrl,
-                    ImageUrl = (thumbnailImage != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnailImage.Id}" : null),
+                    ImageUrl = (thumbnailImage != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnailImage.Id}.{thumbnailImage.MimeType.GetFileExtension()}" : null),
                     Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
                 });
             }

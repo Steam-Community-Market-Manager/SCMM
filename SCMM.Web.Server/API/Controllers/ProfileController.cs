@@ -409,9 +409,9 @@ namespace SCMM.Web.Server.API.Controllers
                 inventoryThumbnail = await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
                 {
                     ProfileId = profile.SteamId,
-                    TileSize = mosaicTileSize,
-                    Columns = mosaicColumns,
-                    Rows = mosaicRows,
+                    ItemSize = mosaicTileSize,
+                    ItemColumns = mosaicColumns,
+                    ItemRows = mosaicRows,
                     ExpiresOn = DateTimeOffset.Now.AddDays(7)
                 });
             }
@@ -424,7 +424,7 @@ namespace SCMM.Web.Server.API.Controllers
                     SteamId = profile.SteamId,
                     Name = profile.Name,
                     AvatarUrl = profile.AvatarUrl,
-                    InventoryMosaicUrl = inventoryThumbnail?.Image?.Id != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image.Id}" : null,
+                    InventoryMosaicUrl = inventoryThumbnail?.Image?.Id != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image.Id}.{inventoryThumbnail.Image.MimeType.GetFileExtension()}" : null,
                     Items = inventoryTotals.Items,
                     Invested = inventoryTotals.Invested,
                     InvestmentGains = inventoryTotals.InvestmentGains,

@@ -11,11 +11,11 @@ namespace SCMM.Steam.API.Commands
     {
         public string ProfileId { get; set; }
 
-        public int TileSize { get; set; } = 128;
+        public int ItemSize { get; set; } = 128;
 
-        public int Columns { get; set; } = 5;
+        public int ItemColumns { get; set; } = 5;
 
-        public int? Rows { get; set; } = 5;
+        public int? ItemRows { get; set; } = 5;
 
         public DateTimeOffset? ExpiresOn { get; set; } = null;
     }
@@ -96,9 +96,9 @@ namespace SCMM.Steam.API.Commands
             var inventoryImageMosaic = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = inventoryImageSources,
-                TileSize = request.TileSize,
-                Columns = request.Columns,
-                Rows = request.Rows
+                ImageSize = request.ItemSize,
+                ImageColumns = request.ItemColumns,
+                ImageRows = request.ItemRows
             });
             if (inventoryImageMosaic?.Data == null)
             {
