@@ -23,9 +23,8 @@ namespace SCMM.Discord.Client
             var interactionServicesConfig = new InteractionServiceConfig()
             {
                 DefaultRunMode = RunMode.Async,
-                DeleteUnknownSlashCommandAck = true,
                 EnableAutocompleteHandlers = true,
-                UseCompiledLambda = true,
+                UseCompiledLambda = true
             };
 
             _logger = logger;
