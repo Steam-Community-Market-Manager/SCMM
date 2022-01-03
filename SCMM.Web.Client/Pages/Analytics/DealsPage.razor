@@ -25,14 +25,20 @@
                                         <small>Buy this item now from the marketplace using cash or credit</small>
                                     </p>
                                 </th>
-                                <th></th>
+                                <th>
+                                    <i class="fa fa-fw fa-arrow-right"></i>
+                                </th>
                                 <th>
                                     <span>Sell Instantly</span>
                                     <p class="mud-secondary-text">
                                         <small>Immediately sell on the Steam Community Market for the current highest buy order for instant profit</small>
                                     </p>
                                 </th>
-                                <th></th>
+                                <th>
+                                    <p class="mud-secondary-text">
+                                        <i>or</i>
+                                    </p>
+                                </th>
                                 <th>
                                     <span>Sell Later</span>
                                     <p class="mud-secondary-text">
@@ -54,7 +60,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item))" Class="mr-2">Buy</MudButton>
-                                                <img src="@($"/images/price/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/price/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
                                             </MudText>
                                         </td>
@@ -64,7 +70,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewItem(item))" Class="mr-2">Sell</MudButton>
-                                                <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.SellTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.SellNowPrice) for <strong>@State.Currency.ToPriceString(item.SellNowProfit, dense: true)</strong> profit after tax</span>
                                             </MudText>
                                         </td>
@@ -75,7 +81,7 @@
                                         </th>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.SellTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.SellLaterPrice) for <strong>@State.Currency.ToPriceString(item.SellLaterProfit, dense: true)</strong> profit after tax</span>
                                             </MudText>
                                         </td>

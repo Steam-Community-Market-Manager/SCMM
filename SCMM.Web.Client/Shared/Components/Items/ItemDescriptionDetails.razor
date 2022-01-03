@@ -554,7 +554,7 @@
                                 <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.Type.GetDisplayName()}" : $"Currently unavailable from {price.Type.GetDisplayName()}")">
                                     <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
                                         <MudText Typo="MudBlazor.Typo.h6" Color="price.IsAvailable ? MudBlazor.Color.Inherit : MudBlazor.Color.Secondary" Class="d-flex align-center">
-                                            <img src="@($"/images/price/{price.Type.ToString().ToLower()}.png")" style="width:1.3em; height:1.3em" />
+                                            <img src="@($"/images/price/{price.Type.ToString().ToLower()}.png")" alt="@price.Type.GetDisplayName()" title="@price.Type.GetDisplayName()" style="width:1.3em; height:1.3em" />
                                             @if (price.LowestPrice > 0)
                                             {
                                                 <span class="pl-2">@State.Currency.ToPriceString(price.LowestPrice)</span>
