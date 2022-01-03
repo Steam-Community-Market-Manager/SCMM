@@ -24,7 +24,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
-        [Command("role-add")]
+        [Command("add-role")]
         public async Task<RuntimeResult> AddRoleAsync(string steamId, params string[] roles)
         {
             var profile = await _db.SteamProfiles
@@ -50,7 +50,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
-        [Command("role-remove")]
+        [Command("remove-role")]
         public async Task<RuntimeResult> RemoveRoleAsync(string steamId, params string[] roles)
         {
             var profile = await _db.SteamProfiles

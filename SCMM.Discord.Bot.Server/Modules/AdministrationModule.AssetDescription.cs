@@ -92,36 +92,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             await _db.SaveChangesAsync();
             return CommandResult.Success();
         }
-        /*
-        [Command("rebuild-asset-description-collections")]
-        public async Task<RuntimeResult> RebuildAssetDescriptionCollectionsAsync()
-        {
-            var assetDescriptions = await _db.SteamAssetDescriptions.ToListAsync();
 
-            // Reset item collections
-            foreach (var assetDescription in assetDescriptions)
-            {
-                assetDescription.ItemCollection = null;
-            }
-            await _db.SaveChangesAsync();
-
-            // Rebuild item collections
-            foreach (var batch in assetDescriptions.Batch(100))
-            {
-                foreach (var assetDescription in batch)
-                {
-                    _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
-                    {
-                        AssetDescription = assetDescription
-                    });
-                }
-
-                await _db.SaveChangesAsync();
-            }
-
-            return CommandResult.Success();
-        }
-        */
         [Command("rebuild-asset-description-accepted-times")]
         public async Task<RuntimeResult> RebuildAssetDescriptionAcceptedTimesAsync()
         {
@@ -232,7 +203,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
-        [Command("reanalyse-asset-description-workshop-files")]
+        [Command("reanalyse-workshop-files")]
         public async Task<RuntimeResult> ReanalyseAssetDescriptionWorkshopFiles(params ulong[] classIds)
         {
             var workshopFileUrls = await _db.SteamAssetDescriptions
