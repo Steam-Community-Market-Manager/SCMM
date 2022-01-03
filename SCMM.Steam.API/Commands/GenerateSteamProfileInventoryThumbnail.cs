@@ -44,8 +44,9 @@ namespace SCMM.Steam.API.Commands
                 Id = request.ProfileId
             });
 
-            var showDrops = (resolvedId.Profile?.InventoryShowItemDrops ?? true);
-            var showUnmarketable = (resolvedId.Profile?.InventoryShowUnmarketableItems ?? true);
+            // TODO: Consider making these arguments in the request?
+            var showDrops = false;// (resolvedId.Profile?.InventoryShowItemDrops ?? true);
+            var showUnmarketable = false;// (resolvedId.Profile?.InventoryShowUnmarketableItems ?? true);
             var inventoryItemIcons = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
