@@ -23,7 +23,7 @@ public class UpdateMarketItemPricesFromCSDealsob
     }
 
     [Function("Update-Market-Item-Prices-From-CSDeals")]
-    public async Task Run([TimerTrigger("0 31 * * * *")] /* every hour, 31 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 1-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSDeals");
 

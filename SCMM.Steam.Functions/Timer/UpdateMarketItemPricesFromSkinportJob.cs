@@ -23,7 +23,7 @@ public class UpdateMarketItemPricesFromSkinportJob
     }
 
     [Function("Update-Market-Item-Prices-From-Skinport")]
-    public async Task Run([TimerTrigger("0 33 * * * *")] /* every hour, 33 minutes after the hour */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 3-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-Skinport");
 
