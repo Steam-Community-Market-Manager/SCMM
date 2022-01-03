@@ -1,0 +1,4 @@
+﻿
+.table-disable-borders, .table-disable-borders tr, .table-disable-borders td {
+    border: none;
+}

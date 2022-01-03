@@ -303,7 +303,7 @@ namespace SCMM.Steam.Data.Store
                         IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Stock != 0),
                         Url = String.Format(
                             (marketPrice.Key.GetType().GetField(marketPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>()?.Url ?? String.Empty),
-                            app?.SteamId, app?.Name?.ToLower(), ClassId, NameHash
+                            app?.SteamId, Uri.EscapeDataString(app?.Name?.ToLower()), ClassId, Uri.EscapeDataString(NameHash)
                         )
                     };
                 }

@@ -146,26 +146,35 @@ else
             {
                 Icon = "fas fa-fw fa-paint-roller",
                 Title = "Skins",
-                SubTitle = "Explore all item skins",
+                SubTitle = "Explore all game skins",
                 Path = "/items",
+                Prefix = true
+            },
+            new NavigationMenuItemLink
+            {
+                Icon = "fas fa-fw fa-search-dollar",
+                Title = "Market Deals",
+                SubTitle = "Find yourself a bargin",
+                Path = "/deals",
+                Prefix = true,
+                Disabled = (!State.IsInRole(Roles.VIP))
+            },
+            new NavigationMenuItemLink
+            {
+                Icon = "fas fa-fw fa-exchange-alt",
+                Title = "Market Activity",
+                SubTitle = "See what's popular",
+                Path = "/activity",
                 Prefix = true
             },
             new NavigationMenuItemLink
             {
                 Icon = "fas fa-fw fa-chart-pie",
                 Title = "Statistics",
-                SubTitle = "View market trends and stats",
+                SubTitle = "View stats and trends",
                 Path = "/stats",
                 Prefix = true
             },
-            new NavigationMenuItemLink
-            {
-                Icon = "fas fa-fw fa-exchange-alt",
-                Title = "Market Activity",
-                SubTitle = "View recent market activity",
-                Path = "/activity",
-                Prefix = true
-            }
         });
         if (items.Any())
         {

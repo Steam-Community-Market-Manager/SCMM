@@ -4,6 +4,19 @@
         <name>SCMM.Web.Server</name>
     </assembly>
     <members>
+        <member name="M:SCMM.Web.Server.API.Controllers.AnalyticsController.GetUndervaluedItems(System.Int32,System.Int32)">
+            <summary>
+            List undervalued items from third party markets that can be sold for profit by flipping them on the Steam Community Market
+            </summary>
+            <remarks>
+            This API requires authentication and the user must belong to the <code>VIP</code> role.
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data)</param>
+            <response code="200">Paginated list of items matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.CurrencyController.Get(System.Boolean)">
             <summary>
             List all supported currencies
