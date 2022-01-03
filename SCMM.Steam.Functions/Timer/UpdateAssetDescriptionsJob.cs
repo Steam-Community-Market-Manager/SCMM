@@ -19,7 +19,7 @@ public class UpdateAssetDescriptionsJob
     }
 
     [Function("Update-Asset-Descriptions")]
-    public async Task Run([TimerTrigger("0 0/15 * * * *")] /* every 15 minutes */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 0/5 * * * *")] /* every 5 minutes */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Asset-Descriptions");
 
@@ -32,7 +32,7 @@ public class UpdateAssetDescriptionsJob
                 AppId = x.App.SteamId,
                 x.ClassId
             })
-            .Take(30) // batch 30 at a time
+            .Take(10) // batch 10 at a time
             .ToList();
 
         if (!assetDescriptions.Any())

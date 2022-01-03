@@ -674,8 +674,11 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            // Update last checked on
-            assetDescription.TimeRefreshed = DateTimeOffset.Now;
+            // Update last checked on (unless this is a newly created asset)
+            if (!assetDescription.IsTransient)
+            {
+                assetDescription.TimeRefreshed = DateTimeOffset.Now;
+            }
 
             return new UpdateSteamAssetDescriptionResponse
             {

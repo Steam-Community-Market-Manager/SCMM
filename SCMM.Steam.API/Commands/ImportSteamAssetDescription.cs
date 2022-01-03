@@ -241,16 +241,6 @@ namespace SCMM.Steam.API.Commands
                         Id = publishedFile.PublishedFileId.ToString()
                     });
                 }
-
-                // Queue a download of the workshop file data for analyse (if missing or changed since our last check)
-                if (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
-                {
-                    await _serviceBusClient.SendMessageAsync(new DownloadSteamWorkshopFileMessage()
-                    {
-                        PublishedFileId = publishedFileId,
-                        Force = publishedFileHasChanged
-                    });
-                }
             }
 
             // Get community market details from Steam (if item description or nameid is missing and it is a marketable item)
@@ -309,6 +299,20 @@ namespace SCMM.Steam.API.Commands
                 MarketListingPageHtml = marketListingPageHtml,
                 StoreItemPageHtml = storeItemPageHtml
             });
+
+            // If the asset description is now persistent (not transient)...
+            if (!assetDescription.IsTransient)
+            {
+                // Queue a download of the workshop file data for analyse (if it's missing or has changed since our last check)
+                if (publishedFileHasChanged || string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
+                {
+                    await _serviceBusClient.SendMessageAsync(new DownloadSteamWorkshopFileMessage()
+                    {
+                        PublishedFileId = publishedFileId,
+                        Force = publishedFileHasChanged
+                    });
+                }
+            }
 
             return new ImportSteamAssetDescriptionResponse
             {
