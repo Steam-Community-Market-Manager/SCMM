@@ -18,7 +18,7 @@ namespace SCMM.Steam.Data.Models.Enums
         SteamCommunityMarket,
 
         [Display(Name = "Skinport")]
-        [BuyFrom(Url = "https://skinport.com/{1}/market?item={3}")]
+        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}")]
         [SalesTax(13)]
         Skinport,
 
