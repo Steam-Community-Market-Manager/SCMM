@@ -4,33 +4,48 @@ namespace SCMM.Steam.Data.Models.Extensions
 {
     public static class EconomyExtensions
     {
-        public const decimal FeeMultiplier = 0.1304347826071739m; // 13%
-        public const decimal FeePlatformMultiplier = 0.0304347811170578m; // 3%
-        public const decimal FeePublisherMultiplier = 0.100000001490116119m; // 10%
-        public const decimal FeeAuthorMultiplier = 0.25m; // 25%
+        public const decimal SalesTaxMultiplier = 0.07m; // 7% 
+        public const decimal SalesAuthorMultiplier = 0.25m; // 25%
+        public const decimal SalesPlatformFeeMultiplier = 0.30m; // 30%
 
-        public static long SteamFeeAuthorComponentAsInt(this long value)
+        public const decimal MarketFeeMultiplier = 0.1304347826071739m; // 13%
+        public const decimal MarketFeePlatformMultiplier = 0.0304347811170578m; // 3%
+        public const decimal MarketFeePublisherMultiplier = 0.100000001490116119m; // 10%
+
+        public static long SteamSaleTaxComponentAsInt(this long value)
         {
-            // Minimum author fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * FeeAuthorMultiplier, 1));
+            // Minimum fee is 0.01 units
+            return (long)Math.Floor(Math.Max(value * SalesTaxMultiplier, 1));
         }
 
-        public static long SteamFeePublisherComponentAsInt(this long value)
+        public static long SteamSaleAuthorComponentAsInt(this long value)
         {
-            // Minimum publisher fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * FeePublisherMultiplier, 1));
+            // Minimum fee is 0.01 units
+            return (long)Math.Floor(Math.Max(value * SalesAuthorMultiplier, 1));
         }
 
-        public static long SteamFeePlatformComponentAsInt(this long value)
+        public static long SteamSalePlatformFeeComponentAsInt(this long value)
         {
-            // Minimum platform fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * FeePlatformMultiplier, 1));
+            // Minimum fee is 0.01 units
+            return (long)Math.Floor(Math.Max(value * SalesPlatformFeeMultiplier, 1));
         }
 
-        public static long SteamFeeAsInt(this long value)
+        public static long SteamMarketFeePublisherComponentAsInt(this long value)
+        {
+            // Minimum fee is 0.01 units
+            return (long)Math.Floor(Math.Max(value * MarketFeePublisherMultiplier, 1));
+        }
+
+        public static long SteamMarketFeePlatformComponentAsInt(this long value)
+        {
+            // Minimum fee is 0.01 units
+            return (long)Math.Floor(Math.Max(value * MarketFeePlatformMultiplier, 1));
+        }
+
+        public static long SteamMarketFeeAsInt(this long value)
         {
             // Add both fees together, minimum combined fee is 0.02 units
-            return value.SteamFeePlatformComponentAsInt() + value.SteamFeePublisherComponentAsInt();
+            return value.SteamMarketFeePlatformComponentAsInt() + value.SteamMarketFeePublisherComponentAsInt();
         }
 
         /// <summary>
@@ -111,7 +126,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             return nAmount;
         }
 
-        public static long SteamStorePriceRounded(this long value)
+        public static long SteamPriceRounded(this long value)
         {
             if (value <= 0)
             {
@@ -121,7 +136,7 @@ namespace SCMM.Steam.Data.Models.Extensions
             // Round to the nearest $0.05.
             var roundedValue = (long)(Math.Round(value / 5.0) * 5);
 
-            // If the price is a multiple of $0.10, subtract $0.01 physiologically pricing.
+            // If the price is a multiple of $0.10, subtract $0.01 for physiologically pricing.
             if ((roundedValue % 10) == 0)
             {
                 roundedValue -= 1;

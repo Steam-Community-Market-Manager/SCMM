@@ -231,7 +231,7 @@ namespace SCMM.Steam.Data.Store
                 var cumulativeSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
                 var lowestSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Min(x => x.Price) : 0);
                 var resellPrice = (lowestSellOrderPrice - 1);
-                var resellTax = resellPrice.SteamFeeAsInt();
+                var resellTax = resellPrice.SteamMarketFeeAsInt();
 
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //SellOrderCount = sellOrdersSorted.Sum(y => y.Quantity);

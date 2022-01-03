@@ -212,7 +212,7 @@
                                         </td>
                                         <td class="text-right">
                                             <MudText Typo="Typo.body2" Color="Color.Success" Class="no-wrap">
-                                                @State.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.FeeMultiplier, 1))))
+                                                @State.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.MarketFeeMultiplier, 1))))
                                             </MudText>
                                         </td>
                                     </tr>

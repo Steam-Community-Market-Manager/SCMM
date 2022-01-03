@@ -23,7 +23,7 @@
                     {
                         <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
                             <span><strong>Steam doesn't disclose exact sales figures, this is just an estimate</strong> to roughly guage how each item is performing. How is this calculated? Steam users <MudLink Href="https://partner.steamgames.com/doc/features/workshop/implementation#item_subscription" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">subscribe to workshop files</MudLink> when they purchase items from the store. Using this, we can determine the approximate number of unique users that purchased at least one copy of the item.</span>
-                            <span>To account for users who buy multiple copies of items, we do two things; Firstly, use the <MudLink Href="https://store.steampowered.com/itemstore/252490/?filter=Featured" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">store top sellers</MudLink> ranking to add a conservative 1-10% buffer in sales depending on how well the item has been selling. Secondly, we scan Steam inventories to identify actual duplicate item purchases. Because only a small fraction of all Steam accounts are scanned, this metric is heavily skewed but does provide an insight in to what items people think are good to buy.</span>
+                            <span>To account for users who buy multiple copies of items, we do two things; Firstly, use the <MudLink Href="https://store.steampowered.com/itemstore/252490/?filter=Featured" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">store top sellers</MudLink> ranking to add a conservative 1-10% buffer in sales depending on how well the item has been selling. Secondly, we scan Steam inventories to identify actual duplicate item purchases. Because only a small fraction of all Steam accounts are scanned, this metric is heavily skewed but does provide a some level of insight in to what items are selling multiple copies.</span>
                         </MudAlert>
                         <SfChart ID="ItemSales" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
                             <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemSales")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
@@ -69,9 +69,9 @@
                     {
                         <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
                             <span><strong>Steam doesn't disclose exact sales figures, this is just an estimate</strong> to roughly guage how each item is performing. How is this calculated? <code>(sales_count * price_in_usd)</code>. See the sales tab for more on how we calculate sales numbers.</span>
-                            <span>All revenue is subject to local sales tax, which varies from country to country and is difficult to accurately estimate without knowing the distribution of sales per country. We use an average tax rate of 20% for all sales.</span>
-                            <span>After tax, <MudLink Href="https://steamcommunity.com/workshop/about/?appid=252490" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Facepunch shares 25% of item revenue with the item creator(s)</MudLink>. The remaining 75% is split between Facepunch and Steam. It is not known how much of a cut Steam takes from item sales.</span>
-                            <span>Lastly, all income is still subject to local income taxes and international banking fees(where applicable), which (again) varies depending on the country and is not accounted for in these estimates.</span>
+                            <span>All revenue is subject to local sales tax, which varies between countries (and states) and is difficult to accurately estimate. We estimate that Steam pay about 7% in taxes for all store revenue collected.</span>
+                            <span>After tax, <MudLink Href="https://steamcommunity.com/workshop/about/?appid=252490" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">25% of remaining revenue goes to the item creator(s)</MudLink>. After the item creator(s), we estimate that Steam takes 30% as a service fee, with the remaining revenue going to the game publisher (Facepunch).</span>
+                            <span>Finally, all revenue is further subjected to local income taxes (for individuals), goods and service taxes (for companies), international banking fees, etc; None of these additional taxes/fees are accounted for in below estimates, so actual revenue is likley lower.</span>
                         </MudAlert>
                         <SfChart ID="ItemRevenue" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
                             <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemRevenue")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
@@ -87,17 +87,13 @@
                                 <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
                             </ChartPrimaryYAxis>
                             <ChartSeriesCollection>
-                                <ChartSeries XName="name" YName="salesTax" Name="Sales Tax" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#c5412b" Width="2" Type="ChartSeriesType.StackingBar">
+                                <ChartSeries XName="name" YName="salesTax" Name="Sales Tax" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#fb8c00" Width="2" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
                                 <ChartSeries XName="name" YName="authorRevenue" Name="Item Author Revenue" StackingGroup="Breakdown" ColumnWidth="0.5" Fill="#1e88e5" Width="2" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
-                                @* 
                                 <ChartSeries XName="name" YName="platformRevenue" Name="Steam Revenue" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#171a21" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
                                 <ChartSeries XName="name" YName="publisherRevenue" Name="Facepunch Revenue" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#c5412b" Type="ChartSeriesType.StackingBar">
-                                </ChartSeries
-                                *@
-                                <ChartSeries XName="name" YName="publisherRevenue" Name="Facepunch & Steam Revenue" StackingGroup="Breakdown" ColumnWidth="0.5" Width="2" Fill="#171a21" Type="ChartSeriesType.StackingBar">
                                 </ChartSeries>
                                 <ChartSeries XName="name" YName="total" Name="Total" StackingGroup="Total" ColumnWidth="1" Fill="#388e3c" Width="2" Type="ChartSeriesType.Bar">
                                     <ChartMarker>

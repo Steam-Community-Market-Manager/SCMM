@@ -350,9 +350,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.BuyOrderHighestPrice > x.AllTimeLowestValue)
                 .Where(x => x.SellOrderLowestPrice > x.Last24hrValue)
                 .Where(x => x.SellOrderLowestPrice < x.AllTimeHighestValue)
-                .Where(x => (x.SellOrderLowestPrice - x.BuyOrderHighestPrice - Math.Floor(x.SellOrderLowestPrice * EconomyExtensions.FeeMultiplier)) > 300) // more than $3 profit
+                .Where(x => (x.SellOrderLowestPrice - x.BuyOrderHighestPrice - Math.Floor(x.SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier)) > 300) // more than $3 profit
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .OrderByDescending(x => (x.SellOrderLowestPrice - x.BuyOrderHighestPrice - Math.Floor(x.SellOrderLowestPrice * EconomyExtensions.FeeMultiplier)));
+                .OrderByDescending(x => (x.SellOrderLowestPrice - x.BuyOrderHighestPrice - Math.Floor(x.SellOrderLowestPrice * EconomyExtensions.MarketFeeMultiplier)));
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemBuySellOrderStatisticDTO()

@@ -29,12 +29,12 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "swap.gg")]
         [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}")]
-        [SalesTax(8)]
+        [SalesTax(5)]
         SwapGG,
 
+        // TODO: Sale tax seems like a fixed fee
         [Display(Name = "Tradeit.gg")]
         [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")]
-        [SalesTax(13)]
         TradeitGG,
 
         // TODO: Implement this...

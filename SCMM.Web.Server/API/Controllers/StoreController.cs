@@ -318,11 +318,13 @@ namespace SCMM.Web.Server.API.Controllers
             var storeItemRevenue = (
                 from storeItem in storeItems
                 let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(usdCurrency.Name) ? storeItem.Prices[usdCurrency.Name] : 0))
-                let salesTax = (long)Math.Round(total * 0.20)
+                let salesTax = EconomyExtensions.SteamSaleTaxComponentAsInt(total)
                 let totalAfterTax = (total - salesTax)
-                let authorRevenue = EconomyExtensions.SteamFeeAuthorComponentAsInt(totalAfterTax)
-                let platformRevenue = 0 // TODO: EconomyExtensions.SteamFeePlatformComponentAsInt(total - authorRoyalties)
-                let publisherRevenue = (totalAfterTax - platformRevenue - authorRevenue)
+                let authorRevenue = EconomyExtensions.SteamSaleAuthorComponentAsInt(totalAfterTax)
+                let totalAfterTaxAndAuthorSplit = (totalAfterTax - authorRevenue)
+                let platformRevenue = EconomyExtensions.SteamSalePlatformFeeComponentAsInt(totalAfterTax - authorRevenue)
+                let totalAfterTaxAndAuthorAndPlatformSplit = (totalAfterTaxAndAuthorSplit - platformRevenue)
+                let publisherRevenue = (totalAfterTax - authorRevenue - platformRevenue)
                 select new StoreChartItemRevenueDTO
                 {
                     Name = storeItem.Name,
@@ -437,7 +439,7 @@ namespace SCMM.Web.Server.API.Controllers
                         .Select(x => x.ExchangeRateMultiplier)
                         .FirstOrDefaultAsync();
 
-                    storeItemLink.Prices[currency.Name] = EconomyExtensions.SteamStorePriceRounded(
+                    storeItemLink.Prices[currency.Name] = EconomyExtensions.SteamPriceRounded(
                         exchangeRate.CalculateExchange(command.StorePrice)
                     );
                 }

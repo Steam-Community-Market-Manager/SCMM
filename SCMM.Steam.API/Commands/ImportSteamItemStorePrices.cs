@@ -154,7 +154,7 @@ namespace SCMM.Steam.API.Commands
                                 .Select(x => x.ExchangeRateMultiplier)
                                 .FirstOrDefaultAsync();
 
-                            itemPrices[currency.Name] = EconomyExtensions.SteamStorePriceRounded(
+                            itemPrices[currency.Name] = EconomyExtensions.SteamPriceRounded(
                                 exchangeRate.CalculateExchange(itemPrice)
                             );
                         }
