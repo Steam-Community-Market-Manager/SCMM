@@ -181,6 +181,7 @@ public class CheckForNewStoreItemsJob
                         Store = itemStore,
                         Item = storeItem,
                         Currency = usdCurrency,
+                        CurrencyId = usdCurrency.Id,
                         Price = prices.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
                         Prices = new PersistablePriceDictionary(prices),
                         IsPriceVerified = true
