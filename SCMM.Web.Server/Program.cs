@@ -195,7 +195,9 @@ public static class WebApplicationExtensions
             {
                 // Probably haven't generated XML docs, not a deal breaker...
             }
-            config.SwaggerDoc("v1",
+
+            config.SwaggerDoc(
+                "v1",
                 new OpenApiInfo
                 {
                     Title = "SCMM",
@@ -206,12 +208,33 @@ public static class WebApplicationExtensions
                     ),
                     Contact = new OpenApiContact()
                     {
-                        Name = "More about this project",
+                        Name = "About",
                         Url = new Uri($"{builder.Configuration.GetWebsiteUrl()}/about")
                     },
                     TermsOfService = new Uri($"{builder.Configuration.GetWebsiteUrl()}/tos")
                 }
             );
+
+            var securitySchema = new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Example: `Authorization: Bearer {token}`",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            };
+
+            config.AddSecurityDefinition("Bearer", securitySchema);
+            config.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                { securitySchema, new[] { "Bearer" } }
+            });
+
         });
 
         return builder;
