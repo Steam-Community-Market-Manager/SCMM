@@ -30,7 +30,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         _queryProcessor = queryProcessor;
     }
 
-    [SlashCommand("steam", "Link your SteamID so that you don't have to specify it when using other commands")]
+    [SlashCommand("steam", "Link your Steam ID so that you don't have to specify it when using other commands")]
     public async Task<RuntimeResult> SetUserSteamIdAsync(
         [Summary("id", "Your SteamID or Steam URL")] string steamId
     )
@@ -97,7 +97,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
 
     [SlashCommand("currency", "Set your preferred currency so that you don't have to specify it when using other commands")]
     public async Task<RuntimeResult> SetUserCurrencyAsync(
-        [Summary("code", "Your three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId
+        [Summary("name", "Your preferred three-letter currency name (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId
     )
     {
         var user = Context.User;

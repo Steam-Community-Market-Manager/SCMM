@@ -32,7 +32,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         _queryProcessor = queryProcessor;
     }
 
-    [SlashCommand("skin", "Show information about a skin")]
+    [SlashCommand("skin", "Show skin details and prices")]
     public async Task<RuntimeResult> GetItemValueAsync(
         [Summary("name", "Name of the skin")][Autocomplete(typeof(ItemNameAutocompleteHandler))] string name,
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null
@@ -84,7 +84,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         if (String.IsNullOrEmpty(closestItemName))
         {
             return InteractionResult.Fail(
-                $"Sorry, I can't find any item with that name."
+                $"Sorry, I can't find that item."
             );
         }
 
@@ -100,7 +100,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         if (item == null)
         {
             return InteractionResult.Fail(
-                $"Sorry, I can't find any item by that name."
+                $"Sorry, I can't find that item."
             );
         }
 
@@ -166,13 +166,13 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
             priceValue.Append($"```{priceColorFormatter}");
             priceValue.AppendLine();
             priceValue.Append(currency.ToPriceString(price.LowestPrice));
-            if (priceIsCheapest && availablePrices.Count > 1)
-            {
-                priceValue.Append(" (Best Deal)");
-            }
             priceValue.AppendLine();
             priceValue.Append($"```");
             priceValue.Append(priceAvailabilityFormatter);
+            if (price.IsAvailable && priceIsCheapest)
+            {
+                priceValue.Append($"[buy it now at the cheapest price]({price.Url})");
+            }
 
             fields.Add(
                 new EmbedFieldBuilder()
@@ -186,8 +186,8 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
             .WithTitle(item.Name)
             .WithUrl($"{_configuration.GetWebsiteUrl()}/item/{Uri.EscapeDataString(item.Name)}")
             .WithDescription(description.ToString())
-            .WithThumbnailUrl(item.IconUrl)
-            .WithImageUrl(item.PreviewUrl ?? item.IconUrl)
+            .WithThumbnailUrl(item.IconLargeUrl ?? item.IconUrl)
+            .WithImageUrl(item.PreviewUrl ?? item.IconLargeUrl ?? item.IconUrl)
             .WithColor(Convert.ToUInt32(item.ForegroundColour.Trim('#'), 16))
             .WithFooter(x => x.Text = _configuration.GetWebsiteUrl());
 

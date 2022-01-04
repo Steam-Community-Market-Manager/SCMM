@@ -74,8 +74,8 @@ namespace SCMM.Web.Server.API.Controllers
                     SellTo = PriceType.SteamCommunityMarket,
                     SellNowPrice = this.Currency().CalculateExchange(x.BuyOrderHighestPrice, x.Currency),
                     SellNowTax = this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.BuyOrderHighestPrice), x.Currency),
-                    SellLaterPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
-                    SellLaterTax = this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.SellOrderLowestPrice), x.Currency),
+                    SellLaterPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice - 1, x.Currency),
+                    SellLaterTax = this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.SellOrderLowestPrice - 1), x.Currency),
                 })
             );
         }

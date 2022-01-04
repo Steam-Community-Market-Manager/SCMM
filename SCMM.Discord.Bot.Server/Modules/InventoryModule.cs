@@ -32,7 +32,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         _queryProcessor = queryProcessor;
     }
 
-    [SlashCommand("value", "Show the current market value of your Steam inventory (it must be public)")]
+    [SlashCommand("value", "Calculate the market value of a Steam inventory (it must be public)")]
     public async Task<RuntimeResult> GetUserInventoryValueAsync(
         [Summary("steam-id", "Any SteamID or Steam URL")] string steamId = null,
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null

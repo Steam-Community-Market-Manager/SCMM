@@ -17,7 +17,7 @@ public class HelpModule : InteractionModuleBase<ShardedInteractionContext>
         _configuration = configuration;
     }
 
-    [SlashCommand("invite", "Invite this bot to your own Discord server", runMode: RunMode.Sync)]
+    [SlashCommand("invite", "Invite this bot to another Discord server", runMode: RunMode.Sync)]
     public async Task<RuntimeResult> GetBotInviteAsync()
     {
         var name = Context.Client.CurrentUser.Username;
@@ -25,7 +25,7 @@ public class HelpModule : InteractionModuleBase<ShardedInteractionContext>
             ephemeral: true,
             embed: new EmbedBuilder()
                 .WithColor(Color.Red)
-                .WithTitle($"Invite {name} to your Discord server")
+                .WithTitle($"Click to invite {name} to your Discord server")
                 .WithDescription($"{name} is an app for analysing Steam Community Market information. Click the link above to invite {name} to your own Discord server!")
                 .WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl())
                 .WithUrl(_configuration.InviteUrl)
