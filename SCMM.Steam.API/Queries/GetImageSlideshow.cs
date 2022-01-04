@@ -56,14 +56,27 @@ namespace SCMM.Steam.API.Queries
                 return null;
             }
 
-            var frameSize = Math.Max(32, request.ImageSize);
-            var frameDelay = Math.Max(100, request.ImageFrameDelay);
+            var imageSize = Math.Max(32, request.ImageSize);
+            var imageFrameDelay = Math.Max(100, request.ImageFrameDelay);
             var maxFrames = Math.Min(tileCount, request.MaxImages ?? int.MaxValue);
             var renderTitles = imageSources.Any(x => !string.IsNullOrEmpty(x.Title));
 
-            var padding = (int)Math.Ceiling(frameSize * 0.0625f);
-            var indicatorSize = (int)Math.Ceiling(frameSize * 0.25f);
-            var fontSize = (int)Math.Ceiling(24 * ((double)frameSize / 256));
+            // Hydrate the image sources (but only as many as we need to render)
+            imageSources = imageSources.Take(maxFrames).ToList();
+            await HydrateImageData(imageSources);
+            if (!imageSources.Any())
+            {
+                return null;
+            }
+
+            var imageInfo = Image.Identify(imageSources.First().ImageData);
+            var imageRatio = ((decimal)imageInfo.Width / (decimal)imageInfo.Height);
+            var frameWidth = imageSize;
+            var frameHeight = (int) Math.Ceiling(imageSize / imageRatio);
+            
+            var padding = (int)Math.Ceiling(frameHeight * 0.0625f);
+            var indicatorSize = (int)Math.Ceiling(frameHeight * 0.25f);
+            var fontSize = (int)Math.Ceiling(24 * ((double)frameHeight / 256));
             var fontLineHeight = (fontSize + (padding * 3));
             var fontFamily = (FontFamily)null;
             if (!SystemFonts.TryFind("Segoe UI", out fontFamily) && 
@@ -81,13 +94,8 @@ namespace SCMM.Steam.API.Queries
             var solidGreen = Brushes.Solid(Color.FromRgba(76, 175, 80, 255));
             var solidBlue = Brushes.Solid(Color.FromRgba(144, 202, 249, 255));
             var transparent = new Rgba32(255, 255, 255, 0);
-            var imageSize = frameSize;
-
-            // Hydrate the image sources (but only as many as we need to render)
-            imageSources = imageSources.Take(maxFrames).ToList();
-            await HydrateImageData(imageSources);
-
-            var slideshow = new Image<Rgba32>(frameSize, frameSize + (renderTitles ? fontLineHeight : 0), transparent);
+            
+            var slideshow = new Image<Rgba32>(frameWidth, frameHeight + (renderTitles ? fontLineHeight : 0), transparent);
             var imageSourceQueue = new Queue<ImageSource>(imageSources);
             slideshow.Mutate(ctx => ctx
                 .BackgroundColor(transparent)
@@ -100,6 +108,10 @@ namespace SCMM.Steam.API.Queries
             var slideshowMetadata = slideshow.Metadata.GetGifMetadata();
             slideshowMetadata.ColorTableMode = GifColorTableMode.Local;
 
+            var rootFrameMetadata = slideshow.Frames.RootFrame.Metadata.GetGifMetadata();
+            rootFrameMetadata.DisposalMethod = GifDisposalMethod.RestoreToBackground;
+            rootFrameMetadata.FrameDelay = 0;
+
             while (imageSourceQueue.Any())
             {
                 var imageSource = imageSourceQueue.Dequeue();
@@ -108,22 +120,17 @@ namespace SCMM.Steam.API.Queries
                     continue;
                 }
 
-                var x = 0;
-                var y = 0;
-                var frame = new Image<Rgba32>(frameSize, frameSize + (renderTitles ? fontLineHeight : 0), transparent);
+                var frame = new Image<Rgba32>(frameWidth, frameHeight + (renderTitles ? fontLineHeight : 0), transparent);
                 var image = Image.Load<Rgba32>(new MemoryStream(imageSource.ImageData));
                 image.Mutate(ctx => ctx
                     .BackgroundColor(transparent)
-                    .Resize(imageSize, imageSize, KnownResamplers.Lanczos5)
+                    .Resize(frameWidth, 0, KnownResamplers.Lanczos5)
                 );
                 frame.Mutate(ctx => ctx
                     .BackgroundColor(transparent)
                     .DrawImage(
                         image,
-                        new Point(
-                            x + ((Math.Max(2, frameSize - imageSize) / 2) - 1), 
-                            y
-                        ),
+                        new Point(0, 0),
                         ctx.GetGraphicsOptions()
                     )
                 );
@@ -133,8 +140,8 @@ namespace SCMM.Steam.API.Queries
                     var badgeText = $"{imageSource.Badge}";
                     var badgeTextSize = TextMeasurer.Measure(badgeText, new RendererOptions(font));
                     var badgeRect = new Rectangle(
-                        (int)(x + frameSize - badgeTextSize.Width - padding),
-                        (int)(y),
+                        (int)(frameWidth - badgeTextSize.Width - padding),
+                        (int)(0),
                         (int)(badgeTextSize.Width + padding),
                         (int)(badgeTextSize.Height + padding)
                     );
@@ -147,7 +154,6 @@ namespace SCMM.Steam.API.Queries
                             badgeText, 
                             font, 
                             solidBlack,
-
                             new PointF(
                                 badgeRect.Left + (padding / 2),
                                 badgeRect.Top + (padding / 2)
@@ -156,8 +162,8 @@ namespace SCMM.Steam.API.Queries
                     );
                 }
 
-                var symbolX = (x + frameSize - indicatorSize - padding);
-                var symbolY = (y + frameSize - indicatorSize - padding);
+                var symbolX = (frameWidth - indicatorSize - padding);
+                var symbolY = (frameHeight - indicatorSize - padding);
                 var symbolRect = new Rectangle(symbolX, symbolY, indicatorSize, indicatorSize);
                 switch (imageSource.Symbol)
                 {
@@ -193,7 +199,7 @@ namespace SCMM.Steam.API.Queries
                 {
                     var title = imageSource.Title;
                     var titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
-                    while (titleWidth >= (frameSize - (padding * 2)) && title.Length > 0)
+                    while (titleWidth >= (frameWidth - (padding * 2)) && title.Length > 0)
                     {
                         title = title.Substring(0, title.Length - 1);
                         titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
@@ -212,8 +218,8 @@ namespace SCMM.Steam.API.Queries
                                 solidWhite,
                                 solidBlackOutlinePen,
                                 new PointF(
-                                    x + (frameSize / 2) - (titleWidth / 2),
-                                    y + imageSize + padding
+                                    (frameWidth / 2) - (titleWidth / 2),
+                                    imageSize + padding
                                 )
                             )
                         );
@@ -223,8 +229,7 @@ namespace SCMM.Steam.API.Queries
                 var slideshowFrame = slideshow.Frames.AddFrame(frame.Frames.RootFrame);
                 var frameMetadata = slideshowFrame.Metadata.GetGifMetadata();
                 frameMetadata.DisposalMethod = GifDisposalMethod.RestoreToBackground;
-                frameMetadata.FrameDelay = frameDelay;
-
+                frameMetadata.FrameDelay = imageFrameDelay;
             }
 
             using var mosaicStream = new MemoryStream();
