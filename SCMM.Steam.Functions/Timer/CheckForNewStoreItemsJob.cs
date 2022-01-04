@@ -260,16 +260,16 @@ public class CheckForNewStoreItemsJob
                 .Where(x => x.Description != null)
                 .Select(x => new ImageSource()
                 {
-                    Title = x.Description.Name,
                     ImageUrl = x.Description.IconLargeUrl ?? x.Description.IconUrl,
                     ImageData = x.Description.IconLarge?.Data ?? x.Description.Icon?.Data,
                 })
                 .ToList();
 
-            var thumbnail = await queryProcessor.ProcessAsync(new GetImageSlideshowRequest()
+            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = itemImageSources,
-                ImageSize = 256
+                ImageSize = 256,
+                ImageColumns = 3
             });
             if (thumbnail == null)
             {

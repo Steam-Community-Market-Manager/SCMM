@@ -165,7 +165,6 @@ namespace SCMM.Discord.Bot.Server.Modules
                     .Where(x => x.Description != null)
                     .Select(x => new ImageSource()
                     {
-                        Title = x.Description.Name,
                         ImageUrl = x.Description.IconLargeUrl ?? x.Description.IconUrl,
                         ImageData = x.Description.IconLarge?.Data ?? x.Description.Icon?.Data,
                     })
@@ -175,19 +174,20 @@ namespace SCMM.Discord.Bot.Server.Modules
                     continue;
                 }
 
-                var itemsSlideshow = await _queryProcessor.ProcessAsync(new GetImageSlideshowRequest()
+                var itemsMosaic = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
                 {
                     ImageSources = itemImageSources,
-                    ImageSize = 256
+                    ImageSize = 256,
+                    ImageColumns = 3
                 });
-                if (itemsSlideshow == null)
+                if (itemsMosaic == null)
                 {
                     continue;
                 }
 
                 var itemsThumbnail = itemStore.ItemsThumbnail ?? new FileData();
-                itemsThumbnail.MimeType = itemsSlideshow.MimeType;
-                itemsThumbnail.Data = itemsSlideshow.Data;
+                itemsThumbnail.MimeType = itemsMosaic.MimeType;
+                itemsThumbnail.Data = itemsMosaic.Data;
 
                 await _db.SaveChangesAsync();
             }

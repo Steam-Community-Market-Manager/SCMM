@@ -63,8 +63,6 @@ namespace SCMM.Steam.API.Queries
             var y = 0;
             var padding = (int)Math.Ceiling(tileSize * 0.0625f);
             var indicatorSize = (int)Math.Ceiling(tileSize * 0.25f);
-            var fontSize = (int)Math.Ceiling(24 * ((double)tileSize / 128));
-            var fontLineHeight = (fontSize + (padding * 3));
             var fontFamily = (FontFamily)null;
             if (!SystemFonts.TryFind("Segoe UI", out fontFamily) && 
                 !SystemFonts.TryFind("DejaVu Sans", out fontFamily) &&
@@ -73,7 +71,10 @@ namespace SCMM.Steam.API.Queries
             {
                 throw new Exception($"Unable to find a suitable font. Available options are: {String.Join(", ", SystemFonts.Families.Select(x => x.Name))}");
             }
-            var font = new Font(fontFamily, fontSize, FontStyle.Regular);
+            var badgeFont = new Font(fontFamily, (int)Math.Ceiling(16 * ((double)tileSize / 128)), FontStyle.Regular);
+            var titleFont = new Font(fontFamily, (int)Math.Ceiling(24 * ((double)tileSize / 128)), FontStyle.Regular);
+            var titleLineHeight = (renderTitles ? ((int)titleFont.Size + (padding * 2)) : 0);
+
             var solidBlackOutlinePen = Pens.Solid(Color.FromRgba(0, 0, 0, 128), 2);
             var solidBlack = Brushes.Solid(Color.FromRgba(0, 0, 0, 255));
             var solidWhite = Brushes.Solid(Color.FromRgba(255, 255, 255, 255));
@@ -81,7 +82,6 @@ namespace SCMM.Steam.API.Queries
             var solidGreen = Brushes.Solid(Color.FromRgba(76, 175, 80, 255));
             var solidBlue = Brushes.Solid(Color.FromRgba(144, 202, 249, 255));
             var transparent = new Rgba32(255, 255, 255, 0);
-            var imageSize = tileSize;
 
             // If there are rows than we have images for, reduces the row count to the minimum required to render the images
             var minimumRowsToRenderTiles = (int)Math.Ceiling((float)tileCount / tileColumns);
@@ -92,7 +92,7 @@ namespace SCMM.Steam.API.Queries
             imageSources = imageSources.Take(maxTiles).ToList();
             await HydrateImageData(imageSources);
 
-            var mosaic = new Image<Rgba32>(tileColumns * tileSize, tileRows * (tileSize + (renderTitles ? fontLineHeight : 0)), transparent);
+            var mosaic = new Image<Rgba32>(tileColumns * tileSize, tileRows * (tileSize + titleLineHeight), transparent);
             var mosaicMetadata = mosaic.Metadata.GetPngMetadata();
             mosaicMetadata.HasTransparency = true;
 
@@ -120,16 +120,13 @@ namespace SCMM.Steam.API.Queries
                     var image = Image.Load<Rgba32>(new MemoryStream(imageSource.ImageData));
                     image.Mutate(ctx => ctx
                         .BackgroundColor(transparent)
-                        .Resize(imageSize, imageSize, KnownResamplers.Lanczos5)
+                        .Resize(tileSize, tileSize, KnownResamplers.Lanczos5)
                     );
                     mosaic.Mutate(ctx => ctx
                         .BackgroundColor(transparent)
                         .DrawImage(
                             image,
-                            new Point(
-                                x + ((Math.Max(2, tileSize - imageSize) / 2) - 1), 
-                                y
-                            ),
+                            new Point(x, y),
                             ctx.GetGraphicsOptions()
                         )
                     );
@@ -137,7 +134,7 @@ namespace SCMM.Steam.API.Queries
                     if (imageSource.Badge > 1)
                     {
                         var badgeText = $"{imageSource.Badge}";
-                        var badgeTextSize = TextMeasurer.Measure(badgeText, new RendererOptions(font));
+                        var badgeTextSize = TextMeasurer.Measure(badgeText, new RendererOptions(badgeFont));
                         var badgeRect = new Rectangle(
                             (int)(x + tileSize - badgeTextSize.Width - padding),
                             (int)(y),
@@ -150,8 +147,8 @@ namespace SCMM.Steam.API.Queries
                             .Fill(solidBlue, badgeIconPath)
                             .Draw(solidBlackOutlinePen, badgeIconPath)
                             .DrawText(
-                                badgeText, 
-                                font, 
+                                badgeText,
+                                badgeFont, 
                                 solidBlack,
                                 new PointF(
                                     badgeRect.Left + (padding / 2),
@@ -197,28 +194,28 @@ namespace SCMM.Steam.API.Queries
                     if (!string.IsNullOrEmpty(imageSource.Title))
                     {
                         var title = imageSource.Title;
-                        var titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
-                        while (titleWidth >= (tileSize - (padding * 2)) && title.Length > 0)
+                        var titleSize = TextMeasurer.Measure(title, new RendererOptions(titleFont));
+                        while (titleSize.Width >= (tileSize - (padding * 2)) && title.Length > 0)
                         {
                             title = title.Substring(0, title.Length - 1);
-                            titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
+                            titleSize = TextMeasurer.Measure(title, new RendererOptions(titleFont));
                         }
                         if (title.Length != imageSource.Title.Length)
                         {
                             title = (title.Trim() + "…");
-                            titleWidth = TextMeasurer.Measure(title, new RendererOptions(font)).Width;
+                            titleSize = TextMeasurer.Measure(title, new RendererOptions(titleFont));
                         }
-                        if (!string.IsNullOrEmpty(title) && titleWidth > 0)
+                        if (!string.IsNullOrEmpty(title) && titleSize.Width > 0)
                         {
                             mosaic.Mutate(ctx => ctx
                                 .DrawText(
                                     title,
-                                    font,
+                                    titleFont,
                                     solidWhite,
                                     solidBlackOutlinePen,
                                     new PointF(
-                                        x + (tileSize / 2) - (titleWidth / 2),
-                                        y + imageSize + padding
+                                        x + (tileSize / 2) - (titleSize.Width / 2),
+                                        y + tileSize + padding
                                     )
                                 )
                             );
@@ -226,7 +223,7 @@ namespace SCMM.Steam.API.Queries
                     }
                     x += tileSize;
                 }
-                y += tileSize + (renderTitles ? fontLineHeight : 0);
+                y += tileSize + (renderTitles ? titleLineHeight : 0);
             }
 
             using var mosaicStream = new MemoryStream();
@@ -239,6 +236,7 @@ namespace SCMM.Steam.API.Queries
             };
         }
 
+        // TODO: Consolidate code somewhere else
         private async Task HydrateImageData(IEnumerable<ImageSource> imageSources)
         {
             // Check only images that are missing image data
