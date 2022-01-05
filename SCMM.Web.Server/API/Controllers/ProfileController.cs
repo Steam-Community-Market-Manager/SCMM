@@ -359,7 +359,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetInventoryValue([FromRoute] string id, [FromQuery] bool generateInventoryMosaic = false, [FromQuery] int mosaicTileSize = 128, [FromQuery] int mosaicColumns = 5, [FromQuery] int mosaicRows = 5, [FromQuery] bool force = false)
+        public async Task<IActionResult> GetInventoryValue([FromRoute] string id, [FromQuery] bool generateInventoryMosaic = false, [FromQuery] int mosaicTileSize = 64, [FromQuery] int mosaicColumns = 5, [FromQuery] int mosaicRows = 5, [FromQuery] bool force = false)
         {
             if (string.IsNullOrEmpty(id))
             {

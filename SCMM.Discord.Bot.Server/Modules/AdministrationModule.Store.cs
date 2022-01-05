@@ -139,6 +139,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("rebuild-store-item-mosaics")]
         public async Task<RuntimeResult> RebuildStoreItemMosaicsAsync(string storeId = null)
         {
+            var message = await Context.Message.ReplyAsync("Finding stores...");
             var itemStoreIds = _db.SteamItemStores.ToList()
                 .Where(x => String.IsNullOrEmpty(storeId) || (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
@@ -152,7 +153,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
                 .ToArrayAsync();
 
-            var message = await Context.Message.ReplyAsync("Rebuilding store item mosaics...");
+            await message.ModifyAsync(
+                x => x.Content = "Rebuilding store item mosaics..."
+            );
+
             foreach (var itemStore in itemStores)
             {
                 await message.ModifyAsync(
@@ -165,8 +169,8 @@ namespace SCMM.Discord.Bot.Server.Modules
                     .Where(x => x.Description != null)
                     .Select(x => new ImageSource()
                     {
-                        ImageUrl = x.Description.IconLargeUrl ?? x.Description.IconUrl,
-                        ImageData = x.Description.IconLarge?.Data ?? x.Description.Icon?.Data,
+                        ImageUrl = x.Description.IconUrl,
+                        ImageData = x.Description.Icon?.Data,
                     })
                     .ToList();
                 if (!itemImageSources.Any())
@@ -177,7 +181,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var itemsMosaic = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
                 {
                     ImageSources = itemImageSources,
-                    ImageSize = 256,
+                    ImageSize = 200,
                     ImageColumns = 3
                 });
                 if (itemsMosaic == null)
@@ -185,15 +189,15 @@ namespace SCMM.Discord.Bot.Server.Modules
                     continue;
                 }
 
-                var itemsThumbnail = itemStore.ItemsThumbnail ?? new FileData();
-                itemsThumbnail.MimeType = itemsMosaic.MimeType;
-                itemsThumbnail.Data = itemsMosaic.Data;
+                itemStore.ItemsThumbnail = itemStore.ItemsThumbnail ?? new FileData();
+                itemStore.ItemsThumbnail.MimeType = itemsMosaic.MimeType;
+                itemStore.ItemsThumbnail.Data = itemsMosaic.Data;
 
                 await _db.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
-                x => x.Content = $"Rebuilt {itemStores.Where(x => x.ItemsThumbnailId != null).Count()}/{itemStores.Length} snapshots item mosaics"
+                x => x.Content = $"Rebuilt {itemStores.Where(x => x.ItemsThumbnail != null).Count()}/{itemStores.Length} snapshots item mosaics"
             );
 
             return CommandResult.Success();

@@ -17,7 +17,7 @@ namespace SCMM.Steam.API.Queries
     {
         public IEnumerable<ImageSource> ImageSources { get; set; }
 
-        public int ImageSize { get; set; } = 256;
+        public int ImageSize { get; set; } = 200;
 
         public int ImageColumns { get; set; } = 3;
 
@@ -61,8 +61,6 @@ namespace SCMM.Steam.API.Queries
 
             var x = 0;
             var y = 0;
-            var padding = (int)Math.Ceiling(tileSize * 0.0625f);
-            var indicatorSize = (int)Math.Ceiling(tileSize * 0.25f);
             var fontFamily = (FontFamily)null;
             if (!SystemFonts.TryFind("Segoe UI", out fontFamily) && 
                 !SystemFonts.TryFind("DejaVu Sans", out fontFamily) &&
@@ -71,17 +69,19 @@ namespace SCMM.Steam.API.Queries
             {
                 throw new Exception($"Unable to find a suitable font. Available options are: {String.Join(", ", SystemFonts.Families.Select(x => x.Name))}");
             }
-            var badgeFont = new Font(fontFamily, (int)Math.Ceiling(16 * ((double)tileSize / 128)), FontStyle.Regular);
-            var titleFont = new Font(fontFamily, (int)Math.Ceiling(24 * ((double)tileSize / 128)), FontStyle.Regular);
-            var titleLineHeight = (renderTitles ? ((int)titleFont.Size + (padding * 2)) : 0);
+            var badgeFont = new Font(fontFamily, (int)Math.Max(12, Math.Ceiling(20 * ((double)tileSize / 200))), FontStyle.Regular);
+            var titleFont = new Font(fontFamily, (int)Math.Max(20, Math.Ceiling(30 * ((double)tileSize / 200))), FontStyle.Regular);
+            var titleLineHeight = (renderTitles ? ((int)titleFont.LineHeight + (2 * 2)) : 0);
+            var padding = (int)Math.Ceiling(badgeFont.Size * 0.5f);
+            var indicatorSize = (int)Math.Ceiling(tileSize * 0.25f);
 
-            var solidBlackOutlinePen = Pens.Solid(Color.FromRgba(0, 0, 0, 128), 2);
+            var solidBlackOutlinePen = Pens.Solid(Color.FromRgba(0, 0, 0, 128), 1);
             var solidBlack = Brushes.Solid(Color.FromRgba(0, 0, 0, 255));
             var solidWhite = Brushes.Solid(Color.FromRgba(255, 255, 255, 255));
             var solidRed = Brushes.Solid(Color.FromRgba(244, 67, 54, 255));
             var solidGreen = Brushes.Solid(Color.FromRgba(76, 175, 80, 255));
             var solidBlue = Brushes.Solid(Color.FromRgba(144, 202, 249, 255));
-            var transparent = new Rgba32(255, 255, 255, 0);
+            //var transparent = new Rgba32(255, 255, 255, 0);
 
             // If there are rows than we have images for, reduces the row count to the minimum required to render the images
             var minimumRowsToRenderTiles = (int)Math.Ceiling((float)tileCount / tileColumns);
@@ -92,13 +92,13 @@ namespace SCMM.Steam.API.Queries
             imageSources = imageSources.Take(maxTiles).ToList();
             await HydrateImageData(imageSources);
 
-            var mosaic = new Image<Rgba32>(tileColumns * tileSize, tileRows * (tileSize + titleLineHeight), transparent);
-            var mosaicMetadata = mosaic.Metadata.GetPngMetadata();
-            mosaicMetadata.HasTransparency = true;
+            var mosaic = new Image<Rgba32>(tileColumns * tileSize, tileRows * (tileSize + titleLineHeight)/*, transparent*/);
+            //var mosaicMetadata = mosaic.Metadata.GetPngMetadata();
+            //mosaicMetadata.HasTransparency = true;
 
             var imageSourceQueue = new Queue<ImageSource>(imageSources);
             mosaic.Mutate(ctx => ctx
-                .BackgroundColor(transparent)
+                //.BackgroundColor(transparent)
                 .SetGraphicsOptions(new GraphicsOptions()
                 {
                     Antialias = true
@@ -119,11 +119,11 @@ namespace SCMM.Steam.API.Queries
 
                     var image = Image.Load<Rgba32>(new MemoryStream(imageSource.ImageData));
                     image.Mutate(ctx => ctx
-                        .BackgroundColor(transparent)
-                        .Resize(tileSize, tileSize, KnownResamplers.Lanczos5)
+                        //.BackgroundColor(transparent)
+                        .Resize(tileSize, tileSize, KnownResamplers.Bicubic)
                     );
                     mosaic.Mutate(ctx => ctx
-                        .BackgroundColor(transparent)
+                        //.BackgroundColor(transparent)
                         .DrawImage(
                             image,
                             new Point(x, y),
@@ -136,10 +136,10 @@ namespace SCMM.Steam.API.Queries
                         var badgeText = $"{imageSource.Badge}";
                         var badgeTextSize = TextMeasurer.Measure(badgeText, new RendererOptions(badgeFont));
                         var badgeRect = new Rectangle(
-                            (int)(x + tileSize - badgeTextSize.Width - padding),
-                            (int)(y),
+                            (int)(x + tileSize - badgeTextSize.Width - (padding * 2)),
+                            (int)(y + padding),
                             (int)(badgeTextSize.Width + padding),
-                            (int)(badgeTextSize.Height + padding)
+                            (int)(badgeTextSize.Height + (padding / 2))
                         );
 
                         var badgeIconPath = new RectangularPolygon(badgeRect);
@@ -151,8 +151,8 @@ namespace SCMM.Steam.API.Queries
                                 badgeFont, 
                                 solidBlack,
                                 new PointF(
-                                    badgeRect.Left + (padding / 2),
-                                    badgeRect.Top + (padding / 2)
+                                    badgeRect.Left + (badgeRect.Width / 2) - (badgeTextSize.Width / 2),
+                                    badgeRect.Top
                                 )
                             )
                         );
@@ -291,6 +291,7 @@ namespace SCMM.Steam.API.Queries
                 {
                     Url = imageSource.ImageUrl,
                     UseExisting = false, // we've already checked, it doesn't exist
+                    Persist = false
                 });
                 if (importedImage?.File?.Data != null)
                 {

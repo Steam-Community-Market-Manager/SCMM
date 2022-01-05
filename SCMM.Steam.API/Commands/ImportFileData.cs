@@ -17,6 +17,11 @@ namespace SCMM.Steam.API.Commands
         /// If true, we'll recycle existing file data the same source url exists in the database already
         /// </summary>
         public bool UseExisting { get; set; } = true;
+
+        /// <summary>
+        /// If true, we'll persist to database
+        /// </summary>
+        public bool Persist { get; set; } = true;
     }
 
     public class ImportFileDataResponse

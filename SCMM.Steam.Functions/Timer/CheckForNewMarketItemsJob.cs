@@ -130,15 +130,15 @@ public class CheckForNewMarketItemsJob
                 .Where(x => x.Description != null)
                 .Select(x => new ImageSource()
                 {
-                    ImageUrl = x.Description.IconLargeUrl ?? x.Description.IconUrl,
-                    ImageData = x.Description.IconLarge?.Data ?? x.Description.Icon?.Data,
+                    ImageUrl = x.Description.IconUrl,
+                    ImageData = x.Description.Icon?.Data,
                 })
                 .ToList();
 
             var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = itemImageSources,
-                ImageSize = 256,
+                ImageSize = 200,
                 ImageColumns = 3
             });
             if (thumbnail == null)

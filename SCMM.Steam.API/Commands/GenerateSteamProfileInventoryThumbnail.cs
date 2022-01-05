@@ -11,11 +11,11 @@ namespace SCMM.Steam.API.Commands
     {
         public string ProfileId { get; set; }
 
-        public int ItemSize { get; set; } = 128;
+        public int ItemSize { get; set; } = 64;
 
         public int ItemColumns { get; set; } = 5;
 
-        public int? ItemRows { get; set; } = 5;
+        public int ItemRows { get; set; } = 5;
 
         public DateTimeOffset? ExpiresOn { get; set; } = null;
     }

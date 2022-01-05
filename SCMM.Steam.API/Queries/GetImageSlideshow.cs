@@ -17,7 +17,7 @@ namespace SCMM.Steam.API.Queries
 
         public int ImageSize { get; set; } = 512;
 
-        public int ImageFrameDelay { get; set; } = 300;
+        public TimeSpan ImageFrameDelay { get; set; } = TimeSpan.FromSeconds(3);
 
         public int? MaxImages { get; set; }
     }
@@ -53,7 +53,7 @@ namespace SCMM.Steam.API.Queries
             }
 
             var imageSize = Math.Max(32, request.ImageSize);
-            var imageFrameDelay = Math.Max(100, request.ImageFrameDelay);
+            var imageFrameDelay = Math.Max(1, (int) Math.Floor(request.ImageFrameDelay.TotalMilliseconds * 0.1));
             var maxFrames = Math.Min(tileCount, request.MaxImages ?? int.MaxValue);
             
             imageSources = imageSources.Take(maxFrames).ToList();
@@ -173,6 +173,7 @@ namespace SCMM.Steam.API.Queries
                 {
                     Url = imageSource.ImageUrl,
                     UseExisting = false, // we've already checked, it doesn't exist
+                    Persist = false
                 });
                 if (importedImage?.File?.Data != null)
                 {
