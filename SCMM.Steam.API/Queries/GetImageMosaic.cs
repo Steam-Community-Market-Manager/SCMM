@@ -152,7 +152,7 @@ namespace SCMM.Steam.API.Queries
                                 solidBlack,
                                 new PointF(
                                     badgeRect.Left + (badgeRect.Width / 2) - (badgeTextSize.Width / 2),
-                                    badgeRect.Top
+                                    badgeRect.Top + (padding / 4)
                                 )
                             )
                         );

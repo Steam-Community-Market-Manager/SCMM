@@ -138,7 +138,7 @@ public class CheckForNewMarketItemsJob
             var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = itemImageSources,
-                ImageSize = 200,
+                ImageSize = 128,
                 ImageColumns = 3
             });
             if (thumbnail == null)

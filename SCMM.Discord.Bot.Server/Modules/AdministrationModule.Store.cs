@@ -181,7 +181,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 var itemsMosaic = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
                 {
                     ImageSources = itemImageSources,
-                    ImageSize = 200,
+                    ImageSize = 128,
                     ImageColumns = 3
                 });
                 if (itemsMosaic == null)
