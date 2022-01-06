@@ -3,7 +3,6 @@ using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
-using SCMM.Discord.Client.Attributes;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.API.Extensions;
@@ -16,7 +15,6 @@ using System.Text;
 
 namespace SCMM.Discord.Bot.Server.Modules;
 
-[Global]
 public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
 {
     private readonly IConfiguration _configuration;

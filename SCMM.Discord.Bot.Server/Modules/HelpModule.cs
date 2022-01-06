@@ -1,12 +1,10 @@
 ﻿using Discord;
 using Discord.Interactions;
 using SCMM.Discord.Client;
-using SCMM.Discord.Client.Attributes;
 using SCMM.Discord.Client.Commands;
 
 namespace SCMM.Discord.Bot.Server.Modules;
 
-[Global]
 [Group("help", "Help commands")]
 public class HelpModule : InteractionModuleBase<ShardedInteractionContext>
 {

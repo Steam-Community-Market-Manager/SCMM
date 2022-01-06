@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Discord.Client.Attributes;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
 using System.Reflection;
@@ -36,6 +35,7 @@ namespace SCMM.Discord.Client
 
         public async Task AddInteractionsAsync(params Assembly[] assemblies)
         {
+            _client.JoinedGuild += OnJoinedGuildAddInteractionModulesAsync;
             _client.AutocompleteExecuted += OnAutocompleteReceivedAsync;
             _client.SlashCommandExecuted += OnSlashCommandReceivedAsync;
             _interactions.AutocompleteCommandExecuted += OnAutocompleteCommandExecutedAsync;
@@ -64,12 +64,17 @@ namespace SCMM.Discord.Client
                     }
                 }
 
-                await _interactions.AddModulesGloballyAsync(
-                    deleteMissing: true,
-                    modules: _interactions.Modules.Where(x => x.Attributes.Any(y => y is GlobalAttribute)).ToArray()
-                );
+                var globalModules = _interactions.Modules.Where(x => x.Preconditions.OfType<RequireContextAttribute>().All(x => x.Contexts != ContextType.Guild)).ToArray();
+                await _interactions.AddModulesGloballyAsync(deleteMissing: true, modules: globalModules);
 
-                // TODO: Guild commands
+                var guildModules = _interactions.Modules.Where(x => x.Preconditions.OfType<RequireContextAttribute>().Any(x => x.Contexts == ContextType.Guild)).ToArray();
+                if (guildModules.Any())
+                {
+                    foreach (var guild in _client.Guilds)
+                    {
+                        await _interactions.AddModulesToGuildAsync(guild, deleteMissing: true, modules: guildModules);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -89,6 +94,15 @@ namespace SCMM.Discord.Client
             }
 
             return Task.CompletedTask;
+        }
+
+        private async Task OnJoinedGuildAddInteractionModulesAsync(SocketGuild guild)
+        {
+            var guildModules = _interactions.Modules.Where(x => x.Attributes.OfType<RequireContextAttribute>().Any(x => x.Contexts == ContextType.Guild)).ToArray();
+            if (guildModules.Any())
+            {
+                await _interactions.AddModulesToGuildAsync(guild, deleteMissing: true, modules: guildModules);
+            }
         }
 
         private Task OnAutocompleteReceivedAsync(SocketAutocompleteInteraction interaction)

@@ -297,7 +297,7 @@ public class CheckForNewStoreItemsJob
         {
             try
             {
-                if (guild.IsSet(DiscordConfiguration.Alerts) && !guild.Get(DiscordConfiguration.Alerts).Value.Contains(DiscordConfiguration.AlertsStore))
+                if (guild.IsSet(DiscordConfiguration.AlertsStore) && !bool.Parse(guild.Get(DiscordConfiguration.AlertsStore).Value))
                 {
                     continue;
                 }

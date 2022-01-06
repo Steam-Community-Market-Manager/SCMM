@@ -169,7 +169,7 @@ public class CheckForNewMarketItemsJob
         {
             try
             {
-                if (guild.IsSet(DiscordConfiguration.Alerts) && !guild.Get(DiscordConfiguration.Alerts).Value.Contains(DiscordConfiguration.AlertsMarket))
+                if (guild.IsSet(DiscordConfiguration.AlertsMarket) && !bool.Parse(guild.Get(DiscordConfiguration.AlertsMarket).Value))
                 {
                     continue;
                 }

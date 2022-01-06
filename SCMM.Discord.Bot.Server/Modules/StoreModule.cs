@@ -3,7 +3,6 @@ using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
-using SCMM.Discord.Client.Attributes;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.API.Extensions;
@@ -16,7 +15,6 @@ using System.Text;
 
 namespace SCMM.Discord.Bot.Server.Modules;
 
-[Global]
 [Group("store", "Store commands")]
 public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
 {
@@ -87,7 +85,7 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         if (store == null)
         {
             return InteractionResult.Fail(
-                $"Sorry, I can't find that store"
+                $"Sorry, I can't find that store."
             );
         }
 

@@ -2,7 +2,6 @@
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
-using SCMM.Discord.Client.Attributes;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
 using SCMM.Shared.API.Extensions;
@@ -13,7 +12,6 @@ using SCMM.Steam.Data.Store;
 
 namespace SCMM.Discord.Bot.Server.Modules;
 
-[Global]
 [Group("config", "User configuration commands")]
 public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContext>
 {
