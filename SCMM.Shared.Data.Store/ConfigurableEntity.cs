@@ -55,7 +55,7 @@ namespace SCMM.Shared.Data.Store
                 }
             }
 
-            return values?.Where(x => !string.IsNullOrEmpty(x))?.ToArray() ?? new string[0];
+            return values?.Where(x => !string.IsNullOrEmpty(x))?.Distinct()?.ToArray() ?? new string[0];
         }
 
         public KeyValuePair<T, IEnumerable<string>> List(string name)
