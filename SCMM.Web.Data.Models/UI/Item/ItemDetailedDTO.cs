@@ -157,10 +157,6 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? MarketSellOrderLowestPrice { get; set; }
 
-        public long? MarketResellPrice { get; set; }
-
-        public long? MarketResellTax { get; set; }
-
         public long? Market1hrSales { get; set; }
 
         public long? Market1hrValue { get; set; }
@@ -194,6 +190,10 @@ namespace SCMM.Web.Data.Models.UI.Item
         public string BuyNowUrl { get; set; }
 
         public IEnumerable<ItemPriceDTO> Prices { get; set; }
+
+        // TODO: BuyLater
+        // TODO: SellNow
+        // TODO: SellLater
 
         #endregion
     }

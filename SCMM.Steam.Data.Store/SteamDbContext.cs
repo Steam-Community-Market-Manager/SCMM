@@ -139,7 +139,9 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamMarketItem>()
                 .HasOne(x => x.Currency);
             builder.Entity<SteamMarketItem>()
-                .OwnsOne(x => x.Prices);
+                .OwnsOne(x => x.BuyPrices);
+            builder.Entity<SteamMarketItem>()
+                .OwnsOne(x => x.SellPrices);
             builder.Entity<SteamMarketItem>()
                 .HasMany(x => x.BuyOrders)
                 .WithOne(x => x.Item)

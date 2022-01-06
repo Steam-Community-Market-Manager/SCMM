@@ -1,12 +1,9 @@
 ﻿namespace SCMM.Steam.Data.Models.Attributes;
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-public class SalesTaxAttribute : Attribute
+public class SellToAttribute : Attribute
 {
-    public SalesTaxAttribute(float tax)
-    {
-        Tax = tax;
-    }
+    public string Url { get; set; }
 
     public float Tax { get; set; }
 }

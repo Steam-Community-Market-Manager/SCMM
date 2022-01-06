@@ -771,23 +771,23 @@ namespace SCMM.Web.Server.API.Controllers
                 case nameof(ProfileInventoryInvestmentItemDTO.BuyPrice):
                     query = query.OrderBy(x => x.BuyPrice, sortDirection);
                     break;
-                case nameof(ProfileInventoryInvestmentItemDTO.ResellPrice):
-                    query = query.OrderBy(x => x.Description.MarketItem.ResellPrice, sortDirection);
+                case nameof(ProfileInventoryInvestmentItemDTO.SellLaterPrice):
+                    query = query.OrderBy(x => x.Description.MarketItem.SellLaterPrice, sortDirection);
                     break;
-                case nameof(ProfileInventoryInvestmentItemDTO.ResellTax):
-                    query = query.OrderBy(x => x.Description.MarketItem.ResellTax, sortDirection);
+                case nameof(ProfileInventoryInvestmentItemDTO.SellLaterTax):
+                    query = query.OrderBy(x => x.Description.MarketItem.SellLaterTax, sortDirection);
                     break;
-                case "ResellProfit":
+                case "SellLaterProfit":
                     query = query.OrderBy(x =>
-                        ((x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) != 0 && x.BuyPrice > 0 && x.Currency != null)
-                            ? ((x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) - (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
+                        ((x.Description.MarketItem.SellLaterPrice - x.Description.MarketItem.SellLaterTax) != 0 && x.BuyPrice > 0 && x.Currency != null)
+                            ? ((x.Description.MarketItem.SellLaterPrice - x.Description.MarketItem.SellLaterTax) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) - (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
                             : 0
                         , sortDirection);
                     break;
-                case "ResellRoI":
+                case "SellLaterRoI":
                     query = query.OrderBy(x =>
-                        ((x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) != 0 && x.BuyPrice > 0 && x.Currency != null)
-                            ? ((x.Description.MarketItem.ResellPrice - x.Description.MarketItem.ResellTax) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) / (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
+                        ((x.Description.MarketItem.SellLaterPrice - x.Description.MarketItem.SellLaterTax) != 0 && x.BuyPrice > 0 && x.Currency != null)
+                            ? ((x.Description.MarketItem.SellLaterPrice - x.Description.MarketItem.SellLaterTax) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) / (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
                             : 0
                         , sortDirection);
                     break;

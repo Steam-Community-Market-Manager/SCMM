@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
@@ -11,9 +12,10 @@ using SCMM.Steam.Data.Store;
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220106101334_SteamMarketItemBuySellPriceSnapshots")]
+    partial class SteamMarketItemBuySellPriceSnapshots
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -597,10 +599,10 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<long>("LastSaleValue")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("SellLaterPrice")
+                    b.Property<long>("ResellPrice")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("SellLaterTax")
+                    b.Property<long>("ResellTax")
                         .HasColumnType("bigint");
 
                     b.Property<byte>("SellLaterTo")

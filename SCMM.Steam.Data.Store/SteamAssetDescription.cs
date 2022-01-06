@@ -215,7 +215,7 @@ namespace SCMM.Steam.Data.Store
 
         public IEnumerable<Price> GetPrices(IExchangeableCurrency currency)
         {
-            // Steam store
+            // Store price
             if (StoreItem != null && StoreItem.Currency != null)
             {
                 var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
@@ -249,40 +249,11 @@ namespace SCMM.Steam.Data.Store
                 };
             }
 
-            // Steam community market
-            if (MarketItem != null && MarketItem.Currency != null && MarketItem.Prices?.ContainsKey(PriceType.SteamCommunityMarket) != true)
-            {
-                var appId = (MarketItem.App?.SteamId ?? App?.SteamId);
-                var lowestPrice = (long?)null;
-                if (currency != null)
-                {
-                    lowestPrice = currency.CalculateExchange(MarketItem.SellOrderLowestPrice, MarketItem.Currency);
-                }
-                else
-                {
-                    currency = MarketItem.Currency;
-                    lowestPrice = MarketItem.SellOrderLowestPrice;
-                }
-                yield return new Price
-                {
-                    Type = PriceType.SteamCommunityMarket,
-                    Currency = currency,
-                    LowestPrice = lowestPrice ?? 0,
-                    QuantityAvailable = MarketItem.SellOrderCount,
-                    IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && MarketItem.SellOrderCount > 0),
-                    Url = new SteamMarketListingPageRequest()
-                    {
-                        AppId = appId,
-                        MarketHashName = NameHash
-                    }
-                };
-            }
-
-            // Third party markets
-            if (MarketItem != null && MarketItem.Prices != null && MarketItem.Currency != null)
+            // Market prices
+            if (MarketItem != null && MarketItem.Currency != null)
             {
                 var app = (MarketItem.App ?? App);
-                foreach (var marketPrice in MarketItem.Prices)
+                foreach (var marketPrice in MarketItem.BuyPrices)
                 {
                     var lowestPrice = (long?)null;
                     if (currency != null)

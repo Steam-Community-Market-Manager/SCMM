@@ -81,22 +81,18 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                     var item = items.FirstOrDefault(x => x.Name == tradeitGGItem.Key.Name)?.Item;
                     if (item != null)
                     {
-                        item.Prices = new PersistablePriceStockDictionary(item.Prices);
-                        item.Prices[PriceType.TradeitGG] = new PriceStock
+                        item.UpdateBuyPrices(PriceType.TradeitGG, new PriceStock
                         {
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
                             Stock = tradeitGGItem.Value
-                        };
-                        item.UpdateBuyNowPrice();
+                        });
                     }
                 }
 
-                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.Prices.ContainsKey(PriceType.TradeitGG));
+                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(PriceType.TradeitGG));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
-                    missingItem.Item.Prices.Remove(PriceType.TradeitGG);
-                    missingItem.Item.UpdateBuyNowPrice();
+                    missingItem.Item.UpdateBuyPrices(PriceType.TradeitGG, null);
                 }
             }
             catch (Exception ex)

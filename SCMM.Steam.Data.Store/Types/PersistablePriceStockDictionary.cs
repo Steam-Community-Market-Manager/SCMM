@@ -24,12 +24,24 @@ namespace SCMM.Steam.Data.Store.Types
 
         protected override PriceStock ConvertSingleValueToRuntime(string rawValue)
         {
-            var priceStock = rawValue.Split("@", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            return new PriceStock()
+            if (rawValue.Contains("@"))
             {
-                Stock = (Int32.TryParse(priceStock.FirstOrDefault(), out _) ? Int32.Parse(priceStock.FirstOrDefault()) : null),
-                Price = (Int32.TryParse(priceStock.LastOrDefault(), out _) ? Int32.Parse(priceStock.LastOrDefault()) : 0)
-            };
+                var priceStock = rawValue.Split("@", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                return new PriceStock()
+                {
+                    Price = (Int32.TryParse(priceStock.LastOrDefault(), out _) ? Int32.Parse(priceStock.LastOrDefault()) : 0),
+                    Stock = (Int32.TryParse(priceStock.FirstOrDefault(), out _) ? Int32.Parse(priceStock.FirstOrDefault()) : null)
+                };
+            }
+            else
+            {
+                var priceStock = rawValue.Split("x", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                return new PriceStock()
+                {
+                    Price = (Int32.TryParse(priceStock.FirstOrDefault(), out _) ? Int32.Parse(priceStock.FirstOrDefault()) : 0),
+                    Stock = (priceStock.Length > 1 ? Int32.Parse(priceStock.LastOrDefault()) : null)
+                };
+            }
         }
 
         protected override string ConvertSingleKeyToPersistable(PriceType key)
@@ -39,14 +51,15 @@ namespace SCMM.Steam.Data.Store.Types
 
         protected override string ConvertSingleValueToPersistable(PriceStock value)
         {
-            return $"{value.Stock?.ToString() ?? "?"}@{value.Price}";
+            return (value.Stock > 0)
+                ? $"{value.Price}x{value.Stock.Value}"
+                : $"{value.Price}";
         }
     }
 
     public struct PriceStock
     {
-        public int? Stock { get; set; }
-
         public long Price { get; set; }
+        public int? Stock { get; set; }
     }
 }

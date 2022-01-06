@@ -25,8 +25,6 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.MarketBuyOrderHighestPrice, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.BuyOrderHighestPrice : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
                 .ForMember(x => x.MarketSellOrderCount, o => o.MapFrom(p => (p.MarketItem != null ? (int?)p.MarketItem.SellOrderCount : null)))
                 .ForMember(x => x.MarketSellOrderLowestPrice, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.SellOrderLowestPrice : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
-                .ForMember(x => x.MarketResellPrice, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.ResellPrice : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
-                .ForMember(x => x.MarketResellTax, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.ResellTax : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
                 .ForMember(x => x.Market1hrSales, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last1hrSales : null)))
                 .ForMember(x => x.Market1hrValue, o => o.MapFromUsingCurrencyExchange(p => (p.MarketItem != null ? (long?)p.MarketItem.Last1hrValue : null), p => (p.MarketItem != null ? p.MarketItem.Currency : null)))
                 .ForMember(x => x.Market24hrSales, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)))

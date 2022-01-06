@@ -41,8 +41,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyPriceStore, o => o.MapFromUsingCurrencyTable(p => p.Description.StoreItem != null ? p.Description.StoreItem.Prices : null))
                 .ForMember(x => x.BuyPriceText, o => o.MapFrom(p => p.Currency != null && p.BuyPrice != null ? p.Currency.ToPriceString(p.BuyPrice.Value, true) : null))
                 .ForMember(x => x.Quantity, o => o.MapFrom(p => p.Quantity))
-                .ForMember(x => x.ResellPrice, o => o.MapFromUsingCurrencyExchange(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.ResellPrice : null, p => p.Description.MarketItem.Currency))
-                .ForMember(x => x.ResellTax, o => o.MapFromUsingCurrencyExchange(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.ResellTax : null, p => p.Description.MarketItem.Currency));
+                .ForMember(x => x.SellLaterPrice, o => o.MapFromUsingCurrencyExchange(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.SellLaterPrice : null, p => p.Description.MarketItem.Currency))
+                .ForMember(x => x.SellLaterTax, o => o.MapFromUsingCurrencyExchange(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.SellLaterTax : null, p => p.Description.MarketItem.Currency));
         }
     }
 }

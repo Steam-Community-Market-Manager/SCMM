@@ -30,22 +30,22 @@ else
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The price you could reasonably expect to sell the item for right now by undercutting the lowest 'buy now' price">
-                    <MudTableSortLabel SortLabel="ResellPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Price</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="SellLaterPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Price</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The fees Steam charge when selling items on the Steam Community Market (~12% of sale price)">
-                    <MudTableSortLabel SortLabel="ResellTax" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="SellLaterTax" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and Steam seller fees">
-                    <MudTableSortLabel SortLabel="ResellProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Profit / Loss</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="SellLaterProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Profit / Loss</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
             <MudTh Class="mud-primary-text">
                 <MudTooltip Text="Your return on investment, as a percentage. 0% is break-even, a positive number is profit, negative is a loss">
-                    <MudTableSortLabel SortLabel="ResellRoI" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">RoI %</MudTableSortLabel>
+                    <MudTableSortLabel SortLabel="SellLaterRoI" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">RoI %</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
         </HeaderContent>
@@ -135,9 +135,9 @@ else
                 }
             </MudTd>
             <MudTd>
-                @if (context.ResellPrice != null)
+                @if (context.SellLaterPrice != null)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value) 
+                    @State.Currency.ToPriceString(context.SellLaterPrice.Value) 
                 }
                 else
                 {
@@ -145,9 +145,9 @@ else
                 }
             </MudTd>
             <MudTd>
-                @if (context.ResellTax != null)
+                @if (context.SellLaterTax != null)
                 {
-                    @State.Currency.ToPriceString(context.ResellTax.Value) 
+                    @State.Currency.ToPriceString(context.SellLaterTax.Value) 
                 }
                 else
                 {
@@ -155,9 +155,9 @@ else
                 }
             </MudTd>
             <MudTd>
-                @if (context.ResellPrice != null && context.ResellTax != null && (context.ResellPrice - context.ResellTax) > 0)
+                @if (context.SellLaterPrice != null && context.SellLaterTax != null && (context.SellLaterPrice - context.SellLaterTax) > 0)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPriceLocal ?? 0)) 
+                    @State.Currency.ToPriceString(context.SellLaterPrice.Value - context.SellLaterTax.Value - (context.BuyPriceLocal ?? 0)) 
                 }
                 else
                 {
@@ -165,9 +165,9 @@ else
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.ResellPrice - context.ResellTax) != 0)
+                @if (context.SellLaterPrice != null && context.SellLaterTax != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.SellLaterPrice - context.SellLaterTax) != 0)
                 {
-                    @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
+                    @(((int)Math.Round(((decimal)(context.SellLaterPrice.Value - context.SellLaterTax.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
@@ -232,9 +232,9 @@ else
                 </div>
             </MudTd>
             <MudTd>
-                @if (context.ResellPrice != null)
+                @if (context.SellLaterPrice != null)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value) 
+                    @State.Currency.ToPriceString(context.SellLaterPrice.Value) 
                 }
                 else
                 {
@@ -242,9 +242,9 @@ else
                 }
             </MudTd>
             <MudTd>
-                @if (context.ResellTax != null)
+                @if (context.SellLaterTax != null)
                 {
-                    @State.Currency.ToPriceString(context.ResellTax.Value) 
+                    @State.Currency.ToPriceString(context.SellLaterTax.Value) 
                 }
                 else
                 {
@@ -252,9 +252,9 @@ else
                 }
             </MudTd>
             <MudTd>
-                @if (context.ResellPrice != null && context.ResellTax != null && (context.ResellPrice - context.ResellTax) > 0)
+                @if (context.SellLaterPrice != null && context.SellLaterTax != null && (context.SellLaterPrice - context.SellLaterTax) > 0)
                 {
-                    @State.Currency.ToPriceString(context.ResellPrice.Value - context.ResellTax.Value - (context.BuyPriceLocal ?? 0)) 
+                    @State.Currency.ToPriceString(context.SellLaterPrice.Value - context.SellLaterTax.Value - (context.BuyPriceLocal ?? 0)) 
                 }
                 else
                 {
@@ -262,9 +262,9 @@ else
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.ResellPrice != null && context.ResellTax != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.ResellPrice - context.ResellTax) > 0)
+                @if (context.SellLaterPrice != null && context.SellLaterTax != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.SellLaterPrice - context.SellLaterTax) > 0)
                 {
-                    @(((int)Math.Round(((decimal)(context.ResellPrice.Value - context.ResellTax.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
+                    @(((int)Math.Round(((decimal)(context.SellLaterPrice.Value - context.SellLaterTax.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
@@ -399,11 +399,11 @@ else
     
     private string GetItemClass(ProfileInventoryInvestmentItemDTO item, int index = 0)
     {
-        if (item.BuyPrice == null || item.BuyPriceLocal <= 0 || item.ResellPrice == null || item.ResellTax == null)
+        if (item.BuyPrice == null || item.BuyPriceLocal <= 0 || item.SellLaterPrice == null || item.SellLaterTax == null)
         {
             return null;
         }
-        var roi = ((int)Math.Round(((decimal)(item.ResellPrice.Value - item.ResellTax.Value) / item.BuyPriceLocal.Value) * 100, 0));
+        var roi = ((int)Math.Round(((decimal)(item.SellLaterPrice.Value - item.SellLaterTax.Value) / item.BuyPriceLocal.Value) * 100, 0));
         if (roi > 100)
         {
             return "mud-success";

@@ -196,7 +196,7 @@
                                     </MudSelect>
                                 </Preference>
                                 <Preference Title="Inventory Item Resell Tax" 
-                                            Description="Should the 13% Steam Community Market tax be included in all resell profit and investment gain/loss calculations. This is recommended if you primarily buy and sell your items from the Steam Community Market.">  
+                                            Description="Should market sales tax be included in all resell profit and investment gain/loss calculations. This is recommended if you primarily sell your items on the Steam Community Market (as opposed to cash selling items).">  
                                     <MudSwitch T="bool" Checked="@Update.InventoryIncludeMarketTax" CheckedChanged="((x) => { Update.InventoryIncludeMarketTax = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.InventoryIncludeMarketTax ? "Include" : "Exclude")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Inventory Item Drops" 

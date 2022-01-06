@@ -4,4 +4,6 @@
 public class BuyFromAttribute : Attribute
 {
     public string Url { get; set; }
+
+    public float Tax { get; set; }
 }

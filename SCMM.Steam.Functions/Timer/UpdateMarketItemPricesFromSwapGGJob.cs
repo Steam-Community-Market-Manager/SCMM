@@ -64,22 +64,18 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     var item = items.FirstOrDefault(x => x.Name == swapggItem.Key)?.Item;
                     if (item != null)
                     {
-                        item.Prices = new PersistablePriceStockDictionary(item.Prices);
-                        item.Prices[PriceType.SwapGG] = new PriceStock
+                        item.UpdateBuyPrices(PriceType.SwapGG, new PriceStock
                         {
                             Price = swapggItem.Value.Quantity > 0 ? item.Currency.CalculateExchange(swapggItem.Value.Price, eurCurrency) : 0,
                             Stock = swapggItem.Value.Quantity
-                        };
-                        item.UpdateBuyNowPrice();
+                        });
                     }
                 }
 
-                var missingItems = items.Where(x => !swapggItems.Any(y => x.Name == y.Key) && x.Item.Prices.ContainsKey(PriceType.SwapGG));
+                var missingItems = items.Where(x => !swapggItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGG));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
-                    missingItem.Item.Prices.Remove(PriceType.SwapGG);
-                    missingItem.Item.UpdateBuyNowPrice();
+                    missingItem.Item.UpdateBuyPrices(PriceType.SwapGG, null);
                 }
             }
             catch (Exception ex)

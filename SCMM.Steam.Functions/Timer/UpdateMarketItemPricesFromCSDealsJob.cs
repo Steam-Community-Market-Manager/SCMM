@@ -65,22 +65,18 @@ public class UpdateMarketItemPricesFromCSDealsob
                     var item = items.FirstOrDefault(x => x.Name == csDealsItem.MarketName)?.Item;
                     if (item != null)
                     {
-                        item.Prices = new PersistablePriceStockDictionary(item.Prices);
-                        item.Prices[PriceType.CSDeals] = new PriceStock
+                        item.UpdateBuyPrices(PriceType.CSDeals, new PriceStock
                         {
                             Price = item.Currency.CalculateExchange(csDealsItem.LowestPrice.SteamPriceAsInt(), usdCurrency),
                             Stock = null
-                        };
-                        item.UpdateBuyNowPrice();
+                        });
                     }
                 }
 
-                var missingItems = items.Where(x => !csDealsItems.Any(y => x.Name == y.MarketName) && x.Item.Prices.ContainsKey(PriceType.CSDeals));
+                var missingItems = items.Where(x => !csDealsItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(PriceType.CSDeals));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.Prices = new PersistablePriceStockDictionary(missingItem.Item.Prices);
-                    missingItem.Item.Prices.Remove(PriceType.CSDeals);
-                    missingItem.Item.UpdateBuyNowPrice();
+                    missingItem.Item.UpdateBuyPrices(PriceType.CSDeals, null);
                 }
             }
             catch (Exception ex)

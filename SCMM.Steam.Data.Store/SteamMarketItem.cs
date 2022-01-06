@@ -1,9 +1,11 @@
 ﻿using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Attributes;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store.Types;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace SCMM.Steam.Data.Store
 {
@@ -11,7 +13,8 @@ namespace SCMM.Steam.Data.Store
     {
         public SteamMarketItem()
         {
-            Prices = new PersistablePriceStockDictionary();
+            BuyPrices = new PersistablePriceStockDictionary();
+            SellPrices = new PersistablePriceStockDictionary();
             Activity = new Collection<SteamMarketItemActivity>();
             BuyOrders = new Collection<SteamMarketItemBuyOrder>();
             BuyOrderHighestPriceRolling24hrs = new PersistablePriceCollection();
@@ -26,25 +29,33 @@ namespace SCMM.Steam.Data.Store
 
         public SteamCurrency Currency { get; set; }
 
-        public PersistablePriceStockDictionary Prices { get; set; }
+        public PersistablePriceStockDictionary BuyPrices { get; set; }
 
         public PriceType BuyNowFrom { get; set; }
 
         public long BuyNowPrice { get; set; }
 
-        // TODO: SellNowTo
-        // TODO: SellNowPrice
-        // TODO: SellNowTax
+        public long BuyNowTax { get; set; }
 
-        // TODO: SellLaterTo
+        public PriceType BuyLaterFrom { get; set; }
 
-        // What is the price you could reasonably flip this for given the current sell orders
-        // TODO: Rename: SellLaterPrice
-        public long ResellPrice { get; set; }
+        public long BuyLaterPrice { get; set; }
 
-        // What tax is owed on resell price
-        // TODO: Rename: SellLaterTax
-        public long ResellTax { get; set; }
+        public long BuyLaterTax { get; set; }
+
+        public PersistablePriceStockDictionary SellPrices { get; set; }
+
+        public PriceType SellNowTo { get; set; }
+
+        public long SellNowPrice { get; set; }
+
+        public long SellNowTax { get; set; }
+
+        public PriceType SellLaterTo { get; set; }
+
+        public long SellLaterPrice { get; set; }
+
+        public long SellLaterTax { get; set; }
 
         public ICollection<SteamMarketItemActivity> Activity { get; set; }
 
@@ -173,19 +184,67 @@ namespace SCMM.Steam.Data.Store
         // How long since sales were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
-        public void UpdateBuyNowPrice()
+        public void UpdateBuyPrices(PriceType type, PriceStock? price)
         {
-            var stockedPrices = Prices.Where(x => x.Value.Stock != 0).ToArray();
-            if (stockedPrices.Any())
+            BuyPrices = new PersistablePriceStockDictionary(BuyPrices);
+            if (price != null)
             {
-                var lowestPrice = Prices.Where(x => x.Value.Stock != 0).MinBy(x => x.Value.Price);
-                BuyNowFrom = lowestPrice.Key;
+                BuyPrices[type] = price.Value;
+            }
+            else if (BuyPrices.ContainsKey(type))
+            {
+                BuyPrices.Remove(type);
+            }
+
+            var availableprices = BuyPrices.Where(x => x.Value.Stock != 0).ToArray();
+            if (availableprices.Any())
+            {
+                var lowestPrice = availableprices.MinBy(x => x.Value.Price);
+                var buyFromAttribute = lowestPrice.Key.GetType().GetField(lowestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>();
+                var sellToAttribute = lowestPrice.Key.GetType().GetField(lowestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>();
+                BuyNowFrom = SellLaterTo = lowestPrice.Key;
                 BuyNowPrice = lowestPrice.Value.Price;
+                BuyNowTax = (buyFromAttribute?.Tax > 0 ? BuyNowPrice.MarketSaleTaxComponentAsInt(buyFromAttribute.Tax) : 0);
+                SellLaterPrice = (lowestPrice.Value.Price - 1);
+                SellLaterTax = (sellToAttribute?.Tax > 0 ? SellLaterPrice.MarketSaleTaxComponentAsInt(sellToAttribute.Tax) : 0);
             }
             else
             {
-                BuyNowFrom = PriceType.Unknown;
-                BuyNowPrice = 0;
+                BuyNowFrom = SellLaterTo = PriceType.Unknown;
+                BuyNowPrice = SellLaterPrice = 0;
+                BuyNowTax = SellLaterTax = 0;
+            }
+        }
+
+        public void UpdateSellPrices(PriceType type, PriceStock? price)
+        {
+            SellPrices = new PersistablePriceStockDictionary(SellPrices);
+            if (price != null)
+            {
+                SellPrices[type] = price.Value;
+            }
+            else if (SellPrices.ContainsKey(type))
+            {
+                SellPrices.Remove(type);
+            }
+
+            var availablePrices = SellPrices.Where(x => x.Value.Stock != 0).ToArray();
+            if (availablePrices.Any())
+            {
+                var highestPrice = availablePrices.MaxBy(x => x.Value.Price);
+                var buyFromAttribute = highestPrice.Key.GetType().GetField(highestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>();
+                var sellToAttribute = highestPrice.Key.GetType().GetField(highestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>();
+                SellNowTo = BuyLaterFrom = highestPrice.Key;
+                SellNowPrice = highestPrice.Value.Price;
+                SellNowTax = (sellToAttribute?.Tax > 0 ? SellNowPrice.MarketSaleTaxComponentAsInt(sellToAttribute.Tax) : 0);
+                BuyLaterPrice = (highestPrice.Value.Price + 1);
+                BuyLaterTax = (buyFromAttribute?.Tax > 0 ? BuyLaterPrice.MarketSaleTaxComponentAsInt(buyFromAttribute.Tax) : 0);
+            }
+            else
+            {
+                SellNowTo = BuyLaterFrom = PriceType.Unknown;
+                SellNowPrice = BuyLaterPrice = 0;
+                SellNowTax = BuyLaterTax = 0;
             }
         }
 
@@ -214,6 +273,12 @@ namespace SCMM.Steam.Data.Store
                 BuyOrderCount = (buyOrderCount ?? BuyOrderCount);
                 BuyOrderCumulativePrice = cumulativeBuyOrderPrice;
                 BuyOrderHighestPrice = highestBuyOrderPrice;
+
+                UpdateSellPrices(PriceType.SteamCommunityMarket, new PriceStock
+                {
+                    Price = BuyOrderCount > 0 ? BuyOrderHighestPrice : 0,
+                    Stock = BuyOrderCount
+                });
             }
 
             // Recalculate sell order stats
@@ -230,27 +295,20 @@ namespace SCMM.Steam.Data.Store
                 var sellOrdersSorted = SellOrders.OrderBy(y => y.Price).ToArray();
                 var cumulativeSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Sum(x => x.Price * x.Quantity) : 0);
                 var lowestSellOrderPrice = (sellOrdersSorted.Any() ? sellOrdersSorted.Min(x => x.Price) : 0);
-                var resellPrice = (lowestSellOrderPrice - 1);
-                var resellTax = resellPrice.SteamMarketFeeAsInt();
-
+                
                 // NOTE: Steam only returns the top 100 orders, so the true count can't be calculated from sell orders list
                 //SellOrderCount = sellOrdersSorted.Sum(y => y.Quantity);
                 SellOrderCount = (sellOrderCount ?? SellOrderCount);
                 SellOrderCumulativePrice = cumulativeSellOrderPrice;
                 SellOrderLowestPrice = lowestSellOrderPrice;
                 
-                Prices = new PersistablePriceStockDictionary(Prices);
-                Prices[PriceType.SteamCommunityMarket] = new PriceStock
+                UpdateBuyPrices(PriceType.SteamCommunityMarket, new PriceStock
                 {
                     Price = SellOrderCount > 0 ? SellOrderLowestPrice : 0,
                     Stock = SellOrderCount
-                };
-
-                UpdateBuyNowPrice();
-
-                ResellPrice = resellPrice;
-                ResellTax = resellTax;
+                });
             }
+
             /*
             // Update the latest order summary for the hour
             var hourOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date.AddHours(DateTime.UtcNow.Hour), TimeZoneInfo.Utc.BaseUtcOffset);
