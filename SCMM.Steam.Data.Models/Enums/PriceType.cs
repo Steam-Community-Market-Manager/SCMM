@@ -42,6 +42,13 @@ namespace SCMM.Steam.Data.Models.Enums
         // TODO: SellTo
         CSDeals,
 
+        [Display(Name = "SkinBaron")]
+        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF")]
+        // https://skinbaron.de/misc/apidoc/
+        // TODO: BuyNow
+        // TODO: SellTo
+        SkinBaron,
+
         [Display(Name = "Dmarket")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")]
         // https://docs.dmarket.com/v1/swagger.html#/Buy%20items/GetAggregatedPrices
@@ -50,5 +57,10 @@ namespace SCMM.Steam.Data.Models.Enums
         // TODO: SellTo
         Dmarket,
 
+        [Display(Name = "BUFF")]
+        // https://buff.163.com/market/rust
+        // TODO: BuyNow
+        // TODO: SellTo
+        Buff
     }
 }
