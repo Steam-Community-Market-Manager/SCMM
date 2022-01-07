@@ -18,22 +18,22 @@ namespace SCMM.Steam.Data.Models.Enums
         SteamCommunityMarket,
 
         [Display(Name = "Skinport")]
-        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}", FeeRate = 7.0f)]
+        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}", FeeRate = 7.0f)] // Unconfirmed
         // TODO: SellTo (not supported in some countries)
         Skinport,
 
         [Display(Name = "LOOT.Farm")]
-        [BuyFrom(Url = "https://loot.farm/", FeeRate = -20.0f)]
+        [BuyFrom(Url = "https://loot.farm/", FeeRate = -20.0f)] // Unconfirmed, first time only?
         // TODO: SellTo
         LOOTFarm,
 
         [Display(Name = "swap.gg")]
-        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeRate = 3.0f, FeeSurcharge = 40)]
+        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeRate = 3.0f, FeeSurcharge = 40)] // Unconfirmed
         // TODO: SellTo
         SwapGG,
 
         [Display(Name = "Tradeit.gg")]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", FeeRate = -20.0f)] // Unconfirmed, first time only?
         // TODO: SellTo
         TradeitGG,
 
@@ -48,6 +48,12 @@ namespace SCMM.Steam.Data.Models.Enums
         // TODO: BuyNow
         // TODO: SellTo
         SkinBaron,
+
+        [Display(Name = "RUSTSkins")]
+        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")]
+        // TODO: BuyNow
+        // TODO: SellTo
+        RUSTSkins,
 
         [Display(Name = "Dmarket")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")]
