@@ -71,7 +71,7 @@
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewItem(item))" Class="mr-2">Sell</MudButton>
                                                 <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                <span>@State.Currency.ToPriceString(item.SellNowPrice) for <strong>@State.Currency.ToPriceString(item.SellNowProfit, dense: true)</strong> profit after tax</span>
+                                                <span>@State.Currency.ToPriceString(item.SellNowPrice) for <strong>@State.Currency.ToPriceString(item.SellNowProfit, dense: true)</strong> profit after fees</span>
                                             </MudText>
                                         </td>
                                         <th>
@@ -82,7 +82,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                <span>@State.Currency.ToPriceString(item.SellLaterPrice) for <strong>@State.Currency.ToPriceString(item.SellLaterProfit, dense: true)</strong> profit after tax</span>
+                                                <span>@State.Currency.ToPriceString(item.SellLaterPrice) for <strong>@State.Currency.ToPriceString(item.SellLaterProfit, dense: true)</strong> profit after fees</span>
                                             </MudText>
                                         </td>
                                     </tr>

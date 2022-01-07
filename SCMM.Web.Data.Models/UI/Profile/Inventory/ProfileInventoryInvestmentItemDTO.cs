@@ -37,6 +37,6 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 
         public long? SellLaterPrice { get; set; }
 
-        public long? SellLaterTax { get; set; }
+        public long? SellLaterFee { get; set; }
     }
 }

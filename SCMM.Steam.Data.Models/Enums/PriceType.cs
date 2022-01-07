@@ -14,21 +14,21 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Steam Community Market")]
         [BuyFrom(Url = "https://steamcommunity.com/market/listings/{0}/{3}")]
-        [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", Tax = 13)]
+        [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", FeeRate = 13.0f)]
         SteamCommunityMarket,
 
         [Display(Name = "Skinport")]
-        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}")]
+        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}", FeeRate = 7.0f)]
         // TODO: SellTo (not supported in some countries)
         Skinport,
 
         [Display(Name = "LOOT.Farm")]
-        [BuyFrom(Url = "https://loot.farm/", Tax = 5)]
+        [BuyFrom(Url = "https://loot.farm/", FeeRate = -20.0f)]
         // TODO: SellTo
         LOOTFarm,
 
         [Display(Name = "swap.gg")]
-        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}")]
+        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeRate = 3.0f, FeeSurcharge = 40)]
         // TODO: SellTo
         SwapGG,
 
@@ -43,7 +43,7 @@ namespace SCMM.Steam.Data.Models.Enums
         CSDeals,
 
         [Display(Name = "SkinBaron")]
-        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF")]
+        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeRate = 5.0f, FeeSurcharge = 40)]
         // https://skinbaron.de/misc/apidoc/
         // TODO: BuyNow
         // TODO: SellTo
@@ -58,7 +58,7 @@ namespace SCMM.Steam.Data.Models.Enums
         Dmarket,
 
         [Display(Name = "BUFF")]
-        // https://buff.163.com/market/rust
+        [BuyFrom(Url = "https://buff.163.com/market/{1}")]
         // TODO: BuyNow
         // TODO: SellTo
         Buff

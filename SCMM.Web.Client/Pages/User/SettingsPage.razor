@@ -195,9 +195,9 @@
                                         }
                                     </MudSelect>
                                 </Preference>
-                                <Preference Title="Inventory Item Resell Tax" 
-                                            Description="Should market sales tax be included in all resell profit and investment gain/loss calculations. This is recommended if you primarily sell your items on the Steam Community Market (as opposed to cash selling items).">  
-                                    <MudSwitch T="bool" Checked="@Update.InventoryIncludeMarketTax" CheckedChanged="((x) => { Update.InventoryIncludeMarketTax = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.InventoryIncludeMarketTax ? "Include" : "Exclude")</MudSwitch>
+                                <Preference Title="Inventory Item Resell Fees" 
+                                            Description="Should market sales fees be included in all resell profit and investment gain/loss calculations. This is recommended if you primarily sell your items on the Steam Community Market (as opposed to cash selling items).">  
+                                    <MudSwitch T="bool" Checked="@Update.InventoryIncludeMarketFees" CheckedChanged="((x) => { Update.InventoryIncludeMarketFees = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.InventoryIncludeMarketFees ? "Include" : "Exclude")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Inventory Item Drops" 
                                             Description="Should 'free' item drops (e.g. Twitch and Facepunch items) be shown when viewing item inventories and item collections.">  
@@ -416,7 +416,7 @@
                 MarketValue = State.Profile.MarketValue,
                 ItemInfo = State.Profile.ItemInfo,
                 ItemInfoWebsite = State.Profile.ItemInfoWebsite,
-                InventoryIncludeMarketTax = State.Profile.InventoryIncludeMarketTax,
+                InventoryIncludeMarketFees = State.Profile.InventoryIncludeMarketFees,
                 InventoryShowItemDrops = State.Profile.InventoryShowItemDrops,
                 InventoryShowUnmarketableItems = State.Profile.InventoryShowUnmarketableItems,
                 InventoryValueMovemenDisplay = State.Profile.InventoryValueMovementDisplay,

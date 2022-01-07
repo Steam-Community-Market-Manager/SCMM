@@ -12,10 +12,10 @@ namespace SCMM.Steam.Data.Models.Extensions
         public const decimal MarketFeePlatformMultiplier = 0.0304347811170578m; // 3%
         public const decimal MarketFeePublisherMultiplier = 0.100000001490116119m; // 10%
 
-        public static long MarketSaleTaxComponentAsInt(this long value, float tax)
+        public static long MarketSaleFeeComponentAsInt(this long value, float feeRate)
         {
             // Minimum fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * (tax / 100), 1));
+            return (long)Math.Floor(Math.Max(value * (feeRate / 100), 1));
         }
 
         public static long SteamSaleTaxComponentAsInt(this long value)

@@ -35,13 +35,13 @@ namespace SCMM.Steam.Data.Store
 
         public long BuyNowPrice { get; set; }
 
-        public long BuyNowTax { get; set; }
+        public long BuyNowFee { get; set; }
 
         public PriceType BuyLaterFrom { get; set; }
 
         public long BuyLaterPrice { get; set; }
 
-        public long BuyLaterTax { get; set; }
+        public long BuyLaterFee { get; set; }
 
         public PersistablePriceStockDictionary SellPrices { get; set; }
 
@@ -49,13 +49,13 @@ namespace SCMM.Steam.Data.Store
 
         public long SellNowPrice { get; set; }
 
-        public long SellNowTax { get; set; }
+        public long SellNowFee { get; set; }
 
         public PriceType SellLaterTo { get; set; }
 
         public long SellLaterPrice { get; set; }
 
-        public long SellLaterTax { get; set; }
+        public long SellLaterFee { get; set; }
 
         public ICollection<SteamMarketItemActivity> Activity { get; set; }
 
@@ -204,15 +204,15 @@ namespace SCMM.Steam.Data.Store
                 var sellToAttribute = lowestPrice.Key.GetType().GetField(lowestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>();
                 BuyNowFrom = SellLaterTo = lowestPrice.Key;
                 BuyNowPrice = lowestPrice.Value.Price;
-                BuyNowTax = (buyFromAttribute?.Tax > 0 ? BuyNowPrice.MarketSaleTaxComponentAsInt(buyFromAttribute.Tax) : 0);
+                BuyNowFee = (buyFromAttribute?.FeeRate > 0 ? BuyNowPrice.MarketSaleFeeComponentAsInt(buyFromAttribute.FeeRate) + buyFromAttribute.FeeSurcharge : 0);
                 SellLaterPrice = (lowestPrice.Value.Price - 1);
-                SellLaterTax = (sellToAttribute?.Tax > 0 ? SellLaterPrice.MarketSaleTaxComponentAsInt(sellToAttribute.Tax) : 0);
+                SellLaterFee = (sellToAttribute?.FeeRate > 0 ? SellLaterPrice.MarketSaleFeeComponentAsInt(sellToAttribute.FeeRate) + sellToAttribute.FeeSurcharge : 0);
             }
             else
             {
                 BuyNowFrom = SellLaterTo = PriceType.Unknown;
                 BuyNowPrice = SellLaterPrice = 0;
-                BuyNowTax = SellLaterTax = 0;
+                BuyNowFee = SellLaterFee = 0;
             }
         }
 
@@ -236,15 +236,15 @@ namespace SCMM.Steam.Data.Store
                 var sellToAttribute = highestPrice.Key.GetType().GetField(highestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>();
                 SellNowTo = BuyLaterFrom = highestPrice.Key;
                 SellNowPrice = highestPrice.Value.Price;
-                SellNowTax = (sellToAttribute?.Tax > 0 ? SellNowPrice.MarketSaleTaxComponentAsInt(sellToAttribute.Tax) : 0);
+                SellNowFee = (sellToAttribute?.FeeRate > 0 ? SellNowPrice.MarketSaleFeeComponentAsInt(sellToAttribute.FeeRate) + sellToAttribute.FeeSurcharge : 0);
                 BuyLaterPrice = (highestPrice.Value.Price + 1);
-                BuyLaterTax = (buyFromAttribute?.Tax > 0 ? BuyLaterPrice.MarketSaleTaxComponentAsInt(buyFromAttribute.Tax) : 0);
+                BuyLaterFee = (buyFromAttribute?.FeeRate > 0 ? BuyLaterPrice.MarketSaleFeeComponentAsInt(buyFromAttribute.FeeRate) + buyFromAttribute.FeeSurcharge : 0);
             }
             else
             {
                 SellNowTo = BuyLaterFrom = PriceType.Unknown;
                 SellNowPrice = BuyLaterPrice = 0;
-                SellNowTax = BuyLaterTax = 0;
+                SellNowFee = BuyLaterFee = 0;
             }
         }
 
