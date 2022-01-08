@@ -506,6 +506,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
+            var isMyInventory = (User.SteamId() == resolvedId.Profile?.SteamId);
             var showDrops = this.User.Preference(_db, x => x.InventoryShowItemDrops);
             var showUnmarketable = this.User.Preference(_db, x => x.InventoryShowUnmarketableItems);
             var profileInventoryItems = await _db.SteamProfileInventoryItems
@@ -537,7 +538,7 @@ namespace SCMM.Web.Server.API.Controllers
                     // Calculate the item's quantity and stack sizes
                     itemSummary.Stacks = itemInventoryInstances.ToDictionary(x => x.SteamId, x => x.Quantity);
                     itemSummary.Quantity = itemInventoryInstances.Sum(x => x.Quantity);
-                    itemSummary.AverageBuyPrice = itemInventoryInstances.Any(x => x.BuyPrice > 0)
+                    itemSummary.AverageBuyPrice = (isMyInventory && itemInventoryInstances.Any(x => x.BuyPrice > 0))
                         ? (long) Math.Round(itemInventoryInstances.Where(x => x.BuyPrice > 0).Average(x => x.BuyPrice.Value), 0) 
                         : 0;
 
