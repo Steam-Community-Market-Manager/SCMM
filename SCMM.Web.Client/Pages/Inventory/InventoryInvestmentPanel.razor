@@ -10,7 +10,7 @@
 else
 {
     <MudTable @ref="Table" Dense="true" Hover="true" Striped="true" FixedHeader="true" FixedFooter="true" ReadOnly="@(!State.Is(SteamId))" Class="mud-table-dense-extra"
-              ServerData="@LoadItems" RowsPerPage="25" CommitEditTooltip="Save Changes" AllowUnsorted="false">
+              ServerData="@LoadItems" RowsPerPage="25" Breakpoint="Breakpoint.Xs" CommitEditTooltip="Save Changes" AllowUnsorted="false">
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
                 <span>Track your investment returns against the latest market value.</span><br/>
@@ -137,7 +137,10 @@ else
             <MudTd>
                 @if (context.SellLaterPrice != null)
                 {
-                    @State.Currency.ToPriceString(context.SellLaterPrice.Value) 
+                    <div class="d-flex flex-row justify-start align-center">
+                        <img src="@($"/images/price/{context.SellLaterTo.ToString().ToLower()}.png")" alt="@context.SellLaterTo.GetDisplayName()" title="@context.SellLaterTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                        <span>@State.Currency.ToPriceString(context.SellLaterPrice.Value)</span>
+                    </div>
                 }
                 else
                 {
@@ -234,7 +237,10 @@ else
             <MudTd>
                 @if (context.SellLaterPrice != null)
                 {
-                    @State.Currency.ToPriceString(context.SellLaterPrice.Value) 
+                    <div class="d-flex flex-row justify-start align-center">
+                        <img src="@($"/images/price/{context.SellLaterTo.ToString().ToLower()}.png")" alt="@context.SellLaterTo.GetDisplayName()" title="@context.SellLaterTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                        <span>@State.Currency.ToPriceString(context.SellLaterPrice.Value)</span>
+                    </div>
                 }
                 else
                 {
