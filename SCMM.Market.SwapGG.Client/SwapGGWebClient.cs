@@ -4,18 +4,33 @@ namespace SCMM.Market.SwapGG.Client
 {
     public class SwapGGWebClient
     {
-        private const string BaseUri = "https://market-api.swap.gg/v1/";
+        private const string TradeBaseUri = "https://api.swap.gg/";
+        private const string MarketBaseUri = "https://market-api.swap.gg/v1/";
 
-        public async Task<IDictionary<string, SwapGGItemPrice>> GetItemPricingLowestAsync(string appId)
+        public async Task<IEnumerable<SwapGGTradeItem>> GetTradeBotInventoryAsync(string appId)
         {
             using (var client = new HttpClient())
             {
-                var url = $"{BaseUri}pricing/lowest?appId={Uri.EscapeDataString(appId)}";
+                var url = $"{TradeBaseUri}inventory/bot/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonSerializer.Deserialize<SwapGGResponse<IDictionary<string, SwapGGItemPrice>>>(textJson);
+                var responseJson = JsonSerializer.Deserialize<SwapGGResponse<IEnumerable<SwapGGTradeItem>>>(textJson);
+                return responseJson?.Result;
+            }
+        }
+
+        public async Task<IDictionary<string, SwapGGMarketItem>> GetMarketPricingLowestAsync(string appId)
+        {
+            using (var client = new HttpClient())
+            {
+                var url = $"{MarketBaseUri}pricing/lowest?appId={Uri.EscapeDataString(appId)}";
+                var response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                var textJson = await response.Content.ReadAsStringAsync();
+                var responseJson = JsonSerializer.Deserialize<SwapGGResponse<IDictionary<string, SwapGGMarketItem>>>(textJson);
                 return responseJson?.Result;
             }
         }

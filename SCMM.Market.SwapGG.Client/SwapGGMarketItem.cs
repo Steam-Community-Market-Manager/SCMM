@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.SwapGG.Client
 {
-    public class SwapGGItemPrice
+    public class SwapGGMarketItem
     {
         [JsonPropertyName("price")]
         public long Price { get; set; }

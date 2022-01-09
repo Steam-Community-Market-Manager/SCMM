@@ -19,54 +19,57 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Skinport")]
         [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}", FeeRate = 7.0f)] // Unconfirmed
-        // TODO: SellTo (not supported in some countries)
         Skinport,
 
         [Display(Name = "LOOT.Farm")]
         [BuyFrom(Url = "https://loot.farm/", FeeRate = -20.0f)] // Unconfirmed, first time only?
-        // TODO: SellTo
         LOOTFarm,
 
-        [Display(Name = "swap.gg")]
+        [Display(Name = "swap.gg Trade")]
+        [BuyFrom(Url = "https://swap.gg?idev_id=326&appId={0}&search={3}")]
+        SwapGGTrade,
+
+        [Display(Name = "swap.gg Market")]
         [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeRate = 3.0f, FeeSurcharge = 40)] // Unconfirmed
-        // TODO: SellTo
-        SwapGG,
+        SwapGGMarket,
 
-        [Display(Name = "Tradeit.gg")]
+        [Display(Name = "Tradeit.gg Trade")]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}")] // Unconfirmed
+        TradeitGGTrade,
+
+        [Display(Name = "Tradeit.gg Store")]
         [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", FeeRate = -20.0f)] // Unconfirmed, first time only?
-        // TODO: SellTo
-        TradeitGG,
+        TradeitGGStore,
 
-        [Display(Name = "CS.Deals")]
-        [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")]
-        // TODO: SellTo
-        CSDeals,
+        [Display(Name = "CS.Deals Trade")]
+        [BuyFrom(Url = "https://cs.deals/trade-skins")] // Unconfirmed
+        CSDealsTrade,
 
+        [Display(Name = "CS.Deals Marketplace")]
+        [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")] // Unconfirmed
+        CSDealsMarketplace,
+
+        /*
         [Display(Name = "SkinBaron")]
-        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeRate = 5.0f, FeeSurcharge = 40)]
+        //[BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeRate = 5.0f, FeeSurcharge = 40)]
         // https://skinbaron.de/misc/apidoc/
-        // TODO: BuyNow
-        // TODO: SellTo
         SkinBaron,
 
         [Display(Name = "RUSTSkins")]
-        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")]
-        // TODO: BuyNow
-        // TODO: SellTo
+        //[BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")]
         RUSTSkins,
 
         [Display(Name = "Dmarket")]
-        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")]
+        //[BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")]
         // https://docs.dmarket.com/v1/swagger.html#/Buy%20items/GetAggregatedPrices
         // https://api.dmarket.com/price-aggregator/v1/aggregated-prices?Titles=Blackout%20Hoodie&Titles=Blackout%20Pants&Limit=100
-        // TODO: BuyNow
-        // TODO: SellTo
         Dmarket,
 
         [Display(Name = "BUFF")]
-        [BuyFrom(Url = "https://buff.163.com/market/{1}")]
-        // TODO: BuyNow
-        // TODO: SellTo
+        //[BuyFrom(Url = "https://buff.163.com/market/{1}")]
         Buff
+
+        // TODO: https://skinmarket.gg/
+        */
     }
 }

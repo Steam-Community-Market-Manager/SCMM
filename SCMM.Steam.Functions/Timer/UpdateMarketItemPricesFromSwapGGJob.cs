@@ -41,19 +41,52 @@ public class UpdateMarketItemPricesFromSwapGGJob
 
         foreach (var app in steamApps)
         {
+            var items = await _db.SteamMarketItems
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
+            try
+            {
+                logger.LogTrace($"Updating trade item price information from swap.gg (appId: {app.SteamId})");
+                var swapggItems = await _swapGGWebClient.GetTradeBotInventoryAsync(app.SteamId);
+                if (swapggItems?.Any() != true)
+                {
+                    continue;
+                }
+
+                foreach (var swapggItem in swapggItems)
+                {
+                    var item = items.FirstOrDefault(x => x.Name == swapggItem.Name)?.Item;
+                    if (item != null)
+                    {
+                        item.UpdateBuyPrices(PriceType.SwapGGTrade, new PriceStock
+                        {
+                            Price = swapggItem.ItemIds?.Length > 0 ? item.Currency.CalculateExchange(swapggItem.Price, eurCurrency) : 0,
+                            Stock = swapggItem.ItemIds?.Length
+                        });
+                    }
+                }
+
+                var missingItems = items.Where(x => !swapggItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGGTrade));
+                foreach (var missingItem in missingItems)
+                {
+                    missingItem.Item.UpdateBuyPrices(PriceType.SwapGGTrade, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to update trade item price information from swap.gg (appId: {app.SteamId}). {ex.Message}");
+            }
+
             try
             {
                 logger.LogTrace($"Updating market item price information from swap.gg (appId: {app.SteamId})");
-                var items = await _db.SteamMarketItems
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                var swapggItems = await _swapGGWebClient.GetItemPricingLowestAsync(app.SteamId);
+                var swapggItems = await _swapGGWebClient.GetMarketPricingLowestAsync(app.SteamId);
                 if (swapggItems?.Any() != true)
                 {
                     continue;
@@ -64,7 +97,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     var item = items.FirstOrDefault(x => x.Name == swapggItem.Key)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(PriceType.SwapGG, new PriceStock
+                        item.UpdateBuyPrices(PriceType.SwapGGMarket, new PriceStock
                         {
                             Price = swapggItem.Value.Quantity > 0 ? item.Currency.CalculateExchange(swapggItem.Value.Price, eurCurrency) : 0,
                             Stock = swapggItem.Value.Quantity
@@ -72,16 +105,15 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     }
                 }
 
-                var missingItems = items.Where(x => !swapggItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGG));
+                var missingItems = items.Where(x => !swapggItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGGMarket));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(PriceType.SwapGG, null);
+                    missingItem.Item.UpdateBuyPrices(PriceType.SwapGGMarket, null);
                 }
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}). {ex.Message}");
-                continue;
             }
 
             _db.SaveChanges();

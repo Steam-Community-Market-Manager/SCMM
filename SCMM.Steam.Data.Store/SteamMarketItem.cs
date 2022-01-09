@@ -196,23 +196,43 @@ namespace SCMM.Steam.Data.Store
                 BuyPrices.Remove(type);
             }
 
-            var availablePrices = BuyPrices.Where(x => x.Value.Price > 0 && x.Value.Stock != 0).ToArray();
-            if (availablePrices.Any())
+            var availablePrices = BuyPrices
+                .Where(x => x.Value.Price > 0 && x.Value.Stock != 0)
+                .Select(x => new
+                {
+                    Type = x.Key,
+                    Price = x.Value.Price,
+                    BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>(),
+                    SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>()
+                })
+                .ToArray();
+
+            if (availablePrices.Any(x => x.BuyFrom != null))
             {
-                var lowestPrice = availablePrices.MinBy(x => x.Value.Price);
-                var buyFromAttribute = lowestPrice.Key.GetType().GetField(lowestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>();
-                var sellToAttribute = lowestPrice.Key.GetType().GetField(lowestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>();
-                BuyNowFrom = SellLaterTo = lowestPrice.Key;
-                BuyNowPrice = lowestPrice.Value.Price;
-                BuyNowFee = (buyFromAttribute?.FeeRate > 0 ? BuyNowPrice.MarketSaleFeeComponentAsInt(buyFromAttribute.FeeRate) + buyFromAttribute.FeeSurcharge : 0);
-                SellLaterPrice = (lowestPrice.Value.Price - 1);
-                SellLaterFee = (sellToAttribute?.FeeRate > 0 ? SellLaterPrice.MarketSaleFeeComponentAsInt(sellToAttribute.FeeRate) + sellToAttribute.FeeSurcharge : 0);
+                var lowestBuyPrice = availablePrices.Where(x => x.BuyFrom != null).MinBy(x => x.Price);
+                BuyNowFrom = lowestBuyPrice.Type;
+                BuyNowPrice = lowestBuyPrice.Price;
+                BuyNowFee = (lowestBuyPrice.BuyFrom.FeeRate > 0 ? BuyNowPrice.MarketSaleFeeComponentAsInt(lowestBuyPrice.BuyFrom.FeeRate) + lowestBuyPrice.BuyFrom.FeeSurcharge : 0);
             }
             else
             {
-                BuyNowFrom = SellLaterTo = PriceType.Unknown;
-                BuyNowPrice = SellLaterPrice = 0;
-                BuyNowFee = SellLaterFee = 0;
+                BuyNowFrom = PriceType.Unknown;
+                BuyNowPrice = 0;
+                BuyNowFee = 0;
+            }
+
+            if (availablePrices.Any(x => x.SellTo != null))
+            {
+                var highestSellPrice = availablePrices.Where(x => x.SellTo != null).MaxBy(x => x.Price);
+                SellLaterTo = highestSellPrice.Type;
+                SellLaterPrice = (highestSellPrice.Price - 1);
+                SellLaterFee = (highestSellPrice.SellTo.FeeRate > 0 ? SellLaterPrice.MarketSaleFeeComponentAsInt(highestSellPrice.SellTo.FeeRate) + highestSellPrice.SellTo.FeeSurcharge : 0);
+            }
+            else
+            {
+                SellLaterTo = PriceType.Unknown;
+                SellLaterPrice = 0;
+                SellLaterFee = 0;
             }
         }
 
@@ -228,23 +248,43 @@ namespace SCMM.Steam.Data.Store
                 SellPrices.Remove(type);
             }
 
-            var availablePrices = SellPrices.Where(x => x.Value.Price > 0 && x.Value.Stock != 0).ToArray();
-            if (availablePrices.Any())
+            var availablePrices = SellPrices
+                .Where(x => x.Value.Price > 0 && x.Value.Stock != 0)
+                .Select(x => new
+                {
+                    Type = x.Key,
+                    Price = x.Value.Price,
+                    SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>(),
+                    BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>()
+                })
+                .ToArray();
+
+            if (availablePrices.Any(x => x.SellTo != null))
             {
-                var highestPrice = availablePrices.MaxBy(x => x.Value.Price);
-                var buyFromAttribute = highestPrice.Key.GetType().GetField(highestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>();
-                var sellToAttribute = highestPrice.Key.GetType().GetField(highestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>();
-                SellNowTo = BuyLaterFrom = highestPrice.Key;
-                SellNowPrice = highestPrice.Value.Price;
-                SellNowFee = (sellToAttribute?.FeeRate > 0 ? SellNowPrice.MarketSaleFeeComponentAsInt(sellToAttribute.FeeRate) + sellToAttribute.FeeSurcharge : 0);
-                BuyLaterPrice = (highestPrice.Value.Price + 1);
-                BuyLaterFee = (buyFromAttribute?.FeeRate > 0 ? BuyLaterPrice.MarketSaleFeeComponentAsInt(buyFromAttribute.FeeRate) + buyFromAttribute.FeeSurcharge : 0);
+                var highestSellPrice = availablePrices.Where(x => x.SellTo != null).MaxBy(x => x.Price);
+                SellNowTo = highestSellPrice.Type;
+                SellNowPrice = highestSellPrice.Price;
+                SellNowFee = (highestSellPrice.SellTo.FeeRate > 0 ? SellNowPrice.MarketSaleFeeComponentAsInt(highestSellPrice.SellTo.FeeRate) + highestSellPrice.SellTo.FeeSurcharge : 0);
             }
             else
             {
-                SellNowTo = BuyLaterFrom = PriceType.Unknown;
-                SellNowPrice = BuyLaterPrice = 0;
-                SellNowFee = BuyLaterFee = 0;
+                SellNowTo = PriceType.Unknown;
+                SellNowPrice = 0;
+                SellNowFee = 0;
+            }
+
+            if (availablePrices.Any(x => x.BuyFrom != null))
+            {
+                var lowestBuyPrice = availablePrices.Where(x => x.BuyFrom != null).MinBy(x => x.Price);
+                BuyLaterFrom = lowestBuyPrice.Type;
+                BuyLaterPrice = (lowestBuyPrice.Price + 1);
+                BuyLaterFee = (lowestBuyPrice.BuyFrom.FeeRate > 0 ? BuyLaterPrice.MarketSaleFeeComponentAsInt(lowestBuyPrice.BuyFrom.FeeRate) + lowestBuyPrice.BuyFrom.FeeSurcharge : 0);
+            }
+            else
+            {
+                BuyLaterFrom = PriceType.Unknown;
+                BuyLaterPrice = 0;
+                BuyLaterFee = 0;
             }
         }
 
