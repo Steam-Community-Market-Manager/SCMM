@@ -196,10 +196,10 @@ namespace SCMM.Steam.Data.Store
                 BuyPrices.Remove(type);
             }
 
-            var availableprices = BuyPrices.Where(x => x.Value.Stock != 0).ToArray();
-            if (availableprices.Any())
+            var availablePrices = BuyPrices.Where(x => x.Value.Price > 0 && x.Value.Stock != 0).ToArray();
+            if (availablePrices.Any())
             {
-                var lowestPrice = availableprices.MinBy(x => x.Value.Price);
+                var lowestPrice = availablePrices.MinBy(x => x.Value.Price);
                 var buyFromAttribute = lowestPrice.Key.GetType().GetField(lowestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>();
                 var sellToAttribute = lowestPrice.Key.GetType().GetField(lowestPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>();
                 BuyNowFrom = SellLaterTo = lowestPrice.Key;
@@ -228,7 +228,7 @@ namespace SCMM.Steam.Data.Store
                 SellPrices.Remove(type);
             }
 
-            var availablePrices = SellPrices.Where(x => x.Value.Stock != 0).ToArray();
+            var availablePrices = SellPrices.Where(x => x.Value.Price > 0 && x.Value.Stock != 0).ToArray();
             if (availablePrices.Any())
             {
                 var highestPrice = availablePrices.MaxBy(x => x.Value.Price);
