@@ -11,44 +11,24 @@
 <PageContainer Title="Market Deals">
 
     <MudGrid Spacing="2">
-
-        <MudItem xs="12">
-            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Undervalued items from third party markets" Subtitle="These items have been undervalued on third party markets and can be brought cheaply. Either keep the item, or flip it on the Steam Community Market for some quick profit.">
+        
+        <MudItem xs="12" xl="6">
+            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Cheapest item offers" Subtitle="Looking to buy an item? Find the cheapest offer across all markets.">
                 <div class="ma-n4">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:50vh;">
                         <thead>
                             <tr>
-                                <th></th>
                                 <th>
-                                    <span>Buy Now</span>
-                                    <p class="mud-secondary-text">
-                                        <small>Buy from the marketplace using credit, tokens, or real money</small>
-                                    </p>
+                                    <MudTextField T="string" ValueChanged="async (x) => { FilterBuyNowDeals = x; await VirtualiseBuyNowDeals.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
+                                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
                                 </th>
-                                <th>
-                                    <i class="fa fa-fw fa-arrow-right"></i>
-                                </th>
-                                <th>
-                                    <span>Sell Instantly</span>
-                                    <p class="mud-secondary-text">
-                                        <small>Immediately sell the item on the Steam Community Market for instant profit</small>
-                                    </p>
-                                </th>
-                                <th>
-                                    <p class="mud-secondary-text">
-                                        <i>or</i>
-                                    </p>
-                                </th>
-                                <th>
-                                    <span>Sell Later</span>
-                                    <p class="mud-secondary-text">
-                                        <small>Make a competitive sell order on the Steam Community Market to maximum profits (if you're prepared to wait)</small>
-                                    </p>
-                                </th>
+                                <th>Cheapest Deal</th>
+                                <th>Discount</th>
+                                <th>Steam Community Market</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize ItemsProvider="LoadUndervaluedItems" Context="item">
+                            <Virtualize @ref="VirtualiseBuyNowDeals" ItemsProvider="LoadBuyNowDeals" Context="item">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -59,30 +39,27 @@
                                         </td>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item))" Class="mr-2">Buy</MudButton>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
                                                 <img src="@($"/images/price/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
                                             </MudText>
                                         </td>
-                                        <th>
-                                            <i class="fa fa-fw fa-arrow-right"></i>
-                                        </th>
                                         <td>
-                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewItem(item))" Class="mr-2">Sell</MudButton>
-                                                <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                <span>@State.Currency.ToPriceString(item.SellNowPrice) for <strong>@State.Currency.ToPriceString(item.SellNowProfit, dense: true)</strong> profit after fees</span>
-                                            </MudText>
+                                            <MudTooltip>
+                                                <TooltipContent>
+                                                    <span>Save @State.Currency.ToPriceString(item.DiscountAmount)</span>
+                                                </TooltipContent>
+                                                <ChildContent>
+                                                    <MudChip Variant="Variant.Filled" Color="Color.Success" Size="@Size.Small" Text="@($"{item.DiscountAmount.ToPercentageString(item.ReferemcePrice)} off")">
+                                                    </MudChip>
+                                                </ChildContent>
+                                            </MudTooltip>
                                         </td>
-                                        <th>
-                                            <MudText Typo="Typo.body2" Class="no-wrap">
-                                                <i>or</i>
-                                            </MudText>
-                                        </th>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                <span>@State.Currency.ToPriceString(item.SellLaterPrice) for <strong>@State.Currency.ToPriceString(item.SellLaterProfit, dense: true)</strong> profit after fees</span>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">View</MudButton>
+                                                <img src="@($"/images/price/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <span>@State.Currency.ToPriceString(item.ReferemcePrice)</span>
                                             </MudText>
                                         </td>
                                     </tr>
@@ -96,7 +73,71 @@
                                             </div>
                                         </td>
                                         <td>—</td>
-                                        <td></td>
+                                        <td>—</td>
+                                        <td>—</td>
+                                    </tr>
+                                </Placeholder>
+                            </Virtualize>
+                        </tbody>
+                    </MudSimpleTable>
+                </div>
+            </AnalyticsPanel>
+        </MudItem>
+    
+        <MudItem xs="12" xl="6">
+            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Undervalued items on third party markets" Subtitle="Looking to top up your Steam wallet balance? Buy these undervalued items and instantly flip them on the Steam Community Market for extra balance.">
+                <div class="ma-n4">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:50vh;">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <MudTextField T="string" ValueChanged="async (x) => { FilterUndervaluedDeals = x; await VirtualiseUndervaluedDeals.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
+                                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
+                                </th>
+                                <th>Buy Now</th>
+                                <th class="pa-0">
+                                    <i class="fa fa-fw fa-arrow-right"></i>
+                                </th>
+                                <th>Sell Instantly</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <Virtualize @ref="VirtualiseUndervaluedDeals" ItemsProvider="LoadUndervaluedDeals" Context="item">
+                                <ItemContent>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                                <MudText Typo="Typo.body2">@item.Name</MudText>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
+                                                <img src="@($"/images/price/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
+                                            </MudText>
+                                        </td>
+                                        <th class="pa-0">
+                                            <i class="fa fa-fw fa-arrow-right"></i>
+                                        </th>
+                                        <td>
+                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">Sell</MudButton>
+                                                <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <span>@State.Currency.ToPriceString(item.SellNowPrice) for <strong>@State.Currency.ToPriceString(item.SellNowProfit, dense: true)</strong> profit after fees</span>
+                                            </MudText>
+                                        </td>
+                                    </tr>
+                                </ItemContent>
+                                <Placeholder>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                            </div>
+                                        </td>
                                         <td>—</td>
                                         <td></td>
                                         <td>—</td>
@@ -114,31 +155,53 @@
 </PageContainer>
 
 @code {
+
+    private string FilterBuyNowDeals { get; set; }
     
-    private void ViewItem(MarketItemFlipSaleAnalyticDTO item)
+    private string FilterUndervaluedDeals { get; set; }
+
+    private Virtualize<MarketItemDealAnalyticDTO> VirtualiseBuyNowDeals { get; set; }
+    
+    private Virtualize<MarketItemFlipDealAnalyticDTO> VirtualiseUndervaluedDeals { get; set; }
+
+    private void ViewMarketItem(ulong appId, string name)
     {
         ExternalNavigationManager.NavigateToNewTab(new SteamMarketListingPageRequest()
         {
-            AppId = item.AppId.ToString(),
-            MarketHashName = item.Name
+            AppId = appId.ToString(),
+            MarketHashName = name
         }.ToString());
     }
     
-    private void BuyItem(MarketItemFlipSaleAnalyticDTO item)
+    private void BuyItem(string buyUrl)
     {
-        ExternalNavigationManager.NavigateToNewTab(item.BuyUrl);
+        ExternalNavigationManager.NavigateToNewTab(buyUrl);
     }
     
-    protected async ValueTask<ItemsProviderResult<MarketItemFlipSaleAnalyticDTO>> LoadUndervaluedItems(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<MarketItemDealAnalyticDTO>> LoadBuyNowDeals(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipSaleAnalyticDTO>>($"api/analytics/undervaluedItems?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<MarketItemFlipSaleAnalyticDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemDealAnalyticDTO>>($"api/analytics/buyNowDeals?filter={Uri.EscapeDataString(FilterBuyNowDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<MarketItemDealAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'undervalued items' analytics");
+            Logger.LogError(ex, $"Error listing 'buy now deals' analytics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<MarketItemFlipDealAnalyticDTO>> LoadUndervaluedDeals(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipDealAnalyticDTO>>($"api/analytics/undervaluedDeals?filter={Uri.EscapeDataString(FilterUndervaluedDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<MarketItemFlipDealAnalyticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'undervalued deals' analytics");
             throw;
         }
     }

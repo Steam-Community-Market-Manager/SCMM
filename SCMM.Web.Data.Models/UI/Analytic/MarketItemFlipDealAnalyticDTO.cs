@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Analytic
 {
-    public class MarketItemFlipSaleAnalyticDTO
+    public class MarketItemFlipDealAnalyticDTO
     {
         public ulong Id { get; set; }
 

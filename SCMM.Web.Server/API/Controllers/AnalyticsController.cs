@@ -35,34 +35,77 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List undervalued items from third party markets that can be sold for profit by flipping them on the Steam Community Market
+        /// List items that are cheaper to buy from third party markets rather than the Steam Community Market
         /// </summary>
         /// <remarks>
-        /// This API requires authentication and the user must belong to the <code>VIP</code> role.
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
+        /// <param name="filter">Optional search filter. Matches against item name</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [Authorize(Roles = $"{Roles.Administrator},{Roles.VIP}")]
-        [HttpGet("undervaluedItems")]
-        [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipSaleAnalyticDTO>), StatusCodes.Status200OK)]
+        [HttpGet("buyNowDeals")]
+        [ProducesResponseType(typeof(PaginatedResult<MarketItemDealAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUndervaluedItems([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetBuyNowDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
+                .Where(x => x.BuyNowFrom != PriceType.SteamCommunityMarket)
+                .Where(x => x.BuyNowPrice < x.SellOrderLowestPrice)
+                .Where(x => x.BuyNowPrice > 0 && x.SellOrderLowestPrice > 0 && (x.SellOrderLowestPrice - x.BuyNowPrice) > 0)
+                .OrderByDescending(x => (x.SellOrderLowestPrice - x.BuyNowPrice) / (decimal)x.SellOrderLowestPrice);
+
+            return Ok(
+                await query.PaginateAsync(start, count, x => new MarketItemDealAnalyticDTO()
+                {
+                    Id = x.Description.ClassId,
+                    AppId = ulong.Parse(x.App.SteamId),
+                    IconUrl = x.Description.IconUrl,
+                    Name = x.Description.Name,
+                    BuyFrom = x.BuyNowFrom,
+                    BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
+                    BuyUrl = x.Description.GetPrices(x.Currency)?.FirstOrDefault(p => p.Type == x.BuyNowFrom)?.Url,
+                    ReferenceFrom = PriceType.SteamCommunityMarket,
+                    ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice - 1, x.Currency),
+                })
+            );
+        }
+
+        /// <summary>
+        /// List items from third party markets that can be instatly flipped on to the Steam Community Market for more than what you paid
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <param name="filter">Optional search filter. Matches against item name</param>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [HttpGet("undervaluedDeals")]
+        [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipDealAnalyticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetUndervaluedDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var query = _db.SteamMarketItems
+                .AsNoTracking()
+                .Include(x => x.App)
+                .Include(x => x.Currency)
+                .Include(x => x.Description)
+                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
                 .Where(x => x.BuyNowFrom != PriceType.SteamCommunityMarket)
                 .Where(x => x.BuyNowPrice > 0 && x.BuyOrderHighestPrice > 0)
                 .Where(x => ((x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - x.BuyNowPrice) / (decimal)x.BuyOrderHighestPrice) > 0.25m)
                 .OrderByDescending(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - x.BuyNowPrice));
 
             return Ok(
-                await query.PaginateAsync(start, count, x => new MarketItemFlipSaleAnalyticDTO()
+                await query.PaginateAsync(start, count, x => new MarketItemFlipDealAnalyticDTO()
                 {
                     Id = x.Description.ClassId,
                     AppId = ulong.Parse(x.App.SteamId),
