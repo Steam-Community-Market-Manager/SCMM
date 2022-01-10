@@ -78,12 +78,12 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                     if (item != null)
                     {
                         // NOTE: Trade and store share the same item inventory, but buying from the store has a fixed discount
-                        item.UpdateBuyPrices(PriceType.TradeitGGTrade, new PriceStock
+                        item.UpdateBuyPrices(MarketType.TradeitGGTrade, new PriceStock
                         {
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
                             Stock = tradeitGGItem.Value
                         });
-                        item.UpdateBuyPrices(PriceType.TradeitGGStore, new PriceStock
+                        item.UpdateBuyPrices(MarketType.TradeitGGStore, new PriceStock
                         {
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price - (long)Math.Round(tradeitGGItem.Key.Price * TradeitGGWebClient.StoreDiscountMultiplier, 0), usdCurrency) : 0,
                             Stock = tradeitGGItem.Value
@@ -91,11 +91,11 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                     }
                 }
 
-                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(PriceType.TradeitGGStore));
+                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(MarketType.TradeitGGStore));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(PriceType.TradeitGGTrade, null);
-                    missingItem.Item.UpdateBuyPrices(PriceType.TradeitGGStore, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.TradeitGGTrade, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.TradeitGGStore, null);
                 }
             }
             catch (Exception ex)

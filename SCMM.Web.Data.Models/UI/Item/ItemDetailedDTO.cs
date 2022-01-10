@@ -183,13 +183,13 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         #region Prices
 
-        public PriceType? BuyNowFrom { get; set; }
+        public MarketType? BuyNowFrom { get; set; }
 
         public long? BuyNowPrice { get; set; }
 
         public string BuyNowUrl { get; set; }
 
-        public IEnumerable<ItemPriceDTO> Prices { get; set; }
+        public IEnumerable<ItemPriceDTO> BuyPrices { get; set; }
 
         // TODO: BuyLater
         // TODO: SellNow

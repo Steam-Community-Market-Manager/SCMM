@@ -65,7 +65,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     var item = items.FirstOrDefault(x => x.Name == swapggTradeItem.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(PriceType.SwapGGTrade, new PriceStock
+                        item.UpdateBuyPrices(MarketType.SwapGGTrade, new PriceStock
                         {
                             Price = swapggTradeItem.ItemIds?.Length > 0 ? item.Currency.CalculateExchange(swapggTradeItem.Price, eurCurrency) : 0,
                             Stock = swapggTradeItem.ItemIds?.Length
@@ -73,10 +73,10 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     }
                 }
 
-                var missingItems = items.Where(x => !swapggTradeItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGGTrade));
+                var missingItems = items.Where(x => !swapggTradeItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(MarketType.SwapGGTrade));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(PriceType.SwapGGTrade, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.SwapGGTrade, null);
                 }
             }
             catch (Exception ex)
@@ -97,7 +97,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     var item = items.FirstOrDefault(x => x.Name == swapggMarketItem.Key)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(PriceType.SwapGGMarket, new PriceStock
+                        item.UpdateBuyPrices(MarketType.SwapGGMarket, new PriceStock
                         {
                             Price = swapggMarketItem.Value.Quantity > 0 ? item.Currency.CalculateExchange(swapggMarketItem.Value.Price, eurCurrency) : 0,
                             Stock = swapggMarketItem.Value.Quantity
@@ -105,10 +105,10 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     }
                 }
 
-                var missingItems = items.Where(x => !swapggMarketItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGGMarket));
+                var missingItems = items.Where(x => !swapggMarketItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(MarketType.SwapGGMarket));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(PriceType.SwapGGMarket, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.SwapGGMarket, null);
                 }
             }
             catch (Exception ex)

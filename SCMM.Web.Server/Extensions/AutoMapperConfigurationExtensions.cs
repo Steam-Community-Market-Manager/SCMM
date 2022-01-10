@@ -195,7 +195,7 @@ namespace SCMM.Web.Server.Extensions
             });
         }
 
-        public static void MapFromAssetPrices<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, IEnumerable<ItemPriceDTO>> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression)
+        public static void MapFromAssetBuyPrices<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, IEnumerable<ItemPriceDTO>> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression)
         {
             memberOptions.MapFrom((src, dst, _, context) =>
             {
@@ -218,9 +218,9 @@ namespace SCMM.Web.Server.Extensions
                         return null;
                     }
 
-                    return assetDescription.GetPrices(currency)
-                        .OrderByDescending(x => x.Type == PriceType.SteamStore)
-                        .ThenByDescending(x => x.Type == PriceType.SteamCommunityMarket)
+                    return assetDescription.GetBuyPrices(currency)
+                        .OrderByDescending(x => x.MarketType == MarketType.SteamStore)
+                        .ThenByDescending(x => x.MarketType == MarketType.SteamCommunityMarket)
                         .ThenByDescending(x => x.IsAvailable)
                         .ThenBy(x => x.LowestPrice)
                         .ToList();

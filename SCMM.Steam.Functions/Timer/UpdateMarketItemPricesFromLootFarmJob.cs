@@ -64,7 +64,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                     var item = items.FirstOrDefault(x => x.Name == lootFarmItem.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(PriceType.LOOTFarm, new PriceStock
+                        item.UpdateBuyPrices(MarketType.LOOTFarm, new PriceStock
                         {
                             Price = lootFarmItem.Have > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
                             Stock = lootFarmItem.Have
@@ -72,10 +72,10 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                     }
                 }
 
-                var missingItems = items.Where(x => !lootFarmItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(PriceType.LOOTFarm));
+                var missingItems = items.Where(x => !lootFarmItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(MarketType.LOOTFarm));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(PriceType.LOOTFarm, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.LOOTFarm, null);
                 }
             }
             catch (Exception ex)

@@ -56,7 +56,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
-                .Where(x => x.BuyNowFrom != PriceType.SteamCommunityMarket)
+                .Where(x => x.BuyNowFrom != MarketType.SteamCommunityMarket)
                 .Where(x => x.BuyNowPrice < x.SellOrderLowestPrice)
                 .Where(x => x.BuyNowPrice > 0 && x.SellOrderLowestPrice > 0 && (x.SellOrderLowestPrice - x.BuyNowPrice) > 0)
                 .OrderByDescending(x => (x.SellOrderLowestPrice - x.BuyNowPrice) / (decimal)x.SellOrderLowestPrice);
@@ -70,8 +70,8 @@ namespace SCMM.Web.Server.API.Controllers
                     Name = x.Description.Name,
                     BuyFrom = x.BuyNowFrom,
                     BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
-                    BuyUrl = x.Description.GetPrices(x.Currency)?.FirstOrDefault(p => p.Type == x.BuyNowFrom)?.Url,
-                    ReferenceFrom = PriceType.SteamCommunityMarket,
+                    BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
+                    ReferenceFrom = MarketType.SteamCommunityMarket,
                     ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice - 1, x.Currency),
                 })
             );
@@ -99,7 +99,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
-                .Where(x => x.BuyNowFrom != PriceType.SteamCommunityMarket)
+                .Where(x => x.BuyNowFrom != MarketType.SteamCommunityMarket)
                 .Where(x => x.BuyNowPrice > 0 && x.BuyOrderHighestPrice > 0)
                 .Where(x => ((x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - x.BuyNowPrice) / (decimal)x.BuyOrderHighestPrice) > 0.25m)
                 .OrderByDescending(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - x.BuyNowPrice));
@@ -113,8 +113,8 @@ namespace SCMM.Web.Server.API.Controllers
                     Name = x.Description.Name,
                     BuyFrom = x.BuyNowFrom,
                     BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
-                    BuyUrl = x.Description.GetPrices(x.Currency)?.FirstOrDefault(p => p.Type == x.BuyNowFrom)?.Url,
-                    SellTo = PriceType.SteamCommunityMarket,
+                    BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
+                    SellTo = MarketType.SteamCommunityMarket,
                     SellNowPrice = this.Currency().CalculateExchange(x.BuyOrderHighestPrice, x.Currency),
                     SellNowFee = this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.BuyOrderHighestPrice), x.Currency),
                     SellLaterPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice - 1, x.Currency),

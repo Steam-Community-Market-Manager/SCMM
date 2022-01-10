@@ -41,10 +41,10 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.StoreId, o => o.MapFrom(p => (p.StoreItem != null ? p.StoreItem.SteamId : null)))
                 .ForMember(x => x.StorePrice, o => o.MapFromUsingCurrencyTable(p => (p.StoreItem != null ? p.StoreItem.Prices : null)))
                 .ForMember(x => x.Stores, o => o.MapFrom(p => (p.StoreItem != null ? p.StoreItem.Stores : null)))
-                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p, p => p.Type))
+                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p, p => p.MarketType))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetPrice(p => p, p => p.LowestPrice))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetPrice(p => p, p => p.Url))
-                .ForMember(x => x.Prices, o => o.MapFromAssetPrices(p => p));
+                .ForMember(x => x.BuyPrices, o => o.MapFromAssetBuyPrices(p => p));
 
             CreateMap<List<SteamAssetDescription>, ItemCollectionDTO>()
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Count > 0 ? p.FirstOrDefault().ItemCollection : null))
@@ -61,7 +61,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.OriginalPrice, o => o.MapFromUsingCurrencyTable(p => (p.StoreItem != null ? p.StoreItem.Prices : null)))
-                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p, p => p.Type))
+                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p, p => p.MarketType))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetPrice(p => p, p => p.LowestPrice))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetPrice(p => p, p => p.Url))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions))
@@ -72,7 +72,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
                 .ForMember(x => x.AppId, o => o.MapFrom(p => p.App.SteamId))
                 .ForMember(x => x.OriginalPrice, o => o.MapFromUsingCurrencyTable(p => (p.StoreItem != null ? p.StoreItem.Prices : null)))
-                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p, p => p.Type))
+                .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetPrice(p => p, p => p.MarketType))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetPrice(p => p, p => p.LowestPrice))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetPrice(p => p, p => p.Url))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions))

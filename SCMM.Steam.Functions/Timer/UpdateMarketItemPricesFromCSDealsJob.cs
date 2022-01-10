@@ -65,7 +65,7 @@ public class UpdateMarketItemPricesFromCSDealsob
                     var item = items.FirstOrDefault(x => x.Name == csDealsItem.MarketName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(PriceType.CSDealsMarketplace, new PriceStock
+                        item.UpdateBuyPrices(MarketType.CSDealsMarketplace, new PriceStock
                         {
                             Price = item.Currency.CalculateExchange(csDealsItem.LowestPrice.SteamPriceAsInt(), usdCurrency),
                             Stock = null
@@ -73,10 +73,10 @@ public class UpdateMarketItemPricesFromCSDealsob
                     }
                 }
 
-                var missingItems = items.Where(x => !csDealsItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(PriceType.CSDealsMarketplace));
+                var missingItems = items.Where(x => !csDealsItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.CSDealsMarketplace));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(PriceType.CSDealsMarketplace, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.CSDealsMarketplace, null);
                 }
             }
             catch (Exception ex)

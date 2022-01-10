@@ -5,7 +5,9 @@ namespace SCMM.Steam.Data.Models
 {
     public class Price
     {
-        public PriceType Type { get; set; }
+        public PriceTypes Type { get; set; }
+
+        public MarketType MarketType { get; set; }
 
         public IExchangeableCurrency Currency { get; set; }
 
@@ -21,7 +23,7 @@ namespace SCMM.Steam.Data.Models
         /// <summary>
         /// If true, price is from a 1st party market, run by Steam/Value
         /// </summary>
-        public bool IsFirstPartySource => (Type == PriceType.SteamStore || Type == PriceType.SteamCommunityMarket);
+        public bool IsFirstPartyMarket => (MarketType == MarketType.SteamStore || MarketType == MarketType.SteamCommunityMarket);
 
         public string Url { get; set; }
     }

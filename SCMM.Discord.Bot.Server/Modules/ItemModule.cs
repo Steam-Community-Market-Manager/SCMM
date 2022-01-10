@@ -102,14 +102,14 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
             );
         }
 
-        var prices = item.GetPrices(currency).ToList();
-        var availablePrices = prices
+        var buyPrices = item.GetBuyPrices(currency).ToList();
+        var availableBuyPrices = buyPrices
             .Where(x => x.IsAvailable)
             .OrderBy(x => x.LowestPrice)
             .ToList();
 
         var description = new StringBuilder(item.Description);
-        var storePrice = prices.FirstOrDefault(x => x.Type == PriceType.SteamStore);
+        var storePrice = buyPrices.FirstOrDefault(x => x.MarketType == MarketType.SteamStore);
         if (storePrice != null && item.TimeAccepted != null)
         {
             if (!description.ToString().EndsWith("."))
@@ -139,10 +139,10 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         var fields = new List<EmbedFieldBuilder>();
-        foreach (var price in availablePrices)
+        foreach (var price in availableBuyPrices)
         {
             var priceAvailabilityFormatter = (!price.IsAvailable ? "~~" : null);
-            var priceIsCheapest = (price.LowestPrice == availablePrices.Min(x => x.LowestPrice));
+            var priceIsCheapest = (price.LowestPrice == availableBuyPrices.Min(x => x.LowestPrice));
             var priceColorFormatter = String.Empty;
             if (priceIsCheapest)
             {
@@ -153,7 +153,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
                 priceColorFormatter = "fix";
             }
 
-            var priceName = new StringBuilder(price.Type.GetDisplayName());
+            var priceName = new StringBuilder(price.MarketType.GetDisplayName());
             if (price.QuantityAvailable > 0)
             {
                 priceName.Append($" ({price.QuantityAvailable.Value.ToQuantityString()})");

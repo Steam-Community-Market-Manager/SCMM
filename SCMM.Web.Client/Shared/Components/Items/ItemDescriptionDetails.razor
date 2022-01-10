@@ -544,17 +544,17 @@
                 </MudItem>
             }
             
-            @if(Item.Prices?.Any() == true && !Item.IsBanned)
+            @if(Item.BuyPrices?.Any() == true && !Item.IsBanned)
             {   
                 <MudItem xs="12">
                     <MudPaper Outlined="true">
                         <div class="d-flex flex-row align-stretch justify-sm-space-around flex-wrap">
-                            @foreach (var price in Item.Prices)
+                            @foreach (var price in Item.BuyPrices)
                             {
-                                <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.Type.GetDisplayName()}" : $"Currently unavailable from {price.Type.GetDisplayName()}")">
+                                <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.MarketType.GetDisplayName()}" : $"Currently unavailable from {price.MarketType.GetDisplayName()}")">
                                     <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
                                         <MudText Typo="MudBlazor.Typo.h6" Color="price.IsAvailable ? MudBlazor.Color.Inherit : MudBlazor.Color.Secondary" Class="d-flex align-center">
-                                            <img src="@($"/images/price/{price.Type.ToString().ToLower()}.png")" alt="@price.Type.GetDisplayName()" title="@price.Type.GetDisplayName()" style="width:1.3em; height:1.3em" />
+                                            <img src="@($"/images/price/{price.MarketType.ToString().ToLower()}.png")" alt="@price.MarketType.GetDisplayName()" title="@price.MarketType.GetDisplayName()" style="width:1.3em; height:1.3em" />
                                             @if (price.LowestPrice > 0)
                                             {
                                                 <span class="pl-2">@State.Currency.ToPriceString(price.LowestPrice)</span>
@@ -563,21 +563,29 @@
                                             {
                                                 <span class="pl-2">Unavailable</span>
                                             }
-                                            @if (price.LowestPrice > 0 && price.Type != PriceType.SteamStore)
+                                            @if (price.LowestPrice > 0 && price.MarketType != MarketType.SteamStore)
                                             {
-                                                @if (price.LowestPrice == Item.Prices.Where(x => x.IsAvailable).Min(x => x.LowestPrice))
+                                                @if (price.LowestPrice == Item.BuyPrices.Where(x => x.IsAvailable).Min(x => x.LowestPrice))
                                                 {
                                                     <MudChip Size="MudBlazor.Size.Small" Text="Best Deal" Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Filled" Class="ma-0 ml-2" />
                                                 }
                                             }
 									    </MudText>
                                         <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                                            <span>@price.Type.GetDisplayName()</span>
-                                            @if (price.Type == PriceType.SteamStore && Item.Stores?.Any() == true)
+                                            @if (price.Type.HasFlag(PriceTypes.Cash))
+                                            {
+                                                <i class="fa fa-fw fa-credit-card mr-1" title="Cash and credit"></i>
+                                            }
+                                            @if (price.Type.HasFlag(PriceTypes.Trade))
+                                            {
+                                                <i class="fa fa-fw fa-exchange-alt mr-1" title="Trade and exchange"></i>
+                                            }
+                                            <span>@price.MarketType.GetDisplayName()</span>
+                                            @if (price.MarketType == MarketType.SteamStore && Item.Stores?.Any() == true)
                                             {
                                                 <span> from @(Item.Stores.Max(x => x.Date)?.ToString("d") ?? Item.Stores.MaxBy(x => x.Date)?.Name)</span>
                                             }
-                                            else if (price.Type != PriceType.SteamStore && price.QuantityAvailable > 0)
+                                            else if (price.MarketType != MarketType.SteamStore && price.QuantityAvailable > 0)
                                             {
                                                 <span> (@price.QuantityAvailable.Value.ToQuantityString())</span>
                                             }

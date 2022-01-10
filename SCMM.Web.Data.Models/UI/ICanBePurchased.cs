@@ -4,7 +4,7 @@ namespace SCMM.Web.Data.Models.UI
 {
     public interface ICanBePurchased
     {
-        public PriceType? BuyNowFrom { get; }
+        public MarketType? BuyNowFrom { get; }
 
         public string BuyNowUrl { get; }
 

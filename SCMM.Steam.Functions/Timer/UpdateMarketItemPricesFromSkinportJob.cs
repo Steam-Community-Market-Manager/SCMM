@@ -65,7 +65,7 @@ public class UpdateMarketItemPricesFromSkinportJob
                     var item = items.FirstOrDefault(x => x.Name == skinportItem.MarketHashName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(PriceType.Skinport, new PriceStock
+                        item.UpdateBuyPrices(MarketType.Skinport, new PriceStock
                         {
                             Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Stock = skinportItem.Quantity
@@ -73,10 +73,10 @@ public class UpdateMarketItemPricesFromSkinportJob
                     }
                 }
 
-                var missingItems = items.Where(x => !skinportItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(PriceType.Skinport));
+                var missingItems = items.Where(x => !skinportItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(MarketType.Skinport));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(PriceType.Skinport, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.Skinport, null);
                 }
             }
             catch (Exception ex)

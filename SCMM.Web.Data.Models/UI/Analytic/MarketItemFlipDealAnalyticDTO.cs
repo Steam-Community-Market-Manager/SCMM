@@ -13,13 +13,13 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         public string Name { get; set; }
 
-        public PriceType BuyFrom { get; set; }
+        public MarketType BuyFrom { get; set; }
 
         public long BuyPrice { get; set; }
 
         public string BuyUrl { get; set; }
 
-        public PriceType SellTo { get; set; }
+        public MarketType SellTo { get; set; }
 
         public long SellNowPrice { get; set; }
 

@@ -6,7 +6,7 @@ namespace SCMM.Web.Data.Models.UI.Item
     {
         public long? OriginalPrice { get; set; }
 
-        public PriceType? BuyNowFrom { get; set; }
+        public MarketType? BuyNowFrom { get; set; }
 
         public long? BuyNowPrice { get; set; }
 

@@ -4,7 +4,9 @@ namespace SCMM.Web.Data.Models.UI.Item
 {
     public class ItemPriceDTO
     {
-        public PriceType Type { get; set; }
+        public PriceTypes Type { get; set; }
+
+        public MarketType MarketType { get; set; }
 
         public long LowestPrice { get; set; }
 

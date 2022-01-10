@@ -4,7 +4,7 @@
 @inject AppState State
 
 <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
-    @if (PurchasableItem.BuyNowFrom == PriceType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)
+    @if (PurchasableItem.BuyNowFrom == MarketType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)
     {
         <MudBadge Color="MudBlazor.Color.Primary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
             <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
@@ -12,7 +12,7 @@
             </div>
         </MudBadge>
     }
-    else if (PurchasableItem.BuyNowFrom != PriceType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
+    else if (PurchasableItem.BuyNowFrom != MarketType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
     {
         <MudBadge Color="@((PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice) ? MudBlazor.Color.Success : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? MudBlazor.Color.Error : MudBlazor.Color.Secondary)" 
                   Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
@@ -37,7 +37,7 @@
             <MudText Typo="MudBlazor.Typo.body2" Class="d-flex flex-row flex-wrap justify-center align-center">
                 <img src="@($"/images/price/{PurchasableItem.BuyNowFrom.ToString().ToLower()}.png")" alt="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" title="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" class="mr-1" style="width:1.1em; height:1.1em" />
                 <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
-                @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowFrom != PriceType.SteamStore && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
+                @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowFrom != MarketType.SteamStore && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
                 {
                     <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(PurchasableItem.OriginalPrice.Value, dense: true)</span>
                 }

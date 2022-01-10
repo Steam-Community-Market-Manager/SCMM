@@ -35,7 +35,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
 
         public int Quantity { get; set; }
 
-        public PriceType SellLaterTo { get; set; }
+        public MarketType SellLaterTo { get; set; }
 
         public long? SellLaterPrice { get; set; }
 
