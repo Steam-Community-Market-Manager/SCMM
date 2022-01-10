@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.CSDeals.Client
 {
-    public class CSDealsPricingGetLowestPricesResponse
+    public class CSDealsPricingGetLowestPricesResult
     {
         [JsonPropertyName("time_updated")]
         public long TimeUpdated { get; set; }
