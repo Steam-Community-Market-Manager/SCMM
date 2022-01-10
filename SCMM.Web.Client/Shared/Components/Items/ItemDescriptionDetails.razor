@@ -575,7 +575,7 @@
                                             <span>@price.Type.GetDisplayName()</span>
                                             @if (price.Type == PriceType.SteamStore && Item.Stores?.Any() == true)
                                             {
-                                                <span> (@(Item.Stores.Max(x => x.Date)?.ToString("d") ?? Item.Stores.MaxBy(x => x.Date)?.Name))</span>
+                                                <span> from @(Item.Stores.Max(x => x.Date)?.ToString("d") ?? Item.Stores.MaxBy(x => x.Date)?.Name)</span>
                                             }
                                             else if (price.Type != PriceType.SteamStore && price.QuantityAvailable > 0)
                                             {

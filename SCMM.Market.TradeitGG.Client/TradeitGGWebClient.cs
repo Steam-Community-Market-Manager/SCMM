@@ -5,6 +5,8 @@ namespace SCMM.Market.TradeitGG.Client
 {
     public class TradeitGGWebClient
     {
+        public const decimal StoreDiscountMultiplier = 0.25m; // 25% off
+
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 
         private HttpClient WebBrowserLikeClient()
@@ -50,8 +52,8 @@ namespace SCMM.Market.TradeitGG.Client
                 }
                 catch (JsonException)
                 {
-                    // TODO: If "counts" is empty, it shows as an empty array in the JSON, which cannot be deserialised as a dictionary.
-                    //       Need to add a customer type converter to handle either empty array or populated dictionary
+                    // TODO: If "counts" is empty, we get an empty array in the JSON, which cannot be deserialised as a dictionary.
+                    //       Need to add a customer type converter to handle this better but I cbf writing one...
                     return null;
                 }
             }

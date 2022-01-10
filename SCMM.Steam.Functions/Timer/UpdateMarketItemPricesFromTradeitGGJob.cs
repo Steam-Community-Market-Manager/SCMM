@@ -43,7 +43,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
         {
             try
             {
-                logger.LogTrace($"Updating market item price information from Tradeit.gg (appId: {app.SteamId})");
+                logger.LogTrace($"Updating item price information from Tradeit.gg (appId: {app.SteamId})");
                 var items = await _db.SteamMarketItems
                     .Select(x => new
                     {
@@ -67,7 +67,6 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                         inventoryDataOffset += inventoryDataLimit;
                     }
                 } while (inventoryDataItems?.Any() == true);
-
                 if (tradeitGGItems?.Any() != true)
                 {
                     continue;
@@ -75,15 +74,18 @@ public class UpdateMarketItemPricesFromTradeitGGJob
 
                 foreach (var tradeitGGItem in tradeitGGItems)
                 {
-                    // NOTE Buying directly from the store gives a 25% discount off the item price, account for this now
-                    tradeitGGItem.Key.Price -= (long) Math.Round(tradeitGGItem.Key.Price * 0.25, 0);
-
                     var item = items.FirstOrDefault(x => x.Name == tradeitGGItem.Key.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(PriceType.TradeitGGStore, new PriceStock
+                        // NOTE: Trade and store share the same item inventory, but buying from the store has a fixed discount
+                        item.UpdateBuyPrices(PriceType.TradeitGGTrade, new PriceStock
                         {
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
+                            Stock = tradeitGGItem.Value
+                        });
+                        item.UpdateBuyPrices(PriceType.TradeitGGStore, new PriceStock
+                        {
+                            Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price - (long)Math.Round(tradeitGGItem.Key.Price * TradeitGGWebClient.StoreDiscountMultiplier, 0), usdCurrency) : 0,
                             Stock = tradeitGGItem.Value
                         });
                     }
@@ -92,6 +94,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                 var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(PriceType.TradeitGGStore));
                 foreach (var missingItem in missingItems)
                 {
+                    missingItem.Item.UpdateBuyPrices(PriceType.TradeitGGTrade, null);
                     missingItem.Item.UpdateBuyPrices(PriceType.TradeitGGStore, null);
                 }
             }

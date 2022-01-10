@@ -50,29 +50,30 @@ public class UpdateMarketItemPricesFromSwapGGJob
                 })
                 .ToListAsync();
 
+            logger.LogTrace($"Updating market item price information from swap.gg (appId: {app.SteamId})");
+
             try
             {
-                logger.LogTrace($"Updating trade item price information from swap.gg (appId: {app.SteamId})");
-                var swapggItems = await _swapGGWebClient.GetTradeBotInventoryAsync(app.SteamId);
-                if (swapggItems?.Any() != true)
+                var swapggTradeItems = await _swapGGWebClient.GetTradeBotInventoryAsync(app.SteamId);
+                if (swapggTradeItems?.Any() != true)
                 {
                     continue;
                 }
 
-                foreach (var swapggItem in swapggItems)
+                foreach (var swapggTradeItem in swapggTradeItems)
                 {
-                    var item = items.FirstOrDefault(x => x.Name == swapggItem.Name)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == swapggTradeItem.Name)?.Item;
                     if (item != null)
                     {
                         item.UpdateBuyPrices(PriceType.SwapGGTrade, new PriceStock
                         {
-                            Price = swapggItem.ItemIds?.Length > 0 ? item.Currency.CalculateExchange(swapggItem.Price, eurCurrency) : 0,
-                            Stock = swapggItem.ItemIds?.Length
+                            Price = swapggTradeItem.ItemIds?.Length > 0 ? item.Currency.CalculateExchange(swapggTradeItem.Price, eurCurrency) : 0,
+                            Stock = swapggTradeItem.ItemIds?.Length
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !swapggItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGGTrade));
+                var missingItems = items.Where(x => !swapggTradeItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGGTrade));
                 foreach (var missingItem in missingItems)
                 {
                     missingItem.Item.UpdateBuyPrices(PriceType.SwapGGTrade, null);
@@ -80,32 +81,31 @@ public class UpdateMarketItemPricesFromSwapGGJob
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update trade item price information from swap.gg (appId: {app.SteamId}). {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
             }
 
             try
             {
-                logger.LogTrace($"Updating market item price information from swap.gg (appId: {app.SteamId})");
-                var swapggItems = await _swapGGWebClient.GetMarketPricingLowestAsync(app.SteamId);
-                if (swapggItems?.Any() != true)
+                var swapggMarketItems = await _swapGGWebClient.GetMarketPricingLowestAsync(app.SteamId);
+                if (swapggMarketItems?.Any() != true)
                 {
                     continue;
                 }
 
-                foreach (var swapggItem in swapggItems)
+                foreach (var swapggMarketItem in swapggMarketItems)
                 {
-                    var item = items.FirstOrDefault(x => x.Name == swapggItem.Key)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == swapggMarketItem.Key)?.Item;
                     if (item != null)
                     {
                         item.UpdateBuyPrices(PriceType.SwapGGMarket, new PriceStock
                         {
-                            Price = swapggItem.Value.Quantity > 0 ? item.Currency.CalculateExchange(swapggItem.Value.Price, eurCurrency) : 0,
-                            Stock = swapggItem.Value.Quantity
+                            Price = swapggMarketItem.Value.Quantity > 0 ? item.Currency.CalculateExchange(swapggMarketItem.Value.Price, eurCurrency) : 0,
+                            Stock = swapggMarketItem.Value.Quantity
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !swapggItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGGMarket));
+                var missingItems = items.Where(x => !swapggMarketItems.Any(y => x.Name == y.Key) && x.Item.BuyPrices.ContainsKey(PriceType.SwapGGMarket));
                 foreach (var missingItem in missingItems)
                 {
                     missingItem.Item.UpdateBuyPrices(PriceType.SwapGGMarket, null);
@@ -113,7 +113,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}). {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}, source: market). {ex.Message}");
             }
 
             _db.SaveChanges();

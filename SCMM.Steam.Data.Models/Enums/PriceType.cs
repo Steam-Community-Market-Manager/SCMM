@@ -34,11 +34,11 @@ namespace SCMM.Steam.Data.Models.Enums
         SwapGGMarket,
 
         [Display(Name = "Tradeit.gg Trade")]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}")] // Unconfirmed
+        [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}")]
         TradeitGGTrade,
 
         [Display(Name = "Tradeit.gg Store")]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", FeeRate = -20.0f)] // Unconfirmed, first time only?
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")] // Unconfirmed
         TradeitGGStore,
 
         [Display(Name = "CS.Deals Trade")]
