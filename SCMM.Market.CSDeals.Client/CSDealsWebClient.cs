@@ -7,6 +7,15 @@ namespace SCMM.Market.CSDeals.Client
         private const string BaseUri = "https://cs.deals/";
         private const string BaseApiUri = "https://cs.deals/API/";
 
+        private HttpClient BuildWebBrowserHttpClient()
+        {
+            // NOTE: Must supply these headers else we get "invalid request"
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+            return client;
+
+        }
+
         public async Task<IEnumerable<CSDealsItemPrice>> PricingGetLowestPricesAsync(string appId)
         {
             using (var client = new HttpClient())
@@ -23,15 +32,14 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsMarketplaceSearchResults<CSDealsItemListings>> MarketplaceSearchAsync(string appId, int page = 0)
         {
-            using (var client = new HttpClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
-                var url = $"{BaseUri}marketplace-search";
+                var url = $"{BaseUri}ajax/marketplace-search";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
                     { "appid", appId },
                     { "page", page.ToString() }
                 });
 
-                client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
                 var response = await client.PostAsync(url, payload);
                 response.EnsureSuccessStatusCode();
 
@@ -43,14 +51,13 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsBotsInventoryResult> BotsInventoryAsync(string appId)
         {
-            using (var client = new HttpClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
-                var url = $"{BaseUri}botsinventory";
+                var url = $"{BaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
                     { "appid", appId }
                 });
 
-                client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
                 var response = await client.PostAsync(url, payload);
                 response.EnsureSuccessStatusCode();
 

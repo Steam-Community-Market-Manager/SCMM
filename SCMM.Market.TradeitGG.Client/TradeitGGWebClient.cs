@@ -9,7 +9,7 @@ namespace SCMM.Market.TradeitGG.Client
 
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 
-        private HttpClient WebBrowserLikeClient()
+        private HttpClient BuildWebBrowserHttpClient()
         {
             // NOTE: We need to pretend we are a web browser as tradeit.gg uses a CloudFlare firewall with some rules that block clients that don't look like typical web browsers.
             var client = new HttpClient();
@@ -23,9 +23,10 @@ namespace SCMM.Market.TradeitGG.Client
             return client;
 
         }
+
         public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = 200)
         {
-            using (var client = WebBrowserLikeClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
                 try
                 {
