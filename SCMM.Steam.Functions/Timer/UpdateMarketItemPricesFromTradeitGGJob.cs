@@ -41,18 +41,18 @@ public class UpdateMarketItemPricesFromTradeitGGJob
 
         foreach (var app in steamApps)
         {
+            logger.LogTrace($"Updating item price information from Tradeit.gg (appId: {app.SteamId})");
+            var items = await _db.SteamMarketItems
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
             try
             {
-                logger.LogTrace($"Updating item price information from Tradeit.gg (appId: {app.SteamId})");
-                var items = await _db.SteamMarketItems
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
                 var tradeitGGItems = new Dictionary<TradeitGGItem, int>();
                 var inventoryDataItems = (IDictionary<TradeitGGItem, int>) null;
                 var inventoryDataOffset = 0;

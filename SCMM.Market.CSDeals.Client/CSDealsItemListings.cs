@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.CSDeals.Client
 {
-    public class CSDealsAppItems : Dictionary<string, CSDealsAppItem[]>
+    public class CSDealsItemListings : Dictionary<string, CSDealsItemListing[]>
     {
     }
 }

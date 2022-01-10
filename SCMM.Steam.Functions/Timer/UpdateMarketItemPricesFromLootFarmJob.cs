@@ -41,18 +41,18 @@ public class UpdateMarketItemPricesFromLootFarmtJob
 
         foreach (var app in steamApps)
         {
+            logger.LogTrace($"Updating market item price information from LOOT.Farm (appId: {app.SteamId})");
+            var items = await _db.SteamMarketItems
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
             try
             {
-                logger.LogTrace($"Updating market item price information from LOOT.Farm (appId: {app.SteamId})");
-                var items = await _db.SteamMarketItems
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
                 var lootFarmItems = await _lootFarmWebClient.GetItemsAsync(app.Name);
                 if (lootFarmItems?.Any() != true)
                 {

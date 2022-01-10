@@ -21,7 +21,7 @@ namespace SCMM.Market.CSDeals.Client
             }
         }
 
-        public async Task<CSDealsMarketplaceSearchResults<CSDealsAppItems>> MarketplaceSearchAsync(string appId, int page = 0)
+        public async Task<CSDealsMarketplaceSearchResults<CSDealsItemListings>> MarketplaceSearchAsync(string appId, int page = 0)
         {
             using (var client = new HttpClient())
             {
@@ -36,7 +36,7 @@ namespace SCMM.Market.CSDeals.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonSerializer.Deserialize<CSDealsResponse<CSDealsMarketplaceSearchResults<CSDealsAppItems>>>(textJson);
+                var responseJson = JsonSerializer.Deserialize<CSDealsResponse<CSDealsMarketplaceSearchResults<CSDealsItemListings>>>(textJson);
                 return responseJson?.Response;
             }
         }

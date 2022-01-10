@@ -42,18 +42,18 @@ public class UpdateMarketItemPricesFromSkinportJob
 
         foreach (var app in steamApps)
         {
+            logger.LogTrace($"Updating market item price information from Skinport (appId: {app.SteamId})");
+            var items = await _db.SteamMarketItems
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
             try
             {
-                logger.LogTrace($"Updating market item price information from Skinport (appId: {app.SteamId})");
-                var items = await _db.SteamMarketItems
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
                 var skinportItems = await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name);
                 if (skinportItems?.Any() != true)
                 {

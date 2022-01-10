@@ -41,6 +41,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
 
         foreach (var app in steamApps)
         {
+            logger.LogTrace($"Updating market item price information from swap.gg (appId: {app.SteamId})");
             var items = await _db.SteamMarketItems
                 .Select(x => new
                 {
@@ -49,8 +50,6 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     Item = x,
                 })
                 .ToListAsync();
-
-            logger.LogTrace($"Updating market item price information from swap.gg (appId: {app.SteamId})");
 
             try
             {

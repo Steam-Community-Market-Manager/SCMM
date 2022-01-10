@@ -29,12 +29,12 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://loot.farm/", FeeRate = -20.0f)] // Unconfirmed, first time only?
         LOOTFarm,
 
-        [Display(Name = "swap.gg Trade")]
+        [Display(Name = "Swap.gg Trade")]
         [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://swap.gg?idev_id=326&appId={0}&search={3}")]
         SwapGGTrade,
 
-        [Display(Name = "swap.gg Market")]
+        [Display(Name = "Swap.gg Market")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeRate = 3.0f, FeeSurcharge = 40)] // Unconfirmed
         SwapGGMarket,

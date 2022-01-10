@@ -42,38 +42,72 @@ public class UpdateMarketItemPricesFromCSDealsob
 
         foreach (var app in steamApps)
         {
+            logger.LogTrace($"Updating market item price information from CS.Deals (appId: {app.SteamId})");
+            var items = await _db.SteamMarketItems
+                .Select(x => new
+                {
+                    Name = x.Description.NameHash,
+                    Currency = x.Currency,
+                    Item = x,
+                })
+                .ToListAsync();
+
             try
             {
-                logger.LogTrace($"Updating market item price information from CS.Deals (appId: {app.SteamId})");
-                var items = await _db.SteamMarketItems
-                    .Select(x => new
-                    {
-                        Name = x.Description.NameHash,
-                        Currency = x.Currency,
-                        Item = x,
-                    })
-                    .ToListAsync();
-
-                var csDealsItems = await _csDealsWebClient.PricingGetLowestPricesAsync(app.SteamId);
-                if (csDealsItems?.Any() != true)
+                var csDealsInventoryItems = (await _csDealsWebClient.BotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value;
+                if (csDealsInventoryItems?.Any() != true)
                 {
                     continue;
                 }
 
-                foreach (var csDealsItem in csDealsItems)
+                foreach (var csDealsInventoryItemGroup in csDealsInventoryItems.GroupBy(x => x.MarketName))
                 {
-                    var item = items.FirstOrDefault(x => x.Name == csDealsItem.MarketName)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == csDealsInventoryItemGroup.Key)?.Item;
+                    if (item != null)
+                    {
+                        var stock = csDealsInventoryItemGroup.Sum(x => x.ItemIds?.Length ?? 0);
+                        item.UpdateBuyPrices(MarketType.CSDealsTrade, new PriceStock
+                        {
+                            Price = stock > 0 ? item.Currency.CalculateExchange((csDealsInventoryItemGroup.Min(x => x.ListingPrice)).ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                            Stock = stock
+                        });
+                    }
+                }
+
+                var missingItems = items.Where(x => !csDealsInventoryItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.CSDealsTrade));
+                foreach (var missingItem in missingItems)
+                {
+                    missingItem.Item.UpdateBuyPrices(MarketType.CSDealsTrade, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to update market item price information from CS.Deals (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
+                continue;
+            }
+
+            try
+            {
+                var csDealsLowestPriceItems = await _csDealsWebClient.PricingGetLowestPricesAsync(app.SteamId);
+                if (csDealsLowestPriceItems?.Any() != true)
+                {
+                    continue;
+                }
+
+                foreach (var csDealsLowestPriceItem in csDealsLowestPriceItems)
+                {
+                    var item = items.FirstOrDefault(x => x.Name == csDealsLowestPriceItem.MarketName)?.Item;
                     if (item != null)
                     {
                         item.UpdateBuyPrices(MarketType.CSDealsMarketplace, new PriceStock
                         {
-                            Price = item.Currency.CalculateExchange(csDealsItem.LowestPrice.SteamPriceAsInt(), usdCurrency),
+                            Price = item.Currency.CalculateExchange(csDealsLowestPriceItem.LowestPrice.SteamPriceAsInt(), usdCurrency),
                             Stock = null
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !csDealsItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.CSDealsMarketplace));
+                var missingItems = items.Where(x => !csDealsLowestPriceItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.CSDealsMarketplace));
                 foreach (var missingItem in missingItems)
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.CSDealsMarketplace, null);
@@ -81,7 +115,7 @@ public class UpdateMarketItemPricesFromCSDealsob
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from CS.Deals (appId: {app.SteamId}). {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item price information from CS.Deals (appId: {app.SteamId}, source: lowest price items). {ex.Message}");
                 continue;
             }
 
