@@ -59,13 +59,11 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")] // Unconfirmed
         CSDealsMarketplace,
 
-        // TODO: This...
         [Display(Name = "SkinBaron")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5f)] /* 0,33 EUR + 5% */ // Unconfirmed
         SkinBaron,
 
-        // TODO: This...
         [Display(Name = "RUSTSkins")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")] // Unconfirmed

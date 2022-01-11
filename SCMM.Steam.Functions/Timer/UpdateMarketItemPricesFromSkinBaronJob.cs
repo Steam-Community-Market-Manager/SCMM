@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Market.SkinBaron.Client;
-using SCMM.Market.TradeitGG.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
@@ -24,7 +23,7 @@ public class UpdateMarketItemPricesFromSkinBaronJob
     }
 
     [Function("Update-Market-Item-Prices-From-SkinBaron")]
-    public async Task Run([TimerTrigger("0 3-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 4-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinBaron");
 

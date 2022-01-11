@@ -10,7 +10,7 @@ namespace SCMM.Market.RustSkins.Client
         [JsonPropertyName("max")]
         public int Max { get; set; }
 
-        [JsonPropertyName("aggregatedMetaOffers")]
+        [JsonPropertyName("listings")]
         public IEnumerable<RustSkinsItemListing> Listings { get; set; }
     }
 }
