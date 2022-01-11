@@ -13,6 +13,8 @@ using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
 using SCMM.Market.CSDeals.Client;
 using SCMM.Market.LootFarm.Client;
+using SCMM.Market.RustSkins.Client;
+using SCMM.Market.SkinBaron.Client;
 using SCMM.Market.Skinport.Client;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
@@ -127,6 +129,8 @@ public static class HostExtensions
             services.AddSingleton<SwapGGWebClient>();
             services.AddSingleton<CSDealsWebClient>();
             services.AddSingleton<TradeitGGWebClient>();
+            services.AddSingleton<SkinBaronWebClient>();
+            services.AddSingleton<RustSkinsWebClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<SteamWorkshopDownloaderWebClient>();

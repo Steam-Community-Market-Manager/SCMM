@@ -59,25 +59,32 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")] // Unconfirmed
         CSDealsMarketplace,
 
+        // TODO: This...
         [Display(Name = "SkinBaron")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5f)] // Unconfirmed
+        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5f)] /* 0,33 EUR + 5% */ // Unconfirmed
         SkinBaron,
 
+        // TODO: This...
         [Display(Name = "RUSTSkins")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")] // Unconfirmed
         RUSTSkins,
 
         /*
-        [Display(Name = "Dmarket")]
-        //[BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")]
+        // TODO: This...
         // https://docs.dmarket.com/v1/swagger.html#/Buy%20items/GetAggregatedPrices
         // https://api.dmarket.com/price-aggregator/v1/aggregated-prices?Titles=Blackout%20Hoodie&Titles=Blackout%20Pants&Limit=100
-        Dmarket,
+        [Display(Name = "Dmarket")]
+        [Market(Type = PriceTypes.Cash)]
+        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")] // Unconfirmed
+        DmarketMarket,
+        DmarketTrade,
 
+        // TODO: This...
         [Display(Name = "BUFF")]
-        //[BuyFrom(Url = "https://buff.163.com/market/{1}")]
+        [Market(Type = PriceTypes.Cash)]
+        [BuyFrom(Url = "https://buff.163.com/market/{1}")] // Unconfirmed
         Buff
 
         // TODO: https://skinmarket.gg/
