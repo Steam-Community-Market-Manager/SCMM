@@ -121,6 +121,11 @@
                                     {
                                         <span>@Item.TimeAccepted.Value.ToString("d")</span>
                                     }
+                                    @if (Item.StorePrice > 0)
+                                    {
+                                        <span class="mud-secondary-text"> for </span>
+                                        <span> @State.Currency.ToPriceString(Item.StorePrice.Value)</span>
+                                    }
                                 </span>
                             </MudText>
                         }
@@ -548,8 +553,8 @@
             {   
                 <MudItem xs="12">
                     <MudPaper Outlined="true">
-                        <div class="d-flex flex-row align-stretch justify-sm-space-around flex-wrap">
-                            @foreach (var price in Item.BuyPrices)
+                        <div class="d-flex flex-row align-stretch justify-center flex-wrap">
+                            @foreach (var price in Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || (x.IsAvailable && (Item.MarketSellOrderLowestPrice == null || x.LowestPrice <= Item.MarketSellOrderLowestPrice))).OrderBy(x => x.LowestPrice))
                             {
                                 <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.MarketType.GetDisplayName()}" : $"Currently unavailable from {price.MarketType.GetDisplayName()}")">
                                     <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
@@ -574,11 +579,11 @@
                                         <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
                                             @if (price.Type.HasFlag(PriceTypes.Cash))
                                             {
-                                                <i class="fa fa-fw fa-credit-card mr-1" title="Cash and credit"></i>
+                                                <i class="fa fa-fw fa-credit-card mr-1" title="Cash or credit"></i>
                                             }
                                             @if (price.Type.HasFlag(PriceTypes.Trade))
                                             {
-                                                <i class="fa fa-fw fa-exchange-alt mr-1" title="Trade and exchange"></i>
+                                                <i class="fa fa-fw fa-exchange-alt mr-1" title="Trade or exchange"></i>
                                             }
                                             <span>@price.MarketType.GetDisplayName()</span>
                                             @if (price.MarketType == MarketType.SteamStore && Item.Stores?.Any() == true)

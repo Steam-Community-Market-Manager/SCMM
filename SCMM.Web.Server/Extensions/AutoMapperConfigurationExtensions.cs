@@ -219,10 +219,7 @@ namespace SCMM.Web.Server.Extensions
                     }
 
                     return assetDescription.GetBuyPrices(currency)
-                        .OrderByDescending(x => x.MarketType == MarketType.SteamStore)
-                        .ThenByDescending(x => x.MarketType == MarketType.SteamCommunityMarket)
-                        .ThenByDescending(x => x.IsAvailable)
-                        .ThenBy(x => x.LowestPrice)
+                        .OrderBy(x => x.LowestPrice)
                         .ToList();
                 }
                 catch (Exception)

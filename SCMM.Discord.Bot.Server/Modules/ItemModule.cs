@@ -103,14 +103,16 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         var buyPrices = item.GetBuyPrices(currency).ToList();
-        var availableBuyPrices = buyPrices
+        var steamStorePrice = buyPrices.FirstOrDefault(x => x.MarketType == MarketType.SteamStore);
+        var steamMarketPrice = buyPrices.FirstOrDefault(x => x.MarketType == MarketType.SteamCommunityMarket);
+        var competitiveMarketPrices = buyPrices
+            .Where(x => steamMarketPrice == null || x.LowestPrice <= steamMarketPrice.LowestPrice)
             .Where(x => x.IsAvailable)
             .OrderBy(x => x.LowestPrice)
             .ToList();
 
         var description = new StringBuilder(item.Description);
-        var storePrice = buyPrices.FirstOrDefault(x => x.MarketType == MarketType.SteamStore);
-        if (storePrice != null && item.TimeAccepted != null)
+        if (steamStorePrice != null && item.TimeAccepted != null)
         {
             if (!description.ToString().EndsWith("."))
             {
@@ -119,14 +121,14 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
 
             description.AppendLine();
             description.AppendLine();
-            description.Append($"{(item.StoreItem.Stores.Count > 1 ? "First released" : "Released")} on {item.TimeAccepted.Value.ToString("dd MMMM yyyy")}");
-            if (!storePrice.IsAvailable)
+            description.Append($"{(item.StoreItem.Stores.Count > 1 ? "First released" : "Released")} on **{item.TimeAccepted.Value.ToString("dd MMMM yyyy")}**");
+            if (!steamStorePrice.IsAvailable)
             {
-                description.Append($" for `{currency.ToPriceString(storePrice.LowestPrice)}`");
+                description.Append($" for **{currency.ToPriceString(steamStorePrice.LowestPrice)}**");
             }
             if (item.LifetimeSubscriptions > 0)
             {
-                description.Append($" with more than {item.LifetimeSubscriptions.Value.ToQuantityString()} copies sold");
+                description.Append($" with more than an estimated **{item.LifetimeSubscriptions.Value.ToQuantityString()}** copies sold");
             }
             else
             {
@@ -139,10 +141,10 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         var fields = new List<EmbedFieldBuilder>();
-        foreach (var price in availableBuyPrices)
+        foreach (var price in competitiveMarketPrices)
         {
             var priceAvailabilityFormatter = (!price.IsAvailable ? "~~" : null);
-            var priceIsCheapest = (price.LowestPrice == availableBuyPrices.Min(x => x.LowestPrice));
+            var priceIsCheapest = (price.LowestPrice == competitiveMarketPrices.Min(x => x.LowestPrice));
             var priceColorFormatter = String.Empty;
             if (priceIsCheapest)
             {
@@ -169,7 +171,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
             priceValue.Append(priceAvailabilityFormatter);
             if (price.IsAvailable && priceIsCheapest)
             {
-                priceValue.Append($"[buy it now at the cheapest price]({price.Url})");
+                priceValue.Append($"[buy now at the cheapest price]({price.Url})");
             }
 
             fields.Add(

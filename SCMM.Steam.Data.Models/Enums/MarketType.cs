@@ -16,7 +16,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [Display(Name = "Steam Community Market")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://steamcommunity.com/market/listings/{0}/{3}")]
-        [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", FeeRate = 13.0f)]
+        [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", FeeRate = 13f)]
         SteamCommunityMarket,
 
         [Display(Name = "Skinport")]
@@ -26,7 +26,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "LOOT.Farm")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
-        [BuyFrom(Url = "https://loot.farm/", FeeRate = -20.0f)] // Unconfirmed, first time only?
+        [BuyFrom(Url = "https://loot.farm/", FeeRate = -20f)] // Unconfirmed, first time only?
         LOOTFarm,
 
         [Display(Name = "Swap.gg Trade")]
@@ -36,7 +36,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Swap.gg Market")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeSurcharge = 40, FeeRate = 3.0f)] /* 0,33 EUR + 3% */
+        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeSurcharge = 40, FeeRate = 3f)] /* 0,33 EUR + 3% */
         SwapGGMarket,
 
         [Display(Name = "Tradeit.gg Trade")]
@@ -61,7 +61,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "SkinBaron")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5.0f)] // Unconfirmed
+        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5f)] // Unconfirmed
         SkinBaron,
 
         [Display(Name = "RUSTSkins")]
