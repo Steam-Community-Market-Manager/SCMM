@@ -92,7 +92,7 @@ public static class WebApplicationExtensions
                 options.ExpireTimeSpan = TimeSpan.FromDays(7);
                 options.Cookie.IsEssential = true;
                 options.Cookie.HttpOnly = false;
-                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Cookie.SameSite = SameSiteMode.None;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             })
             .AddSteam(options =>
