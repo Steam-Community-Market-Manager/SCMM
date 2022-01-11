@@ -7,6 +7,7 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Attributes;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store.Types;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -257,6 +258,7 @@ namespace SCMM.Steam.Data.Store
                 foreach (var marketPrice in MarketItem.BuyPrices)
                 {
                     var marketTypeField = marketPrice.Key.GetType().GetField(marketPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static);
+                    var marketBuyFrom = marketTypeField?.GetCustomAttribute<BuyFromAttribute>();
                     var lowestPrice = (long?)null;
                     if (currency != null)
                     {
@@ -267,6 +269,14 @@ namespace SCMM.Steam.Data.Store
                         currency = MarketItem.Currency;
                         lowestPrice = marketPrice.Value.Price;
                     }
+                    if (marketBuyFrom.FeeRate > 0 && lowestPrice > 0)
+                    {
+                        lowestPrice += lowestPrice.Value.MarketSaleFeeComponentAsInt(marketBuyFrom.FeeRate);
+                    }
+                    if (marketBuyFrom.FeeSurcharge > 0 && lowestPrice > 0)
+                    {
+                        lowestPrice += marketBuyFrom.FeeSurcharge;
+                    }
                     yield return new Price
                     {
                         Type = (marketTypeField?.GetCustomAttribute<MarketAttribute>()?.Type ?? PriceTypes.None),
@@ -276,7 +286,7 @@ namespace SCMM.Steam.Data.Store
                         QuantityAvailable = marketPrice.Value.Stock,
                         IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Stock != 0),
                         Url = String.Format(
-                            (marketTypeField?.GetCustomAttribute<BuyFromAttribute>()?.Url ?? String.Empty),
+                            (marketBuyFrom?.Url ?? String.Empty),
                             app?.SteamId, Uri.EscapeDataString(app?.Name?.ToLower()), ClassId, Uri.EscapeDataString(NameHash)
                         )
                     };
