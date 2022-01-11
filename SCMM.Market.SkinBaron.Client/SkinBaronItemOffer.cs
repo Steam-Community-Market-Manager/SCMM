@@ -17,10 +17,10 @@ namespace SCMM.Market.SkinBaron.Client
         public decimal LowestPrice { get; set; }
 
         [JsonPropertyName("numberOfOffers")]
-        public decimal NumberOfOffers { get; set; }
+        public int NumberOfOffers { get; set; }
 
         [JsonPropertyName("numberOfOffersTradeLocked")]
-        public decimal NumberOfOffersTradeLocked { get; set; }
+        public int NumberOfOffersTradeLocked { get; set; }
 
         [JsonPropertyName("steamMarketPrice")]
         public decimal SteamMarketPrice { get; set; }

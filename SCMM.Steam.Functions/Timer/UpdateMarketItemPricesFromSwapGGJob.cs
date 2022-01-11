@@ -22,7 +22,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
     }
 
     [Function("Update-Market-Item-Prices-From-SwapGG")]
-    public async Task Run([TimerTrigger("0 4-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 5-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-SwapGG");
 
