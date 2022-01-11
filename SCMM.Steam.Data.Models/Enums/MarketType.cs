@@ -66,7 +66,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "RUSTSkins")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")] // Unconfirmed
+        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", FeeRate = 3f)] // Unconfirmed
         RUSTSkins,
 
         /*
