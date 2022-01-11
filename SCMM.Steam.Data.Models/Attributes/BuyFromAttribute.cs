@@ -5,7 +5,7 @@ public class BuyFromAttribute : Attribute
 {
     public string Url { get; set; }
 
-    public float FeeRate { get; set; }
-
     public long FeeSurcharge { get; set; }
+
+    public float FeeRate { get; set; }
 }

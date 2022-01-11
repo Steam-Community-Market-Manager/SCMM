@@ -21,7 +21,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Skinport")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}", FeeRate = 7.0f)] // Unconfirmed
+        [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}")]
         Skinport,
 
         [Display(Name = "LOOT.Farm")]
@@ -36,7 +36,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Swap.gg Market")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeRate = 3.0f, FeeSurcharge = 40)] // Unconfirmed
+        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeSurcharge = 40, FeeRate = 3.0f)] /* 0,33 EUR + 3% */
         SwapGGMarket,
 
         [Display(Name = "Tradeit.gg Trade")]
@@ -51,7 +51,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "CS.Deals Trade")]
         [Market(Type = PriceTypes.Trade)]
-        [BuyFrom(Url = "https://cs.deals/trade-skins")] // Unconfirmed
+        [BuyFrom(Url = "https://cs.deals/trade-skins")]
         CSDealsTrade,
 
         [Display(Name = "CS.Deals Marketplace")]
@@ -59,16 +59,17 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")] // Unconfirmed
         CSDealsMarketplace,
 
-        /*
         [Display(Name = "SkinBaron")]
-        //[BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeRate = 5.0f, FeeSurcharge = 40)]
-        // https://skinbaron.de/misc/apidoc/
+        [Market(Type = PriceTypes.Cash)]
+        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5.0f)] // Unconfirmed
         SkinBaron,
 
         [Display(Name = "RUSTSkins")]
-        //[BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")]
+        [Market(Type = PriceTypes.Cash)]
+        [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending")] // Unconfirmed
         RUSTSkins,
 
+        /*
         [Display(Name = "Dmarket")]
         //[BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")]
         // https://docs.dmarket.com/v1/swagger.html#/Buy%20items/GetAggregatedPrices
