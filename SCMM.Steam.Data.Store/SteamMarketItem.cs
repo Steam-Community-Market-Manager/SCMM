@@ -209,10 +209,18 @@ namespace SCMM.Steam.Data.Store
 
             if (availablePrices.Any(x => x.BuyFrom != null))
             {
-                var lowestBuyPrice = availablePrices.Where(x => x.BuyFrom != null).MinBy(x => x.Price);
-                BuyNowFrom = lowestBuyPrice.Type;
+                var lowestBuyPrice = availablePrices
+                    .Where(x => x.BuyFrom != null)
+                    .Select(x => new
+                    {
+                        From = x.Type,
+                        Price = x.Price,
+                        Fee = (x.BuyFrom.FeeRate > 0 ? x.Price.MarketSaleFeeComponentAsInt(x.BuyFrom.FeeRate) : 0) + x.BuyFrom.FeeSurcharge
+                    })
+                    .MinBy(x => x.Price + x.Fee);
+                BuyNowFrom = lowestBuyPrice.From;
                 BuyNowPrice = lowestBuyPrice.Price;
-                BuyNowFee = (lowestBuyPrice.BuyFrom.FeeRate > 0 ? BuyNowPrice.MarketSaleFeeComponentAsInt(lowestBuyPrice.BuyFrom.FeeRate) + lowestBuyPrice.BuyFrom.FeeSurcharge : 0);
+                BuyNowFee = lowestBuyPrice.Fee;
             }
             else
             {
@@ -223,10 +231,18 @@ namespace SCMM.Steam.Data.Store
 
             if (availablePrices.Any(x => x.SellTo != null))
             {
-                var highestSellPrice = availablePrices.Where(x => x.SellTo != null).MaxBy(x => x.Price);
-                SellLaterTo = highestSellPrice.Type;
-                SellLaterPrice = (highestSellPrice.Price - 1);
-                SellLaterFee = (highestSellPrice.SellTo.FeeRate > 0 ? SellLaterPrice.MarketSaleFeeComponentAsInt(highestSellPrice.SellTo.FeeRate) + highestSellPrice.SellTo.FeeSurcharge : 0);
+                var highestSellPrice = availablePrices
+                    .Where(x => x.SellTo != null)
+                    .Select(x => new
+                    {
+                        From = x.Type,
+                        Price = (x.Price - 1),
+                        Fee = (x.SellTo.FeeRate > 0 ? (x.Price - 1).MarketSaleFeeComponentAsInt(x.SellTo.FeeRate) : 0) + x.SellTo.FeeSurcharge
+                    })
+                    .MaxBy(x => x.Price);
+                SellLaterTo = highestSellPrice.From;
+                SellLaterPrice = highestSellPrice.Price;
+                SellLaterFee = highestSellPrice.Fee;
             }
             else
             {
@@ -261,10 +277,18 @@ namespace SCMM.Steam.Data.Store
 
             if (availablePrices.Any(x => x.SellTo != null))
             {
-                var highestSellPrice = availablePrices.Where(x => x.SellTo != null).MaxBy(x => x.Price);
-                SellNowTo = highestSellPrice.Type;
+                var highestSellPrice = availablePrices
+                    .Where(x => x.SellTo != null)
+                    .Select(x => new
+                    {
+                        From = x.Type,
+                        Price = x.Price,
+                        Fee = (x.SellTo.FeeRate > 0 ? x.Price.MarketSaleFeeComponentAsInt(x.SellTo.FeeRate) : 0) + x.SellTo.FeeSurcharge
+                    })
+                    .MaxBy(x => x.Price);
+                SellNowTo = highestSellPrice.From;
                 SellNowPrice = highestSellPrice.Price;
-                SellNowFee = (highestSellPrice.SellTo.FeeRate > 0 ? SellNowPrice.MarketSaleFeeComponentAsInt(highestSellPrice.SellTo.FeeRate) + highestSellPrice.SellTo.FeeSurcharge : 0);
+                SellNowFee = highestSellPrice.Fee;
             }
             else
             {
@@ -275,10 +299,18 @@ namespace SCMM.Steam.Data.Store
 
             if (availablePrices.Any(x => x.BuyFrom != null))
             {
-                var lowestBuyPrice = availablePrices.Where(x => x.BuyFrom != null).MinBy(x => x.Price);
-                BuyLaterFrom = lowestBuyPrice.Type;
-                BuyLaterPrice = (lowestBuyPrice.Price + 1);
-                BuyLaterFee = (lowestBuyPrice.BuyFrom.FeeRate > 0 ? BuyLaterPrice.MarketSaleFeeComponentAsInt(lowestBuyPrice.BuyFrom.FeeRate) + lowestBuyPrice.BuyFrom.FeeSurcharge : 0);
+                var lowestBuyPrice = availablePrices
+                    .Where(x => x.BuyFrom != null)
+                    .Select(x => new
+                    {
+                        From = x.Type,
+                        Price = (x.Price + 1),
+                        Fee = (x.BuyFrom.FeeRate > 0 ? (x.Price + 1).MarketSaleFeeComponentAsInt(x.BuyFrom.FeeRate) : 0) + x.BuyFrom.FeeSurcharge
+                    })
+                    .MinBy(x => x.Price);
+                BuyLaterFrom = lowestBuyPrice.From;
+                BuyLaterPrice = lowestBuyPrice.Price;
+                BuyLaterFee = lowestBuyPrice.Fee;
             }
             else
             {
