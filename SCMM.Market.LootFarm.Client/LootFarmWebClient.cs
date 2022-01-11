@@ -6,7 +6,7 @@ namespace SCMM.Market.LootFarm.Client
     {
         private const string BaseUri = "https://loot.farm/";
 
-        public async Task<IEnumerable<LootFarmItem>> GetItemsAsync(string appName)
+        public async Task<IEnumerable<LootFarmItemPrice>> GetItemPricesAsync(string appName)
         {
             using (var client = new HttpClient())
             {
@@ -15,7 +15,7 @@ namespace SCMM.Market.LootFarm.Client
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonSerializer.Deserialize<LootFarmItem[]>(textJson);
+                var responseJson = JsonSerializer.Deserialize<LootFarmItemPrice[]>(textJson);
                 return responseJson;
             }
         }

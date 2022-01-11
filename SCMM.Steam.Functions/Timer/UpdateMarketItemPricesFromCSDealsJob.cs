@@ -54,7 +54,7 @@ public class UpdateMarketItemPricesFromCSDealsob
 
             try
             {
-                var csDealsInventoryItems = (await _csDealsWebClient.BotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value;
+                var csDealsInventoryItems = (await _csDealsWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value;
                 if (csDealsInventoryItems?.Any() != true)
                 {
                     continue;
@@ -88,7 +88,7 @@ public class UpdateMarketItemPricesFromCSDealsob
 
             try
             {
-                var csDealsLowestPriceItems = await _csDealsWebClient.PricingGetLowestPricesAsync(app.SteamId);
+                var csDealsLowestPriceItems = await _csDealsWebClient.GetPricingGetLowestPricesAsync(app.SteamId);
                 if (csDealsLowestPriceItems?.Any() != true)
                 {
                     continue;

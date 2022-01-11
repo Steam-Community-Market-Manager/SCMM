@@ -16,7 +16,7 @@ namespace SCMM.Market.CSDeals.Client
 
         }
 
-        public async Task<IEnumerable<CSDealsItemPrice>> PricingGetLowestPricesAsync(string appId)
+        public async Task<IEnumerable<CSDealsItemPrice>> GetPricingGetLowestPricesAsync(string appId)
         {
             using (var client = new HttpClient())
             {
@@ -30,7 +30,7 @@ namespace SCMM.Market.CSDeals.Client
             }
         }
 
-        public async Task<CSDealsMarketplaceSearchResults<CSDealsItemListings>> MarketplaceSearchAsync(string appId, int page = 0)
+        public async Task<CSDealsMarketplaceSearchResults<CSDealsItemListings>> PostMarketplaceSearchAsync(string appId, int page = 0)
         {
             using (var client = BuildWebBrowserHttpClient())
             {
@@ -49,7 +49,7 @@ namespace SCMM.Market.CSDeals.Client
             }
         }
 
-        public async Task<CSDealsBotsInventoryResult> BotsInventoryAsync(string appId)
+        public async Task<CSDealsBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
             using (var client = BuildWebBrowserHttpClient())
             {

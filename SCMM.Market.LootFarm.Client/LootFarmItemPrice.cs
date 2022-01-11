@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.LootFarm.Client
 {
-    public class LootFarmItem
+    public class LootFarmItemPrice
     {
         [JsonPropertyName("name")]
         public string Name { get; set; }

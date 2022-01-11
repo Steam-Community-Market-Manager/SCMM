@@ -53,7 +53,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
 
             try
             {
-                var lootFarmItems = await _lootFarmWebClient.GetItemsAsync(app.Name);
+                var lootFarmItems = await _lootFarmWebClient.GetItemPricesAsync(app.Name);
                 if (lootFarmItems?.Any() != true)
                 {
                     continue;
