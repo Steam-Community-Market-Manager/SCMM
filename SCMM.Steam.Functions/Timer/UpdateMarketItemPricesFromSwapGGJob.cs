@@ -64,10 +64,10 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     var item = items.FirstOrDefault(x => x.Name == swapggTradeItem.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.SwapGGTrade, new PriceStock
+                        item.UpdateBuyPrices(MarketType.SwapGGTrade, new PriceWithSupply
                         {
                             Price = swapggTradeItem.ItemIds?.Length > 0 ? item.Currency.CalculateExchange(swapggTradeItem.Price, eurCurrency) : 0,
-                            Stock = swapggTradeItem.ItemIds?.Length
+                            Supply = swapggTradeItem.ItemIds?.Length
                         });
                     }
                 }
@@ -96,10 +96,10 @@ public class UpdateMarketItemPricesFromSwapGGJob
                     var item = items.FirstOrDefault(x => x.Name == swapggMarketItem.Key)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.SwapGGMarket, new PriceStock
+                        item.UpdateBuyPrices(MarketType.SwapGGMarket, new PriceWithSupply
                         {
                             Price = swapggMarketItem.Value.Quantity > 0 ? item.Currency.CalculateExchange(swapggMarketItem.Value.Price, eurCurrency) : 0,
-                            Stock = swapggMarketItem.Value.Quantity
+                            Supply = swapggMarketItem.Value.Quantity
                         });
                     }
                 }

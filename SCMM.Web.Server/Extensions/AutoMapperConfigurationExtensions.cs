@@ -157,7 +157,7 @@ namespace SCMM.Web.Server.Extensions
             });
         }
 
-        public static void MapFromUsingAssetPrice<TSource, TDestination, TValue>(this IMemberConfigurationExpression<TSource, TDestination, TValue> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression, Expression<Func<Price, TValue>> propertyExpression)
+        public static void MapFromUsingAssetBuyPrice<TSource, TDestination, TValue>(this IMemberConfigurationExpression<TSource, TDestination, TValue> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression, Expression<Func<MarketPrice, TValue>> propertyExpression)
         {
             memberOptions.MapFrom((src, dst, _, context) =>
             {
@@ -195,7 +195,7 @@ namespace SCMM.Web.Server.Extensions
             });
         }
 
-        public static void MapFromAssetBuyPrices<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, IEnumerable<ItemPriceDTO>> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression)
+        public static void MapFromAssetBuyPrices<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, IEnumerable<ItemMarketPriceDTO>> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression)
         {
             memberOptions.MapFrom((src, dst, _, context) =>
             {
@@ -219,7 +219,7 @@ namespace SCMM.Web.Server.Extensions
                     }
 
                     return assetDescription.GetBuyPrices(currency)
-                        .OrderBy(x => x.LowestPrice)
+                        .OrderBy(x => x.Price)
                         .ToList();
                 }
                 catch (Exception)

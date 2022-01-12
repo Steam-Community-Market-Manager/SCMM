@@ -184,7 +184,7 @@ namespace SCMM.Steam.Data.Store
         // How long since sales were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
-        public void UpdateBuyPrices(MarketType type, PriceStock? price)
+        public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
         {
             BuyPrices = new PersistableMarketPriceDictionary(BuyPrices);
             if (price != null)
@@ -197,7 +197,7 @@ namespace SCMM.Steam.Data.Store
             }
 
             var availablePrices = BuyPrices
-                .Where(x => x.Value.Price > 0 && x.Value.Stock != 0)
+                .Where(x => x.Value.Price > 0 && x.Value.Supply != 0)
                 .Select(x => new
                 {
                     Type = x.Key,
@@ -252,7 +252,7 @@ namespace SCMM.Steam.Data.Store
             }
         }
 
-        public void UpdateSellPrices(MarketType type, PriceStock? price)
+        public void UpdateSellPrices(MarketType type, PriceWithSupply? price)
         {
             SellPrices = new PersistableMarketPriceDictionary(SellPrices);
             if (price != null)
@@ -265,7 +265,7 @@ namespace SCMM.Steam.Data.Store
             }
 
             var availablePrices = SellPrices
-                .Where(x => x.Value.Price > 0 && x.Value.Stock != 0)
+                .Where(x => x.Value.Price > 0 && x.Value.Supply != 0)
                 .Select(x => new
                 {
                     Type = x.Key,
@@ -346,10 +346,10 @@ namespace SCMM.Steam.Data.Store
                 BuyOrderCumulativePrice = cumulativeBuyOrderPrice;
                 BuyOrderHighestPrice = highestBuyOrderPrice;
 
-                UpdateSellPrices(MarketType.SteamCommunityMarket, new PriceStock
+                UpdateSellPrices(MarketType.SteamCommunityMarket, new PriceWithSupply
                 {
                     Price = BuyOrderCount > 0 ? BuyOrderHighestPrice : 0,
-                    Stock = BuyOrderCount
+                    Supply = BuyOrderCount
                 });
             }
 
@@ -374,10 +374,10 @@ namespace SCMM.Steam.Data.Store
                 SellOrderCumulativePrice = cumulativeSellOrderPrice;
                 SellOrderLowestPrice = lowestSellOrderPrice;
                 
-                UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceStock
+                UpdateBuyPrices(MarketType.SteamCommunityMarket, new PriceWithSupply
                 {
                     Price = SellOrderCount > 0 ? SellOrderLowestPrice : 0,
-                    Stock = SellOrderCount
+                    Supply = SellOrderCount
                 });
             }
 

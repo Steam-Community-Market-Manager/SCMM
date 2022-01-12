@@ -64,10 +64,10 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                     var item = items.FirstOrDefault(x => x.Name == lootFarmItem.Name)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.LOOTFarm, new PriceStock
+                        item.UpdateBuyPrices(MarketType.LOOTFarm, new PriceWithSupply
                         {
                             Price = lootFarmItem.Have > 0 ? item.Currency.CalculateExchange(lootFarmItem.Price, usdCurrency) : 0,
-                            Stock = lootFarmItem.Have
+                            Supply = lootFarmItem.Have
                         });
                     }
                 }

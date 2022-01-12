@@ -1,16 +1,22 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Item
 {
-    public class ItemPriceDTO
+    public class ItemMarketPriceDTO
     {
         public PriceTypes Type { get; set; }
 
         public MarketType MarketType { get; set; }
 
-        public long LowestPrice { get; set; }
+        public long Price { get; set; }
 
-        public int? QuantityAvailable { get; set; }
+        public long Fee { get; set; }
+
+        [JsonIgnore]
+        public long Total => (Price + Fee);
+
+        public int? Supply { get; set; }
 
         public bool IsAvailable { get; set; }
 

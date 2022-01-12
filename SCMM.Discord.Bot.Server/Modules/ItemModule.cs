@@ -106,9 +106,9 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         var steamStorePrice = buyPrices.FirstOrDefault(x => x.MarketType == MarketType.SteamStore);
         var steamMarketPrice = buyPrices.FirstOrDefault(x => x.MarketType == MarketType.SteamCommunityMarket);
         var competitiveMarketPrices = buyPrices
-            .Where(x => steamMarketPrice == null || x.LowestPrice <= steamMarketPrice.LowestPrice)
+            .Where(x => steamMarketPrice == null || x.Price <= steamMarketPrice.Price)
             .Where(x => x.IsAvailable)
-            .OrderBy(x => x.LowestPrice)
+            .OrderBy(x => x.Price)
             .ToList();
 
         var description = new StringBuilder(item.Description);
@@ -124,7 +124,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
             description.Append($"{(item.StoreItem.Stores.Count > 1 ? "First released" : "Released")} on **{item.TimeAccepted.Value.ToString("dd MMMM yyyy")}**");
             if (!steamStorePrice.IsAvailable)
             {
-                description.Append($" for **{currency.ToPriceString(steamStorePrice.LowestPrice)}**");
+                description.Append($" for **{currency.ToPriceString(steamStorePrice.Price)}**");
             }
             if (item.LifetimeSubscriptions > 0)
             {
@@ -144,7 +144,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         foreach (var price in competitiveMarketPrices)
         {
             var priceAvailabilityFormatter = (!price.IsAvailable ? "~~" : null);
-            var priceIsCheapest = (price.LowestPrice == competitiveMarketPrices.Min(x => x.LowestPrice));
+            var priceIsCheapest = (price.Price == competitiveMarketPrices.Min(x => x.Price));
             var priceColorFormatter = String.Empty;
             if (priceIsCheapest)
             {
@@ -156,16 +156,16 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
             }
 
             var priceName = new StringBuilder(price.MarketType.GetDisplayName());
-            if (price.QuantityAvailable > 0)
+            if (price.Supply > 0)
             {
-                priceName.Append($" ({price.QuantityAvailable.Value.ToQuantityString()})");
+                priceName.Append($" ({price.Supply.Value.ToQuantityString()})");
             }
 
             var priceValue = new StringBuilder();
             priceValue.Append(priceAvailabilityFormatter);
             priceValue.Append($"```{priceColorFormatter}");
             priceValue.AppendLine();
-            priceValue.Append(currency.ToPriceString(price.LowestPrice));
+            priceValue.Append(currency.ToPriceString(price.Price));
             priceValue.AppendLine();
             priceValue.Append($"```");
             priceValue.Append(priceAvailabilityFormatter);

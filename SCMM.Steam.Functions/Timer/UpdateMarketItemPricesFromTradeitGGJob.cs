@@ -78,15 +78,15 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                     if (item != null)
                     {
                         // NOTE: Trade and store share the same item inventory, but buying from the store has a fixed discount
-                        item.UpdateBuyPrices(MarketType.TradeitGGTrade, new PriceStock
+                        item.UpdateBuyPrices(MarketType.TradeitGGTrade, new PriceWithSupply
                         {
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
-                            Stock = tradeitGGItem.Value
+                            Supply = tradeitGGItem.Value
                         });
-                        item.UpdateBuyPrices(MarketType.TradeitGGStore, new PriceStock
+                        item.UpdateBuyPrices(MarketType.TradeitGGStore, new PriceWithSupply
                         {
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price - (long)Math.Round(tradeitGGItem.Key.Price * TradeitGGWebClient.StoreDiscountMultiplier, 0), usdCurrency) : 0,
-                            Stock = tradeitGGItem.Value
+                            Supply = tradeitGGItem.Value
                         });
                     }
                 }

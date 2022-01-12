@@ -17,6 +17,11 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         public long BuyPrice { get; set; }
 
+        public long BuyFee { get; set; }
+
+        [JsonIgnore]
+        public long BuyTotal => (BuyPrice + BuyFee);
+
         public string BuyUrl { get; set; }
 
         public MarketType ReferenceFrom { get; set; }
@@ -24,6 +29,6 @@ namespace SCMM.Web.Data.Models.UI.Analytic
         public long ReferemcePrice { get; set; }
 
         [JsonIgnore]
-        public long DiscountAmount => Math.Abs(ReferemcePrice - BuyPrice);
+        public long DiscountAmount => Math.Abs(ReferemcePrice - (BuyPrice + BuyFee));
     }
 }

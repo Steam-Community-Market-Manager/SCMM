@@ -77,10 +77,10 @@ public class UpdateMarketItemPricesFromSkinBaronJob
                     var item = items.FirstOrDefault(x => x.Name == skinBaronItem.ExtendedProductInformation?.LocalizedName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.SkinBaron, new PriceStock
+                        item.UpdateBuyPrices(MarketType.SkinBaron, new PriceWithSupply
                         {
                             Price = skinBaronItem.NumberOfOffers > 0 ? item.Currency.CalculateExchange(skinBaronItem.LowestPrice.ToString().SteamPriceAsInt(), eurCurrency) : 0,
-                            Stock = skinBaronItem.NumberOfOffers
+                            Supply = skinBaronItem.NumberOfOffers
                         });
                     }
                 }

@@ -3,7 +3,7 @@ using SCMM.Steam.Data.Models.Enums;
 
 namespace SCMM.Steam.Data.Models
 {
-    public class Price
+    public class MarketPrice
     {
         public PriceTypes Type { get; set; }
 
@@ -11,12 +11,14 @@ namespace SCMM.Steam.Data.Models
 
         public IExchangeableCurrency Currency { get; set; }
 
-        public long LowestPrice { get; set; }
+        public long Price { get; set; }
+
+        public long Fee { get; set; }
 
         /// <summary>
         /// Zero == no supply. Null == unlimited supply. 
         /// </summary>
-        public int? QuantityAvailable { get; set; } = 0;
+        public int? Supply { get; set; } = 0;
 
         public bool IsAvailable { get; set; }
 

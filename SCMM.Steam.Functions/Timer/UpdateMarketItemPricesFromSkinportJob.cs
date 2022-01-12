@@ -65,10 +65,10 @@ public class UpdateMarketItemPricesFromSkinportJob
                     var item = items.FirstOrDefault(x => x.Name == skinportItem.MarketHashName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.Skinport, new PriceStock
+                        item.UpdateBuyPrices(MarketType.Skinport, new PriceWithSupply
                         {
                             Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                            Stock = skinportItem.Quantity
+                            Supply = skinportItem.Quantity
                         });
                     }
                 }

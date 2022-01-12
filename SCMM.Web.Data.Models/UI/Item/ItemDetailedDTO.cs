@@ -189,7 +189,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string BuyNowUrl { get; set; }
 
-        public IEnumerable<ItemPriceDTO> BuyPrices { get; set; }
+        public IEnumerable<ItemMarketPriceDTO> BuyPrices { get; set; }
 
         // TODO: BuyLater
         // TODO: SellNow

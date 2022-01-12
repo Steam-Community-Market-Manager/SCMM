@@ -211,16 +211,16 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public Price this[IExchangeableCurrency currency] =>
-            GetBuyPrices(currency).Where(x => x.IsFirstPartyMarket && x.IsAvailable).OrderBy(x => x.LowestPrice).FirstOrDefault();
+        public MarketPrice this[IExchangeableCurrency currency] =>
+            GetBuyPrices(currency).Where(x => x.IsFirstPartyMarket && x.IsAvailable).OrderBy(x => x.Price + x.Fee).FirstOrDefault();
 
-        public IEnumerable<Price> GetBuyPrices(IExchangeableCurrency currency)
+        public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency)
         {
             // Store price
             if (StoreItem != null && StoreItem.Currency != null)
             {
                 var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
-                var lowestPrice = (long?)null;
+                var lowestPrice = 0l;
                 if (currency != null)
                 {
                     if (StoreItem.Prices != null && StoreItem.Prices.ContainsKey(currency.Name))
@@ -235,15 +235,16 @@ namespace SCMM.Steam.Data.Store
                 else
                 {
                     currency = StoreItem.Currency;
-                    lowestPrice = StoreItem.Price;
+                    lowestPrice = StoreItem.Price ?? 0;
                 }
-                yield return new Price
+                yield return new MarketPrice
                 {
                     Type = PriceTypes.Cash,
                     MarketType = MarketType.SteamStore,
                     Currency = currency,
-                    LowestPrice = lowestPrice ?? 0,
-                    QuantityAvailable = (!StoreItem.IsAvailable ? 0 : null),
+                    Price = lowestPrice,
+                    Fee = 0,
+                    Supply = (!StoreItem.IsAvailable ? 0 : null),
                     IsAvailable = (StoreItem.IsAvailable && lowestPrice > 0),
                     Url = !string.IsNullOrEmpty(StoreItem.SteamId)
                         ? new SteamItemStoreDetailPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
@@ -259,7 +260,8 @@ namespace SCMM.Steam.Data.Store
                 {
                     var marketTypeField = marketPrice.Key.GetType().GetField(marketPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static);
                     var marketBuyFrom = marketTypeField?.GetCustomAttribute<BuyFromAttribute>();
-                    var lowestPrice = (long?)null;
+                    var lowestPrice = 0l;
+                    var lowestPriceFee = 0l;
                     if (currency != null)
                     {
                         lowestPrice = currency.CalculateExchange(marketPrice.Value.Price, MarketItem.Currency);
@@ -271,20 +273,21 @@ namespace SCMM.Steam.Data.Store
                     }
                     if (marketBuyFrom.FeeRate != 0 && lowestPrice > 0)
                     {
-                        lowestPrice += lowestPrice.Value.MarketSaleFeeComponentAsInt(marketBuyFrom.FeeRate);
+                        lowestPriceFee += lowestPrice.MarketSaleFeeComponentAsInt(marketBuyFrom.FeeRate);
                     }
                     if (marketBuyFrom.FeeSurcharge != 0 && lowestPrice > 0)
                     {
-                        lowestPrice += marketBuyFrom.FeeSurcharge;
+                        lowestPriceFee += marketBuyFrom.FeeSurcharge;
                     }
-                    yield return new Price
+                    yield return new MarketPrice
                     {
                         Type = (marketTypeField?.GetCustomAttribute<MarketAttribute>()?.Type ?? PriceTypes.None),
                         MarketType = marketPrice.Key,
                         Currency = currency,
-                        LowestPrice = lowestPrice ?? 0,
-                        QuantityAvailable = marketPrice.Value.Stock,
-                        IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Stock != 0),
+                        Price = lowestPrice,
+                        Fee = lowestPriceFee,
+                        Supply = marketPrice.Value.Supply,
+                        IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Supply != 0),
                         Url = String.Format(
                             (marketBuyFrom?.Url ?? String.Empty),
                             app?.SteamId, Uri.EscapeDataString(app?.Name?.ToLower()), ClassId, Uri.EscapeDataString(NameHash)

@@ -78,11 +78,11 @@ public class UpdateMarketItemPricesFromRustSkinsJob
                     var item = items.FirstOrDefault(x => x.Name == rustSkinItemGroups.Key)?.Item;
                     if (item != null)
                     {
-                        var stock = rustSkinItemGroups.Count();
-                        item.UpdateBuyPrices(MarketType.RUSTSkins, new PriceStock
+                        var supply = rustSkinItemGroups.Count();
+                        item.UpdateBuyPrices(MarketType.RUSTSkins, new PriceWithSupply
                         {
-                            Price = stock > 0 ? item.Currency.CalculateExchange(rustSkinItemGroups.Min(x => x.CustomPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                            Stock = stock
+                            Price = supply > 0 ? item.Currency.CalculateExchange(rustSkinItemGroups.Min(x => x.CustomPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                            Supply = supply
                         });
                     }
                 }

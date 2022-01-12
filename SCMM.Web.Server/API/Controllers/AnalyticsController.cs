@@ -69,7 +69,8 @@ namespace SCMM.Web.Server.API.Controllers
                     IconUrl = x.Description.IconUrl,
                     Name = x.Description.Name,
                     BuyFrom = x.BuyNowFrom,
-                    BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice + x.BuyNowFee, x.Currency),
+                    BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
+                    BuyFee = this.Currency().CalculateExchange(x.BuyNowFee, x.Currency),
                     BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
                     ReferenceFrom = MarketType.SteamCommunityMarket,
                     ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice - 1, x.Currency),
@@ -101,8 +102,8 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
                 .Where(x => x.BuyNowFrom != MarketType.SteamCommunityMarket)
                 .Where(x => (x.BuyNowPrice + x.BuyNowFee) > 0 && x.BuyOrderHighestPrice > 0)
-                .Where(x => ((x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + x.BuyNowFee)) / (decimal)x.BuyOrderHighestPrice) > 0.25m)
-                .OrderByDescending(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + x.BuyNowFee)));
+                .Where(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + x.BuyNowFee)) > 100)
+                .OrderByDescending(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + x.BuyNowFee)) / (decimal)x.BuyOrderHighestPrice);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new MarketItemFlipDealAnalyticDTO()
@@ -112,13 +113,12 @@ namespace SCMM.Web.Server.API.Controllers
                     IconUrl = x.Description.IconUrl,
                     Name = x.Description.Name,
                     BuyFrom = x.BuyNowFrom,
-                    BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice + x.BuyNowFee, x.Currency),
+                    BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
+                    BuyFee = this.Currency().CalculateExchange(x.BuyNowFee, x.Currency),
                     BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
                     SellTo = MarketType.SteamCommunityMarket,
-                    SellNowPrice = this.Currency().CalculateExchange(x.BuyOrderHighestPrice, x.Currency),
-                    SellNowFee = this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.BuyOrderHighestPrice), x.Currency),
-                    SellLaterPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice - 1, x.Currency),
-                    SellLaterFee = this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.SellOrderLowestPrice - 1), x.Currency),
+                    SellPrice = this.Currency().CalculateExchange(x.BuyOrderHighestPrice, x.Currency),
+                    SellFee = this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.BuyOrderHighestPrice), x.Currency),
                 })
             );
         }

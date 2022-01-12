@@ -65,11 +65,11 @@ public class UpdateMarketItemPricesFromCSDealsob
                     var item = items.FirstOrDefault(x => x.Name == csDealsInventoryItemGroup.Key)?.Item;
                     if (item != null)
                     {
-                        var stock = csDealsInventoryItemGroup.Sum(x => x.ItemIds?.Length ?? 0);
-                        item.UpdateBuyPrices(MarketType.CSDealsTrade, new PriceStock
+                        var supply = csDealsInventoryItemGroup.Sum(x => x.ItemIds?.Length ?? 0);
+                        item.UpdateBuyPrices(MarketType.CSDealsTrade, new PriceWithSupply
                         {
-                            Price = stock > 0 ? item.Currency.CalculateExchange((csDealsInventoryItemGroup.Min(x => x.ListingPrice)).ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                            Stock = stock
+                            Price = supply > 0 ? item.Currency.CalculateExchange((csDealsInventoryItemGroup.Min(x => x.ListingPrice)).ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                            Supply = supply
                         });
                     }
                 }
@@ -99,10 +99,10 @@ public class UpdateMarketItemPricesFromCSDealsob
                     var item = items.FirstOrDefault(x => x.Name == csDealsLowestPriceItem.MarketName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.CSDealsMarketplace, new PriceStock
+                        item.UpdateBuyPrices(MarketType.CSDealsMarketplace, new PriceWithSupply
                         {
                             Price = item.Currency.CalculateExchange(csDealsLowestPriceItem.LowestPrice.SteamPriceAsInt(), usdCurrency),
-                            Stock = null
+                            Supply = null
                         });
                     }
                 }

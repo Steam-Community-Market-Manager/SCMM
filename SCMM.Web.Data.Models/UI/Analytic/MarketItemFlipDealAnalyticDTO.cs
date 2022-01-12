@@ -17,28 +17,26 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         public long BuyPrice { get; set; }
 
+        public long BuyFee { get; set; }
+
+        [JsonIgnore]
+        public long BuyTotal => (BuyPrice + BuyFee);
+
         public string BuyUrl { get; set; }
 
         public MarketType SellTo { get; set; }
 
-        public long SellNowPrice { get; set; }
+        public long SellPrice { get; set; }
+
+        public long SellFee { get; set; }
 
         [JsonIgnore]
-        public decimal SellNowPriceRatio => BuyPrice > 0 && SellNowPrice > 0 ? (SellNowPrice - BuyPrice) / (decimal)SellNowPrice : 0;
-
-        public long? SellNowFee { get; set; }
+        public long SellTotal => (SellPrice + SellFee);
 
         [JsonIgnore]
-        public long SellNowProfit => SellNowPrice - (SellNowFee ?? 0) - BuyPrice;
-
-        public long SellLaterPrice { get; set; }
+        public decimal SellPriceRatio => (BuyPrice + BuyFee) > 0 && SellPrice > 0 ? (SellPrice - (BuyPrice + BuyFee)) / (decimal)SellPrice : 0;
 
         [JsonIgnore]
-        public decimal SellLaterPriceRatio => BuyPrice > 0 && SellLaterPrice > 0 ? (SellLaterPrice - BuyPrice) / (decimal)SellLaterPrice : 0;
-
-        public long? SellLaterFee { get; set; }
-
-        [JsonIgnore]
-        public long SellLaterProfit => SellLaterPrice - (SellLaterFee ?? 0) - BuyPrice;
+        public long SellProfit => (SellPrice + SellFee) - BuyPrice;
     }
 }
