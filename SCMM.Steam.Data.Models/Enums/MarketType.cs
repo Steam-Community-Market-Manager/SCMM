@@ -26,7 +26,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "LOOT.Farm")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
-        [BuyFrom(Url = "https://loot.farm/", FeeRate = -20f)] // Unconfirmed, first time only?
+        [BuyFrom(Url = "https://loot.farm/", FeeRate = -17f)] /* 20% bonus balance - 3% card fee */
         LOOTFarm,
 
         [Display(Name = "Swap.gg Trade")]
@@ -36,7 +36,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Swap.gg Market")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeSurcharge = 40, FeeRate = 3f)] /* 0,33 EUR + 3% */
+        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeSurcharge = 40, FeeRate = 3f)] /* Roughly 0,33 EUR + 3% card fee */
         SwapGGMarket,
 
         [Display(Name = "Tradeit.gg Trade")]
@@ -46,7 +46,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Tradeit.gg Store")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")] // Unconfirmed
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")]
         TradeitGGStore,
 
         [Display(Name = "CS.Deals Trade")]
@@ -56,12 +56,12 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "CS.Deals Marketplace")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price")] // Unconfirmed
+        [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", FeeSurcharge = 45, FeeRate = 3f)] /* Roughly 0,40 EUR + 3% card fee */
         CSDealsMarketplace,
 
         [Display(Name = "SkinBaron")]
         [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5f)] /* 0,33 EUR + 5% */ // Unconfirmed
+        [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5f)] /* Roughly 0,33 EUR + 5% card fee */ // Unconfirmed
         SkinBaron,
 
         [Display(Name = "RUSTSkins")]

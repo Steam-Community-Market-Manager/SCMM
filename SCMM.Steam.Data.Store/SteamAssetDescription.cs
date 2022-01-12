@@ -269,11 +269,11 @@ namespace SCMM.Steam.Data.Store
                         currency = MarketItem.Currency;
                         lowestPrice = marketPrice.Value.Price;
                     }
-                    if (marketBuyFrom.FeeRate > 0 && lowestPrice > 0)
+                    if (marketBuyFrom.FeeRate != 0 && lowestPrice > 0)
                     {
                         lowestPrice += lowestPrice.Value.MarketSaleFeeComponentAsInt(marketBuyFrom.FeeRate);
                     }
-                    if (marketBuyFrom.FeeSurcharge > 0 && lowestPrice > 0)
+                    if (marketBuyFrom.FeeSurcharge != 0 && lowestPrice > 0)
                     {
                         lowestPrice += marketBuyFrom.FeeSurcharge;
                     }

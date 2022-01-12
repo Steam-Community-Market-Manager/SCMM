@@ -14,8 +14,8 @@ namespace SCMM.Steam.Data.Models.Extensions
 
         public static long MarketSaleFeeComponentAsInt(this long value, float feeRate)
         {
-            // Minimum fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * ((decimal)feeRate / (decimal)100), 1));
+            // Fees can be negative (fee) or positive (discount)
+            return (long)Math.Floor(value * ((decimal)feeRate / (decimal)100));
         }
 
         public static long SteamSaleTaxComponentAsInt(this long value)
