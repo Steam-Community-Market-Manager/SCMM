@@ -17,19 +17,37 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public Task HandleAsync(DiscordNotificationMessage message, MessageContext context)
         {
-            return _client.SendMessageAsync(
-                guildId: message.GuidId,
-                channelPatterns: message.ChannelPatterns,
-                message: message.Message,
-                title: message.Title,
-                description: message.Description,
-                fields: message.Fields,
-                fieldsInline: message.FieldsInline,
-                url: message.Url,
-                thumbnailUrl: message.ThumbnailUrl,
-                imageUrl: message.ImageUrl,
-                color: message.Colour
-            );
+            if (!String.IsNullOrEmpty(message.Username))
+            {
+                return _client.SendMessageAsync(
+                    username: message.Username,
+                    message: message.Message,
+                    title: message.Title,
+                    description: message.Description,
+                    fields: message.Fields,
+                    fieldsInline: message.FieldsInline,
+                    url: message.Url,
+                    thumbnailUrl: message.ThumbnailUrl,
+                    imageUrl: message.ImageUrl,
+                    color: message.Colour
+                );
+            }
+            else
+            {
+                return _client.SendMessageAsync(
+                    guildId: message.GuidId,
+                    channelPatterns: message.ChannelPatterns,
+                    message: message.Message,
+                    title: message.Title,
+                    description: message.Description,
+                    fields: message.Fields,
+                    fieldsInline: message.FieldsInline,
+                    url: message.Url,
+                    thumbnailUrl: message.ThumbnailUrl,
+                    imageUrl: message.ImageUrl,
+                    color: message.Colour
+                );
+            }
         }
     }
 }

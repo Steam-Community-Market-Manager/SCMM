@@ -6,6 +6,8 @@ namespace SCMM.Discord.API.Messages
     [Queue(Name = "Discord-Notifications")]
     public class DiscordNotificationMessage : IMessage
     {
+        public string Username { get; set; }
+
         public ulong GuidId { get; set; }
 
         public string[] ChannelPatterns { get; set; }
