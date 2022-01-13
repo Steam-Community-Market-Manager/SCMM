@@ -102,7 +102,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
                 .Where(x => x.BuyNowFrom != MarketType.SteamCommunityMarket)
                 .Where(x => (x.BuyNowPrice + x.BuyNowFee) > 0 && x.BuyOrderHighestPrice > 0)
-                .Where(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + x.BuyNowFee)) > 100)
+                .Where(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + x.BuyNowFee)) > 1)
                 .OrderByDescending(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + x.BuyNowFee)) / (decimal)x.BuyOrderHighestPrice);
 
             return Ok(
