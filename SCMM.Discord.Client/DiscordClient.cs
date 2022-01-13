@@ -169,7 +169,9 @@ namespace SCMM.Discord.Client
 
             // Find the user
             var usernameParts = username.Split("#", StringSplitOptions.TrimEntries);
-            var user = _client.GetUser(usernameParts.FirstOrDefault(), usernameParts.LastOrDefault());
+            var user = (usernameParts.Length > 1)
+                ? _client.GetUser(usernameParts.FirstOrDefault(), usernameParts.LastOrDefault())
+                : _client.GetUser(UInt64.Parse(username));
             if (user == null)
             {
                 throw new Exception($"Unable to find user for message \"{message ?? title}\" (username: {username})");
