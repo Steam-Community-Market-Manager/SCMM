@@ -14,7 +14,7 @@ namespace SCMM.Steam.Data.Models.Enums
         SteamStore,
 
         [Display(Name = "Steam Community Market")]
-        [Market(Type = PriceTypes.Cash)]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
         [BuyFrom(Url = "https://steamcommunity.com/market/listings/{0}/{3}")]
         [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", FeeRate = 13f)]
         SteamCommunityMarket,
