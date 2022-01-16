@@ -144,7 +144,7 @@ namespace SCMM.Steam.Data.Store
 
         public void RecalculateHasReturnedToStore()
         {
-            if (!Stores.Any())
+            if (!Stores.Any(x => x.Store != null))
             {
                 return;
             }

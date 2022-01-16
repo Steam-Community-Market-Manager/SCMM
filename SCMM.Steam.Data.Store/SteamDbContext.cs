@@ -12,6 +12,7 @@ namespace SCMM.Steam.Data.Store
         public DbSet<SteamCurrencyExchangeRate> SteamCurrencyExchangeRates { get; set; }
         public DbSet<SteamApp> SteamApps { get; set; }
         public DbSet<SteamItemStore> SteamItemStores { get; set; }
+        public DbSet<SteamStoreItemItemStore> SteamStoreItemItemStore { get; set; }
         public DbSet<SteamStoreItem> SteamStoreItems { get; set; }
         public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
         public DbSet<SteamMarketItemBuyOrder> SteamMarketItemBuyOrder { get; set; }

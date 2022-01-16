@@ -8,6 +8,8 @@ using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
+using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Extensions;
 using System.Globalization;
 
 namespace SCMM.Discord.Bot.Server.Modules
@@ -269,6 +271,92 @@ namespace SCMM.Discord.Bot.Server.Modules
             await _db.SaveChangesAsync();
             await message.ModifyAsync(
                 x => x.Content = $"Imported {webArchiveSnapshots.Length}/{webArchiveSnapshots.Length} snapshots"
+            );
+
+            return CommandResult.Success();
+        }
+
+        [Command("rebuild-store-item-missing-prices")]
+        public async Task<RuntimeResult> RebuildStoreItemMissingPricesAsync()
+        {
+            var message = await Context.Message.ReplyAsync("Rebuilding missing store item prices...");
+            var currencies = await _db.SteamCurrencies.ToListAsync();
+            var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+
+            var currenciesAndStoreItems = await _db.SteamCurrencies
+                .Select(x => new
+                {
+                    Currency = x,
+                    StoreItemsWithMissingPrices = _db.SteamStoreItemItemStore
+                        .Where(y => y.Price != null)
+                        .Where(y => !String.IsNullOrEmpty(y.Prices.Serialised) && !y.Prices.Serialised.Contains(x.Name))
+                        .Where(y => y.CurrencyId == usdCurrency.Id)
+                        .Select(y => new
+                        {
+                            StoreItemItemStore = y,
+                            ExchangeRate = _db.SteamCurrencyExchangeRates
+                                .Where(z => z.CurrencyId == x.Name)
+                                .Where(z => z.Timestamp < (y.Store.Start != null ? y.Store.Start : y.Item.Description.TimeAccepted))
+                                .OrderByDescending(z => z.Timestamp)
+                                .FirstOrDefault()
+                        })
+                        .ToArray()
+                })
+                .ToListAsync();
+
+            var currenciesWithMissingStorePrices = currenciesAndStoreItems.Where(x => x.StoreItemsWithMissingPrices.Length > 0).ToList();
+            foreach (var currencyWithMissingStorePrices in currenciesWithMissingStorePrices)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Rebuilding {currencyWithMissingStorePrices.Currency.Name}, {currencyWithMissingStorePrices.StoreItemsWithMissingPrices.Length} missing store item prices were found"
+                );
+
+                foreach (var itemExchange in currencyWithMissingStorePrices.StoreItemsWithMissingPrices)
+                {
+                    if (itemExchange.ExchangeRate != null)
+                    {
+                        itemExchange.StoreItemItemStore.Prices = new Steam.Data.Store.Types.PersistablePriceDictionary(itemExchange.StoreItemItemStore.Prices);
+                        itemExchange.StoreItemItemStore.Prices[currencyWithMissingStorePrices.Currency.Name] = EconomyExtensions.SteamPriceRounded(
+                            itemExchange.ExchangeRate.ExchangeRateMultiplier.CalculateExchange(itemExchange.StoreItemItemStore.Price.Value)
+                        );
+
+                        //itemExchange.StoreItem.UpdateLatestPrice();
+                    }
+                    else
+                    {
+                        // Missing exchange rate?!...
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Rebuilt {currenciesWithMissingStorePrices.Count} currencies with missing store item prices"
+            );
+
+            return CommandResult.Success();
+        }
+
+        [Command("rebuild-store-item-latest-prices")]
+        public async Task<RuntimeResult> RebuildStoreItemLatestPricesAsync()
+        {
+            var message = await Context.Message.ReplyAsync("Rebuilding latest store item prices...");
+
+            var storeItems = await _db.SteamStoreItemItemStore
+                .Include(x => x.Item)
+                .Include(x => x.Store)
+                .ToListAsync();
+
+            foreach (var storeItem in storeItems)
+            {
+                storeItem.Item.UpdateLatestPrice();
+            }
+
+            await _db.SaveChangesAsync();
+
+            await message.ModifyAsync(
+                x => x.Content = $"Rebuilt {storeItems.Count} store item prices"
             );
 
             return CommandResult.Success();
