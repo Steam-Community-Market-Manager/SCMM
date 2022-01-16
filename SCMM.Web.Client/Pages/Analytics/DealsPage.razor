@@ -13,13 +13,13 @@
     <MudGrid Spacing="2">
         
         <MudItem xs="12" xl="6">
-            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Cheapest item offers" Subtitle="Looking to buy an item? Find the cheapest offer across all markets.">
+            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Cheapest item offers" Subtitle="Looking to buy an item? Find the cheapest offer across all third party markets.">
                 <div class="ma-n4">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:50vh;">
                         <thead>
                             <tr>
                                 <th>
-                                    <MudTextField T="string" ValueChanged="async (x) => { FilterBuyNowDeals = x; await VirtualiseBuyNowDeals.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
+                                    <MudTextField T="string" ValueChanged="async (x) => { FilterCheapestDeals = x; await VirtualiseCheapestDeals.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
                                                   Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
                                 </th>
                                 <th>Cheapest Deal</th>
@@ -28,7 +28,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize @ref="VirtualiseBuyNowDeals" ItemsProvider="LoadBuyNowDeals" Context="item">
+                            <Virtualize @ref="VirtualiseCheapestDeals" ItemsProvider="LoadCheapestThirdPartyDeals" Context="item">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -103,7 +103,7 @@
         </MudItem>
     
         <MudItem xs="12" xl="6">
-            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Undervalued items on third party markets" Subtitle="Looking to top up your Steam wallet balance? Buy these undervalued items and instantly flip them on the Steam Community Market for extra balance.">
+            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Undervalued items on third party markets" Subtitle="Looking to top up your Steam wallet balance? Buy these undervalued third party items and instantly flip them on the Steam Community Market for extra balance.">
                 <div class="ma-n4">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:50vh;">
                         <thead>
@@ -120,7 +120,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize @ref="VirtualiseUndervaluedDeals" ItemsProvider="LoadUndervaluedDeals" Context="item">
+                            <Virtualize @ref="VirtualiseUndervaluedDeals" ItemsProvider="LoadUndervaluedThirdPartyDeals" Context="item">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -192,11 +192,11 @@
 
 @code {
 
-    private string FilterBuyNowDeals { get; set; }
+    private string FilterCheapestDeals { get; set; }
     
     private string FilterUndervaluedDeals { get; set; }
 
-    private Virtualize<MarketItemDealAnalyticDTO> VirtualiseBuyNowDeals { get; set; }
+    private Virtualize<MarketItemDealAnalyticDTO> VirtualiseCheapestDeals { get; set; }
     
     private Virtualize<MarketItemFlipDealAnalyticDTO> VirtualiseUndervaluedDeals { get; set; }
 
@@ -214,30 +214,30 @@
         ExternalNavigationManager.NavigateToNewTab(buyUrl);
     }
     
-    protected async ValueTask<ItemsProviderResult<MarketItemDealAnalyticDTO>> LoadBuyNowDeals(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<MarketItemDealAnalyticDTO>> LoadCheapestThirdPartyDeals(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemDealAnalyticDTO>>($"api/analytics/buyNowDeals?filter={Uri.EscapeDataString(FilterBuyNowDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemDealAnalyticDTO>>($"api/analytics/cheapestThirdPartyDeals?filter={Uri.EscapeDataString(FilterCheapestDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemDealAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'buy now deals' analytics");
+            Logger.LogError(ex, $"Error listing 'cheapest third party deals' analytics");
             throw;
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<MarketItemFlipDealAnalyticDTO>> LoadUndervaluedDeals(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<MarketItemFlipDealAnalyticDTO>> LoadUndervaluedThirdPartyDeals(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipDealAnalyticDTO>>($"api/analytics/undervaluedDeals?filter={Uri.EscapeDataString(FilterUndervaluedDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipDealAnalyticDTO>>($"api/analytics/undervaluedThirdPartyDeals?filter={Uri.EscapeDataString(FilterUndervaluedDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemFlipDealAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'undervalued deals' analytics");
+            Logger.LogError(ex, $"Error listing 'undervalued third party deals' analytics");
             throw;
         }
     }

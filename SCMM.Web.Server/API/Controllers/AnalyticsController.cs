@@ -45,10 +45,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [HttpGet("buyNowDeals")]
+        [HttpGet("cheapestThirdPartyDeals")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemDealAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetBuyNowDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetCheapestThirdPartDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()
@@ -89,10 +89,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [HttpGet("undervaluedDeals")]
+        [HttpGet("undervaluedThirdPartyDeals")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipDealAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUndervaluedDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetUndervaluedThirdPartyDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var query = _db.SteamMarketItems
                 .AsNoTracking()

@@ -424,12 +424,34 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetItemTypes()
         {
             return Ok(
-                await _db.SteamAssetDescriptions
-                    .AsNoTracking()
+                await _db.SteamAssetDescriptions.AsNoTracking()
                     .Where(x => !String.IsNullOrEmpty(x.ItemType))
                     .GroupBy(x => x.ItemType)
                     .Select(x => x.Key)
                     .ToArrayAsync()
+            );
+        }
+
+        /// <summary>
+        /// List all item prices across all known markets
+        /// </summary>
+        /// <response code="200">List of item prices</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("prices")]
+        [ProducesResponseType(typeof(IEnumerable<ItemMarketPricingDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemPrices()
+        {
+            var items = await _db.SteamAssetDescriptions
+                .Include(x => x.App)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .OrderBy(x => x.ClassId)
+                .ToArrayAsync();
+
+            return Ok(
+                _mapper.Map<SteamAssetDescription, ItemMarketPricingDTO>(items, this)
             );
         }
     }
