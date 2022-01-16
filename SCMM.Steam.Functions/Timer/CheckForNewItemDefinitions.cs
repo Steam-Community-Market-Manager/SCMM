@@ -124,7 +124,7 @@ public class CheckForNewItemDefinitions
                         {
                             fields.Add(
                                 $"🆕 {item.ItemDefId}",
-                                item.Name
+                                (String.IsNullOrEmpty(item.IconUrl) ? item.Name : $"[{item.Name}]({item.IconUrl})")
                             );
                         }
                     }
@@ -134,8 +134,8 @@ public class CheckForNewItemDefinitions
                         foreach (var item in updatedAssetDescriptions.OrderByDescending(x => x.ClassId))
                         {
                             fields.Add(
-                                $"{item.Name}",
-                                item.ClassId.ToString()
+                                $"{item.ClassId}",
+                                $"[{item.Name}]({_configuration.GetWebsiteUrl()}/item/{item.Name})"
                             );
                         }
                     }
