@@ -368,6 +368,59 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get the distribution of known instances for an item
+        /// </summary>
+        /// <param name="id">Item GUID, ID64, or name</param>
+        /// <response code="200">The distribution of known instances for this item.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the request item cannot be found.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}/distribution")]
+        [ProducesResponseType(typeof(ItemDistributionDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemDistribution([FromRoute] string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Item id is invalid");
+            }
+
+            var guid = Guid.Empty;
+            var id64 = (ulong)0;
+            Guid.TryParse(id, out guid);
+            ulong.TryParse(id, out id64);
+
+            var item = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x =>
+                    (guid != Guid.Empty && x.Id == guid) ||
+                    (id64 > 0 && x.ClassId == id64) ||
+                    (x.Name == id)
+                )
+                .Select(x => new
+                {
+                    Subscriptions = x.LifetimeSubscriptions,
+                    InventoryCount = _db.SteamProfileInventoryItems.Where(y => y.DescriptionId == x.Id).Sum(y => y.Quantity),
+                    MarketCounts = x.MarketItem.BuyPrices
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(
+                new ItemDistributionDTO()
+                {
+                    EstimatedItemTotalCount = item.Subscriptions,
+                    KnownInventoryItemCount = item.InventoryCount,
+                    KnownMarketItemCounts = item.MarketCounts.OrderBy(x => x.Key.ToString()).ToDictionary(
+                        x => x.Key,
+                        x => x.Value.Supply ?? 0
+                    )
+                }
+            );
+        }
+
+        /// <summary>
         /// Get all items that belong to the specified collection
         /// </summary>
         /// <param name="name">The name of the item collection</param>
