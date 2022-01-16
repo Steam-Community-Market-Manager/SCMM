@@ -355,7 +355,7 @@
             <response code="404">If the inventory items cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SplitInventoryItemStacks(System.String,System.String,System.UInt64,System.UInt32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ProfileController.SplitInventoryItemStacks(System.String,System.String,System.UInt64,System.UInt32,System.Boolean)">
             <summary>
             Split inventory item in to multiple stacks
             </summary>
@@ -367,6 +367,9 @@
             </param>
             <param name="quantity">
             The number of items to split out in to a new stack
+            </param>
+            <param name="unstackNewItems">
+            If true, new items will be unstacked. If false, new items will be stacked as high as possible
             </param>
             <param name="apiKey">
             Valid Steam Web API key with permission to modify the source and destination items.

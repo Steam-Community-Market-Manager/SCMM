@@ -18,6 +18,8 @@ namespace SCMM.Steam.API.Commands
         public ulong ItemId { get; set; }
 
         public uint Quantity { get; set; }
+
+        public bool UnstackNewItems { get; set; }
     }
 
     public class SplitInventoryItemStackResponse
@@ -54,51 +56,57 @@ namespace SCMM.Steam.API.Commands
                 .Where(x => x.SteamId == request.ItemId.ToString())
                 .FirstOrDefaultAsync();
 
-            var sourceAppId = UInt64.Parse(sourceItem.App.SteamId);
-            var response = await _steamWebApiClient.InventoryServiceSplitItemStack(new SplitItemStackJsonRequest()
-            {
-                Key = request.ApiKey,
-                AppId = sourceAppId,
-                SteamId = resolvedId.SteamId64.Value,
-                ItemId = request.ItemId,
-                Quantity = request.Quantity
-            });
-
             var items = new List<SteamProfileInventoryItem>()
-            { 
+            {
                 sourceItem
             };
 
-            if (response.Any())
+            var appId = UInt64.Parse(sourceItem.App.SteamId);
+            var quantityRemaining = request.Quantity;
+            while(quantityRemaining > 0)
             {
-                foreach (var item in response)
+                var quantityToSplit = (request.UnstackNewItems ? 1 : quantityRemaining);
+                var response = await _steamWebApiClient.InventoryServiceSplitItemStack(new SplitItemStackJsonRequest()
                 {
-                    var inventoryItem = items.FirstOrDefault(x => x.SteamId == item.ItemId);
-                    if (inventoryItem != null)
+                    Key = request.ApiKey,
+                    AppId = appId,
+                    SteamId = resolvedId.SteamId64.Value,
+                    ItemId = request.ItemId,
+                    Quantity = quantityToSplit
+                });
+                if (response?.Any() == true)
+                {
+                    foreach (var item in response)
                     {
-                        inventoryItem.Quantity = (int) item.Quantity;
-                    }
-                    else
-                    {
-                        items.Add(inventoryItem = new SteamProfileInventoryItem()
+                        var inventoryItem = items.FirstOrDefault(x => x.SteamId == item.ItemId);
+                        if (inventoryItem != null)
                         {
-                            SteamId = item.ItemId,
-                            Profile = sourceItem.Profile,
-                            ProfileId = sourceItem.ProfileId,
-                            App = sourceItem.App,
-                            AppId = sourceItem.AppId,
-                            Description = sourceItem.Description,
-                            DescriptionId = sourceItem.DescriptionId,
-                            Quantity = (int)item.Quantity
-                        });
+                            inventoryItem.Quantity = (int)item.Quantity;
+                        }
+                        else
+                        {
+                            items.Add(inventoryItem = new SteamProfileInventoryItem()
+                            {
+                                SteamId = item.ItemId,
+                                Profile = sourceItem.Profile,
+                                ProfileId = sourceItem.ProfileId,
+                                App = sourceItem.App,
+                                AppId = sourceItem.AppId,
+                                Description = sourceItem.Description,
+                                DescriptionId = sourceItem.DescriptionId,
+                                Quantity = (int)item.Quantity
+                            });
 
-                        _db.SteamProfileInventoryItems.Add(inventoryItem);
+                            _db.SteamProfileInventoryItems.Add(inventoryItem);
+                        }
                     }
                 }
-            }
-            else
-            {
-                throw new SteamRequestException("Steam reported failure, no items were modified", HttpStatusCode.BadRequest);
+                else
+                {
+                    throw new SteamRequestException($"Steam reported failure, {(request.UnstackNewItems ? "some" : "no")} items were modified", HttpStatusCode.BadRequest);
+                }
+
+                quantityRemaining -= quantityToSplit;
             }
 
             return new SplitInventoryItemStackResponse()

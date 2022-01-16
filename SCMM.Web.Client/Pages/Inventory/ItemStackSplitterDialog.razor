@@ -14,7 +14,7 @@
     </TitleContent>
     <DialogContent>
         <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
-            <span><strong>This action requires your Steam API Key to modify your inventory items.</strong> Make sure you fully understand the implications of sharing your API Key with a 3rd party before proceeding. Read our <MudLink Href="/privacy" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Privacy Policy</MudLink> for more info.</span>
+            <span><strong>This action requires your <MudLink Href="https://steamcommunity.com/dev/apikey" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Steam API Key</MudLink> to modify your inventory items.</strong> Make sure you fully understand the implications of sharing your API Key with a 3rd party before proceeding. Read our <MudLink Href="/privacy" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Privacy Policy</MudLink> for more info.</span>
         </MudAlert>
         <div class="d-flex flex-row flex-wrap align-center justify-center full-width py-4">
             <div class="d-flex flex-wrap flex-row align-start justify-center full-width">
@@ -79,8 +79,11 @@
             </div>
         </div>
         <MudTextField T="string" @bind-Text="@SteamApiKey" DebounceInterval="500" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" 
-                      Label="Steam API Key" Placeholder="Paste your Steam API key here..." HelperText="View and manage your key at https://steamcommunity.com/dev/apikey"
+                      Label="Steam API Key" Placeholder="Paste your Steam API key here..." HelperText="Click on the question mark icon to view and manage your Steam API Key"
                       Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab("https://steamcommunity.com/dev/apikey"))" />
+        <div class="mt-2">
+            <MudCheckBox T="bool" @bind-Checked="@RestackNewItems" Color="Color.Default" Label="Automatically restack newly created items" Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))" />
+        </div>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
@@ -109,6 +112,8 @@
     private IDictionary<string, int> SelectedStacks { get; set; }
 
     private string SteamApiKey { get; set; }
+
+    private bool RestackNewItems { get; set; } = true;
 
     private bool IsSplitting { get; set; }
 
@@ -139,7 +144,7 @@
                 Logger.LogTrace($"Splitting item {sourceItem.Key} in to {sourceItem.Value}");
                 var request = new HttpRequestMessage()
                 {
-                    RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{sourceItem.Key}/split"),
+                    RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{sourceItem.Key}/split?unstackNewItems={!RestackNewItems}"),
                     Method = HttpMethod.Put,
                     Headers = {
                         { "Steam-Api-Key", SteamApiKey }

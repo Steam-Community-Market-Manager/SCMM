@@ -976,6 +976,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="quantity">
         /// The number of items to split out in to a new stack
         /// </param>
+        /// <param name="unstackNewItems">
+        /// If true, new items will be unstacked. If false, new items will be stacked as high as possible
+        /// </param>
         /// <param name="apiKey">
         /// Valid Steam Web API key with permission to modify the source and destination items.
         /// You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
@@ -993,7 +996,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SplitInventoryItemStacks([FromHeader(Name = "Steam-Api-Key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] uint quantity)
+        public async Task<IActionResult> SplitInventoryItemStacks([FromHeader(Name = "Steam-Api-Key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] uint quantity, [FromQuery] bool unstackNewItems = false)
         {
             if (string.IsNullOrEmpty(profileId))
             {
@@ -1031,7 +1034,8 @@ namespace SCMM.Web.Server.API.Controllers
                     ProfileId = profileId,
                     ApiKey = apiKey,
                     ItemId = itemId,
-                    Quantity = quantity
+                    Quantity = quantity,
+                    UnstackNewItems = unstackNewItems
                 });
 
                 await _db.SaveChangesAsync();
