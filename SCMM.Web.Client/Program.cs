@@ -51,7 +51,6 @@ public static class WebAssemblyHostExtensions
         {
             config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
             config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
-            config.SnackbarConfiguration.MaximumOpacity = 90;
             config.SnackbarConfiguration.NewestOnTop = true;
             config.SnackbarConfiguration.ShowCloseIcon = true;
             config.SnackbarConfiguration.RequireInteraction = true;
