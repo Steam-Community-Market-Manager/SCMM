@@ -351,7 +351,7 @@ else
         {
             positiveMovementDistribution.Add(new ChartData() 
             {
-                Name = $"Other Items ({otherPositiveMovement.Count()})",
+                Name = $"Other Items ({otherPositiveMovement.Count().ToQuantityString()})",
                 Value = (double) State.Currency.ToPrice(otherPositiveMovement.Sum(x => x.Movement * x.Quantity))
             });
         }
@@ -372,7 +372,7 @@ else
         {
             negativeMovementDistribution.Add(new ChartData() 
             {
-                Name = $"Other Items ({otherNegativeMovement.Count()})",
+                Name = $"Other Items ({otherNegativeMovement.Count().ToQuantityString()})",
                 Value = (double) State.Currency.ToPrice(otherNegativeMovement.Sum(x => x.Movement * x.Quantity))
             });
         }

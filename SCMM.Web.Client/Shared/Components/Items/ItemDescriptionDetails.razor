@@ -1,7 +1,9 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Steam.Data.Models.Attributes
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Statistic
 @using Syncfusion.Blazor.Charts
+@using System.Reflection
 @inject ILogger<ItemDescriptionDetails> Logger
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -411,7 +413,7 @@
 				</MudPaper>
 			</MudItem>
             
-            <MudItem xs="12" sm="6" lg="12">
+            <MudItem xs="12">
                 @if (Item.Tags.Any(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)))
                 {
                     <div class="quote-box text-centered pa-2 mb-2">
@@ -448,7 +450,7 @@
             
             @if (Item.CreatorId != null && !String.IsNullOrEmpty(Item.CreatorName))
             {
-                <MudItem xs="12" sm="6" lg="12">
+                <MudItem xs="12">
                     <MudPaper Outlined="true" Class=" full-height py-2 px-3">
                         <div class="d-flex flex-row">
                             <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="my-1" />
@@ -472,7 +474,7 @@
             
             @if (Item.Stores?.Count() > 1)
             {
-                <MudItem xs="12" sm="6" lg="12">
+                <MudItem xs="12">
                     <MudPaper Outlined="true" Class="full-height">
                         <div class="d-flex flex-column align-stretch">
                             @foreach (var store in Item.Stores.Where(x => x.Date != null).OrderByDescending(x => x.Date))
@@ -554,16 +556,16 @@
                 <MudItem xs="12">
                     <MudPaper Outlined="true">
                         <div class="d-flex flex-row align-stretch justify-center flex-wrap">
-                            @foreach (var price in Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || (x.IsAvailable && (Item.MarketSellOrderLowestPrice == null || x.Total <= Item.MarketSellOrderLowestPrice))).OrderBy(x => x.Total))
+                            @foreach (var price in Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || (x.IsAvailable && (Item.MarketSellOrderLowestPrice == null || (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0)) <= Item.MarketSellOrderLowestPrice))).OrderBy(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
                             {
                                 <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.MarketType.GetDisplayName()}" : $"Currently unavailable from {price.MarketType.GetDisplayName()}")">
                                     <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
                                         <MudText Typo="MudBlazor.Typo.h6" Color="price.IsAvailable ? MudBlazor.Color.Inherit : MudBlazor.Color.Secondary" Class="d-flex align-center">
                                             <img src="@($"/images/price/{price.MarketType.ToString().ToLower()}.png")" alt="@price.MarketType.GetDisplayName()" title="@price.MarketType.GetDisplayName()" style="width:1.3em; height:1.3em" />
-                                            @if (price.Total > 0)
+                                            @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) > 0)
                                             {
-                                                <span class="pl-2">@State.Currency.ToPriceString(price.Total)</span>
-                                                @if (price.Fee != 0)
+                                                <span class="pl-2">@State.Currency.ToPriceString((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)))</span>
+                                                @if (State.Profile.ItemIncludeMarketFees && price.Fee != 0)
                                                 {
                                                     <MudTooltip>
                                                         <TooltipContent>
@@ -586,9 +588,9 @@
                                             {
                                                 <span class="pl-2">Unavailable</span>
                                             }
-                                            @if (price.Total > 0 && price.MarketType != MarketType.SteamStore)
+                                            @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) > 0 && price.MarketType != MarketType.SteamStore)
                                             {
-                                                @if (price.Total == Item.BuyPrices.Where(x => x.IsAvailable).Min(x => x.Total))
+                                                @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) == Item.BuyPrices.Where(x => x.IsAvailable).Min(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
                                                 {
                                                     <MudChip Size="MudBlazor.Size.Small" Text="Best Deal" Color="MudBlazor.Color.Success" Variant="MudBlazor.Variant.Filled" Class="ma-0 ml-2" />
                                                 }
@@ -621,10 +623,62 @@
                 </MudItem>
             }
  
+            @if (Item.IsAvailableOnMarket && !Item.IsBanned && MarketItemDistribution != null && MarketItemDistributionChartData?.Any() == true)
+            {
+                <MudItem xs="12" xl="6">
+                    <MudPaper Outlined="true" Class="text-centered">
+                        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 text-centered">
+                            <span>Item distribution</span>
+                        </MudText>
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="px-4 text-centered">
+                            @if (((MarketItemDistribution.EstimatedItemTotalCount ?? 0) - MarketItemDistribution.KnownItemTotalCount) > 0)
+                            {
+                                <span>There were <strong>@((MarketItemDistribution.EstimatedItemTotalCount ?? 0).ToQuantityString())</strong> (or more) estimated copies of this item originally in existance, of which we can only confirm <strong>@(MarketItemDistribution.KnownItemTotalCount.ToQuantityString())</strong> currently exist. Our database is not comprehensive and there are always more copies that we don't know about.</span>
+                            }
+                            else
+                            {
+                                <span>There are <strong>@(MarketItemDistribution.KnownItemTotalCount.ToQuantityString())</strong> (or more) confirmed copies of this item currently in existance. Our database is not comprehensive and there are always more copies that we don't know about.</span>
+                            }
+                        </MudText>
+                        <SfAccumulationChart ID="MarketItemDistribution" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" EnableSmartLabels="true">
+                            <AccumulationChartSeriesCollection>
+                                <AccumulationChartSeries DataSource="@MarketItemDistributionChartData" XName="Name" YName="Value" PointColorMapping="Fill" Radius="80%" StartAngle="315" EndAngle="314" InnerRadius="0%">
+                                    <AccumulationChartAnimation Enable="false" />
+                                    <AccumulationDataLabelSettings Name="Label" Visible="true" Position="AccumulationLabelPosition.Outside">
+                                        <AccumulationChartDataLabelFont Color="#eeeeee" />
+                                        <AccumulationChartConnector Type="ConnectorType.Curve" />
+                                    </AccumulationDataLabelSettings>
+                                </AccumulationChartSeries>
+                            </AccumulationChartSeriesCollection>
+                            <AccumulationChartAnnotations>
+                                @if ((MarketItemDistribution.EstimatedItemTotalCount ?? 0) - MarketItemDistribution.KnownItemTotalCount > 0)
+                                {
+                                    <AccumulationChartAnnotation X="Unknown Estimated Copies" Y="@(((MarketItemDistribution.EstimatedItemTotalCount ?? 0) - MarketItemDistribution.KnownItemTotalCount).ToString())" CoordinateUnits="Units.Point" Region="Regions.Series">
+                                        <ContentTemplate>
+                                            <i class="fa fa-fw fa-question text-outlined" style="font-size: 3em;" />
+                                        </ContentTemplate>
+                                    </AccumulationChartAnnotation>
+                                }
+                                @if (MarketItemDistribution.KnownInventoryItemCount > 0)
+                                {
+                                    <AccumulationChartAnnotation X="Player Inventories" Y="@MarketItemDistribution.KnownInventoryItemCount.ToString()" CoordinateUnits="Units.Point" Region="Regions.Series">
+                                        <ContentTemplate>
+                                            <i class="fa fa-fw fa-users text-outlined" style="font-size: 3em;" />
+                                        </ContentTemplate>
+                                    </AccumulationChartAnnotation>
+                                }
+                            </AccumulationChartAnnotations>
+                            <AccumulationChartLegendSettings Visible="false" />
+                            <AccumulationChartTooltipSettings Enable="true" />
+                        </SfAccumulationChart>
+                    </MudPaper>
+		        </MudItem>
+            }
+
             @if(Item.IsAvailableOnMarket && !Item.IsBanned)
             {
                 <MudItem xs="12" sm="6" xl="3">
-                    <MudPaper Outlined="true" Class="text-centered">
+                    <MudPaper Outlined="true" Class="d-flex flex-column text-centered full-height">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
                             @if (Item.MarketSellOrderCount > 0) 
                             {
@@ -642,7 +696,7 @@
                             } 
                         </MudText>
                         <MudDivider />
-                        <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;">
+                        <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;" Class="flex-grow-1">
                             <thead>
                                 <tr>
                                     <th class="no-wrap text-centered">Price</th>
@@ -693,7 +747,7 @@
             @if(Item.IsAvailableOnMarket && !Item.IsBanned)
             {
                 <MudItem xs="12" sm="6" xl="3">
-                    <MudPaper Outlined="true" Class="text-centered">
+                    <MudPaper Outlined="true" Class="d-flex flex-column text-centered full-height">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
                             @if (Item.MarketBuyOrderCount > 0) 
                             {
@@ -712,7 +766,7 @@
                             }
                         </MudText>
                         <MudDivider />
-                        <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;">
+                        <MudSimpleTable Dense="true" FixedHeader="true" Style="height:25vh;" Class="flex-grow-1">
                             <thead>
                                 <tr>
                                     <th class="no-wrap text-centered">Price</th>
@@ -740,50 +794,6 @@
                                 </Virtualize>
                             </tbody>
                         </MudSimpleTable>
-				    </MudPaper>
-                </MudItem>
-            }
-            
-            @if(Item.IsAvailableOnMarket && !Item.IsBanned)
-            {
-                <MudItem xs="12" xl="6">
-                    <MudPaper Outlined="true" Style="height:30vh; overflow-y:scroll">
-                        <Virtualize ItemsProvider="LoadItemActivity" Context="item">
-                            <ItemContent>
-                                <div class="@(item.IsSale ? "mud-paper mud-paper-square" : null)">
-                                    <div class="d-flex flex-row flex-wrap justify-start align-center hover-darken pa-1">
-                                        @if (!String.IsNullOrEmpty(item.BuyerName))
-                                        {
-                                            <img src="@item.BuyerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
-                                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.BuyerName</MudText>
-                                        }
-                                        else if (!String.IsNullOrEmpty(item.SellerName))
-                                        {
-                                            <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
-                                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
-                                        }
-                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">@GetActivityDescription(item)</MudText>
-                                        <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.Quantity.ToQuantityString()x</MudText>
-                                        <img src="@item.IconUrl" class="mx-1" style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">for</MudText>
-                                        <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
-                                        @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
-                                        {
-                                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">from</MudText>
-                                            <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
-                                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
-                                        }
-                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
-                                    </div>
-                                </div>
-                            </ItemContent>
-                            <Placeholder>
-                                <div class="d-flex flex-row justify-start align-center pa-1">
-                                    <MudProgressCircular Indeterminate="true" Class="mx-1" Style="width:32px; height:32px;" />
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mx-1">Loading...</MudText>
-                                </div>
-                            </Placeholder>
-                        </Virtualize>
 				    </MudPaper>
                 </MudItem>
             }
@@ -859,6 +869,50 @@
                 </MudItem>
             }
             
+            @if(Item.IsAvailableOnMarket && !Item.IsBanned)
+            {
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Style="height:30vh; overflow-y:scroll">
+                        <Virtualize ItemsProvider="LoadItemActivity" Context="item">
+                            <ItemContent>
+                                <div class="@(item.IsSale ? "mud-paper mud-paper-square" : null)">
+                                    <div class="d-flex flex-row flex-wrap justify-start align-center hover-darken pa-1">
+                                        @if (!String.IsNullOrEmpty(item.BuyerName))
+                                        {
+                                            <img src="@item.BuyerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.BuyerName</MudText>
+                                        }
+                                        else if (!String.IsNullOrEmpty(item.SellerName))
+                                        {
+                                            <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
+                                        }
+                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">@GetActivityDescription(item)</MudText>
+                                        <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.Quantity.ToQuantityString()x</MudText>
+                                        <img src="@item.IconUrl" class="mx-1" style="width:32px; height:32px;" />
+                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">for</MudText>
+                                        <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@State.Currency.ToPriceString(item.Price)</MudText>
+                                        @if (!String.IsNullOrEmpty(item.BuyerName) && !String.IsNullOrEmpty(item.SellerName))
+                                        {
+                                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="mx-1 no-wrap">from</MudText>
+                                            <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
+                                        }
+                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
+                                    </div>
+                                </div>
+                            </ItemContent>
+                            <Placeholder>
+                                <div class="d-flex flex-row justify-start align-center pa-1">
+                                    <MudProgressCircular Indeterminate="true" Class="mx-1" Style="width:32px; height:32px;" />
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mx-1">Loading...</MudText>
+                                </div>
+                            </Placeholder>
+                        </Virtualize>
+				    </MudPaper>
+                </MudItem>
+            }
+            
             @if (!String.IsNullOrEmpty(Item.ItemCollection))
             {
                 <MudItem xs="12">
@@ -926,18 +980,27 @@
 
     [Parameter]
     public ItemDetailedDTO Item { get; set; }
-    
+
     private ItemCollectionDTO Collection { get; set; }
-    
+
     private bool SalesHistoryChartLoaded { get; set; }
+
+    private ItemDistributionDTO MarketItemDistribution { get; set; }
+
+    private IEnumerable<object> MarketItemDistributionChartData { get; set;}
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
-    
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            if (Item.IsMarketable && !Item.IsBanned)
+            {
+                MarketItemDistribution = await Http.GetFromJsonWithDefaultsAsync<ItemDistributionDTO>($"api/item/{Item.Id}/distribution");
+                RebuildMarketItemDistributionChartData();
+            }
             if (!String.IsNullOrEmpty(Item.ItemCollection))
             {
                 Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}");
@@ -949,7 +1012,7 @@
             Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
-    
+
     protected async ValueTask<ItemsProviderResult<ItemOrderDTO>> LoadItemSellOrders(ItemsProviderRequest request)
     {
         try
@@ -964,7 +1027,7 @@
             throw;
         }
     }
-    
+
     protected async ValueTask<ItemsProviderResult<ItemOrderDTO>> LoadItemBuyOrders(ItemsProviderRequest request)
     {
         try
@@ -979,7 +1042,7 @@
             throw;
         }
     }
-    
+
     protected async ValueTask<ItemsProviderResult<ItemActivityStatisticDTO>> LoadItemActivity(ItemsProviderRequest request)
     {
         try
@@ -994,7 +1057,48 @@
             throw;
         }
     }
-    
+
+    private void RebuildMarketItemDistributionChartData()
+    {
+        if (MarketItemDistribution == null)
+        {
+            return;
+        }
+
+        var marketItemDistribution = new List<ChartData>();
+        if ((MarketItemDistribution.EstimatedItemTotalCount - MarketItemDistribution.KnownItemTotalCount) > 0)
+        {
+            marketItemDistribution.Add(new ChartData() 
+            {
+                Name = "Unknown Estimated Copies",
+                Value = (double) (MarketItemDistribution.EstimatedItemTotalCount - MarketItemDistribution.KnownItemTotalCount),
+                Fill = "#56aeff"
+            });
+        }
+        if (MarketItemDistribution.KnownInventoryItemCount > 0)
+        {
+            marketItemDistribution.Add(new ChartData() 
+            {
+                Name = "Player Inventories",
+                Value = (double) MarketItemDistribution.KnownInventoryItemCount,
+                Fill = "#9ecb08"
+            });
+        }
+        if (MarketItemDistribution.KnownMarketItemCounts != null)
+        {
+            foreach (var market in MarketItemDistribution.KnownMarketItemCounts.OrderBy(x => x.Value))
+            {
+                marketItemDistribution.Add(new ChartData() 
+                {
+                    Name = market.Key.GetDisplayName(),
+                    Value = (double) market.Value
+                });
+            }
+        }
+
+        MarketItemDistributionChartData = marketItemDistribution;
+    }
+
     private void BuyItem(ItemMarketPriceDTO price)
     {
         if (price != null && price.IsAvailable && !String.IsNullOrEmpty(price.Url))
@@ -1205,5 +1309,16 @@
         public string Title { get; set; }
 
         public string Subtitle { get; set; }
+    }
+
+    private class ChartData
+    {
+        public string Name {get; set; }
+
+        public double Value {get; set; }
+
+        public string Label => $"{Name} ({((long)Value).ToQuantityString()})";
+
+        public string Fill { get; set; }
     }
 }

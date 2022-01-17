@@ -49,6 +49,11 @@
     text-decoration: line-through
 }
 
+.text-outlined {
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: rgb(51, 51, 51);
+}
+
 .clickable:hover {
     cursor: pointer;
 }
