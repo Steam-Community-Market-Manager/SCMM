@@ -50,8 +50,8 @@
 
 .component-error-banner, #blazor-error-ui {
     position: fixed;
-    top: 0;
-    bottom: unset;
+    top: unset;
+    bottom: 0;
     left: 0;
     right: unset;
     background: #d32f2f;

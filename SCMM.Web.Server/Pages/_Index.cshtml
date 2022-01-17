@@ -76,7 +76,7 @@
         </div>
         <div id="components-reconnect-modal" class="components-reconnect-modal components-reconnect-hide pa-4">
             <div class="show">
-                <h5>Server connection was lost, attempting to reconnect...</h5>
+                <h5>Server connection was interrupted,<br/>attempting to reconnect...</h5>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="height: 4em; width: 4em;">
                     <circle cx="50" cy="50" fill="none" stroke="#fff" stroke-width="5" r="35" stroke-dasharray="150 50">
                         <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 50 50; 360 50 50" keyTimes="0;1"></animateTransform>
@@ -84,11 +84,11 @@
                 </svg>
             </div>
             <div class="failed">
-                <h5>Server connection failed after several attempts. Reconnect to try again.</h5>
+                <h5>Server connection failed after several attempts.<br/>Reconnect to try again.</h5>
                 <a href="" onclick="window.Blazor.reconnect()" class="mud-button-root mud-button mud-button-outlined mud-button-outlined-size-medium mt-2" title="Attempt to reconnect with the server">Reconnect</a>
             </div>
             <div class="rejected">
-                <h5>Server connection was lost. Reload to restore functionality.</h5>
+                <h5>Server connection was lost.<br/>Reload to restore functionality.</h5>
                 <a href="" onclick="location.reload()" class="mud-button-root mud-button mud-button-outlined mud-button-outlined-size-medium mt-2" title="Reload the application">Reload</a>
             </div>
         </div>
