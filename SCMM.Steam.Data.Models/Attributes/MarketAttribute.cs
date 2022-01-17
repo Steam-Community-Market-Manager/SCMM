@@ -6,4 +6,6 @@ namespace SCMM.Steam.Data.Models.Attributes;
 public class MarketAttribute : Attribute
 {
     public PriceTypes Type { get; set; }
+
+    public string Color { get; set; }
 }
