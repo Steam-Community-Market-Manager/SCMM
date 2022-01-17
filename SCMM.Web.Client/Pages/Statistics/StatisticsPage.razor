@@ -187,56 +187,6 @@
         </MudItem>
     
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-dice-five" Title="Profitable Flips" Subtitle="What items have the largest gap in asking price vs buy now price, with an upward trending average price? It's a gamble, but these items can potentially be flipped for profit if you are able to buy low and then sell high after the seven day market cooldown." Dense="true">
-                <div class="">
-                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th class="no-wrap">Buy At</th>
-                                <th class="no-wrap text-right">Potential Profit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <Virtualize ItemsProvider="LoadItemsProfitableFlips" Context="item">
-                                <ItemContent>
-                                    <tr @onclick="@((_) => ViewItem(item))" class="clickable">
-                                        <td>
-                                            <div class="d-flex flex-row justify-start align-center">
-                                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                                <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(item.BuyAskingPrice)</MudText>
-                                        </td>
-                                        <td class="text-right">
-                                            <MudText Typo="Typo.body2" Color="Color.Success" Class="no-wrap">
-                                                @State.Currency.ToPriceString(item.BuyNowPrice - item.BuyAskingPrice - ((long)Math.Floor(Math.Max(item.BuyNowPrice * EconomyExtensions.MarketFeeMultiplier, 1))))
-                                            </MudText>
-                                        </td>
-                                    </tr>
-                                </ItemContent>
-                                <Placeholder>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex flex-row justify-start align-center">
-                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                            </div>
-                                        </td>
-                                        <td>—</td>
-                                        <td class="text-right">—</td>
-                                    </tr>
-                                </Placeholder>
-                            </Virtualize>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-            </StatisticsPanel>
-        </MudItem>
-    
-        <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-wheelchair" Title="Manipulated" Subtitle="What items have the largest gap in average market value vs buy now price? These items are probably (but not always) suffering from price manipulation, where a group of people buy out a majority of the supply and re-list them at a much higher price in an attempt to drive up the items value." Dense="true">
                 <div class="">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;">
@@ -684,21 +634,7 @@
             throw;
         }
     }
-    
-    protected async ValueTask<ItemsProviderResult<ItemBuySellOrderStatisticDTO>> LoadItemsProfitableFlips(ItemsProviderRequest request)
-    {
-        try
-        {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemBuySellOrderStatisticDTO>>($"api/stats/items/profitableFlips?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemBuySellOrderStatisticDTO>(response.Items, response.Total);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing 'profitable flips' item statistics");
-            throw;
-        }
-    }
-    
+
     protected async ValueTask<ItemsProviderResult<ItemManipulationStatisticDTO>> LoadItemsManipulated(ItemsProviderRequest request)
     {
         try
