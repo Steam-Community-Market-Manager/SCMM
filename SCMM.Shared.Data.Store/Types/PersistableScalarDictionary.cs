@@ -48,10 +48,11 @@ namespace SCMM.Shared.Data.Store.Types
                     var pairs = value.Split(ItemSeperator, StringSplitOptions.None).Select(x => x.Split(KeyValueSeperator, StringSplitOptions.None)).ToList();
                     foreach (var pair in pairs)
                     {
-                        _data.Add(
-                            ConvertSingleKeyToRuntime(pair.FirstOrDefault()),
-                            ConvertSingleValueToRuntime(pair.LastOrDefault())
-                        );
+                        var key = ConvertSingleKeyToRuntime(pair.FirstOrDefault());
+                        if (!_data.ContainsKey(key))
+                        {
+                            _data[key] = ConvertSingleValueToRuntime(pair.LastOrDefault());
+                        }
                     }
                 }
             }

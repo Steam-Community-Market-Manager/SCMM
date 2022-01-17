@@ -77,25 +77,18 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                     var item = items.FirstOrDefault(x => x.Name == tradeitGGItem.Key.Name)?.Item;
                     if (item != null)
                     {
-                        // NOTE: Trade and store share the same item inventory, but buying from the store has a fixed discount
-                        item.UpdateBuyPrices(MarketType.TradeitGGTrade, new PriceWithSupply
+                        item.UpdateBuyPrices(MarketType.TradeitGG, new PriceWithSupply
                         {
                             Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price, usdCurrency) : 0,
-                            Supply = tradeitGGItem.Value
-                        });
-                        item.UpdateBuyPrices(MarketType.TradeitGGStore, new PriceWithSupply
-                        {
-                            Price = tradeitGGItem.Value > 0 ? item.Currency.CalculateExchange(tradeitGGItem.Key.Price - (long)Math.Round(tradeitGGItem.Key.Price * TradeitGGWebClient.StoreDiscountMultiplier, 0), usdCurrency) : 0,
                             Supply = tradeitGGItem.Value
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(MarketType.TradeitGGStore));
+                var missingItems = items.Where(x => !tradeitGGItems.Any(y => x.Name == y.Key.Name) && x.Item.BuyPrices.ContainsKey(MarketType.TradeitGG));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.TradeitGGTrade, null);
-                    missingItem.Item.UpdateBuyPrices(MarketType.TradeitGGStore, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.TradeitGG, null);
                 }
             }
             catch (Exception ex)

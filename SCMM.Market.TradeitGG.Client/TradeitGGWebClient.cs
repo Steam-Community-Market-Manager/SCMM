@@ -5,8 +5,6 @@ namespace SCMM.Market.TradeitGG.Client
 {
     public class TradeitGGWebClient
     {
-        public const decimal StoreDiscountMultiplier = 0.25m; // 25% off
-
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 
         private HttpClient BuildWebBrowserHttpClient()

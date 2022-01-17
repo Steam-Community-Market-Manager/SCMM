@@ -11,66 +11,93 @@ namespace SCMM.Steam.Data.Models.Enums
         [Display(Name = "Steam Store")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://store.steampowered.com/itemstore/{0}/")]
-        SteamStore,
+        SteamStore = 1,
 
         [Display(Name = "Steam Community Market")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
         [BuyFrom(Url = "https://steamcommunity.com/market/listings/{0}/{3}")]
         [SellTo(Url = "https://steamcommunity.com/market/listings/{0}/{3}", FeeRate = 13f)]
-        SteamCommunityMarket,
+        SteamCommunityMarket = 2,
 
         [Display(Name = "Skinport")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://skinport.com/{1}/market?r=scmm&item={3}")]
-        Skinport,
+        Skinport = 10,
 
         [Display(Name = "LOOT.Farm")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
         [BuyFrom(Url = "https://loot.farm/", FeeRate = -17f)] /* 20% bonus balance - 3% card fee */
-        LOOTFarm,
+        LOOTFarm = 11,
 
-        [Display(Name = "Swap.gg Trade")]
+        [Display(Name = "Swap.gg")]
         [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://swap.gg?idev_id=326&appId={0}&search={3}")]
-        SwapGGTrade,
+        SwapGGTrade = 12,
 
         [Display(Name = "Swap.gg Market")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}", FeeSurcharge = 40, FeeRate = 3f)] /* Roughly 0,33 EUR + 3% card fee */
-        SwapGGMarket,
+        SwapGGMarket = 13,
 
-        [Display(Name = "Tradeit.gg Trade")]
-        [Market(Type = PriceTypes.Trade)]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/trade?aff=scmm&search={3}")]
-        TradeitGGTrade,
-
-        [Display(Name = "Tradeit.gg Store")]
-        [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}")]
-        TradeitGGStore,
+        [Display(Name = "Tradeit.gg")]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
+        [BuyFrom(Url = "https://tradeit.gg/{1}/store?aff=scmm&search={3}", FeeRate = -25f)] /* 25% bonus balance */
+        TradeitGG = 14,
 
         [Display(Name = "CS.Deals Trade")]
         [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://cs.deals/trade-skins")]
-        CSDealsTrade,
+        CSDealsTrade = 15,
 
         [Display(Name = "CS.Deals Marketplace")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", FeeSurcharge = 45, FeeRate = 3f)] /* Roughly 0,40 EUR + 3% card fee */
-        CSDealsMarketplace,
+        CSDealsMarketplace = 16,
 
-        [Display(Name = "SkinBaron")]
+        [Display(Name = "Skin Baron")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://skinbaron.de/en/{1}?str={3}&sort=CF", FeeSurcharge = 40, FeeRate = 5f)] /* Roughly 0,33 EUR + 5% card fee */ // Unconfirmed
-        SkinBaron,
+        SkinBaron = 17,
 
-        [Display(Name = "RUSTSkins")]
+        [Display(Name = "RUST Skins")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", FeeRate = 3f)] // Unconfirmed
-        RUSTSkins,
+        RUSTSkins = 18,
 
         /*
-        // TODO: This...
+        // TODO: https://cs.trade
+        [Display(Name = "CS.TRADE")]
+        [Market(Type = PriceTypes.Trade)]
+        [BuyFrom(Url = "https://cs.trade/#trader")] // Unconfirmed
+        CSTRADE,
+        */
+
+        /*
+        // TODO: https://rust.tm
+        [Display(Name = "Rust.tm")]
+        [Market(Type = PriceTypes.Cash)]
+        [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc")] // Unconfirmed
+        RustTM,
+        */
+
+        /*
+        // TODO: https://tradeskinsfast.com
+        [Display(Name = "Trade Skins Fast")]
+        [Market(Type = PriceTypes.Trade)]
+        [BuyFrom(Url = "https://tradeskinsfast.com/")] // Unconfirmed
+        TradeSkinsFast,
+        */
+
+        /*
+        // TODO: https://skinmarket.gg
+        [Display(Name = "skinmarket.gg")]
+        [Market(Type = PriceTypes.Trade)] // Also offers crypto cash deposits (40% bonus balance)
+        [BuyFrom(Url = "")] // Unconfirmed
+        skinmarketGG,
+        */
+
+        /*
+        // TODO: https://dmarket.com
         // https://docs.dmarket.com/v1/swagger.html#/Buy%20items/GetAggregatedPrices
         // https://api.dmarket.com/price-aggregator/v1/aggregated-prices?Titles=Blackout%20Hoodie&Titles=Blackout%20Pants&Limit=100
         [Display(Name = "Dmarket")]
@@ -78,14 +105,14 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")] // Unconfirmed
         DmarketMarket,
         DmarketTrade,
+        */
 
-        // TODO: This...
+        /*
+        // TODO: https://buff.163.com
         [Display(Name = "BUFF")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://buff.163.com/market/{1}")] // Unconfirmed
         Buff
-
-        // TODO: https://skinmarket.gg/
         */
     }
 }
