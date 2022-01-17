@@ -78,6 +78,10 @@
     transform: scale(1.5) !important;
 }
 
+.update-notification-icon {
+    font-size: 2rem;
+}
+
 .fade-out {
     animation: fade-out 0.5s 5s forwards 1;
 }
