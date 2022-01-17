@@ -44,7 +44,8 @@
                                         <MudItem xs="12">
                                             <MudTextField Label="Steam Trade URL" Variant="MudBlazor.Variant.Outlined" FullWidth
                                                           @bind-Value="@Update.TradeUrl" DebounceInterval="1000" OnDebounceIntervalElapsed="UpdateProfile"
-                                                          HelperText="Optional. If set, we'll allow other users to send you trade requests if they are looking for items that you've flagged as available for trade." />
+                                                          HelperText="Optional. If set, we'll allow other users to send you trade requests if they are looking for items that you've flagged as available for trade. Click on the question mark icon to view and manage your Steam Trade URL."
+                                                          Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/id/{State.Profile.SteamId}/tradeoffers/privacy#trade_offer_access_url"))" />
                                         </MudItem>
                                         <MudItem xs="12" lg="6" xl="4" xxl="3">
                                             <MudSelect T="ItemAnalyticsParticipationType" Value="@Update.ItemAnalyticsParticipation" ValueChanged="((x) => { Update.ItemAnalyticsParticipation = x; _ = UpdateProfile(); })" Label="Item Analytics" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true"
@@ -157,7 +158,7 @@
                         <MudCardContent class="pt-0">
                             <MudGrid Spacing="4">
                                 <Preference Title="Store 'Top Sellers'" 
-                                            Description="Which data source is used to determine an item stores top selling items.">
+                                            Description="Which data source is used to determine top selling items in the store.">
                                     <MudSelect T="StoreTopSellerRankingType" Value="@Update.StoreTopSellers" ValueChanged="((x) => { Update.StoreTopSellers = x; _ = UpdateProfile(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0">
                                         @foreach (var value in Enum.GetValues<StoreTopSellerRankingType>())
                                         {
@@ -179,7 +180,8 @@
                                     <MudSelect T="ItemInfoType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true"
                                                AdornmentIcon="fas fa-fw fa-check-square" AdornmentColor="Color.Primary" Adornment="Adornment.End" OnAdornmentClick="@(() => UpdateProfile())"
                                                @bind-SelectedValues="@Update.ItemInfo" ToStringFunc="@((x) => x.GetDisplayName())" OnInternalInputChanged="@((x) => UpdateProfile())"
-                                               MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No additional info"))">
+                                               MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No additional info"))"
+                                               HelperText="Click the checkbox icon on the right to save your selection">
                                         @foreach (var value in Enum.GetValues<ItemInfoType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
@@ -195,9 +197,9 @@
                                         }
                                     </MudSelect>
                                 </Preference>
-                                <Preference Title="Inventory Item Resell Fees" 
-                                            Description="Should market sales fees be included in all resell profit and investment gain/loss calculations. This is recommended if you primarily sell your items on the Steam Community Market (as opposed to cash selling items).">  
-                                    <MudSwitch T="bool" Checked="@Update.InventoryIncludeMarketFees" CheckedChanged="((x) => { Update.InventoryIncludeMarketFees = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0" Disabled="true">@(Update.InventoryIncludeMarketFees ? "Include" : "Exclude")</MudSwitch>
+                                <Preference Title="Item Market Fees" 
+                                            Description="Should market sales fees be included in all resell, profit, and investment gain/loss calculations. This is recommended if you primarily sell your items on skin marketplaces (as opposed to selling for cash).">  
+                                    <MudSwitch T="bool" Checked="@Update.ItemIncludeMarketFees" CheckedChanged="((x) => { Update.ItemIncludeMarketFees = x; _ = UpdateProfile(); })" Color="Color.Primary" Class="ma-0">@(Update.ItemIncludeMarketFees ? "Include" : "Exclude")</MudSwitch>
                                 </Preference>
                                 <Preference Title="Inventory Item Drops" 
                                             Description="Should 'free' item drops (e.g. Twitch and Facepunch items) be shown when viewing item inventories and item collections.">  
@@ -416,7 +418,7 @@
                 MarketValue = State.Profile.MarketValue,
                 ItemInfo = State.Profile.ItemInfo,
                 ItemInfoWebsite = State.Profile.ItemInfoWebsite,
-                InventoryIncludeMarketFees = State.Profile.InventoryIncludeMarketFees,
+                ItemIncludeMarketFees = State.Profile.ItemIncludeMarketFees,
                 InventoryShowItemDrops = State.Profile.InventoryShowItemDrops,
                 InventoryShowUnmarketableItems = State.Profile.InventoryShowUnmarketableItems,
                 InventoryValueMovemenDisplay = State.Profile.InventoryValueMovementDisplay,

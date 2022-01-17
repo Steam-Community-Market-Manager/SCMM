@@ -26,7 +26,7 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public ItemInfoWebsiteType ItemInfoWebsite { get; set; }
 
-        public bool InventoryIncludeMarketFees { get; set; }
+        public bool ItemIncludeMarketFees { get; set; }
 
         public bool InventoryShowItemDrops { get; set; }
 

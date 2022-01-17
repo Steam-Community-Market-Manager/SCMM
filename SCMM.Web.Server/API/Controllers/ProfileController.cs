@@ -143,7 +143,7 @@ namespace SCMM.Web.Server.API.Controllers
             profile.MarketValue = command.MarketValue;
             profile.ItemInfo = command.ItemInfo;
             profile.ItemInfoWebsite = command.ItemInfoWebsite;
-            profile.InventoryIncludeMarketFees = command.InventoryIncludeMarketFees;
+            profile.ItemIncludeMarketFees = command.ItemIncludeMarketFees;
             profile.InventoryShowItemDrops = command.InventoryShowItemDrops;
             profile.InventoryShowUnmarketableItems = command.InventoryShowUnmarketableItems;
             profile.InventoryValueMovementDisplay = command.InventoryValueMovemenDisplay;
@@ -738,7 +738,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 Id = id
             });
-            if (resolvedId?.Exists != true || resolvedId.ProfileId == null)
+            if (resolvedId?.Exists != true || resolvedId.ProfileId == null || resolvedId.Profile == null)
             {
                 return NotFound("Profile not found");
             }
@@ -764,6 +764,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description.StoreItem.Currency)
                 .AsQueryable();
 
+            var includeFees = resolvedId.Profile.ItemIncludeMarketFees;
             switch (sortBy)
             {
                 case nameof(ProfileInventoryInvestmentItemDTO.Name):
@@ -776,19 +777,19 @@ namespace SCMM.Web.Server.API.Controllers
                     query = query.OrderBy(x => x.Description.MarketItem.SellLaterPrice, sortDirection);
                     break;
                 case nameof(ProfileInventoryInvestmentItemDTO.SellLaterFee):
-                    query = query.OrderBy(x => x.Description.MarketItem.SellLaterFee, sortDirection);
+                    query = query.OrderBy(x => (includeFees ? x.Description.MarketItem.SellLaterFee : 0), sortDirection);
                     break;
                 case "SellLaterProfit":
                     query = query.OrderBy(x =>
-                        ((x.Description.MarketItem.SellLaterPrice - x.Description.MarketItem.SellLaterFee) != 0 && x.BuyPrice > 0 && x.Currency != null)
-                            ? ((x.Description.MarketItem.SellLaterPrice - x.Description.MarketItem.SellLaterFee) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) - (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
+                        ((x.Description.MarketItem.SellLaterPrice - (includeFees ? x.Description.MarketItem.SellLaterFee : 0)) != 0 && x.BuyPrice > 0 && x.Currency != null)
+                            ? ((x.Description.MarketItem.SellLaterPrice - (includeFees ? x.Description.MarketItem.SellLaterFee : 0)) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) - (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
                             : 0
                         , sortDirection);
                     break;
                 case "SellLaterRoI":
                     query = query.OrderBy(x =>
-                        ((x.Description.MarketItem.SellLaterPrice - x.Description.MarketItem.SellLaterFee) != 0 && x.BuyPrice > 0 && x.Currency != null)
-                            ? ((x.Description.MarketItem.SellLaterPrice - x.Description.MarketItem.SellLaterFee) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) / (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
+                        ((x.Description.MarketItem.SellLaterPrice - (includeFees ? x.Description.MarketItem.SellLaterFee : 0)) != 0 && x.BuyPrice > 0 && x.Currency != null)
+                            ? ((x.Description.MarketItem.SellLaterPrice - (includeFees ? x.Description.MarketItem.SellLaterFee : 0)) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) / (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
                             : 0
                         , sortDirection);
                     break;

@@ -28,13 +28,13 @@ public enum StoreTopSellerRankingType
 
 public enum MarketValueType
 {
-    [Display(Name = "Sell Order Prices")]
+    [Display(Name = "Lowest Sell Order Price")]
     SellOrderPrices = 0,
 
-    [Display(Name = "Buy Order Prices")]
+    [Display(Name = "Highest Buy Order Price")]
     BuyOrderPrices,
 
-    [Display(Name = "Median Sale Prices")]
+    [Display(Name = "Median 24hr Sale Price")]
     MedianSalePrices
 }
 

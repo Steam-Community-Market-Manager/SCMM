@@ -42,7 +42,7 @@
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
                                                 <img src="@($"/images/price/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
-                                                @if (item.BuyFee != 0)
+                                                @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
                                                 {
                                                     <MudTooltip>
                                                         <TooltipContent>
@@ -134,13 +134,13 @@
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
                                                 <img src="@($"/images/price/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
-                                                @if (item.BuyFee != 0)
+                                                @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
                                                 {
                                                     <MudTooltip>
                                                         <TooltipContent>
                                                             @if (item.BuyFee > 0)
                                                             {
-                                                                <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimated fees charged by @item.BuyFrom.GetDisplayName() payment providers</span>
+                                                                <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimated fees charged by @item.BuyFrom.GetDisplayName()</span>
                                                             }
                                                             else
                                                             {
@@ -161,7 +161,7 @@
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">Sell</MudButton>
                                                 <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                <span>@State.Currency.ToPriceString(item.SellPrice) for <strong>@State.Currency.ToPriceString(item.SellProfit, dense: true)</strong> profit after fees</span>
+                                                <span>@State.Currency.ToPriceString(item.SellPrice) for <strong>@State.Currency.ToPriceString(item.SellProfit, dense: true)</strong> profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees</span>
                                             </MudText>
                                         </td>
                                     </tr>

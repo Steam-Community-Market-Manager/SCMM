@@ -93,10 +93,10 @@ namespace SCMM.Steam.Data.Store
 
         [JsonIgnore]
         [NotMapped]
-        public bool InventoryIncludeMarketFees
+        public bool ItemIncludeMarketFees
         {
-            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryIncludeMarketFees), Boolean.FalseString)); }
-            set { Preferences[nameof(InventoryIncludeMarketFees)] = value.ToString(); }
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(ItemIncludeMarketFees), Boolean.TrueString)); }
+            set { Preferences[nameof(ItemIncludeMarketFees)] = value.ToString(); }
         }
 
         [JsonIgnore]

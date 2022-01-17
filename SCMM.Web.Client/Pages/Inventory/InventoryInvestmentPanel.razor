@@ -14,7 +14,7 @@ else
         <ToolBarContent>
             <MudText Typo="MudBlazor.Typo.body2" Class="no-wrap">
                 <span>Track your investment returns against the latest market value.</span><br/>
-                <span class="mud-secondary-text">Click on an items "Purchase Price" column to edit the purchase information. Your return on investment (RoI) will then be automatically calculated.</span>
+                <span class="mud-secondary-text">Click on an items "Purchase Price" column to edit the purchase information. Your return on investment (RoI) will then automatically calculate.</span>
             </MudText>
         </ToolBarContent>
         <HeaderContent>
@@ -33,13 +33,16 @@ else
                     <MudTableSortLabel SortLabel="SellLaterPrice" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Price</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
+            @if (State.Profile.ItemIncludeMarketFees)
+            {
+                <MudTh Class="mud-primary-text">
+                    <MudTooltip Text="The fees charged when selling this item on the market">
+                        <MudTableSortLabel SortLabel="SellLaterFee" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
+                    </MudTooltip>
+                </MudTh>
+            }
             <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The fees charged when selling this item on the market">
-                    <MudTableSortLabel SortLabel="SellLaterFee" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Market Fees</MudTableSortLabel>
-                </MudTooltip>
-            </MudTh>
-            <MudTh Class="mud-primary-text">
-                <MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and market fees">
+                <MudTooltip Text="The profit or loss you'll make if you sold this item at the listing price, after deducting your investment cost and market fees (if fees are enabled)">
                     <MudTableSortLabel SortLabel="SellLaterProfit" InitialDirection="MudBlazor.SortDirection.Descending" T="ProfileInventoryInvestmentItemDTO">Profit / Loss</MudTableSortLabel>
                 </MudTooltip>
             </MudTh>
@@ -147,20 +150,23 @@ else
                     <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
+            @if (State.Profile.ItemIncludeMarketFees)
+            {
+                <MudTd>
+                    @if (context.SellLaterFee != null)
+                    {
+                        @State.Currency.ToPriceString(context.SellLaterFee.Value) 
+                    }
+                    else
+                    {
+                        <span class="mud-secondary-text">—</span>
+                    }
+                </MudTd>
+            }
             <MudTd>
-                @if (context.SellLaterFee != null)
+                @if (context.SellLaterPrice != null && (context.SellLaterPrice - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) > 0)
                 {
-                    @State.Currency.ToPriceString(context.SellLaterFee.Value) 
-                }
-                else
-                {
-                    <span class="mud-secondary-text">—</span>
-                }
-            </MudTd>
-            <MudTd>
-                @if (context.SellLaterPrice != null && context.SellLaterFee != null && (context.SellLaterPrice - context.SellLaterFee) > 0)
-                {
-                    @State.Currency.ToPriceString(context.SellLaterPrice.Value - context.SellLaterFee.Value - (context.BuyPriceLocal ?? 0)) 
+                    @State.Currency.ToPriceString(context.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0) - (context.BuyPriceLocal ?? 0)) 
                 }
                 else
                 {
@@ -168,9 +174,9 @@ else
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.SellLaterPrice != null && context.SellLaterFee != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.SellLaterPrice - context.SellLaterFee) != 0)
+                @if (context.SellLaterPrice != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.SellLaterPrice - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) != 0)
                 {
-                    @(((int)Math.Round(((decimal)(context.SellLaterPrice.Value - context.SellLaterFee.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
+                    @(((int)Math.Round(((decimal)(context.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
@@ -247,20 +253,23 @@ else
                     <span class="mud-secondary-text">—</span>
                 }
             </MudTd>
+            @if (State.Profile.ItemIncludeMarketFees)
+            {
+                <MudTd>
+                    @if (context.SellLaterFee != null)
+                    {
+                        @State.Currency.ToPriceString(context.SellLaterFee.Value) 
+                    }
+                    else
+                    {
+                        <span class="mud-secondary-text">—</span>
+                    }
+                </MudTd>
+            }
             <MudTd>
-                @if (context.SellLaterFee != null)
+                @if (context.SellLaterPrice != null && (context.SellLaterPrice - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) > 0)
                 {
-                    @State.Currency.ToPriceString(context.SellLaterFee.Value) 
-                }
-                else
-                {
-                    <span class="mud-secondary-text">—</span>
-                }
-            </MudTd>
-            <MudTd>
-                @if (context.SellLaterPrice != null && context.SellLaterFee != null && (context.SellLaterPrice - context.SellLaterFee) > 0)
-                {
-                    @State.Currency.ToPriceString(context.SellLaterPrice.Value - context.SellLaterFee.Value - (context.BuyPriceLocal ?? 0)) 
+                    @State.Currency.ToPriceString(context.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0) - (context.BuyPriceLocal ?? 0)) 
                 }
                 else
                 {
@@ -268,9 +277,9 @@ else
                 }
             </MudTd>
             <MudTd Class="@GetItemClass(context)">
-                @if (context.SellLaterPrice != null && context.SellLaterFee != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.SellLaterPrice - context.SellLaterFee) > 0)
+                @if (context.SellLaterPrice != null && context.BuyPriceLocal != null && context.BuyPriceLocal > 0 && (context.SellLaterPrice - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) > 0)
                 {
-                    @(((int)Math.Round(((decimal)(context.SellLaterPrice.Value - context.SellLaterFee.Value) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
+                    @(((int)Math.Round(((decimal)(context.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? context.SellLaterFee ?? 0 : 0)) / context.BuyPriceLocal.Value) * 100, 0) - 100).ToRoIString()) 
                 }
                 else
                 {
@@ -405,11 +414,11 @@ else
     
     private string GetItemClass(ProfileInventoryInvestmentItemDTO item, int index = 0)
     {
-        if (item.BuyPrice == null || item.BuyPriceLocal <= 0 || item.SellLaterPrice == null || item.SellLaterFee == null)
+        if (item.BuyPrice == null || item.BuyPriceLocal <= 0 || item.SellLaterPrice == null)
         {
             return null;
         }
-        var roi = ((int)Math.Round(((decimal)(item.SellLaterPrice.Value - item.SellLaterFee.Value) / item.BuyPriceLocal.Value) * 100, 0));
+        var roi = ((int)Math.Round(((decimal)(item.SellLaterPrice.Value - (State.Profile.ItemIncludeMarketFees ? item.SellLaterFee ?? 0 : 0)) / item.BuyPriceLocal.Value) * 100, 0));
         if (roi > 100)
         {
             return "mud-success";
