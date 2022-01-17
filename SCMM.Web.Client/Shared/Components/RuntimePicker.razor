@@ -5,19 +5,37 @@
 @if (Runtime != null)
 {
     <div @attributes="AdditionalAttributes">
-        <MudToggleIconButton Toggled="@(Runtime == RuntimeType.Server)" ToggledChanged="@OnToggleRuntimeChanged" Size="Size.Medium"
-                             Icon="fas fa-fw fa-desktop" Color="@Color.Inherit" Title="Switch to Blazor server-side"
-                             ToggledIcon="fas fa-fw fa-server" ToggledColor="@Color.Inherit" ToggledTitle="Switch to Blazor WebAssembly" />
+        <MudMenu StartIcon="@((Runtime == RuntimeType.Server) ? "fas fa-fw fa-server" : "fas fa-fw fa-desktop")" Label="@Runtime.GetDisplayName()" Size="MudBlazor.Size.Large" 
+                 Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" title="Change runtime mode">
+            <MudMenuItem OnClick="@(() => ChangeRuntime(RuntimeType.Server))" Class="d-flex align-center">
+                <MudText Typo="Typo.body1"  Class="d-flex align-center">
+                    <i class="fas fa-fw fa-server" />
+                    <span class="ml-2">@RuntimeType.Server.GetDisplayName()</span>
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="d-flex align-center">
+                    <span>Use server-side rendering for increased performance</span>
+                </MudText>
+            </MudMenuItem>
+            <MudMenuItem OnClick="@(() => ChangeRuntime(RuntimeType.WebAssembly))" Class="d-flex align-center">
+                <MudText Typo="Typo.body1" Class="d-flex align-center">
+                    <i class="fas fa-fw fa-desktop" />
+                    <span class="ml-2">@RuntimeType.WebAssembly.GetDisplayName()</span>
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="d-flex align-center">
+                    <span>Use client-side rendering for increased stability</span>
+                </MudText>
+            </MudMenuItem>
+        </MudMenu>
     </div>
 }
 
 @code
 {
     private RuntimeType? Runtime { get; set; }
-    
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
-    
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -31,9 +49,9 @@
         }
     }
 
-    private async Task OnToggleRuntimeChanged(bool isRuntimeServer)
+    private async Task ChangeRuntime(RuntimeType runtime)
     {
-        Runtime = (isRuntimeServer ? RuntimeType.Server : RuntimeType.WebAssembly);
+        Runtime = runtime;
         Logger.LogInformation($"Runtime was changed to '{Runtime}'");
         await CookieManager.SetAsync("Runtime", Runtime.Value.ToString());
 
