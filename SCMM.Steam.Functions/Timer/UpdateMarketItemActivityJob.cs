@@ -31,9 +31,9 @@ public class UpdateMarketItemActivityJob
         var logger = context.GetLogger("Update-Market-Item-Activity");
 
         // Delete all market activity older than 7 days
-        var yesterday = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(7));
+        var cutoffData = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(7));
         var expiredActivity = await _db.SteamMarketItemActivity
-            .Where(x => x.Timestamp < yesterday)
+            .Where(x => x.Timestamp < cutoffData)
             .ToListAsync();
         if (expiredActivity.Any())
         {
