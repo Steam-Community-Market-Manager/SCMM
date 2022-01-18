@@ -323,49 +323,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List items with largest gap between buy now price and average market value
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <param name="start">Return items starting at this specific index (pagination)</param>
-        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("items/manipulated")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemManipulationStatisticDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsManipulated([FromQuery] int start = 0, [FromQuery] int count = 10)
-        {
-            var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
-            var now = DateTimeOffset.UtcNow;
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Where(x => x.SellOrderLowestPrice > 0 && x.AllTimeAverageValue > 0)
-                .Where(x => x.SellOrderLowestPrice / x.AllTimeAverageValue > 5) // more than 5x average price
-                .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
-                .OrderByDescending(x => x.SellOrderLowestPrice / x.AllTimeAverageValue);
-
-            return Ok(
-                await query.PaginateAsync(start, count, x => new ItemManipulationStatisticDTO()
-                {
-                    Id = x.Description.ClassId,
-                    AppId = ulong.Parse(x.App.SteamId),
-                    Name = x.Description.Name,
-                    BackgroundColour = x.Description.BackgroundColour,
-                    ForegroundColour = x.Description.ForegroundColour,
-                    IconUrl = x.Description.IconUrl,
-                    AverageMarketValue = this.Currency().CalculateExchange(x.AllTimeAverageValue, x.Currency),
-                    BuyNowPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency)
-                })
-            );
-        }
-
-        /// <summary>
         /// List items, sorted by highest value
         /// </summary>
         /// <remarks>
