@@ -826,11 +826,17 @@
                                         <span class="mud-error-text"><i class="fa fa-fw fa-arrow-down ml-1"/> trending down</span>
                                     }
                                 </MudText>
-                                <MudButtonGroup Variant="Variant.Text" OverrideStyles="false" Class="pa-1 flex-shrink-1">
-                                    <MudButton OnClick="@(() => LoadItemSalesHistory(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
-                                    <MudButton OnClick="@(() => LoadItemSalesHistory(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
-                                    <MudButton OnClick="@(() => LoadItemSalesHistory(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
-                                </MudButtonGroup>
+                                <div class="pa-1 flex-shrink-1">
+                                    <MudToggleIconButton @bind-Toggled="@MarketItemSalesAnnotations"
+                                         Icon="fa fw-fw fa-toggle-off" Color="@Color.Secondary" Title="Off"
+                                         ToggledIcon="fa fw-fw fa-toggle-on" ToggledColor="@Color.Primary" ToggledTitle="On"/>
+                                    <span class="mr-2">Annotations @(MarketItemSalesAnnotations ? "On" : "Off")</span>
+                                    <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
+                                        <MudButton OnClick="@(() => LoadItemSalesHistory(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
+                                        <MudButton OnClick="@(() => LoadItemSalesHistory(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
+                                        <MudButton OnClick="@(() => LoadItemSalesHistory(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                                    </MudButtonGroup>
+                                </div>
                             </div>
                         }
                         <div class="d-flex flex-column justify-stretch align-stretch relative">
@@ -888,6 +894,30 @@
                                             </ChartTrendlines>
                                         </Syncfusion.Blazor.Charts.ChartSeries>
                                     </ChartSeriesCollection>
+                                    <ChartAnnotations>
+                                        @if (MarketItemSalesAnnotations && Collection?.Items?.Any() == true)
+                                        {
+                                            @foreach (var itemGroup in Collection.Items.Where(x => x.TimeAccepted != null && MarketItemSalesChartData.Any(y => DateTime.Equals(y.Date, x.TimeAccepted.Value.Date))).GroupBy(x => x.TimeAccepted.Value.Date))
+                                            {
+                                                <ChartAnnotation YAxisName="PriceAxis" X="@MarketItemSalesChartData.FirstOrDefault(x => DateTime.Equals(x.Date, itemGroup.Key))?.Date" Y="@MarketItemSalesChartData.FirstOrDefault(x => DateTime.Equals(x.Date, itemGroup.Key))?.Median.ToString()" CoordinateUnits="Units.Point" Region="Regions.Series">
+                                                    <ContentTemplate>
+                                                        <div class="d-flex flex-column">
+                                                            @foreach (var item in itemGroup)
+                                                            {
+                                                                <MudTooltip Text="@($"{item.Name} was accepted")">
+                                                                    <MudChip Size="Size.Small" Class="pa-1" Style="height:auto">
+                                                                        <div class="hover-zoom hover-zoom-extreme">
+                                                                            <img src="@item.IconUrl" alt="@item.Name" style="width:3em; height:3em" />
+                                                                        </div>
+                                                                    </MudChip>
+                                                                </MudTooltip>
+                                                            }
+                                                        </div>
+                                                    </ContentTemplate>
+                                                </ChartAnnotation>
+                                            }
+                                        }
+                                    </ChartAnnotations>
                                     <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="false" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
                                     <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
                                     <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
@@ -1020,6 +1050,8 @@
     private IEnumerable<ItemSaleChartDTO> MarketItemSalesChartData { get; set; }
 
     private decimal MarketItemSalesTrend { get; set; }
+
+    private bool MarketItemSalesAnnotations { get; set; } = true;
 
     private int MarketItemSalesMaxDays { get; set; }
 

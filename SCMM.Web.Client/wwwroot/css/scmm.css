@@ -83,6 +83,10 @@
     transform: scale(1.5) !important;
 }
 
+.hover-zoom-extreme:hover img {
+    transform: scale(3) !important;
+}
+
 .update-notification-icon {
     font-size: 2rem;
 }
