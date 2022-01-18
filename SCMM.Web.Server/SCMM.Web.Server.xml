@@ -118,13 +118,16 @@
             <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSalesTimeline(System.String)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSalesTimeline(System.String,System.Int32)">
             <summary>
             Get item sales history chart data, grouped by day (UTC)
             </summary>
             <remarks>
+            Detailed financial details (high/low/open/close) are only reported for periods less than 30 days.
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
+            <param name="id">Item GUID, ID64, or name</param>
+            <param name="maxDays">The maximum number of days worth of sales history to return. Use <code>-1</code> for all sales history</param>
             <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>

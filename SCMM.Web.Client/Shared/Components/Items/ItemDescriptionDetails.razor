@@ -631,18 +631,18 @@
                             <span>Item distribution</span>
                         </MudText>
                         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="px-4 text-centered">
-                            @if (((MarketItemDistribution.EstimatedItemTotalCount ?? 0) - MarketItemDistribution.KnownItemTotalCount) > 0)
+                            @if (MarketItemDistribution.HasUnknownItems)
                             {
-                                <span>There were <strong>@((MarketItemDistribution.EstimatedItemTotalCount ?? 0).ToQuantityString())</strong> (or more) estimated copies of this item originally in existance, of which we can only confirm <strong>@(MarketItemDistribution.KnownItemTotalCount.ToQuantityString())</strong> currently exist. Our database is not comprehensive and there are always more copies that we don't know about.</span>
+                                <span>There are an estimated <strong>@((MarketItemDistribution.EstimatedItemCount ?? 0).ToQuantityString())</strong> (or more) copies of this item in existance, of which we can only confirm that <strong>@(MarketItemDistribution.KnownItemCount.ToQuantityString())</strong> currently exist. Our database is not comprehensive and there are always more copies that we don't know about.</span>
                             }
                             else
                             {
-                                <span>There are <strong>@(MarketItemDistribution.KnownItemTotalCount.ToQuantityString())</strong> (or more) confirmed copies of this item currently in existance. Our database is not comprehensive and there are always more copies that we don't know about.</span>
+                                <span>There are <strong>@(MarketItemDistribution.KnownItemCount.ToQuantityString())</strong> (or more) confirmed copies of this item currently in existance. Our database is not comprehensive and there are always more copies that we don't know about.</span>
                             }
                         </MudText>
                         <SfAccumulationChart ID="MarketItemDistribution" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" EnableSmartLabels="true">
                             <AccumulationChartSeriesCollection>
-                                <AccumulationChartSeries DataSource="@MarketItemDistributionChartData" XName="Name" YName="Value" PointColorMapping="Fill" Radius="80%" StartAngle="315" EndAngle="314" InnerRadius="0%">
+                                <AccumulationChartSeries DataSource="@MarketItemDistributionChartData" XName="Name" YName="Value" PointColorMapping="Fill" Radius="80%" StartAngle="315" EndAngle="315" InnerRadius="0%">
                                     <AccumulationChartAnimation Enable="false" />
                                     <AccumulationDataLabelSettings Name="Label" Visible="true" Position="AccumulationLabelPosition.Outside">
                                         <AccumulationChartDataLabelFont Color="#eeeeee" />
@@ -651,11 +651,11 @@
                                 </AccumulationChartSeries>
                             </AccumulationChartSeriesCollection>
                             <AccumulationChartAnnotations>
-                                @if ((MarketItemDistribution.EstimatedItemTotalCount ?? 0) - MarketItemDistribution.KnownItemTotalCount > 0)
+                                @if (MarketItemDistribution.UnknownItemCount > 0 && MarketItemDistribution.HasUnknownItems)
                                 {
-                                    <AccumulationChartAnnotation X="Unknown Estimated Copies" Y="@(((MarketItemDistribution.EstimatedItemTotalCount ?? 0) - MarketItemDistribution.KnownItemTotalCount).ToString())" CoordinateUnits="Units.Point" Region="Regions.Series">
+                                    <AccumulationChartAnnotation X="Estimated Unknown Copies" Y="@MarketItemDistribution.UnknownItemCount.Value.ToString()" CoordinateUnits="Units.Point" Region="Regions.Series">
                                         <ContentTemplate>
-                                            <i class="fa fa-fw fa-question text-outlined" style="font-size: 3em;" />
+                                            <i class="fa fa-fw fa-question text-outlined" style="@($"font-size: 5em; transform: scale({Math.Min(Math.Round((MarketItemDistribution.UnknownItemCount.Value / (decimal)MarketItemDistribution.TotalItemCount) * 3, 2), 1)})")" />
                                         </ContentTemplate>
                                     </AccumulationChartAnnotation>
                                 }
@@ -663,7 +663,7 @@
                                 {
                                     <AccumulationChartAnnotation X="Player Inventories" Y="@MarketItemDistribution.KnownInventoryItemCount.ToString()" CoordinateUnits="Units.Point" Region="Regions.Series">
                                         <ContentTemplate>
-                                            <i class="fa fa-fw fa-users text-outlined" style="font-size: 3em;" />
+                                            <i class="fa fa-fw fa-users text-outlined" style="@($"font-size: 5em; transform: scale({Math.Min(Math.Round((MarketItemDistribution.KnownInventoryItemCount / (decimal)MarketItemDistribution.TotalItemCount) * 3, 2), 1)})")" />
                                         </ContentTemplate>
                                     </AccumulationChartAnnotation>
                                 }
@@ -804,66 +804,96 @@
                     <MudPaper Outlined="true" Class="pa-2">
                         @if (!Item.IsBanned)
                         {
-                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2">
-                                <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
-                                <span class="mud-secondary-text"> sold in the last 24hrs, median price of </span>
-                                <span>@State.Currency.ToPriceString(Item.Market24hrValue.Value)</span>
-                            </MudText>
+                            <div class="d-flex flex-row flex-wrap justify-end">
+                                <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 flex-grow-1">
+                                    @if (Item.Market24hrSales > 0 && Item.Market24hrValue > 0)
+                                    {
+                                        <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
+                                        <span class="mud-secondary-text"> sold in the last 24hrs, median price of </span>
+                                        <span>@State.Currency.ToPriceString(Item.Market24hrValue.Value)</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
+                                        <span class="mud-secondary-text"> sold in the last 24hrs</span>
+                                    }
+                                    @if (MarketItemSalesTrend > 0)
+                                    {
+                                        <span class="mud-success-text"><i class="fa fa-fw fa-arrow-up ml-1"/> trending up</span>
+                                    }
+                                    else if (MarketItemSalesTrend < 0)
+                                    {
+                                        <span class="mud-error-text"><i class="fa fa-fw fa-arrow-down ml-1"/> trending down</span>
+                                    }
+                                </MudText>
+                                <MudButtonGroup Variant="Variant.Text" OverrideStyles="false" Class="pa-1 flex-shrink-1">
+                                    <MudButton OnClick="@(() => LoadItemSalesHistory(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
+                                    <MudButton OnClick="@(() => LoadItemSalesHistory(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
+                                    <MudButton OnClick="@(() => LoadItemSalesHistory(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                                </MudButtonGroup>
+                            </div>
                         }
                         <div class="d-flex flex-column justify-stretch align-stretch relative">
-                            @if (!SalesHistoryChartLoaded)
+                            @if (MarketItemSalesChartData == null)
                             {
-                                <div class="absolute d-flex align-center justify-center full-width full-height">
+                                <div class="d-flex align-center justify-center full-width full-height pa-2">
                                     <Loading Message="Loading sales history..." />
                                 </div>
                             }
-                            <style>
-                                #SalesHistory_Series_1_TrendLine_0 {
-                                    stroke-dasharray: 10px 10px;
-                                    stroke-linejoin: round;
-                                    stroke-linecap: round;
-                                    -webkit-animation: dash 1s linear infinite;
-                                    animation: dash 1s linear infinite;
-                                }
-                                @@-webkit-keyframes dash {
-                                    100% {
-                                        stroke-dashoffset: -20px;
+                            else
+                            {
+                                <style>
+                                    #SalesHistory_Series_1_TrendLine_0 {
+                                        stroke-dasharray: 10px 10px;
+                                        stroke-linejoin: round;
+                                        stroke-linecap: round;
+                                        -webkit-animation: dash 1s linear infinite;
+                                        animation: dash 1s linear infinite;
                                     }
-                                }
-                                @@keyframes dash {
-                                    100% {
-                                        stroke-dashoffset: -20px;
+                                    @@-webkit-keyframes dash {
+                                        100% {
+                                            stroke-dashoffset: -20px;
+                                        }
                                     }
-                                }
-                            </style>
-                            <SfChart ID="SalesHistory" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
-                                <SfDataManager Url="@($"api/item/{Item.Id}/salesHistory")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
-                                <ChartEvents Loaded="((x) => { SalesHistoryChartLoaded = true; StateHasChanged(); })"></ChartEvents>
-                                <ChartArea>
-                                    <ChartAreaBorder Width="0"></ChartAreaBorder>
-                                </ChartArea>
-                                <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                                </ChartPrimaryXAxis>
-                                <ChartAxes>
-                                    <ChartAxis Name="PriceAxis" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift" OpposedPosition="true" />
-                                    <ChartAxis Name="QuantityAxis" LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />
-                                </ChartAxes>
-                                <ChartSeriesCollection>
-                                    <Syncfusion.Blazor.Charts.ChartSeries XName="date" YName="price" YAxisName="PriceAxis" Opacity="1" Name="Median Price" Width="2" Fill="#388e3c" Type="ChartSeriesType.Line">
-                                        <ChartTrendlines>
-                                            <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="5" Width="3" Name="Price Trend" Fill="#fff">
-                                            </ChartTrendline>
-                                        </ChartTrendlines>
-                                    </Syncfusion.Blazor.Charts.ChartSeries>
-                                    <Syncfusion.Blazor.Charts.ChartSeries XName="date" YName="quantity" YAxisName="QuantityAxis" Opacity="1" Name="Quantity Sold" Width="2" Fill="#66c0f4" Type="ChartSeriesType.Line">
-                                        <ChartSeriesBorder Width="1" Color="#1b5e20"></ChartSeriesBorder>
-                                    </Syncfusion.Blazor.Charts.ChartSeries>
-                                </ChartSeriesCollection>
-                                <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="true" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
-                                <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
-                                <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
-                                <ChartLegendSettings Visible="true"></ChartLegendSettings>
-                            </SfChart>
+                                    @@keyframes dash {
+                                        100% {
+                                            stroke-dashoffset: -20px;
+                                        }
+                                    }
+                                </style>
+                                <SfChart ID="SalesHistory" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
+                                    <ChartArea>
+                                        <ChartAreaBorder Width="0"></ChartAreaBorder>
+                                    </ChartArea>
+                                    <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                    </ChartPrimaryXAxis>
+                                    <ChartPrimaryYAxis Name="VolumeAxis" ValueType="Syncfusion.Blazor.Charts.ValueType.Logarithmic" LabelFormat="#,##" OpposedPosition="true" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                    </ChartPrimaryYAxis>
+                                    <ChartAxes>
+                                        <ChartAxis Name="PriceAxis" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" OpposedPosition="true" RowIndex="1" RangePadding="ChartRangePadding.None" PlotOffset="30">
+                                        </ChartAxis>
+                                    </ChartAxes>
+                                    <ChartRows>
+                                        <ChartRow Height="30%"></ChartRow>
+                                        <ChartRow Height="70%"></ChartRow>
+                                    </ChartRows>
+                                    <ChartSeriesCollection>
+                                        <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketItemSalesChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.Column">
+                                        </Syncfusion.Blazor.Charts.ChartSeries>
+                                        <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketItemSalesChartData" YAxisName="PriceAxis" Name="Median Price" XName="Date" YName="Median" Volume="Volume" High="High" Low="Low" Open="Open" Close="Close"
+                                                                              Fill="#388e3c" BearFillColor="#2ecd71" BullFillColor="#e74c3d" Type="@(MarketItemSalesMaxDays >= 1 && MarketItemSalesMaxDays <= 30 ? ChartSeriesType.Candle : ChartSeriesType.Line)">
+                                            <ChartTrendlines>
+                                                <ChartTrendline Type="TrendlineTypes.Polynomial" Width="3" Name="Median Price Trend" Fill="@(MarketItemSalesTrend > 0 ? "#2ecd71" : "#e74c3d")" EnableTooltip="true">
+                                                </ChartTrendline>
+                                            </ChartTrendlines>
+                                        </Syncfusion.Blazor.Charts.ChartSeries>
+                                    </ChartSeriesCollection>
+                                    <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="false" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
+                                    <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
+                                    <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                                    <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                                </SfChart>
+                            }
                         </div>
 				    </MudPaper>
                 </MudItem>
@@ -983,11 +1013,15 @@
 
     private ItemCollectionDTO Collection { get; set; }
 
-    private bool SalesHistoryChartLoaded { get; set; }
-
     private ItemDistributionDTO MarketItemDistribution { get; set; }
 
     private IEnumerable<object> MarketItemDistributionChartData { get; set;}
+
+    private IEnumerable<ItemSaleChartDTO> MarketItemSalesChartData { get; set; }
+
+    private decimal MarketItemSalesTrend { get; set; }
+
+    private int MarketItemSalesMaxDays { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
@@ -996,14 +1030,18 @@
     {
         try
         {
-            if (Item.IsMarketable && !Item.IsBanned)
+            if (!String.IsNullOrEmpty(Item.ItemCollection))
+            {
+                Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}");
+            }
+            if (Item.IsMarketable && Item.IsAvailableOnMarket && !Item.IsBanned)
             {
                 MarketItemDistribution = await Http.GetFromJsonWithDefaultsAsync<ItemDistributionDTO>($"api/item/{Item.Id}/distribution");
                 RebuildMarketItemDistributionChartData();
             }
-            if (!String.IsNullOrEmpty(Item.ItemCollection))
+            if (Item.IsMarketable && Item.IsAvailableOnMarket && !Item.IsBanned)
             {
-                Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}");
+                LoadItemSalesHistory();
             }
         }
         catch (Exception ex)
@@ -1058,6 +1096,32 @@
         }
     }
 
+    protected async void LoadItemSalesHistory(int maxDays = 30)
+    {
+        try
+        {
+            MarketItemSalesMaxDays = maxDays;
+            MarketItemSalesTrend = 0;
+            MarketItemSalesChartData = null;
+            StateHasChanged();
+            MarketItemSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemSaleChartDTO>>($"api/item/{Item.Id}/salesHistory?maxDays={maxDays}");
+            MarketItemSalesTrend = ((maxDays >= 1 && maxDays <= 30)
+                ? (MarketItemSalesChartData?.LastOrDefault()?.Close ?? 0) - (MarketItemSalesChartData?.FirstOrDefault()?.Median ?? 0)
+                : (MarketItemSalesChartData?.LastOrDefault()?.Median ?? 0) - (MarketItemSalesChartData?.FirstOrDefault()?.Median ?? 0)
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Unable to list item sales history");
+            Snackbar.Add($"Unable to load item sales history. {ex.Message}", MudBlazor.Severity.Error);
+            throw;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
     private void RebuildMarketItemDistributionChartData()
     {
         if (MarketItemDistribution == null)
@@ -1066,13 +1130,13 @@
         }
 
         var marketItemDistribution = new List<ChartData>();
-        if ((MarketItemDistribution.EstimatedItemTotalCount - MarketItemDistribution.KnownItemTotalCount) > 0)
+        if (MarketItemDistribution.UnknownItemCount > 0 && MarketItemDistribution.HasUnknownItems)
         {
             marketItemDistribution.Add(new ChartData() 
             {
-                Name = "Unknown Estimated Copies",
-                Value = (double) (MarketItemDistribution.EstimatedItemTotalCount - MarketItemDistribution.KnownItemTotalCount),
-                Fill = "#56aeff"
+                Name = "Estimated Unknown Copies",
+                Value = (double) MarketItemDistribution.UnknownItemCount.Value,
+                Fill = "#616161"
             });
         }
         if (MarketItemDistribution.KnownInventoryItemCount > 0)
@@ -1081,7 +1145,7 @@
             {
                 Name = "Player Inventories",
                 Value = (double) MarketItemDistribution.KnownInventoryItemCount,
-                Fill = "#9ecb08"
+                Fill = "#0288d1"
             });
         }
         if (MarketItemDistribution.KnownMarketItemCounts != null)

@@ -317,15 +317,18 @@ namespace SCMM.Web.Server.API.Controllers
         /// Get item sales history chart data, grouped by day (UTC)
         /// </summary>
         /// <remarks>
+        /// Detailed financial details (high/low/open/close) are only reported for periods less than 30 days.
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
+        /// <param name="id">Item GUID, ID64, or name</param>
+        /// <param name="maxDays">The maximum number of days worth of sales history to return. Use <code>-1</code> for all sales history</param>
         /// <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/salesHistory")]
         [ProducesResponseType(typeof(IEnumerable<ItemSaleChartDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemSalesTimeline([FromRoute] string id)
+        public async Task<IActionResult> GetItemSalesTimeline([FromRoute] string id, int maxDays = 30)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -337,7 +340,8 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
+            var getCandleData = (maxDays >= 1 && maxDays <= 30);
             var query = _db.SteamMarketItemSale
                 .AsNoTracking()
                 .Where(x =>
@@ -345,22 +349,30 @@ namespace SCMM.Web.Server.API.Controllers
                     (id64 > 0 && x.Item.Description.ClassId == id64) ||
                     (x.Item.Description.Name == id)
                 )
-                .Where(x => x.Timestamp.Date <= yesterday.Date)
+                .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
                 .GroupBy(x => x.Timestamp.Date)
                 .OrderBy(x => x.Key.Date)
                 .Select(x => new
                 {
                     Date = x.Key,
-                    MedianPrice = x.Average(y => y.MedianPrice),
-                    Quantity = x.Sum(y => y.Quantity)
+                    Median = x.Average(y => y.MedianPrice),
+                    High = (getCandleData ? x.Max(y => y.MedianPrice) : 0),
+                    Low = (getCandleData ? x.Min(y => y.MedianPrice) : 0),
+                    Open = (getCandleData && x.Count() > 0 ? x.OrderBy(y => y.Timestamp).FirstOrDefault().MedianPrice : 0),
+                    Close = (getCandleData && x.Count() > 0 ? x.OrderBy(y => y.Timestamp).LastOrDefault().MedianPrice : 0),
+                    Volume = x.Sum(y => y.Quantity)
                 });
 
             var sales = (await query.ToListAsync()).Select(
                 x => new ItemSaleChartDTO
                 {
                     Date = x.Date,
-                    Price = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.MedianPrice, 0))),
-                    Quantity = x.Quantity
+                    Median = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.Median, 0))),
+                    High = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.High)),
+                    Low = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Low)),
+                    Open = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Open)),
+                    Close = this.Currency().ToPrice(this.Currency().CalculateExchange((long)x.Close)),
+                    Volume = x.Volume
                 }
             );
 
@@ -410,11 +422,11 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 new ItemDistributionDTO()
                 {
-                    EstimatedItemTotalCount = item.Subscriptions,
+                    EstimatedItemCount = item.Subscriptions,
                     KnownInventoryItemCount = item.InventoryCount,
                     KnownMarketItemCounts = item.MarketCounts.OrderBy(x => x.Key.ToString()).ToDictionary(
                         x => x.Key,
-                        x => x.Value.Supply ?? 0
+                        x => (long) (x.Value.Supply ?? 0)
                     )
                 }
             );

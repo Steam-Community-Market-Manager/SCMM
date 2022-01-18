@@ -1,15 +1,26 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Item
 {
     public class ItemDistributionDTO
     {
-        public long? EstimatedItemTotalCount { get; set; }
+        [JsonIgnore]
+        public long TotalItemCount => ((EstimatedItemCount ?? 0) + KnownItemCount);
 
-        public long KnownItemTotalCount => (KnownInventoryItemCount + KnownMarketItemCounts.Sum(x => x.Value));
+        public long? EstimatedItemCount { get; set; }
 
-        public int KnownInventoryItemCount { get; set; }
+        [JsonIgnore]
+        public long? UnknownItemCount => (EstimatedItemCount - KnownItemCount);
 
-        public IDictionary<MarketType, int> KnownMarketItemCounts { get; set; }
+        [JsonIgnore]
+        public bool HasUnknownItems => (UnknownItemCount ?? 0) > 0;
+
+        [JsonIgnore]
+        public long KnownItemCount => (KnownInventoryItemCount + KnownMarketItemCounts.Sum(x => x.Value));
+
+        public long KnownInventoryItemCount { get; set; }
+
+        public IDictionary<MarketType, long> KnownMarketItemCounts { get; set; }
     }
 }
