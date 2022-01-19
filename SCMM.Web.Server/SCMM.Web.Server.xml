@@ -52,6 +52,14 @@
             <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.AppController.Get(System.Boolean)">
+            <summary>
+            List all supported apps
+            </summary>
+            <returns>List of supported apps</returns>
+            <response code="200">If <paramref name="detailed"/> is <code>true</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.App.AppDetailedDTO"/>. If <code>false</code>, the response will be a list of <see cref="T:SCMM.Web.Data.Models.UI.App.AppListDTO"/>.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.CurrencyController.Get(System.Boolean)">
             <summary>
             List all supported currencies
@@ -667,6 +675,7 @@
             </summary>
             <returns>The system status for the current app</returns>
             <response code="200">The system status for the current app.</response>
+            <response code="404">If the request app cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.Controllers.AuthenticationController.SignIn(System.String)">

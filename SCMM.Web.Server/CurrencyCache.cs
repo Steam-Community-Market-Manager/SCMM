@@ -58,8 +58,7 @@ namespace SCMM.Web.Server
                 return null;
             }
 
-            Cache.TryGetValue(name.Trim().ToUpper(), out
-            CurrencyDetailedDTO value);
+            Cache.TryGetValue(name.Trim().ToUpper(), out CurrencyDetailedDTO value);
             return value;
         }
     }

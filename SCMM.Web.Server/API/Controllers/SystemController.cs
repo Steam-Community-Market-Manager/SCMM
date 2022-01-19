@@ -33,14 +33,16 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <returns>The system status for the current app</returns>
         /// <response code="200">The system status for the current app.</response>
+        /// <response code="404">If the request app cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("status")]
         [ProducesResponseType(typeof(AppStatusDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStatus()
         {
-            var appId = this.App();
+            var appId = this.App()?.Id.ToString();
             var app = await _db.SteamApps
                 .AsNoTracking()
                 .Where(x => x.SteamId == appId)
@@ -68,6 +70,11 @@ namespace SCMM.Web.Server.API.Controllers
                     }
                 })
                 .FirstOrDefaultAsync();
+
+            if (app == null)
+            {
+                return NotFound($"App was not found");
+            }
 
             return Ok(app);
         }

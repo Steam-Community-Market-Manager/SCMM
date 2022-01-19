@@ -7,6 +7,9 @@ namespace SCMM.Steam.Data.Store
 {
     public class SteamCurrency : Entity, ICurrency, IExchangeableCurrency
     {
+        [NotMapped]
+        uint ICurrency.Id => UInt32.Parse(SteamId);
+
         [Required]
         public string SteamId { get; set; }
 

@@ -220,7 +220,7 @@ namespace SCMM.Steam.Data.Store
             if (StoreItem != null && StoreItem.Currency != null)
             {
                 var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
-                var lowestPrice = 0l;
+                var lowestPrice = 0L;
                 if (currency != null)
                 {
                     if (StoreItem.Prices != null && StoreItem.Prices.ContainsKey(currency.Name))
@@ -260,8 +260,8 @@ namespace SCMM.Steam.Data.Store
                 {
                     var marketTypeField = marketPrice.Key.GetType().GetField(marketPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static);
                     var marketBuyFrom = marketTypeField?.GetCustomAttribute<BuyFromAttribute>();
-                    var lowestPrice = 0l;
-                    var lowestPriceFee = 0l;
+                    var lowestPrice = 0L;
+                    var lowestPriceFee = 0L;
                     if (currency != null)
                     {
                         lowestPrice = currency.CalculateExchange(marketPrice.Value.Price, MarketItem.Currency);

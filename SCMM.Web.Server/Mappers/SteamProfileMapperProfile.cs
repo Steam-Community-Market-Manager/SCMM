@@ -15,7 +15,8 @@ namespace SCMM.Web.Server.Mappers
             CreateMap<SteamProfile, MyProfileDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
                 .ForMember(x => x.Currency, o => o.MapFromCurrency())
-                .ForMember(x => x.Language, o => o.MapFromLanguage());
+                .ForMember(x => x.Language, o => o.MapFromLanguage())
+                .ForMember(x => x.App, o => o.MapFromApp());
             CreateMap<SteamProfile, ProfileDTO>();
             CreateMap<SteamProfile, ProfileDetailedDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id));

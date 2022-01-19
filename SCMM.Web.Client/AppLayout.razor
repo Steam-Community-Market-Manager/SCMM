@@ -1,11 +1,12 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
+@inject AppState State
 
 <MudLayout>
     <MudAppBar Fixed="true" Dense="false" Elevation="4">
         <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" />
         <MudText Typo="Typo.h4" Class="ml-2 pt-2">
-            <img src="/images/rust-logo.svg" style="height:1em" />
+            <img src="/images/@(State.App.Name.ToLower())-logo.svg" style="height:1em" />
         </MudText>
         <MudText Typo="Typo.h6" Class="ml-4">
             <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">

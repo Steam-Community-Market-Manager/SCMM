@@ -40,7 +40,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
-                                                <img src="@($"/images/price/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
                                                 {
@@ -76,7 +76,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">View</MudButton>
-                                                <img src="@($"/images/price/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/market/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.ReferemcePrice)</span>
                                             </MudText>
                                         </td>
@@ -132,7 +132,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
-                                                <img src="@($"/images/price/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
                                                 {
@@ -160,7 +160,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">Sell</MudButton>
-                                                <img src="@($"/images/price/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/market/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.SellPrice) for <strong>@State.Currency.ToPriceString(item.SellProfit, dense: true)</strong> profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees</span>
                                             </MudText>
                                         </td>

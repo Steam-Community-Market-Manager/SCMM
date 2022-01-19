@@ -132,8 +132,8 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         if (inventoryTotals == null)
         {
             return InteractionResult.Fail(
-                reason: $"No Rust items found",
-                explaination: $"That Steam inventory doesn't contain any **marketable** Rust items. If you've recently purchased some items, it can take up to 7 days for those items to become marketable."
+                reason: $"No marketable items found",
+                explaination: $"That Steam inventory doesn't contain any **marketable** items. If you've recently purchased some items, it can take up to 7 days for those items to become marketable."
             );
         }
 

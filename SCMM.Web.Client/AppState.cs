@@ -1,14 +1,19 @@
 ﻿using SCMM.Shared.Data.Models.Json;
+using SCMM.Steam.Data.Models;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
+using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Profile;
 
 public class AppState
 {
     public const string HttpHeaderLanguage = "language";
     public const string HttpHeaderCurrency = "currency";
-    public const string DefaultLanguage = "English";
-    public const string DefaultCurrency = "USD";
+    public const string HttpHeaderAppId = "appId";
+
+    public const string DefaultLanguage = Constants.SteamLanguageEnglish;
+    public const string DefaultCurrency = Constants.SteamCurrencyUSD;
+    public const ulong DefaultAppId = Constants.RustAppId;
 
     private readonly ILogger<AppState> Logger;
     private readonly LocalStorageService Storage;
@@ -28,6 +33,10 @@ public class AppState
     public string CurrencyId { get; set; }
 
     public CurrencyDetailedDTO Currency => Profile?.Currency;
+
+    public ulong AppId { get; set; }
+
+    public AppDetailedDTO App => Profile?.App;
 
     public MyProfileDTO Profile { get; set; }
 
@@ -67,6 +76,11 @@ public class AppState
             client.DefaultRequestHeaders.Remove(HttpHeaderCurrency);
             client.DefaultRequestHeaders.Add(HttpHeaderCurrency, CurrencyId);
         }
+        if (AppId > 0)
+        {
+            client.DefaultRequestHeaders.Remove(HttpHeaderAppId);
+            client.DefaultRequestHeaders.Add(HttpHeaderAppId, AppId.ToString());
+        }
     }
 
     // TODO: Store this info as a cookie with a fixed-expiry
@@ -76,7 +90,8 @@ public class AppState
         {
             LanguageId = await Storage.GetAsync<string>(nameof(LanguageId));
             CurrencyId = await Storage.GetAsync<string>(nameof(CurrencyId));
-            return (!string.IsNullOrEmpty(LanguageId) && !string.IsNullOrEmpty(CurrencyId));
+            AppId = await Storage.GetAsync<ulong>(nameof(AppId));
+            return (!string.IsNullOrEmpty(LanguageId) && !string.IsNullOrEmpty(CurrencyId) && AppId > 0);
         }
         catch (Exception ex)
         {
@@ -106,27 +121,19 @@ public class AppState
             {
                 await Storage.RemoveAsync(nameof(CurrencyId));
             }
+            if (AppId > 0)
+            {
+                await Storage.SetAsync<ulong>(nameof(AppId), AppId);
+            }
+            else
+            {
+                await Storage.RemoveAsync(nameof(AppId));
+            }
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Failed to save state to storage");
         }
-    }
-
-    public Task TryGuessLocalityAsync()
-    {
-        try
-        {
-            // Just assign defaults
-            LanguageId = DefaultLanguage;
-            CurrencyId = DefaultCurrency;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, $"Failed to auto-detect locality, falling back to default");
-        }
-
-        return Task.CompletedTask;
     }
 
     public async Task RefreshAsync(HttpClient http)
@@ -149,7 +156,24 @@ public class AppState
         }
     }
 
-    public void ChangeCurrency(CurrencyDetailedDTO currency)
+    public async Task ChangeCurrencyAsync(LanguageDetailedDTO language)
+    {
+        if (language == null)
+        {
+            return;
+        }
+
+        LanguageId = language.Name;
+        if (Profile != null)
+        {
+            Profile.Language = language;
+        }
+
+        await WriteToStorageAsync();
+        Changed?.Invoke(this, new EventArgs());
+    }
+
+    public async Task ChangeCurrencyAsync(CurrencyDetailedDTO currency)
     {
         if (currency == null)
         {
@@ -162,6 +186,24 @@ public class AppState
             Profile.Currency = currency;
         }
 
+        await WriteToStorageAsync();
+        Changed?.Invoke(this, new EventArgs());
+    }
+
+    public async Task ChangeAppAsync(AppDetailedDTO app)
+    {
+        if (app == null)
+        {
+            return;
+        }
+
+        AppId = app.Id;
+        if (Profile != null)
+        {
+            Profile.App = app;
+        }
+
+        await WriteToStorageAsync();
         Changed?.Invoke(this, new EventArgs());
     }
 }

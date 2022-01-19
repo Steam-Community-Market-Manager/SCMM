@@ -1,4 +1,5 @@
 ﻿using SCMM.Steam.Data.Models.Enums;
+using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
 
@@ -17,6 +18,8 @@ namespace SCMM.Web.Data.Models.UI.Profile
         public LanguageDetailedDTO Language { get; set; }
 
         public CurrencyDetailedDTO Currency { get; set; }
+
+        public AppDetailedDTO App { get; set; }
 
         public StoreTopSellerRankingType StoreTopSellers { get; set; }
 

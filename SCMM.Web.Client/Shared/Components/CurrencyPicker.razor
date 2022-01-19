@@ -42,10 +42,8 @@
     private async Task ChangeCurrency(CurrencyDetailedDTO currency)
     {
         Logger.LogInformation($"Currency was changed to '{currency.Name}'");
-        State.ChangeCurrency(currency);
-        StateHasChanged();
+        await State.ChangeCurrencyAsync(currency);
         
-        await State.WriteToStorageAsync();
         NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
     }
 

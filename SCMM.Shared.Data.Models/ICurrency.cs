@@ -2,6 +2,8 @@
 {
     public interface ICurrency
     {
+        public uint Id { get; }
+
         public string Name { get; set; }
 
         public string PrefixText { get; set; }

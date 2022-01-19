@@ -1,10 +1,12 @@
-﻿using SCMM.Shared.Data.Store;
+﻿using SCMM.Shared.Data.Models;
+using SCMM.Shared.Data.Store;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SCMM.Steam.Data.Store
 {
-    public class SteamApp : Entity
+    public class SteamApp : Entity, IApp
     {
         public SteamApp()
         {
@@ -14,6 +16,9 @@ namespace SCMM.Steam.Data.Store
             StoreItems = new Collection<SteamStoreItem>();
             ItemStores = new Collection<SteamItemStore>();
         }
+
+        [NotMapped]
+        ulong IApp.Id => UInt64.Parse(SteamId);
 
         [Required]
         public string SteamId { get; set; }
@@ -31,6 +36,8 @@ namespace SCMM.Steam.Data.Store
 
         public string BackgroundColor { get; set; }
 
+        public string Subdomain { get; set; }
+
         public string ItemDefinitionsDigest { get; set; }
 
         public DateTimeOffset? TimeUpdated { get; set; }
@@ -45,5 +52,6 @@ namespace SCMM.Steam.Data.Store
 
         public ICollection<SteamItemStore> ItemStores { get; set; }
 
+        public bool IsActive { get; set; }
     }
 }

@@ -53,6 +53,8 @@ namespace SCMM.Steam.Data.Store
                 .OwnsOne(x => x.List);
 
             builder.Entity<SteamApp>()
+                .HasKey(x => x.Id);
+            builder.Entity<SteamApp>()
                 .HasIndex(x => x.SteamId)
                 .IsUnique(true);
             builder.Entity<SteamApp>()
@@ -114,6 +116,8 @@ namespace SCMM.Steam.Data.Store
                 .HasForeignKey<SteamMarketItem>(x => x.DescriptionId);
 
             builder.Entity<SteamCurrency>()
+                .HasKey(x => x.Id);
+            builder.Entity<SteamCurrency>()
                 .HasIndex(x => x.SteamId)
                 .IsUnique(true);
 
@@ -128,6 +132,8 @@ namespace SCMM.Steam.Data.Store
             builder.Entity<SteamItemStore>()
                 .OwnsOne(x => x.Notes);
 
+            builder.Entity<SteamLanguage>()
+                .HasKey(x => x.Id);
             builder.Entity<SteamLanguage>()
                 .HasIndex(x => x.SteamId)
                 .IsUnique(true);

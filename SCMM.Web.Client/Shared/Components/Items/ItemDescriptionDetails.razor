@@ -561,7 +561,7 @@
                                 <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.MarketType.GetDisplayName()}" : $"Currently unavailable from {price.MarketType.GetDisplayName()}")">
                                     <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
                                         <MudText Typo="MudBlazor.Typo.h6" Color="price.IsAvailable ? MudBlazor.Color.Inherit : MudBlazor.Color.Secondary" Class="d-flex align-center">
-                                            <img src="@($"/images/price/{price.MarketType.ToString().ToLower()}.png")" alt="@price.MarketType.GetDisplayName()" title="@price.MarketType.GetDisplayName()" style="width:1.3em; height:1.3em" />
+                                            <img src="@($"/images/market/{price.MarketType.ToString().ToLower()}.png")" alt="@price.MarketType.GetDisplayName()" title="@price.MarketType.GetDisplayName()" style="width:1.3em; height:1.3em" />
                                             @if ((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)) > 0)
                                             {
                                                 <span class="pl-2">@State.Currency.ToPriceString((price.Price + (State.Profile.ItemIncludeMarketFees ? price.Fee : 0)))</span>
@@ -1340,7 +1340,7 @@
                 Color = Color.Primary,
                 Icon = "fas fa-fw fa-check",
                 Title = "Item Accepted",
-                Subtitle = "Item was accepted for Rust."
+                Subtitle = $"Item was accepted for {State.App.Name}."
             });
         }
         foreach (var change in Item.Changes)

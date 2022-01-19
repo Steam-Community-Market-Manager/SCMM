@@ -26,7 +26,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeitGG");
 
-        var steamApps = await _db.SteamApps.ToListAsync();
+        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
         if (!steamApps.Any())
         {
             return;

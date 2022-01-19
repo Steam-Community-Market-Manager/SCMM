@@ -40,7 +40,7 @@ public class CheckForNewItemDefinitions
     {
         var logger = context.GetLogger("Check-New-Item-Definitions");
 
-        var steamApps = await _db.SteamApps.ToListAsync();
+        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
         if (!steamApps.Any())
         {
             return;

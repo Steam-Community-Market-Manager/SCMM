@@ -13,8 +13,8 @@
             <div class="d-flex flex-row flex-wrap">
                 <div class="d-flex flex-column flex-grow-1">
                     <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="d-flex align-center">
-                        <img src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/252490/820be4782639f9c4b64fa3ca7e6c26a95ae4fd1c.jpg" class="mr-2" style="width: 1em; height: 1em" />
-                        <span>Rust Index Fund</span>
+                        <img src="@State.App.IconUrl" class="mr-2" style="width: 1em; height: 1em" />
+                        <span>@State.App.Name Index Fund</span>
                     </MudText>
                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="">
                         <span>If there was an <MudLink Typo="MudBlazor.Typo.body2" Href="https://www.investopedia.com/terms/i/indexfund.asp" Target="_blank">index fund</MudLink> that tracked the performance of all market items, how is it performing?</span>
@@ -74,9 +74,9 @@
                         <ChartSeriesCollection>
                             <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
                             </Syncfusion.Blazor.Charts.ChartSeries>
-                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="ValueAxis" Name="Value" XName="Date" YName="Value" Fill="#CD412B" Type="ChartSeriesType.Line">
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="ValueAxis" Name="Value" XName="Date" YName="Value" Fill="@State.App.PrimaryColor" Type="ChartSeriesType.Line">
                                 <ChartTrendlines>
-                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Value Trend" Fill="#A4A6A7">
+                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Value Trend" Fill="@State.App.SecondaryColor">
                                     </ChartTrendline>
                                 </ChartTrendlines>
                             </Syncfusion.Blazor.Charts.ChartSeries>

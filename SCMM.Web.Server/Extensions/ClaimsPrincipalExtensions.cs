@@ -42,6 +42,11 @@ namespace SCMM.Web.Server.Extensions
             return user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.Currency)?.Value;
         }
 
+        public static string AppId(this ClaimsPrincipal user)
+        {
+            return user?.FindFirst(SCMM.Shared.Data.Models.ClaimTypes.AppId)?.Value;
+        }
+
         public static T Preference<T>(this ClaimsPrincipal user, SteamDbContext db, Expression<Func<SteamProfile, T>> preference)
         {
             var profile = new SteamProfile();

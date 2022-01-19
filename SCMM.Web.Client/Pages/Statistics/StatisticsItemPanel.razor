@@ -382,11 +382,11 @@
                                             @if (item.CheapestItem.BuyNowPrice >= item.BuyNowPrice)
                                             {
                                                 <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest directly from the market for <strong>@State.Currency.ToPriceString(item.BuyNowPrice)</strong>.</MudText>
-                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can also buy <span>@item.CheapestItem.Name</span> for <span>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</span> and break it down using the Rust in-game workshop.</MudText>
+                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">You can also buy <span>@item.CheapestItem.Name</span> for <span>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</span> and break it down using the @State.App.Name in-game workshop.</MudText>
                                             }
                                             else
                                             {
-                                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest if you buy <strong>@item.CheapestItem.Name</strong> for <strong>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</strong> and break it down using the Rust in-game workshop.</MudText>
+                                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default">Cheapest if you buy <strong>@item.CheapestItem.Name</strong> for <strong>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</strong> and break it down using the @State.App.Name in-game workshop.</MudText>
                                                 <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">It would cost <span>@State.Currency.ToPriceString(item.BuyNowPrice)</span> to buy it from the market.</MudText>
                                             }
                                         </div>

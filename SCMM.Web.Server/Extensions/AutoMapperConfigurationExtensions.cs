@@ -2,8 +2,8 @@
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.UI.Language;
@@ -16,6 +16,7 @@ namespace SCMM.Web.Server.Extensions
         public const string ContextKeyUser = "user";
         public const string ContextKeyLanguage = "language";
         public const string ContextKeyCurrency = "currency";
+        public const string ContextKeyApp = "app";
 
         public static void MapFromLanguage<TSource, TDestination, TLanguage>(this IMemberConfigurationExpression<TSource, TDestination, TLanguage> memberOptions) where TLanguage : LanguageDTO
         {
@@ -33,6 +34,16 @@ namespace SCMM.Web.Server.Extensions
             {
                 return context.Items.ContainsKey(ContextKeyCurrency)
                     ? (TCurrency)context.Options.Items[ContextKeyCurrency]
+                    : null;
+            });
+        }
+
+        public static void MapFromApp<TSource, TDestination, TApp>(this IMemberConfigurationExpression<TSource, TDestination, TApp> memberOptions) where TApp : AppDTO
+        {
+            memberOptions.MapFrom((src, dst, _, context) =>
+            {
+                return context.Items.ContainsKey(ContextKeyApp)
+                    ? (TApp)context.Options.Items[ContextKeyApp]
                     : null;
             });
         }

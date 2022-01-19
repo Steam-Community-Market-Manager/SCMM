@@ -22,6 +22,7 @@ namespace SCMM.Web.Server.Extensions
             opt.Items[AutoMapperConfigurationExtensions.ContextKeyUser] = controller.User;
             opt.Items[AutoMapperConfigurationExtensions.ContextKeyLanguage] = controller.Language();
             opt.Items[AutoMapperConfigurationExtensions.ContextKeyCurrency] = controller.Currency();
+            opt.Items[AutoMapperConfigurationExtensions.ContextKeyApp] = controller.App();
             return opt;
         }
     }

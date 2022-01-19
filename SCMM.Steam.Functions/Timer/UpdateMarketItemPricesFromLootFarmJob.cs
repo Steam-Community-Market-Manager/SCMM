@@ -26,7 +26,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
 
-        var steamApps = await _db.SteamApps.ToListAsync();
+        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
         if (!steamApps.Any())
         {
             return;

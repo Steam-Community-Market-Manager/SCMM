@@ -27,7 +27,7 @@ public class UpdateMarketItemPricesFromCSDealsob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSDeals");
 
-        var steamApps = await _db.SteamApps.ToListAsync();
+        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
         if (!steamApps.Any())
         {
             return;

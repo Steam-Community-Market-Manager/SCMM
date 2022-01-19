@@ -162,6 +162,7 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<SteamService>();
         builder.Services.AddScoped<LanguageCache>();
         builder.Services.AddScoped<CurrencyCache>();
+        builder.Services.AddScoped<AppCache>();
 
         // Controllers
         builder.Services
@@ -300,6 +301,7 @@ public static class WebApplicationExtensions
         {
             scope.ServiceProvider.GetService<LanguageCache>()?.RepopulateCache();
             scope.ServiceProvider.GetService<CurrencyCache>()?.RepopulateCache();
+            scope.ServiceProvider.GetService<AppCache>()?.RepopulateCache();
         }
 
         // Enable Swagger API auto-docs

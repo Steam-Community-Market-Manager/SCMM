@@ -84,7 +84,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Load the apps
-            var apps = await _db.SteamApps.ToListAsync();
+            var apps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
             if (!apps.Any())
             {
                 return null;

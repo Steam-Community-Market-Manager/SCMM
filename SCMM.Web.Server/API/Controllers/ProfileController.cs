@@ -63,6 +63,7 @@ namespace SCMM.Web.Server.API.Controllers
             defaultProfile.Name = "Guest";
             defaultProfile.Language = this.Language();
             defaultProfile.Currency = this.Currency();
+            defaultProfile.App = this.App();
 
             // If the user is authenticated, use their database profile
             if (User.Identity.IsAuthenticated)

@@ -1,21 +1,41 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SCMM.Steam.Data.Models;
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
+using SCMM.Web.Data.Models.UI.App;
 
 namespace SCMM.Web.Server.Extensions
 {
     public static class ControllerBaseExtensions
     {
-        public static string App(this ControllerBase controller)
+        public static AppDetailedDTO App(this ControllerBase controller)
         {
-            // TODO: Make this configurable by the client
-            return Constants.RustAppId.ToString();
+            var appId = (ulong)0;
+
+            // If the app was specified in the request query, use that
+            if (controller.Request.Query.ContainsKey(AppState.HttpHeaderAppId))
+            {
+                UInt64.TryParse(controller.Request.Query[AppState.HttpHeaderAppId].ToString(), out appId);
+            }
+            // Else, if the app was specified in the request headers, use that
+            else if (controller.Request.Headers.ContainsKey(AppState.HttpHeaderAppId))
+            {
+                UInt64.TryParse(controller.Request.Headers[AppState.HttpHeaderAppId].ToString(), out appId);
+            }
+            // Else, if the user is authenticated and has a preferred app, use that
+            else if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.AppId()))
+            {
+                UInt64.TryParse(controller.User.AppId(), out appId);
+            }
+
+            // Get the app by the supplied id, or from the request hostname
+            return AppCache.GetById(appId) ?? 
+                   AppCache.GetByHostname(controller.Request.Host.Host) ??
+                   AppCache.GetById(AppState.DefaultAppId);
         }
 
         public static LanguageDetailedDTO Language(this ControllerBase controller)
         {
-            var languageName = AppState.DefaultLanguage;
+            var languageName = (string)null;
 
             // If the language was specified in the request query, use that
             if (controller.Request.Query.ContainsKey(AppState.HttpHeaderLanguage))
@@ -39,7 +59,7 @@ namespace SCMM.Web.Server.Extensions
 
         public static CurrencyDetailedDTO Currency(this ControllerBase controller)
         {
-            var currencyName = AppState.DefaultCurrency;
+            var currencyName = (string)null;
 
             // If the currency was specified in the request query, use that
             if (controller.Request.Query.ContainsKey(AppState.HttpHeaderCurrency))

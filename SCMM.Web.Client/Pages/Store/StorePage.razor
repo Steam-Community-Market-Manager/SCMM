@@ -222,7 +222,7 @@ else if (StoreList.Any())
                                             @if (!item.HasWorkshopFile)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="mb-2">
-                                                    <span>This item is not from the Rust workshop, detailed statistics are not available.</span>
+                                                    <span>This item is not from the @State.App.Name workshop, detailed statistics are not available.</span>
                                                 </MudText>
                                             }
                                             @if (item.SalesMinimum > 0)
@@ -486,7 +486,14 @@ else if (StoreList.Any())
                                                 @if (item.IsStillAvailableFromStore)
                                                 {
                                                     <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Tertiary" Size="@Size.Medium" FullWidth>
-                                                        <RustTransparentIcon />        
+                                                        @if (State.App.Id == Constants.RustAppId)
+                                                        {
+                                                            <RustTransparentIcon />        
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fab fa-fw fa-steam" />
+                                                        }
                                                         <strong class="ml-1">Store</strong>
                                                     </MudButton>
                                                 }

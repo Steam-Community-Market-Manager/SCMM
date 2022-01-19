@@ -39,7 +39,7 @@ public class CheckNewYouTubeStoreVideos
     {
         var logger = context.GetLogger("Check-New-YouTube-Store-Videos");
 
-        var steamApps = await _db.SteamApps.ToListAsync();
+        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
         if (!steamApps.Any())
         {
             return;
@@ -48,6 +48,7 @@ public class CheckNewYouTubeStoreVideos
         foreach (var app in steamApps)
         {
             var activeItemStores = await _db.SteamItemStores
+                .Where(x => x.AppId == app.Id)
                 .Where(x => x.Start != null && x.End == null)
                 .OrderByDescending(x => x.Start)
                 .ToListAsync();
@@ -85,7 +86,7 @@ public class CheckNewYouTubeStoreVideos
                             {
                                 await googleClient.LikeVideoAsync(storeVideo.Id);
                                 await googleClient.CommentOnVideoAsync(storeVideo.ChannelId, storeVideo.Id,
-                                    $"thank you for showcasing this weeks Rust skins, your video has been featured on https://scmm.app/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
+                                    $"thank you for showcasing this weeks new skins, your video has been featured on https://scmm.app/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
                                 );
                             }
                             catch (Exception ex)

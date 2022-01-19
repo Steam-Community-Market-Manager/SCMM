@@ -141,7 +141,7 @@ else
                 @if (context.SellLaterPrice != null)
                 {
                     <div class="d-flex flex-row justify-start align-center">
-                        <img src="@($"/images/price/{context.SellLaterTo.ToString().ToLower()}.png")" alt="@context.SellLaterTo.GetDisplayName()" title="@context.SellLaterTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                        <img src="@($"/images/market/{context.SellLaterTo.ToString().ToLower()}.png")" alt="@context.SellLaterTo.GetDisplayName()" title="@context.SellLaterTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                         <span>@State.Currency.ToPriceString(context.SellLaterPrice.Value)</span>
                     </div>
                 }
@@ -244,7 +244,7 @@ else
                 @if (context.SellLaterPrice != null)
                 {
                     <div class="d-flex flex-row justify-start align-center">
-                        <img src="@($"/images/price/{context.SellLaterTo.ToString().ToLower()}.png")" alt="@context.SellLaterTo.GetDisplayName()" title="@context.SellLaterTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                        <img src="@($"/images/market/{context.SellLaterTo.ToString().ToLower()}.png")" alt="@context.SellLaterTo.GetDisplayName()" title="@context.SellLaterTo.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                         <span>@State.Currency.ToPriceString(context.SellLaterPrice.Value)</span>
                     </div>
                 }
