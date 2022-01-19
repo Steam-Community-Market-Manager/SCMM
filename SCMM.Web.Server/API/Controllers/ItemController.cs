@@ -325,10 +325,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("{id}/salesHistory")]
-        [ProducesResponseType(typeof(IEnumerable<ItemSaleChartDTO>), StatusCodes.Status200OK)]
+        [HttpGet("{id}/sales")]
+        [ProducesResponseType(typeof(IEnumerable<ItemSalesChartPointDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemSalesTimeline([FromRoute] string id, int maxDays = 30)
+        public async Task<IActionResult> GetItemSales([FromRoute] string id, int maxDays = 30)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -364,7 +364,7 @@ namespace SCMM.Web.Server.API.Controllers
                 });
 
             var sales = (await query.ToListAsync()).Select(
-                x => new ItemSaleChartDTO
+                x => new ItemSalesChartPointDTO
                 {
                     Date = x.Date,
                     Median = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.Median, 0))),

@@ -832,9 +832,9 @@
                                          ToggledIcon="fa fw-fw fa-toggle-on" ToggledColor="@Color.Primary" ToggledTitle="On"/>
                                     <span class="mr-2">Annotations @(MarketItemSalesAnnotations ? "On" : "Off")</span>
                                     <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
-                                        <MudButton OnClick="@(() => LoadItemSalesHistory(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
-                                        <MudButton OnClick="@(() => LoadItemSalesHistory(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
-                                        <MudButton OnClick="@(() => LoadItemSalesHistory(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                                        <MudButton OnClick="@(() => LoadItemSales(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
+                                        <MudButton OnClick="@(() => LoadItemSales(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
+                                        <MudButton OnClick="@(() => LoadItemSales(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
                                     </MudButtonGroup>
                                 </div>
                             </div>
@@ -873,10 +873,10 @@
                                     </ChartArea>
                                     <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
                                     </ChartPrimaryXAxis>
-                                    <ChartPrimaryYAxis Name="VolumeAxis" ValueType="Syncfusion.Blazor.Charts.ValueType.Logarithmic" LabelFormat="#,##" OpposedPosition="true" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
-                                    </ChartPrimaryYAxis>
                                     <ChartAxes>
-                                        <ChartAxis Name="PriceAxis" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" OpposedPosition="true" RowIndex="1" RangePadding="ChartRangePadding.None" PlotOffset="30">
+                                        <ChartAxis Name="VolumeAxis" RowIndex="0" LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" OpposedPosition="true">
+                                        </ChartAxis>
+                                        <ChartAxis Name="PriceAxis" RowIndex="1" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" RangePadding="ChartRangePadding.None" PlotOffset="30">
                                         </ChartAxis>
                                     </ChartAxes>
                                     <ChartRows>
@@ -1047,7 +1047,7 @@
 
     private IEnumerable<object> MarketItemDistributionChartData { get; set;}
 
-    private IEnumerable<ItemSaleChartDTO> MarketItemSalesChartData { get; set; }
+    private IEnumerable<ItemSalesChartPointDTO> MarketItemSalesChartData { get; set; }
 
     private decimal MarketItemSalesTrend { get; set; }
 
@@ -1073,7 +1073,7 @@
             }
             if (Item.IsMarketable && Item.IsAvailableOnMarket && !Item.IsBanned)
             {
-                LoadItemSalesHistory();
+                await LoadItemSales();
             }
         }
         catch (Exception ex)
@@ -1128,7 +1128,7 @@
         }
     }
 
-    protected async void LoadItemSalesHistory(int maxDays = 30)
+    protected async Task LoadItemSales(int maxDays = 30)
     {
         try
         {
@@ -1136,7 +1136,7 @@
             MarketItemSalesTrend = 0;
             MarketItemSalesChartData = null;
             StateHasChanged();
-            MarketItemSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemSaleChartDTO>>($"api/item/{Item.Id}/salesHistory?maxDays={maxDays}");
+            MarketItemSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemSalesChartPointDTO>>($"api/item/{Item.Id}/sales?maxDays={maxDays}");
             MarketItemSalesTrend = ((maxDays >= 1 && maxDays <= 30)
                 ? (MarketItemSalesChartData?.LastOrDefault()?.Close ?? 0) - (MarketItemSalesChartData?.FirstOrDefault()?.Median ?? 0)
                 : (MarketItemSalesChartData?.LastOrDefault()?.Median ?? 0) - (MarketItemSalesChartData?.FirstOrDefault()?.Median ?? 0)
@@ -1144,8 +1144,8 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Unable to list item sales history");
-            Snackbar.Add($"Unable to load item sales history. {ex.Message}", MudBlazor.Severity.Error);
+            Logger.LogError(ex, $"Unable to list item sales");
+            Snackbar.Add($"Unable to load item sales. {ex.Message}", MudBlazor.Severity.Error);
             throw;
         }
         finally

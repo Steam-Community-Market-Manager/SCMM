@@ -1,6 +1,6 @@
 ﻿namespace SCMM.Web.Data.Models.UI.Item
 {
-    public class ItemSaleChartDTO
+    public class ItemSalesChartPointDTO
     {
         public DateTime Date { get; set; }
 

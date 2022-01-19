@@ -126,46 +126,6 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get marketplace sales and revenue chart data, grouped by day (UTC)
-        /// </summary>
-        /// <remarks>
-        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-        /// </remarks>
-        /// <response code="200">List of market sales and revenue per day grouped/keyed by UTC date.</response>
-        /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [AllowAnonymous]
-        [HttpGet("market/activityTimeline")]
-        [ProducesResponseType(typeof(IEnumerable<MarketActivityChartStatisticDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketActivityTimeline()
-        {
-            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-            var query = _db.SteamMarketItemSale
-                .AsNoTracking()
-                .Where(x => x.Timestamp.Date <= yesterday.Date)
-                .GroupBy(x => x.Timestamp.Date)
-                .OrderBy(x => x.Key.Date)
-                .Select(x => new
-                {
-                    Date = x.Key,
-                    // TODO: Snapshot these for faster querying
-                    Sales = x.Sum(y => y.Quantity),
-                    Revenue = x.Sum(y => y.Quantity * y.MedianPrice)
-                });
-
-            var salesPerDay = (await query.ToListAsync()).Select(
-                x => new MarketActivityChartStatisticDTO
-                {
-                    Date = x.Date,
-                    Sales = x.Sales,
-                    Revenue = this.Currency().ToPrice(this.Currency().CalculateExchange(x.Revenue))
-                }
-            );
-
-            return Ok(salesPerDay);
-        }
-
-        /// <summary>
         /// List items, sorted by highest number of sales in the last 24hrs
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
@@ -389,7 +349,7 @@ namespace SCMM.Web.Server.API.Controllers
                         .Where(y => y.Count() > 1)
                         .Select(y => y.Sum(z => z.Quantity))
                         .Sum(x => x)*/
-                })
+                    })
                 .Select(x => new ItemSalesStatisticDTO()
                 {
                     Id = x.Item.ClassId,

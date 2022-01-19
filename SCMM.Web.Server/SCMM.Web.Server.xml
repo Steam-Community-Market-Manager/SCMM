@@ -4,6 +4,28 @@
         <name>SCMM.Web.Server</name>
     </assembly>
     <members>
+        <member name="M:SCMM.Web.Server.API.Controllers.AnalyticsController.GetMarketIndexFund(System.Int32)">
+            <summary>
+            Get marketplace index fund chart data, grouped by day (UTC)
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="maxDays">The maximum number of days worth of market history to return. Use <code>-1</code> for all history</param>
+            <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.AnalyticsController.GetMarketSales(System.Int32)">
+            <summary>
+            Get marketplace sales and revenue chart data, grouped by day (UTC)
+            </summary>
+            <remarks>
+            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+            </remarks>
+            <param name="maxDays">The maximum number of days worth of market history to return. Use <code>-1</code> for all history</param>
+            <response code="200">List of market sales and revenue grouped/keyed per day by UTC date.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.AnalyticsController.GetCheapestThirdPartDeals(System.String,System.Int32,System.Int32)">
             <summary>
             List items that are cheaper to buy from third party markets rather than the Steam Community Market
@@ -118,7 +140,7 @@
             <response code="404">If the request item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSalesTimeline(System.String,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemSales(System.String,System.Int32)">
             <summary>
             Get item sales history chart data, grouped by day (UTC)
             </summary>
@@ -420,16 +442,6 @@
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data)</param>
             <response code="200">Paginated list of items matching the request parameters.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketActivityTimeline">
-            <summary>
-            Get marketplace sales and revenue chart data, grouped by day (UTC)
-            </summary>
-            <remarks>
-            The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
-            </remarks>
-            <response code="200">List of market sales and revenue per day grouped/keyed by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostDemanded(System.Int32,System.Int32)">

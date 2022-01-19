@@ -1,0 +1,241 @@
+﻿@using SCMM.Web.Data.Models.UI.Item
+@using SCMM.Web.Data.Models.UI.Analytic
+@using Syncfusion.Blazor.Charts
+@inject ILogger<StatisticsMarketPanel> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject AppState State
+
+<MudGrid Spacing="2">
+    
+    <MudItem xs="12" xl="12">
+        <StatisticsPanel>
+            <div class="d-flex flex-row flex-wrap">
+                <div class="d-flex flex-column flex-grow-1">
+                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="d-flex align-center">
+                        <img src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/252490/820be4782639f9c4b64fa3ca7e6c26a95ae4fd1c.jpg" class="mr-2" style="width: 1em; height: 1em" />
+                        <span>Rust Index Fund</span>
+                    </MudText>
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="">
+                        <span>If there was an <MudLink Typo="MudBlazor.Typo.body2" Href="https://www.investopedia.com/terms/i/indexfund.asp" Target="_blank">index fund</MudLink> that tracked the performance of all market items, how is it performing?</span>
+                    </MudText>
+                </div>
+                <div class="pa-1 flex-shrink-1">
+                    <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(7))" Color="@(MarketIndexFundMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(30))" Color="@(MarketIndexFundMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(365))" Color="@(MarketIndexFundMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2">Year</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(-1))" Color="@(MarketIndexFundMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                    </MudButtonGroup>
+                </div>
+            </div>
+            <div class="d-flex flex-column justify-stretch align-stretch relative">
+                @if (MarketIndexFundChartData == null)
+                {
+                    <div class="d-flex align-center justify-center full-width full-height pa-2">
+                        <Loading Message="Loading market index fund..." />
+                    </div>
+                }
+                else
+                {
+                    <style>
+                        #MarketIndexFund_Series_1_TrendLine_0 {
+                            stroke-dasharray: 10px 10px;
+                            stroke-linejoin: round;
+                            stroke-linecap: round;
+                            -webkit-animation: dash 1s linear infinite;
+                            animation: dash 1s linear infinite;
+                        }
+                        @@-webkit-keyframes dash {
+                            100% {
+                                stroke-dashoffset: -20px;
+                            }
+                        }
+                        @@keyframes dash {
+                            100% {
+                                stroke-dashoffset: -20px;
+                            }
+                        }
+                    </style>
+                    <SfChart ID="MarketIndexFund" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
+                        <ChartArea>
+                            <ChartAreaBorder Width="0"></ChartAreaBorder>
+                        </ChartArea>
+                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                        </ChartPrimaryXAxis>
+                        <ChartAxes>
+                            <ChartAxis Name="VolumeAxis" RowIndex="0" LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" OpposedPosition="true" />
+                            <ChartAxis Name="ValueAxis" RowIndex="1" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />
+                        </ChartAxes>
+                        <ChartRows>
+                            <ChartRow Height="30%"></ChartRow>
+                            <ChartRow Height="70%"></ChartRow>
+                        </ChartRows>
+                        <ChartSeriesCollection>
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
+                            </Syncfusion.Blazor.Charts.ChartSeries>
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="ValueAxis" Name="Value" XName="Date" YName="Value" Fill="#CD412B" Type="ChartSeriesType.Line">
+                                <ChartTrendlines>
+                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Value Trend" Fill="#A4A6A7">
+                                    </ChartTrendline>
+                                </ChartTrendlines>
+                            </Syncfusion.Blazor.Charts.ChartSeries>
+                        </ChartSeriesCollection>
+                        <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="false" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
+                        <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
+                        <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                        <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                    </SfChart>
+                }
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    <span>Based on Dr. Blake Porter's <MudLink Typo="MudBlazor.Typo.caption" Href="https://www.blakeporterneuro.com/video-game-skin-analysis-rust/" Target="_blank">"Video Game Skin Analyse"</MudLink> (2019).</span>
+                </MudText>
+            </div>
+        </StatisticsPanel>
+    </MudItem>
+
+    <MudItem xs="12" xl="12">
+        <StatisticsPanel>
+            <div class="d-flex flex-row flex-wrap">
+                <div class="d-flex flex-column flex-grow-1">
+                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="">
+                        <i class="fas fa-fw fa-chart-line" />
+                        <span>Market Turnover</span>
+                    </MudText>
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="">
+                        <span>How much income is generated by market sales each day? How many items are bought and sold on the market each day?</span>
+                    </MudText>
+                </div>
+                <div class="pa-1 flex-shrink-1">
+                    <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
+                        <MudButton OnClick="@(() => LoadMarketSales(7))" Color="@(MarketSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketSales(30))" Color="@(MarketSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketSales(365))" Color="@(MarketSalesMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2">Year</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketSales(-1))" Color="@(MarketSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                    </MudButtonGroup>
+                </div>
+            </div>
+            <div class="d-flex flex-column justify-stretch align-stretch relative">
+                @if (MarketSalesChartData == null)
+                {
+                    <div class="d-flex align-center justify-center full-width full-height pa-2">
+                        <Loading Message="Loading market sales..." />
+                    </div>
+                }
+                else
+                {
+                    <style>
+                        #MarketSalesHistory_Series_1_TrendLine_0 {
+                            stroke-dasharray: 10px 10px;
+                            stroke-linejoin: round;
+                            stroke-linecap: round;
+                            -webkit-animation: dash 1s linear infinite;
+                            animation: dash 1s linear infinite;
+                        }
+                        @@-webkit-keyframes dash {
+                            100% {
+                                stroke-dashoffset: -20px;
+                            }
+                        }
+                        @@keyframes dash {
+                            100% {
+                                stroke-dashoffset: -20px;
+                            }
+                        }
+                    </style>
+                    <SfChart ID="MarketSalesHistory" Theme="Syncfusion.Blazor.Theme.MaterialDark" Background="transparent" Width="100%" Height="100%">
+                        <ChartArea>
+                            <ChartAreaBorder Width="0"></ChartAreaBorder>
+                        </ChartArea>
+                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="d-MMM-yy" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                        </ChartPrimaryXAxis>
+                        <ChartAxes>
+                            <ChartAxis Name="VolumeAxis" RowIndex="0" LabelFormat="#,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" OpposedPosition="true" />
+                            <ChartAxis Name="RevenueAxis" RowIndex="1" LabelFormat="@($"{State.Currency.PrefixText}#,##0.00{State.Currency.SuffixText}")" EdgeLabelPlacement="EdgeLabelPlacement.Shift" />
+                        </ChartAxes>
+                        <ChartRows>
+                            <ChartRow Height="30%"></ChartRow>
+                            <ChartRow Height="70%"></ChartRow>
+                        </ChartRows>
+                        <ChartSeriesCollection>
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketSalesChartData" YAxisName="VolumeAxis" Name="Volume" XName="Date" YName="Volume" Fill="#66c0f4" Type="ChartSeriesType.StepArea">
+                            </Syncfusion.Blazor.Charts.ChartSeries>
+                            <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketSalesChartData" YAxisName="RevenueAxis" Name="Revenue" XName="Date" YName="Revenue" Fill="#388e3c" Type="ChartSeriesType.Line">
+                                <ChartTrendlines>
+                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Revenue Trend" Fill="#fff">
+                                    </ChartTrendline>
+                                </ChartTrendlines>
+                            </Syncfusion.Blazor.Charts.ChartSeries>
+                        </ChartSeriesCollection>
+                        <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="false" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
+                        <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
+                        <ChartTooltipSettings Enable="true" Shared="true"></ChartTooltipSettings>
+                        <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                    </SfChart>
+                }
+            </div>
+        </StatisticsPanel>
+    </MudItem>
+    
+</MudGrid>
+
+@code {
+    
+    private IEnumerable<MarketIndexFundChartPointDTO> MarketIndexFundChartData { get; set; }
+    
+    private IEnumerable<MarketSalesChartPointDTO> MarketSalesChartData { get; set; }
+    
+    private int MarketIndexFundMaxDays { get; set; }
+
+    private int MarketSalesMaxDays { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        _ = LoadMarketIndexFund();
+        _ = LoadMarketSales();
+    }
+    
+    protected async Task LoadMarketIndexFund(int maxDays = 365)
+    {
+        try
+        {
+            MarketIndexFundMaxDays = maxDays;
+            MarketIndexFundChartData = null;
+            StateHasChanged();
+            MarketIndexFundChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<MarketIndexFundChartPointDTO>>($"api/analytics/market/indexFund?maxDays={maxDays}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Unable to list market index fund");
+            Snackbar.Add($"Unable to load market index fund. {ex.Message}", MudBlazor.Severity.Error);
+            throw;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    protected async Task LoadMarketSales(int maxDays = 365)
+    {
+        try
+        {
+            MarketSalesMaxDays = maxDays;
+            MarketSalesChartData = null;
+            StateHasChanged();
+            MarketSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<MarketSalesChartPointDTO>>($"api/analytics/market/sales?maxDays={maxDays}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Unable to list market sales");
+            Snackbar.Add($"Unable to load market sales. {ex.Message}", MudBlazor.Severity.Error);
+            throw;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+}

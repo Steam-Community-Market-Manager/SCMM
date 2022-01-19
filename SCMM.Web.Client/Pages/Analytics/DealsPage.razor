@@ -218,7 +218,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemDealAnalyticDTO>>($"api/analytics/cheapestThirdPartyDeals?filter={Uri.EscapeDataString(FilterCheapestDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemDealAnalyticDTO>>($"api/analytics/market/thirdParty/cheapestDeals?filter={Uri.EscapeDataString(FilterCheapestDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemDealAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -232,7 +232,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipDealAnalyticDTO>>($"api/analytics/undervaluedThirdPartyDeals?filter={Uri.EscapeDataString(FilterUndervaluedDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipDealAnalyticDTO>>($"api/analytics/market/thirdParty/undervaluedDeals?filter={Uri.EscapeDataString(FilterUndervaluedDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemFlipDealAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)

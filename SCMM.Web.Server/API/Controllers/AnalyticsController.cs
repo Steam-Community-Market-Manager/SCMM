@@ -10,6 +10,7 @@ using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Analytic;
+using SCMM.Web.Data.Models.UI.Statistic;
 using SCMM.Web.Server.Extensions;
 using Syncfusion.Blazor.Data;
 
@@ -35,6 +36,92 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// Get marketplace index fund chart data, grouped by day (UTC)
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <param name="maxDays">The maximum number of days worth of market history to return. Use <code>-1</code> for all history</param>
+        /// <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("market/indexFund")]
+        [ProducesResponseType(typeof(IEnumerable<MarketIndexFundChartPointDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketIndexFund(int maxDays = 365)
+        {
+            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
+            var query = _db.SteamMarketItemSale
+                .AsNoTracking()
+                .Where(x => x.Timestamp.Date <= yesterday.Date)
+                .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
+                .GroupBy(x => x.Timestamp.Date)
+                .OrderBy(x => x.Key.Date)
+                .Select(x => new
+                {
+                    // TODO: Snapshot these for faster querying
+                    Date = x.Key,
+                    Volume = x/*.DistinctBy(x => x.ItemId)*/.Sum(y => y.Quantity),
+                    MedianPrice = x.Average(y => y.MedianPrice),
+                });
+
+            var salesPerDay = (await query.ToListAsync()).Select(
+                x => new MarketIndexFundChartPointDTO
+                {
+                    Date = x.Date,
+                    Volume = x.Volume/*(long)Math.Round((x.Volume > 0 && x.ItemCount > 0) ? (x.Volume / (decimal)x.ItemCount) : 0, 0)*/,
+                    Value = this.Currency().ToPrice(this.Currency().CalculateExchange((long)Math.Round(x.MedianPrice, 0)))
+                }
+            );
+
+            return Ok(salesPerDay);
+        }
+
+        /// <summary>
+        /// Get marketplace sales and revenue chart data, grouped by day (UTC)
+        /// </summary>
+        /// <remarks>
+        /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
+        /// </remarks>
+        /// <param name="maxDays">The maximum number of days worth of market history to return. Use <code>-1</code> for all history</param>
+        /// <response code="200">List of market sales and revenue grouped/keyed per day by UTC date.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("market/sales")]
+        [ProducesResponseType(typeof(IEnumerable<MarketSalesChartPointDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetMarketSales(int maxDays = 365)
+        {
+            var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+            var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
+            var query = _db.SteamMarketItemSale
+                .AsNoTracking()
+                .Where(x => x.Timestamp.Date <= yesterday.Date)
+                .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
+                .GroupBy(x => x.Timestamp.Date)
+                .OrderBy(x => x.Key.Date)
+                .Select(x => new
+                {
+                    // TODO: Snapshot these for faster querying
+                    Date = x.Key,
+                    Volume = x.Sum(y => y.Quantity),
+                    Revenue = x.Sum(y => y.Quantity * y.MedianPrice)
+                });
+
+            var salesPerDay = (await query.ToListAsync()).Select(
+                x => new MarketSalesChartPointDTO
+                {
+                    Date = x.Date,
+                    Volume = x.Volume,
+                    Revenue = this.Currency().ToPrice(this.Currency().CalculateExchange(x.Revenue))
+                }
+            );
+
+            return Ok(salesPerDay);
+        }
+
+        /// <summary>
         /// List items that are cheaper to buy from third party markets rather than the Steam Community Market
         /// </summary>
         /// <remarks>
@@ -45,7 +132,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [HttpGet("cheapestThirdPartyDeals")]
+        [HttpGet("market/thirdParty/cheapestDeals")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemDealAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCheapestThirdPartDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
@@ -90,7 +177,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [HttpGet("undervaluedThirdPartyDeals")]
+        [HttpGet("market/thirdParty/undervaluedDeals")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipDealAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetUndervaluedThirdPartyDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
