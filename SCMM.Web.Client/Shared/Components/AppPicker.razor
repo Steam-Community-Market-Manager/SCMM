@@ -8,7 +8,7 @@
 {
     <div @attributes="AdditionalAttributes">
         <MudMenu Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" 
-                 AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="false" MaxHeight="500" title="Switch application" Class="pa-2 hover-darken">
+                 AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="false" MaxHeight="500" title="Ghange game" Class="pa-2 hover-darken">
             <ActivatorContent>
                 <MudText Typo="Typo.h4" Class="pt-2">
                     <img src="/images/app/@(State.App.Id.ToString())/logo.svg" style="height:1em" />
@@ -16,7 +16,7 @@
             </ActivatorContent>
             <ChildContent>
                 <MudMenuItem Disabled="true" Class="py-0 my-0">
-                    <span>Select Application</span>
+                    <span>Select Game</span>
                 </MudMenuItem>
                 @foreach (var app in Apps)
                 {

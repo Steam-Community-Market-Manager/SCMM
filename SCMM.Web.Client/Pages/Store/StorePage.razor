@@ -486,9 +486,9 @@ else if (StoreList.Any())
                                                 @if (item.IsStillAvailableFromStore)
                                                 {
                                                     <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" Size="@Size.Medium" FullWidth>
-                                                        @if (!String.IsNullOrEmpty(State.App?.IconUrl))
+                                                        @if (State.AppId > 0)
                                                         {
-                                                            <img src="@State.App.IconUrl" class="store-button-icon" />    
+                                                            <img src="/images/app/@(@State.AppId.ToString())/icon.svg" class="store-button-icon" />    
                                                         }
                                                         else
                                                         {
