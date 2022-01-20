@@ -20,15 +20,13 @@ public class UpdateCurrentStoreStatisticsJob
     private readonly SteamDbContext _db;
     private readonly ICommandProcessor _commandProcessor;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
-    private readonly SteamService _steamService;
 
-    public UpdateCurrentStoreStatisticsJob(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
+    public UpdateCurrentStoreStatisticsJob(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
     {
         _steamConfiguration = steamConfiguration;
         _commandProcessor = commandProcessor;
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;
-        _steamService = steamService;
     }
 
     [Function("Update-Store-Statistics")]
@@ -46,17 +44,17 @@ public class UpdateCurrentStoreStatisticsJob
 
         foreach (var appItemStore in appItemStores)
         {
-            await UpdateItemStoreSubscribers(logger, _db, _steamService, _commandProcessor, appItemStore);
-            await UpdateItemStoreTopSellers(logger, _db, _steamCommunityWebClient, _steamService, appItemStore);
+            await UpdateItemStoreSubscribers(logger, appItemStore);
+            await UpdateItemStoreTopSellers(logger, appItemStore);
         }
 
         _db.SaveChanges();
     }
 
-    private async Task UpdateItemStoreTopSellers(ILogger logger, SteamDbContext db, SteamCommunityWebClient commnityClient, SteamService service, SteamItemStore itemStore)
+    private async Task UpdateItemStoreTopSellers(ILogger logger, SteamItemStore itemStore)
     {
         logger.LogTrace($"Updating item store top seller statistics (app: {itemStore.App.SteamId})");
-        var storePage = await commnityClient.GetStorePage(new SteamItemStorePageRequest()
+        var storePage = await _steamCommunityWebClient.GetStorePage(new SteamItemStorePageRequest()
         {
             AppId = itemStore.App.SteamId,
             Start = 0,
@@ -119,10 +117,10 @@ public class UpdateCurrentStoreStatisticsJob
             storeItem.Item.RecalculateTotalSales(itemStore);
         }
 
-        db.SaveChanges();
+        _db.SaveChanges();
     }
 
-    private async Task UpdateItemStoreSubscribers(ILogger logger, SteamDbContext db, SteamService service, ICommandProcessor commandProcessor, SteamItemStore itemStore)
+    private async Task UpdateItemStoreSubscribers(ILogger logger, SteamItemStore itemStore)
     {
         var assetDescriptions = itemStore.Items
             .Select(x => x.Item)
@@ -162,13 +160,13 @@ public class UpdateCurrentStoreStatisticsJob
 
         foreach (var item in assetWorkshopJoined)
         {
-            _ = await commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+            _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
             {
                 AssetDescription = item.AssetDescription,
                 PublishedFile = item.PublishedFile
             });
         }
 
-        db.SaveChanges();
+        _db.SaveChanges();
     }
 }

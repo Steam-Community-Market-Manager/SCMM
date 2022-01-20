@@ -109,7 +109,7 @@ public class CheckForNewMarketItemsJob
             logger.LogInformation($"New market items detected!");
 
             var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
-            var thumbnail = await GenerateMarketItemsThumbnailImage(logger, _queryProcessor, newMarketItems, thumbnailExpiry);
+            var thumbnail = await GenerateMarketItemsThumbnailImage(logger, newMarketItems, thumbnailExpiry);
             if (thumbnail != null)
             {
                 _db.FileData.Add(thumbnail);
@@ -117,11 +117,11 @@ public class CheckForNewMarketItemsJob
 
             _db.SaveChanges();
 
-            await BroadcastNewMarketItemsNotification(logger, _commandProcessor, _db, newMarketItems, thumbnail);
+            await BroadcastNewMarketItemsNotification(logger, newMarketItems, thumbnail);
         }
     }
 
-    private async Task<FileData> GenerateMarketItemsThumbnailImage(ILogger logger, IQueryProcessor queryProcessor, IEnumerable<SteamMarketItem> marketItems, DateTimeOffset expiresOn)
+    private async Task<FileData> GenerateMarketItemsThumbnailImage(ILogger logger, IEnumerable<SteamMarketItem> marketItems, DateTimeOffset expiresOn)
     {
         try
         {
@@ -135,7 +135,7 @@ public class CheckForNewMarketItemsJob
                 })
                 .ToList();
 
-            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+            var thumbnail = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = itemImageSources,
                 ImageSize = 128,
@@ -160,16 +160,16 @@ public class CheckForNewMarketItemsJob
         }
     }
 
-    private async Task BroadcastNewMarketItemsNotification(ILogger logger, ICommandProcessor commandProcessor, SteamDbContext db, IEnumerable<SteamMarketItem> newMarketItems, FileData thumbnailImage)
+    private async Task BroadcastNewMarketItemsNotification(ILogger logger, IEnumerable<SteamMarketItem> newMarketItems, FileData thumbnailImage)
     {
         newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name);
         var app = newMarketItems.Where(x => x.App != null).FirstOrDefault()?.App;
-        var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
+        var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
         foreach (var guild in guilds)
         {
             try
             {
-                if (guild.IsSet(DiscordConfiguration.AlertsMarket) && !bool.Parse(guild.Get(DiscordConfiguration.AlertsMarket).Value))
+                if (!bool.Parse(guild.Get(DiscordConfiguration.AlertsMarket, Boolean.FalseString).Value))
                 {
                     continue;
                 }
@@ -214,7 +214,7 @@ public class CheckForNewMarketItemsJob
                     .Where(x => x.Description?.IconId != null)
                     .Select(x => x.Description.IconId);
 
-                await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
+                await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuidId = ulong.Parse(guild.DiscordId),
                     ChannelPatterns = guildChannels?.ToArray(),

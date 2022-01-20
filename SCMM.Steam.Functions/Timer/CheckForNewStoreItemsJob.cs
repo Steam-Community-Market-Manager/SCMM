@@ -27,16 +27,14 @@ public class CheckForNewStoreItemsJob
     private readonly SteamDbContext _db;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
-    private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly SteamService _steamService;
 
-    public CheckForNewStoreItemsJob(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
+    public CheckForNewStoreItemsJob(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamService steamService)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
         _db = db;
-        _steamCommunityWebClient = steamCommunityWebClient;
         _steamService = steamService;
     }
 
@@ -209,7 +207,7 @@ public class CheckForNewStoreItemsJob
                 {
                     _db.SteamItemStores.Add(permanentItemStore);
                 }
-                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, permanentItemStore.Items.Select(x => x.Item));
+                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, permanentItemStore.Items.Select(x => x.Item));
                 if (thumbnail != null)
                 {
                     permanentItemStore.ItemsThumbnail = (permanentItemStore.ItemsThumbnail ?? thumbnail);
@@ -223,7 +221,7 @@ public class CheckForNewStoreItemsJob
                 {
                     _db.SteamItemStores.Add(limitedItemStore);
                 }
-                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, limitedItemStore.Items.Select(x => x.Item));
+                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, limitedItemStore.Items.Select(x => x.Item));
                 if (thumbnail != null)
                 {
                     limitedItemStore.ItemsThumbnail = (limitedItemStore.ItemsThumbnail ?? thumbnail);
@@ -238,19 +236,19 @@ public class CheckForNewStoreItemsJob
             if (newPermanentStoreItems.Any())
             {
                 logger.LogInformation($"New permanent store items detected!");
-                await BroadcastNewStoreItemsNotification(logger, _commandProcessor, _db, app, permanentItemStore, newPermanentStoreItems, currencies);
+                await BroadcastNewStoreItemsNotification(logger, app, permanentItemStore, newPermanentStoreItems, currencies);
             }
             if (newLimitedStoreItems.Any())
             {
                 logger.LogInformation($"New limited store items detected!");
-                await BroadcastNewStoreItemsNotification(logger, _commandProcessor, _db, app, limitedItemStore, newLimitedStoreItems, currencies);
+                await BroadcastNewStoreItemsNotification(logger, app, limitedItemStore, newLimitedStoreItems, currencies);
             }
 
             // TODO: Wait 1min, then trigger CheckForNewMarketItemsJob
         }
     }
 
-    private async Task<FileData> GenerateStoreItemsThumbnailImage(ILogger logger, IQueryProcessor queryProcessor, IEnumerable<SteamStoreItem> storeItems)
+    private async Task<FileData> GenerateStoreItemsThumbnailImage(ILogger logger, IEnumerable<SteamStoreItem> storeItems)
     {
         try
         {
@@ -265,7 +263,7 @@ public class CheckForNewStoreItemsJob
                 })
                 .ToList();
 
-            var thumbnail = await queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+            var thumbnail = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = itemImageSources,
                 ImageSize = 128,
@@ -289,15 +287,15 @@ public class CheckForNewStoreItemsJob
         }
     }
 
-    private async Task BroadcastNewStoreItemsNotification(ILogger logger, ICommandProcessor commandProcessor, SteamDbContext db, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
+    private async Task BroadcastNewStoreItemsNotification(ILogger logger, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
     {
         newStoreItems = newStoreItems?.OrderBy(x => x.Item?.Description?.Name);
-        var guilds = db.DiscordGuilds.Include(x => x.Configurations).ToList();
+        var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
         foreach (var guild in guilds)
         {
             try
             {
-                if (guild.IsSet(DiscordConfiguration.AlertsStore) && !bool.Parse(guild.Get(DiscordConfiguration.AlertsStore).Value))
+                if (!bool.Parse(guild.Get(DiscordConfiguration.AlertsStore, Boolean.TrueString).Value))
                 {
                     continue;
                 }
@@ -325,7 +323,7 @@ public class CheckForNewStoreItemsJob
                     ? $"{store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}"
                     : store.Name;
 
-                await commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
+                await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
                     GuidId = ulong.Parse(guild.DiscordId),
                     ChannelPatterns = guildChannels?.ToArray(),

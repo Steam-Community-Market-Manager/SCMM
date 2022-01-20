@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.API.Commands;
 using SCMM.Shared.API.Extensions;
-using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Extensions;
@@ -113,59 +112,85 @@ public class CheckForNewItemDefinitions
 
                     _db.SaveChanges();
 
-                    var description = new StringBuilder();
-                    var fields = new Dictionary<string, string>();
-                    description.AppendLine(app.ItemDefinitionsDigest);
-                    description.AppendLine();
-                    if (newItemDefinitions.Any())
+                    await BroadcastUpdatedItemDefinitionsNotification(logger, app, newItemDefinitions, updatedAssetDescriptions);
+                }
+            }
+        }
+    }
+
+    private async Task BroadcastUpdatedItemDefinitionsNotification(ILogger logger, SteamApp app, IEnumerable<ItemDefinition> newItemDefinitions, IEnumerable<SteamAssetDescription> updatedAssetDescriptions)
+    {
+        var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
+        foreach (var guild in guilds)
+        {
+            try
+            {
+                if (!bool.Parse(guild.Get(DiscordConfiguration.AlertsItemDefinition, Boolean.FalseString).Value))
+                {
+                    continue;
+                }
+
+                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                    "announcement", "market", "skin", app.Name, "general", "chat", "bot"
+                });
+
+                var description = new StringBuilder();
+                var fields = new Dictionary<string, string>();
+                description.AppendLine(app.ItemDefinitionsDigest);
+                description.AppendLine();
+                if (newItemDefinitions.Any())
+                {
+                    description.Append($"{newItemDefinitions.Count()} new item(s) have just appeared in the {app?.Name} item definitions archive.");
+                    foreach (var item in newItemDefinitions.OrderByDescending(x => x.DateCreated.SteamTimestampToDateTimeOffset()))
                     {
-                        description.Append($"{newItemDefinitions.Count()} new item(s) have just appeared in the {app?.Name} item definitions archive.");
-                        foreach (var item in newItemDefinitions.OrderByDescending(x => x.DateCreated.SteamTimestampToDateTimeOffset()))
-                        {
-                            fields.Add(
-                                $"🆕 {item.ItemDefId}",
-                                (String.IsNullOrEmpty(item.IconUrl) ? item.Name : $"[{item.Name}]({item.IconUrl})")
-                            );
-                        }
-                    }
-                    if (updatedAssetDescriptions.Any())
-                    {
-                        description.Append($"{updatedAssetDescriptions.Count()} existing item(s) have been updated.");
-                        foreach (var item in updatedAssetDescriptions.OrderByDescending(x => x.ClassId))
-                        {
-                            fields.Add(
-                                $"{item.ClassId}",
-                                $"[{item.Name}]({_configuration.GetWebsiteUrl()}/item/{item.Name})"
-                            );
-                        }
-                    }
-                    if (!newItemDefinitions.Any() && !updatedAssetDescriptions.Any())
-                    {
-                        description.Append("No significant item additions/removals were detected.");
-                    }
-                    if (fields.Count > 24)
-                    {
-                        fields = fields.Take(24).ToDictionary(x => x.Key, x => x.Value);
                         fields.Add(
-                            $"+{newItemDefinitions.Count + updatedAssetDescriptions.Count - 24} items",
-                            "View full item list for more details"
+                            $"🆕 {item.ItemDefId}",
+                            (String.IsNullOrEmpty(item.IconUrl) ? item.Name : $"[{item.Name}]({item.IconUrl})")
                         );
                     }
-
-                    await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
-                    {
-                        GuidId = 761035706021314561,
-                        ChannelPatterns = new [] { "announcements" },
-                        Message = null,
-                        Title = $"{app?.Name} Item Definitions Updated",
-                        Description = description.ToString(),
-                        Fields = fields,
-                        FieldsInline = true,
-                        Url = $"{_configuration.GetWebsiteUrl()}/items",
-                        ThumbnailUrl = app?.IconUrl,
-                        Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
-                    });
                 }
+                if (updatedAssetDescriptions.Any())
+                {
+                    description.Append($"{updatedAssetDescriptions.Count()} existing item(s) have been updated.");
+                    foreach (var item in updatedAssetDescriptions.OrderByDescending(x => x.ClassId))
+                    {
+                        fields.Add(
+                            $"{item.ClassId}",
+                            $"[{item.Name}]({_configuration.GetWebsiteUrl()}/item/{item.Name})"
+                        );
+                    }
+                }
+                if (!newItemDefinitions.Any() && !updatedAssetDescriptions.Any())
+                {
+                    description.Append("No significant item additions/removals were detected.");
+                }
+                if (fields.Count > 24)
+                {
+                    fields = fields.Take(24).ToDictionary(x => x.Key, x => x.Value);
+                    fields.Add(
+                        $"+{newItemDefinitions.Count() + updatedAssetDescriptions.Count() - 24} items",
+                        "View full item list for more details"
+                    );
+                }
+
+                await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
+                {
+                    GuidId = ulong.Parse(guild.DiscordId),
+                    ChannelPatterns = guildChannels?.ToArray(),
+                    Message = null,
+                    Title = $"{app?.Name} Item Definitions Updated",
+                    Description = description.ToString(),
+                    Fields = fields,
+                    FieldsInline = true,
+                    Url = $"{_configuration.GetWebsiteUrl()}/items",
+                    ThumbnailUrl = app?.IconUrl,
+                    Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to send new market item notification to guild (id: {guild.Id})");
+                continue;
             }
         }
     }
