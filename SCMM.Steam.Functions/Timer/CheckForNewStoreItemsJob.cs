@@ -226,7 +226,7 @@ public class CheckForNewStoreItemsJob
                 var thumbnail = await GenerateStoreItemsThumbnailImage(logger, _queryProcessor, limitedItemStore.Items.Select(x => x.Item));
                 if (thumbnail != null)
                 {
-                    limitedItemStore.ItemsThumbnail = (permanentItemStore.ItemsThumbnail ?? thumbnail);
+                    limitedItemStore.ItemsThumbnail = (limitedItemStore.ItemsThumbnail ?? thumbnail);
                     limitedItemStore.ItemsThumbnail.MimeType = thumbnail.MimeType;
                     limitedItemStore.ItemsThumbnail.Data = thumbnail.Data;
                 }
