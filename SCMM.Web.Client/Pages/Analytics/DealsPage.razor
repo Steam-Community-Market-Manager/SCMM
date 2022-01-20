@@ -15,7 +15,7 @@
         <MudItem xs="12" xl="6">
             <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Cheapest item offers" Subtitle="Looking to buy an item? Find the cheapest offer across all third party markets.">
                 <div class="ma-n4">
-                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:50vh;">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:70vh;">
                         <thead>
                             <tr>
                                 <th>
@@ -39,7 +39,7 @@
                                         </td>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
                                                 <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
@@ -105,7 +105,7 @@
         <MudItem xs="12" xl="6">
             <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Undervalued items on third party markets" Subtitle="Looking to top up your Steam wallet balance? Buy these undervalued third party items and instantly flip them on the Steam Community Market for extra balance.">
                 <div class="ma-n4">
-                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:50vh;">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:70vh;">
                         <thead>
                             <tr>
                                 <th>
@@ -131,7 +131,7 @@
                                         </td>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
                                                 <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)

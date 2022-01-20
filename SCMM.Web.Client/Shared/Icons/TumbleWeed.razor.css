@@ -1,15 +1,23 @@
 ﻿
-.tumble-weed-container, .tumble-weed-light-container {
+.tumble-weed-container, .tumble-weed-container-light {
     position: relative;
     display: block;
     text-align: center;
     height: 10em;
     width: 10em;
-    border-bottom: solid 2px #000;
+    border-bottom: solid 2px;
     overflow: hidden;
 }
 
-.tumble-weed-light-container .bounce {
+.tumble-weed-container {
+    border-color: #000;
+}
+
+.tumble-weed-container-light {
+    border-color: #fff;
+}
+
+.tumble-weed-container-light .bounce {
     filter: invert(100%);
     -webkit-filter: invert(100%);
 }
@@ -18,7 +26,7 @@
     background-color: #000;
 }
 
-.tumble-weed-light-container .pebble1 {
+.tumble-weed-container-light .pebble1 {
     background-color: #fff;
 }
 
@@ -26,7 +34,7 @@
     background-color: #000;
 }
 
-.tumble-weed-light-container .pebble2 {
+.tumble-weed-container-light .pebble2 {
     background-color: #fff;
 }
 
@@ -34,7 +42,7 @@
     background-color: #000;
 }
 
-.tumble-weed-light-container .pebble3 {
+.tumble-weed-container-light .pebble3 {
     background-color: #fff;
 }
 

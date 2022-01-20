@@ -82,7 +82,7 @@
                       Label="Steam API Key" Placeholder="Paste your Steam API key here..." HelperText="Click on the question mark icon to view and manage your Steam API Key"
                       Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab("https://steamcommunity.com/dev/apikey"))" />
         <div class="mt-2">
-            <MudCheckBox T="bool" @bind-Checked="@RestackNewItems" Color="Color.Default" Label="Automatically restack newly created items" Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))" />
+            <MudCheckBox T="bool" @bind-Checked="@RestackNewItems" Color="Color.Primary" Label="Automatically restack newly created items" Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))" />
         </div>
     </DialogContent>
     <DialogActions>

@@ -1326,7 +1326,7 @@
             events.Add(new TimelineEvent()
             {
                 Timestamp = Item.TimeCreated.Value,
-                Color = Color.Primary,
+                Color = Color.Default,
                 Icon = "fas fa-fw fa-plus",
                 Title = "Item Created",
                 Subtitle = $"{Item.CreatorName} published the item."
@@ -1337,7 +1337,7 @@
             events.Add(new TimelineEvent()
             {
                 Timestamp = Item.TimeAccepted.Value,
-                Color = Color.Primary,
+                Color = Color.Default,
                 Icon = "fas fa-fw fa-check",
                 Title = "Item Accepted",
                 Subtitle = $"Item was accepted for {State.App.Name}."
@@ -1348,7 +1348,7 @@
             events.Add(new TimelineEvent()
             {
                 Timestamp = new DateTimeOffset(change.Key, TimeZoneInfo.Utc.BaseUtcOffset),
-                Color = Color.Inherit,
+                Color = Color.Info,
                 Icon = "fas fa-fw fa-wrench",
                 Title = "Item Updated",
                 Subtitle = !String.IsNullOrEmpty(change.Value) ? change.Value : "An unknown file change was made."
@@ -1359,7 +1359,7 @@
             events.Add(new TimelineEvent()
             {
                 Timestamp = Item.TimeMarketFirstSold.Value,
-                Color = Color.Primary,
+                Color = Color.Default,
                 Icon = "fas fa-fw fa-balance-scale-left",
                 Title = "First Market Listing",
                 Subtitle = "Item first appeared on the market."

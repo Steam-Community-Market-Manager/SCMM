@@ -309,7 +309,7 @@
                                 @if (!String.IsNullOrEmpty(Update.DiscordId))
                                 {
                                     <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                        <MudText Typo="Typo.body1" Color="Color.Primary" GutterBottom Class="mt-2">
+                                        <MudText Typo="Typo.body1" Color="Color.Warning" GutterBottom Class="mt-2">
                                             <i class="fas fa-fw fa-exclamation-triangle"></i>
                                             <span>You have not verified this Discord ID yet.</span>
                                             <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Disabled="true">Verify Now</MudButton>
@@ -378,7 +378,7 @@
                             }
                         </MudCardContent>
                         <MudCardActions class="d-flex flex-wrap pt-4 px-4">
-                            <MudButton OnClick="@DownloadProfileData" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-download" Class="mr-4 mb-4">
+                            <MudButton OnClick="@DownloadProfileData" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Default" StartIcon="fas fa-fw fa-download" Class="mr-4 mb-4">
                                 Download Your Data
                             </MudButton>
                             <MudButton OnClick="@ShowDeleteProfileDataConfirmationDialog" Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Error" StartIcon="fas fa-fw fa-trash" Class="mr-4 mb-4">

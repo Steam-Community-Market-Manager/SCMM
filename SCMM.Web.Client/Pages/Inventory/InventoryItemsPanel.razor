@@ -28,7 +28,7 @@ else
             <div class="item">
                 @if (item.Quantity > 1)
                 {
-                    <MudBadge Color="MudBlazor.Color.Primary" Content="@item.Quantity" Max="Int32.MaxValue" Overlap="true" Bordered="true" Class="mud-badge-overlap-extra">
+                    <MudBadge Color="MudBlazor.Color.Dark" Content="@item.Quantity" Max="Int32.MaxValue" Overlap="true" Bordered="true" Class="mud-badge-overlap-extra">
                         <InventoryItemSummary SteamId="@SteamId" Item="@item" />
                     </MudBadge>
                 }
@@ -39,7 +39,7 @@ else
                 @if(SelectedInventoryItems != null && State.Is(SteamId))
                 {
                     <div class="@($"item-multi-select {((SelectedInventoryItems.ContainsKey(item.Id) && SelectedInventoryItems[item.Id] == true) ? "item-selected" : "item-hover-to-select")}")">
-                        <MudCheckBox T="bool" @bind-Checked="@SelectedInventoryItems[item.Id]" Color="Color.Default " Class="ma-n1" />
+                        <MudCheckBox T="bool" @bind-Checked="@SelectedInventoryItems[item.Id]" Color="Color.Primary" Class="ma-n1" />
                     </div>
                 }
             </div>
@@ -47,7 +47,7 @@ else
     </div>
     @if (SelectedInventoryItems != null && SelectedInventoryItems.Any(x => x.Value) && State.Is(SteamId))
     {
-        <div class="multi-select-actions d-flex flex-row  justify-center align-center pa-2 mud-theme-dark">
+        <div class="multi-select-actions d-flex flex-row justify-center align-center pa-2 mud-appbar">
             <MudButton OnClick="ClearItemSelection" Variant="Variant.Outlined" Color="Color.Secondary" Class="mx-1">Clear</MudButton>
             <MudButton OnClick="SellSelectedItemsOnMarket" Variant="Variant.Filled" Color="Color.Success" StartIcon="fa fa-fw fa-hand-holding-usd" Class="mx-1">Multi-sell</MudButton>
         </div>

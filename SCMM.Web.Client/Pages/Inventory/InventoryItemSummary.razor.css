@@ -1,11 +1,5 @@
 ﻿
-.item-summary {
-    border: 1px solid transparent;
-}
-
 .item-summary:hover {
-    background-color: var(--mud-palette-overlay-dark);
-    border: 1px solid var(--mud-palette-lines-default);
     cursor: pointer;
 }
 

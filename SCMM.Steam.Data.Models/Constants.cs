@@ -44,6 +44,12 @@
         public const string SteamLanguageEnglish = "english";
         public const string SteamDefaultLanguage = SteamLanguageEnglish;
 
+        #region CSGO
+
+        public const ulong CSGOAppId = 730L;
+
+        #endregion
+
         #region Rust
 
         public const ulong RustAppId = 252490L;

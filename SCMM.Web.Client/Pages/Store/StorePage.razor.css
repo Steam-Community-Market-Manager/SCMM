@@ -3,3 +3,11 @@
     max-width: 12em;
     max-height: 12em;
 }
+
+.store-button-icon {
+    height: 1.5em;
+}
+
+.store-button-label {
+    padding-top: 2px;
+}

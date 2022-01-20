@@ -34,6 +34,10 @@ namespace SCMM.Steam.Data.Store
 
         public string SecondaryColor { get; set; }
 
+        public string TertiaryColor { get; set; }
+
+        public string SurfaceColor { get; set; }
+
         public string BackgroundColor { get; set; }
 
         public string Subdomain { get; set; }

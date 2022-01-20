@@ -28,16 +28,16 @@
         </MudItem>
         <MudItem xs="12">
             <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Info" />
-                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Info" />
+                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" />
             </MudPaper>
         </MudItem>
         @if (Items == null)

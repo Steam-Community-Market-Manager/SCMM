@@ -485,16 +485,16 @@ else if (StoreList.Any())
                                                 }
                                                 @if (item.IsStillAvailableFromStore)
                                                 {
-                                                    <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Tertiary" Size="@Size.Medium" FullWidth>
-                                                        @if (State.App.Id == Constants.RustAppId)
+                                                    <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" Size="@Size.Medium" FullWidth>
+                                                        @if (!String.IsNullOrEmpty(State.App?.IconUrl))
                                                         {
-                                                            <RustIcon />        
+                                                            <img src="@State.App.IconUrl" class="store-button-icon" />    
                                                         }
                                                         else
                                                         {
                                                             <i class="fab fa-fw fa-steam" />
                                                         }
-                                                        <strong class="ml-1">Store</strong>
+                                                        <strong class="ml-2 store-button-label">Store</strong>
                                                     </MudButton>
                                                 }
                                             </div>
