@@ -181,7 +181,7 @@ public class CheckForNewMarketItemsJob
                 var fields = new Dictionary<string, string>();
                 foreach (var marketItem in newMarketItems)
                 {
-                    var storeItem = db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
+                    var storeItem = _db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
                     var description = marketItem.Description?.ItemType;
                     if (string.IsNullOrEmpty(description))
                     {
