@@ -16,7 +16,7 @@
         </MudItem>
         <MudItem xs="12" sm="6">
             <MudSelect T="string" Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Label="Item Type" Clearable="true"
-                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0">
+                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Disabled="@(ItemTypes == null || !ItemTypes.Any())" Class="mud-input-transparent ma-0">
                 @if (ItemTypes != null)
                 {
                     @foreach (var itemType in ItemTypes)
@@ -46,7 +46,7 @@
                 <Loading Message="Finding items..." />
             </MudItem>
         }
-        else 
+        else if (Items.Items.Any())
         {
             @foreach (var item in Items.Items)
             {
@@ -64,6 +64,15 @@
                                    Count="@((int)Math.Ceiling((double)Items.Total / Math.Max(Count ?? 100, 1)))" />
                 </MudItem>
             }
+        }
+        else
+        {
+            <MudItem xs="12" Class="d-flex justify-center">
+                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                    <TumbleWeed Light="true" />
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">empty, check back later</MudText>
+                </div>
+            </MudItem>
         }
     </MudGrid>
 

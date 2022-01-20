@@ -5,9 +5,7 @@
 <MudLayout>
     <MudAppBar Fixed="true" Dense="false" Elevation="4">
         <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" />
-        <MudText Typo="Typo.h4" Class="ml-2 pt-2">
-            <img src="/images/@(State.App.Name.ToLower())-logo.svg" style="height:1em" />
-        </MudText>
+        <AppPicker class="ml-2" />
         <MudText Typo="Typo.h6" Class="ml-4">
             <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
                 <span>Steam Community Market Manager</span>

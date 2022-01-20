@@ -488,7 +488,7 @@ else if (StoreList.Any())
                                                     <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Tertiary" Size="@Size.Medium" FullWidth>
                                                         @if (State.App.Id == Constants.RustAppId)
                                                         {
-                                                            <RustTransparentIcon />        
+                                                            <RustIcon />        
                                                         }
                                                         else
                                                         {
@@ -519,6 +519,13 @@ else if (StoreList.Any())
         </MudGrid>
 
     </PageContainer>
+}
+else
+{
+    <div class="d-flex flex-column justify-center align-center full-height pa-4">
+        <TumbleWeed Light="true" />
+        <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">empty, check back later</MudText>
+    </div>
 }
 
 @code {
@@ -612,6 +619,17 @@ else if (StoreList.Any())
                 // The selected store should show as the active tab in the store tab list
                 StoreIndex = Array.IndexOf(StoreList, StoreList.FirstOrDefault(x => x.Id == StoreId));
 
+                StateHasChanged();
+            }
+        }
+        catch(HttpRequestException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                Store = null;
+                StoreId = null;
+                StoreIndex = 0;
+                StoreException = null;
                 StateHasChanged();
             }
         }

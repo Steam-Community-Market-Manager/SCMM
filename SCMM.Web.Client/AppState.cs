@@ -90,7 +90,8 @@ public class AppState
         {
             LanguageId = await Storage.GetAsync<string>(nameof(LanguageId));
             CurrencyId = await Storage.GetAsync<string>(nameof(CurrencyId));
-            AppId = await Storage.GetAsync<ulong>(nameof(AppId));
+            UInt64.TryParse(await Storage.GetAsync<string>(nameof(AppId)), out ulong appId);
+            AppId = appId;
             return (!string.IsNullOrEmpty(LanguageId) && !string.IsNullOrEmpty(CurrencyId) && AppId > 0);
         }
         catch (Exception ex)
@@ -123,7 +124,7 @@ public class AppState
             }
             if (AppId > 0)
             {
-                await Storage.SetAsync<ulong>(nameof(AppId), AppId);
+                await Storage.SetAsync<string>(nameof(AppId), AppId.ToString());
             }
             else
             {
@@ -144,6 +145,12 @@ public class AppState
             Profile = await http.GetFromJsonWithDefaultsAsync<MyProfileDTO>(
                 $"api/profile"
             );
+            if (Profile != null)
+            {
+                LanguageId = Profile.Language.Name;
+                CurrencyId = Profile.Currency.Name;
+                AppId = Profile.App.Id;
+            }
         }
         catch (Exception ex)
         {

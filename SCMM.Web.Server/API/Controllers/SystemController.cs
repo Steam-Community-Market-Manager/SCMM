@@ -42,10 +42,10 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStatus()
         {
-            var appId = this.App()?.Id.ToString();
+            var appId = this.App().Guid;
             var app = await _db.SteamApps
                 .AsNoTracking()
-                .Where(x => x.SteamId == appId)
+                .Where(x => x.Id == appId)
                 .Select(x => new AppStatusDTO()
                 {
                     SteamId = x.SteamId,

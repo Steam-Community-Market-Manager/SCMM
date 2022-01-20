@@ -48,10 +48,10 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStores()
         {
-            var appId = this.App()?.Id.ToString();
+            var appId = this.App().Guid;
             var itemStores = await _db.SteamItemStores
                 .AsNoTracking()
-                .Where(x => x.App.SteamId == appId)
+                .Where(x => x.AppId == appId)
                 .OrderByDescending(x => x.Start == null)
                 .ThenByDescending(x => x.Start)
                 .ToListAsync();
@@ -117,9 +117,11 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
+            var appId = this.App().Guid;
             var itemStore = await _db.SteamItemStores
                 .AsNoTracking()
                 .OrderByDescending(x => x.Start)
+                .Where(x => x.AppId == appId)
                 .Where(x => (guid != Guid.Empty && guid == x.Id) || (storeStartDate > DateTime.MinValue && storeStartDate >= x.Start) || (!String.IsNullOrEmpty(storeName) && storeName == x.Name))
                 .Take(1)
                 .Include(x => x.Items).ThenInclude(x => x.Item)

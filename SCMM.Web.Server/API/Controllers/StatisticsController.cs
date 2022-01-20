@@ -52,10 +52,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMarketActivity([FromQuery] string filter = null, [FromQuery] string item = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemActivity
                 .AsNoTracking()
                 .Include(x => x.Description).ThenInclude(x => x.App)
                 .Include(x => x.Currency)
+                .Where(x => x.Item.AppId == appId)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.BuyerName.Contains(filter) || x.SellerName.Contains(filter))
                 .Where(x => string.IsNullOrEmpty(item) || x.Description.Name.Contains(item))
                 .OrderByDescending(x => x.Timestamp);
@@ -103,9 +105,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .Take(30)
                 .ToArrayAsync();
 
+            var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
+                .Where(x => x.AppId == appId)
                 .Where(x => topAssetDescriptionIds.Contains(x.Id))
                 .ToList()
                 .OrderBy(x => topAssetDescriptionIds.IndexOf(x.Id))
@@ -138,10 +142,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsMostDemanded([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.Last24hrSales > 0)
                 .OrderByDescending(x => x.Last24hrSales)
                 .Select(x => new ItemSupplyDemandStatisticDTO()
@@ -174,10 +180,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsMostSaturated([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.SellOrderCount > 0)
                 .OrderByDescending(x => x.SellOrderCount)
                 .Select(x => new ItemSupplyDemandStatisticDTO()
@@ -215,11 +223,13 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var sevenDays = TimeSpan.FromDays(7);
             var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeHighestValue > 0)
@@ -257,11 +267,13 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetItemsAllTimeLow([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var lastFewHours = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(6));
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.LastCheckedSalesOn >= lastFewHours && x.LastCheckedOrdersOn >= lastFewHours)
                 .Where(x => x.SellOrderCount > 0)
                 .Where(x => x.AllTimeLowestValue > 0)
@@ -298,11 +310,13 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsMostExpensive([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.SellOrderLowestPrice > 0)
                 .OrderByDescending(x => x.SellOrderLowestPrice);
 
@@ -333,9 +347,11 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsMostSales([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.LifetimeSubscriptions > 0)
                 .OrderByDescending(x => x.LifetimeSubscriptions)
                 .Select(x => new
@@ -381,9 +397,11 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsLargestCollections([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.ItemCollection != null)
                 .Select(x => new
                 {
@@ -429,9 +447,11 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsCheapestResourceCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
                 .Include(x => x.App)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.IsCraftingComponent)
                 .Where(x => x.MarketItem != null)
                 .Select(x => new
@@ -488,9 +508,11 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsCheapestCraftingCosts([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var resources = await _db.SteamAssetDescriptions
                 .Include(x => x.App)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.IsCraftingComponent)
                 .Where(x => x.MarketItem != null)
                 .Select(x => new
@@ -515,6 +537,7 @@ namespace SCMM.Web.Server.API.Controllers
             var query = _db.SteamAssetDescriptions
                 .Include(x => x.App)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
                 .Where(x => x.IsCraftable)
                 .Where(x => x.MarketItem != null)
                 .OrderBy(x => x.MarketItem.SellOrderLowestPrice);
@@ -566,10 +589,11 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfilesLargestCreators([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
+            var appId = this.App().Guid;
             var query = _db.SteamProfiles
                 .AsNoTracking()
-                .Where(x => x.AssetDescriptions.Count(y => y.TimeAccepted != null) > 0)
-                .OrderByDescending(x => x.AssetDescriptions.Count(y => y.TimeAccepted != null))
+                .Where(x => x.AssetDescriptions.Count(y => y.AppId == appId && y.TimeAccepted != null) > 0)
+                .OrderByDescending(x => x.AssetDescriptions.Count(y => y.AppId == appId && y.TimeAccepted != null))
                 .Select(x => new ProfileAcceptedItemsStatisticDTO()
                 {
                     SteamId = x.SteamId,

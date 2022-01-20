@@ -90,7 +90,9 @@ namespace SCMM.Web.Server.API.Controllers
                 count = int.MaxValue;
             }
 
-            var query = _db.SteamAssetDescriptions.AsNoTracking();
+            var appId = this.App().Guid;
+            var query = _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId);
 
             filter = Uri.UnescapeDataString(filter?.Trim() ?? string.Empty);
             var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -206,6 +208,7 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
+            var appId = this.App().Guid;
             var item = await _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
@@ -213,6 +216,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
                 .FirstOrDefaultAsync(x =>
                     (guid != Guid.Empty && x.Id == guid) ||
                     (id64 > 0 && x.ClassId == id64) ||
@@ -257,8 +261,10 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemSellOrder
                 .Include(x => x.Item.Currency)
+                .Where(x => x.Item.AppId == appId)
                 .Where(x =>
                     (guid != Guid.Empty && x.Item.Description.Id == guid) ||
                     (id64 > 0 && x.Item.Description.ClassId == id64) ||
@@ -299,8 +305,10 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemBuyOrder
                 .Include(x => x.Item.Currency)
+                .Where(x => x.Item.AppId == appId)
                 .Where(x =>
                     (guid != Guid.Empty && x.Item.Description.Id == guid) ||
                     (id64 > 0 && x.Item.Description.ClassId == id64) ||
@@ -342,8 +350,10 @@ namespace SCMM.Web.Server.API.Controllers
 
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
             var getCandleData = (maxDays >= 1 && maxDays <= 30);
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemSale
                 .AsNoTracking()
+                .Where(x => x.Item.AppId == appId)
                 .Where(x =>
                     (guid != Guid.Empty && x.Item.Description.Id == guid) ||
                     (id64 > 0 && x.Item.Description.ClassId == id64) ||
@@ -405,7 +415,9 @@ namespace SCMM.Web.Server.API.Controllers
             Guid.TryParse(id, out guid);
             ulong.TryParse(id, out id64);
 
+            var appId = this.App().Guid;
             var item = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId)
                 .Where(x =>
                     (guid != Guid.Empty && x.Id == guid) ||
                     (id64 > 0 && x.ClassId == id64) ||
@@ -458,7 +470,9 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("Collection name is missing");
             }
 
+            var appId = this.App().Guid;
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId)
                 .Where(x => x.ItemCollection == name)
                 .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
@@ -488,8 +502,10 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemTypes()
         {
+            var appId = this.App().Guid;
             return Ok(
                 await _db.SteamAssetDescriptions.AsNoTracking()
+                    .Where(x => x.AppId == appId)
                     .Where(x => !String.IsNullOrEmpty(x.ItemType))
                     .GroupBy(x => x.ItemType)
                     .Select(x => x.Key)
@@ -508,10 +524,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemPrices()
         {
+            var appId = this.App().Guid;
             var items = await _db.SteamAssetDescriptions
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
+                .Where(x => x.AppId == appId)
                 .OrderBy(x => x.ClassId)
                 .ToArrayAsync();
 

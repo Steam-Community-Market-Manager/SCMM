@@ -52,8 +52,10 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemSale
                 .AsNoTracking()
+                .Where(x => x.Item.AppId == appId)
                 .Where(x => x.Timestamp.Date <= yesterday.Date)
                 .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
                 .GroupBy(x => x.Timestamp.Date)
@@ -95,8 +97,10 @@ namespace SCMM.Web.Server.API.Controllers
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItemSale
                 .AsNoTracking()
+                .Where(x => x.Item.AppId == appId)
                 .Where(x => x.Timestamp.Date <= yesterday.Date)
                 .Where(x => maxDaysCutoff == null || x.Timestamp.Date >= maxDaysCutoff.Value.Date)
                 .GroupBy(x => x.Timestamp.Date)
@@ -138,11 +142,13 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetCheapestThirdPartDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
                 .Where(x => x.BuyNowFrom != MarketType.SteamCommunityMarket)
                 .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) < x.SellOrderLowestPrice)
@@ -183,11 +189,13 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetUndervaluedThirdPartyDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
+            var appId = this.App().Guid;
             var query = _db.SteamMarketItems
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Include(x => x.Currency)
                 .Include(x => x.Description)
+                .Where(x => x.AppId == appId)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
                 .Where(x => x.BuyNowFrom != MarketType.SteamCommunityMarket)
                 .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.BuyOrderHighestPrice > 0)

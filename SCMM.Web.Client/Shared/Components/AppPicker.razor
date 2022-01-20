@@ -1,0 +1,59 @@
+﻿@inject ILogger<AppPicker> Logger
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject AppState State
+@inject HttpClient Http
+
+@if (State.App != null && Apps != null)
+{
+    <div @attributes="AdditionalAttributes">
+        <MudMenu Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" 
+                 AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="false" MaxHeight="500" title="Change application">
+            <ActivatorContent>
+                <MudText Typo="Typo.h4" Class="pt-2">
+                    <img src="/images/app/@(State.App.Id.ToString())/logo.svg" style="height:1em" />
+                </MudText>
+            </ActivatorContent>
+            <ChildContent>
+                @foreach (var app in Apps)
+                {
+                    <MudMenuItem OnClick="@(() => ChangeApp(app))" Disabled="@(app.Id == State.AppId)">
+                        <div class="d-flex justify-center" style="@((app.Id == State.AppId) ? "opacity: 0.2" : null)">
+                            <img src="/images/app/@(app.Id.ToString())/logo.svg" style="height:3em" />
+                        </div>
+                    </MudMenuItem>
+                }
+            </ChildContent>
+        </MudMenu>
+    </div>
+}
+
+@code
+{
+    private IList<AppDetailedDTO> Apps { get; set; }
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Apps = await Http.GetFromJsonWithDefaultsAsync<AppDetailedDTO[]>($"api/app?detailed=true");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error loading apps");
+            Snackbar.Add($"Unable to load app list. {ex.Message}", MudBlazor.Severity.Error);
+        }
+    }
+
+    private async Task ChangeApp(AppDetailedDTO app)
+    {
+        Logger.LogInformation($"App was changed to '{app.Name}'");
+        await State.ChangeAppAsync(app);
+        
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
+    }
+
+}
