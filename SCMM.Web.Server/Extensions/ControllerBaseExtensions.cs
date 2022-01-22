@@ -11,6 +11,14 @@ namespace SCMM.Web.Server.Extensions
         {
             var appId = (ulong)0;
 
+            // Get the app by the URL hostname or from the request info
+            // NOTE: Navigating directly to the app hostname trumps all other request settings
+            var hostApp = AppCache.GetByHostname(controller.Request.Host.Host);
+            if (hostApp != null)
+            {
+                return hostApp;
+            }
+
             // If the app was specified in the request query, use that
             if (controller.Request.Query.ContainsKey(AppState.HttpHeaderAppId))
             {
@@ -27,9 +35,7 @@ namespace SCMM.Web.Server.Extensions
                 UInt64.TryParse(controller.User.AppId(), out appId);
             }
 
-            // Get the app by the supplied id, or from the request hostname
             return AppCache.GetById(appId) ?? 
-                   AppCache.GetByHostname(controller.Request.Host.Host) ??
                    AppCache.GetById(AppState.DefaultAppId);
         }
 
