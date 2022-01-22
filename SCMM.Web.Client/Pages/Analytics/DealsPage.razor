@@ -23,8 +23,8 @@
                                                   Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
                                 </th>
                                 <th>Cheapest Deal</th>
-                                <th>Discount</th>
                                 <th>Steam Community Market</th>
+                                <th>Discount</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -48,11 +48,11 @@
                                                         <TooltipContent>
                                                             @if (item.BuyFee > 0)
                                                             {
-                                                                <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimated fees charged by @item.BuyFrom.GetDisplayName() payment providers</span>
+                                                                <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimated fees charged by @item.BuyFrom.GetDisplayName()</span>
                                                             }
                                                             else
                                                             {
-                                                                <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimate discounts gained by purchasing @item.BuyFrom.GetDisplayName() balance</span>
+                                                                <span>Price includes @State.Currency.ToPriceString(item.BuyFee) in estimate discounts gained by purchasing new @item.BuyFrom.GetDisplayName() balance</span>
                                                             }
                                                         </TooltipContent>
                                                         <ChildContent>
@@ -60,6 +60,13 @@
                                                         </ChildContent>
                                                     </MudTooltip>
                                                 }
+                                            </MudText>
+                                        </td>
+                                        <td>
+                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">View</MudButton>
+                                                <img src="@($"/images/market/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <span>@State.Currency.ToPriceString(item.ReferemcePrice)</span>
                                             </MudText>
                                         </td>
                                         <td>
@@ -72,13 +79,6 @@
                                                     </MudChip>
                                                 </ChildContent>
                                             </MudTooltip>
-                                        </td>
-                                        <td>
-                                            <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">View</MudButton>
-                                                <img src="@($"/images/market/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                <span>@State.Currency.ToPriceString(item.ReferemcePrice)</span>
-                                            </MudText>
                                         </td>
                                     </tr>
                                 </ItemContent>

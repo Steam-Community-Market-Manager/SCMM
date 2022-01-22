@@ -76,7 +76,7 @@
                             </Syncfusion.Blazor.Charts.ChartSeries>
                             <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketIndexFundChartData" YAxisName="ValueAxis" Name="Value" XName="Date" YName="Value" Fill="@State.App.PrimaryColor" Type="ChartSeriesType.Line">
                                 <ChartTrendlines>
-                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Value Trend" Fill="@State.App.SecondaryColor">
+                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Value Trend" Fill="#ffffff">
                                     </ChartTrendline>
                                 </ChartTrendlines>
                             </Syncfusion.Blazor.Charts.ChartSeries>
@@ -164,7 +164,7 @@
                             </Syncfusion.Blazor.Charts.ChartSeries>
                             <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketSalesChartData" YAxisName="RevenueAxis" Name="Revenue" XName="Date" YName="Revenue" Fill="#388e3c" Type="ChartSeriesType.Line">
                                 <ChartTrendlines>
-                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Revenue Trend" Fill="#fff">
+                                    <ChartTrendline Type="TrendlineTypes.MovingAverage" Period="8" Width="3" Name="Revenue Trend" Fill="#ffffff">
                                     </ChartTrendline>
                                 </ChartTrendlines>
                             </Syncfusion.Blazor.Charts.ChartSeries>
@@ -197,7 +197,7 @@
         _ = LoadMarketSales();
     }
     
-    protected async Task LoadMarketIndexFund(int maxDays = 365)
+    protected async Task LoadMarketIndexFund(int maxDays = 30)
     {
         try
         {
@@ -218,7 +218,7 @@
         }
     }
 
-    protected async Task LoadMarketSales(int maxDays = 365)
+    protected async Task LoadMarketSales(int maxDays = 30)
     {
         try
         {

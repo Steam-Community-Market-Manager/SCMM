@@ -817,14 +817,6 @@
                                         <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
                                         <span class="mud-secondary-text"> sold in the last 24hrs</span>
                                     }
-                                    @if (MarketItemSalesTrend > 0)
-                                    {
-                                        <span class="mud-success-text"><i class="fa fa-fw fa-arrow-up ml-1"/> trending up</span>
-                                    }
-                                    else if (MarketItemSalesTrend < 0)
-                                    {
-                                        <span class="mud-error-text"><i class="fa fa-fw fa-arrow-down ml-1"/> trending down</span>
-                                    }
                                 </MudText>
                                 <div class="pa-1 flex-shrink-1">
                                     <MudToggleIconButton @bind-Toggled="@MarketItemSalesAnnotations"
@@ -889,7 +881,7 @@
                                         <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketItemSalesChartData" YAxisName="PriceAxis" Name="Median Price" XName="Date" YName="Median" Volume="Volume" High="High" Low="Low" Open="Open" Close="Close"
                                                                               Fill="#388e3c" BearFillColor="#2ecd71" BullFillColor="#e74c3d" Type="@(MarketItemSalesMaxDays >= 1 && MarketItemSalesMaxDays <= 30 ? ChartSeriesType.Candle : ChartSeriesType.Line)">
                                             <ChartTrendlines>
-                                                <ChartTrendline Type="TrendlineTypes.Polynomial" Width="3" Name="Median Price Trend" Fill="@(MarketItemSalesTrend > 0 ? "#2ecd71" : "#e74c3d")" EnableTooltip="true">
+                                                <ChartTrendline Type="TrendlineTypes.Polynomial" Width="3" Name="Median Price Trend" Fill="#ffffff" EnableTooltip="true">
                                                 </ChartTrendline>
                                             </ChartTrendlines>
                                         </Syncfusion.Blazor.Charts.ChartSeries>
@@ -1049,8 +1041,6 @@
 
     private IEnumerable<ItemSalesChartPointDTO> MarketItemSalesChartData { get; set; }
 
-    private decimal MarketItemSalesTrend { get; set; }
-
     private bool MarketItemSalesAnnotations { get; set; } = true;
 
     private int MarketItemSalesMaxDays { get; set; }
@@ -1133,14 +1123,9 @@
         try
         {
             MarketItemSalesMaxDays = maxDays;
-            MarketItemSalesTrend = 0;
             MarketItemSalesChartData = null;
             StateHasChanged();
             MarketItemSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemSalesChartPointDTO>>($"api/item/{Item.Id}/sales?maxDays={maxDays}");
-            MarketItemSalesTrend = ((maxDays >= 1 && maxDays <= 30)
-                ? (MarketItemSalesChartData?.LastOrDefault()?.Close ?? 0) - (MarketItemSalesChartData?.FirstOrDefault()?.Median ?? 0)
-                : (MarketItemSalesChartData?.LastOrDefault()?.Median ?? 0) - (MarketItemSalesChartData?.FirstOrDefault()?.Median ?? 0)
-            );
         }
         catch (Exception ex)
         {

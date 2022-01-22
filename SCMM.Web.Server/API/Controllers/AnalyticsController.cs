@@ -48,7 +48,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/indexFund")]
         [ProducesResponseType(typeof(IEnumerable<MarketIndexFundChartPointDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketIndexFund(int maxDays = 365)
+        public async Task<IActionResult> GetMarketIndexFund(int maxDays = 30)
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
@@ -93,7 +93,7 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/sales")]
         [ProducesResponseType(typeof(IEnumerable<MarketSalesChartPointDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketSales(int maxDays = 365)
+        public async Task<IActionResult> GetMarketSales(int maxDays = 30)
         {
             var yesterday = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             var maxDaysCutoff = (maxDays >= 1 ? DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(maxDays)) : (DateTimeOffset?)null);
