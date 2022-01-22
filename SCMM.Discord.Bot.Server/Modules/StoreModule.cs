@@ -75,11 +75,13 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         // Find the store
+        var appId = _configuration.GetDiscordConfiguration().AppId;
         var store = _db.SteamItemStores
             .Include(x => x.App)
             .Include(x => x.ItemsThumbnail)
             .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Currency)
             .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
+            .Where(x => x.App.SteamId == appId.ToString())
             .FirstOrDefault(x => x.Id.ToString() == storeId);
 
         if (store == null)
@@ -94,7 +96,10 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         {
             if (store.End == null)
             {
-                var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+                var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
+                {
+                    AppId = _configuration.GetDiscordConfiguration().AppId
+                });
                 if (nextUpdateTime != null)
                 {
                     description.Append($"This store is currently live with approximately {nextUpdateTime.TimeRemaining.ToDurationString(showSeconds: false, maxGranularity: 2)} remaining until it ends.");
@@ -167,11 +172,14 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
     [SlashCommand("next", "Show time remaining until the next store update")]
     public async Task<RuntimeResult> GetStoreNextUpdateExpectedOnAsync()
     {
-        var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+        var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
+        {
+            AppId = _configuration.GetDiscordConfiguration().AppId
+        });
         if (nextUpdateTime == null || string.IsNullOrEmpty(nextUpdateTime.TimeDescription))
         {
             return InteractionResult.Fail(
-                $"I have no idea, something went wrong trying to figure it out."
+                $"The configured application either does not support stores, or has had no previous stores for me to compare against."
             );
         }
 

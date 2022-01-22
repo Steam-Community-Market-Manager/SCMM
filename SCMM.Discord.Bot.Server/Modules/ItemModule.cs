@@ -87,7 +87,9 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         // Load the item
+        var appId = _configuration.GetDiscordConfiguration().AppId;
         var item = await _db.SteamAssetDescriptions
+            .Where(x => x.App.SteamId == appId.ToString())
             .Where(x => x.Name == closestItemName)
             .Include(x => x.App)
             .Include(x => x.StoreItem).ThenInclude(x => x.Stores)

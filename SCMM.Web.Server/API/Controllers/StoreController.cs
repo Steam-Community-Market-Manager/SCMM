@@ -538,7 +538,11 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreNextUpdateTime()
         {
-            var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+            var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
+            {
+                AppId = this.App().Id
+            });
+
             return Ok(nextUpdateTime?.Timestamp);
         }
     }

@@ -11,5 +11,7 @@
         public int TotalShards { get; set; }
 
         public string InviteUrl { get; set; }
+
+        public ulong AppId { get; set; }
     }
 }

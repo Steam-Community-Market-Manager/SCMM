@@ -72,7 +72,7 @@ else
     {
         try
         {
-            StoreNextUpdateTime = await Http.GetFromJsonWithDefaultsAsync<DateTimeOffset>(
+            StoreNextUpdateTime = await Http.GetFromJsonWithDefaultsAsync<DateTimeOffset?>(
                 $"api/store/nextUpdateTime"
             );
         }

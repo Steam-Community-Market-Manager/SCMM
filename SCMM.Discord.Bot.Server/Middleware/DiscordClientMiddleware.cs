@@ -4,6 +4,7 @@ using SCMM.Discord.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
+using DiscordConfiguration = SCMM.Discord.Client.DiscordConfiguration;
 
 namespace SCMM.Discord.Bot.Server.Middleware
 {
@@ -13,15 +14,17 @@ namespace SCMM.Discord.Bot.Server.Middleware
         private readonly ILogger<DiscordClientMiddleware> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly DiscordClient _client;
+        private readonly DiscordConfiguration _configuration;
         private readonly Timer _statusUpdateTimer;
         private DateTimeOffset _statusNextStoreUpdate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
 
-        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory scopeFactory, DiscordClient discordClient)
+        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory scopeFactory, DiscordConfiguration discordConfiguration, DiscordClient discordClient)
         {
             _next = next;
             _logger = logger;
             _scopeFactory = scopeFactory;
             _statusUpdateTimer = new Timer(OnStatusUpdate);
+            _configuration = discordConfiguration;
             _client = discordClient;
             _client.Connected += OnConnected;
             _client.Disconnected += OnDisconnected;
@@ -81,7 +84,14 @@ namespace SCMM.Discord.Bot.Server.Middleware
                 try
                 {
                     var queryProcessor = scope.ServiceProvider.GetRequiredService<IQueryProcessor>();
-                    var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest());
+                    var storeNextUpdateTime = await queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
+                    {
+                        AppId = _configuration.AppId
+                    });
+                    if (storeNextUpdateTime == null)
+                    {
+                        return; // No stores to report on...
+                    }
                     _statusNextStoreUpdate = storeNextUpdateTime.Timestamp;
                 }
                 catch (Exception ex)

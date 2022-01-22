@@ -7,6 +7,7 @@ namespace SCMM.Steam.API.Queries
 {
     public class GetStoreNextUpdateTimeRequest : IQuery<GetStoreNextUpdateTimeResponse>
     {
+        public ulong AppId { get; set; }
     }
 
     public class GetStoreNextUpdateTimeResponse
@@ -32,10 +33,16 @@ namespace SCMM.Steam.API.Queries
         public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request)
         {
             var recentStoreStarts = await _db.SteamItemStores
+                .Where(x => x.App.SteamId == request.AppId.ToString())
                 .Where(x => x.Start != null)
                 .OrderByDescending(x => x.Start).Take(5)
                 .Select(x => x.Start.Value)
                 .ToListAsync();
+
+            if (recentStoreStarts.Any() != true)
+            {
+                return null;
+            }
 
             // Average out the last month or so of store start times
             // For reference, the store normally updates around Friday 6am NZT (Thursday 5pm UTC)
