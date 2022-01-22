@@ -38,7 +38,7 @@ else
     private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
 
     private DateTimeOffset? StoreNextUpdateTime { get; set; }
-    
+
     protected override async Task OnInitializedAsync()
     {
         NavigationMenuItems = RebuildMenuItems();
@@ -84,13 +84,13 @@ else
 
     private List<INavigationMenuItem> RebuildMenuItems()
     {
-        var inventoryValue = String.Empty;
+        var inventoryValue = (string)null;
         if (InventoryTotals?.MarketValue > 0)
         {
             inventoryValue = State.Currency.ToPriceString(InventoryTotals.MarketValue);
         }
 
-        var storeUpdateTimeRemaining = String.Empty;
+        var storeUpdateTimeRemaining = (string)null;
         if (StoreNextUpdateTime != null)
         {
             var nextStoreIsOverdue = (StoreNextUpdateTime.Value <= DateTimeOffset.Now);
@@ -138,7 +138,7 @@ else
             {
                 Icon = "fas fa-fw fa-shopping-cart",
                 Title = "Store",
-                SubTitle = storeUpdateTimeRemaining,
+                SubTitle = storeUpdateTimeRemaining ?? "Explore all game stores",
                 Path =  "/store",
                 Prefix =  true
             },
