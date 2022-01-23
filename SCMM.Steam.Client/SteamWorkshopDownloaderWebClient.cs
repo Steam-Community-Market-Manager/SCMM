@@ -8,11 +8,12 @@ using System.Text.Json;
 
 namespace SCMM.Steam.Client
 {
-    public class SteamWorkshopDownloaderWebClient
+    public class SteamWorkshopDownloaderWebClient : IDisposable
     {
         private readonly ILogger<SteamWorkshopDownloaderWebClient> _logger;
         private readonly HttpClientHandler _httpHandler;
         private readonly string _workshopDownloaderNodeUrl;
+        private bool _disposedValue;
 
         public SteamWorkshopDownloaderWebClient(ILogger<SteamWorkshopDownloaderWebClient> logger, SteamConfiguration configuration)
         {
@@ -103,6 +104,26 @@ namespace SCMM.Steam.Client
                     throw new SteamRequestException($"Download workshop file '{request.PublishedFileId}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
                 }
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _httpHandler?.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

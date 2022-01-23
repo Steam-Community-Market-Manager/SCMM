@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.TradeitGG.Client
 {
-    public class TradeitGGWebClient
+    public class TradeitGGWebClient : MarketWebClient
     {
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 
@@ -12,7 +12,7 @@ namespace SCMM.Market.TradeitGG.Client
 
         public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {
-            using (var client = new MarketHttpClient())
+            using (var client = BuildHttpClient())
             {
                 try
                 {

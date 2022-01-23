@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.DMarket.Client
 {
-    public class DMarketWebClient
+    public class DMarketWebClient : MarketWebClient
     {
         private const string BaseUri = "https://api.dmarket.com/exchange/v1/";
 
@@ -16,7 +16,7 @@ namespace SCMM.Market.DMarket.Client
 
         public async Task<DMarketMarketItemsResponse> GetMarketItemsAsync(string appName, string marketType = MarketTypeDMarket, string currencyName = Constants.SteamCurrencyUSD, string cursor = null, int limit = MaxPageLimit)
         {
-            using (var client = new MarketHttpClient())
+            using (var client = BuildHttpClient())
             {
                 var url = $"{BaseUri}market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
                 var response = await client.GetAsync(url);

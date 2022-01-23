@@ -3,13 +3,13 @@ using System.Text.Json;
 
 namespace SCMM.Market.TradeSkinsFast.Client
 {
-    public class TradeSkinsFastWebClient
+    public class TradeSkinsFastWebClient : MarketWebClient
     {
         private const string BaseUri = "https://tradeskinsfast.com/";
 
         public async Task<TradeSkinsFastBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
-            using (var client = new MarketHttpClient(new Uri(BaseUri)))
+            using (var client = BuildHttpClient(new Uri(BaseUri)))
             {
                 var url = $"{BaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {

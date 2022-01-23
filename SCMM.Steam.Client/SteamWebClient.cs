@@ -13,11 +13,12 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
-    public abstract class SteamWebClient
+    public abstract class SteamWebClient : IDisposable
     {
         private readonly ILogger<SteamWebClient> _logger;
         private readonly HttpClientHandler _httpHandler;
         private readonly SteamSession _session;
+        private bool _disposedValue;
 
         public SteamWebClient(ILogger<SteamWebClient> logger, SteamSession session)
         {
@@ -202,6 +203,26 @@ namespace SCMM.Steam.Client
             }
 
             return JsonSerializer.Deserialize<TResponse>(json);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _httpHandler?.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+        
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.SkinsMonkey.Client
 {
-    public class SkinsMonkeyWebClient
+    public class SkinsMonkeyWebClient : MarketWebClient
     {
         private const string BaseUri = "https://skinsmonkey.com/api/";
 
@@ -11,7 +11,7 @@ namespace SCMM.Market.SkinsMonkey.Client
 
         public async Task<IEnumerable<SkinsMonkeyItemListing>> GetInventoryAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {
-            using (var client = new MarketHttpClient())
+            using (var client = BuildHttpClient())
             {
                 var url = $"{BaseUri}inventory?appId={Uri.EscapeDataString(appId)}&offset={offset}&limit={limit}&sort=price-desc&force=true";
                 var response = await client.GetAsync(url);
