@@ -17,5 +17,8 @@ public class MarketHttpClient : HttpClient
 
         // NOTE: We don't want to give them an easy way to identify and block us...
         //DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("SCMM", "1.0"));
+
+        // Most markets require this
+        DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
     }
 }

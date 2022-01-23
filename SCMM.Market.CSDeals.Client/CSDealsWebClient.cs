@@ -8,15 +8,6 @@ namespace SCMM.Market.CSDeals.Client
         private const string BaseUri = "https://cs.deals/";
         private const string BaseApiUri = "https://cs.deals/API/";
 
-        private HttpClient BuildMarketAPIClient()
-        {
-            // NOTE: Must supply this header else we get "invalid request"
-            var client = new MarketHttpClient();
-            client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-            return client;
-
-        }
-
         public async Task<IEnumerable<CSDealsItemPrice>> GetPricingGetLowestPricesAsync(string appId)
         {
             using (var client = new MarketHttpClient())
@@ -33,7 +24,7 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsMarketplaceSearchResults<CSDealsItemListings>> PostMarketplaceSearchAsync(string appId, int page = 0)
         {
-            using (var client = BuildMarketAPIClient())
+            using (var client = new MarketHttpClient())
             {
                 var url = $"{BaseUri}ajax/marketplace-search";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
@@ -52,7 +43,7 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
-            using (var client = BuildMarketAPIClient())
+            using (var client = new MarketHttpClient())
             {
                 var url = $"{BaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {

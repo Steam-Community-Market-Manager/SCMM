@@ -49,6 +49,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/trade-skins")]
         CSDealsTrade = 15,
 
+        // TODO: Items currently missing quantities
         [Display(Name = "CS.Deals Marketplace")]
         [Market(Type = PriceTypes.Cash, Color = "#313846")]
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", FeeSurcharge = 45, FeeRate = 3f)] /* Roughly 0,40 EUR + 3% card fee */
@@ -64,55 +65,56 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", FeeRate = 3f)]
         RUSTSkins = 18,
 
-        // TODO: https://rust.tm
         [Display(Name = "Rust.tm")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc")] // Unconfirmed
         RustTM = 19,
 
-        // TODO: https://rustvendor.com
+        // TODO: https://rustvendor.com (web socket client required)
+        // wss://rustvendor.com/socket.io/?EIO=4&transport=websocket&sid=xxx
+        // => 42["requestInventory"]
+        // <= 42["requestInventoryResponse",…]
         [Display(Name = "RUSTVendor")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)] // +50% crypto deposits
         [BuyFrom(Url = "https://rustvendor.com/trade")] // Unconfirmed
         RUSTVendor = 20,
 
-        // TODO: https://rustytrade.com
+        // TODO: https://rustytrade.com (web socket client required)
+        // wss://rustytrade.com/socket.io/?EIO=3&transport=websocket&sid=xxx
+        // => 42["get bots inv"]
+        // <= 42["bots inv",…]
         [Display(Name = "RustyTrade")]
         [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://rustytrade.com/")] // Unconfirmed
         RustyTrade = 21,
 
-        // TODO: https://cs.trade
         [Display(Name = "CS.TRADE")]
         [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://cs.trade/#trader")] // Unconfirmed
         CSTRADE = 22,
 
-        // TODO: https://itrade.gg
         [Display(Name = "iTrade.gg")]
         [Market(Type = PriceTypes.Trade)]
-        [BuyFrom(Url = "https://itrade.gg/")] // Unconfirmed
+        [BuyFrom(Url = "https://itrade.gg/?userInv={1}&botInv={1}")] // Unconfirmed
         iTradegg = 23,
 
-        // TODO: https://tradeskinsfast.com
         [Display(Name = "Trade Skins Fast")]
         [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://tradeskinsfast.com/")] // Unconfirmed
         TradeSkinsFast = 24,
 
-        // TODO: https://skinsmonkey.com
         [Display(Name = "SkinsMonkey")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)] // +25% cash deposits
-        [BuyFrom(Url = "https://skinsmonkey.com/trade")] // Unconfirmed
+        [BuyFrom(Url = "https://skinsmonkey.com/trade-{1}-skins")] // Unconfirmed
         SkinsMonkey = 25,
 
-        // TODO: https://skinmarket.gg
+        // TODO: https://skinmarket.gg (currently broken)
         [Display(Name = "skinmarket.gg")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)] // +40% crypto deposits
         [BuyFrom(Url = "https://skinmarket.gg/")] // Unconfirmed
         skinmarketGG = 26,
 
-        // TODO: https://gamerall.com
+        // TODO: https://gamerall.com (super agressive ClourFlare policies)
         [Display(Name = "GAMERALL.com")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed
@@ -126,15 +128,14 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")] // Unconfirmed
         Dmarket = 28,
 
-        // TODO: https://buff.163.com
         [Display(Name = "BUFF")]
         [Market(Type = PriceTypes.Cash, Color = "#FFFFFF")]
-        [BuyFrom(Url = "https://buff.163.com/market/{1}")] // Unconfirmed
+        [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}")] // Unconfirmed
         Buff = 29
 
         /* BUY / TRADE
-        https://trade.skin/ (sus...)
-        https://rustplus.com/ (sus...)
+        https://trade.skin/ (looks sus...)
+        https://rustplus.com/ (looks sus...)
         */
 
         /* SELL

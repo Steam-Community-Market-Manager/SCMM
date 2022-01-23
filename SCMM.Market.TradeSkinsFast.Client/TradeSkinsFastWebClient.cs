@@ -7,18 +7,9 @@ namespace SCMM.Market.TradeSkinsFast.Client
     {
         private const string BaseUri = "https://tradeskinsfast.com/";
 
-        private HttpClient BuildMarketAPIClient()
-        {
-            // NOTE: Must supply this header else we get "invalid request"
-            var client = new MarketHttpClient();
-            client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-            return client;
-
-        }
-
         public async Task<TradeSkinsFastBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
-            using (var client = BuildMarketAPIClient())
+            using (var client = new MarketHttpClient())
             {
                 var url = $"{BaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
