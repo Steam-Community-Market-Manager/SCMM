@@ -2,7 +2,7 @@
 
 namespace SCMM.Market.RustTM.Client
 {
-    public class RustTMInventoryDataResponse
+    public class RustTMPricesResponse
     {
         [JsonPropertyName("success")]
         public bool Success { get; set; }

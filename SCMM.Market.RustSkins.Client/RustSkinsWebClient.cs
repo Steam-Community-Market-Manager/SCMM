@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using SCMM.Market.Client;
+using System.Text.Json;
 
 namespace SCMM.Market.RustSkins.Client
 {
@@ -8,7 +9,7 @@ namespace SCMM.Market.RustSkins.Client
 
         public async Task<RustSkinsMarketListingsResponse> GetMarketListingsAsync(int page = 1)
         {
-            using (var client = new HttpClient())
+            using (var client = new MarketHttpClient())
             {
                 var url = $"{BaseUri}market/listings?sort=p-descending&page={page}";
                 var response = await client.GetAsync(url);

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using SCMM.Market.Client;
+using System.Text.Json;
 
 namespace SCMM.Market.RustTM.Client
 {
@@ -8,14 +9,14 @@ namespace SCMM.Market.RustTM.Client
 
         public async Task<IEnumerable<RustTMItem>> GetPricesAsync(string currencyName = "USD")
         {
-            using (var client = new HttpClient())
+            using (var client = new MarketHttpClient())
             {
                 var url = $"{BaseUri}prices/{currencyName.ToUpper()}.json";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 var textJson = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonSerializer.Deserialize<RustTMInventoryDataResponse>(textJson);
+                var responseJson = JsonSerializer.Deserialize<RustTMPricesResponse>(textJson);
                 return responseJson?.Items;
             }
         }

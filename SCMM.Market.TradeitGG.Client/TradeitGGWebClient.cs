@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using SCMM.Market.Client;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace SCMM.Market.TradeitGG.Client
@@ -7,24 +8,9 @@ namespace SCMM.Market.TradeitGG.Client
     {
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 
-        private HttpClient BuildWebBrowserHttpClient()
-        {
-            // NOTE: We need to pretend we are a web browser as tradeit.gg uses a CloudFlare firewall with some rules that block clients that don't look like typical web browsers.
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.UserAgent.Clear();
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(Windows NT 10.0; Win64; x64)"));
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("AppleWebKit", "537.36"));
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("(KHTML, like Gecko)"));
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Chrome", "96.0.4664.110"));
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Safari", "537.36"));
-            return client;
-
-        }
-
         public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = 200)
         {
-            using (var client = BuildWebBrowserHttpClient())
+            using (var client = new MarketHttpClient())
             {
                 try
                 {

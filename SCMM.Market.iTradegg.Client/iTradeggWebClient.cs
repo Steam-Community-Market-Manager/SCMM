@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using SCMM.Market.Client;
+using System.Text.Json;
 
 namespace SCMM.Market.iTradegg.Client
 {
@@ -8,7 +9,7 @@ namespace SCMM.Market.iTradegg.Client
 
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {
-            using (var client = new HttpClient())
+            using (var client = new MarketHttpClient())
             {
                 var url = $"{BaseUri}getInventory?game={appId}&type=bot";
                 var response = await client.GetAsync(url);

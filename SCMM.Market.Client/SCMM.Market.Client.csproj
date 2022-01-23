@@ -12,8 +12,4 @@
     <Copyright>Copyright 2020-2021 Rhys Koedijk</Copyright>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SCMM.Market.Client\SCMM.Market.Client.csproj" />
-  </ItemGroup>
-
 </Project>

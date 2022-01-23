@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using SCMM.Market.Client;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace SCMM.Market.SkinBaron.Client
@@ -7,18 +8,9 @@ namespace SCMM.Market.SkinBaron.Client
     {
         private const string BaseUri = "https://skinbaron.de/api/v2/";
 
-        private HttpClient BuildHttpClient()
-        {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.UserAgent.Clear();
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("SCMM", "1.0"));
-            return client;
-
-        }
-
         public async Task<SkinBaronFilterOffersResponse> GetBrowsingFilterOffersAsync(string appId, int page = 1)
         {
-            using (var client = BuildHttpClient())
+            using (var client = new MarketHttpClient())
             {
                 var url = $"{BaseUri}Browsing/FilterOffers?appId={Uri.EscapeDataString(appId)}&sort=EF&language=en&page={page}";
                 var response = await client.GetAsync(url);

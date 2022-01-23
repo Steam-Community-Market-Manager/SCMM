@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using SCMM.Market.Client;
+using System.Text.Json;
 
 namespace SCMM.Market.Skinport.Client
 {
@@ -8,7 +9,7 @@ namespace SCMM.Market.Skinport.Client
 
         public async Task<IEnumerable<SkinportItem>> GetItemsAsync(string appId, string currency = null)
         {
-            using (var client = new HttpClient())
+            using (var client = new MarketHttpClient())
             {
                 var url = $"{BaseUri}items?app_id={Uri.EscapeDataString(appId)}&currency={Uri.EscapeDataString(currency)}";
                 var response = await client.GetAsync(url);
