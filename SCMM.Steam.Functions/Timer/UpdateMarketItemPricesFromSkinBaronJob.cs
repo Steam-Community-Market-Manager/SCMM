@@ -53,17 +53,13 @@ public class UpdateMarketItemPricesFromSkinBaronJob
                 {
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
                     offersResponse = await _skinBaronWebClient.GetBrowsingFilterOffersAsync(app.SteamId, browsingPage);
-                    if (offersResponse.AggregatedMetaOffers?.Any() == true)
+                    if (offersResponse?.AggregatedMetaOffers?.Any() == true)
                     {
                         skinBaronItems.AddRange(offersResponse.AggregatedMetaOffers);
                         browsingPage++;
                     }
-                } while (offersResponse.ItemsPerPage > 0);
-                if (skinBaronItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                } while (offersResponse != null && offersResponse.ItemsPerPage > 0);
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

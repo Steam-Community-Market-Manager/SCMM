@@ -48,7 +48,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
             
             try
             {
-                var iTradeggItems = await _iTradeggWebClient.GetInventoryAsync(app.SteamId);
+                var iTradeggItems = (await _iTradeggWebClient.GetInventoryAsync(app.SteamId)) ?? new List<iTradeggItem>();
 
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)

@@ -58,10 +58,6 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                         inventoryDataOffset += TradeitGGWebClient.MaxPageLimit;
                     }
                 } while (inventoryDataItems?.Any() == true);
-                if (tradeitGGItems?.Any() != true)
-                {
-                    continue;
-                }
 
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)

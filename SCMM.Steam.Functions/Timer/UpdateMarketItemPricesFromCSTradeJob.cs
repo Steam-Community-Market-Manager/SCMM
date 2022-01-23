@@ -48,7 +48,7 @@ public class UpdateMarketItemPricesFromCSTradeJob
             
             try
             {
-                var csTradeItems = await _csTradeWebClient.GetInventoryAsync();
+                var csTradeItems = (await _csTradeWebClient.GetInventoryAsync()) ?? new List<CSTradeItem>();
                 var csTradeAppItems = csTradeItems.Where(x => x.AppId == app.SteamId).Where(x => x.Price != null).ToList();
 
                 var items = await _db.SteamMarketItems

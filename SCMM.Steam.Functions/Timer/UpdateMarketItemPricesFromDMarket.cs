@@ -54,16 +54,12 @@ public class UpdateMarketItemPricesFromDMarketJob
                     marketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
                         app.Name, marketType: DMarketWebClient.MarketTypeDMarket, currencyName: usdCurrency.Name, cursor: marketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
                     );
-                    if (marketItemsResponse.Objects?.Any() == true)
+                    if (marketItemsResponse?.Objects?.Any() == true)
                     {
                         dMarketItems.AddRange(marketItemsResponse.Objects);
                     }
-                } while (!String.IsNullOrEmpty(marketItemsResponse.Cursor));
-                if (dMarketItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                } while (marketItemsResponse != null && !String.IsNullOrEmpty(marketItemsResponse.Cursor));
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

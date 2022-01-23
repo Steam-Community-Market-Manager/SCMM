@@ -46,11 +46,7 @@ public class UpdateMarketItemPricesFromCSDealsJob
             
             try
             {
-                var csDealsInventoryItems = (await _csDealsWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value;
-                if (csDealsInventoryItems?.Any() != true)
-                {
-                    continue;
-                }
+                var csDealsInventoryItems = (await _csDealsWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value ?? new CSDealsItemListing[0];
 
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
@@ -92,12 +88,8 @@ public class UpdateMarketItemPricesFromCSDealsJob
 
             try
             {
-                var csDealsLowestPriceItems = await _csDealsWebClient.GetPricingGetLowestPricesAsync(app.SteamId);
-                if (csDealsLowestPriceItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                var csDealsLowestPriceItems = (await _csDealsWebClient.GetPricingGetLowestPricesAsync(app.SteamId)) ?? new List<CSDealsItemPrice>();
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

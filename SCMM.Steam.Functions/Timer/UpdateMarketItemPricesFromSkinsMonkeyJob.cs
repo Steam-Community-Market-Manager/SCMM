@@ -58,11 +58,7 @@ public class UpdateMarketItemPricesFromSkinsMonkeyJob
                         inventoryOffset += SkinsMonkeyWebClient.MaxPageLimit;
                     }
                 } while (inventoryItems?.Any() == true);
-                if (skinsMonkeyItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

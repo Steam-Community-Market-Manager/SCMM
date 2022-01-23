@@ -57,11 +57,7 @@ public class UpdateMarketItemPricesFromBuffJob
                         buffItems.AddRange(marketGoodsResponse.Items);
                     }
                 } while (marketGoodsResponse != null && marketGoodsResponse.PageNum < marketGoodsResponse.TotalPage);
-                if (buffItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

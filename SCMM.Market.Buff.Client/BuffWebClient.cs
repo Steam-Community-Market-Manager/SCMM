@@ -1,4 +1,5 @@
 ﻿using SCMM.Market.Client;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
@@ -9,6 +10,11 @@ namespace SCMM.Market.Buff.Client
         private const string BaseUri = "https://buff.163.com/api/";
 
         public const int MaxPageLimit = 80;
+
+        public BuffWebClient()
+        {
+            Cookies.Add(new Uri(BaseUri), new Cookie("session", "1-5FmUUBO4DK7Tf6Mc4veLwoRUqgwEZHariXisqhTsdRga2037021906"));
+        }
 
         public async Task<BuffMarketGoodsResponse> GetMarketGoodsAsync(string appName, int page = 1, int pageSize = MaxPageLimit)
         {

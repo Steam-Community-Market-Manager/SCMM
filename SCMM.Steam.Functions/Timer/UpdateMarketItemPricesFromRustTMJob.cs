@@ -49,7 +49,7 @@ public class UpdateMarketItemPricesFromRustTMJob
            
             try
             {
-                var rustTMItems = await _rustTMWebClient.GetPricesAsync(usdCurrency.Name);
+                var rustTMItems = (await _rustTMWebClient.GetPricesAsync(usdCurrency.Name)) ?? new List<RustTMItem>();
 
                 var items = await _db.SteamMarketItems
                    .Where(x => x.AppId == app.Id)

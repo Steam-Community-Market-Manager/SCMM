@@ -57,17 +57,13 @@ public class UpdateMarketItemPricesFromRustSkinsJob
                 {
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
                     listingsResponse = await _rustSkinsWebClient.GetMarketListingsAsync(listingPage);
-                    if (listingsResponse.Success && listingsResponse.Listings?.Any() == true)
+                    if (listingsResponse?.Success == true && listingsResponse?.Listings?.Any() == true)
                     {
                         rustSkinsItems.AddRange(listingsResponse.Listings);
                         listingPage++;
                     }
-                } while (listingsResponse.Success && listingsResponse.Listings?.Any() == true);
-                if (rustSkinsItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                } while (listingsResponse?.Success == true && listingsResponse?.Listings?.Any() == true);
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

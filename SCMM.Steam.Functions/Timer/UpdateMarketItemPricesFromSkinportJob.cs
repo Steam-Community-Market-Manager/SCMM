@@ -46,12 +46,8 @@ public class UpdateMarketItemPricesFromSkinportJob
            
             try
             {
-                var skinportItems = await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name);
-                if (skinportItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                var skinportItems = (await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name)) ?? new List<SkinportItem>();
+                
                 var items = await _db.SteamMarketItems
                    .Where(x => x.AppId == app.Id)
                    .Select(x => new

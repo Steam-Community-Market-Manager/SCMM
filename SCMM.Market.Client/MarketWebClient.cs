@@ -1,16 +1,24 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 
 namespace SCMM.Market.Client;
 
 public class MarketWebClient : IDisposable
 {
+    private readonly CookieContainer _cookieContainer;
     private readonly HttpMessageHandler _httpHandler;
     private bool _disposedValue;
 
-    public MarketWebClient(Uri referer = null)
+    public MarketWebClient(CookieContainer cookieContainer = null)
     {
-        _httpHandler = new HttpClientHandler();
+        _cookieContainer = new CookieContainer();
+        _httpHandler = new HttpClientHandler()
+        {
+            CookieContainer = _cookieContainer
+        };
     }
+
+    protected CookieContainer Cookies => _cookieContainer;
 
     protected HttpClient BuildHttpClient(Uri referer = null)
     {

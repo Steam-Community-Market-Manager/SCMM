@@ -46,12 +46,8 @@ public class UpdateMarketItemPricesFromTradeSkinsFastJob
             
             try
             {
-                var tradeSkinsFastInventoryItems = (await _tradeSkinsFastWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value;
-                if (tradeSkinsFastInventoryItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                var tradeSkinsFastInventoryItems = (await _tradeSkinsFastWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value ?? new TradeSkinsFastItemListing[0];
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new

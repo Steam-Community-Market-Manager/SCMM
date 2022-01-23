@@ -45,12 +45,8 @@ public class UpdateMarketItemPricesFromSwapGGJob
           
             try
             {
-                var swapggTradeItems = await _swapGGWebClient.GetTradeBotInventoryAsync(app.SteamId);
-                if (swapggTradeItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                var swapggTradeItems = (await _swapGGWebClient.GetTradeBotInventoryAsync(app.SteamId)) ?? new List<SwapGGTradeItem>();
+                
                 var items = await _db.SteamMarketItems
                   .Where(x => x.AppId == app.Id)
                   .Select(x => new
@@ -89,12 +85,8 @@ public class UpdateMarketItemPricesFromSwapGGJob
 
             try
             {
-                var swapggMarketItems = await _swapGGWebClient.GetMarketPricingLowestAsync(app.SteamId);
-                if (swapggMarketItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                var swapggMarketItems = (await _swapGGWebClient.GetMarketPricingLowestAsync(app.SteamId)) ?? new Dictionary<string, SwapGGMarketItem>();
+                
                 var items = await _db.SteamMarketItems
                   .Where(x => x.AppId == app.Id)
                   .Select(x => new

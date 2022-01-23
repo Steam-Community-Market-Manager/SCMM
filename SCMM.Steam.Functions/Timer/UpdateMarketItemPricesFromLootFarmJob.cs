@@ -45,12 +45,8 @@ public class UpdateMarketItemPricesFromLootFarmtJob
             
             try
             {
-                var lootFarmItems = await _lootFarmWebClient.GetItemPricesAsync(app.Name);
-                if (lootFarmItems?.Any() != true)
-                {
-                    continue;
-                }
-
+                var lootFarmItems = (await _lootFarmWebClient.GetItemPricesAsync(app.Name)) ?? new List<LootFarmItemPrice>();
+                
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new
