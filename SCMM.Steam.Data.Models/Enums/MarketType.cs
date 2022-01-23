@@ -114,5 +114,22 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://buff.163.com/market/{1}")] // Unconfirmed
         Buff
         */
+
+        /* BUY / TRADE
+        https://rustvendor.com/
+        https://skinsmonkey.com/trade
+        https://gamerall.com/rust
+        https://itrade.gg/
+        https://rustytrade.com/
+        https://trade.skin/ (sus...)
+        https://rustplus.com/ (sus...)
+        */
+
+        /* SELL
+        https://rustysell.com/
+        https://skincashier.com/
+        https://skins.cash/
+        */
+
     }
 }
