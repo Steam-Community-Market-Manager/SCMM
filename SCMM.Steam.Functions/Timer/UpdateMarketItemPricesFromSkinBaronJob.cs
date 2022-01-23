@@ -44,6 +44,7 @@ public class UpdateMarketItemPricesFromSkinBaronJob
         {
             logger.LogTrace($"Updating item price information from SkinBaron (appId: {app.SteamId})");
             var items = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
                 .Select(x => new
                 {
                     Name = x.Description.NameHash,

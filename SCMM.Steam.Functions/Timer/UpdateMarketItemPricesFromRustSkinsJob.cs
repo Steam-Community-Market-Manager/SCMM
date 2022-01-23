@@ -28,7 +28,10 @@ public class UpdateMarketItemPricesFromRustSkinsJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-RustSkins");
 
-        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
+        var steamApps = await _db.SteamApps
+            .Where(x => x.IsActive)
+            .Where(x => x.SteamId == Constants.RustAppId.ToString())
+            .ToListAsync();
         if (!steamApps.Any())
         {
             return;
@@ -45,6 +48,7 @@ public class UpdateMarketItemPricesFromRustSkinsJob
         {
             logger.LogTrace($"Updating item price information from RUSTSkins (appId: {app.SteamId})");
             var items = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
                 .Select(x => new
                 {
                     Name = x.Description.NameHash,

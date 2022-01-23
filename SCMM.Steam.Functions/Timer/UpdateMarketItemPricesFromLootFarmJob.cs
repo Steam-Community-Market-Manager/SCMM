@@ -43,6 +43,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
         {
             logger.LogTrace($"Updating market item price information from LOOT.Farm (appId: {app.SteamId})");
             var items = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
                 .Select(x => new
                 {
                     Name = x.Description.NameHash,

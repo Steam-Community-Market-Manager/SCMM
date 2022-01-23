@@ -43,6 +43,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
         {
             logger.LogTrace($"Updating item price information from Tradeit.gg (appId: {app.SteamId})");
             var items = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
                 .Select(x => new
                 {
                     Name = x.Description.NameHash,

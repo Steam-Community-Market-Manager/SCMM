@@ -44,6 +44,7 @@ public class UpdateMarketItemPricesFromCSDealsob
         {
             logger.LogTrace($"Updating market item price information from CS.Deals (appId: {app.SteamId})");
             var items = await _db.SteamMarketItems
+                .Where(x => x.AppId == app.Id)
                 .Select(x => new
                 {
                     Name = x.Description.NameHash,

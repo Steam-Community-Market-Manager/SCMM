@@ -4,7 +4,7 @@ namespace SCMM.Market.iTradegg.Client
 {
     public class iTradeggInventoryItemsResponse
     {
-        [JsonPropertyName("inventory")]
+        [JsonPropertyName("items")]
         public IDictionary<string, iTradeggItem> Items { get; set; }
 
         [JsonPropertyName("extraItems")]
