@@ -106,6 +106,7 @@ namespace SCMM.Discord.Client
                 message.MentionedUsers.Contains(_client.CurrentUser))
             {
                 _ = ReactToMessageSentiment(message);
+                _ = RelayMentionedMessage(message);
             }
 
             // If a command is detected, execute it
@@ -292,6 +293,50 @@ namespace SCMM.Discord.Client
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to react to message");
+            }
+        }
+
+        private async Task RelayMentionedMessage(SocketMessage message)
+        {
+            try
+            {
+                var guildChannel = (message.Channel as SocketGuildChannel);
+                if (guildChannel == null)
+                {
+                    return;
+                }
+
+                var userName = message.Author.GetFullUsername();
+                var guildName = (guildChannel.Guild != null ? $"{guildChannel.Guild.Name} #{guildChannel.Guild.Id}" : "n/a");
+                var channelName = (message.Channel != null ? message.Channel.Name : "n/a");
+                var content = message.Content;
+
+                var notifyGuild = _client.GetGuild(761035706021314561);
+                if (notifyGuild != null)
+                {
+                    var notifyChannel = notifyGuild.TextChannels.FirstOrDefault(x => x.Name == "bot-mentions");
+                    if (notifyChannel != null)
+                    {
+                        var embed = new EmbedBuilder()
+                            .WithTitle("SCMM was mentioned somewhere")
+                            .WithFields(new []
+                            {
+                                new EmbedFieldBuilder().WithName("User").WithValue(userName),
+                                new EmbedFieldBuilder().WithName("Guild").WithValue(guildName),
+                                new EmbedFieldBuilder().WithName("Channel").WithValue(channelName),
+                                new EmbedFieldBuilder().WithName("Content").WithValue(content)
+                            })
+                            .WithTimestamp(message.Timestamp);
+
+                        await notifyChannel.SendMessageAsync(
+                            embed: embed.Build()
+                        );
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to relay a mentioned message");
             }
         }
     }
