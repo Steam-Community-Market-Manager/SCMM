@@ -45,7 +45,6 @@ public static class WebAssemblyHostExtensions
         services.AddScoped<ICookieManager, CookieManager>();
         services.AddScoped<ExternalNavigationManager>();
         services.AddScoped<DocumentManager>();
-        services.AddScoped<UpdateManager>();
 
         services.AddMudServices(config =>
         {
