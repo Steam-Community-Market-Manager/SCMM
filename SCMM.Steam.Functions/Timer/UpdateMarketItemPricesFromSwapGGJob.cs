@@ -42,16 +42,7 @@ public class UpdateMarketItemPricesFromSwapGGJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating market item price information from swap.gg (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+          
             try
             {
                 var swapggTradeItems = await _swapGGWebClient.GetTradeBotInventoryAsync(app.SteamId);
@@ -59,6 +50,16 @@ public class UpdateMarketItemPricesFromSwapGGJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                  .Where(x => x.AppId == app.Id)
+                  .Select(x => new
+                  {
+                      Name = x.Description.NameHash,
+                      Currency = x.Currency,
+                      Item = x,
+                  })
+                  .ToListAsync();
 
                 foreach (var swapggTradeItem in swapggTradeItems)
                 {
@@ -78,6 +79,8 @@ public class UpdateMarketItemPricesFromSwapGGJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.SwapGGTrade, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -91,6 +94,16 @@ public class UpdateMarketItemPricesFromSwapGGJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                  .Where(x => x.AppId == app.Id)
+                  .Select(x => new
+                  {
+                      Name = x.Description.NameHash,
+                      Currency = x.Currency,
+                      Item = x,
+                  })
+                  .ToListAsync();
 
                 foreach (var swapggMarketItem in swapggMarketItems)
                 {
@@ -110,13 +123,13 @@ public class UpdateMarketItemPricesFromSwapGGJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.SwapGGMarket, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from swap.gg (appId: {app.SteamId}, source: market). {ex.Message}");
             }
-
-            _db.SaveChanges();
         }
     }
 }

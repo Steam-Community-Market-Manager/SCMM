@@ -43,16 +43,7 @@ public class UpdateMarketItemPricesFromDMarketJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating market item price information from DMarket (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var dMarketItems = new List<DMarketItem>();
@@ -60,7 +51,9 @@ public class UpdateMarketItemPricesFromDMarketJob
                 do
                 {
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
-                    marketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(app.Name, currencyName: usdCurrency.Name, cursor: marketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit);
+                    marketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(
+                        app.Name, marketType: DMarketWebClient.MarketTypeDMarket, currencyName: usdCurrency.Name, cursor: marketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit
+                    );
                     if (marketItemsResponse.Objects?.Any() == true)
                     {
                         dMarketItems.AddRange(marketItemsResponse.Objects);
@@ -70,6 +63,16 @@ public class UpdateMarketItemPricesFromDMarketJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
 
                 foreach (var dMarketInventoryItemGroup in dMarketItems.GroupBy(x => x.Title))
                 {
@@ -90,14 +93,14 @@ public class UpdateMarketItemPricesFromDMarketJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.Dmarket, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from DMarket (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

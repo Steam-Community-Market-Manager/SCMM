@@ -42,16 +42,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating market item price information from LOOT.Farm (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var lootFarmItems = await _lootFarmWebClient.GetItemPricesAsync(app.Name);
@@ -59,6 +50,16 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
 
                 foreach (var lootFarmItem in lootFarmItems)
                 {
@@ -78,14 +79,14 @@ public class UpdateMarketItemPricesFromLootFarmtJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.LOOTFarm, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from LOOT.Farm (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

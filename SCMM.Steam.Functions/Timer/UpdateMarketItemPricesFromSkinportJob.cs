@@ -43,16 +43,7 @@ public class UpdateMarketItemPricesFromSkinportJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating market item price information from Skinport (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+           
             try
             {
                 var skinportItems = await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name);
@@ -60,6 +51,16 @@ public class UpdateMarketItemPricesFromSkinportJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                   .Where(x => x.AppId == app.Id)
+                   .Select(x => new
+                   {
+                       Name = x.Description.NameHash,
+                       Currency = x.Currency,
+                       Item = x,
+                   })
+                   .ToListAsync();
 
                 foreach (var skinportItem in skinportItems)
                 {
@@ -79,14 +80,14 @@ public class UpdateMarketItemPricesFromSkinportJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.Skinport, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from Skinport (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

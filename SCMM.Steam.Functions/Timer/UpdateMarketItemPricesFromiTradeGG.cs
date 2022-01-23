@@ -45,19 +45,21 @@ public class UpdateMarketItemPricesFromiTradeggJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating item price information from iTrade.gg (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var iTradeggItems = await _iTradeggWebClient.GetInventoryAsync(app.SteamId);
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
+
                 foreach (var iTradeggItem in iTradeggItems)
                 {
                     var item = items.FirstOrDefault(x => x.Name == iTradeggItem.Name)?.Item;
@@ -76,14 +78,14 @@ public class UpdateMarketItemPricesFromiTradeggJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.iTradegg, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from iTrade.gg (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

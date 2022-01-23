@@ -43,16 +43,7 @@ public class UpdateMarketItemPricesFromCSDealsJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating market item price information from CS.Deals (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var csDealsInventoryItems = (await _csDealsWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value;
@@ -60,6 +51,16 @@ public class UpdateMarketItemPricesFromCSDealsJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
 
                 foreach (var csDealsInventoryItemGroup in csDealsInventoryItems.GroupBy(x => x.MarketName))
                 {
@@ -80,6 +81,8 @@ public class UpdateMarketItemPricesFromCSDealsJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.CSDealsTrade, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -94,6 +97,16 @@ public class UpdateMarketItemPricesFromCSDealsJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
 
                 foreach (var csDealsLowestPriceItem in csDealsLowestPriceItems)
                 {
@@ -113,14 +126,14 @@ public class UpdateMarketItemPricesFromCSDealsJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.CSDealsMarketplace, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from CS.Deals (appId: {app.SteamId}, source: lowest price items). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

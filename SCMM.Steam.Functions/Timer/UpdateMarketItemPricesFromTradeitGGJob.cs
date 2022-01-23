@@ -42,16 +42,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating item price information from Tradeit.gg (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+         
             try
             {
                 var tradeitGGItems = new Dictionary<TradeitGGItem, int>();
@@ -72,6 +63,16 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                     continue;
                 }
 
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
+
                 foreach (var tradeitGGItem in tradeitGGItems)
                 {
                     var item = items.FirstOrDefault(x => x.Name == tradeitGGItem.Key.Name)?.Item;
@@ -90,14 +91,14 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.TradeitGG, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from Tradeit.gg (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

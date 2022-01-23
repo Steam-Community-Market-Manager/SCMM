@@ -47,16 +47,7 @@ public class UpdateMarketItemPricesFromRustSkinsJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating item price information from RUSTSkins (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var rustSkinsItems = new List<RustSkinsItemListing>();
@@ -76,6 +67,16 @@ public class UpdateMarketItemPricesFromRustSkinsJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
 
                 foreach (var rustSkinItemGroups in rustSkinsItems.GroupBy(x => x.MarketHashName))
                 {
@@ -97,14 +98,14 @@ public class UpdateMarketItemPricesFromRustSkinsJob
                     missingItem.Item.UpdateBuyPrices(MarketType.RUSTSkins, null);
                     missingItem.Item.UpdateBuyPrices(MarketType.RUSTSkins, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from RUSTSkins (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

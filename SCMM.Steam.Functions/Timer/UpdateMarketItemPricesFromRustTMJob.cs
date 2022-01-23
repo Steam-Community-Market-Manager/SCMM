@@ -46,19 +46,21 @@ public class UpdateMarketItemPricesFromRustTMJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating item price information from Rust.tm (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+           
             try
             {
                 var rustTMItems = await _rustTMWebClient.GetPricesAsync(usdCurrency.Name);
+
+                var items = await _db.SteamMarketItems
+                   .Where(x => x.AppId == app.Id)
+                   .Select(x => new
+                   {
+                       Name = x.Description.NameHash,
+                       Currency = x.Currency,
+                       Item = x,
+                   })
+                   .ToListAsync();
+
                 foreach (var rustTMItem in rustTMItems)
                 {
                     var item = items.FirstOrDefault(x => x.Name == rustTMItem.MarketHashName)?.Item;
@@ -77,14 +79,14 @@ public class UpdateMarketItemPricesFromRustTMJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.RustTM, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from Rust.tm (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

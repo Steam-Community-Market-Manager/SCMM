@@ -42,16 +42,7 @@ public class UpdateMarketItemPricesFromSkinsMonkeyJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating item price information from SkinsMonkey (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var skinsMonkeyItems = new List<SkinsMonkeyItemListing>();
@@ -72,6 +63,16 @@ public class UpdateMarketItemPricesFromSkinsMonkeyJob
                     continue;
                 }
 
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
+
                 foreach (var skinsMonkeyItem in skinsMonkeyItems.GroupBy(x => x.Item.MarketName))
                 {
                     var item = items.FirstOrDefault(x => x.Name == skinsMonkeyItem.Key)?.Item;
@@ -91,14 +92,14 @@ public class UpdateMarketItemPricesFromSkinsMonkeyJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.SkinsMonkey, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from SkinsMonkey (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

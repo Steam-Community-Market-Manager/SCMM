@@ -43,16 +43,7 @@ public class UpdateMarketItemPricesFromTradeSkinsFastJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating market item price information from TradeSkinsFast (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var tradeSkinsFastInventoryItems = (await _tradeSkinsFastWebClient.PostBotsInventoryAsync(app.SteamId))?.Items?.FirstOrDefault(x => x.Key == app.SteamId).Value;
@@ -60,6 +51,16 @@ public class UpdateMarketItemPricesFromTradeSkinsFastJob
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
 
                 foreach (var tradeSkinsFastInventoryItemGroup in tradeSkinsFastInventoryItems.GroupBy(x => x.MarketName))
                 {
@@ -80,14 +81,14 @@ public class UpdateMarketItemPricesFromTradeSkinsFastJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.TradeSkinsFast, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from TradeSkinsFast (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

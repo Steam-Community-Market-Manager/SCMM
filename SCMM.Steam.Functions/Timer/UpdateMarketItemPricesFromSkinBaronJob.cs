@@ -43,16 +43,7 @@ public class UpdateMarketItemPricesFromSkinBaronJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating item price information from SkinBaron (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var skinBaronItems = new List<SkinBaronItemOffer>();
@@ -73,6 +64,16 @@ public class UpdateMarketItemPricesFromSkinBaronJob
                     continue;
                 }
 
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
+
                 foreach (var skinBaronItem in skinBaronItems)
                 {
                     var item = items.FirstOrDefault(x => x.Name == skinBaronItem.ExtendedProductInformation?.LocalizedName)?.Item;
@@ -92,14 +93,14 @@ public class UpdateMarketItemPricesFromSkinBaronJob
                     missingItem.Item.UpdateBuyPrices(MarketType.SkinBaron, null);
                     missingItem.Item.UpdateBuyPrices(MarketType.SkinBaron, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from SkinBaron (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

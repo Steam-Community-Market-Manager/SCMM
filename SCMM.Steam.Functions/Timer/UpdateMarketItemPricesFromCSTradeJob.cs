@@ -45,20 +45,22 @@ public class UpdateMarketItemPricesFromCSTradeJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating item price information from CS.TRADE (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+            
             try
             {
                 var csTradeItems = await _csTradeWebClient.GetInventoryAsync();
                 var csTradeAppItems = csTradeItems.Where(x => x.AppId == app.SteamId).Where(x => x.Price != null).ToList();
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
+
                 foreach (var csTradeItem in csTradeAppItems.GroupBy(x => x.MarketHashName))
                 {
                     var item = items.FirstOrDefault(x => x.Name == csTradeItem.Key)?.Item;
@@ -78,14 +80,14 @@ public class UpdateMarketItemPricesFromCSTradeJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.CSTRADE, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from CS.TRADE (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }

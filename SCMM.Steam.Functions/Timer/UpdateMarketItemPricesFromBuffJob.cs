@@ -43,16 +43,7 @@ public class UpdateMarketItemPricesFromBuffJob
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Updating market item price information from Buff (appId: {app.SteamId})");
-            var items = await _db.SteamMarketItems
-                .Where(x => x.AppId == app.Id)
-                .Select(x => new
-                {
-                    Name = x.Description.NameHash,
-                    Currency = x.Currency,
-                    Item = x,
-                })
-                .ToListAsync();
-
+          
             try
             {
                 var buffItems = new List<BuffItem>();
@@ -61,15 +52,25 @@ public class UpdateMarketItemPricesFromBuffJob
                 {
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
                     marketGoodsResponse = await _buffWebClient.GetMarketGoodsAsync(app.Name, (marketGoodsResponse?.PageNum ?? 0) + 1);
-                    if (marketGoodsResponse.Items?.Any() == true)
+                    if (marketGoodsResponse?.Items?.Any() == true)
                     {
                         buffItems.AddRange(marketGoodsResponse.Items);
                     }
-                } while (marketGoodsResponse.PageNum < marketGoodsResponse.TotalPage);
+                } while (marketGoodsResponse != null && marketGoodsResponse.PageNum < marketGoodsResponse.TotalPage);
                 if (buffItems?.Any() != true)
                 {
                     continue;
                 }
+
+                var items = await _db.SteamMarketItems
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Name = x.Description.NameHash,
+                        Currency = x.Currency,
+                        Item = x,
+                    })
+                    .ToListAsync();
 
                 foreach (var buffItem in buffItems)
                 {
@@ -89,14 +90,14 @@ public class UpdateMarketItemPricesFromBuffJob
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.Buff, null);
                 }
+
+                _db.SaveChanges();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, $"Failed to update market item price information from Buff (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
-
-            _db.SaveChanges();
         }
     }
 }
