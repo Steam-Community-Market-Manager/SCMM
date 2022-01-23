@@ -64,63 +64,75 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rustskins.com/market?search={3}&sort=p-ascending", FeeRate = 3f)]
         RUSTSkins = 18,
 
-        /*
-        // TODO: https://cs.trade
-        [Display(Name = "CS.TRADE")]
-        [Market(Type = PriceTypes.Trade, Color = "#F6C607")]
-        [BuyFrom(Url = "https://cs.trade/#trader")] // Unconfirmed
-        CSTRADE,
-        */
-
-        /*
         // TODO: https://rust.tm
         [Display(Name = "Rust.tm")]
-        [Market(Type = PriceTypes.Cash, Color = "#7B2805")]
+        [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc")] // Unconfirmed
-        RustTM,
-        */
+        RustTM = 19,
 
-        /*
+        // TODO: https://rustvendor.com
+        [Display(Name = "RUSTVendor")]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade)] // +50% crypto deposits
+        [BuyFrom(Url = "https://rustvendor.com/trade")] // Unconfirmed
+        RUSTVendor = 20,
+
+        // TODO: https://rustytrade.com
+        [Display(Name = "RustyTrade")]
+        [Market(Type = PriceTypes.Trade)]
+        [BuyFrom(Url = "https://rustytrade.com/")] // Unconfirmed
+        RustyTrade = 21,
+
+        // TODO: https://cs.trade
+        [Display(Name = "CS.TRADE")]
+        [Market(Type = PriceTypes.Trade)]
+        [BuyFrom(Url = "https://cs.trade/#trader")] // Unconfirmed
+        CSTRADE = 22,
+
+        // TODO: https://itrade.gg
+        [Display(Name = "iTrade.gg")]
+        [Market(Type = PriceTypes.Trade)]
+        [BuyFrom(Url = "https://itrade.gg/")] // Unconfirmed
+        iTradegg = 23,
+
         // TODO: https://tradeskinsfast.com
         [Display(Name = "Trade Skins Fast")]
-        [Market(Type = PriceTypes.Trade, Color = "#FFC800")]
+        [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://tradeskinsfast.com/")] // Unconfirmed
-        TradeSkinsFast,
-        */
+        TradeSkinsFast = 24,
 
-        /*
+        // TODO: https://skinsmonkey.com
+        [Display(Name = "SkinsMonkey")]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade)] // +25% cash deposits
+        [BuyFrom(Url = "https://skinsmonkey.com/trade")] // Unconfirmed
+        SkinsMonkey = 25,
+
         // TODO: https://skinmarket.gg
         [Display(Name = "skinmarket.gg")]
-        [Market(Type = PriceTypes.Trade, Color = "#050E45")] // Also offers crypto cash deposits (40% bonus balance)
-        [BuyFrom(Url = "")] // Unconfirmed
-        skinmarketGG,
-        */
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade)] // +40% crypto deposits
+        [BuyFrom(Url = "https://skinmarket.gg/")] // Unconfirmed
+        skinmarketGG = 26,
 
-        /*
+        // TODO: https://gamerall.com
+        [Display(Name = "GAMERALL.com")]
+        [Market(Type = PriceTypes.Cash)]
+        [BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed
+        GAMERALL = 27,
+
         // TODO: https://dmarket.com
         // https://docs.dmarket.com/v1/swagger.html#/Buy%20items/GetAggregatedPrices
         // https://api.dmarket.com/price-aggregator/v1/aggregated-prices?Titles=Blackout%20Hoodie&Titles=Blackout%20Pants&Limit=100
         [Display(Name = "Dmarket")]
-        [Market(Type = PriceTypes.Cash, Color = "#49BC74")]
+        [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#49BC74")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")] // Unconfirmed
-        DmarketMarket,
-        DmarketTrade,
-        */
+        Dmarket = 28,
 
-        /*
         // TODO: https://buff.163.com
         [Display(Name = "BUFF")]
         [Market(Type = PriceTypes.Cash, Color = "#FFFFFF")]
         [BuyFrom(Url = "https://buff.163.com/market/{1}")] // Unconfirmed
-        Buff
-        */
+        Buff = 29
 
         /* BUY / TRADE
-        https://rustvendor.com/
-        https://skinsmonkey.com/trade
-        https://gamerall.com/rust
-        https://itrade.gg/
-        https://rustytrade.com/
         https://trade.skin/ (sus...)
         https://rustplus.com/ (sus...)
         */
