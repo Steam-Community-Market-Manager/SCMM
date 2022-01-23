@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.Buff.Client
 {
-    public class BuffWebClient
+    public class BuffWebClient : MarketWebClient
     {
         private const string BaseUri = "https://buff.163.com/api/";
 
@@ -12,7 +12,7 @@ namespace SCMM.Market.Buff.Client
 
         public async Task<BuffMarketGoodsResponse> GetMarketGoodsAsync(string appName, int page = 1, int pageSize = MaxPageLimit)
         {
-            using (var client = new MarketWebClient())
+            using (var client = BuildHttpClient())
             {
                 var url = $"{BaseUri}market/goods?game={appName.ToLower()}&page_num={page}&page_size={pageSize}&sort_by=price.desc&trigger=undefined_trigger&_={Random.Shared.NextInt64(1000000000000L, 9999999999999L)}";
                 var response = await client.GetAsync(url);
