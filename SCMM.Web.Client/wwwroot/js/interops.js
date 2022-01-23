@@ -22,29 +22,6 @@ WindowInterop.scrollElementIntoView = (selector) => {
     }
 };
 
-// Interops for PWA updates
-var UpdateInterop = UpdateInterop || {};
-UpdateInterop.setCallback = (dotNetHelper) => {
-    UpdateInterop.callback = dotNetHelper;
-};
-UpdateInterop.isUpdatePending = () => {
-    return (UpdateInterop.worker != null && UpdateInterop.worker.waiting != null);
-}
-UpdateInterop.applyPendingUpdate = () => {
-    var worker = UpdateInterop.worker;
-    if (worker && worker.waiting) {
-        worker = worker.waiting;
-    }
-    if (worker) {
-        console.log("skipping wait for pending update, activating immediately");
-        worker.postMessage({
-            action: 'skipWaiting'
-        });
-    } else {
-        console.warn("no updates are pending");
-    }
-}
-
 // Interops for cookies
 var CookieInterop = CookieInterop || {};
 CookieInterop.setCookie = (name, value, days) => {
