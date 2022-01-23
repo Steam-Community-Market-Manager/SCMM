@@ -16,13 +16,11 @@ namespace SCMM.Market.DMarket.Client
         [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        [JsonPropertyName("sell_min_price")]
-        public string SellMinPrice { get; set; }
+        [JsonPropertyName("price")]
+        public IDictionary<string, long> Price { get; set; }
 
-        [JsonPropertyName("sell_reference_price")]
-        public string SellReference_Price { get; set; }
+        [JsonPropertyName("suggestedPrice")]
+        public IDictionary<string, long> SuggestedPrice { get; set; }
 
-        [JsonPropertyName("sell_num")]
-        public int SellNum { get; set; }
     }
 }

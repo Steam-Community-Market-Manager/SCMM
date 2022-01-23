@@ -41,6 +41,7 @@
 
         public const string SteamCurrencyUSD = "USD";
         public const string SteamCurrencyEUR = "EUR";
+        public const string SteamCurrencyCNY = "CNY";
         public const string SteamLanguageEnglish = "english";
         public const string SteamDefaultLanguage = SteamLanguageEnglish;
 

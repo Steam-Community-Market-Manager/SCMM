@@ -22,7 +22,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
     }
 
     [Function("Update-Market-Item-Prices-From-TradeitGG")]
-    public async Task Run([TimerTrigger("0 7-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 13-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeitGG");
 
@@ -57,15 +57,14 @@ public class UpdateMarketItemPricesFromTradeitGGJob
                 var tradeitGGItems = new Dictionary<TradeitGGItem, int>();
                 var inventoryDataItems = (IDictionary<TradeitGGItem, int>) null;
                 var inventoryDataOffset = 0;
-                const int inventoryDataLimit = 200;
                 do
                 {
-                    // NOTE: Items have to be fetched in multiple batches of 200, keep reading until no new items are found
-                    inventoryDataItems = await _tradeitGGWebClient.GetInventoryDataAsync(app.SteamId, offset: inventoryDataOffset, limit: inventoryDataLimit);
+                    // NOTE: Items have to be fetched in multiple batches, keep reading until no new items are found
+                    inventoryDataItems = await _tradeitGGWebClient.GetInventoryDataAsync(app.SteamId, offset: inventoryDataOffset, limit: TradeitGGWebClient.MaxPageLimit);
                     if (inventoryDataItems?.Any() == true)
                     {
                         tradeitGGItems.AddRange(inventoryDataItems);
-                        inventoryDataOffset += inventoryDataLimit;
+                        inventoryDataOffset += TradeitGGWebClient.MaxPageLimit;
                     }
                 } while (inventoryDataItems?.Any() == true);
                 if (tradeitGGItems?.Any() != true)

@@ -23,7 +23,7 @@ public class UpdateMarketItemPricesFromTradeSkinsFastJob
     }
 
     [Function("Update-Market-Item-Prices-From-TradeSkinsFast")]
-    public async Task Run([TimerTrigger("0/30 * * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 14-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeSkinsFast");
 
@@ -83,7 +83,7 @@ public class UpdateMarketItemPricesFromTradeSkinsFastJob
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from TradeSkinsFast (appId: {app.SteamId}, source: trade inventory). {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item price information from TradeSkinsFast (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
 

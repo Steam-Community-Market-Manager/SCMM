@@ -1,4 +1,5 @@
 ﻿using SCMM.Market.Client;
+using SCMM.Steam.Data.Models;
 using System.Text.Json;
 
 namespace SCMM.Market.RustTM.Client
@@ -7,7 +8,7 @@ namespace SCMM.Market.RustTM.Client
     {
         private const string BaseUri = "https://rust.tm/api/v2/";
 
-        public async Task<IEnumerable<RustTMItem>> GetPricesAsync(string currencyName = "USD")
+        public async Task<IEnumerable<RustTMItem>> GetPricesAsync(string currencyName = Constants.SteamCurrencyUSD)
         {
             using (var client = new MarketHttpClient())
             {

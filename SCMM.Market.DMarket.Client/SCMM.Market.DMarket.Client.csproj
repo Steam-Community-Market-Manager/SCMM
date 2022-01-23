@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Market.Client\SCMM.Market.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
   </ItemGroup>
 
 </Project>

@@ -7,7 +7,9 @@ namespace SCMM.Market.SkinsMonkey.Client
     {
         private const string BaseUri = "https://skinsmonkey.com/api/";
 
-        public async Task<IEnumerable<SkinsMonkeyItemListing>> GetInventoryAsync(string appId, int offset = 0, int limit = 1000)
+        public const int MaxPageLimit = 1000;
+
+        public async Task<IEnumerable<SkinsMonkeyItemListing>> GetInventoryAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {
             using (var client = new MarketHttpClient())
             {

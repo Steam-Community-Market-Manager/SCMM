@@ -23,7 +23,7 @@ public class UpdateMarketItemPricesFromRustTMJob
     }
 
     [Function("Update-Market-Item-Prices-From-RustTM")]
-    public async Task Run([TimerTrigger("0 * * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 8-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-RustTM");
 

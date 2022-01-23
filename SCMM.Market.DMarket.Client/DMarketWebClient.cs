@@ -1,4 +1,5 @@
 ﻿using SCMM.Market.Client;
+using SCMM.Steam.Data.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
@@ -8,7 +9,9 @@ namespace SCMM.Market.DMarket.Client
     {
         private const string BaseUri = "https://api.dmarket.com/exchange/v1/";
 
-        public async Task<DMarketMarketItemsResponse> GetMarketItemsAsync(string appName, string currencyName = "USD", string cursor = null, int limit = 100)
+        public const int MaxPageLimit = 100;
+
+        public async Task<DMarketMarketItemsResponse> GetMarketItemsAsync(string appName, string currencyName = Constants.SteamCurrencyUSD, string cursor = null, int limit = MaxPageLimit)
         {
             using (var client = new MarketHttpClient())
             {

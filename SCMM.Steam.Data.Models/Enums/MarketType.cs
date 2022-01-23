@@ -114,7 +114,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinmarket.gg/")] // Unconfirmed
         skinmarketGG = 26,
 
-        // TODO: https://gamerall.com (super agressive ClourFlare policies)
+        // TODO: https://gamerall.com (overly agressive CloudFlare policies)
         [Display(Name = "GAMERALL.com")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed

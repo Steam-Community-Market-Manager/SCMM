@@ -8,7 +8,9 @@ namespace SCMM.Market.Buff.Client
     {
         private const string BaseUri = "https://buff.163.com/api/";
 
-        public async Task<BuffMarketGoodsResponse> GetMarketGoodsAsync(string appName, int page = 1, int pageSize = 80)
+        public const int MaxPageLimit = 80;
+
+        public async Task<BuffMarketGoodsResponse> GetMarketGoodsAsync(string appName, int page = 1, int pageSize = MaxPageLimit)
         {
             using (var client = new MarketHttpClient())
             {

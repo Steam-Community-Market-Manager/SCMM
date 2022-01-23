@@ -8,7 +8,9 @@ namespace SCMM.Market.TradeitGG.Client
     {
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 
-        public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = 200)
+        public const int MaxPageLimit = 200;
+
+        public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {
             using (var client = new MarketHttpClient())
             {
