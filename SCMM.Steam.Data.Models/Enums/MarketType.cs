@@ -120,12 +120,13 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed
         GAMERALL = 27,
 
+        // TODO: F2F market inventory support
         // TODO: https://dmarket.com
         // https://docs.dmarket.com/v1/swagger.html#/Buy%20items/GetAggregatedPrices
         // https://api.dmarket.com/price-aggregator/v1/aggregated-prices?Titles=Blackout%20Hoodie&Titles=Blackout%20Pants&Limit=100
         [Display(Name = "Dmarket")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#49BC74")]
-        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?title={3}")] // Unconfirmed
+        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}")] // Unconfirmed
         Dmarket = 28,
 
         [Display(Name = "BUFF")]
