@@ -9,7 +9,7 @@
     var runtime = await CookieManager.GetAsync<RuntimeType>("Runtime", RuntimeType.WebAssembly);
     var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssembly);
     var prerenderMode = (runtime == RuntimeType.Server ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered);
-    var progressiveWebAppEnabled = true;
+    var progressiveWebAppEnabled = false;
 }
 <!DOCTYPE html>
 <html>
@@ -140,7 +140,8 @@ else
                             if (type == "dotnetjs") {
                                 return defaultUri;
                             }
-
+                                
+                            console.log(`Loading: '${type}', '${name}', '${defaultUri}', '${integrity}'`);
                             var fetchResource = fetch(defaultUri, {
                                 cache: 'no-cache',
                                 integrity: integrity
@@ -164,6 +165,8 @@ else
 
                     }).then(function () {
                         document.getElementById("blazor-preloader-ui").style.display = "none";
+                    }).catch(function (err) {
+                        console.log(`Blazor boot has failed, fallback...`);
                     });
                 });
 
@@ -187,53 +190,83 @@ else
     <script src="/js/azure-storage.blob.min.js"></script>
     <script src="/js/interops.js"></script>
     
-@if (runtime == RuntimeType.WebAssembly && progressiveWebAppEnabled)
+@if (runtime == RuntimeType.WebAssembly)
 {
-    <script type="text/javascript">
+    @if (progressiveWebAppEnabled)
+    {
+        <script type="text/javascript">
 
-        /* Register PWA service worker and send update notifications to Blazor */
+            /* Register PWA service worker and send update notifications to Blazor */
 
-        let refreshing = false;
-        if ('serviceWorker' in navigator) {
+            let refreshing = false;
+            if ('serviceWorker' in navigator) {
 
-            navigator.serviceWorker.register('service-worker.js').then(worker => {
-                UpdateInterop.worker = worker;
+                navigator.serviceWorker.register('service-worker.js').then(worker => {
+                    UpdateInterop.worker = worker;
 
-                // When a new update is ready, notify the user
-                worker.addEventListener('updatefound', () => {
-                    console.log('a new update was found');
-                    var newWorker = worker.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state == 'installed') {
-                            console.log('update has been installed, ready for activation');
-                            if (navigator.serviceWorker.controller) {
-                                UpdateInterop.worker = newWorker;
-                                if (UpdateInterop.callback) {
-                                    UpdateInterop.callback.invokeMethodAsync('ShowUpdateNotification');
-                                } else {
-                                    UpdateInterop.applyPendingUpdate();
+                    // When a new update is ready, notify the user
+                    worker.addEventListener('updatefound', () => {
+                        console.log('A new service worker update was found');
+                        var newWorker = worker.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state == 'installed') {
+                                console.log('New service worker update has been installed, ready for activation');
+                                if (navigator.serviceWorker.controller) {
+                                    UpdateInterop.worker = newWorker;
+                                    if (UpdateInterop.callback) {
+                                        UpdateInterop.callback.invokeMethodAsync('ShowUpdateNotification');
+                                    } else {
+                                        UpdateInterop.applyPendingUpdate();
+                                    }
                                 }
                             }
-                        }
-                        if (newWorker.state == 'activated') {
-                            console.log('update has been activated');
-                        }
+                            if (newWorker.state == 'activated') {
+                                console.log('New service worker update has been activated');
+                            }
+                        });
                     });
+
                 });
 
-            });
+                // When a new update has been activated, reload the page so that the user sees the changes
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        window.location.reload();
+                        refreshing = true;
+                    }
+                });
 
-            // When a new update has been activated, reload the page so that the user sees the changes
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
-                    window.location.reload();
-                    refreshing = true;
-                }
-            });
+            }
+        </script>
+    }
+    else
+    {
+        <script type="text/javascript">
 
-        }
+            /* Unregister PWA service worker */
+            
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                    if (!registrations.length) {
+                        console.log('No serviceWorker registrations found.');
+                        return;
+                    }
+                    for(let registration of registrations) {
+                        registration.unregister().then(function (boolean) {
+                            console.log(
+                                (boolean ? 'Successfully unregistered' : 'Failed to unregister'), 'ServiceWorkerRegistration\n' +
+                                (registration.installing ? '  .installing.scriptURL = ' + registration.installing.scriptURL + '\n' : '') +
+                                (registration.waiting ? '  .waiting.scriptURL = ' + registration.waiting.scriptURL + '\n' : '') +
+                                (registration.active ? '  .active.scriptURL = ' + registration.active.scriptURL + '\n' : '') +
+                                '  .scope: ' + registration.scope + '\n'
+                            );
+                        });
+                    }
+                });
+            }
 
-    </script>
+        </script>
+    }
 }
 
 </body>
