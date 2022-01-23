@@ -60,7 +60,7 @@ public class UpdateMarketItemPricesFromBuffJob
                 do
                 {
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
-                    marketGoodsResponse = await _buffWebClient.GetMarketGoodsAsync(app.SteamId, (marketGoodsResponse?.PageNum ?? 0) + 1);
+                    marketGoodsResponse = await _buffWebClient.GetMarketGoodsAsync(app.Name, (marketGoodsResponse?.PageNum ?? 0) + 1);
                     if (marketGoodsResponse.Items?.Any() == true)
                     {
                         buffItems.AddRange(marketGoodsResponse.Items);

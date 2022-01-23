@@ -60,12 +60,12 @@ public class UpdateMarketItemPricesFromDMarketJob
                 do
                 {
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
-                    marketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(app.SteamId, currencyName: usdCurrency.Name, cursor: marketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit);
+                    marketItemsResponse = await _dMarketWebClient.GetMarketItemsAsync(app.Name, currencyName: usdCurrency.Name, cursor: marketItemsResponse?.Cursor, limit: DMarketWebClient.MaxPageLimit);
                     if (marketItemsResponse.Objects?.Any() == true)
                     {
                         dMarketItems.AddRange(marketItemsResponse.Objects);
                     }
-                } while (marketItemsResponse.Objects?.Any() == true || !String.IsNullOrEmpty(marketItemsResponse.Cursor));
+                } while (!String.IsNullOrEmpty(marketItemsResponse.Cursor));
                 if (dMarketItems?.Any() != true)
                 {
                     continue;
@@ -79,7 +79,7 @@ public class UpdateMarketItemPricesFromDMarketJob
                         var supply = dMarketInventoryItemGroup.Sum(x => x.Amount);
                         item.UpdateBuyPrices(MarketType.Dmarket, new PriceWithSupply
                         {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Min(x => x.Price[usdCurrency.Name]), usdCurrency) : 0,
+                            Price = supply > 0 ? item.Currency.CalculateExchange(dMarketInventoryItemGroup.Select(x => !String.IsNullOrEmpty(x.Price[usdCurrency.Name]) ? Int64.Parse(x.Price[usdCurrency.Name]) : 0).Min(x => x), usdCurrency) : 0,
                             Supply = supply
                         });
                     }

@@ -17,10 +17,10 @@ namespace SCMM.Market.DMarket.Client
         public string Title { get; set; }
 
         [JsonPropertyName("price")]
-        public IDictionary<string, long> Price { get; set; }
+        public IDictionary<string, string> Price { get; set; }
 
         [JsonPropertyName("suggestedPrice")]
-        public IDictionary<string, long> SuggestedPrice { get; set; }
+        public IDictionary<string, string> SuggestedPrice { get; set; }
 
     }
 }
