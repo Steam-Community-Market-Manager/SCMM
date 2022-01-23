@@ -4,7 +4,7 @@ namespace SCMM.Market.Client;
 
 public class MarketHttpClient : HttpClient
 {
-    public MarketHttpClient() : base()
+    public MarketHttpClient(Uri referer = null) : base()
     {
         // NOTE: Most markets use CloudFlare anti-bot protection and/or request filtering with that block clients that don't advertise sane look user agent strings
         DefaultRequestHeaders.UserAgent.Clear();
@@ -20,5 +20,11 @@ public class MarketHttpClient : HttpClient
 
         // Most markets require this
         DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+
+        // Some markets require this
+        if (referer != null)
+        {
+            DefaultRequestHeaders.Referrer = referer;
+        }
     }
 }
