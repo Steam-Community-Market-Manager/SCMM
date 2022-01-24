@@ -57,15 +57,16 @@ public class UpdateMarketItemPricesFromSkinMarketGGJob
                     })
                     .ToListAsync();
 
-                foreach (var skinMarketGGItem in skinMarketGGItems)
+                foreach (var skinMarketGGItemGroup in skinMarketGGItems.GroupBy(x => x.Name))
                 {
-                    var item = items.FirstOrDefault(x => x.Name == skinMarketGGItem.Name)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == skinMarketGGItemGroup.Key)?.Item;
                     if (item != null)
                     {
+                        var supply = skinMarketGGItemGroup.Sum(x => x.Amount);
                         item.UpdateBuyPrices(MarketType.skinmarketGG, new PriceWithSupply
                         {
-                            Price = skinMarketGGItem.Amount > 0 ? item.Currency.CalculateExchange(skinMarketGGItem.PriceCents, usdCurrency) : 0,
-                            Supply = skinMarketGGItem.Amount
+                            Price = supply > 0 ? item.Currency.CalculateExchange(skinMarketGGItemGroup.Min(x => x.PriceCents), usdCurrency) : 0,
+                            Supply = supply
                         });
                     }
                 }
