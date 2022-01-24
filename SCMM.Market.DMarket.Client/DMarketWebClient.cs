@@ -16,15 +16,33 @@ namespace SCMM.Market.DMarket.Client
 
         public async Task<DMarketMarketItemsResponse> GetMarketItemsAsync(string appName, string marketType = MarketTypeDMarket, string currencyName = Constants.SteamCurrencyUSD, string cursor = null, int limit = MaxPageLimit)
         {
-            using (var client = BuildHttpClient())
-            {
-                var url = $"{BaseUri}market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
-                var response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
+            const int rateLimitDelay = 3000;
+            const int rateLimitMaxRetryCount = 3;
+            var rateLimitRetryCount = 0;
+            retry:
 
-                var textJson = await response.Content.ReadAsStringAsync();
-                var responseJson = JsonSerializer.Deserialize<DMarketMarketItemsResponse>(textJson);
-                return responseJson;
+            try
+            {
+                using (var client = BuildHttpClient())
+                {
+                    var url = $"{BaseUri}market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
+                    var response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+
+                    var textJson = await response.Content.ReadAsStringAsync();
+                    var responseJson = JsonSerializer.Deserialize<DMarketMarketItemsResponse>(textJson);
+                    return responseJson;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                if (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests && rateLimitRetryCount < rateLimitMaxRetryCount)
+                {
+                    Thread.Sleep(rateLimitDelay);
+                    rateLimitRetryCount++;
+                    goto retry;
+                }
+                throw;
             }
         }
     }

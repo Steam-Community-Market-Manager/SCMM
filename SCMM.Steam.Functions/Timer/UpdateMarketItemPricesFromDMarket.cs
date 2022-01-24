@@ -23,7 +23,7 @@ public class UpdateMarketItemPricesFromDMarketJob
     }
 
     [Function("Update-Market-Item-Prices-From-DMarket")]
-    public async Task Run([TimerTrigger("0 4-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 30 * * * *")] /* every hour at 30mins past */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-DMarket");
 

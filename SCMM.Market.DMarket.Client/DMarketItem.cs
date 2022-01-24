@@ -5,7 +5,7 @@ namespace SCMM.Market.DMarket.Client
     public class DMarketItem
     {
         [JsonPropertyName("itemId")]
-        public Guid ItemId { get; set; }
+        public string ItemId { get; set; }
 
         [JsonPropertyName("amount")]
         public int Amount { get; set; }
