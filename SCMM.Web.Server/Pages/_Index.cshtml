@@ -77,11 +77,11 @@ else
             <div id="wasm-unsupported" class="wasm-unsupported-root hidden">
                 <img src="images/webassembly.png" />
                 <p>
-                    <span class="preloader-text">Your browser does not support WebAssembly (Wasm).</span><br />
-                    <span><a href="https://caniuse.com/wasm" class="preloader-subtext">https://caniuse.com/wasm</a></span>
+                    <strong>Your browser does not support WebAssembly (Wasm).</strong><br />
+                    <span><a href="https://caniuse.com/wasm">https://caniuse.com/wasm</a></span>
                 </p>
             </div>
-            <div id="wasm-loading" class="wasm-loading-root hidden">
+            <div id="blazor-loading" class="blazor-loading-root hidden">
                 <p class="preloader-animation">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="height: 8em; width: 8em;">
                         <circle cx="50" cy="50" fill="none" stroke="#fff" stroke-width="5" r="35" stroke-dasharray="150 50">
@@ -92,8 +92,16 @@ else
                 <div id="preloader-progress" class="preloader-progress-bar-root hidden">
                     <div style="width:0%"></div>
                 </div>
-                <p class="preloader-text">
+                <p>
                     <span>Initialising Blazor...</span>
+                </p>
+            </div>
+            <div id="blazor-load-error" class="blazor-load-error-root hidden">
+                <img src="images/blazor.png" style="filter: hue-rotate(90deg)" />
+                <p>
+                    <strong>Blazor initialisation error.</strong><br />
+                    <span>Try clearing your browse cache.</span>
+                    <pre id="blazor-load-error-details"></pre>
                 </p>
             </div>
             <script type="text/javascript">
@@ -113,7 +121,7 @@ else
                 }
 
                 if (wasmIsSupported()) {
-                    document.getElementById("wasm-loading").style.display = "flex";
+                    document.getElementById("blazor-loading").style.display = "flex";
                 }
                 else {
                     document.getElementById("wasm-unsupported").style.display = "flex";
@@ -129,40 +137,47 @@ else
                 let progressBarElement = document.getElementById('preloader-progress');
                 let progressElement = progressBarElement.children[0];
                 document.addEventListener("DOMContentLoaded", function() {
-                    Blazor.start({
+                    if (wasmIsSupported()) {
+                        Blazor.start({
 
-                        loadBootResource: (type, name, defaultUri, integrity) => {
-                            if (type == "dotnetjs") {
-                                return defaultUri;
-                            }
-                                
-                            console.log(`Loading: '${type}', '${name}', '${defaultUri}', '${integrity}'`);
-                            var fetchResource = fetch(defaultUri, {
-                                cache: 'no-cache',
-                                integrity: integrity
-                            });
-
-                            resourcesLoaded.push(fetchResource);
-                            fetchResource.then((r) => {
-                                resourceIndex++;
-                                var resourcesTotal = resourcesLoaded.length;
-                                var progressValue = parseInt((resourceIndex * 100.0) / resourcesTotal);
-                                var progressText = progressValue + '%';
-                                if (progressValue > 0 && progressValue <= 100) {
-                                    progressBarElement.style.display = 'block';
-                                    progressElement.style.width = progressText;
-                                    //progressElement.innerText = progressText;
+                            loadBootResource: (type, name, defaultUri, integrity) => {
+                                if (type == "dotnetjs") {
+                                    return defaultUri;
                                 }
-                            });
+                                
+                                console.log(`Loading: '${type}', '${name}', '${defaultUri}', '${integrity}'`);
+                                var fetchResource = fetch(defaultUri, {
+                                    cache: 'no-cache',
+                                    integrity: integrity
+                                });
 
-                            return fetchResource;
-                        }
+                                resourcesLoaded.push(fetchResource);
+                                fetchResource.then((r) => {
+                                    resourceIndex++;
+                                    var resourcesTotal = resourcesLoaded.length;
+                                    var progressValue = parseInt((resourceIndex * 100.0) / resourcesTotal);
+                                    var progressText = progressValue + '%';
+                                    if (progressValue > 0 && progressValue <= 100) {
+                                        progressBarElement.style.display = 'block';
+                                        progressElement.style.width = progressText;
+                                        //progressElement.innerText = progressText;
+                                    }
+                                });
 
-                    }).then(function () {
-                        document.getElementById("blazor-preloader-ui").style.display = "none";
-                    }).catch(function (err) {
-                        console.log(`Blazor boot has failed, fallback...`);
-                    });
+                                return fetchResource;
+                            }
+
+                        }).then(function () {
+                            document.getElementById("blazor-preloader-ui").style.display = "none";
+                        }).catch(function (err) {
+                            console.log(`Blazor startup has failed`, err);
+                            document.getElementById("blazor-loading").style.display = "none";
+                            document.getElementById("blazor-load-error").style.display = "flex";
+                            if (err) {
+                                document.getElementById("blazor-load-error-details").innerHTML = err;
+                            }
+                        });
+                    }
                 });
 
             </script>

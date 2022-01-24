@@ -12,11 +12,15 @@
     overflow: hidden;
 }
 
-.preloader, .wasm-unsupported-root, .wasm-loading-root {
+.preloader, .wasm-unsupported-root, .blazor-loading-root, .blazor-load-error-root {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+}
+
+.preloader pre {
+    margin: 1em;
 }
 
 .preloader img {
