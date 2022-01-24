@@ -49,7 +49,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://cs.deals/trade-skins")]
         CSDealsTrade = 15,
 
-        // TODO: Items currently missing quantities
+        // TODO: Add missing items quantities
         [Display(Name = "CS.Deals Marketplace")]
         [Market(Type = PriceTypes.Cash, Color = "#313846")]
         [BuyFrom(Url = "https://cs.deals/market/{1}/?name={3}&sort=price", FeeSurcharge = 45, FeeRate = 3f)] /* Roughly 0,40 EUR + 3% card fee */
@@ -70,7 +70,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc")] // Unconfirmed
         RustTM = 19,
 
-        // TODO: https://rustvendor.com (web socket client required)
+        // TODO: Implement web socket client support
         // wss://rustvendor.com/socket.io/?EIO=4&transport=websocket&sid=xxx
         // => 42["requestInventory"]
         // <= 42["requestInventoryResponse",…]
@@ -79,7 +79,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rustvendor.com/trade")] // Unconfirmed
         RUSTVendor = 20,
 
-        // TODO: https://rustytrade.com (web socket client required)
+        // TODO: Implement web socket client support
         // wss://rustytrade.com/socket.io/?EIO=3&transport=websocket&sid=xxx
         // => 42["get bots inv"]
         // <= 42["bots inv",…]
@@ -113,13 +113,13 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinmarket.gg/")] // Unconfirmed
         skinmarketGG = 26,
 
-        // TODO: https://gamerall.com (overly agressive CloudFlare policies)
+        // TODO: Find workaround for overly agressive CloudFlare policies
         [Display(Name = "GAMERALL.com")]
         [Market(Type = PriceTypes.Cash)]
         [BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed
         GAMERALL = 27,
 
-        // TODO: F2F market inventory support
+        // TODO: F2F market support
         [Display(Name = "Dmarket")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#49BC74")]
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}")] // Unconfirmed
@@ -131,16 +131,12 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}")] // Unconfirmed
         Buff = 29
 
-        /* BUY / TRADE
-        https://trade.skin/ (looks sus...)
-        https://rustplus.com/ (looks sus...)
+        /*
+        BUY:  https://trade.skin/ (looks sus...)
+        BUY:  https://rustplus.com/ (looks sus...)
+        SELL: https://rustysell.com/
+        SELL: https://skincashier.com/
+        SELL: https://skins.cash/
         */
-
-        /* SELL
-        https://rustysell.com/
-        https://skincashier.com/
-        https://skins.cash/
-        */
-
     }
 }

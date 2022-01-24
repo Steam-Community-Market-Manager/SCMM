@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Net.WebSockets;
 
 namespace SCMM.Market.Client;
 
@@ -46,6 +47,14 @@ public class MarketWebClient : IDisposable
         }
 
         return httpClient;
+    }
+
+    protected ClientWebSocket BuildWebSocketClient()
+    {
+        var webSocketClient = new ClientWebSocket();
+        webSocketClient.Options.Cookies = _cookieContainer;
+
+        return webSocketClient;
     }
 
     protected virtual void Dispose(bool disposing)
