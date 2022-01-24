@@ -108,7 +108,6 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinsmonkey.com/trade-{1}-skins")] // Unconfirmed
         SkinsMonkey = 25,
 
-        // TODO: https://skinmarket.gg (currently broken)
         [Display(Name = "skinmarket.gg")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)] // +40% crypto deposits
         [BuyFrom(Url = "https://skinmarket.gg/")] // Unconfirmed
@@ -126,6 +125,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}")] // Unconfirmed
         Dmarket = 28,
 
+        // TODO: Login support
         [Display(Name = "BUFF")]
         [Market(Type = PriceTypes.Cash, Color = "#FFFFFF")]
         [BuyFrom(Url = "https://buff.163.com/market/{1}#tab=selling&sort_by=price.asc&search={3}")] // Unconfirmed

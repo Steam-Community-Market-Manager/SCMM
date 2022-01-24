@@ -22,7 +22,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
     }
 
     [Function("Update-Market-Item-Prices-From-LootFarm")]
-    public async Task Run([TimerTrigger("0 6-59/15 * * * *")] /* every 15mins */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 6-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
 
