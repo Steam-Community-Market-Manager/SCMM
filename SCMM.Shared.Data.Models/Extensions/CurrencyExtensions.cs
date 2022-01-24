@@ -6,7 +6,7 @@ namespace SCMM.Shared.Data.Models.Extensions
     {
         public static long CalculateExchange(this decimal exchangeRate, decimal value)
         {
-            return (long)Math.Floor(value * exchangeRate);
+            return (long)Math.Round(value * exchangeRate, 0);
         }
 
         public static long CalculateExchange(this IExchangeableCurrency currency, decimal value)
@@ -31,7 +31,7 @@ namespace SCMM.Shared.Data.Models.Extensions
                 targetValue = (baseValue * targetCurrency.ExchangeRateMultiplier);
             }
 
-            return (long)Math.Floor(targetValue);
+            return (long)Math.Round(targetValue, 0);
         }
 
         public static decimal ToPrice(this ICurrency currency, long price)

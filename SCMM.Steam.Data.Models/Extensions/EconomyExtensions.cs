@@ -15,37 +15,37 @@ namespace SCMM.Steam.Data.Models.Extensions
         public static long MarketSaleFeeComponentAsInt(this long value, float feeRate)
         {
             // Fees can be negative (fee) or positive (discount)
-            return (long)Math.Floor(value * ((decimal)feeRate / (decimal)100));
+            return (long)Math.Round(value * ((decimal)feeRate / (decimal)100), 0);
         }
 
         public static long SteamSaleTaxComponentAsInt(this long value)
         {
             // Minimum fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * SalesTaxMultiplier, 1));
+            return (long)Math.Round(Math.Max(value * SalesTaxMultiplier, 1), 0);
         }
 
         public static long SteamSaleAuthorComponentAsInt(this long value)
         {
             // Minimum fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * SalesAuthorMultiplier, 1));
+            return (long)Math.Round(Math.Max(value * SalesAuthorMultiplier, 1), 0);
         }
 
         public static long SteamSalePlatformFeeComponentAsInt(this long value)
         {
             // Minimum fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * SalesPlatformFeeMultiplier, 1));
+            return (long)Math.Round(Math.Max(value * SalesPlatformFeeMultiplier, 1), 0);
         }
 
         public static long SteamMarketFeePublisherComponentAsInt(this long value)
         {
             // Minimum fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * MarketFeePublisherMultiplier, 1));
+            return (long)Math.Round(Math.Max(value * MarketFeePublisherMultiplier, 1), 0);
         }
 
         public static long SteamMarketFeePlatformComponentAsInt(this long value)
         {
             // Minimum fee is 0.01 units
-            return (long)Math.Floor(Math.Max(value * MarketFeePlatformMultiplier, 1));
+            return (long)Math.Round(Math.Max(value * MarketFeePlatformMultiplier, 1), 0);
         }
 
         public static long SteamMarketFeeAsInt(this long value)
