@@ -10,6 +10,7 @@ using SCMM.Steam.API;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Server.Extensions;
@@ -427,7 +428,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     Subscriptions = x.LifetimeSubscriptions,
                     InventoryCount = _db.SteamProfileInventoryItems.Where(y => y.DescriptionId == x.Id).Sum(y => y.Quantity),
-                    MarketCounts = x.MarketItem.BuyPrices
+                    MarketCounts = x.MarketItem.BuyPrices ?? new PersistableMarketPriceDictionary()
                 })
                 .FirstOrDefaultAsync();
 

@@ -545,18 +545,42 @@
             @if (Item.IsBanned)
             {
                 <MudItem xs="12">
-                    <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Warning" Icon="fas fa-fw fa-ban mt-1" 
+                    <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Error" Icon="fas fa-fw fa-ban mt-1" Class="mud-alert-text-error mud-alert-outlined-error"
                            Title="@($"This item is trade and market banned due to {Item.BanReason.FirstCharToLower()}.")" 
                            Subtitle="The only way you can acquire this item is to 'buy' a Steam account that already contained the item before it was banned. Buying Steam accounts is against the Steam ToS." />
                 </MudItem>
             }
             
-            @if(Item.BuyPrices?.Any() == true && !Item.IsBanned)
+            @if (!Item.IsAvailableOnMarket)
+            {
+                <MudItem xs="12">
+                    @if (Item.MarketLastSaleOn != null)
+                    {
+                        <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Warning" Icon="fas fa-fw fa-balance-scale-left mt-1" 
+                               Title="This item is no longer available on the market" Class="mud-alert-text-warning mud-alert-outlined-warning"
+                               Subtitle="Only limited information is available for this item as it is no longer marketable" />
+                    }
+                    else if (Item.MarketLastSaleOn == null && Item.MarketableRestrictionDays > 0)
+                    {
+                        <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-balance-scale-left mt-1" 
+                               Title="This item is not available on the market yet" Class="mud-alert-text-normal mud-alert-outlined-normal"
+                               Subtitle="More information will become available when this item becomes marketable" />
+                    }
+                    else
+                    {
+                        <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Warning" Icon="fas fa-fw fa-balance-scale-left mt-1" 
+                              Title="This item is not available on the market" Class="mud-alert-text-warning mud-alert-outlined-warning"
+                              Subtitle="Only limited information is available for this item as it is unmarketable" />
+                    }
+                </MudItem>
+            }
+
+            @if(Item.BuyPrices?.Any(x => x.MarketType == MarketType.SteamStore || (x.IsAvailable && (Item.MarketSellOrderLowestPrice <= 0 || (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0)) <= Item.MarketSellOrderLowestPrice))) == true)
             {   
                 <MudItem xs="12">
                     <MudPaper Outlined="true">
                         <div class="d-flex flex-row align-stretch justify-center flex-wrap">
-                            @foreach (var price in Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || (x.IsAvailable && (Item.MarketSellOrderLowestPrice == null || (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0)) <= Item.MarketSellOrderLowestPrice))).OrderBy(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
+                            @foreach (var price in Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || (x.IsAvailable && (Item.MarketSellOrderLowestPrice <= 0 || (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0)) <= Item.MarketSellOrderLowestPrice))).OrderBy(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
                             {
                                 <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.MarketType.GetDisplayName()}" : $"Currently unavailable from {price.MarketType.GetDisplayName()}")">
                                     <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
@@ -623,7 +647,7 @@
                 </MudItem>
             }
  
-            @if (Item.IsAvailableOnMarket && !Item.IsBanned && MarketItemDistribution != null && MarketItemDistributionChartData?.Any() == true)
+            @if (MarketItemDistribution != null && MarketItemDistributionChartData?.Any() == true)
             {
                 <MudItem xs="12" xl="6">
                     <MudPaper Outlined="true" Class="text-centered">
@@ -674,8 +698,8 @@
                     </MudPaper>
 		        </MudItem>
             }
-
-            @if(Item.IsAvailableOnMarket && !Item.IsBanned)
+            
+            @if(Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null || Item.MarketSellOrderCount > 0)
             {
                 <MudItem xs="12" sm="6" xl="3">
                     <MudPaper Outlined="true" Class="d-flex flex-column text-centered full-height">
@@ -714,18 +738,9 @@
                                             </td>
                                             <td class="text-centered">
                                                 <MudText Typo="Typo.body2" Color="@(item.Quantity >= 50 ? Color.Error : item.Quantity >= 25 ? Color.Warning : Color.Secondary)" Class="no-wrap">
-                                                    @if (item.Quantity >= 100)
-                                                    {
-                                                        <MudTooltip Text="Severe mental disability detected; High quantity 'sell wall' listings like this often cause the price to drop as people to start undercut eachother">
-                                                            <i class="fas fa-fw fa-wheelchair mr-1" />
-                                                        </MudTooltip>
-                                                    }
-                                                    else if (item.Quantity >= 25)
-                                                    {
-                                                        <MudTooltip Text="High quantity 'sell wall' listings like this often cause the price to drop as people to start undercut eachother">
-                                                            <i class="fas fa-fw fa-exclamation-triangle mr-1" />
-                                                        </MudTooltip>
-                                                    }
+                                                    <MudTooltip Text="High quantity 'sell wall' listings like this often cause the price to drop as people to start undercut eachother">
+                                                        <i class="fas fa-fw fa-exclamation-triangle mr-1" />
+                                                    </MudTooltip>
                                                     <span>@item.Quantity.ToQuantityString()</span>
                                                 </MudText>
                                             </td>
@@ -744,7 +759,7 @@
                 </MudItem>
             }
             
-            @if(Item.IsAvailableOnMarket && !Item.IsBanned)
+            @if(Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null || Item.MarketBuyOrderCount > 0)
             {
                 <MudItem xs="12" sm="6" xl="3">
                     <MudPaper Outlined="true" Class="d-flex flex-column text-centered full-height">
@@ -798,39 +813,36 @@
                 </MudItem>
             }
             
-            @if(Item.IsAvailableOnMarket)
+            @if(Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
             {
                 <MudItem xs="12">
                     <MudPaper Outlined="true" Class="pa-2">
-                        @if (!Item.IsBanned)
-                        {
-                            <div class="d-flex flex-row flex-wrap justify-end">
-                                <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 flex-grow-1">
-                                    @if (Item.Market24hrSales > 0 && Item.Market24hrValue > 0)
-                                    {
-                                        <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
-                                        <span class="mud-secondary-text"> sold in the last 24hrs, median price of </span>
-                                        <span>@State.Currency.ToPriceString(Item.Market24hrValue.Value)</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
-                                        <span class="mud-secondary-text"> sold in the last 24hrs</span>
-                                    }
-                                </MudText>
-                                <div class="pa-1 flex-shrink-1">
-                                    <MudToggleIconButton @bind-Toggled="@MarketItemSalesAnnotations"
-                                         Icon="fa fw-fw fa-toggle-off" Color="@Color.Secondary" Title="Off"
-                                         ToggledIcon="fa fw-fw fa-toggle-on" ToggledColor="@Color.Primary" ToggledTitle="On"/>
-                                    <span class="mr-2">Annotations @(MarketItemSalesAnnotations ? "On" : "Off")</span>
-                                    <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
-                                        <MudButton OnClick="@(() => LoadItemSales(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
-                                        <MudButton OnClick="@(() => LoadItemSales(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
-                                        <MudButton OnClick="@(() => LoadItemSales(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
-                                    </MudButtonGroup>
-                                </div>
+                        <div class="d-flex flex-row flex-wrap justify-end">
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 flex-grow-1">
+                                @if (Item.Market24hrSales > 0 && Item.Market24hrValue > 0)
+                                {
+                                    <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
+                                    <span class="mud-secondary-text"> sold in the last 24hrs, median price of </span>
+                                    <span>@State.Currency.ToPriceString(Item.Market24hrValue.Value)</span>
+                                }
+                                else
+                                {
+                                    <span>@((Item.Market24hrSales ?? 0).ToQuantityString())</span>
+                                    <span class="mud-secondary-text"> sold in the last 24hrs</span>
+                                }
+                            </MudText>
+                            <div class="pa-1 flex-shrink-1">
+                                <MudToggleIconButton @bind-Toggled="@MarketItemSalesAnnotations"
+                                        Icon="fa fw-fw fa-toggle-off" Color="@Color.Secondary" Title="Off"
+                                        ToggledIcon="fa fw-fw fa-toggle-on" ToggledColor="@Color.Primary" ToggledTitle="On"/>
+                                <span class="mr-2">Annotations @(MarketItemSalesAnnotations ? "On" : "Off")</span>
+                                <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
+                                    <MudButton OnClick="@(() => LoadItemSales(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
+                                    <MudButton OnClick="@(() => LoadItemSales(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
+                                    <MudButton OnClick="@(() => LoadItemSales(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                                </MudButtonGroup>
                             </div>
-                        }
+                        </div>
                         <div class="d-flex flex-column justify-stretch align-stretch relative">
                             @if (MarketItemSalesChartData == null)
                             {
@@ -921,7 +933,7 @@
                 </MudItem>
             }
             
-            @if(Item.IsAvailableOnMarket && !Item.IsBanned)
+            @if(Item.IsAvailableOnMarket && Item.MarketLastSaleOn != null && (DateTimeOffset.Now - Item.MarketLastSaleOn.Value).TotalDays < 7)
             {
                 <MudItem xs="12">
                     <MudPaper Outlined="true" Style="height:30vh; overflow-y:scroll">
@@ -1005,24 +1017,6 @@
                 </MudItem>
             }
             
-            @if (!Item.IsAvailableOnMarket)
-            {
-                <MudItem xs="12">
-                    @if (Item.MarketableRestrictionDays > 0)
-                    {
-                        <Alert Variant="MudBlazor.Variant.Outlined" Severity="MudBlazor.Severity.Normal" Icon="fas fa-fw fa-balance-scale-left mt-1" 
-                                Title="This item is not available on the market yet" 
-                                Subtitle="More information will become available when this item becomes marketable" />
-                    }
-                    else
-                    {
-                        <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Warning" Icon="fas fa-fw fa-balance-scale-left mt-1" 
-                               Title="This item is not available on the market" 
-                               Subtitle="Only limited information is available for this item as it is unmarketable" />
-                    }
-                </MudItem>
-            }
-
 		</MudGrid>
     </MudItem>
            
@@ -1056,14 +1050,14 @@
             {
                 Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}");
             }
-            if (Item.IsMarketable && Item.IsAvailableOnMarket && !Item.IsBanned)
+            if (Item.Id > 0)
             {
                 MarketItemDistribution = await Http.GetFromJsonWithDefaultsAsync<ItemDistributionDTO>($"api/item/{Item.Id}/distribution");
                 RebuildMarketItemDistributionChartData();
             }
-            if (Item.IsMarketable && Item.IsAvailableOnMarket && !Item.IsBanned)
+            if (Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
             {
-                await LoadItemSales();
+                await LoadItemSales((DateTimeOffset.Now - Item.MarketLastSaleOn.Value).TotalDays < 30 ? 30 : -1);
             }
         }
         catch (Exception ex)
