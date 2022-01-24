@@ -507,28 +507,31 @@
 			    </MudItem>
             }
             
-            <MudItem xs="12">
-                <MudPaper Outlined="true" Class="pa-4">
-                    <MudTimeline>
-                        @foreach (var timelineEvent in GetTimelineEvents().OrderByDescending(x => x.Timestamp))
-                        {
-                            <MudTimelineItem Color="@timelineEvent.Color" TimelineAlign="TimelineAlign.End" Size="Size.Medium" Elevation="25">
-                                <ItemOpposite>
-                                    <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Timestamp.ToString("d")</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@((DateTimeOffset.Now - timelineEvent.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</MudText>
-                                </ItemOpposite>
-                                <ItemDot>
-                                    <i class="@timelineEvent.Icon" />
-                                </ItemDot>
-                                <ItemContent>
-                                    <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Title</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@timelineEvent.Subtitle</MudText>
-                                </ItemContent>
-                            </MudTimelineItem>
-                        }
-                    </MudTimeline>
-		        </MudPaper>
-            </MudItem>
+            @if (GetTimelineEvents().Any())
+            {
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <MudTimeline>
+                            @foreach (var timelineEvent in GetTimelineEvents().OrderByDescending(x => x.Timestamp))
+                            {
+                                <MudTimelineItem Color="@timelineEvent.Color" TimelineAlign="TimelineAlign.End" Size="Size.Medium" Elevation="25">
+                                    <ItemOpposite>
+                                        <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Timestamp.ToString("d")</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@((DateTimeOffset.Now - timelineEvent.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</MudText>
+                                    </ItemOpposite>
+                                    <ItemDot>
+                                        <i class="@timelineEvent.Icon" />
+                                    </ItemDot>
+                                    <ItemContent>
+                                        <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Title</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@timelineEvent.Subtitle</MudText>
+                                    </ItemContent>
+                                </MudTimelineItem>
+                            }
+                        </MudTimeline>
+		            </MudPaper>
+                </MudItem>
+            }
             
             @* TODO: Technical: app id, class id, workshop id, name id, store id... *@
             @* TODO: Time created/updated/accepted... *@
@@ -732,15 +735,18 @@
                                     <ItemContent>
                                         <tr class="hover-darken">
                                             <td class="text-centered">
-                                                <MudText Typo="Typo.body2" Color="@(item.Quantity >= 50 ? Color.Error : item.Quantity >= 25 ? Color.Warning : Color.Secondary)" Class="no-wrap">
+                                                <MudText Typo="Typo.body2" Color="@(item.Quantity >= 100 ? Color.Error : item.Quantity >= 50 ? Color.Warning : Color.Secondary)" Class="no-wrap">
                                                     <span>@State.Currency.ToPriceString(item.Price)</span>
                                                 </MudText>
                                             </td>
                                             <td class="text-centered">
-                                                <MudText Typo="Typo.body2" Color="@(item.Quantity >= 50 ? Color.Error : item.Quantity >= 25 ? Color.Warning : Color.Secondary)" Class="no-wrap">
-                                                    <MudTooltip Text="High quantity 'sell wall' listings like this often cause the price to drop as people to start undercut eachother">
-                                                        <i class="fas fa-fw fa-exclamation-triangle mr-1" />
-                                                    </MudTooltip>
+                                                <MudText Typo="Typo.body2" Color="@(item.Quantity >= 100 ? Color.Error : item.Quantity >= 50 ? Color.Warning : Color.Secondary)" Class="no-wrap">
+                                                    @if (item.Quantity >= 50)
+                                                    {
+                                                        <MudTooltip Text="High quantity 'sell wall' listings like this often cause the price to drop as people to start undercut eachother">
+                                                            <i class="fas fa-fw fa-exclamation-triangle mr-1" />
+                                                        </MudTooltip>
+                                                    }
                                                     <span>@item.Quantity.ToQuantityString()</span>
                                                 </MudText>
                                             </td>
