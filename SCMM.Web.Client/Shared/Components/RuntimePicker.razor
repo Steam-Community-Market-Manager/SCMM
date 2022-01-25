@@ -1,61 +1,46 @@
 ﻿@inject ILogger<RuntimePicker> Logger
-@inject ICookieManager CookieManager
 @inject NavigationManager NavigationManager
+@inject AppState State
 
-@if (Runtime != null)
-{
-    <div @attributes="AdditionalAttributes">
-        <MudMenu StartIcon="@((Runtime == RuntimeType.Server) ? "fas fa-fw fa-server" : "fas fa-fw fa-desktop")" Label="@Runtime.GetDisplayName()" Size="MudBlazor.Size.Large" 
-                 Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" title="Change runtime mode">
-            <MudMenuItem OnClick="@(() => ChangeRuntime(RuntimeType.Server))" Class="d-flex align-center">
-                <MudText Typo="Typo.body1"  Class="d-flex align-center">
-                    <i class="fas fa-fw fa-server" />
-                    <span class="ml-2">@RuntimeType.Server.GetDisplayName()</span>
-                </MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="d-flex align-center">
-                    <span>Use server-side rendering for increased website performance</span>
-                </MudText>
-            </MudMenuItem>
-            <MudMenuItem OnClick="@(() => ChangeRuntime(RuntimeType.WebAssembly))" Class="d-flex align-center">
-                <MudText Typo="Typo.body1" Class="d-flex align-center">
-                    <i class="fas fa-fw fa-desktop" />
-                    <span class="ml-2">@RuntimeType.WebAssembly.GetDisplayName()</span>
-                </MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="d-flex align-center">
-                    <span>Use client-side rendering for increased website stability</span>
-                </MudText>
-            </MudMenuItem>
-        </MudMenu>
-    </div>
-}
+<div @attributes="AdditionalAttributes">
+    <MudMenu StartIcon="@((State.Runtime == RuntimeType.Server) ? "fas fa-fw fa-server" : "fas fa-fw fa-desktop")" Label="@State.Runtime.GetDisplayName()" Size="MudBlazor.Size.Large" 
+                Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" title="Change runtime mode">
+        <MudMenuItem OnClick="@(() => ChangeRuntime(RuntimeType.Server))" Class="d-flex align-center">
+            <MudText Typo="Typo.body1"  Class="d-flex align-center">
+                <i class="fas fa-fw fa-server" />
+                <span class="ml-2">@RuntimeType.Server.GetDisplayName()</span>
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="d-flex align-center">
+                <span>Use server-side rendering</span>
+            </MudText>
+        </MudMenuItem>
+        <MudMenuItem OnClick="@(() => ChangeRuntime(RuntimeType.WebAssembly))" Class="d-flex align-center">
+            <MudText Typo="Typo.body1" Class="d-flex align-center">
+                <i class="fas fa-fw fa-desktop" />
+                <span class="ml-2">@RuntimeType.WebAssembly.GetDisplayName()</span>
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="d-flex align-center">
+                <span>Use client-side rendering</span>
+            </MudText>
+        </MudMenuItem>
+    </MudMenu>
+</div>
 
 @code
 {
-    private RuntimeType? Runtime { get; set; }
-
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
-
-    protected override async Task OnInitializedAsync()
+    
+    protected override void OnInitialized()
     {
-        try
-        {
-            Runtime = await CookieManager.GetAsync<RuntimeType?>("Runtime", RuntimeType.WebAssembly);
-            Logger.LogInformation($"Runtime is '{Runtime}'");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error loading runtime option from cookies");
-        }
+        Logger.LogInformation($"Runtime is '{State.Runtime}'");
     }
 
-    private async Task ChangeRuntime(RuntimeType runtime)
+    private void ChangeRuntime(RuntimeType runtime)
     {
-        Runtime = runtime;
-        Logger.LogInformation($"Runtime was changed to '{Runtime}'");
-        await CookieManager.SetAsync("Runtime", Runtime.Value.ToString());
+        Logger.LogInformation($"Runtime was changed to '{runtime}'");
+        State.Runtime = runtime;
 
         NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
     }
-
 }

@@ -19,15 +19,20 @@ namespace SCMM.Web.Server.Extensions
                 return hostApp;
             }
 
-            // If the app was specified in the request query, use that
-            if (controller.Request.Query.ContainsKey(AppState.HttpHeaderAppId))
+            // If the app was specified in the request query string, use that
+            if (controller.Request.Query.ContainsKey(AppState.AppIdKey))
             {
-                UInt64.TryParse(controller.Request.Query[AppState.HttpHeaderAppId].ToString(), out appId);
+                UInt64.TryParse(controller.Request.Query[AppState.AppIdKey].ToString(), out appId);
             }
             // Else, if the app was specified in the request headers, use that
-            else if (controller.Request.Headers.ContainsKey(AppState.HttpHeaderAppId))
+            else if (controller.Request.Headers.ContainsKey(AppState.AppIdKey))
             {
-                UInt64.TryParse(controller.Request.Headers[AppState.HttpHeaderAppId].ToString(), out appId);
+                UInt64.TryParse(controller.Request.Headers[AppState.AppIdKey].ToString(), out appId);
+            }
+            // Else, if the app was specified in the request cookies, use that
+            else if (controller.Request.Cookies.Any(x => String.Equals(x.Key, AppState.AppIdKey, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                UInt64.TryParse(controller.Request.Cookies.FirstOrDefault(x => String.Equals(x.Key, AppState.AppIdKey, StringComparison.InvariantCultureIgnoreCase)).Value, out appId);
             }
             // Else, if the user is authenticated and has a preferred app, use that
             else if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.AppId()))
@@ -43,15 +48,20 @@ namespace SCMM.Web.Server.Extensions
         {
             var languageName = (string)null;
 
-            // If the language was specified in the request query, use that
-            if (controller.Request.Query.ContainsKey(AppState.HttpHeaderLanguage))
+            // If the language was specified in the request query string, use that
+            if (controller.Request.Query.ContainsKey(AppState.LanguageNameKey))
             {
-                languageName = controller.Request.Query[AppState.HttpHeaderLanguage].ToString();
+                languageName = controller.Request.Query[AppState.LanguageNameKey].ToString();
             }
             // Else, if the language was specified in the request headers, use that
-            else if (controller.Request.Headers.ContainsKey(AppState.HttpHeaderLanguage))
+            else if (controller.Request.Headers.ContainsKey(AppState.LanguageNameKey))
             {
-                languageName = controller.Request.Headers[AppState.HttpHeaderLanguage].ToString();
+                languageName = controller.Request.Headers[AppState.LanguageNameKey].ToString();
+            }
+            // Else, if the language was specified in the request cookies, use that
+            else if (controller.Request.Cookies.Any(x => String.Equals(x.Key, AppState.LanguageNameKey, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                languageName = controller.Request.Cookies.FirstOrDefault(x => String.Equals(x.Key, AppState.LanguageNameKey, StringComparison.InvariantCultureIgnoreCase)).Value;
             }
             // Else, if the user is authenticated and has a preferred language, use that
             else if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.Language()))
@@ -67,15 +77,20 @@ namespace SCMM.Web.Server.Extensions
         {
             var currencyName = (string)null;
 
-            // If the currency was specified in the request query, use that
-            if (controller.Request.Query.ContainsKey(AppState.HttpHeaderCurrency))
+            // If the currency was specified in the request query string, use that
+            if (controller.Request.Query.ContainsKey(AppState.CurrencyNameKey))
             {
-                currencyName = controller.Request.Query[AppState.HttpHeaderCurrency].ToString();
+                currencyName = controller.Request.Query[AppState.CurrencyNameKey].ToString();
             }
             // Else, if the currency was specified in the request headers, use that
-            else if (controller.Request.Headers.ContainsKey(AppState.HttpHeaderCurrency))
+            else if (controller.Request.Headers.ContainsKey(AppState.CurrencyNameKey))
             {
-                currencyName = controller.Request.Headers[AppState.HttpHeaderCurrency].ToString();
+                currencyName = controller.Request.Headers[AppState.CurrencyNameKey].ToString();
+            }
+            // Else, if the currency was specified in the request cookies, use that
+            else if (controller.Request.Cookies.Any(x => String.Equals(x.Key, AppState.CurrencyNameKey, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                currencyName = controller.Request.Cookies.FirstOrDefault(x => String.Equals(x.Key, AppState.CurrencyNameKey, StringComparison.InvariantCultureIgnoreCase)).Value;
             }
             // Else, if the user is authenticated and has a preferred currency, use that
             else if (controller.User.Identity.IsAuthenticated && !string.IsNullOrEmpty(controller.User.Currency()))

@@ -267,12 +267,6 @@ public static class WebApplicationExtensions
                 client.DefaultRequestHeaders.Add("Cookie", string.Join(';', cks));
             }
 
-            var state = sp.GetService<AppState>();
-            if (state != null)
-            {
-                state.AddHeadersTo(client);
-            }
-
             return client;
         });
 

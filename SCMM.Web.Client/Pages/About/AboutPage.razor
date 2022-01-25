@@ -1,4 +1,5 @@
 ﻿@page "/about"
+@inherits PersistentComponent
 @inject ILogger<AboutPage> Logger
 @inject ISnackbar Snackbar
 @inject HttpClient Http
@@ -128,30 +129,45 @@
 
 @code {
 
-    private IList<ProfileDTO> Contributors { get; set; } = Skeleton.List<ProfileDTO>();
+    private IList<ProfileDTO> Contributors = Skeleton.List<ProfileDTO>();
     
-    private IList<ProfileDTO> Donators { get; set; } = Skeleton.List<ProfileDTO>();
-
-    protected override async Task OnInitializedAsync()
+    private IList<ProfileDTO> Donators = Skeleton.List<ProfileDTO>();
+    
+    protected override async Task OnLoadStateAsync()
     {
-        try
+        Contributors = await RestoreFromStateOrLoad(nameof(Contributors), async () =>
         {
-            Contributors = await Http.GetFromJsonWithDefaultsAsync<ProfileDTO[]>($"api/stats/contributors");
-        }
-        catch (Exception ex)
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<ProfileDTO[]>($"api/stats/contributors");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading contributors");
+                Snackbar.Add($"Unable to load contributor list. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+        Donators = await RestoreFromStateOrLoad(nameof(Donators), async () =>
         {
-            Logger.LogError(ex, $"Error loading contributors");
-            Snackbar.Add($"Unable to load contributor list. {ex.Message}", MudBlazor.Severity.Error);
-        }
-        try
-        {
-            Donators = await Http.GetFromJsonWithDefaultsAsync<ProfileDTO[]>($"api/stats/donators");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error loading donators");
-            Snackbar.Add($"Unable to load donator list. {ex.Message}", MudBlazor.Severity.Error);
-        }
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<ProfileDTO[]>($"api/stats/donators");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading donators");
+                Snackbar.Add($"Unable to load donator list. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Contributors), Contributors);
+        PersistToState(nameof(Donators), Donators);
+        return Task.CompletedTask;
     }
 
 }

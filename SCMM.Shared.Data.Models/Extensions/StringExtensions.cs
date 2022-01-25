@@ -52,13 +52,9 @@
             {
                 return ((T)Enum.Parse(baseType, value));
             }
-            else if (baseType.IsPrimitive)
-            {
-                return ((T)Convert.ChangeType(value, baseType));
-            }
             else
             {
-                return default;
+                return ((T)Convert.ChangeType(value, baseType)) ?? default;
             }
         }
     }

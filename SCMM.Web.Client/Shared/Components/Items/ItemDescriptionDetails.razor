@@ -4,6 +4,7 @@
 @using SCMM.Web.Data.Models.UI.Statistic
 @using Syncfusion.Blazor.Charts
 @using System.Reflection
+@inherits PersistentComponent
 @inject ILogger<ItemDescriptionDetails> Logger
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -1030,47 +1031,80 @@
 
 @code {
 
-    [Parameter]
-    public ItemDetailedDTO Item { get; set; }
-
-    private ItemCollectionDTO Collection { get; set; }
-
-    private ItemDistributionDTO MarketItemDistribution { get; set; }
-
-    private IEnumerable<object> MarketItemDistributionChartData { get; set;}
-
-    private IEnumerable<ItemSalesChartPointDTO> MarketItemSalesChartData { get; set; }
-
-    private bool MarketItemSalesAnnotations { get; set; } = true;
-
-    private int MarketItemSalesMaxDays { get; set; }
-
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    [Parameter]
+    public ItemDetailedDTO Item { get; set; }
+
+    private ItemCollectionDTO Collection;
+
+    private ItemDistributionDTO MarketItemDistribution;
+
+    private IEnumerable<object> MarketItemDistributionChartData;
+
+    private bool MarketItemSalesAnnotations = true;
+
+    private int MarketItemSalesMaxDays = 30;
+    
+    private IEnumerable<ItemSalesChartPointDTO> MarketItemSalesChartData;
+
+    protected override async Task OnLoadStateAsync()
     {
-        try
+        if (!String.IsNullOrEmpty(Item.ItemCollection))
         {
-            if (!String.IsNullOrEmpty(Item.ItemCollection))
+            Collection = await RestoreFromStateOrLoad(nameof(Collection), async () =>
             {
-                Collection = await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}");
-            }
-            if (Item.Id > 0)
-            {
-                MarketItemDistribution = await Http.GetFromJsonWithDefaultsAsync<ItemDistributionDTO>($"api/item/{Item.Id}/distribution");
-                RebuildMarketItemDistributionChartData();
-            }
-            if (Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
-            {
-                await LoadItemSales((DateTimeOffset.Now - Item.MarketLastSaleOn.Value).TotalDays < 30 ? 30 : -1);
-            }
+                try
+                {
+                    return await Http.GetFromJsonWithDefaultsAsync<ItemCollectionDTO>($"api/item/collection/{Item.ItemCollection}?creatorId={(!Item.IsTwitchDrop ? Item.CreatorId : null)}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"Error loading the item collection");
+                    Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
+                    throw;
+                }
+            });
         }
-        catch (Exception ex)
+        if (Item.Id > 0)
         {
-            Logger.LogError(ex, $"Error loading the item collection");
-            Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
+            MarketItemDistribution = await RestoreFromStateOrLoad(nameof(MarketItemDistribution), async () =>
+            {
+                try
+                {
+                    return await Http.GetFromJsonWithDefaultsAsync<ItemDistributionDTO>($"api/item/{Item.Id}/distribution");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"Error loading the item collection");
+                    Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
+                    throw;
+                }
+            });
+            RebuildMarketItemDistributionChartData();
         }
+        if (Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
+        {
+            MarketItemSalesMaxDays = await RestoreFromStateOrLoad(nameof(MarketItemSalesMaxDays), async () =>
+            {
+                return (DateTimeOffset.Now - Item.MarketLastSaleOn.Value).TotalDays < 30 ? 30 : -1;
+            });
+            MarketItemSalesChartData = await RestoreFromStateOrLoad(nameof(MarketItemSalesChartData), async () =>
+            {
+                await LoadItemSales(MarketItemSalesMaxDays);
+                return MarketItemSalesChartData;
+            });
+        }
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Collection), Collection);
+        PersistToState(nameof(MarketItemDistribution), MarketItemDistribution);
+        PersistToState(nameof(MarketItemSalesMaxDays), MarketItemSalesMaxDays);
+        PersistToState(nameof(MarketItemSalesChartData), MarketItemSalesChartData);
+        return Task.CompletedTask;
     }
 
     protected async ValueTask<ItemsProviderResult<ItemOrderDTO>> LoadItemSellOrders(ItemsProviderRequest request)
@@ -1118,7 +1152,7 @@
         }
     }
 
-    protected async Task LoadItemSales(int maxDays = 30)
+    protected async Task LoadItemSales(int maxDays)
     {
         try
         {

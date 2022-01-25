@@ -1,12 +1,12 @@
-@page "/settings"
 @using SCMM.Web.Data.Models.UI.Profile
+@page "/settings"
 @inject ILogger<SettingsPage> Logger
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
-@inject NavigationManager Navigation
-@inject ExternalNavigationManager ExternalNavigation
-@inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
 @inject AppState State
 
 <PageContainer Title="Settings" class="mt-3 mb-6 mx-6">
@@ -45,7 +45,7 @@
                                             <MudTextField Label="Steam Trade URL" Variant="MudBlazor.Variant.Outlined" FullWidth
                                                           @bind-Value="@Update.TradeUrl" DebounceInterval="1000" OnDebounceIntervalElapsed="UpdateProfile"
                                                           HelperText="Optional. If set, we'll allow other users to send you trade requests if they are looking for items that you've flagged as available for trade. Click on the question mark icon to view and manage your Steam Trade URL."
-                                                          Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigation.NavigateToNewTab($"https://steamcommunity.com/id/{State.Profile.SteamId}/tradeoffers/privacy#trade_offer_access_url"))" />
+                                                          Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab($"https://steamcommunity.com/id/{State.Profile.SteamId}/tradeoffers/privacy#trade_offer_access_url"))" />
                                         </MudItem>
                                         <MudItem xs="12" lg="6" xl="4" xxl="3">
                                             <MudSelect T="ItemAnalyticsParticipationType" Value="@Update.ItemAnalyticsParticipation" ValueChanged="((x) => { Update.ItemAnalyticsParticipation = x; _ = UpdateProfile(); })" Label="Item Analytics" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true"
@@ -405,7 +405,7 @@
     {
         if (!State.IsAuthenticated)
         {
-            ExternalNavigation.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+            ExternalNavigationManager.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
         }
         else 
         {
@@ -452,7 +452,7 @@
                 options.ShowCloseIcon = false;
             });
 
-            await State.RefreshAsync(Http);
+            await State.LoadFromServerProfileAsync(Http);
         }
         catch (Exception ex)
         {
@@ -474,7 +474,7 @@
     
     private void DownloadProfileData()
     {
-        ExternalNavigation.NavigateTo("/api/profile/data");
+        ExternalNavigationManager.NavigateTo("/api/profile/data");
     }
     
     private async Task ShowDeleteProfileDataConfirmationDialog()
@@ -503,7 +503,7 @@
                 throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
             }
 
-            ExternalNavigation.NavigateTo("/signout");
+            ExternalNavigationManager.NavigateTo("/signout");
         }
         catch (Exception)
         {

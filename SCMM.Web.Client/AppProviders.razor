@@ -10,28 +10,31 @@
 
     protected override void OnInitialized()
     {
-        BuildTheme();
-        State.Changed += (s, e) =>
+        Theme = GetThemeFor(State.App);
+        State.PropertyChanged += (s, e) =>
         {
-            BuildTheme();
-            StateHasChanged();
+            if (e.PropertyName == nameof(State.App))
+            {
+                Theme = GetThemeFor(State.App);
+                StateHasChanged();
+            }
         };
     }
 
-    private void BuildTheme()
+    private MudTheme GetThemeFor(AppDetailedDTO app)
     {
-        Theme = new MudTheme()
+        return new MudTheme()
         {
             Palette = new MudBlazor.Palette()
             {
                 Black = "#000000",
                 White = "#ffffff",
                 
-                Background = (State.App?.BackgroundColor ?? "rgb(0,0,0)"),
-                BackgroundGrey = (State.App?.BackgroundColor ?? "rgb(0,0,0)"),
+                Background = (app?.BackgroundColor ?? "rgb(0,0,0)"),
+                BackgroundGrey = (app?.BackgroundColor ?? "rgb(0,0,0)"),
 
-                Surface = (State.App?.SurfaceColor ?? "#333333"),
-                DrawerBackground = (State.App?.SurfaceColor ?? "#333333"),
+                Surface = (app?.SurfaceColor ?? "#333333"),
+                DrawerBackground = (app?.SurfaceColor ?? "#333333"),
                 DrawerText = "#dddddd",
                 DrawerIcon = "#dddddd", 
 
@@ -42,11 +45,11 @@
                 TextSecondary = "#dddddd",
                 TextDisabled = "#666666",
                 
-                Primary = (State.App?.PrimaryColor ?? "#66c0f4"), // Steam blue
+                Primary = (app?.PrimaryColor ?? "#66c0f4"), // Steam blue
                 PrimaryContrastText = "#111111",
-                Secondary = (State.App?.SecondaryColor ?? "#9B9B9B"), // Steam grey
+                Secondary = (app?.SecondaryColor ?? "#9B9B9B"), // Steam grey
                 SecondaryContrastText = "#111111",
-                Tertiary = (State.App?.TertiaryColor ??  "#66c0f4"), // Steam blue
+                Tertiary = (app?.TertiaryColor ??  "#66c0f4"), // Steam blue
                 TertiaryContrastText = "#111111",
                 
                 Info = "#1976d2",

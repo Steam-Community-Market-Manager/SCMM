@@ -1,10 +1,11 @@
-﻿@page "/"
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Item
+@using SCMM.Web.Data.Models.UI.Store
+@page "/"
 @page "/store"
 @page "/store/{StoreId}"
 @page "/steam/store"
-@using SCMM.Steam.Data.Models.Community.Requests.Html
-@using SCMM.Web.Data.Models.UI.Item
-@using SCMM.Web.Data.Models.UI.Store
+@inherits PersistentComponent
 @inject ILogger<StorePage> Logger
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
@@ -530,25 +531,44 @@ else
 
 @code {
 
-    private StoreIdentifierDTO[] StoreList { get; set; }
-
-    private StoreDetailsDTO Store { get; set; }
-
     [Parameter]
     public string StoreId { get; set; }
 
-    private int StoreIndex { get; set; }
+    private StoreIdentifierDTO[] StoreList;
 
-    private Exception StoreException { get; set; }
+    private int StoreIndex;
 
-    private ItemDescriptionWithPriceDTO LinkedItem { get; set; }
+    private StoreDetailsDTO Store;
 
-    private double LinkedItemStorePrice { get; set; }
+    private Exception StoreException;
 
-    protected override async Task OnInitializedAsync()
+    private ItemDescriptionWithPriceDTO LinkedItem;
+
+    private double LinkedItemStorePrice;
+
+    protected override async Task OnLoadStateAsync()
     {
-        // Load store list
-        await LoadStoreList();
+        StoreId = RestoreFromStateOrDefault(nameof(StoreId), StoreId);
+        StoreList = await RestoreFromStateOrLoad(nameof(StoreList), async () =>
+        {
+            await LoadStoreList();
+            return StoreList;
+        });
+        StoreIndex = RestoreFromStateOrDefault(nameof(StoreIndex), StoreIndex);
+        Store = await RestoreFromStateOrLoad(nameof(Store), async () =>
+        {
+            await LoadStore();
+            return Store;
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(StoreId), StoreId);
+        PersistToState(nameof(StoreList), StoreList);
+        PersistToState(nameof(StoreIndex), StoreIndex);
+        PersistToState(nameof(Store), Store);
+        return Task.CompletedTask;
     }
 
     protected override async Task OnParametersSetAsync()

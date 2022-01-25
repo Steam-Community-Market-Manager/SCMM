@@ -4,11 +4,13 @@
 @using Microsoft.AspNetCore.Components.Web
 @using SCMM.Web.Client;
 @using SCMM.Web.Data.Models
-@inject ICookieManager CookieManager
+@inject AppState State
 @{
-    var runtime = await CookieManager.GetAsync<RuntimeType>("Runtime", RuntimeType.WebAssembly);
-    var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssembly);
+    await State.LoadFromCookiesAsync();
+    var runtime = State.Runtime;
+    var renderMode = (runtime == RuntimeType.Server ? RenderMode.Server : RenderMode.WebAssemblyPrerendered);
     var prerenderMode = (runtime == RuntimeType.Server ? RenderMode.ServerPrerendered : RenderMode.WebAssemblyPrerendered);
+
 }
 <!DOCTYPE html>
 <html>
@@ -18,12 +20,12 @@
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
     <meta name="title" property="og:title" content="Rust - Steam Community Market Manager">
     <meta name="image" property="og:image" content="https://scmm.app/images/og.image.png">
-    <meta name="description" property="og:description" content="SCMM is an app for analysing Steam Community Market information from the video game Rust">
+    <meta name="description" property="og:description" content="Find Rust skin prices, deals, analytics, and much more with SCMM">
     <meta name="determiner" property="og:determiner" content="the">
     <meta name="type" property="og:type" content="website">
     <meta name="url" property="og:url" content="https://scmm.app">
     <meta name="site_name" property="og:site_name" content="SCMM">
-    <meta name="keywords" content="Steam, Community, Market, SCM, SCMM, Rust, Store, Skin, Inventory, Value, Statistics, Analytics">
+    <meta name="keywords" content="Steam, Community, Market, SCM, SCMM, Rust, CSGO, Store, Shop, Skin, Skins, Inventory, Value, Cheap, Cheapest, Price, Prices, Deal, Deals, Sale Sales, History, Statistics, Analytics, Invest, Investment">
     <base href="/" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -42,7 +44,6 @@
  
     <div id="app">
         <component type="typeof(App)" render-mode="@renderMode" />
-        <persist-component-state />
 @if (runtime == RuntimeType.Server)
 {
         <div id="blazor-error-ui" class="component-error-banner hidden pa-2">
@@ -184,6 +185,8 @@ else
         </div>
 }
     </div>
+
+    <persist-component-state />
 
 @if (runtime == RuntimeType.Server)
 {

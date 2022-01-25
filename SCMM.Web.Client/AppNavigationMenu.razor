@@ -1,4 +1,5 @@
 ﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@inherits PersistentComponent
 @inject ILogger<AppNavigationMenu> Logger
 @inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
@@ -12,8 +13,8 @@
         <MudAvatar Image="@State.Profile.AvatarLargeUrl" Style="height:64px; width:64px;" />
         <MudText Typo="MudBlazor.Typo.h6">@State.Profile.Name</MudText>
         <RoleBadges Roles="@State.Profile.Roles" />
-        <MudIconButton OnClick="NavigateSettings" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-cog" title="Your settings" />
-        <MudIconButton OnClick="NavigateSignOut" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-sign-out-alt" title="Sign out" />
+        <MudIconButton OnClick="NavigateToSettings" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-cog" title="Your settings" />
+        <MudIconButton OnClick="NavigateToSignOut" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-sign-out-alt" title="Sign out" />
     </div>
 }
 else
@@ -33,61 +34,65 @@ else
 
 @code {
 
-    private List<INavigationMenuItem> NavigationMenuItems { get; set; }
+    private List<INavigationMenuItem> NavigationMenuItems;
 
-    private ProfileInventoryTotalsDTO InventoryTotals { get; set; }
+    private ProfileInventoryTotalsDTO InventoryTotals;
 
-    private DateTimeOffset? StoreNextUpdateTime { get; set; }
+    private DateTimeOffset? StoreNextUpdateTime;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        NavigationMenuItems = RebuildMenuItems();
-        StateHasChanged();
-
-        await RefreshInventoryTotals();
-        await RefreshStoreTimeRemaining();
-        NavigationMenuItems = RebuildMenuItems();
-        StateHasChanged();
+        NavigationMenuItems = GetMenuItems();
+    }
+    
+    protected override async Task OnLoadStateAsync()
+    {
+        InventoryTotals = await RestoreFromStateOrLoad(nameof(InventoryTotals), async () =>
+        {
+            try
+            {
+                return String.IsNullOrEmpty(State.Profile?.SteamId) ? null :
+                    await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
+                        $"api/profile/{State.Profile?.SteamId}/inventory/total"
+                    );
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error refreshing inventory totals for '{State.Profile?.SteamId}'");
+                throw;
+            }
+        });
+        StoreNextUpdateTime = await RestoreFromStateOrLoad(nameof(StoreNextUpdateTime), async () =>
+        {
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<DateTimeOffset?>(
+                    $"api/store/nextUpdateTime"
+                );
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error refreshing remaining store time");
+                throw;
+            }
+        });
+        
+        NavigationMenuItems = GetMenuItems();
     }
 
-    private async Task RefreshInventoryTotals()
+    protected override Task OnPersistStateAsync()
     {
-        if (!State.IsAuthenticated)
-        {
-            return;
-        }
-        try
-        {
-            InventoryTotals = await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
-                $"api/profile/{State.Profile?.SteamId}/inventory/total"
-            );
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error refreshing inventory totals for '{State.Profile?.SteamId}'");
-        }
+        PersistToState(nameof(InventoryTotals), InventoryTotals);
+        PersistToState(nameof(StoreNextUpdateTime), StoreNextUpdateTime);
+        return Task.CompletedTask;
     }
 
-    private async Task RefreshStoreTimeRemaining()
-    {
-        try
-        {
-            StoreNextUpdateTime = await Http.GetFromJsonWithDefaultsAsync<DateTimeOffset?>(
-                $"api/store/nextUpdateTime"
-            );
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error refreshing remaining store time");
-        }
-    }
-
-    private List<INavigationMenuItem> RebuildMenuItems()
+    private List<INavigationMenuItem> GetMenuItems()
     {
         var inventoryValue = (string)null;
         if (InventoryTotals?.MarketValue > 0)
         {
-            inventoryValue = State.Currency.ToPriceString(InventoryTotals.MarketValue);
+            inventoryValue = State.Currency?.ToPriceString(InventoryTotals.MarketValue);
         }
 
         var storeUpdateTimeRemaining = (string)null;
@@ -258,21 +263,21 @@ else
         var result = await Dialogs.Show<SignInDialog>().Result;
         if (!result.Cancelled && (bool) result.Data == true)
         {
-            NavigateSignIn();
+            NavigateToSignIn();
         }
     }
     
-    private void NavigateSettings()
+    private void NavigateToSettings()
     {
         NavigationManager.NavigateTo($"/settings");
     }
 
-    private void NavigateSignIn()
+    private void NavigateToSignIn()
     {
         ExternalNavigationManager.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
     }
 
-    private void NavigateSignOut()
+    private void NavigateToSignOut()
     {
         ExternalNavigationManager.NavigateTo($"/signout?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
     }

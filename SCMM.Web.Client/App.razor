@@ -1,12 +1,13 @@
+@inherits PersistentComponent
 @inject ILogger<App> Logger
 @inject ISnackbar Snackbar
-@inject AppState AppState
+@inject AppState State
 @inject HttpClient Http
 
 <AppProviders />
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        @if (State != null)
+        @if (State.Profile != null)
         {
             <CascadingValue Value="@routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)" />
@@ -23,24 +24,31 @@
 
 @code {
 
-    private AppState State { get; set; }
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnLoadStateAsync()
     {
-        try
+        // Load the application state
+        await State.LoadFromCookiesAsync();
+        
+        // Load the our profile
+        State.Profile = await RestoreFromStateOrLoad(nameof(State.Profile), async () =>
         {
-            // Load the application state
-            await AppState.ReadFromStorageAsync();
-            await AppState.RefreshAsync(Http);
+            try
+            {
+                await State.LoadFromServerProfileAsync(Http);
+                return State.Profile;
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Unable to load your profile. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
+    }
 
-            State = AppState;
-            State.Changed += (s, e) => StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to initialise app state");
-            Snackbar.Add($"Unable to load application state. {ex.Message}", MudBlazor.Severity.Error);
-        }
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(State.Profile), State.Profile);
+        return Task.CompletedTask;
     }
 
 }

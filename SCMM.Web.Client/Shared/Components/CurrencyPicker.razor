@@ -1,13 +1,14 @@
-﻿@inject ILogger<CurrencyPicker> Logger
+﻿@inherits PersistentComponent
+@inject ILogger<CurrencyPicker> Logger
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject AppState State
 @inject HttpClient Http
 
-@if (State.Currency != null && Currencies != null)
+@if (Currencies != null)
 {
     <div @attributes="AdditionalAttributes">
-        <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.Currency.Name" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" 
+        <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.CurrencyId" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" 
                  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" title="Change currency">
             @foreach (var currency in Currencies)
             {
@@ -21,30 +22,39 @@
 
 @code
 {
-    private IList<CurrencyDetailedDTO> Currencies { get; set; }
-    
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
-    
-    protected override async Task OnInitializedAsync()
+
+    private CurrencyDetailedDTO[] Currencies;
+
+    protected override async Task OnLoadStateAsync()
     {
-        try
+        Currencies = await RestoreFromStateOrLoad(nameof(Currencies), async () =>
         {
-            Currencies = await Http.GetFromJsonWithDefaultsAsync<CurrencyDetailedDTO[]>($"api/currency?detailed=true");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error loading currencies");
-            Snackbar.Add($"Unable to load currency list. {ex.Message}", MudBlazor.Severity.Error);
-        }
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<CurrencyDetailedDTO[]>($"api/currency?detailed=true");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading currencies");
+                Snackbar.Add($"Unable to load currency list. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
     }
 
-    private async Task ChangeCurrency(CurrencyDetailedDTO currency)
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Currencies), Currencies);
+        return Task.CompletedTask;
+    }
+
+    private void ChangeCurrency(CurrencyDetailedDTO currency)
     {
         Logger.LogInformation($"Currency was changed to '{currency.Name}'");
-        await State.ChangeCurrencyAsync(currency);
+        State.Currency = currency;
         
         NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
     }
-
 }

@@ -1,6 +1,8 @@
 ﻿public interface ICookieManager
 {
-    Task SetAsync<T>(string name, T value, int days = 365);
+    void Set<T>(string name, T value, int? expiresInDays = 3650);
+
     Task<T> GetAsync<T>(string name, T defaultValue = default);
-    Task RemoveAsync(string name);
+
+    void Remove(string name);
 }

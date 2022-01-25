@@ -1,8 +1,10 @@
-﻿@page "/items"
-@page "/skins"
-@using SCMM.Web.Client.Shared.Components.Items
+﻿@using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
+@page "/items"
+@page "/skins"
+@inherits PersistentComponent
 @inject ILogger<ItemsPage> Logger
+@inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
@@ -80,58 +82,54 @@
 
 @code {
 
-    private PaginatedResult<ItemDescriptionWithPriceDTO> Items { get; set; }
-    
-    private string[] ItemTypes { get; set; }
-
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string Type { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Glow { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Glowsight { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Cutout { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Craftable { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool SpecialDrop { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool TwitchDrop { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Tradeable { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Marketable { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Returning { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public bool Banned { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public Nullable<int> Start { get; set; }
@@ -139,13 +137,31 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public Nullable<int> Count { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await RefreshItemTypes();
-        await RefreshItems();
-    }
     
+    private string[] ItemTypes;
+
+    private PaginatedResult<ItemDescriptionWithPriceDTO> Items;
+
+    protected override async Task OnLoadStateAsync()
+    {
+        ItemTypes = await RestoreFromStateOrLoad(nameof(ItemTypes), async () =>
+        {
+            return await Http.GetFromJsonWithDefaultsAsync<string[]>($"api/item/types");
+        });
+        Items = await RestoreFromStateOrLoad(nameof(Items), async () =>
+        {
+            await RefreshItems();
+            return Items;
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(ItemTypes), ItemTypes);
+        PersistToState(nameof(Items), Items);
+        return Task.CompletedTask;
+    }
+
     private void OnItemClicked(IItemDescription item)
     {
         ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");  
@@ -156,6 +172,8 @@
         if (Filter != text)
         {
             Filter = text;
+            Items = null;
+            StateHasChanged();
             _ = RefreshItems();
         };
     }
@@ -166,32 +184,16 @@
         if (Start != newStart)
         {
             Start = newStart;
+            Items = null;
+            StateHasChanged();
             _ = RefreshItems();
         }
     }
     
-    private async Task RefreshItemTypes()
-    {
-        try
-        {
-            ItemTypes = await Http.GetFromJsonWithDefaultsAsync<string[]>($"api/item/types");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error listing item types");
-        }
-        finally
-        {
-            StateHasChanged();
-        }
-    }
-
     private async Task RefreshItems()
     {
         try
         {
-            Items = null;
-            StateHasChanged();
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
                 $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
             );
@@ -199,6 +201,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error listing items");
+            Snackbar.Add($"Unable to load list. {ex.Message}", MudBlazor.Severity.Error);
         }
         finally
         {

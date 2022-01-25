@@ -4,41 +4,212 @@ using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
 using SCMM.Web.Data.Models.UI.App;
 using SCMM.Web.Data.Models.UI.Profile;
+using SCMM.Web.Data.Models;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
-public class AppState
+public class AppState : INotifyPropertyChanged
 {
-    public const string HttpHeaderLanguage = "language";
-    public const string HttpHeaderCurrency = "currency";
-    public const string HttpHeaderAppId = "appId";
+    public const string RuntimeTypeKey = "runtime";
+    public const string LanguageNameKey = "language";
+    public const string CurrencyNameKey = "currency";
+    public const string AppIdKey = "app";
 
+    public const RuntimeType DefaultRuntime = RuntimeType.WebAssembly;
     public const string DefaultLanguage = Constants.SteamLanguageEnglish;
     public const string DefaultCurrency = Constants.SteamCurrencyUSD;
     public const ulong DefaultAppId = Constants.RustAppId;
 
-    private readonly ILogger<AppState> Logger;
-    private readonly LocalStorageService Storage;
+    private readonly ILogger<AppState> _logger;
+    private readonly ICookieManager _cookieManager;
 
-    public AppState(ILogger<AppState> logger, LocalStorageService storage)
+    public AppState(ILogger<AppState> logger, ICookieManager cookieManager)
     {
-        Logger = logger;
-        Storage = storage;
+        _logger = logger;
+        _cookieManager = cookieManager;
     }
 
-    public event EventHandler Changed;
+    private RuntimeType? _runtime;
+    public RuntimeType Runtime
+    {
+        get
+        {
+            return _runtime ?? DefaultRuntime;
+        }
+        set
+        {
+            if (value != _runtime)
+            {
+                _runtime = value;
+                _cookieManager.Set(RuntimeTypeKey, value.ToString());
+                NotifyPropertyChanged();
+            }
+        }
+    }
 
-    public string LanguageId { get; set; }
+    private string _languageId;
+    public string LanguageId
+    {
+        get
+        {
+            return _languageId ?? DefaultLanguage;
+        }
+        set
+        {
+            if (value != _languageId)
+            {
+                _languageId = value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    _cookieManager.Set(LanguageNameKey, value);
+                }
+                else
+                {
+                    _cookieManager.Remove(LanguageNameKey);
+                }
 
-    public LanguageDetailedDTO Language => Profile?.Language;
+                NotifyPropertyChanged();
+            }
+        }
+    }
 
-    public string CurrencyId { get; set; }
+    private string _currencyId;
+    public string CurrencyId
+    {
+        get
+        {
+            return _currencyId ?? DefaultCurrency;
+        }
+        set
+        {
+            if (value != _languageId)
+            {
+                _currencyId = value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    _cookieManager.Set(CurrencyNameKey, value);
+                }
+                else
+                {
+                    _cookieManager.Remove(CurrencyNameKey);
+                }
 
-    public CurrencyDetailedDTO Currency => Profile?.Currency;
+                NotifyPropertyChanged();
+            }
+        }
+    }
 
-    public ulong AppId { get; set; }
+    private ulong? _appId;
+    public ulong AppId
+    {
+        get
+        {
+            return _appId ?? DefaultAppId;
+        }
+        set
+        {
+            if (value != _appId)
+            {
+                _appId = value;
+                if (value > 0)
+                {
+                    _cookieManager.Set(AppIdKey, AppId.ToString());
+                }
+                else
+                {
+                    _cookieManager.Remove(AppIdKey);
+                }
 
-    public AppDetailedDTO App => Profile?.App;
+                NotifyPropertyChanged();
+            }
+        }
+    }
 
-    public MyProfileDTO Profile { get; set; }
+    private MyProfileDTO _profile;
+    public MyProfileDTO Profile
+    {
+        get
+        {
+            return _profile;
+        }
+        set
+        {
+            if (value != _profile)
+            {
+                _profile = value;
+                NotifyPropertyChanged();
+                if (value != null)
+                {
+                    Language = value?.Language;
+                    NotifyPropertyChanged(nameof(Language));
+                    Currency = value?.Currency;
+                    NotifyPropertyChanged(nameof(Currency));
+                    App = value?.App;
+                    NotifyPropertyChanged(nameof(App));
+                }
+            }
+        }
+    }
+
+    public LanguageDetailedDTO Language
+    {
+        get
+        {
+            return Profile?.Language;
+        }
+        set
+        {
+            if (value?.Name != LanguageId)
+            {
+                LanguageId = value?.Name;
+                NotifyPropertyChanged();
+                if (Profile != null)
+                {
+                    Profile.Language = value;
+                }
+            }
+        }
+    }
+
+    public CurrencyDetailedDTO Currency
+    {
+        get
+        {
+            return Profile?.Currency;
+        }
+        set
+        {
+            if (value?.Name != CurrencyId)
+            {
+                CurrencyId = value?.Name;
+                NotifyPropertyChanged();
+                if (Profile != null)
+                {
+                    Profile.Currency = value;
+                }
+            }
+        }
+    }
+
+    public AppDetailedDTO App
+    {
+        get
+        {
+            return Profile?.App;
+        }
+        set
+        {
+            if (value?.Id != AppId)
+            {
+                AppId = value?.Id ?? 0;
+                NotifyPropertyChanged();
+                if (Profile != null)
+                {
+                    Profile.App = value;
+                }
+            }
+        }
+    }
 
     public bool IsAuthenticated => (
         Profile != null && Profile.Guid != Guid.Empty
@@ -64,153 +235,45 @@ public class AppState
         return (Profile?.SteamId == steamId || Profile?.ProfileId == steamId) == true;
     }
 
-    public void AddHeadersTo(HttpClient client)
-    {
-        if (!string.IsNullOrEmpty(LanguageId))
-        {
-            client.DefaultRequestHeaders.Remove(HttpHeaderLanguage);
-            client.DefaultRequestHeaders.Add(HttpHeaderLanguage, LanguageId);
-        }
-        if (!string.IsNullOrEmpty(CurrencyId))
-        {
-            client.DefaultRequestHeaders.Remove(HttpHeaderCurrency);
-            client.DefaultRequestHeaders.Add(HttpHeaderCurrency, CurrencyId);
-        }
-        if (AppId > 0)
-        {
-            client.DefaultRequestHeaders.Remove(HttpHeaderAppId);
-            client.DefaultRequestHeaders.Add(HttpHeaderAppId, AppId.ToString());
-        }
-    }
-
-    // TODO: Store this info as a cookie with a fixed-expiry
-    public async Task<bool> ReadFromStorageAsync()
+    public async Task LoadFromCookiesAsync()
     {
         try
         {
-            LanguageId = await Storage.GetAsync<string>(nameof(LanguageId));
-            CurrencyId = await Storage.GetAsync<string>(nameof(CurrencyId));
-            UInt64.TryParse(await Storage.GetAsync<string>(nameof(AppId)), out ulong appId);
-            AppId = appId;
-            return (!string.IsNullOrEmpty(LanguageId) && !string.IsNullOrEmpty(CurrencyId) && AppId > 0);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "Failed to load state from storage");
-            return false;
-        }
-    }
-
-    // TODO: Store this info as a cookie with a fixed-expiry
-    public async Task WriteToStorageAsync()
-    {
-        try
-        {
-            if (!string.IsNullOrEmpty(LanguageId))
+            Runtime = await _cookieManager.GetAsync(RuntimeTypeKey, DefaultRuntime);
+            LanguageId = await _cookieManager.GetAsync(LanguageNameKey, DefaultLanguage);
+            CurrencyId = await _cookieManager.GetAsync(CurrencyNameKey, DefaultCurrency);
+            if (UInt64.TryParse(await _cookieManager.GetAsync(AppIdKey, DefaultAppId.ToString()), out ulong appId))
             {
-                await Storage.SetAsync<string>(nameof(LanguageId), LanguageId);
-            }
-            else
-            {
-                await Storage.RemoveAsync(nameof(LanguageId));
-            }
-            if (!string.IsNullOrEmpty(CurrencyId))
-            {
-                await Storage.SetAsync<string>(nameof(CurrencyId), CurrencyId);
-            }
-            else
-            {
-                await Storage.RemoveAsync(nameof(CurrencyId));
-            }
-            if (AppId > 0)
-            {
-                await Storage.SetAsync<string>(nameof(AppId), AppId.ToString());
-            }
-            else
-            {
-                await Storage.RemoveAsync(nameof(AppId));
+                AppId = appId;
             }
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Failed to save state to storage");
+            _logger.LogError(ex, "Failed to load application state from cookies");
         }
     }
 
-    public async Task RefreshAsync(HttpClient http)
+    public async Task LoadFromServerProfileAsync(HttpClient http)
     {
         try
         {
-            AddHeadersTo(http);
             Profile = await http.GetFromJsonWithDefaultsAsync<MyProfileDTO>(
                 $"api/profile"
             );
-            if (Profile != null)
-            {
-                LanguageId = Profile.Language.Name;
-                CurrencyId = Profile.Currency.Name;
-                AppId = Profile.App.Id;
-            }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to refresh the profile state");
-            Profile = null;
-        }
-        finally
-        {
-            Changed?.Invoke(this, new EventArgs());
+            _logger.LogError(ex, "Failed to load profile state from server");
         }
     }
 
-    public async Task ChangeCurrencyAsync(LanguageDetailedDTO language)
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
     {
-        if (language == null)
+        if (PropertyChanged != null)
         {
-            return;
+            PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        LanguageId = language.Name;
-        if (Profile != null)
-        {
-            Profile.Language = language;
-        }
-
-        await WriteToStorageAsync();
-        Changed?.Invoke(this, new EventArgs());
-    }
-
-    public async Task ChangeCurrencyAsync(CurrencyDetailedDTO currency)
-    {
-        if (currency == null)
-        {
-            return;
-        }
-
-        CurrencyId = currency.Name;
-        if (Profile != null)
-        {
-            Profile.Currency = currency;
-        }
-
-        await WriteToStorageAsync();
-        Changed?.Invoke(this, new EventArgs());
-    }
-
-    public async Task ChangeAppAsync(AppDetailedDTO app)
-    {
-        if (app == null)
-        {
-            return;
-        }
-
-        AppId = app.Id;
-        if (Profile != null)
-        {
-            Profile.App = app;
-        }
-
-        await WriteToStorageAsync();
-        Changed?.Invoke(this, new EventArgs());
     }
 }

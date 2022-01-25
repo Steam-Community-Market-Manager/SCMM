@@ -1,17 +1,21 @@
-﻿@inject ILogger<AppPicker> Logger
+﻿@inherits PersistentComponent
+@inject ILogger<AppPicker> Logger
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject AppState State
 @inject HttpClient Http
 
-@if (State.App != null && Apps != null)
+@if (Apps != null)
 {
     <div @attributes="AdditionalAttributes">
         <MudMenu Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" 
                  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="false" MaxHeight="500" title="Change game" Class="pa-2 hover-darken">
             <ActivatorContent>
                 <MudText Typo="Typo.h4" Class="pt-2">
-                    <img src="/images/app/@(State.App.Id.ToString())/logo.svg" style="height:1em" />
+                    @if (State.AppId > 0)
+                    {
+                        <img src="/images/app/@(State.AppId.ToString())/logo.svg" style="height:1em" />
+                    }
                 </MudText>
             </ActivatorContent>
             <ChildContent>
@@ -33,30 +37,39 @@
 
 @code
 {
-    private IList<AppDetailedDTO> Apps { get; set; }
-    
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
-    
-    protected override async Task OnInitializedAsync()
+
+    private AppDetailedDTO[] Apps;
+
+    protected override async Task OnLoadStateAsync()
     {
-        try
+        Apps = await RestoreFromStateOrLoad(nameof(Apps), async () =>
         {
-            Apps = await Http.GetFromJsonWithDefaultsAsync<AppDetailedDTO[]>($"api/app?detailed=true");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error loading apps");
-            Snackbar.Add($"Unable to load app list. {ex.Message}", MudBlazor.Severity.Error);
-        }
+            try
+            {
+                return await Http.GetFromJsonWithDefaultsAsync<AppDetailedDTO[]>($"api/app?detailed=true");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error loading apps");
+                Snackbar.Add($"Unable to load app list. {ex.Message}", MudBlazor.Severity.Error);
+                throw;
+            }
+        });
     }
 
-    private async Task ChangeApp(AppDetailedDTO app)
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(Apps), Apps);
+        return Task.CompletedTask;
+    }
+
+    private void ChangeApp(AppDetailedDTO app)
     {
         Logger.LogInformation($"App was changed to '{app.Name}'");
-        await State.ChangeAppAsync(app);
-        
+        State.App = app;
+
         NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
     }
-
 }

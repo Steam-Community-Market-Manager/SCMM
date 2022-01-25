@@ -9,15 +9,17 @@ public class CookieManager : ICookieManager
         _jsRuntime = jsRuntime;
     }
 
-    public virtual async Task SetAsync<T>(string name, T value, int days = 365)
+    public virtual void Set<T>(string name, T value, int? expiresInDays = 3650)
     {
-        await _jsRuntime.InvokeVoidAsync("CookieInterop.setCookie", name, value, days);
+        // TODO: Change this to sync if/when Blazor supports it
+        _ = _jsRuntime.InvokeVoidAsync("CookieInterop.setCookie", name, value, expiresInDays);
     }
 
     public virtual async Task<T> GetAsync<T>(string name, T defaultValue = default)
     {
         try
         {
+            // TODO: Change this to sync if/when Blazor supports it
             return (await _jsRuntime.InvokeAsync<T>("CookieInterop.getCookie", name)) ?? defaultValue;
         }
         catch
@@ -26,8 +28,9 @@ public class CookieManager : ICookieManager
         }
     }
 
-    public virtual async Task RemoveAsync(string name)
+    public virtual void Remove(string name)
     {
-        await _jsRuntime.InvokeAsync<string>("CookieInterop.removeCookie", name);
+        // TODO: Change this to sync if/when Blazor supports it
+        _ = _jsRuntime.InvokeAsync<string>("CookieInterop.removeCookie", name);
     }
 }

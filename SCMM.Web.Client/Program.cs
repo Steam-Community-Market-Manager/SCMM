@@ -26,12 +26,6 @@ public static class WebAssemblyHostExtensions
                 BaseAddress = new Uri(navigationManager.BaseUri)
             };
 
-            var state = sp.GetService<AppState>();
-            if (state != null)
-            {
-                state.AddHeadersTo(client);
-            }
-
             return client;
         });
 
@@ -41,7 +35,6 @@ public static class WebAssemblyHostExtensions
     public static void AddUIServices(this IServiceCollection services)
     {
         services.AddScoped<AppState>();
-        services.AddScoped<LocalStorageService>();
         services.AddScoped<ICookieManager, CookieManager>();
         services.AddScoped<ExternalNavigationManager>();
         services.AddScoped<DocumentManager>();
