@@ -86,7 +86,7 @@ public class CheckNewYouTubeStoreVideos
                             {
                                 await googleClient.LikeVideoAsync(storeVideo.Id);
                                 await googleClient.CommentOnVideoAsync(storeVideo.ChannelId, storeVideo.Id,
-                                    $"thank you for showcasing this weeks new skins, your video has been featured on https://scmm.app/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
+                                    $"thank you for showcasing this weeks new skins, your video has been featured on {_configuration.GetWebsiteUrl()}/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
                                 );
                             }
                             catch (Exception ex)

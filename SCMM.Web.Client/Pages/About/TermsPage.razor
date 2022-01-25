@@ -1,4 +1,5 @@
 ﻿@page "/tos"
+@inject NavigationManager NavigationManager;
 
 <PageContainer Title="Terms of Service">
     <MudPaper Outlined="true" Class="pa-4">
@@ -16,7 +17,7 @@
         </MudText>
 
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>1. Terms</MudText>
-        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>By accessing this website, accessible from https://scmm.app, you are agreeing to be bound by these Terms and Conditions of Use and agree that you are responsible for the agreement with any applicable local laws. If you disagree with any of these terms, you are prohibited from accessing this site. The materials contained in this website are protected by copyright and trade mark law.</MudText>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>By accessing this website, accessible from @(NavigationManager.BaseUri.ToString()), you are agreeing to be bound by these Terms and Conditions of Use and agree that you are responsible for the agreement with any applicable local laws. If you disagree with any of these terms, you are prohibited from accessing this site. The materials contained in this website are protected by copyright and trade mark law.</MudText>
     
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>2. Use License</MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>Permission is granted to temporarily download one copy of the materials on SCMM's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</MudText>

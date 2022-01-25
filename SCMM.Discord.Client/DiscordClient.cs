@@ -1,8 +1,10 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Client;
 using System.Text.RegularExpressions;
 
@@ -11,6 +13,7 @@ namespace SCMM.Discord.Client
     public class DiscordClient : IDisposable
     {
         private readonly ILogger<DiscordClient> _logger;
+        private readonly string _websiteUrl;
         private readonly DiscordConfiguration _configuration;
         private readonly DiscordShardedClient _client;
         private readonly ManualResetEvent _clientIsConnected;
@@ -19,14 +22,15 @@ namespace SCMM.Discord.Client
         private bool handlersRegistered;
         private bool disposedValue;
 
-        public DiscordClient(ILogger<DiscordClient> logger, DiscordConfiguration configuration, IServiceProvider serviceProvider)
+        public DiscordClient(ILogger<DiscordClient> logger, IConfiguration configuration, IServiceProvider serviceProvider)
         {
             _logger = logger;
-            _configuration = configuration;
+            _websiteUrl = configuration.GetWebsiteUrl();
+            _configuration = configuration.GetDiscordConfiguration();
             _client = new DiscordShardedClient(new DiscordSocketConfig()
             {
-                ShardId = configuration.ShardId,
-                TotalShards = configuration.TotalShards
+                ShardId = _configuration.ShardId,
+                TotalShards = _configuration.TotalShards
             });
             _client.Log += OnClientLogAsync;
             _client.ShardConnected += OnShardConnectedAsync;
@@ -36,8 +40,8 @@ namespace SCMM.Discord.Client
             _client.JoinedGuild += (x) => Task.Run(() => GuildJoined?.Invoke(new DiscordGuild(x)));
             _client.LeftGuild += (x) => Task.Run(() => GuildLeft?.Invoke(new DiscordGuild(x)));
             _clientIsConnected = new ManualResetEvent(false);
-            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _client, configuration);
-            _interactionHandler = new DiscordInteractionHandler(logger, serviceProvider, _client, configuration);
+            _commandHandler = new DiscordCommandHandler(logger, serviceProvider, _client, _configuration);
+            _interactionHandler = new DiscordInteractionHandler(logger, serviceProvider, _client, _configuration);
         }
 
         private Task OnClientLogAsync(LogMessage message)
@@ -323,7 +327,7 @@ namespace SCMM.Discord.Client
                     .WithImageUrl(imageUrl)
                     .WithThumbnailUrl(thumbnailUrl)
                     .WithColor((color != null ? color.Value : Color.Default))
-                    .WithFooter(x => x.Text = "https://scmm.app")
+                    .WithFooter(x => x.Text = _websiteUrl)
                     .Build();
             }
 
