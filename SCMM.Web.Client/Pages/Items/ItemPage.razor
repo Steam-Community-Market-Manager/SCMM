@@ -10,7 +10,9 @@
 @inject HttpClient Http
 @inject AppState State
 
-<PageContainer Title="@(Item != null ? $"Item - {Item.Name}" : Name)">
+<PageContainer Title="@(Item != null ? $"Item - {Item.Name}" : Name)" 
+               Description="@(Item?.Description)"
+               ImageUrl="@(Item?.PreviewUrl ?? Item?.IconLargeUrl)">
 
     @if (Item == null)
     {

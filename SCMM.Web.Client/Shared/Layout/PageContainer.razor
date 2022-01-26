@@ -2,7 +2,19 @@
 @if (!String.IsNullOrEmpty(Title))
 {
     <PageTitle>@Title</PageTitle>
+    <HeadContent>
+        <meta name="title" property="og:title" content="@Title">
+        @if (!String.IsNullOrEmpty(Description))
+        {
+            <meta name="description" property="og:description" content="@Description">
+        }
+        @if (!String.IsNullOrEmpty(ImageUrl))
+        {
+            <meta name="image" property="og:image" content="@ImageUrl">
+        }
+    </HeadContent>
 }
+
 
 <div class="ma-6" @attributes="AdditionalAttributes">
     @ChildContent
@@ -19,6 +31,12 @@
 
     [Parameter]
     public string Title { get; set; }
+    
+    [Parameter]
+    public string Description { get; set; }
+
+    [Parameter]
+    public string ImageUrl { get; set; }
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
