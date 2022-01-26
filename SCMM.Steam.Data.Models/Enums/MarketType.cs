@@ -97,7 +97,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "iTrade.gg")]
         [Market(Type = PriceTypes.Trade)]
-        [BuyFrom(Url = "https://itrade.gg/?userInv={1}&botInv={1}")] // Unconfirmed
+        [BuyFrom(Url = "https://itrade.gg/r/scmm?userInv={1}&botInv={1}")] // Unconfirmed
         iTradegg = 23,
 
         [Display(Name = "Trade Skins Fast")]
