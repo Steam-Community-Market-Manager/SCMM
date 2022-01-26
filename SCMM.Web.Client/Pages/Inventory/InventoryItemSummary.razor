@@ -19,7 +19,7 @@
         <ChildContent>
             @if (State.Is(SteamId))
             {
-                <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="false" Dense="true" OffsetY>
+                <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="false" Dense="true" OffsetY Disabled="State.IsPrerendering">
                     <ActivatorContent>
                         <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
                             <div class="hover-zoom">

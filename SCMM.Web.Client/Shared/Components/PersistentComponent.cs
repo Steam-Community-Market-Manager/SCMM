@@ -45,14 +45,14 @@ public abstract class PersistentComponent : ComponentBase, IDisposable
 
     protected T RestoreFromStateOrDefault<T>(string name, T defaultValue)
     {
-        return ComponentState.TryTakeFromJson(name, out T value)
+        return ComponentState.TryTakeFromJson($"{GetType().Name}.{name}", out T value)
             ? value
             : defaultValue;
     }
 
     protected async Task<T> RestoreFromStateOrLoad<T>(string name, Func<Task<T>> loader)
     {
-        if (!ComponentState.TryTakeFromJson(name, out T value))
+        if (!ComponentState.TryTakeFromJson($"{GetType().Name}.{name}", out T value))
         {
             try
             {
@@ -68,7 +68,7 @@ public abstract class PersistentComponent : ComponentBase, IDisposable
 
     protected void PersistToState<T>(string name, T value)
     {
-        ComponentState.PersistAsJson(name, value);
+        ComponentState.PersistAsJson($"{GetType().Name}.{name}", value);
     }
 
     protected virtual void Dispose(bool disposing)

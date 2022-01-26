@@ -48,19 +48,19 @@
                             <div class="d-flex align-center justify-center full-width item-preview-controls">
                                 <MudButtonGroup Color="Color.Default" Size="Size.Medium" Variant="Variant.Filled" DisableElevation="true">
                                     <MudTooltip Text="View the workshop page">
-                                        <MudButton OnClick="@ViewItemWorkshopPage" Disabled="Item.WorkshopFileId == null">
+                                        <MudButton OnClick="@ViewItemWorkshopPage" Disabled="Item.WorkshopFileId == null || State.IsPrerendering">
                                             <i class="fas fa-fw fa-tools mr-1"></i>
                                             <span class="no-wrap">Workshop</span>
                                         </MudButton>
 								    </MudTooltip>
                                     <MudTooltip Text="View an interactive 3D render of this item">
-                                        <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
+                                        <MudButton OnClick="@ShowItemModelDialog" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl) || State.IsPrerendering">
                                             <i class="fab fa-fw fa-unity mr-1"></i>
                                             <span class="no-wrap">3D</span>
                                         </MudButton>
 								    </MudTooltip>
                                     <MudTooltip Text="Download the workshop file for this item">
-                                        <MudButton OnClick="@DownloadItemWorkshopFile" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl)">
+                                        <MudButton OnClick="@DownloadItemWorkshopFile" Disabled="String.IsNullOrEmpty(Item.WorkshopFileUrl) || State.IsPrerendering">
                                             <i class="fas fa-fw fa-download"></i>
                                             <span class="no-wrap">&nbsp;</span>
                                         </MudButton>
@@ -118,7 +118,7 @@
                                     }
                                     @if(Item.Stores?.Any() == true)
                                     {
-                                        <MudLink @onclick="@(() => ViewStorePage(Item.Stores.MinBy(x => x.Date).Id))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@((Item.Stores.MinBy(x => x.Date).Date ?? Item.TimeAccepted)?.ToString("d"))</MudLink>
+                                        <MudLink @onclick="@(() => ViewStorePage(Item.Stores.MinBy(x => x.Date).Id))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@((Item.Stores.MinBy(x => x.Date).Date ?? Item.TimeAccepted)?.ToString("d"))</MudLink>
                                     }
                                     else
                                     {
@@ -138,7 +138,7 @@
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
                                 <span>
-                                    <MudLink @onclick="@(() => ShowItemTypeDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@Item.MarketRankIndex cheaper @Item.ItemType.Pluralise(Item.MarketRankTotal)</MudLink>
+                                    <MudLink @onclick="@(() => ShowItemTypeDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.MarketRankIndex cheaper @Item.ItemType.Pluralise(Item.MarketRankTotal)</MudLink>
                                     <span class="mud-secondary-text"> in the marketplace (@Item.MarketRankTotal total).</span>
                                 </span>
                             </MudText>
@@ -176,7 +176,7 @@
                                 <i class="fas fa-fw fa-paint-roller mud-secondary-text"></i>
                                 <span>
                                     <span class="mud-secondary-text">Part of the </span>
-                                    <MudLink @onclick="@(() => ShowItemCollectionDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@Item.ItemCollection</MudLink>
+                                    <MudLink @onclick="@(() => ShowItemCollectionDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.ItemCollection</MudLink>
                                     <span class="mud-secondary-text"> collection</span>
                                 </span>
                             </MudText>
@@ -461,11 +461,11 @@
                                     @if (Item.CreatorId != Item.AppId)
                                     {
                                         <span>• </span>
-                                        <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ViewCreatorWorkshopPage())">View Steam Workshop</MudLink>
+                                        <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ViewCreatorWorkshopPage())" Disabled="State.IsPrerendering">View Steam Workshop</MudLink>
                                         <br />
                                     }
                                     <span>• </span>
-                                    <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ShowCreatorItemsDialog())">View more items from this creator</MudLink>
+                                    <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ShowCreatorItemsDialog())" Disabled="State.IsPrerendering">View more items from this creator</MudLink>
 								</MudText>
 						    </div>
                         </div>
@@ -654,7 +654,7 @@
             @if (MarketItemDistribution != null && MarketItemDistributionChartData?.Any() == true)
             {
                 <MudItem xs="12" xl="6">
-                    <MudPaper Outlined="true" Class="text-centered">
+                    <MudPaper Outlined="true" Class="text-centered full-height">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 text-centered">
                             <span>Item distribution</span>
                         </MudText>
@@ -839,14 +839,14 @@
                                 }
                             </MudText>
                             <div class="pa-1 flex-shrink-1">
-                                <MudToggleIconButton @bind-Toggled="@MarketItemSalesAnnotations"
+                                <MudToggleIconButton @bind-Toggled="@MarketItemSalesAnnotations" Disabled="State.IsPrerendering"
                                         Icon="fa fw-fw fa-toggle-off" Color="@Color.Secondary" Title="Off"
                                         ToggledIcon="fa fw-fw fa-toggle-on" ToggledColor="@Color.Primary" ToggledTitle="On"/>
                                 <span class="mr-2">Annotations @(MarketItemSalesAnnotations ? "On" : "Off")</span>
                                 <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
-                                    <MudButton OnClick="@(() => LoadItemSales(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
-                                    <MudButton OnClick="@(() => LoadItemSales(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
-                                    <MudButton OnClick="@(() => LoadItemSales(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                                    <MudButton OnClick="@(() => LoadItemSales(7))" Color="@(MarketItemSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Week</MudButton>
+                                    <MudButton OnClick="@(() => LoadItemSales(30))" Color="@(MarketItemSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Month</MudButton>
+                                    <MudButton OnClick="@(() => LoadItemSales(-1))" Color="@(MarketItemSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Lifetime</MudButton>
                                 </MudButtonGroup>
                             </div>
                         </div>

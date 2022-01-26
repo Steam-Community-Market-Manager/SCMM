@@ -180,7 +180,7 @@
 {
     <MudItem xs="12" sm="6" lg="4" xl="2" Class="d-flex flex-row justify-start align-center">
         <MudTooltip Text="Fetch the latest inventory data from your Steam account">
-            <MudButton Variant="MudBlazor.Variant.Outlined" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Secondary" OnClick="@SynchroniseInventory">
+            <MudButton Variant="MudBlazor.Variant.Outlined" Size="MudBlazor.Size.Small" Color="MudBlazor.Color.Secondary" OnClick="@SynchroniseInventory" Disabled="State.IsPrerendering">
                 Refresh
             </MudButton>
         </MudTooltip>

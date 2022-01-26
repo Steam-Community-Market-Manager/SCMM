@@ -8,7 +8,7 @@
 @if (Currencies != null)
 {
     <div @attributes="AdditionalAttributes">
-        <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.CurrencyId" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" 
+        <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.CurrencyId" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Disabled="State.IsPrerendering"
                  AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" title="Change currency">
             @foreach (var currency in Currencies)
             {

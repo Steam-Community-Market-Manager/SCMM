@@ -31,7 +31,7 @@ else if (StoreList.Any())
         <ChildContent>
 		    @foreach (var store in StoreList)
             {
-                <MudTabPanel ID="@store.Id" Tag="@store" Text="@GetStoreTitle(store)" />
+                <MudTabPanel ID="@store.Id" Tag="@store" Text="@GetStoreTitle(store)" Disabled="State.IsPrerendering" />
             }
 	    </ChildContent>
 	    <TabPanelHeader>
@@ -91,7 +91,7 @@ else if (StoreList.Any())
                     <MudItem xs="12">
                         <MudPaper Outlined="true" Class="d-flex flex-row justify-center align-center full-height pa-2">
                             <MudAutocomplete T="ItemDescriptionWithPriceDTO" @bind-Value="LinkedItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" 
-                                             Placeholder="Add an item to this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2">
+                                             Placeholder="Add an item to this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2" Disabled="State.IsPrerendering">
                                 <ItemTemplate Context="item">
                                     <div class="d-flex flex-row justify-start align-center">
                                         <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
@@ -102,10 +102,10 @@ else if (StoreList.Any())
                             @if (Store.Start != null)
                             {
                                 <MudNumericField @bind-Value="LinkedItemStorePrice" Format="F2" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-dollar-sign" Variant="Variant.Outlined" Margin="Margin.Dense" 
-                                                 HideSpinButtons="true" Class="flex-grow-0 flex-shrink-0 pl-1 pr-2" />
+                                                 HideSpinButtons="true" Class="flex-grow-0 flex-shrink-0 pl-1 pr-2" Disabled="State.IsPrerendering" />
                             }
                             <MudTooltip Text="Add this item to the store">
-                                <MudButton OnClick="@LinkItem" Variant="Variant.Text" Color="Color.Primary" StartIcon="fas fa-fw fa-plus" Class="flex-grow-0 flex-shrink-0 pa-2">Add</MudButton>
+                                <MudButton OnClick="@LinkItem" Variant="Variant.Text" Color="Color.Primary" StartIcon="fas fa-fw fa-plus" Class="flex-grow-0 flex-shrink-0 pa-2" Disabled="State.IsPrerendering">Add</MudButton>
                             </MudTooltip>
                         </MudPaper>
                     </MudItem>
@@ -128,11 +128,9 @@ else if (StoreList.Any())
                             <MudCard Outlined="true" Class="d-flex flex-column full-height">
                                 <MudCardHeader>
                                     <CardHeaderAvatar>
-                                        <MudHidden Breakpoint="Breakpoint.LgAndDown">
-                                            <MudTooltip Text="@item.CreatorName">
-                                                <MudAvatar Image="@item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" />
-                                            </MudTooltip>
-                                        </MudHidden>
+                                        <MudTooltip Text="@item.CreatorName">
+                                            <MudAvatar Image="@item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" />
+                                        </MudTooltip>
                                     </CardHeaderAvatar>
                                     <CardHeaderContent>
                                         <div>
@@ -150,7 +148,7 @@ else if (StoreList.Any())
                                             @if (State.IsInRole(Roles.Administrator) || (Store.IsDraft && item.IsDraft && State.IsInRole(Roles.Contributor)))
                                             {
                                                 <MudTooltip Text="Remove this item from the store">
-                                                    <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" Icon="fas fa-fw fa-trash-alt" Class="mr-3"></MudFab>
+                                                    <MudFab OnClick="@(() => UnlinkItem(item))" Color="Color.Error" Size="Size.Medium" Icon="fas fa-fw fa-trash-alt" Class="mr-3" Disabled="State.IsPrerendering"></MudFab>
                                                 </MudTooltip>
                                             }
                                             @if (Store.End == null && item.IsStillAvailableFromStore && item.TopSellerIndex != null)
@@ -289,7 +287,7 @@ else if (StoreList.Any())
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-piggy-bank mud-secondary-text"></i>
                                                     <span>
-                                                        <MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.MarketRankIndex cheaper @item.ItemType.Split(" ").LastOrDefault().FirstCharToLower().Pluralise(item.MarketRankTotal)</MudLink>
+                                                        <MudLink @onclick="@(() => ShowItemTypeDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.MarketRankIndex cheaper @item.ItemType.Split(" ").LastOrDefault().FirstCharToLower().Pluralise(item.MarketRankTotal)</MudLink>
                                                         <span class="mud-secondary-text"> on the market</span>
                                                     </span>
                                                 </MudText>
@@ -300,7 +298,7 @@ else if (StoreList.Any())
                                                     <i class="fas fa-fw fa-paint-roller mud-secondary-text"></i>
                                                     <span>
                                                         <span class="mud-secondary-text">Part of the </span>
-                                                        <MudLink @onclick="@(() => ShowItemCollectionDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default">@item.ItemCollection</MudLink>
+                                                        <MudLink @onclick="@(() => ShowItemCollectionDialog(item))" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@item.ItemCollection</MudLink>
                                                         <span class="mud-secondary-text"> collection</span>
                                                     </span>
                                                 </MudText>
@@ -467,12 +465,12 @@ else if (StoreList.Any())
                                                 @if (item.HasWorkshopFile)
                                                 {
                                                     <div class="d-flex flex-row full-width mb-2">
-                                                        <MudButton OnClick="@(() => ViewItemWorkshopPage(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fas fa-fw fa-tools" Size="@Size.Small" FullWidth>     
+                                                        <MudButton OnClick="@(() => ViewItemWorkshopPage(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fas fa-fw fa-tools" Size="@Size.Small" FullWidth Disabled="State.IsPrerendering">     
                                                             <strong>Workshop</strong>
                                                         </MudButton>
                                                         @if (!String.IsNullOrEmpty(item.WorkshopFileUrl))
                                                         {
-                                                            <MudButton OnClick="@(() => ShowItemModelDialog(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fab fa-fw fa-unity" Size="@Size.Small" Class="ml-2">     
+                                                            <MudButton OnClick="@(() => ShowItemModelDialog(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Secondary" StartIcon="fab fa-fw fa-unity" Size="@Size.Small" Class="ml-2" Disabled="State.IsPrerendering">     
                                                                 <strong>3D</strong>
                                                             </MudButton>
                                                         }
@@ -480,13 +478,13 @@ else if (StoreList.Any())
                                                 }
                                                 @if (item.HasMarketListing && !item.IsBanned)
                                                 {
-                                                    <MudButton OnClick="@(() => BuyItemFromMarket(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" Size="@Size.Medium" Class="mb-2" FullWidth>
+                                                    <MudButton OnClick="@(() => BuyItemFromMarket(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" Size="@Size.Medium" Class="mb-2" FullWidth Disabled="State.IsPrerendering">
                                                         <strong>Marketplace</strong>
                                                     </MudButton>
                                                 }
                                                 @if (item.IsStillAvailableFromStore)
                                                 {
-                                                    <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" Size="@Size.Medium" FullWidth>
+                                                    <MudButton OnClick="@(() => BuyItemFromStore(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" Size="@Size.Medium" FullWidth Disabled="State.IsPrerendering">
                                                         @if (State.AppId > 0)
                                                         {
                                                             <img src="/images/app/@(@State.AppId.ToString())/icon.svg" class="store-button-icon" />    

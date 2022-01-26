@@ -2,8 +2,8 @@
 @using Syncfusion.Blazor.Charts
 @inject AppState State
 
-<MudExpansionPanels Dense="true" DisableGutters="true">
-    <MudExpansionPanel>
+<MudExpansionPanels Dense="true" DisableGutters="true" >
+    <MudExpansionPanel Disabled="State.IsPrerendering">
         <TitleContent>
             <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="text-centered my-n4 mx-n2">
                 <i class="fa fa-fw fa-flask mr-1" />

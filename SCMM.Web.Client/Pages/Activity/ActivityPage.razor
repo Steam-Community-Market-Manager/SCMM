@@ -13,7 +13,8 @@
     <MudGrid Spacing="2">
 
         <MudItem xs="12">
-            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search market activity..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search market activity..." Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" 
+                          FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         
         <MudItem xs="12">

@@ -8,17 +8,18 @@
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
+@inject AppState State
 
 <PageContainer Title="Items">
 
     <MudGrid Spacing="2">
         <MudItem xs="12" sm="6">
             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item..." 
-                          Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
+                          Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudSelect T="string" Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Label="Item Type" Clearable="true"
-                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Disabled="@(ItemTypes == null || !ItemTypes.Any())" Class="mud-input-transparent ma-0">
+            <MudSelect T="string" Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Label="Item Type" Clearable="true" Disabled="@(ItemTypes == null || !ItemTypes.Any() || State.IsPrerendering)"
+                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0">
                 @if (ItemTypes != null)
                 {
                     @foreach (var itemType in ItemTypes)
@@ -30,16 +31,16 @@
         </MudItem>
         <MudItem xs="12">
             <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" />
-                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" />
+                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Disabled="State.IsPrerendering" />
+                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Disabled="State.IsPrerendering" />
             </MudPaper>
         </MudItem>
         @if (Items == null)
@@ -63,7 +64,7 @@
                 <MudItem xs="12" Class="d-flex justify-center">
                     <MudPagination SelectedChanged="@OnPageChange" Color="@Color.Primary" ShowFirstButton="true" ShowLastButton="true" 
                                    Selected="@((int)Math.Floor(Start > 0 ? ((double)Start.Value / Math.Max(Count ?? 100, 1)) + 1 : 1))" 
-                                   Count="@((int)Math.Ceiling((double)Items.Total / Math.Max(Count ?? 100, 1)))" />
+                                   Count="@((int)Math.Ceiling((double)Items.Total / Math.Max(Count ?? 100, 1)))" Disabled="State.IsPrerendering" />
                 </MudItem>
             }
         }

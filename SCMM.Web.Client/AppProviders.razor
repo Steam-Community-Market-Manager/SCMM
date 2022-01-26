@@ -10,7 +10,10 @@
 
     protected override void OnInitialized()
     {
-        Theme = GetThemeFor(State.App);
+        if (State.App != null)
+        {
+            Theme = GetThemeFor(State.App);
+        }
         State.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(State.App))

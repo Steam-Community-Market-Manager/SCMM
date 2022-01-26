@@ -4,7 +4,10 @@
 @inject AppState State
 @inject HttpClient Http
 
-<AppProviders />
+@if (State.App != null)
+{
+    <AppProviders />
+}
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         @if (State.Profile != null)

@@ -1,4 +1,5 @@
-﻿
+﻿@inject AppState State
+
 @if (!String.IsNullOrEmpty(Title))
 {
     <PageTitle>@Title</PageTitle>
@@ -15,7 +16,6 @@
     </HeadContent>
 }
 
-
 <div class="ma-6" @attributes="AdditionalAttributes">
     @ChildContent
 </div>
@@ -23,7 +23,7 @@
 @if (ScrollTopTop)
 {
     <MudScrollToTop Selector=".mud-main-content">
-        <MudIconButton Variant="Variant.Filled" Icon="fas fa-fw fa-arrow-up" Color="MudBlazor.Color.Secondary" Title="Scroll to top"></MudIconButton>
+        <MudIconButton Variant="Variant.Filled" Icon="fas fa-fw fa-arrow-up" Color="MudBlazor.Color.Secondary" Title="Scroll to top" Disabled="State.IsPrerendering"></MudIconButton>
     </MudScrollToTop>
 }
 

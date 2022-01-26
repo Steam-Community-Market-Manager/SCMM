@@ -22,10 +22,10 @@
                 </div>
                 <div class="pa-1 flex-shrink-1">
                     <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
-                        <MudButton OnClick="@(() => LoadMarketIndexFund(7))" Color="@(MarketIndexFundMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketIndexFund(30))" Color="@(MarketIndexFundMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketIndexFund(365))" Color="@(MarketIndexFundMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2">Year</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketIndexFund(-1))" Color="@(MarketIndexFundMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(7))" Color="@(MarketIndexFundMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Week</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(30))" Color="@(MarketIndexFundMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Month</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(365))" Color="@(MarketIndexFundMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Year</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketIndexFund(-1))" Color="@(MarketIndexFundMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Lifetime</MudButton>
                     </MudButtonGroup>
                 </div>
             </div>
@@ -110,10 +110,10 @@
                 </div>
                 <div class="pa-1 flex-shrink-1">
                     <MudButtonGroup Variant="Variant.Text" OverrideStyles="false">
-                        <MudButton OnClick="@(() => LoadMarketSales(7))" Color="@(MarketSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2">Week</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketSales(30))" Color="@(MarketSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2">Month</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketSales(365))" Color="@(MarketSalesMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2">Year</MudButton>
-                        <MudButton OnClick="@(() => LoadMarketSales(-1))" Color="@(MarketSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2">Lifetime</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketSales(7))" Color="@(MarketSalesMaxDays == 7 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Week</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketSales(30))" Color="@(MarketSalesMaxDays == 30 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Month</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketSales(365))" Color="@(MarketSalesMaxDays == 365 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Year</MudButton>
+                        <MudButton OnClick="@(() => LoadMarketSales(-1))" Color="@(MarketSalesMaxDays == -1 ? Color.Primary : Color.Secondary)" Class="px-2" Disabled="State.IsPrerendering">Lifetime</MudButton>
                     </MudButtonGroup>
                 </div>
             </div>

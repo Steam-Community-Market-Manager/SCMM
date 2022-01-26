@@ -1,14 +1,15 @@
 ﻿@page "/stats"
 @page "/steam/marketstatistics"
 @inject ILogger<StatisticsPage> Logger
+@inject AppState State
 
 <PageContainer Title="Market Statistics">
     <MudTabs Elevation="0" Class="mud-tabs-transparent mt-n3">
         <ChildContent>
-            <MudTabPanel Icon="fas fa-fw fa-balance-scale-right mr-2" Text="Market">
+            <MudTabPanel Icon="fas fa-fw fa-balance-scale-right mr-2" Text="Market" Disabled="State.IsPrerendering">
                 <StatisticsMarketPanel />
             </MudTabPanel>
-            <MudTabPanel Icon="fas fa-fw fa-list-ol mr-2" Text="Items">
+            <MudTabPanel Icon="fas fa-fw fa-list-ol mr-2" Text="Items" Disabled="State.IsPrerendering">
                 <StatisticsItemPanel />
             </MudTabPanel>
 		</ChildContent>

@@ -13,14 +13,14 @@
         <MudAvatar Image="@State.Profile.AvatarLargeUrl" Style="height:64px; width:64px;" />
         <MudText Typo="MudBlazor.Typo.h6">@State.Profile.Name</MudText>
         <RoleBadges Roles="@State.Profile.Roles" />
-        <MudIconButton OnClick="NavigateToSettings" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-cog" title="Your settings" />
-        <MudIconButton OnClick="NavigateToSignOut" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-sign-out-alt" title="Sign out" />
+        <MudIconButton OnClick="NavigateToSettings" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-cog" Disabled="State.IsPrerendering" title="Your settings" />
+        <MudIconButton OnClick="NavigateToSignOut" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-sign-out-alt" Disabled="State.IsPrerendering" title="Sign out" />
     </div>
 }
 else
 {
     <div class="signin-container">
-        <MudLink Class="signin-button" @onclick="async () => await ShowSignInDialog()">
+        <MudLink Class="signin-button" @onclick="async () => await ShowSignInDialog()" Disabled="State.IsPrerendering">
             <img src="/images/sits_01.png" alt="Sign in through Steam" title="Sign in through Steam" />
         </MudLink>
     </div>
@@ -29,7 +29,7 @@ else
 <NavigationMenu Items="@NavigationMenuItems" Class="flex-grow-1" />
 
 <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" Class="pa-4">
-    <span><MudLink Href="/about" Typo="MudBlazor.Typo.caption">SCMM is fanmade</MudLink> and not affilated with Valve Corporation or Facepunch.</span>
+    <span><MudLink Href="/about" Typo="MudBlazor.Typo.caption" Disabled="State.IsPrerendering">SCMM is fanmade</MudLink> and not affilated with Valve Corporation or Facepunch.</span>
 </MudText>
 
 @code {

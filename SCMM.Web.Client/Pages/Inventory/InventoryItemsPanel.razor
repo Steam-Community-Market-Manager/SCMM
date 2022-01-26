@@ -1,5 +1,6 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Profile.Inventory
+@inherits PersistentComponent
 @inject ILogger<InventoryItemsPanel> Logger
 @inject HttpClient Http
 @inject AppState State
@@ -39,7 +40,7 @@ else
                 @if(SelectedInventoryItems != null && State.Is(SteamId))
                 {
                     <div class="@($"item-multi-select {((SelectedInventoryItems.ContainsKey(item.Id) && SelectedInventoryItems[item.Id] == true) ? "item-selected" : "item-hover-to-select")}")">
-                        <MudCheckBox T="bool" @bind-Checked="@SelectedInventoryItems[item.Id]" Color="Color.Primary" Class="ma-n1" />
+                        <MudCheckBox T="bool" @bind-Checked="@SelectedInventoryItems[item.Id]" Color="Color.Primary" Class="ma-n1" Disabled="State.IsPrerendering" />
                     </div>
                 }
             </div>
@@ -48,8 +49,8 @@ else
     @if (SelectedInventoryItems != null && SelectedInventoryItems.Any(x => x.Value) && State.Is(SteamId))
     {
         <div class="multi-select-actions d-flex flex-row justify-center align-center pa-2 mud-appbar">
-            <MudButton OnClick="ClearItemSelection" Variant="Variant.Outlined" Color="Color.Secondary" Class="mx-1">Clear</MudButton>
-            <MudButton OnClick="SellSelectedItemsOnMarket" Variant="Variant.Filled" Color="Color.Success" StartIcon="fa fa-fw fa-hand-holding-usd" Class="mx-1">Multi-sell</MudButton>
+            <MudButton OnClick="ClearItemSelection" Variant="Variant.Outlined" Color="Color.Secondary" Class="mx-1" Disabled="State.IsPrerendering">Clear</MudButton>
+            <MudButton OnClick="SellSelectedItemsOnMarket" Variant="Variant.Filled" Color="Color.Success" StartIcon="fa fa-fw fa-hand-holding-usd" Class="mx-1" Disabled="State.IsPrerendering">Multi-sell</MudButton>
         </div>
     }
 }
@@ -62,15 +63,29 @@ else
     [Parameter]
     public string Filter { get; set; }
 
-    private IList<ProfileInventoryItemDescriptionDTO> InventoryItems { get; set; }
+    private IList<ProfileInventoryItemDescriptionDTO> InventoryItems;
 
-    private IDictionary<ulong, bool> SelectedInventoryItems { get; set; }
+    private IDictionary<ulong, bool> SelectedInventoryItems;
 
-    private Exception LoadingError { get; set; }
+    private Exception LoadingError;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnLoadStateAsync()
     {
-        await LoadInventoryItems();
+        InventoryItems = await RestoreFromStateOrLoad(nameof(InventoryItems), async () =>
+        {
+            await LoadInventoryItems();
+            return InventoryItems;
+        });
+        SelectedInventoryItems = RestoreFromStateOrDefault(nameof(SelectedInventoryItems), SelectedInventoryItems);
+        LoadingError = RestoreFromStateOrDefault(nameof(LoadingError), LoadingError);
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(InventoryItems), InventoryItems);
+        PersistToState(nameof(SelectedInventoryItems), SelectedInventoryItems);
+        PersistToState(nameof(LoadingError), LoadingError);
+        return Task.CompletedTask;
     }
 
     private async Task LoadInventoryItems()

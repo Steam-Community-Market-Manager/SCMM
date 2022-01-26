@@ -47,6 +47,23 @@ public class AppState : INotifyPropertyChanged
         }
     }
 
+    private bool _isPrerendering;
+    public bool IsPrerendering
+    {
+        get
+        {
+            return _isPrerendering;
+        }
+        set
+        {
+            if (value != _isPrerendering)
+            {
+                _isPrerendering = value;
+                NotifyPropertyChanged();
+            }
+        }
+    }
+
     private string _languageId;
     public string LanguageId
     {

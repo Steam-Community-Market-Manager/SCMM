@@ -3,7 +3,7 @@
 @inject AppState State
 
 <div @attributes="AdditionalAttributes">
-    <MudMenu StartIcon="@((State.Runtime == RuntimeType.Server) ? "fas fa-fw fa-server" : "fas fa-fw fa-desktop")" Label="@State.Runtime.GetDisplayName()" Size="MudBlazor.Size.Large" 
+    <MudMenu StartIcon="@((State.Runtime == RuntimeType.Server) ? "fas fa-fw fa-server" : "fas fa-fw fa-desktop")" Label="@State.Runtime.GetDisplayName()" Size="MudBlazor.Size.Large" Disabled="State.IsPrerendering"
                 Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" title="Change runtime mode">
         <MudMenuItem OnClick="@(() => ChangeRuntime(RuntimeType.Server))" Class="d-flex align-center">
             <MudText Typo="Typo.body1"  Class="d-flex align-center">

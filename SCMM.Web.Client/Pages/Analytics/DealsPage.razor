@@ -20,7 +20,7 @@
                             <tr>
                                 <th>
                                     <MudTextField T="string" ValueChanged="async (x) => { FilterCheapestDeals = x; await VirtualiseCheapestDeals.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
-                                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
+                                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
                                 <th>Cheapest Deal</th>
                                 <th>Steam Community Market</th>
@@ -39,7 +39,7 @@
                                         </td>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2" Disabled="State.IsPrerendering">Buy</MudButton>
                                                 <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
@@ -64,7 +64,7 @@
                                         </td>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">View</MudButton>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2" Disabled="State.IsPrerendering">View</MudButton>
                                                 <img src="@($"/images/market/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.ReferemcePrice)</span>
                                             </MudText>
@@ -110,7 +110,7 @@
                             <tr>
                                 <th>
                                     <MudTextField T="string" ValueChanged="async (x) => { FilterUndervaluedDeals = x; await VirtualiseUndervaluedDeals.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
-                                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" />
+                                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
                                 <th>Buy Now</th>
                                 <th class="pa-0">
@@ -131,7 +131,7 @@
                                         </td>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2">Buy</MudButton>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2" Disabled="State.IsPrerendering">Buy</MudButton>
                                                 <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
@@ -159,7 +159,7 @@
                                         </th>
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
-                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2">Sell</MudButton>
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2" Disabled="State.IsPrerendering">Sell</MudButton>
                                                 <img src="@($"/images/market/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.SellPrice) for <strong>@State.Currency.ToPriceString(item.SellProfit, dense: true)</strong> profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees</span>
                                             </MudText>

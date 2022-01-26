@@ -1,22 +1,32 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
+@inject AppState State
 
 <MudLayout>
     <MudAppBar Fixed="true" Dense="false" Elevation="4">
-        <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" />
+        @if (State.IsPrerendering)
+        {
+            <MudProgressCircular Indeterminate="true" Size="Size.Medium" />
+        }
+        else
+        {
+            <MudIconButton Edge="MudBlazor.Edge.Start" Icon="@Icons.Material.Filled.Menu" OnClick="@((e) => ToggleDrawer())" />
+        }
         <AppPicker class="ml-2" />
-        <MudText Typo="Typo.h6" Class="ml-4">
-            <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
+        <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
+            <MudText Typo="Typo.h6" Class="ml-2">
                 <span>Steam Community Market Manager</span>
                 <MudChip Variant="MudBlazor.Variant.Text" Size="MudBlazor.Size.Small" OnClick="@ViewAboutPage" Class="mud-chip-outlined">@AppTag</MudChip>
-            </MudHidden>
-            <MudHidden Breakpoint="MudBlazor.Breakpoint.Sm" Invert="true">
+            </MudText>
+        </MudHidden>
+        <MudHidden Breakpoint="MudBlazor.Breakpoint.Sm" Invert="true">
+            <MudText Typo="Typo.h6" Class="ml-2">
                 <span>SCMM</span>
                 <MudChip Variant="MudBlazor.Variant.Text" Size="MudBlazor.Size.Small" OnClick="@ViewAboutPage" Class="mud-chip-outlined">@AppTag</MudChip>
-            </MudHidden >
-        </MudText>
+            </MudText>
+        </MudHidden>
         <MudSpacer />
-        <RuntimePicker class="mx-2" />
+        <RuntimePicker class="ml-2" />
         <CurrencyPicker class="ml-2" />
     </MudAppBar>
     <MudDrawer @bind-Open="IsDrawerOpen" Variant="MudBlazor.DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always" Breakpoint="MudBlazor.Breakpoint.Md" Elevation="2">

@@ -1,7 +1,8 @@
-﻿
+﻿@inject AppState State
+
 @if (ItemGroup != null)
 {
-    <MudNavGroup Icon="@ItemGroup.Icon" Title="@ItemGroup.Title" Disabled="@ItemGroup.Disabled">
+    <MudNavGroup Icon="@ItemGroup.Icon" Title="@ItemGroup.Title" Disabled="@(State.IsPrerendering || ItemGroup.Disabled)">
         @foreach (var item in ItemGroup.Children)
         {
             <NavigationMenuItem Item="item" />
@@ -10,7 +11,7 @@
 }
 else if (ItemLink != null)
 {
-    <MudNavLink OnClick="@ItemLink.OnClick" Href="@ItemLink.Path" Icon="@ItemLink.Icon" Disabled="@ItemLink.Disabled" Class="mud-nav-item-centered">
+    <MudNavLink OnClick="@ItemLink.OnClick" Href="@ItemLink.Path" Icon="@ItemLink.Icon" Disabled="@(State.IsPrerendering || ItemLink.Disabled)" Class="mud-nav-item-centered">
         <div>@ItemLink.Title</div>
         @if(ItemLink.SubTitle != null)
         {
