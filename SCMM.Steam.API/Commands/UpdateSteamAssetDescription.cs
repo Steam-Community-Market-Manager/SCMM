@@ -168,13 +168,15 @@ namespace SCMM.Steam.API.Commands
                 // Parse asset description (if any)
                 if (assetClass.Descriptions != null)
                 {
-                    var itemDescription = String.Join("  \n", 
+                    var itemDescription = String.Join("\n", 
                         assetClass.Descriptions
+                            .Where(x => !string.IsNullOrEmpty(x.Value))
                             .Where(x =>
                                 string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
                                 string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
                             )
-                            .Select(x => x.Value)
+                            .Select(x => (x.Color != null ? $"<span style='color:{x.Color.SteamColourToWebHexString()}'>{x.Value}</span>" : x.Value))
+                            .Select(x => (x == " " ? "&nbsp;" : x))
                             .Where(x => !String.IsNullOrEmpty(x))
                             .ToArray()
                     );
@@ -744,7 +746,9 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Cleanup the asset description text
-            assetDescription.Description = assetDescription.Description.Trim(' ', '.', '\t', '\n', '\r');
+            assetDescription.Description = assetDescription.Description
+                .Trim("&nbsp;")
+                .Trim(' ', '.', '\t', '\n', '\r');
 
             // Check if this is a special/twitch drop item
             if (!assetDescription.IsTwitchDrop && !assetDescription.IsSpecialDrop)

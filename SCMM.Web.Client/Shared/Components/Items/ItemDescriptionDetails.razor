@@ -86,7 +86,9 @@
                     @if (!String.IsNullOrEmpty(Item.Description))
                     {
                         <div class="mt-3">
-                            <MudText Typo="MudBlazor.Typo.body2" GutterBottom>@Item.Description</MudText>
+                            <MudText Typo="MudBlazor.Typo.body2" GutterBottom>
+                                <MarkdownView Content="@Item.Description" />
+                            </MudText>
                         </div>
                     }
                     @if (Item.Notes != null)

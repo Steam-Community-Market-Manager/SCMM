@@ -19,7 +19,13 @@
         if (!String.IsNullOrWhiteSpace(Content))
         {
             MarkupContent = new MarkupString(
-                Markdown.ToHtml(Content, new MarkdownPipelineBuilder().UseAdvancedExtensions().Build())
+                Markdown.ToHtml(
+                    Content, 
+                    new MarkdownPipelineBuilder()
+                        .UseAdvancedExtensions()
+                        .UseSoftlineBreakAsHardlineBreak()
+                        .Build()
+                )
             );
         }
         else 

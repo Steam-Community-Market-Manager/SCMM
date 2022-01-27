@@ -40,6 +40,22 @@
             }
         }
 
+        public static string Trim(this string value, params string[] trimStrings)
+        {
+            foreach(var trimString in trimStrings)
+            {
+                if (value.StartsWith(trimString))
+                {
+                    value = value.Substring(trimString.Length);
+                }
+                if (value.EndsWith(trimString))
+                {
+                    value = value.Substring(0, value.Length - trimString.Length);
+                }
+            }
+            return value;
+        }
+
         public static T As<T>(this string value)
         {
             var underlyingType = Nullable.GetUnderlyingType(typeof(T));
