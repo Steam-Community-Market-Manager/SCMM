@@ -423,7 +423,7 @@
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
-            ["ListName"] = $"Skins by {profile.Name}",
+            ["ListName"] = $"Items by {profile.Name}",
             ["ListUrl"] = $"api/item?creatorId={profile.SteamId}&count=-1"
         });
     }

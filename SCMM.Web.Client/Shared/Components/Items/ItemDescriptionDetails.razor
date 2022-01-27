@@ -40,7 +40,7 @@
                         else
                         {
                             <div class="d-flex flex-grow-1 align-center justify-center">
-                                <img src="@Item.IconLargeUrl" class="@($"{GetGlowClass()} icon full-width pa-8")" style="@GetGlowStyles()" />
+                                <img src="@(Item.IconLargeUrl ?? Item.IconUrl)" class="@($"{GetGlowClass()} icon full-width pa-8")" style="@GetGlowStyles()" />
                             </div>
                         }
                         @if (Item.WorkshopFileId != null)
@@ -1267,7 +1267,7 @@
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
-            ["ListName"] = $"Skins by {Item.CreatorName}",
+            ["ListName"] = $"Items by {Item.CreatorName}",
             ["ListUrl"] = $"api/item?creatorId={Item.CreatorId}&count=-1",
             ["HighlightedItemId"] = Item.Id
         });
