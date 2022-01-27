@@ -79,8 +79,14 @@ public class CheckForNewItemDefinitions
                     var updatedAssetDescriptions = new List<SteamAssetDescription>();
                     if (itemDefinitions != null)
                     {
-                        var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => x.AppId == app.Id).ToListAsync();
-                        var fileredItemDefinitions = itemDefinitions.Where(x => x.Name != "DELETED" && x.Type != "None" && x.Type != "generator");
+                        var assetDescriptions = await _db.SteamAssetDescriptions
+                            .Where(x => x.AppId == app.Id)
+                            .ToListAsync();
+
+                        // TODO: Filter this properly
+                        var fileredItemDefinitions = itemDefinitions
+                            .Where(x => x.Name != "DELETED" && x.Type != "None" && x.Type != "generator");
+
                         foreach (var itemDefinition in fileredItemDefinitions)
                         {
                             var assetDescription = assetDescriptions.FirstOrDefault(x =>
@@ -112,7 +118,10 @@ public class CheckForNewItemDefinitions
 
                     _db.SaveChanges();
 
-                    await BroadcastUpdatedItemDefinitionsNotification(logger, app, newItemDefinitions, updatedAssetDescriptions);
+                    if (newItemDefinitions.Any() || updatedAssetDescriptions.Any())
+                    {
+                        await BroadcastUpdatedItemDefinitionsNotification(logger, app, newItemDefinitions, updatedAssetDescriptions);
+                    }
                 }
             }
         }
