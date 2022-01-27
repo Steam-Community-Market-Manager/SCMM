@@ -129,7 +129,8 @@ namespace SCMM.Steam.API.Commands
                             request.AssetClass.Descriptions.Select(x => new AssetClassDescriptionModel()
                             {
                                 Type = x.Type,
-                                Value = x.Value
+                                Value = x.Value,
+                                Color = x.Type
                             })
                         )
                     ),
@@ -160,15 +161,6 @@ namespace SCMM.Steam.API.Commands
             {
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, asset was not found");
             }
-
-            // Get item description text from asset class (if available)
-            var itemDescription = assetClass.Descriptions?
-                .Where(x =>
-                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
-                )
-                .Select(x => x.Value)
-                .FirstOrDefault();
 
             // Get published file details from Steam (if workshopfileid is available)
             var publishedFile = (PublishedFileDetailsModel)null;
@@ -243,10 +235,19 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
+            var assetClassHasItemDescription = assetClass.Descriptions?
+                .Where(x =>
+                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
+                    string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
+                )
+                .Select(x => x.Value)
+                .Where(x => !String.IsNullOrEmpty(x))
+                .Any() ?? false;
+
             // Get community market details from Steam (if item description or nameid is missing and it is a marketable item)
             var marketListingPageHtml = (string)null;
             var assetIsMarketable = string.Equals(assetClass.Marketable, "1", StringComparison.InvariantCultureIgnoreCase);
-            var needsDescription = ((string.IsNullOrEmpty(itemDescription) && string.IsNullOrEmpty(assetDescription.Description)) || string.IsNullOrEmpty(assetDescription.ItemType) || !assetDescription.BreaksIntoComponents.Any());
+            var needsDescription = ((!assetClassHasItemDescription && string.IsNullOrEmpty(assetDescription.Description)) || string.IsNullOrEmpty(assetDescription.ItemType) || !assetDescription.BreaksIntoComponents.Any());
             var needsNameId = (assetDescription.NameId == null);
             if (assetIsMarketable && (needsDescription || needsNameId))
             {

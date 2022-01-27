@@ -44,7 +44,7 @@ public class CheckForNewMarketItemsJob
         var logger = context.GetLogger("Check-New-Market-Items");
 
         var assetDescriptions = _db.SteamAssetDescriptions
-            .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0))
+            .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0 || (x.IsMarketable && x.MarketableRestrictionDays == null)))
             .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
             .Where(x => x.TimeAccepted != null)
             .Include(x => x.App)
@@ -104,12 +104,13 @@ public class CheckForNewMarketItemsJob
             }
         }
 
-        if (newMarketItems.Any())
+        var newActiveMarketItems = newMarketItems.Where(x => x.App.IsActive).ToList();
+        if (newActiveMarketItems.Any())
         {
             logger.LogInformation($"New market items detected!");
 
             var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
-            var thumbnail = await GenerateMarketItemsThumbnailImage(logger, newMarketItems, thumbnailExpiry);
+            var thumbnail = await GenerateMarketItemsThumbnailImage(logger, newActiveMarketItems, thumbnailExpiry);
             if (thumbnail != null)
             {
                 _db.FileData.Add(thumbnail);
@@ -117,7 +118,7 @@ public class CheckForNewMarketItemsJob
 
             _db.SaveChanges();
 
-            await BroadcastNewMarketItemsNotification(logger, newMarketItems, thumbnail);
+            await BroadcastNewMarketItemsNotification(logger, newActiveMarketItems, thumbnail);
         }
     }
 

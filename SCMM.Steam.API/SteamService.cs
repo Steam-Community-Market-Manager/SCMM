@@ -34,7 +34,7 @@ namespace SCMM.Steam.API
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, DateTimeOffset timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, DateTimeOffset? timeChecked)
         {
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Stores).ThenInclude(x => x.Store)
@@ -63,7 +63,14 @@ namespace SCMM.Steam.API
             assetDescription.IsAccepted = true;
             if (assetDescription.TimeAccepted == null)
             {
-                assetDescription.TimeAccepted = timeChecked;
+                if (!String.IsNullOrEmpty(asset.Date) && DateTimeOffset.TryParseExact(asset.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset storeDate))
+                {
+                    assetDescription.TimeAccepted = storeDate;
+                }
+                else
+                {
+                    assetDescription.TimeAccepted = timeChecked;
+                }
             }
 
             // TODO: This is creating duplicate items, need to find and re-use any existing items before creating new ones
