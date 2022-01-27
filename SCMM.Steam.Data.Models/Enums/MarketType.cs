@@ -92,7 +92,7 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "CS.TRADE")]
         [Market(Type = PriceTypes.Trade)]
-        [BuyFrom(Url = "https://cs.trade/#trader")] // Unconfirmed
+        [BuyFrom(Url = "https://cs.trade/ref/SCMM#trader")] // Unconfirmed
         CSTRADE = 22,
 
         [Display(Name = "iTrade.gg")]
