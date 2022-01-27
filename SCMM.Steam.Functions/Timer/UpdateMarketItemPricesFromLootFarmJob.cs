@@ -26,8 +26,10 @@ public class UpdateMarketItemPricesFromLootFarmtJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-LootFarm");
 
-        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
-        if (!steamApps.Any())
+        var supportedSteamApps = await _db.SteamApps
+            .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
+            .ToListAsync();
+        if (!supportedSteamApps.Any())
         {
             return;
         }
@@ -39,7 +41,7 @@ public class UpdateMarketItemPricesFromLootFarmtJob
             return;
         }
 
-        foreach (var app in steamApps)
+        foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from LOOT.Farm (appId: {app.SteamId})");
             

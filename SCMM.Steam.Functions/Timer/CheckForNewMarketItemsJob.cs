@@ -104,11 +104,15 @@ public class CheckForNewMarketItemsJob
             }
         }
 
+        if (newMarketItems.Any())
+        {
+            logger.LogInformation($"New market items detected!");
+            _db.SaveChanges();
+        }
+
         var newActiveMarketItems = newMarketItems.Where(x => x.App.IsActive).ToList();
         if (newActiveMarketItems.Any())
         {
-            logger.LogInformation($"New market items detected!");
-
             var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
             var thumbnail = await GenerateMarketItemsThumbnailImage(logger, newActiveMarketItems, thumbnailExpiry);
             if (thumbnail != null)

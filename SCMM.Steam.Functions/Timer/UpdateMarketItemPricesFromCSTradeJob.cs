@@ -27,10 +27,10 @@ public class UpdateMarketItemPricesFromCSTradeJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-CSTrade");
 
-        var steamApps = await _db.SteamApps
-            .Where(x => x.IsActive)
+        var supportedSteamApps = await _db.SteamApps
+            .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
             .ToListAsync();
-        if (!steamApps.Any())
+        if (!supportedSteamApps.Any())
         {
             return;
         }
@@ -42,13 +42,13 @@ public class UpdateMarketItemPricesFromCSTradeJob
             return;
         }
 
-        foreach (var app in steamApps)
+        var csTradeItems = (await _csTradeWebClient.GetInventoryAsync()) ?? new List<CSTradeItem>();
+        foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from CS.TRADE (appId: {app.SteamId})");
             
             try
             {
-                var csTradeItems = (await _csTradeWebClient.GetInventoryAsync()) ?? new List<CSTradeItem>();
                 var csTradeAppItems = csTradeItems.Where(x => x.AppId == app.SteamId).Where(x => x.Price != null).ToList();
 
                 var items = await _db.SteamMarketItems

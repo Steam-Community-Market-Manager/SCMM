@@ -27,8 +27,10 @@ public class UpdateMarketItemPricesFromTradeSkinsFastJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeSkinsFast");
 
-        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
-        if (!steamApps.Any())
+        var supportedSteamApps = await _db.SteamApps
+            .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
+            .ToListAsync();
+        if (!supportedSteamApps.Any())
         {
             return;
         }
@@ -40,7 +42,7 @@ public class UpdateMarketItemPricesFromTradeSkinsFastJob
             return;
         }
 
-        foreach (var app in steamApps)
+        foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating market item price information from TradeSkinsFast (appId: {app.SteamId})");
             

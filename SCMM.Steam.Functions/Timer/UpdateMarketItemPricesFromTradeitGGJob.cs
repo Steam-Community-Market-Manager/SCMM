@@ -26,8 +26,10 @@ public class UpdateMarketItemPricesFromTradeitGGJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-TradeitGG");
 
-        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
-        if (!steamApps.Any())
+        var supportedSteamApps = await _db.SteamApps
+            .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
+            .ToListAsync();
+        if (!supportedSteamApps.Any())
         {
             return;
         }
@@ -39,7 +41,7 @@ public class UpdateMarketItemPricesFromTradeitGGJob
             return;
         }
 
-        foreach (var app in steamApps)
+        foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from Tradeit.gg (appId: {app.SteamId})");
          

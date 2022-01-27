@@ -27,10 +27,10 @@ public class UpdateMarketItemPricesFromiTradeggJob
     {
         var logger = context.GetLogger("Update-Market-Item-Prices-From-iTradegg");
 
-        var steamApps = await _db.SteamApps
-            .Where(x => x.IsActive)
+        var supportedSteamApps = await _db.SteamApps
+            .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
             .ToListAsync();
-        if (!steamApps.Any())
+        if (!supportedSteamApps.Any())
         {
             return;
         }
@@ -42,7 +42,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
             return;
         }
 
-        foreach (var app in steamApps)
+        foreach (var app in supportedSteamApps)
         {
             logger.LogTrace($"Updating item price information from iTrade.gg (appId: {app.SteamId})");
             
