@@ -11,6 +11,11 @@ namespace SCMM.Market.LootFarm.Client
         {
             using (var client = BuildHttpClient())
             {
+                if (String.Equals(appName, "CSGO", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    appName = String.Empty; // CSGO is considered the default I guess, don't name it explicitly...
+                }
+
                 var url = $"{BaseUri}fullprice{appName.ToUpper()}.json";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();

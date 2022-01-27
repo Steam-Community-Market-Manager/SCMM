@@ -18,8 +18,5 @@ namespace SCMM.Market.SwapGG.Client
 
         [JsonPropertyName("i")]
         public string Icon { get; set; }
-
-        [JsonPropertyName("m")]
-        public IDictionary<string, string> Tags { get; set; }
     }
 }

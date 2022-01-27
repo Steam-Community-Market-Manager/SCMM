@@ -28,7 +28,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
         var logger = context.GetLogger("Update-Market-Item-Prices-From-iTradegg");
 
         var supportedSteamApps = await _db.SteamApps
-            .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
+            .Where(x => x.SteamId == Constants.RustAppId.ToString())
             .ToListAsync();
         if (!supportedSteamApps.Any())
         {
