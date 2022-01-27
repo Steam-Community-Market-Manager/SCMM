@@ -39,7 +39,10 @@ public class CheckNewYouTubeStoreVideos
     {
         var logger = context.GetLogger("Check-New-YouTube-Store-Videos");
 
-        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
+        var steamApps = await _db.SteamApps
+            .Where(x => x.IsActive)
+            .Where(x => x.StoreTypes > 0)
+            .ToListAsync();
         if (!steamApps.Any())
         {
             return;

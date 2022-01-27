@@ -1,4 +1,5 @@
 ﻿using SCMM.Shared.Data.Models;
+using SCMM.Steam.Data.Models.Enums;
 
 namespace SCMM.Web.Data.Models.UI.App
 {
@@ -19,7 +20,5 @@ namespace SCMM.Web.Data.Models.UI.App
         public string SurfaceColor { get; set; }
 
         public string BackgroundColor { get; set; }
-
-        public string Subdomain { get; set; }
     }
 }

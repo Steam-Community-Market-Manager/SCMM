@@ -1,5 +1,6 @@
 ﻿using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
+using SCMM.Steam.Data.Models.Enums;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -51,6 +52,8 @@ namespace SCMM.Steam.Data.Store
         public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
 
         public ICollection<SteamMarketItem> MarketItems { get; set; }
+
+        public SteamStoreTypes StoreTypes { get; set; }
 
         public ICollection<SteamStoreItem> StoreItems { get; set; }
 

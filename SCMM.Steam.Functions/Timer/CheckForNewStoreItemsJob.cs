@@ -43,7 +43,10 @@ public class CheckForNewStoreItemsJob
     {
         var logger = context.GetLogger("Check-New-Store-Items");
 
-        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
+        var steamApps = await _db.SteamApps
+            .Where(x => x.IsActive)
+            .Where(x => x.StoreTypes > 0)
+            .ToListAsync();
         if (!steamApps.Any())
         {
             return;
