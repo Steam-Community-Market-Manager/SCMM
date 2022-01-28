@@ -82,7 +82,7 @@ namespace SCMM.Steam.API.Commands
 
             // Import the item definitions
             var newAssetDescriptions = new List<SteamAssetDescription>();
-            var assetDescriptions = await _db.SteamAssetDescriptions.ToListAsync();
+            var assetDescriptions = await _db.SteamAssetDescriptions.Include(x => x.App).ToListAsync();
             if (itemDefinitions != null)
             {
                 foreach (var itemDefinition in itemDefinitions)

@@ -80,6 +80,7 @@ public class CheckForNewItemDefinitions
                     if (itemDefinitions != null)
                     {
                         var assetDescriptions = await _db.SteamAssetDescriptions
+                            .Include(x => x.App)
                             .Where(x => x.AppId == app.Id)
                             .ToListAsync();
 

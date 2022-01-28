@@ -71,7 +71,7 @@ namespace SCMM.Steam.API.Commands
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
 
             // Does this asset already exist?
-            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => x.ClassId == request.AssetClassId);
+            var assetDescription = await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ClassId == request.AssetClassId);
             if (assetDescription == null)
             {
                 // Doesn't exist in database, double check that it isn't transient (newly created)
