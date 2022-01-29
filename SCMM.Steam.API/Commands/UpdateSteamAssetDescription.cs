@@ -605,61 +605,6 @@ namespace SCMM.Steam.API.Commands
                     }
 
                     // Parse asset item type (if missing)
-                    if (string.IsNullOrEmpty(assetDescription.ItemType))
-                    {
-                        if (!string.IsNullOrEmpty(assetDescription.Description))
-                        {
-                            // e.g. "This is a skin for the Large Wood Box item." 
-                            var itemTypeMatchGroup = Regex.Match(assetDescription.Description, @"skin for the (.*) item\.").Groups;
-                            var itemType = (itemTypeMatchGroup.Count > 1)
-                                ? itemTypeMatchGroup[1].Value.Trim()
-                                : null;
-
-                            // Is it an item skin?
-                            if (!string.IsNullOrEmpty(itemType))
-                            {
-                                assetDescription.ItemType = itemType;
-                            }
-                            // Is it a crafting component?
-                            else if (assetDescription.IsCraftingComponent)
-                            {
-                                assetDescription.ItemType = Constants.RustItemTypeResource;
-                            }
-                            // Is it a craftable container?
-                            else if (assetDescription.IsCraftable)
-                            {
-                                assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
-                            }
-                            // Is it a non-craftable container?
-                            // e.g. "This special crate acquired from a twitch drop during Trust in Rust 3 will yield a random skin"
-                            else if (Regex.IsMatch(assetDescription.Description, @"crate .* random skin"))
-                            {
-                                assetDescription.ItemType = Constants.RustItemTypeSkinContainer;
-                            }
-                            // Is it a miscellaneous item?
-                            // e.g. "Having this item in your Steam Inventory means you'll be able to craft it in game. If you sell, trade or break this item you will no longer have this ability in game."
-                            else if (Regex.IsMatch(assetDescription.Description, @"craft it in game"))
-                            {
-                                assetDescription.ItemType = Constants.RustItemTypeMiscellaneous;
-                            }
-                            // Is it an underwear item?
-                            // e.g. "Having this item in your Steam Inventory means you'll be able to select this as your players default appearance. If you sell, trade or break this item you will no longer have this ability in game."
-                            else if (Regex.IsMatch(assetDescription.Description, @"players default appearance"))
-                            {
-                                assetDescription.ItemType = Constants.RustItemTypeUnderwear;
-                            }
-                        }
-                        else
-                        {
-                            // HACK: Facepunch messed up the LR300 item descriptions (they are empty), so try fill in the blanks
-                            if (assetDescription.ItemShortName == Constants.RustItemShortNameLR300 || assetDescription.Tags.Any(x => x.Value == Constants.RustItemShortNameLR300 || x.Value == Constants.RustItemTypeLR300))
-                            {
-                                assetDescription.ItemType = Constants.RustItemTypeLR300;
-                            }
-                        }
-                    }
-
-                    // Parse asset item type (if missing)
                     if (string.IsNullOrEmpty(assetDescription.ItemShortName) && !string.IsNullOrEmpty(assetDescription.ItemType))
                     {
                         assetDescription.ItemShortName = assetDescription.ItemType.ToRustItemShortName();
