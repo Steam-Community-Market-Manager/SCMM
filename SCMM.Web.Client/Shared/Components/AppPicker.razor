@@ -70,6 +70,8 @@
         Logger.LogInformation($"App was changed to '{app.Name}'");
         State.App = app;
 
-        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true, replace: true);
+        var uri = new Uri(NavigationManager.Uri);
+        var appUrl = $"{uri.Scheme}://{app.Subdomain}.{uri.Authority}{uri.PathAndQuery}";
+        NavigationManager.NavigateTo(appUrl);
     }
 }
