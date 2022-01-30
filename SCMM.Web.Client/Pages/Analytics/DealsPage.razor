@@ -27,7 +27,7 @@
                                     <MudTextField T="string" ValueChanged="async (x) => { FilterCheapestOffersDeal = x; await VirtualiseCheapestOffersDeal.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
                                                     Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
-                                <th>Cheapest Available Offer</th>
+                                <th>Cheapest Offer</th>
                                 <th>Steam Community Market</th>
                                 <th>Discount</th>
                             </tr>
@@ -109,7 +109,7 @@
                 <AnalyticsPanel>
                     <MudText Type="Typo.body2" Color="Color.Secondary" GutterBottom="true">
                         <span>Looking to top up your Steam wallet balance?</span><br/>
-                        <span>Buy these undervalued items and flip them on the Steam Community Market for extra balance. These items can be flipped instantly by selling to the current highest buy order. If you want to maximum your profit, sell later by listing at the lowest sell order price and hope somebody fulfills it.</span>
+                        <span>Buy these undervalued items and flip them on the Steam Community Market for extra balance. These items can be flipped instantly by selling to the highest buy order. If you want to maximum your profit, sell later by listing at the lowest sell order price and hope somebody fulfills it.</span>
                     </MudText>
                     <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning">
                         <span>Always double check prices before buying/selling. Our prices update once every hour, but some deals may have been snapped up already.</span>
