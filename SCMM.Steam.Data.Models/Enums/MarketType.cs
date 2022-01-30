@@ -124,7 +124,7 @@ namespace SCMM.Steam.Data.Models.Enums
         // TODO: F2F market support
         [Display(Name = "Dmarket")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade, Color = "#49BC74")]
-        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}")] // Unconfirmed
+        [BuyFrom(Url = "https://dmarket.com/ingame-items/item-list/{1}-skins?ref=6tlej6xqvD&title={3}", FeeSurcharge = 14, FeeRate = 2.5f)] /* 0.14 USD + 2.5% card fee */  // Unconfirmed
         Dmarket = 28,
 
         // TODO: Login support
