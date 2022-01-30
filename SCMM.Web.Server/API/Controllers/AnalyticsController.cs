@@ -172,7 +172,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get items that can be instatly flipped on to the Steam Community Market for profit
+        /// Get items that can be instantly flipped on to the Steam Community Market for profit
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').

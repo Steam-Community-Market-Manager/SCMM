@@ -67,11 +67,12 @@
 
     private void ChangeApp(AppDetailedDTO app)
     {
+        var uri = new Uri(NavigationManager.Uri);
+        var authority = uri.Authority.Replace(State.App?.Subdomain, String.Empty, StringComparison.InvariantCultureIgnoreCase).Trim('.');
+        var appUrl = $"{uri.Scheme}://{app.Subdomain}.{authority}{uri.PathAndQuery}";
         Logger.LogInformation($"App was changed to '{app.Name}'");
         State.App = app;
 
-        var uri = new Uri(NavigationManager.Uri);
-        var appUrl = $"{uri.Scheme}://{app.Subdomain}.{uri.Authority}{uri.PathAndQuery}";
         NavigationManager.NavigateTo(appUrl);
     }
 }
