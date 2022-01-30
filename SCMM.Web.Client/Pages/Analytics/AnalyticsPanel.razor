@@ -1,26 +1,35 @@
 ﻿
 <MudCard Outlined="true" Class="full-height d-flex flex-column">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <div class="d-flex flex-row justify-space-between"
-                <div class="Header d-flex flex-column justify-center align-left">
-                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                        @if (!String.IsNullOrEmpty(Icon))
+    @if (!String.IsNullOrEmpty(Title) || !String.IsNullOrEmpty(Subtitle))
+    {
+        <MudCardHeader>
+            <CardHeaderContent>
+                <div class="d-flex flex-row justify-space-between">
+                    <div class="Header d-flex flex-column justify-center align-left">
+                        @if (!String.IsNullOrEmpty(Title))
                         {
-                            <span class="mr-1"><i class="@Icon" /></span>
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                @if (!String.IsNullOrEmpty(Icon))
+                                {
+                                    <span class="mr-1"><i class="@Icon" /></span>
+                                }
+                                <span>@Title</span>
+                            </MudText>
                         }
-                        <span>@Title</span>
-                    </MudText>
-                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                        <span>@Subtitle</span>
-                    </MudText>
+                        @if (!String.IsNullOrEmpty(Subtitle))
+                        {
+                            <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                <span>@Subtitle</span>
+                            </MudText>
+                        }
+                    </div>
+                    <div class="Actions d-flex flex-row justify-center align-right">
+                        @ActionContent
+                    </div>
                 </div>
-                <div class="Actions d-flex flex-row justify-center align-right">
-                    @ActionContent
-                </div>
-            </div>
-        </CardHeaderContent>
-    </MudCardHeader>
+            </CardHeaderContent>
+        </MudCardHeader>
+    }
     <MudCardContent Class="@($"d-flex flex-column justify-end align-stretch flex-grow-1 relative {(Dense ? "pa-0" : null)}")">
         @ChildContent
     </MudCardContent>

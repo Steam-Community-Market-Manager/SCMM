@@ -6,7 +6,7 @@
 <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
     @if (PurchasableItem.BuyNowFrom == MarketType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)
     {
-        <MudBadge Color="MudBlazor.Color.Primary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
+        <MudBadge Color="MudBlazor.Color.Tertiary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
             <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
                 <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
             </div>
@@ -43,43 +43,46 @@
                 }
             </MudText>
         }
-        <div class="d-flex flex-row justify-center align-center text-centered">
-            @if (PurchasableItem?.Supply > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Supply)))
+        @if (!Dense)
+        {
+            <div class="d-flex flex-row justify-center align-center text-centered">
+                @if (PurchasableItem?.Supply > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Supply)))
+                {
+                    <MudTooltip Text="Supply on the market">
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                            <i class="fas fa-fw fa-parachute-box"></i>
+                            <span>@PurchasableItem.Supply.Value.ToQuantityString()</span>
+                        </MudText>
+                    </MudTooltip>
+                }
+                @if (PurchasableItem?.Demand > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Demand)))
+                {
+                    <MudTooltip Text="Demand from the market in the last 24hrs">
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                            <i class="fas fa-fw fa-exchange-alt ml-1"></i>
+                            <span>@PurchasableItem.Demand.Value.ToQuantityString()</span>
+                        </MudText>
+                    </MudTooltip>
+                }
+            </div>
+            @if (SubscribableItem?.Subscriptions > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions)))
             {
-                <MudTooltip Text="Supply on the market">
+                <MudTooltip Text="Subscribers">
                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                        <i class="fas fa-fw fa-parachute-box"></i>
-                        <span>@PurchasableItem.Supply.Value.ToQuantityString()</span>
+                        <i class="fas fa-fw fa-user"></i>
+                        <span>@SubscribableItem.Subscriptions.Value.ToQuantityString()</span>
                     </MudText>
                 </MudTooltip>
             }
-            @if (PurchasableItem?.Demand > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Demand)))
+            @if (Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).TotalDays > 1 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age)))
             {
-                <MudTooltip Text="Demand from the market in the last 24hrs">
+                <MudTooltip Text="Age">
                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                        <i class="fas fa-fw fa-exchange-alt ml-1"></i>
-                        <span>@PurchasableItem.Demand.Value.ToQuantityString()</span>
+                        <i class="fas fa-fw fa-clock"></i>
+                        <span>@((DateTimeOffset.Now - Item.TimeAccepted.Value).ToDurationString(showHours: false, showMinutes: false, showSeconds: false, maxGranularity: 1, zero: "just accepted", suffix: "old"))</span>
                     </MudText>
                 </MudTooltip>
             }
-        </div>
-        @if (SubscribableItem?.Subscriptions > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions)))
-        {
-            <MudTooltip Text="Subscribers">
-                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                    <i class="fas fa-fw fa-user"></i>
-                    <span>@SubscribableItem.Subscriptions.Value.ToQuantityString()</span>
-                </MudText>
-            </MudTooltip>
-        }
-        @if (Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).TotalDays > 1 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age)))
-        {
-            <MudTooltip Text="Age">
-                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                    <i class="fas fa-fw fa-clock"></i>
-                    <span>@((DateTimeOffset.Now - Item.TimeAccepted.Value).ToDurationString(showHours: false, showMinutes: false, showSeconds: false, maxGranularity: 1, zero: "just accepted", suffix: "old"))</span>
-                </MudText>
-            </MudTooltip>
         }
     </div>
 </div>
@@ -88,6 +91,9 @@
 
     [Parameter]
     public bool Highlighted { get; set; }
+    
+    [Parameter]
+    public bool Dense { get; set; }
 
     [Parameter]
     public IItemDescription Item { get; set; }

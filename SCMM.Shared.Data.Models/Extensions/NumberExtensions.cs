@@ -68,19 +68,20 @@
             return $"{movement.ToString($"#,##0{(decimals > 0 ? "." : string.Empty)}{string.Empty.PadRight(decimals, '0')}")}%".Trim();
         }
 
-        public static string ToPercentageString(this int value, int max, int decimals = 0)
+        public static string ToPercentageString(this int value, int max, int decimals = 0, bool dense = false)
         {
-            return ToPercentageString((long)value, (long)max, decimals);
+            return ToPercentageString((long)value, (long)max, decimals: decimals, dense: dense);
         }
 
-        public static string ToPercentageString(this long value, long max, int decimals = 0)
+        public static string ToPercentageString(this long value, long max, int decimals = 0, bool dense = false)
         {
             if (value == 0 || max == 0)
             {
                 return null;
             }
             var percentage = Math.Round((decimal)value / max * 100, decimals);
-            return $"{percentage.ToString($"#,##0{(decimals > 0 ? "." : string.Empty)}{string.Empty.PadRight(decimals, '0')}")}%".Trim();
+            var percentageString = percentage.ToString($"#,##0{(decimals > 0 ? "." : string.Empty)}{string.Empty.PadRight(decimals, '0')}");
+            return ($"{percentageString}{(!dense ? "%" : null)}").Trim();
         }
 
         public static string ToRoIString(this int percentage)

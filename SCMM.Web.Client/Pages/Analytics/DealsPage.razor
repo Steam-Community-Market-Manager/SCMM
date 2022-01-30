@@ -9,26 +9,31 @@
 @inject AppState State
 
 <PageContainer Title="Market Deals">
-
-    <MudGrid Spacing="2">
-        
-        <MudItem xs="12" xl="6">
-            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Cheapest item offers" Subtitle="Looking to buy an item? Find the cheapest offer across all third party markets.">
-                <div class="ma-n4">
-                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:70vh;">
+    <MudTabs Elevation="0" Class="mud-tabs-transparent mt-n3">
+        <ChildContent>
+            <MudTabPanel Icon="fas fa-fw fa-search-dollar mr-2" Text="Cheapest Offers" Disabled="State.IsPrerendering">
+                <AnalyticsPanel>
+                    <MudText Type="Typo.body2" Color="Color.Secondary" GutterBottom="true">
+                        <span>Looking to buy a particular item?</span><br/>
+                        <span>Find the cheapest offer across all markets here.</span>
+                    </MudText>
+                    <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning">
+                        <span>Always double check prices before buying/selling. Our prices update once every hour, but some deals may have been snapped up already.</span>
+                    </MudAlert>
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                         <thead>
                             <tr>
                                 <th>
-                                    <MudTextField T="string" ValueChanged="async (x) => { FilterCheapestDeals = x; await VirtualiseCheapestDeals.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
-                                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                                    <MudTextField T="string" ValueChanged="async (x) => { FilterCheapestOffersDeal = x; await VirtualiseCheapestOffersDeal.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
+                                                    Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
-                                <th>Cheapest Deal</th>
+                                <th>Cheapest Available Offer</th>
                                 <th>Steam Community Market</th>
                                 <th>Discount</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize @ref="VirtualiseCheapestDeals" ItemsProvider="LoadCheapestThirdPartyDeals" Context="item">
+                            <Virtualize @ref="VirtualiseCheapestOffersDeal" ItemsProvider="LoadCheapestOffersDeal" Context="item">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -75,7 +80,7 @@
                                                     <span>Save @State.Currency.ToPriceString(item.DiscountAmount)</span>
                                                 </TooltipContent>
                                                 <ChildContent>
-                                                    <MudChip Variant="Variant.Filled" Color="Color.Success" Size="@Size.Small" Text="@($"{item.DiscountAmount.ToPercentageString(item.ReferemcePrice)} off")">
+                                                    <MudChip Variant="Variant.Text" Color="@((item.DiscountAmount > 0) ? Color.Success : Color.Secondary)" Size="@Size.Small" Text="@($"{item.DiscountAmount.ToPercentageString(item.ReferemcePrice) ?? "0%"} off")">
                                                     </MudChip>
                                                 </ChildContent>
                                             </MudTooltip>
@@ -98,29 +103,39 @@
                             </Virtualize>
                         </tbody>
                     </MudSimpleTable>
-                </div>
-            </AnalyticsPanel>
-        </MudItem>
-    
-        <MudItem xs="12" xl="6">
-            <AnalyticsPanel Icon="fas fa-fw fa-search-dollar" Title="Undervalued items on third party markets" Subtitle="Looking to top up your Steam wallet balance? Buy these undervalued third party items and instantly flip them on the Steam Community Market for extra balance.">
-                <div class="ma-n4">
-                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:70vh;">
+                </AnalyticsPanel>
+            </MudTabPanel>
+            <MudTabPanel Icon="fas fa-fw fa-exchange-alt mr-2" Text="Profitable Flips" Disabled="State.IsPrerendering">
+                <AnalyticsPanel>
+                    <MudText Type="Typo.body2" Color="Color.Secondary" GutterBottom="true">
+                        <span>Looking to top up your Steam wallet balance?</span><br/>
+                        <span>Buy these undervalued items and flip them on the Steam Community Market for extra balance. These items can be flipped instantly by selling to the current highest buy order. If you want to maximum your profit, sell later by listing at the lowest sell order price and hope somebody fulfills it.</span>
+                    </MudText>
+                    <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning">
+                        <span>Always double check prices before buying/selling. Our prices update once every hour, but some deals may have been snapped up already.</span>
+                    </MudAlert>
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                         <thead>
                             <tr>
                                 <th>
-                                    <MudTextField T="string" ValueChanged="async (x) => { FilterUndervaluedDeals = x; await VirtualiseUndervaluedDeals.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
-                                                  Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                                    <MudTextField T="string" ValueChanged="async (x) => { FilterProfitableFlipsDeal = x; await VirtualiseProfitableFlipsDeal.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
+                                                    Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
-                                <th>Buy Now</th>
+                                <th>
+                                    <MudText Typo="Typo.body1">Buy it now</MudText>
+                                </th>
                                 <th class="pa-0">
                                     <i class="fa fa-fw fa-arrow-right"></i>
                                 </th>
-                                <th>Sell Instantly</th>
+                                <th>
+                                    <MudSwitch @bind-Checked="@ProfitableFlipsDealSellLow" ThumbIcon="@MudBlazor.Icons.Material.Filled.AccessTime" ThumbIconColor="@(ProfitableFlipsDealSellLow ? Color.Default : Color.Dark)" Color="@(ProfitableFlipsDealSellLow ? Color.Primary : Color.Warning)">
+                                        <span>Sell it <strong>@(ProfitableFlipsDealSellLow ? "now" : "later")</strong> for <strong>@(ProfitableFlipsDealSellLow ? "instant" : "maximum")</strong> profit</span>
+                                    </MudSwitch>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize @ref="VirtualiseUndervaluedDeals" ItemsProvider="LoadUndervaluedThirdPartyDeals" Context="item">
+                            <Virtualize @ref="VirtualiseProfitableFlipsDeal" ItemsProvider="LoadProfitableFlipsDeal" Context="item">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -161,7 +176,9 @@
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2" Disabled="State.IsPrerendering">Sell</MudButton>
                                                 <img src="@($"/images/market/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                <span>@State.Currency.ToPriceString(item.SellPrice) for <strong>@State.Currency.ToPriceString(item.SellProfit, dense: true)</strong> profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees</span>
+                                                <span><span class="mud-secondary-text">at</span> @State.Currency.ToPriceString(ProfitableFlipsDealSellLow ? item.SellLowPrice : item.SellHighPrice) <span class="mud-secondary-text">for a profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees of</span> <strong class="mud-success-text">@State.Currency.ToPriceString(ProfitableFlipsDealSellLow ? item.SellLowProfit : item.SellHighProfit)</strong></span>
+                                                <MudChip Variant="Variant.Text" Color="Color.Success" Size="@Size.Small" Text="@($"+{(ProfitableFlipsDealSellLow ? item.SellLowProfit : item.SellHighProfit).ToPercentageString(item.BuyTotal) ?? "0%"}")" Class="ml-2">
+                                                </MudChip>
                                             </MudText>
                                         </td>
                                     </tr>
@@ -182,23 +199,23 @@
                             </Virtualize>
                         </tbody>
                     </MudSimpleTable>
-                </div>
-            </AnalyticsPanel>
-        </MudItem>
-    
-    </MudGrid>
+                </AnalyticsPanel>
+            </MudTabPanel>
+		</ChildContent>
+    </MudTabs>
 
 </PageContainer>
 
 @code {
+    private string FilterCheapestOffersDeal;
 
-    private string FilterCheapestDeals { get; set; }
-    
-    private string FilterUndervaluedDeals { get; set; }
+    private string FilterProfitableFlipsDeal;
 
-    private Virtualize<MarketItemDealAnalyticDTO> VirtualiseCheapestDeals { get; set; }
-    
-    private Virtualize<MarketItemFlipDealAnalyticDTO> VirtualiseUndervaluedDeals { get; set; }
+    private Virtualize<MarketItemDealAnalyticDTO> VirtualiseCheapestOffersDeal;
+
+    private Virtualize<MarketItemFlipDealAnalyticDTO> VirtualiseProfitableFlipsDeal;
+
+    private bool ProfitableFlipsDealSellLow = true;
 
     private void ViewMarketItem(ulong appId, string name)
     {
@@ -214,30 +231,30 @@
         ExternalNavigationManager.NavigateToNewTab(buyUrl);
     }
     
-    protected async ValueTask<ItemsProviderResult<MarketItemDealAnalyticDTO>> LoadCheapestThirdPartyDeals(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<MarketItemDealAnalyticDTO>> LoadCheapestOffersDeal(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemDealAnalyticDTO>>($"api/analytics/market/thirdParty/cheapestDeals?filter={Uri.EscapeDataString(FilterCheapestDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemDealAnalyticDTO>>($"api/analytics/market/cheapestOffers?filter={Uri.EscapeDataString(FilterCheapestOffersDeal ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemDealAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'cheapest third party deals' analytics");
+            Logger.LogError(ex, $"Error listing 'cheapest offers' deal analytics");
             throw;
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<MarketItemFlipDealAnalyticDTO>> LoadUndervaluedThirdPartyDeals(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<MarketItemFlipDealAnalyticDTO>> LoadProfitableFlipsDeal(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipDealAnalyticDTO>>($"api/analytics/market/thirdParty/undervaluedDeals?filter={Uri.EscapeDataString(FilterUndervaluedDeals ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipDealAnalyticDTO>>($"api/analytics/market/profitableFlips?filter={Uri.EscapeDataString(FilterProfitableFlipsDeal ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemFlipDealAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'undervalued third party deals' analytics");
+            Logger.LogError(ex, $"Error listing 'profitable flips' deal analytics");
             throw;
         }
     }

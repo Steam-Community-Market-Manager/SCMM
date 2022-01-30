@@ -1,5 +1,6 @@
 ﻿@using SCMM.Web.Client.Shared.Components.Items
 @using SCMM.Web.Data.Models.UI.Item
+@page "/"
 @page "/items"
 @page "/skins"
 @inherits PersistentComponent
@@ -24,7 +25,12 @@
                 {
                     @foreach (var itemType in ItemTypes)
                     {
-                        <MudSelectItem Value="@itemType" />
+                        <MudSelectItem Value="@itemType">
+                            <div class="d-flex flex-row align-center">
+                                <img src="/images/app/@(State.AppId)/items/@(itemType.ToRustItemShortName()).png" class="mr-2" style="height:2em" />
+                                <span>@itemType</span>
+                            </div>
+                        </MudSelectItem>
                     }
                 }
             </MudSelect>
@@ -53,7 +59,7 @@
         {
             @foreach (var item in Items.Items)
             {
-                <MudItem xs="6" sm="4" md="3" lg="2" xl="1">
+                <MudItem xs="6" sm="4" md="3" lg="2" xxl="1">
                     <MudPaper Outlined="true" Class="full-height">
                         <ItemDescriptionSummary Item="@item" OnClick="@OnItemClicked" />
                     </MudPaper>

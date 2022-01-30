@@ -26,14 +26,19 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         public MarketType SellTo { get; set; }
 
-        public long SellPrice { get; set; }
+        public long SellLowPrice { get; set; }
 
-        public long SellFee { get; set; }
-
-        [JsonIgnore]
-        public decimal SellPriceRatio => BuyTotal > 0 && SellPrice > 0 ? (SellPrice - BuyTotal) / (decimal)SellPrice : 0;
+        public long SellLowFee { get; set; }
 
         [JsonIgnore]
-        public long SellProfit => (SellPrice - SellFee - BuyTotal);
+        public long SellLowProfit => (SellLowPrice - SellLowFee - BuyTotal);
+
+        public long SellHighPrice { get; set; }
+
+        public long SellHighFee { get; set; }
+
+        [JsonIgnore]
+        public long SellHighProfit => (SellHighPrice - SellHighFee - BuyTotal);
+
     }
 }

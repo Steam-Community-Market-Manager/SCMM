@@ -26,9 +26,9 @@
             <response code="200">List of market sales and revenue grouped/keyed per day by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.AnalyticsController.GetCheapestThirdPartDeals(System.String,System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.AnalyticsController.GetMarketCheapestOffers(System.String,System.Int32,System.Int32)">
             <summary>
-            List items that are cheaper to buy from third party markets rather than the Steam Community Market
+            Get the cheapeast market offer available for items
             </summary>
             <remarks>
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -39,9 +39,9 @@
             <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.AnalyticsController.GetUndervaluedThirdPartyDeals(System.String,System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.AnalyticsController.GetMarketProfitableFlips(System.String,System.Int32,System.Int32)">
             <summary>
-            List items from third party markets that can be instatly flipped on to the Steam Community Market for more than what you paid
+            Get items that can be instatly flipped on to the Steam Community Market for profit
             </summary>
             <remarks>
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -441,15 +441,6 @@
             <param name="start">Return activity starting at this specific index (pagination)</param>
             <param name="count">Number activity to be returned (can be less if not enough data)</param>
             <response code="200">Paginated list of activity matching the request parameters.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketActivityTopItems(System.Int32,System.Int32)">
-            <summary>
-            Get items with the highest amount of market listing activity in the last 24hrs
-            </summary>
-            <param name="start">Return items starting at this specific index (pagination)</param>
-            <param name="count">Number items to be returned (can be less if not enough data)</param>
-            <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostDemanded(System.Int32,System.Int32)">

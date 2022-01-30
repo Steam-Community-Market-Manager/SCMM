@@ -1,18 +1,21 @@
 ﻿
 <MudCard Outlined="true" Class="full-height d-flex flex-column">
-    @if (!String.IsNullOrEmpty(Title))
+    @if (!String.IsNullOrEmpty(Title) || !String.IsNullOrEmpty(Subtitle))
     {
         <MudCardHeader>
             <CardHeaderContent>
                 <div class="d-flex flex-row justify-space-between">
                     <div class="Header d-flex flex-column justify-center align-left">
-                        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
-                            @if (!String.IsNullOrEmpty(Icon))
-                            {
-                                <span class="mr-1"><i class="@Icon" /></span>
-                            }
-                            <span>@Title</span>
-                        </MudText>
+                        @if (!String.IsNullOrEmpty(Title))
+                        {
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">
+                                @if (!String.IsNullOrEmpty(Icon))
+                                {
+                                    <span class="mr-1"><i class="@Icon" /></span>
+                                }
+                                <span>@Title</span>
+                            </MudText>
+                        }
                         @if (!String.IsNullOrEmpty(Subtitle))
                         {
                             <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">

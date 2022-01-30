@@ -416,73 +416,78 @@
 				</MudPaper>
 			</MudItem>
             
-            <MudItem xs="12">
-                @if (Item.Tags.Any(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)))
-                {
-                    <div class="quote-box text-centered pa-2 mb-2">
-                        @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)).Take(1))
-                        {
-                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Dark">
-                                <span>Looks like a</span>
-                                <span>@tag.Value.FirstCharToLower().TrimStart('a', ' ')</span>
-                            </MudText>
-                        }
-				    </div>
-                }
-                <MudPaper Outlined="true" Class="py-2 px-3">
-                    <div class="d-flex flex-row align-center">
-                        <MudIcon Icon="fas fa-robot" Size="MudBlazor.Size.Large" Class="my-1" />
-                        <div class="ml-5">
-                            @if (!String.IsNullOrEmpty(Item.DominantColour))
-                            {
-                                <MudChip Size="MudBlazor.Size.Small" Text="@Item.DominantColour" Variant="MudBlazor.Variant.Text" Icon="fas fa-fw fa-tint" 
-                                            Class="mud-chip-outlined" Style="@($"background-color: {Item.DominantColour}; color: white")" />
-                            }
-                            @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiTag)))
-                            {
-                                <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
-                            }
-                            @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi) && !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop)))
-                            {
-                                <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
-                            }
-						</div>
-                    </div>
-				</MudPaper>
-			</MudItem>
-            
-            @if (Item.CreatorId != null && !String.IsNullOrEmpty(Item.CreatorName))
-            {
+            <MudHidden Breakpoint="Breakpoint.MdAndDown">
+
                 <MudItem xs="12">
-                    <MudPaper Outlined="true" Class=" full-height py-2 px-3">
-                        <div class="d-flex flex-row">
-                            <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="my-1" />
-                            <div class="ml-3">
-                                <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@Item.CreatorName</MudText>
-                                <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
-                                    @if (Item.CreatorId != Item.AppId)
-                                    {
-                                        <span>• </span>
-                                        <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ViewCreatorWorkshopPage())" Disabled="State.IsPrerendering">View Steam Workshop</MudLink>
-                                        <br />
-                                    }
-                                    <span>• </span>
-                                    <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ShowCreatorItemsDialog())" Disabled="State.IsPrerendering">View more items from this creator</MudLink>
-								</MudText>
+                    @*
+                    @if (Item.Tags.Any(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)))
+                    {
+                        <div class="quote-box text-centered pa-2 mb-2">
+                            @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiCaption)).Take(1))
+                            {
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Dark">
+                                    <span>Looks like a</span>
+                                    <span>@tag.Value.FirstCharToLower().TrimStart('a', ' ')</span>
+                                </MudText>
+                            }
+				        </div>
+                    }
+                    *@
+                    <MudPaper Outlined="true" Class="py-2 px-3">
+                        <div class="d-flex flex-row align-center">
+                            @*
+                            <MudIcon Icon="fas fa-robot" Size="MudBlazor.Size.Large" Class="my-1" />
+                            *@
+                            <div class="ml-5">
+                                @if (!String.IsNullOrEmpty(Item.DominantColour))
+                                {
+                                    <MudChip Size="MudBlazor.Size.Small" Text="@Item.DominantColour" Variant="MudBlazor.Variant.Text" Icon="fas fa-fw fa-tint" 
+                                                Class="mud-chip-outlined" Style="@($"background-color: {Item.DominantColour}; color: white")" />
+                                }
+                                @foreach(var tag in Item.Tags.Where(x => x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAiTag)))
+                                {
+                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                }
+                                @foreach(var tag in Item.Tags.Where(x => !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.AssetTagAi) && !x.Key.StartsWith(SCMM.Steam.Data.Models.Constants.SteamAssetTagWorkshop)))
+                                {
+                                    <MudChip Size="MudBlazor.Size.Small" Text="@tag.Value" Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Default" Class="mud-chip-outlined" />
+                                }
 						    </div>
                         </div>
 				    </MudPaper>
 			    </MudItem>
-            }
             
-            @if (Item.Stores?.Count() > 1)
-            {
-                <MudItem xs="12">
-                    <MudPaper Outlined="true" Class="full-height">
-                        <div class="d-flex flex-column align-stretch">
-                            @foreach (var store in Item.Stores.Where(x => x.Date != null).OrderByDescending(x => x.Date))
-                            {
-                                <MudTooltip Text="@($"View the store from {store.Date.Value.ToString("d")}")">
+                @if (Item.CreatorId != null && !String.IsNullOrEmpty(Item.CreatorName))
+                {
+                    <MudItem xs="12">
+                        <MudPaper Outlined="true" Class=" full-height py-2 px-3">
+                            <div class="d-flex flex-row">
+                                <MudAvatar Image="@Item.CreatorAvatarUrl" Size="MudBlazor.Size.Medium" Class="my-1" />
+                                <div class="ml-3">
+                                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@Item.CreatorName</MudText>
+                                    <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
+                                        @if (Item.CreatorId != Item.AppId)
+                                        {
+                                            <span>• </span>
+                                            <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ViewCreatorWorkshopPage())" Disabled="State.IsPrerendering">View Steam Workshop</MudLink>
+                                            <br />
+                                        }
+                                        <span>• </span>
+                                        <MudLink Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" @onclick="@(() => ShowCreatorItemsDialog())" Disabled="State.IsPrerendering">View more items from this creator</MudLink>
+								    </MudText>
+						        </div>
+                            </div>
+				        </MudPaper>
+			        </MudItem>
+                }
+            
+                @if (Item.Stores?.Count() > 1)
+                {
+                    <MudItem xs="12">
+                        <MudPaper Outlined="true" Class="full-height">
+                            <div class="d-flex flex-column align-stretch">
+                                @foreach (var store in Item.Stores.Where(x => x.Date != null).OrderByDescending(x => x.Date))
+                                {
                                     <div @onclick="@(() => ViewStorePage(store.Id))" class="d-flex flex-row align-center justify-start full-width clickable hover-darken px-4 py-2">
                                         <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Secondary">
                                             <i class="fa fa-fw fa-shopping-cart mr-4" />
@@ -502,46 +507,47 @@
                                             @State.Currency.ToPriceString(store.Price ?? 0)
 								        </MudText>
 						            </div>
-                                    <MudDivider FlexItem="true" />
-								</MudTooltip>
-                            }
-                        </div>
-				    </MudPaper>
-			    </MudItem>
-            }
+                                    <MudDivider />
+                                }
+                            </div>
+				        </MudPaper>
+			        </MudItem>
+                }
             
-            @if (GetTimelineEvents().Any())
-            {
-                <MudItem xs="12">
-                    <MudPaper Outlined="true" Class="pa-4">
-                        <MudTimeline>
-                            @foreach (var timelineEvent in GetTimelineEvents().OrderByDescending(x => x.Timestamp))
-                            {
-                                <MudTimelineItem Color="@timelineEvent.Color" TimelineAlign="TimelineAlign.End" Size="Size.Medium" Elevation="25">
-                                    <ItemOpposite>
-                                        <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Timestamp.ToString("d")</MudText>
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@((DateTimeOffset.Now - timelineEvent.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</MudText>
-                                    </ItemOpposite>
-                                    <ItemDot>
-                                        <i class="@timelineEvent.Icon" />
-                                    </ItemDot>
-                                    <ItemContent>
-                                        <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Title</MudText>
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">@timelineEvent.Subtitle</MudText>
-                                    </ItemContent>
-                                </MudTimelineItem>
-                            }
-                        </MudTimeline>
-		            </MudPaper>
-                </MudItem>
-            }
+                @if (GetTimelineEvents().Any())
+                {
+                    <MudItem xs="12">
+                        <MudPaper Outlined="true" Class="pa-4">
+                            <MudTimeline>
+                                @foreach (var timelineEvent in GetTimelineEvents().OrderByDescending(x => x.Timestamp))
+                                {
+                                    <MudTimelineItem Color="@timelineEvent.Color" TimelineAlign="TimelineAlign.End" Size="Size.Medium" Elevation="25">
+                                        <ItemOpposite>
+                                            <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Timestamp.ToString("d")</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@((DateTimeOffset.Now - timelineEvent.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago"))</MudText>
+                                        </ItemOpposite>
+                                        <ItemDot>
+                                            <i class="@timelineEvent.Icon" />
+                                        </ItemDot>
+                                        <ItemContent>
+                                            <MudText Typo="Typo.body1" Color="@timelineEvent.Color">@timelineEvent.Title</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@timelineEvent.Subtitle</MudText>
+                                        </ItemContent>
+                                    </MudTimelineItem>
+                                }
+                            </MudTimeline>
+		                </MudPaper>
+                    </MudItem>
+                }
             
-            @* TODO: Technical: app id, class id, workshop id, name id, store id... *@
-            @* TODO: Time created/updated/accepted... *@
-            @* TODO: Time refreshed... *@
+                @* TODO: Technical: app id, class id, workshop id, name id, store id... *@
+                @* TODO: Time created/updated/accepted... *@
+                @* TODO: Time refreshed... *@
 
-            @* TODO: "Request Update" button *@
+                @* TODO: "Request Update" button *@
             
+            </MudHidden>
+
         </MudGrid>
     </MudItem>
     
@@ -948,8 +954,8 @@
                     <MudPaper Outlined="true" Style="height:30vh; overflow-y:scroll">
                         <Virtualize ItemsProvider="LoadItemActivity" Context="item">
                             <ItemContent>
-                                <div class="@(item.IsSale ? "mud-paper mud-paper-square" : null)">
-                                    <div class="d-flex flex-row flex-wrap justify-start align-center hover-darken pa-1">
+                                <div class="@($"{(item.IsSale ? "mud-theme-dark" : null)} hover-darken pa-1")">
+                                    <div class="d-flex flex-row flex-wrap justify-start align-center">
                                         @if (!String.IsNullOrEmpty(item.BuyerName))
                                         {
                                             <img src="@item.BuyerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
@@ -971,15 +977,19 @@
                                             <img src="@item.SellerAvatarUrl" class="mx-1" style="width:32px; height:32px;" />
                                             <MudText Typo="Typo.body2" Class="mx-1 no-wrap">@item.SellerName</MudText>
                                         }
-                                        <MudText Typo="Typo.body2" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
+                                        <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary" Class="flex-grow-1 text-right mx-1 no-wrap">@((DateTimeOffset.Now - item.Timestamp).ToDurationString(prefix: "about", maxGranularity: 3, suffix: "ago"))</MudText>
                                     </div>
                                 </div>
+                                <MudDivider />
                             </ItemContent>
                             <Placeholder>
-                                <div class="d-flex flex-row justify-start align-center pa-1">
-                                    <MudProgressCircular Indeterminate="true" Class="mx-1" Style="width:32px; height:32px;" />
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mx-1">Loading...</MudText>
+                                <div class="hover-darken pa-1">
+                                    <div class="d-flex flex-row justify-start align-center">
+                                        <MudProgressCircular Indeterminate="true" Class="mx-1" Style="width:32px; height:32px;" />
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mx-1">Loading...</MudText>
+                                    </div>
                                 </div>
+                                <MudDivider />
                             </Placeholder>
                         </Virtualize>
 				    </MudPaper>
@@ -1017,7 +1027,7 @@
                                 @foreach (var item in Collection.Items)
                                 {
                                     <MudItem xs="6" sm="4" md="3" lg="3" xl="2">
-                                        <ItemDescriptionSummary Item="@item" />
+                                        <ItemDescriptionSummary Item="@item" Dense="true" />
                                     </MudItem>
                                 }
                             </MudGrid>

@@ -126,7 +126,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List items that are cheaper to buy from third party markets rather than the Steam Community Market
+        /// Get the cheapeast market offer available for items
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -136,10 +136,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [HttpGet("market/thirdParty/cheapestDeals")]
+        [HttpGet("market/cheapestOffers")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemDealAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetCheapestThirdPartDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetMarketCheapestOffers([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
             var appId = this.App().Guid;
@@ -150,10 +150,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description)
                 .Where(x => x.AppId == appId)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
-                .Where(x => x.BuyNowFrom != MarketType.SteamCommunityMarket)
-                .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) < x.SellOrderLowestPrice)
-                .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.SellOrderLowestPrice > 0 && (x.SellOrderLowestPrice - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 0)
-                .OrderByDescending(x => (x.SellOrderLowestPrice - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)x.SellOrderLowestPrice);
+                .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) <= x.SellOrderLowestPrice)
+                .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.SellOrderLowestPrice > 0)
+                .OrderByDescending(x => (decimal)(x.SellOrderLowestPrice - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)x.SellOrderLowestPrice);
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new MarketItemDealAnalyticDTO()
@@ -167,13 +166,13 @@ namespace SCMM.Web.Server.API.Controllers
                     BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
                     BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
                     ReferenceFrom = MarketType.SteamCommunityMarket,
-                    ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice - 1, x.Currency),
+                    ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
                 })
             );
         }
 
         /// <summary>
-        /// List items from third party markets that can be instatly flipped on to the Steam Community Market for more than what you paid
+        /// Get items that can be instatly flipped on to the Steam Community Market for profit
         /// </summary>
         /// <remarks>
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
@@ -183,10 +182,10 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
-        [HttpGet("market/thirdParty/undervaluedDeals")]
+        [HttpGet("market/profitableFlips")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipDealAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetUndervaluedThirdPartyDeals([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetMarketProfitableFlips([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
             var appId = this.App().Guid;
@@ -197,10 +196,9 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.Description)
                 .Where(x => x.AppId == appId)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter))
-                .Where(x => x.BuyNowFrom != MarketType.SteamCommunityMarket)
                 .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.BuyOrderHighestPrice > 0)
                 .Where(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 1)
-                .OrderByDescending(x => (x.BuyOrderHighestPrice - (x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)x.BuyOrderHighestPrice);
+                .OrderByDescending(x => (decimal)(x.BuyOrderHighestPrice - ((decimal)x.BuyOrderHighestPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)(x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)));
 
             return Ok(
                 await query.PaginateAsync(start, count, x => new MarketItemFlipDealAnalyticDTO()
@@ -214,8 +212,10 @@ namespace SCMM.Web.Server.API.Controllers
                     BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
                     BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
                     SellTo = MarketType.SteamCommunityMarket,
-                    SellPrice = this.Currency().CalculateExchange(x.BuyOrderHighestPrice, x.Currency),
-                    SellFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.BuyOrderHighestPrice), x.Currency) : 0),
+                    SellLowPrice = this.Currency().CalculateExchange(x.BuyOrderHighestPrice, x.Currency),
+                    SellLowFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.BuyOrderHighestPrice), x.Currency) : 0),
+                    SellHighPrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
+                    SellHighFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(x.SellOrderLowestPrice), x.Currency) : 0),
                 })
             );
         }
