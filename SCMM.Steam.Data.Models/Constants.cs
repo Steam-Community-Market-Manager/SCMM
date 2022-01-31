@@ -31,7 +31,7 @@
         public const string SteamStoreItemDefLinkRegex = @"detail\/(\d+)";
         public const string SteamStoreItemDescriptionName = "item_description_snippet";
 
-        public const string SteamMarketListingItemNameIdRegex = @"ItemActivityTicker.Start\((.*)\);";
+        public const string SteamMarketListingItemNameIdRegex = @"Market_LoadOrderSpread\((.*)\);";
         public const string SteamMarketListingAssetJsonRegex = @"g_rgAssets\s*=\s*(.*);";
 
         public const string SteamAssetClassDescriptionTypeHtml = "html";
