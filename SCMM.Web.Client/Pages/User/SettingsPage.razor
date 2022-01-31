@@ -174,10 +174,8 @@
                                 <Preference Title="Item Summary Information" 
                                             Description="What additional information to show when viewing item summaries.">
                                     <MudSelect T="ItemInfoType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true" Disabled="State.IsPrerendering"
-                                               AdornmentIcon="fas fa-fw fa-check-square" AdornmentColor="Color.Primary" Adornment="Adornment.End" OnAdornmentClick="@(() => UpdateProfile())"
-                                               @bind-SelectedValues="@Update.ItemInfo" ToStringFunc="@((x) => x.GetDisplayName())" OnInternalInputChanged="@((x) => UpdateProfile())"
-                                               MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No additional info"))"
-                                               HelperText="Click the checkbox icon on the right to save your selection">
+                                               @bind-SelectedValues="@Update.ItemInfo" ToStringFunc="@((x) => x.GetDisplayName())" OnInternalInputChanged="@((x) => UpdateProfile())" OnBlur="@(() => UpdateProfile())"
+                                               MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No additional info"))">
                                         @foreach (var value in Enum.GetValues<ItemInfoType>())
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
