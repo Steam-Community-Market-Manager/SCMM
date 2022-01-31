@@ -105,7 +105,7 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.IsAccepted = true;
 
                 // Parse asset description (if any)
-                if (!String.IsNullOrEmpty(assetDescription.Description) && !String.IsNullOrEmpty(itemDefinition.Description))
+                if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrEmpty(itemDefinition.Description))
                 {
                     // Strip any HTML and BBCode tags, just get the plain-text
                     itemDefinition.Description = Regex.Replace(itemDefinition.Description, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
@@ -168,24 +168,9 @@ namespace SCMM.Steam.API.Commands
                 // Parse asset description (if any)
                 if (assetClass.Descriptions != null)
                 {
-                    var itemDescription = String.Join("\n", 
-                        assetClass.Descriptions
-                            .Where(x => !string.IsNullOrEmpty(x.Value))
-                            .Where(x =>
-                                string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
-                                string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
-                            )
-                            .Select(x => (x.Color != null ? $"<span style='color:{x.Color.SteamColourToWebHexString()}'>{x.Value}</span>" : x.Value))
-                            .Select(x => (x == " " ? "&nbsp;" : x))
-                            .Where(x => !String.IsNullOrEmpty(x))
-                            .ToArray()
-                    );
-
+                    var itemDescription = ParseItemDescriptionText(assetClass.Descriptions);
                     if (!string.IsNullOrEmpty(itemDescription))
                     {
-                        // Strip any HTML and BBCode tags, just get the plain-text
-                        //itemDescription = Regex.Replace(itemDescription, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
-                        itemDescription = Regex.Replace(itemDescription, Constants.SteamAssetClassDescriptionStripBBCodeRegex, string.Empty).Trim();
                         assetDescription.Description = itemDescription;
                     }
                 }
@@ -422,15 +407,17 @@ namespace SCMM.Steam.API.Commands
                             .FirstOrDefault().Value?
                             .FirstOrDefault().Value?
                             .FirstOrDefault().Value;
-                        var itemDescriptionHtml = listingAssetClass?
-                            .Descriptions?
-                            .Where(x => string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase))
-                            .Select(x => x.Value)
-                            .FirstOrDefault();
-                        if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrWhiteSpace(itemDescriptionHtml))
+                        var itemDescription = ParseItemDescriptionText(
+                            listingAssetClass?.Descriptions?.Select(x => new AssetClassDescriptionModel()
+                            {
+                                Type = x.Type,
+                                Value = x.Value,
+                                Color = x.Color,
+                            })
+                        );
+                        if (string.IsNullOrEmpty(assetDescription.Description) && !string.IsNullOrWhiteSpace(itemDescription))
                         {
-                            // Strip any HTML tags, just get the plain-text
-                            assetDescription.Description = Regex.Replace(itemDescriptionHtml, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
+                            assetDescription.Description = itemDescription;
                         }
                         if (listingAssetClass?.AppId > 0 && appId == null)
                         {
@@ -477,12 +464,12 @@ namespace SCMM.Steam.API.Commands
                 // Rust
                 case Constants.RustAppId:
 
+                    // TODO: Parse store item id from workshop description "buy now" urls
+                    //       @"\/252490\/[detail\/]*([0-9]+)\/"
+
                     // Parse asset crafting components from the description text (if available)
                     if (!string.IsNullOrEmpty(assetDescription.Description))
                     {
-                        // TODO: Parse store item id from workshop description "buy now" urls
-                        //       @"\/252490\/[detail\/]*([0-9]+)\/"
-
                         // Is this asset a permanent item?
                         var isPermanentDescription = @"This item will be permanently bound to your steam account";
                         if (Regex.IsMatch(assetDescription.Description, isPermanentDescription))
@@ -716,6 +703,33 @@ namespace SCMM.Steam.API.Commands
             {
                 AssetDescription = assetDescription
             };
+        }
+
+        private string ParseItemDescriptionText(IEnumerable<AssetClassDescriptionModel> descriptions)
+        {
+            if (descriptions?.Any() != true)
+            {
+                return null;
+            }
+            return String.Join("\n",
+                descriptions
+                    .Where(x => !string.IsNullOrEmpty(x.Value))
+                    .Where(x =>
+                        string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeHtml, StringComparison.InvariantCultureIgnoreCase) ||
+                        string.Equals(x.Type, Constants.SteamAssetClassDescriptionTypeBBCode, StringComparison.InvariantCultureIgnoreCase)
+                    )
+                    .Select(x =>
+                    {
+                                // Strip any HTML and BBCode tags, just get the plain-text
+                                x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
+                        x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripBBCodeRegex, string.Empty).Trim();
+                        return x;
+                    })
+                    .Select(x => (x.Color != null ? $"<span style='color:{x.Color.SteamColourToWebHexString()}'>{x.Value}</span>" : x.Value))
+                    .Select(x => (x == " " ? "&nbsp;" : x))
+                    .Where(x => !String.IsNullOrEmpty(x))
+                    .ToArray()
+            );
         }
     }
 }
