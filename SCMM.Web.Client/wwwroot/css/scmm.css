@@ -45,6 +45,14 @@
     text-align: right !important;
 }
 
+.align-top {
+    vertical-align: top !important;
+}
+
+.align-bottom {
+    vertical-align: bottom !important;
+}
+
 .text-line-through {
     text-decoration: line-through
 }

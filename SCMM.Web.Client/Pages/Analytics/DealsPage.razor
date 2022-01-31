@@ -2,6 +2,8 @@
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Analytic
 @page "/deals"
+@page "/deals/{tab}"
+@inherits PersistentComponent
 @inject ILogger<DealsPage> Logger
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
@@ -9,22 +11,23 @@
 @inject AppState State
 
 <PageContainer Title="Market Deals">
-    <MudTabs Elevation="0" Class="mud-tabs-transparent mt-n3">
+    <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning">
+        <span>Always double check prices before buying or selling. Our prices update once every hour, some deals may have been snapped up already.</span>
+    </MudAlert>
+    <MudTabs Elevation="0" ActivePanelIndex="TabIndex" ActivePanelIndexChanged="OnSelectedTabChanged" Class="mud-tabs-transparent">
         <ChildContent>
+
             <MudTabPanel Icon="fas fa-fw fa-search-dollar mr-2" Text="Cheapest Offers" Disabled="State.IsPrerendering">
                 <AnalyticsPanel>
-                    <MudText Type="Typo.body2" Color="Color.Secondary" GutterBottom="true">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
                         <span>Looking to buy a particular item?</span><br/>
                         <span>Find the cheapest offer across all markets here.</span>
                     </MudText>
-                    <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning">
-                        <span>Always double check prices before buying/selling. Our prices update once every hour, but some deals may have been snapped up already.</span>
-                    </MudAlert>
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                         <thead>
                             <tr>
                                 <th>
-                                    <MudTextField T="string" ValueChanged="async (x) => { FilterCheapestOffersDeal = x; await VirtualiseCheapestOffersDeal.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
+                                    <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketCheapestListings.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0 mt-n4"
                                                     Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
                                 <th>Cheapest Offer</th>
@@ -33,7 +36,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize @ref="VirtualiseCheapestOffersDeal" ItemsProvider="LoadCheapestOffersDeal" Context="item">
+                            <Virtualize @ref="VirtualiseMarketCheapestListings" ItemsProvider="LoadMarketCheapestListings" Context="item">
                                 <ItemContent>
                                     <tr>
                                         <td>
@@ -105,42 +108,45 @@
                     </MudSimpleTable>
                 </AnalyticsPanel>
             </MudTabPanel>
+
             <MudTabPanel Icon="fas fa-fw fa-exchange-alt mr-2" Text="Profitable Flips" Disabled="State.IsPrerendering">
                 <AnalyticsPanel>
-                    <MudText Type="Typo.body2" Color="Color.Secondary" GutterBottom="true">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" GutterBottom="true">
                         <span>Looking to top up your Steam wallet balance?</span><br/>
-                        <span>Buy these undervalued items and flip them on the Steam Community Market for extra balance. These items can be flipped instantly by selling to the highest buy order. If you want to maximum your profit, sell later by listing at the lowest sell order price and hope somebody fulfills it.</span>
+                        <span>Buy these undervalued items and flip them on the Steam Community Market for extra balance. Flip instantly to the highest buy order or, if you want to maximize your profit, sell later by listing at the lowest sell order price and hope somebody fulfills it.</span>
                     </MudText>
-                    <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning">
-                        <span>Always double check prices before buying/selling. Our prices update once every hour, but some deals may have been snapped up already.</span>
-                    </MudAlert>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="d-flex align-center" GutterBottom="true">
+                        <span class="mr-2">Show me deals that I can</span>
+                        <MudSelect T="bool?" Value="@SellNow" ValueChanged="OnSellNowChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" FullWidth="false" Class="flex-shrink-1 flex-grow-0 ma-0" Disabled="State.IsPrerendering">
+                            <MudSelectItem Value="@((bool?)true)">
+                                <span>sell <strong>now</strong> for quick profit</span>
+                            </MudSelectItem>
+                            <MudSelectItem Value="@((bool?)false)">
+                                <span>sell <strong>later</strong> for maximum profit</span>
+                            </MudSelectItem>
+                        </MudSelect>
+                    </MudText>
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                         <thead>
                             <tr>
                                 <th>
-                                    <MudTextField T="string" ValueChanged="async (x) => { FilterProfitableFlipsDeal = x; await VirtualiseProfitableFlipsDeal.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0"
+                                    <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketFlips.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0 mt-n4"
                                                     Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
-                                <th>
-                                    <MudText Typo="Typo.body1">Buy it now</MudText>
-                                </th>
+                                <th>Buy Now</th>
                                 <th class="pa-0">
                                     <i class="fa fa-fw fa-arrow-right"></i>
                                 </th>
-                                <th>
-                                    <MudSwitch @bind-Checked="@ProfitableFlipsDealSellLow" ThumbIcon="@MudBlazor.Icons.Material.Filled.AccessTime" ThumbIconColor="@(ProfitableFlipsDealSellLow ? Color.Default : Color.Dark)" Color="@(ProfitableFlipsDealSellLow ? Color.Primary : Color.Warning)">
-                                        <span>Sell it <strong>@(ProfitableFlipsDealSellLow ? "now" : "later")</strong> for <strong>@(ProfitableFlipsDealSellLow ? "instant" : "maximum")</strong> profit</span>
-                                    </MudSwitch>
-                                </th>
+                                <th>Sell @(SellNow == true ? "Now" : "Later")</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <Virtualize @ref="VirtualiseProfitableFlipsDeal" ItemsProvider="LoadProfitableFlipsDeal" Context="item">
+                            <Virtualize @ref="VirtualiseMarketFlips" ItemsProvider="LoadMarketFlips" Context="item">
                                 <ItemContent>
                                     <tr>
                                         <td>
                                             <div class="d-flex flex-row justify-start align-center">
-                                                <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                                <img src="@item.IconUrl" class="mr-2" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2">@item.Name</MudText>
                                             </div>
                                         </td>
@@ -176,9 +182,9 @@
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2" Disabled="State.IsPrerendering">Sell</MudButton>
                                                 <img src="@($"/images/market/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                <span><span class="mud-secondary-text">at</span> @State.Currency.ToPriceString(ProfitableFlipsDealSellLow ? item.SellLowPrice : item.SellHighPrice) <span class="mud-secondary-text">for a profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees of</span> <strong class="mud-success-text">@State.Currency.ToPriceString(ProfitableFlipsDealSellLow ? item.SellLowProfit : item.SellHighProfit)</strong></span>
-                                                <MudChip Variant="Variant.Text" Color="Color.Success" Size="@Size.Small" Text="@($"+{(ProfitableFlipsDealSellLow ? item.SellLowProfit : item.SellHighProfit).ToPercentageString(item.BuyTotal) ?? "0%"}")" Class="ml-2">
-                                                </MudChip>
+                                                <span><span class="mud-secondary-text">at</span> @State.Currency.ToPriceString(item.SellPrice) <span class="mud-secondary-text">for a</span> <span class="mud-success-text">@State.Currency.ToPriceString(item.SellProfit)</span></span>
+                                                <MudChip Variant="Variant.Text" Color="Color.Success" Size="@Size.Small" Text="@($"{item.SellProfit.ToPercentageString(item.BuyTotal) ?? "0%"}")" Class="mx-1" />
+                                                <span><span class="mud-secondary-text">profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees</span></span>
                                             </MudText>
                                         </td>
                                     </tr>
@@ -201,21 +207,236 @@
                     </MudSimpleTable>
                 </AnalyticsPanel>
             </MudTabPanel>
+            
+            <MudTabPanel Icon="fas fa-fw fa-hammer mr-2" Text="Crafting" Disabled="State.IsPrerendering">
+                <MudGrid Space="2">
+
+                    <MudItem xs="12">
+                        <AnalyticsPanel Icon="fas fa-fw fa-box" Title="Containers" Subtitle="What is the cheapest way to aquire craftable containers?" Dense="true">
+                            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="flex-grow-1 full-height">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Craft It</th>
+                                        <th>Buy It</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <Virtualize ItemsProvider="LoadMarketCheapestCraftableContainerCosts" Context="item">
+                                        <ItemContent>
+                                            <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
+                                                <td class="align-top">
+                                                    <div class="d-flex flex-row justify-start align-start pa-2">
+                                                        <img src="@item.IconUrl" class="mr-4" style="width:5em; height:5em;" />
+                                                        <div>
+                                                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default"><strong>@item.Name</strong></MudText>
+                                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                                @if (item.CraftingPrice >= item.BuyPrice)
+                                                                {
+                                                                    <span>Cheapest to buy directly from @item.BuyFrom.GetDisplayName().</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>Cheapest if you buy the resources and craft it yourself.</span>
+                                                                }
+                                                            </MudText>
+                                                            <MudSimpleTable Dense="true" Hover="true" Elevation="0">
+                                                                <tbody>
+                                                                    @foreach(var component in item.CraftingComponents)
+                                                                    {
+                                                                        <tr @onclick="@((_) => ViewItem(component.Component))" class="clickable table-disable-borders">
+                                                                            <td>
+                                                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@(component.Quantity)x</MudText>
+                                                                            </td>
+                                                                            <td>
+                                                                                <div class="d-flex flex-row justify-start align-center">
+                                                                                    <img src="@component.Component.IconUrl" class="mr-1" style="width:24px; height:24px;" />
+                                                                                    <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Default">
+                                                                                        <span>@component.Component.Name <span class="mud-secondary-text">(@component.Name)</span></span>
+                                                                                    </MudText>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td>
+                                                                                <MudText Typo="Typo.subtitle2" Color="@(item.CraftingPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                                                    <span><span class="mud-text-secondary">@@</span> @State.Currency.ToPriceString(component.Component.BuyNowPrice) each</span>
+                                                                                </MudText>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                </tbody>
+                                                            </MudSimpleTable>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="align-top pa-4">
+                                                    <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CraftingPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                        <span>@State.Currency.ToPriceString(item.CraftingPrice)</span>
+                                                    </MudText>
+                                                </td>
+                                                <td class="align-top pa-4">
+                                                    <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CraftingPrice >= item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                        <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                        <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
+                                                    </MudText>
+                                                </td>
+                                            </tr>
+                                        </ItemContent>
+                                        <Placeholder>
+                                            <tr
+                                                <td class="align-top">
+                                                    <div class="d-flex flex-row justify-start align-center pa-2">
+                                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                                    </div>
+                                                </td>
+                                                <td class="align-top pa-4">-</td>
+                                                <td class="align-top pa-4">-</td>
+                                            </tr>
+                                        </Placeholder>
+                                    </Virtualize>
+                                </tbody>
+                            </MudSimpleTable>
+                        </AnalyticsPanel>
+                    </MudItem>
+    
+                    <MudItem xs="12">
+                        <AnalyticsPanel Icon="fas fa-fw fa-shapes" Title="Resources" Subtitle="What is the cheapest way to aquire crafting components?" Dense="true">
+                            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="flex-grow-1 full-height">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Break It</th>
+                                        <th>Buy It</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <Virtualize ItemsProvider="LoadMarketCheapestCraftingResourceCosts" Context="item">
+                                        <ItemContent>
+                                            <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
+                                                <td class="align-top">
+                                                    <div class="d-flex flex-row justify-start align-start pa-2">
+                                                        <img src="@item.IconUrl" class="mr-2" style="width:3em; height:3em;" />
+                                                        <div>
+                                                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default"><strong>@item.Name</strong></MudText>
+                                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                                @if (item.CheapestItem.BuyNowPrice >= item.BuyPrice)
+                                                                {
+                                                                    <span>Cheapest to buy directly from @item.BuyFrom.GetDisplayName().</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>Cheapest if you buy <strong>@item.CheapestItem.Name</strong> and break it down using the @State.App.Name in-game workshop.</span>
+                                                                }
+                                                            </MudText>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="align-top pa-4">
+                                                    <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CheapestItem.BuyNowPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                        <img src="@item.CheapestItem.IconUrl" class="mr-2" style="width:1.5em; height:1.5em;" />
+                                                        <span>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</span>
+                                                    </MudText>
+                                                </td>
+                                                <td class="align-top pa-4">
+                                                    <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CheapestItem.BuyNowPrice >= item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                        <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                        <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
+                                                    </MudText>
+                                                </td>
+                                            </tr>
+                                        </ItemContent>
+                                        <Placeholder>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex flex-row justify-start align-center pa-2">
+                                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                                    </div>
+                                                </td>
+                                                <td class="align-top pa-4">-</td>
+                                                <td class="align-top pa-4">-</td>
+                                            </tr>
+                                        </Placeholder>
+                                    </Virtualize>
+                                </tbody>
+                            </MudSimpleTable>
+                        </AnalyticsPanel>
+                    </MudItem>
+    
+                </MudGrid>
+            </MudTabPanel>
+
 		</ChildContent>
     </MudTabs>
 
 </PageContainer>
 
 @code {
-    private string FilterCheapestOffersDeal;
 
-    private string FilterProfitableFlipsDeal;
+    [Parameter]
+    public string Tab { get; set; }
 
-    private Virtualize<MarketItemDealAnalyticDTO> VirtualiseCheapestOffersDeal;
+    private int TabIndex;
 
-    private Virtualize<MarketItemFlipDealAnalyticDTO> VirtualiseProfitableFlipsDeal;
+    private readonly IDictionary<int, string> TabKeys = new Dictionary<int, string>
+    {
+        { 0, "cheapest-offers" },
+        { 1, "profitable-flips" },
+        { 2, "crafting" }
+    };
 
-    private bool ProfitableFlipsDealSellLow = true;
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool? SellNow { get; set; }
+
+    private Virtualize<MarketItemListingAnalyticDTO> VirtualiseMarketCheapestListings;
+
+    private Virtualize<MarketItemFlipAnalyticDTO> VirtualiseMarketFlips;
+
+    protected override void OnParametersSet()
+    {
+        SellNow = (SellNow != null ? SellNow : true);
+        if (!String.IsNullOrEmpty(Tab))
+        {
+            TabIndex = TabKeys.FirstOrDefault(x => String.Equals(x.Value, Tab, StringComparison.OrdinalIgnoreCase)).Key;
+        }
+    }
+
+    protected override async Task OnLoadStateAsync()
+    {
+        TabIndex = RestoreFromStateOrDefault(nameof(TabIndex), TabIndex);
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(TabIndex), TabIndex);
+        return Task.CompletedTask;
+    }
+
+    private void OnSelectedTabChanged(int index)
+    {
+        TabIndex = index;
+        if (!State.IsPrerendering)
+        {
+            var tabId = TabKeys.FirstOrDefault(x => x.Key == index).Value;
+            if (!String.IsNullOrEmpty(tabId) && !String.Equals(Tab, tabId, StringComparison.OrdinalIgnoreCase))
+            {
+                NavigationManager.NavigateTo($"/deals/{Uri.EscapeDataString(tabId)}");
+            }
+        }
+    }
+
+    private void OnSellNowChanged(bool? sellNow)
+    {
+        SellNow = sellNow;
+        _ = VirtualiseMarketFlips.RefreshDataAsync().ContinueWith(x => {
+            StateHasChanged();
+        });
+    }
 
     private void ViewMarketItem(ulong appId, string name)
     {
@@ -226,35 +447,68 @@
         }.ToString());
     }
     
+    private void ViewItem(ItemDescriptionDTO item)
+    {
+        ExternalNavigationManager.NavigateToItem(item);
+    }
+    
     private void BuyItem(string buyUrl)
     {
         ExternalNavigationManager.NavigateToNewTab(buyUrl);
     }
-    
-    protected async ValueTask<ItemsProviderResult<MarketItemDealAnalyticDTO>> LoadCheapestOffersDeal(ItemsProviderRequest request)
+
+    protected async ValueTask<ItemsProviderResult<MarketItemFlipAnalyticDTO>> LoadMarketFlips(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemDealAnalyticDTO>>($"api/analytics/market/cheapestOffers?filter={Uri.EscapeDataString(FilterCheapestOffersDeal ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<MarketItemDealAnalyticDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipAnalyticDTO>>($"api/analytics/market/flips?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&sellNow={SellNow}&start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<MarketItemFlipAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'cheapest offers' deal analytics");
+            Logger.LogError(ex, $"Error listing 'flips' analytics");
             throw;
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<MarketItemFlipDealAnalyticDTO>> LoadProfitableFlipsDeal(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<MarketItemListingAnalyticDTO>> LoadMarketCheapestListings(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipDealAnalyticDTO>>($"api/analytics/market/profitableFlips?filter={Uri.EscapeDataString(FilterProfitableFlipsDeal ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<MarketItemFlipDealAnalyticDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemListingAnalyticDTO>>($"api/analytics/market/cheapestListings?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<MarketItemListingAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'profitable flips' deal analytics");
+            Logger.LogError(ex, $"Error listing 'cheapest listings' analytics");
+            throw;
+        }
+    }
+
+    protected async ValueTask<ItemsProviderResult<MarketCraftingItemCostAnalyticDTO>> LoadMarketCheapestCraftingResourceCosts(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketCraftingItemCostAnalyticDTO>>($"api/analytics/market/cheapestCraftingResourceCosts?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<MarketCraftingItemCostAnalyticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'cheapest crafting resource costs' analytics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<MarketCraftableItemCostAnalyticDTO>> LoadMarketCheapestCraftableContainerCosts(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketCraftableItemCostAnalyticDTO>>($"api/analytics/market/cheapestCraftableContainerCosts?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<MarketCraftableItemCostAnalyticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'cheapest craftable container costs' analytics");
             throw;
         }
     }

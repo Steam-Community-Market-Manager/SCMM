@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Data.Models.UI.Analytic
 {
-    public class MarketItemDealAnalyticDTO
+    public class MarketItemFlipAnalyticDTO
     {
         public ulong Id { get; set; }
 
@@ -24,11 +24,13 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         public string BuyUrl { get; set; }
 
-        public MarketType ReferenceFrom { get; set; }
+        public MarketType SellTo { get; set; }
 
-        public long ReferemcePrice { get; set; }
+        public long SellPrice { get; set; }
+
+        public long SellFee { get; set; }
 
         [JsonIgnore]
-        public long DiscountAmount => Math.Abs(ReferemcePrice - (BuyPrice + BuyFee));
+        public long SellProfit => (SellPrice - SellFee - BuyTotal);
     }
 }
