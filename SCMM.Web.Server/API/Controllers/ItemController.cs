@@ -224,14 +224,41 @@ namespace SCMM.Web.Server.API.Controllers
                     (x.Name == id)
                 );
 
-            if (item == null)
+            var itemDetails = _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(item, this);
+            if (itemDetails == null)
             {
                 return NotFound($"Item was not found");
             }
 
-            return Ok(
-                _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(item, this)
-            );
+            // Calculate market price ranks
+            if (!String.IsNullOrEmpty(itemDetails?.ItemType))
+            {
+                var thisItemCheapestPrice = (itemDetails.IsAvailableOnStore
+                    ? (itemDetails.StorePrice > 0 && itemDetails.MarketSellOrderLowestPrice > 0) ? Math.Min(itemDetails.StorePrice.Value, itemDetails.MarketSellOrderLowestPrice.Value) : itemDetails.StorePrice
+                    : itemDetails.MarketSellOrderLowestPrice
+                );
+                var otherItems = await _db.SteamAssetDescriptions
+                    .AsNoTracking()
+                    .Where(x => x.ItemType == itemDetails.ItemType)
+                    .Where(x => x.IsMarketable || x.MarketableRestrictionDays > 0 || (x.IsMarketable && x.MarketableRestrictionDays == null))
+                    .Select(x => new
+                    {
+                        MarketPrice = (x.MarketItem != null ? x.MarketItem.SellOrderLowestPrice : 0),
+                        MarketCurrency = (x.MarketItem != null ? x.MarketItem.Currency : null),
+                        StorePrices = (x.StoreItem != null && x.StoreItem.IsAvailable ? x.StoreItem.Prices : null)
+                    })
+                    .ToListAsync();
+
+                var otherCheaperItems = otherItems.Where(x =>
+                    (x.MarketPrice > 0 && this.Currency().CalculateExchange(x.MarketPrice, x.MarketCurrency) < thisItemCheapestPrice) ||
+                    (x.StorePrices != null && x.StorePrices.ContainsKey(this.Currency().Name) && x.StorePrices[this.Currency().Name] < thisItemCheapestPrice)
+                );
+
+                itemDetails.MarketRankIndex = otherCheaperItems.Count();
+                itemDetails.MarketRankTotal = otherItems.Count();
+            }
+
+            return Ok(itemDetails);
         }
 
         /// <summary>

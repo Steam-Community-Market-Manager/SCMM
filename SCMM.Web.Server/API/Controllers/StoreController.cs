@@ -172,7 +172,7 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
-            // Sort items based on users preference (if an)
+            // Sort items based on users preference (if any)
             var topSellersRanking = this.User.Preference(_db, x => x.StoreTopSellers);
             switch (topSellersRanking)
             {

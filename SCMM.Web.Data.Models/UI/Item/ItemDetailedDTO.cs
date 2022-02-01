@@ -173,6 +173,10 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? MarketLowestValue { get; set; }
 
+        public long? MarketRankIndex { get; set; }
+
+        public long? MarketRankTotal { get; set; }
+
         public DateTimeOffset? TimeMarketHighestValue { get; set; }
 
         public DateTimeOffset? TimeMarketLowestValue { get; set; }

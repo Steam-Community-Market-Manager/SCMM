@@ -134,44 +134,39 @@
                                 </span>
                             </MudText>
                         }
-                        @* TODO: Market rank
                         @if (Item.MarketRankTotal > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
+                                <i class="fas fa-fw fa-piggy-bank mud-secondary-text"></i>
                                 <span>
-                                    <MudLink @onclick="@(() => ShowItemTypeDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.MarketRankIndex cheaper @Item.ItemType.Pluralise(Item.MarketRankTotal)</MudLink>
-                                    <span class="mud-secondary-text"> in the marketplace (@Item.MarketRankTotal total).</span>
+                                    <MudLink @onclick="@(() => ShowItemTypeDialog())" Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Disabled="State.IsPrerendering">@Item.MarketRankIndex cheaper @Item.ItemType.Split(" ").LastOrDefault().FirstCharToLower().Pluralise((int)Item.MarketRankTotal.Value)</MudLink>
+                                    <span class="mud-secondary-text"> on the market (@Item.MarketRankTotal total)</span>
                                 </span>
                             </MudText>
                         }
-                        @if (Item.SalesMinimum > 0)
+                        @if (Item.IsMarketable && !Item.IsBanned && !Item.IsAvailableOnStore)
                         {
-                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                <i class="fas fa-fw fa-shopping-cart mud-secondary-text"></i>
-                                <span>
-                                    @if (Item.SalesMaximum == null)
-                                    {
-                                        <span class="mud-secondary-text">More than </span>
-                                        <span>@Item.SalesMinimum.Value.ToQuantityString() sold</span>
-                                    }
-                                    else if (Item.SalesMinimum == Item.SalesMaximum)
-                                    {
-                                        <span>@Item.SalesMinimum.Value.ToQuantityString() sold</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="mud-secondary-text">Between </span>
-                                        <span>@Item.SalesMinimum.Value.ToQuantityString() - @Item.SalesMaximum.Value.ToQuantityString() sold</span>
-                                    }
-                                </span>
-                                <span>
-                                    <i class="fas fa-fw fa-question-circle" title="Steam doesn't disclose exact sales figures, this is just an estimate. See the store analytics & insights for more details." />
-                                </span>
-                            </MudText>
+                            @if (Item.MarketSellOrderCount != null)
+                            {
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                    <i class="fas fa-fw fa-parachute-box mud-secondary-text"></i>
+                                    <span>
+                                        <span>@Item.MarketSellOrderCount.Value.ToQuantityString() supply</span>
+                                        <span class="mud-secondary-text"> on the market</span>
+                                    </span>
+                                </MudText>
+                            }
+                            @if (Item.Market24hrSales != null)
+                            {
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                    <i class="fas fa-fw fa-balance-scale-left mud-secondary-text"></i>
+                                    <span>
+                                        <span>@Item.Market24hrSales.Value.ToQuantityString() demand</span>
+                                        <span class="mud-secondary-text"> from the market (last 24hrs)</span>
+                                    </span>
+                                </MudText>
+                            }
                         }
-                        *@
-
                         @if (!String.IsNullOrEmpty(Item.ItemCollection))
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
@@ -257,7 +252,29 @@
                                 </span>
                             </MudText>
                         }
-
+                        @if (Item.Id > 0)
+                        {
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="pt-2" GutterBottom>
+                                <i class="fas fa-fw fa-fingerprint mud-secondary-text"></i>
+                                @if (Item.Id > 0)
+                                {
+                                    <MudTooltip Text="Asset ID">A:<span class="mud-secondary-text mr-1">@Item.Id</span></MudTooltip>
+                                }
+                                @if (Item.WorkshopFileId > 0)
+                                {
+                                    <MudTooltip Text="Workshop ID">W:<span class="mud-secondary-text mr-1">@Item.WorkshopFileId</span></MudTooltip>
+                                }
+                                @if (Item.NameId > 0)
+                                {
+                                    <MudTooltip Text="Market ID">M:<span class="mud-secondary-text mr-1">@Item.NameId</span></MudTooltip>
+                                }
+                                @if (Item.StoreId > 0)
+                                {
+                                    <MudTooltip Text="Store ID">S:<span class="mud-secondary-text mr-1">@Item.StoreId</span></MudTooltip>
+                                }
+                            </MudText>
+                        }
+                      
                     </div>
 
                     <div class="mt-3">
@@ -540,7 +557,6 @@
                     </MudItem>
                 }
             
-                @* TODO: Technical: app id, class id, workshop id, name id, store id... *@
                 @* TODO: Time created/updated/accepted... *@
                 @* TODO: Time refreshed... *@
 
