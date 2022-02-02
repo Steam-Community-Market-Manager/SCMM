@@ -256,22 +256,24 @@
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="pt-2" GutterBottom>
                                 <i class="fas fa-fw fa-fingerprint mud-secondary-text"></i>
-                                @if (Item.Id > 0)
-                                {
-                                    <MudTooltip Text="Asset ID">A:<span class="mud-secondary-text mr-1">@Item.Id</span></MudTooltip>
-                                }
-                                @if (Item.WorkshopFileId > 0)
-                                {
-                                    <MudTooltip Text="Workshop ID">W:<span class="mud-secondary-text mr-1">@Item.WorkshopFileId</span></MudTooltip>
-                                }
-                                @if (Item.NameId > 0)
-                                {
-                                    <MudTooltip Text="Market ID">M:<span class="mud-secondary-text mr-1">@Item.NameId</span></MudTooltip>
-                                }
-                                @if (Item.StoreId > 0)
-                                {
-                                    <MudTooltip Text="Store ID">S:<span class="mud-secondary-text mr-1">@Item.StoreId</span></MudTooltip>
-                                }
+                                <span>
+                                    @if (Item.Id > 0)
+                                    {
+                                        <MudTooltip Text="Asset ID">A:<span class="mud-secondary-text mr-1">@Item.Id</span></MudTooltip>
+                                    }
+                                    @if (Item.WorkshopFileId > 0)
+                                    {
+                                        <MudTooltip Text="Workshop ID">W:<span class="mud-secondary-text mr-1">@Item.WorkshopFileId</span></MudTooltip>
+                                    }
+                                    @if (Item.NameId > 0)
+                                    {
+                                        <MudTooltip Text="Market ID">M:<span class="mud-secondary-text mr-1">@Item.NameId</span></MudTooltip>
+                                    }
+                                    @if (Item.StoreId > 0)
+                                    {
+                                        <MudTooltip Text="Store ID">S:<span class="mud-secondary-text mr-1">@Item.StoreId</span></MudTooltip>
+                                    }
+                                </span>
                             </MudText>
                         }
                       
