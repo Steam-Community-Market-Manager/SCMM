@@ -35,17 +35,19 @@ namespace SCMM.Shared.Data.Store.Types
         {
             get
             {
-                var keyValues = _data.Select(x =>
-                    $"{ConvertSingleKeyToPersistable(x.Key)}{KeyValueSeperator}{ConvertSingleValueToPersistable(x.Value)}"
+                return string.Join(
+                    ItemSeperator, 
+                    _data.Select(x =>
+                        $"{ConvertSingleKeyToPersistable(x.Key)}{KeyValueSeperator}{ConvertSingleValueToPersistable(x.Value)}"
+                    )
                 );
-                return string.Join(ItemSeperator, keyValues);
             }
             set
             {
                 _data.Clear();
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var pairs = value.Split(ItemSeperator, StringSplitOptions.None).Select(x => x.Split(KeyValueSeperator, StringSplitOptions.None)).ToList();
+                    var pairs = value.Split(ItemSeperator, StringSplitOptions.None).Select(x => x.Split(KeyValueSeperator, StringSplitOptions.None)).ToArray();
                     foreach (var pair in pairs)
                     {
                         var key = ConvertSingleKeyToRuntime(pair.FirstOrDefault());

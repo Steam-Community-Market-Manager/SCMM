@@ -29,6 +29,7 @@ namespace SCMM.Steam.Data.Store
 
         public SteamCurrency Currency { get; set; }
 
+        [Required]
         public PersistableMarketPriceDictionary BuyPrices { get; set; }
 
         public MarketType BuyNowFrom { get; set; }
@@ -43,6 +44,7 @@ namespace SCMM.Steam.Data.Store
 
         public long BuyLaterFee { get; set; }
 
+        [Required]
         public PersistableMarketPriceDictionary SellPrices { get; set; }
 
         public MarketType SellNowTo { get; set; }
