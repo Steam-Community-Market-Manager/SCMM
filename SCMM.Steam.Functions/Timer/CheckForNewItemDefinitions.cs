@@ -166,7 +166,7 @@ public class CheckForNewItemDefinitions
                     {
                         fields.Add(
                             $"{item.ClassId}",
-                            $"[{item.Name}]({_configuration.GetWebsiteUrl()}/item/{item.Name})"
+                            $"[{item.Name}]({_configuration.GetWebsiteUrl()}/item/{Uri.EscapeDataString(item.Name)})"
                         );
                     }
                 }
