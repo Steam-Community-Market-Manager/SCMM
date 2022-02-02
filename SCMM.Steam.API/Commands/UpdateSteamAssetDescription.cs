@@ -679,8 +679,8 @@ namespace SCMM.Steam.API.Commands
 
             // Cleanup the asset description text
             assetDescription.Description = assetDescription.Description
-                .Trim("&nbsp;")
-                .Trim(' ', '.', '\t', '\n', '\r');
+                ?.Trim("&nbsp;")
+                ?.Trim(' ', '.', '\t', '\n', '\r');
 
             // Check if this is a special/twitch drop item
             if (!assetDescription.IsTwitchDrop && !assetDescription.IsSpecialDrop)
