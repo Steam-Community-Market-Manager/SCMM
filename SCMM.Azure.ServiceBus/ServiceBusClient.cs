@@ -42,13 +42,14 @@ namespace SCMM.Azure.ServiceBus
             where TRequest : class, IMessage
             where TResponse : class, IMessage
         {
-            var temporaryQueueName = Guid.NewGuid().ToString();
+            var correlationId = Guid.NewGuid();
+            var replyToQueueName = $"reply-to-{correlationId}";
             var messageTimeout = TimeSpan.FromMinutes(5); // minimum allowed time for AutoDeleteOnIdle is 5 minutes
 
             try
             {
                 await _administrationClient.CreateQueueAsync(
-                    new CreateQueueOptions(temporaryQueueName)
+                    new CreateQueueOptions(replyToQueueName)
                     {
                         AutoDeleteOnIdle = (messageTimeout * 2)
                     },
@@ -57,17 +58,17 @@ namespace SCMM.Azure.ServiceBus
 
                 var requestClient = _client.CreateSender<TRequest>();
                 var receiverClient = _client.CreateReceiver(
-                    temporaryQueueName,
+                    replyToQueueName,
                     new ServiceBusReceiverOptions()
                     {
-                        ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+                        ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete,
                     }
                 );
 
                 await requestClient.SendMessageAsync(
                     new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
                     {
-                        ReplyTo = temporaryQueueName
+                        ReplyTo = replyToQueueName
                     },
                     cancellationToken
                 );
@@ -77,9 +78,9 @@ namespace SCMM.Azure.ServiceBus
             }
             finally
             {
-                if (await _administrationClient.QueueExistsAsync(temporaryQueueName))
+                if (await _administrationClient.QueueExistsAsync(replyToQueueName))
                 {
-                    await _administrationClient.DeleteQueueAsync(temporaryQueueName);
+                    await _administrationClient.DeleteQueueAsync(replyToQueueName);
                 }
             }
         }
