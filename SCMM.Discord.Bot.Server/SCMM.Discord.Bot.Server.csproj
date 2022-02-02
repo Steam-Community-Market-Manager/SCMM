@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Azure.AI\SCMM.Azure.AI.csproj" />
+    <ProjectReference Include="..\SCMM.Azure.ApplicationInsights\SCMM.Azure.ApplicationInsights.csproj" />
     <ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
     <ProjectReference Include="..\SCMM.Discord.Client\SCMM.Discord.Client.csproj" />
     <ProjectReference Include="..\SCMM.Fixer.Client\SCMM.Fixer.Client.csproj" />

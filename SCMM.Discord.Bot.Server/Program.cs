@@ -10,6 +10,7 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using SCMM.Azure.AI;
 using SCMM.Azure.AI.Extensions;
+using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Discord.Bot.Server.Middleware;
@@ -80,10 +81,9 @@ public static class WebApplicationExtensions
     {
         // Logging
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-        builder.Services.AddApplicationInsightsTelemetry(options =>
-        {
-            options.InstrumentationKey = builder.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
-        });
+        builder.Services.AddApplicationInsightsTelemetry();
+        builder.Services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+        builder.Services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
 
         // Authentication
         builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
@@ -113,21 +113,27 @@ public static class WebApplicationExtensions
                 });
 
         // Database
-        builder.Services.AddDbContext<SteamDbContext>(options =>
+        var dbConnectionString = builder.Configuration.GetConnectionString("SteamDbConnection");
+        if (!String.IsNullOrEmpty(dbConnectionString))
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("SteamDbConnection"), sql =>
+            builder.Services.AddDbContext<SteamDbContext>(options =>
             {
-                //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                sql.EnableRetryOnFailure();
+                options.UseSqlServer(dbConnectionString, sql =>
+                {
+                    //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    sql.EnableRetryOnFailure();
+                });
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
-            options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
-            options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
-        });
+        }
 
         // Service bus
-        builder.Services.AddAzureServiceBus(
-            builder.Configuration.GetConnectionString("ServiceBusConnection")
-        );
+        var serviceBusConnectionString = builder.Configuration.GetConnectionString("ServiceBusConnection");
+        if (!String.IsNullOrEmpty(serviceBusConnectionString))
+        {
+            builder.Services.AddAzureServiceBus(serviceBusConnectionString);
+        }
 
         // 3rd party clients
         builder.Services.AddSingleton(x => builder.Configuration.GetDiscordConfiguration());

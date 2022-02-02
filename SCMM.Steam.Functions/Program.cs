@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.AI;
 using SCMM.Azure.AI.Extensions;
+using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
@@ -88,6 +89,11 @@ public static class HostExtensions
     {
         return builder.ConfigureServices(services =>
         {
+            // Logging
+            services.AddApplicationInsightsTelemetry();
+            services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
+            services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
+
             // Database
             var dbConnectionString = Environment.GetEnvironmentVariable("SteamDbConnection");
             if (!String.IsNullOrEmpty(dbConnectionString))
@@ -108,9 +114,7 @@ public static class HostExtensions
             var serviceBusConnectionString = Environment.GetEnvironmentVariable("ServiceBusConnection");
             if (!String.IsNullOrEmpty(serviceBusConnectionString))
             {
-                services.AddAzureServiceBus(
-                    Environment.GetEnvironmentVariable("ServiceBusConnection")
-                );
+                services.AddAzureServiceBus(serviceBusConnectionString);
             }
 
             // 3rd party clients
