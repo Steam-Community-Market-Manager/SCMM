@@ -17,6 +17,8 @@ public class DownloadSteamWorkshopFile
     private readonly SteamWorkshopDownloaderWebClient _workshopDownloaderClient;
     private readonly string _workshopFilesStorageConnectionString;
 
+    private readonly TimeSpan _maxTimeToWaitForAsset = TimeSpan.FromMinutes(1);
+
     public DownloadSteamWorkshopFile(IConfiguration configuration, SteamDbContext db, SteamWorkshopDownloaderWebClient workshopDownloaderClient)
     {
         _db = db;
@@ -98,10 +100,19 @@ public class DownloadSteamWorkshopFile
 
         // Update all asset descriptions that reference this workshop file with the blob url
         var workshopFileUrl = blob.Uri.GetLeftPart(UriPartial.Path);
-        var assetDescriptions = await _db.SteamAssetDescriptions
-            .Where(x => x.WorkshopFileId == message.PublishedFileId)
-            .Where(x => x.WorkshopFileUrl != workshopFileUrl)
-            .ToListAsync();
+        var assetDescriptions = new List<SteamAssetDescription>();
+        var assetDescriptionCheckStarted = DateTimeOffset.UtcNow;
+        do
+        {
+            // NOTE: It is possible that the asset doesn't yet exist (i.e. still transient)
+            // TODO: This is a lazy way fix, wait for up to 1min for it to be saved before giving up
+            Thread.Sleep(TimeSpan.FromSeconds(10));
+            assetDescriptions = await _db.SteamAssetDescriptions
+                .Where(x => x.WorkshopFileId == message.PublishedFileId)
+                .Where(x => x.WorkshopFileUrl != workshopFileUrl)
+                .ToListAsync();
+
+        } while (!assetDescriptions.Any() && (DateTimeOffset.UtcNow - assetDescriptionCheckStarted) <= _maxTimeToWaitForAsset);
         foreach (var assetDescription in assetDescriptions)
         {
             assetDescription.WorkshopFileUrl = workshopFileUrl;
