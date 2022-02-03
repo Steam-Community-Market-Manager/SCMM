@@ -90,7 +90,7 @@ public static class HostExtensions
         return builder.ConfigureServices(services =>
         {
             // Logging
-            services.AddApplicationInsightsTelemetry();
+            //services.AddApplicationInsightsTelemetry(); // Application Insights is added by Azure Functions automatically
             services.AddApplicationInsightsTelemetryProcessor<IgnoreSyntheticRequestsFilter>();
             services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
 
