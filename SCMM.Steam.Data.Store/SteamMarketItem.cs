@@ -186,6 +186,11 @@ namespace SCMM.Steam.Data.Store
         // How long since sales were last checked
         public DateTimeOffset? LastCheckedSalesOn { get; set; }
 
+        /// <summary>
+        /// If true, price is likely being manipulated right now
+        /// </summary>
+        public bool IsBeingManipulated { get; set; }
+
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
         {
             BuyPrices = new PersistableMarketPriceDictionary(BuyPrices);
@@ -252,6 +257,8 @@ namespace SCMM.Steam.Data.Store
                 SellLaterPrice = 0;
                 SellLaterFee = 0;
             }
+
+            RecalulateIsBeingManipulated();
         }
 
         public void UpdateSellPrices(MarketType type, PriceWithSupply? price)
@@ -320,6 +327,8 @@ namespace SCMM.Steam.Data.Store
                 BuyLaterPrice = 0;
                 BuyLaterFee = 0;
             }
+
+            RecalulateIsBeingManipulated();
         }
 
         public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
@@ -417,6 +426,8 @@ namespace SCMM.Steam.Data.Store
             BuyOrderHighestPriceRolling24hrs = new PersistablePriceCollection(buyOrderHighestPriceRolling24hrs);
             SellOrderLowestPriceRolling24hrs = new PersistablePriceCollection(sellOrderLowestPriceRolling24hrs);
             */
+
+            RecalulateIsBeingManipulated();
         }
 
         public void RecalculateSales(SteamMarketItemSale[] newSales = null)
@@ -504,6 +515,22 @@ namespace SCMM.Steam.Data.Store
                 AllTimeLowestValue = (allTimeLow?.MedianPrice ?? 0);
                 AllTimeLowestValueOn = allTimeLow?.Timestamp;
             }
+
+            RecalulateIsBeingManipulated();
+        }
+
+        public void RecalulateIsBeingManipulated()
+        {
+            var marketAge = (FirstSaleOn != null ? (DateTimeOffset.UtcNow - FirstSaleOn) : TimeSpan.Zero);
+            var cheapestPrice = SellOrderLowestPrice;
+            var medianPriceLastWeek = Last168hrValue;
+            
+            // If the item is more than 7 days old and the buy now price is +200% the median price over the last week
+            IsBeingManipulated = (
+                (marketAge > TimeSpan.FromDays(7)) &&
+                (cheapestPrice > 0 && medianPriceLastWeek > 0) &&
+                (cheapestPrice / (decimal)medianPriceLastWeek) > 2m 
+            );
         }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Google.Client;
 using SCMM.Shared.Data.Store.Types;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using System.Text.RegularExpressions;
 
@@ -40,8 +41,8 @@ public class CheckNewYouTubeStoreVideos
         var logger = context.GetLogger("Check-New-YouTube-Store-Videos");
 
         var steamApps = await _db.SteamApps
+            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.StorePersistent | SteamAppFeatureTypes.StoreRotating))
             .Where(x => x.IsActive)
-            .Where(x => x.StoreTypes > 0)
             .ToListAsync();
         if (!steamApps.Any())
         {

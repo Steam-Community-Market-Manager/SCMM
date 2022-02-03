@@ -138,7 +138,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("tag-asset-description")]
         public async Task<RuntimeResult> TagAssetDescriptionsAsync(string tagKey, string tagValue, params ulong[] classIds)
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
+            var assetDescriptions = await _db.SteamAssetDescriptions
+                .Where(x => x.ClassId != null)
+                .Where(x => classIds.Contains(x.ClassId.Value))
+                .ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
                 assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags)
@@ -154,7 +157,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("untag-asset-description")]
         public async Task<RuntimeResult> UntagAssetDescriptionsAsync(string tagKey, params ulong[] classIds)
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => classIds.Contains(x.ClassId)).ToListAsync();
+            var assetDescriptions = await _db.SteamAssetDescriptions
+                .Where(x => x.ClassId != null)
+                .Where(x => classIds.Contains(x.ClassId.Value))
+                .ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
                 assetDescription.Tags = new PersistableStringDictionary(assetDescription.Tags);
@@ -207,7 +213,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> ReanalyseAssetDescriptionWorkshopFiles(params ulong[] classIds)
         {
             var workshopFileUrls = await _db.SteamAssetDescriptions
-                .Where(x => classIds.Length == 0 || classIds.Contains(x.ClassId))
+                .Where(x => x.ClassId != null && (classIds.Length == 0 || classIds.Contains(x.ClassId.Value)))
                 .Where(x => x.WorkshopFileId != null && !string.IsNullOrEmpty(x.WorkshopFileUrl))
                 .Select(x => x.WorkshopFileUrl)
                 .ToListAsync();

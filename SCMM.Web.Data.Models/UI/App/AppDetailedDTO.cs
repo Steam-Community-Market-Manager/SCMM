@@ -8,6 +8,6 @@ namespace SCMM.Web.Data.Models.UI.App
 
         public string Subdomain { get; set; }
 
-        public SteamStoreTypes StoreTypes { get; set; }
+        public SteamAppFeatureTypes Features { get; set; }
     }
 }

@@ -31,8 +31,7 @@ namespace SCMM.Steam.Data.Store
 
         public SteamApp App { get; set; }
 
-        [Required]
-        public ulong ClassId { get; set; }
+        public ulong? ClassId { get; set; }
 
         /// <summary>
         /// e.g. Publisher Item, Workshop Item

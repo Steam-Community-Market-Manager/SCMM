@@ -158,7 +158,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new MarketItemFlipAnalyticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     IconUrl = x.Description.IconUrl,
                     Name = x.Description.Name,
@@ -205,7 +205,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new MarketItemListingAnalyticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     IconUrl = x.Description.IconUrl,
                     Name = x.Description.Name,
@@ -260,7 +260,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 query.Paginate(start, count, x => new MarketCraftingItemCostAnalyticDTO
                 {
-                    Id = x.Resource.ClassId,
+                    Id = x.Resource.ClassId ?? 0,
                     AppId = ulong.Parse(x.Resource.App.SteamId),
                     Name = x.Resource.Name,
                     BackgroundColour = x.Resource.BackgroundColour,
@@ -272,7 +272,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BuyUrl = x.Resource.MarketItem.Description.GetBuyPrices(x.Resource.MarketItem.Currency)?.FirstOrDefault(p => p.MarketType == x.Resource.MarketItem.BuyNowFrom)?.Url,
                     CheapestItem = new ItemValueStatisticDTO()
                     {
-                        Id = x.CheapestItem.Item.ClassId,
+                        Id = x.CheapestItem.Item.ClassId ?? 0,
                         AppId = ulong.Parse(x.CheapestItem.Item.App.SteamId),
                         Name = x.CheapestItem.Item.Name,
                         BackgroundColour = x.CheapestItem.Item.BackgroundColour,
@@ -335,7 +335,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 query.Paginate(start, count, x => new MarketCraftableItemCostAnalyticDTO
                 {
-                    Id = x.ClassId,
+                    Id = x.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Name,
                     BackgroundColour = x.BackgroundColour,
@@ -358,7 +358,7 @@ namespace SCMM.Web.Server.API.Controllers
                             Quantity = y.Quantity,
                             Component = new ItemValueStatisticDTO
                             {
-                                Id = y.CheapestItem.ClassId,
+                                Id = y.CheapestItem.ClassId ?? 0,
                                 AppId = ulong.Parse(y.CheapestItem.App.SteamId),
                                 Name = y.CheapestItem.Name,
                                 BackgroundColour = y.CheapestItem.BackgroundColour,

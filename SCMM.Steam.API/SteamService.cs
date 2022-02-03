@@ -99,10 +99,15 @@ namespace SCMM.Steam.API
                 return dbItem;
             }
 
+            if (asset.ClassId == null)
+            {
+                return null;
+            }
+
             var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
             {
                 AppId = ulong.Parse(app.SteamId),
-                AssetClassId = asset.ClassId
+                AssetClassId = asset.ClassId.Value
             });
             var assetDescription = importAssetDescription.AssetDescription;
             if (assetDescription == null || assetDescription.NameId == null)

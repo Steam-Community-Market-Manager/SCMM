@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
@@ -11,9 +12,10 @@ using SCMM.Steam.Data.Store;
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220203043209_SteamAssetDescriptionsNullableIdsAndMarketItemManipulationFlag")]
+    partial class SteamAssetDescriptionsNullableIdsAndMarketItemManipulationFlag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,9 +107,6 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("BackgroundColor")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("Features")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("IconLargeUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -133,6 +132,9 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<string>("SteamId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<byte>("StoreTypes")
+                        .HasColumnType("tinyint");
 
                     b.Property<string>("Subdomain")
                         .HasColumnType("nvarchar(max)");
@@ -1284,7 +1286,7 @@ namespace SCMM.Steam.Data.Store.Migrations
             modelBuilder.Entity("SCMM.Steam.Data.Store.SteamAssetFilter", b =>
                 {
                     b.HasOne("SCMM.Steam.Data.Store.SteamApp", null)
-                        .WithMany("AssetFilters")
+                        .WithMany("Filters")
                         .HasForeignKey("SteamAppId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -1790,7 +1792,7 @@ namespace SCMM.Steam.Data.Store.Migrations
                 {
                     b.Navigation("AssetDescriptions");
 
-                    b.Navigation("AssetFilters");
+                    b.Navigation("Filters");
 
                     b.Navigation("ItemStores");
 

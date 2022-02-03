@@ -720,8 +720,8 @@ namespace SCMM.Steam.API.Commands
                     )
                     .Select(x =>
                     {
-                                // Strip any HTML and BBCode tags, just get the plain-text
-                                x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
+                        // Strip any HTML and BBCode tags, just get the plain-text
+                        x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripHtmlRegex, string.Empty).Trim();
                         x.Value = Regex.Replace(x.Value, Constants.SteamAssetClassDescriptionStripBBCodeRegex, string.Empty).Trim();
                         return x;
                     })

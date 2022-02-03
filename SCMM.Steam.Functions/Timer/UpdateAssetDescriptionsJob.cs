@@ -25,6 +25,7 @@ public class UpdateAssetDescriptionsJob
 
         var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
         var assetDescriptions = _db.SteamAssetDescriptions
+            .Where(x => x.ClassId != null)
             .Where(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutoff)
             .OrderBy(x => x.TimeRefreshed)
             .Select(x => new
@@ -49,7 +50,7 @@ public class UpdateAssetDescriptionsJob
                 await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = ulong.Parse(assetDescription.AppId),
-                    AssetClassId = assetDescription.ClassId
+                    AssetClassId = assetDescription.ClassId.Value
                 });
             }
             catch (Exception ex)

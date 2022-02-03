@@ -13,6 +13,7 @@ using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using SteamWebAPI2.Interfaces;
@@ -44,8 +45,8 @@ public class CheckForNewStoreItemsJob
         var logger = context.GetLogger("Check-New-Store-Items");
 
         var steamApps = await _db.SteamApps
+            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.StorePersistent | SteamAppFeatureTypes.StoreRotating))
             .Where(x => x.IsActive)
-            .Where(x => x.StoreTypes > 0)
             .ToListAsync();
         if (!steamApps.Any())
         {

@@ -11,7 +11,7 @@ namespace SCMM.Steam.Data.Store
     {
         public SteamApp()
         {
-            Filters = new Collection<SteamAssetFilter>();
+            AssetFilters = new Collection<SteamAssetFilter>();
             AssetDescriptions = new Collection<SteamAssetDescription>();
             MarketItems = new Collection<SteamMarketItem>();
             StoreItems = new Collection<SteamStoreItem>();
@@ -47,13 +47,13 @@ namespace SCMM.Steam.Data.Store
 
         public DateTimeOffset? TimeUpdated { get; set; }
 
-        public ICollection<SteamAssetFilter> Filters { get; set; }
+        public SteamAppFeatureTypes Features { get; set; }
+
+        public ICollection<SteamAssetFilter> AssetFilters { get; set; }
 
         public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
 
         public ICollection<SteamMarketItem> MarketItems { get; set; }
-
-        public SteamStoreTypes StoreTypes { get; set; }
 
         public ICollection<SteamStoreItem> StoreItems { get; set; }
 

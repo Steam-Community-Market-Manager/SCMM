@@ -65,7 +65,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemActivityStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.Description.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -106,7 +106,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.Last24hrSales)
                 .Select(x => new ItemSupplyDemandStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -144,7 +144,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.SellOrderCount)
                 .Select(x => new ItemSupplyDemandStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -193,7 +193,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -237,7 +237,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -277,7 +277,7 @@ namespace SCMM.Web.Server.API.Controllers
             return Ok(
                 await query.PaginateAsync(start, count, x => new ItemValueStatisticDTO()
                 {
-                    Id = x.Description.ClassId,
+                    Id = x.Description.ClassId ?? 0,
                     AppId = ulong.Parse(x.App.SteamId),
                     Name = x.Description.Name,
                     BackgroundColour = x.Description.BackgroundColour,
@@ -322,7 +322,7 @@ namespace SCMM.Web.Server.API.Controllers
                     })
                 .Select(x => new ItemSalesStatisticDTO()
                 {
-                    Id = x.Item.ClassId,
+                    Id = x.Item.ClassId ?? 0,
                     AppId = ulong.Parse(x.Item.App.SteamId),
                     Name = x.Item.Name,
                     BackgroundColour = x.Item.BackgroundColour,
