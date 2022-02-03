@@ -1,23 +1,23 @@
 {
-    "version": "2.0",
-    "logging": {
-        "logLevel": {
-          "Default": "Information",
-          "Microsoft": "Warning",
-          "Microsoft.Hosting.Lifetime": "Warning",
-          "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
-        },
-        "applicationInsights": {
-            "logLevel": {
-              "Default": "Information",
-              "Microsoft": "Warning",
-              "Microsoft.Hosting.Lifetime": "Warning",
-              "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
-            },
-            "samplingSettings": {
-                "isEnabled": true,
-                "excludedTypes": "Request"
-            }
-        }
+  "version": "2.0",
+  "logging": {
+    "logLevel": {
+      "Default": "Warning",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+    },
+    "applicationInsights": {
+      "logLevel": {
+        "Default": "Warning",
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Warning",
+        "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+      },
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request;Exception"
+      }
     }
+  }
 }
