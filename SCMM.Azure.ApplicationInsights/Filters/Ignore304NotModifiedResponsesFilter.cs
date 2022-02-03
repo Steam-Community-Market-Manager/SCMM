@@ -17,7 +17,7 @@ public class Ignore304NotModifiedResponsesFilter : ITelemetryProcessor
     public void Process(ITelemetry item)
     {
         var request = item as RequestTelemetry;
-        if (request != null && request.ResponseCode.Equals(HttpStatusCode.NotModified.ToString(), StringComparison.OrdinalIgnoreCase))
+        if (request != null && request.ResponseCode.Equals(((int)HttpStatusCode.NotModified).ToString(), StringComparison.OrdinalIgnoreCase))
         {
             return;
         }

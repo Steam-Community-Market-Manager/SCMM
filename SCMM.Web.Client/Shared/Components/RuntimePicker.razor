@@ -31,11 +31,6 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
     
-    protected override void OnInitialized()
-    {
-        Logger.LogInformation($"Runtime is '{State.Runtime}'");
-    }
-
     private void ChangeRuntime(RuntimeType runtime)
     {
         Logger.LogInformation($"Runtime was changed to '{runtime}'");
