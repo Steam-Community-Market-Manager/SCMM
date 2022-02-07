@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
+using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Enums;
@@ -93,44 +94,10 @@ namespace SCMM.Steam.API.Commands
             // Fetch the profiles inventory for each of the apps we monitor
             foreach (var app in apps)
             {
-                await FetchInventoryRecursive(profile, app);
-            }
-
-            return new ImportSteamProfileInventoryResponse()
-            {
-                Profile = profile
-            };
-        }
-
-        private async Task FetchInventoryRecursive(SteamProfile profile, SteamApp app, int start = 1, int count = SteamInventoryPaginatedJsonRequest.MaxPageSize)
-        {
-            var inventory = (SteamInventoryPaginatedJsonResponse)null;
-
-            try
-            {
-                // Fetch assets
-                inventory = await _communityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
-                {
-                    AppId = app.SteamId,
-                    SteamId = profile.SteamId,
-                    Start = start,
-                    Count = count,
-                    NoRender = true
-                });
-                if (inventory == null)
-                {
-                    // Inventory is probably private
-                    profile.Privacy = SteamVisibilityType.Private;
-                    return;
-                }
-                if (inventory.Assets?.Any() != true)
-                {
-                    // Inventory doesn't have any items for this app
-                    return;
-                }
+                var steamInventoryItems = await FetchInventoryRecursive(profile, app);
 
                 // Add assets
-                var missingAssets = inventory.Assets
+                var missingAssets = steamInventoryItems
                     .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId.ToString()))
                     .ToList();
                 var knownAssets = await _db.SteamAssetDescriptions
@@ -187,7 +154,7 @@ namespace SCMM.Steam.API.Commands
                 }
 
                 // Update assets
-                foreach (var asset in inventory.Assets)
+                foreach (var asset in steamInventoryItems)
                 {
                     var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.SteamId == asset.AssetId.ToString());
                     if (existingAsset != null)
@@ -198,7 +165,7 @@ namespace SCMM.Steam.API.Commands
 
                 // Remove assets
                 var removedAssets = profile.InventoryItems
-                    .Where(x => !inventory.Assets.Any(y => y.AssetId.ToString() == x.SteamId))
+                    .Where(x => !steamInventoryItems.Any(y => y.AssetId.ToString() == x.SteamId))
                     .ToList();
                 foreach (var asset in removedAssets)
                 {
@@ -208,6 +175,40 @@ namespace SCMM.Steam.API.Commands
                 // Update last inventory update timestamp and privacy state
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
                 profile.Privacy = SteamVisibilityType.Public;
+            }
+
+            return new ImportSteamProfileInventoryResponse()
+            {
+                Profile = profile
+            };
+        }
+
+        private async Task<IEnumerable<SteamInventoryAsset>> FetchInventoryRecursive(SteamProfile profile, SteamApp app, ulong? startAssetId = null, int count = SteamInventoryPaginatedJsonRequest.MaxPageSize)
+        {
+            var inventory = (SteamInventoryPaginatedJsonResponse)null;
+            var inventoryItems = new List<SteamInventoryAsset>();
+
+            try
+            {
+                // Fetch assets
+                inventory = await _communityClient.GetInventoryPaginated(new SteamInventoryPaginatedJsonRequest()
+                {
+                    AppId = app.SteamId,
+                    SteamId = profile.SteamId,
+                    StartAssetId = startAssetId,
+                    Count = count,
+                    NoRender = true
+                });
+                if (inventory == null)
+                {
+                    // Inventory is probably private
+                    profile.Privacy = SteamVisibilityType.Private;
+                    return inventoryItems;
+                }
+                if (inventory.Assets?.Any() == true)
+                {
+                    inventoryItems.AddRange(inventory.Assets);
+                }
             }
             catch (SteamRequestException ex)
             {
@@ -224,8 +225,14 @@ namespace SCMM.Steam.API.Commands
             // If there are more assets to fetch, make a call to the next page
             if (inventory?.Assets?.Count >= SteamInventoryPaginatedJsonRequest.MaxPageSize)
             {
-                await FetchInventoryRecursive(profile, app, start + count, Math.Max(0, Math.Min(inventory.TotalInventoryCount - (start + count) - 1, SteamInventoryPaginatedJsonRequest.MaxPageSize)));
+                var moreInventoryItems = await FetchInventoryRecursive(profile, app, inventory.Assets.LastOrDefault()?.AssetId);
+                if (moreInventoryItems?.Any() == true)
+                {
+                    inventoryItems.AddRange(moreInventoryItems);
+                }
             }
+
+            return inventoryItems;
         }
     }
 }
