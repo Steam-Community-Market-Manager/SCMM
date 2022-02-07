@@ -208,7 +208,7 @@
                 </AnalyticsPanel>
             </MudTabPanel>
 
-            @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemCrafting))
+            @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemCrafting) == true)
             {
                 <MudTabPanel Icon="fas fa-fw fa-hammer mr-2" Text="Crafting" Disabled="State.IsPrerendering">
                     <MudGrid Space="2">

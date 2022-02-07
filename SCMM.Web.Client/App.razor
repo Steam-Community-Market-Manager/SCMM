@@ -10,7 +10,7 @@
 }
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        @if (State.Profile != null)
+        @if (State.App != null && State.Profile != null)
         {
             <CascadingValue Value="@routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(AppLayout)" />

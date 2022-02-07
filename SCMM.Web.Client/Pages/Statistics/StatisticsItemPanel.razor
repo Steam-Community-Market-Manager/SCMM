@@ -270,7 +270,7 @@
         </StatisticsPanel>
     </MudItem>
     
-    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop))
+    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
     {
         <MudItem xs="12" md="6" xl="3">
             <StatisticsPanel Icon="fas fa-fw fa-user" Title="Largest Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">

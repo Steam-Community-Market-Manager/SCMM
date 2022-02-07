@@ -154,7 +154,6 @@ public class AppState : INotifyPropertyChanged
             if (value != _profile)
             {
                 _profile = value;
-                NotifyPropertyChanged();
                 if (value != null)
                 {
                     Language = value?.Language;
@@ -164,6 +163,7 @@ public class AppState : INotifyPropertyChanged
                     App = value?.App;
                     NotifyPropertyChanged(nameof(App));
                 }
+                NotifyPropertyChanged();
             }
         }
     }
