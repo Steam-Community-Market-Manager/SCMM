@@ -44,7 +44,7 @@ else
     {
         NavigationMenuItems = GetMenuItems();
     }
-    
+
     protected override async Task OnLoadStateAsync()
     {
         InventoryTotals = await RestoreFromStateOrLoad(nameof(InventoryTotals), async () =>
@@ -66,9 +66,13 @@ else
         {
             try
             {
-                return await Http.GetFromJsonWithDefaultsAsync<DateTimeOffset?>(
-                    $"api/store/nextUpdateTime"
-                );
+                if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                {
+                    return await Http.GetFromJsonWithDefaultsAsync<DateTimeOffset?>(
+                        $"api/store/nextUpdateTime"
+                    );
+                }
+                return null;
             }
             catch (Exception ex)
             {
@@ -76,7 +80,7 @@ else
                 throw;
             }
         });
-        
+
         NavigationMenuItems = GetMenuItems();
     }
 
@@ -107,8 +111,7 @@ else
         var items = new List<INavigationMenuItem>();
         if (State.IsAuthenticated)
         {
-            items.AddRange(new List<INavigationMenuItem>
-            {
+            items.Add(
                 new NavigationMenuItemLink
                 {
                     Icon = "fas fa-fw fa-funnel-dollar",
@@ -117,12 +120,11 @@ else
                     SubTitle = inventoryValue,
                     Prefix = true
                 }
-            });
+            );
         }
         else
         {
-            items.AddRange(new List<INavigationMenuItem>
-            {
+            items.Add(
                 new NavigationMenuItemLink
                 {
                     Icon = "fas fa-fw fa-funnel-dollar",
@@ -131,22 +133,27 @@ else
                     Path = $"/inventory",
                     Prefix = true
                 }
-            });
+            );
         }
         if (items.Any())
         {
             items.Add(null);
         }
+        if (State.App.Features.HasFlag(SteamAppFeatureTypes.Store))
+        {
+            items.Add(
+                new NavigationMenuItemLink
+                {
+                    Icon = "fas fa-fw fa-shopping-cart",
+                    Title = "Store",
+                    SubTitle = storeUpdateTimeRemaining ?? "Explore all game stores",
+                    Path =  "/store",
+                    Prefix =  true
+                }
+            );
+        }
         items.AddRange(new List<INavigationMenuItem>
         {
-            new NavigationMenuItemLink
-            {
-                Icon = "fas fa-fw fa-shopping-cart",
-                Title = "Store",
-                SubTitle = storeUpdateTimeRemaining ?? "Explore all game stores",
-                Path =  "/store",
-                Prefix =  true
-            },
             new NavigationMenuItemLink
             {
                 Icon = "fas fa-fw fa-paint-roller",

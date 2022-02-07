@@ -565,6 +565,7 @@
             </summary>
             <returns>List of stores</returns>
             <response code="200">List of known item stores. Use <see cref="M:SCMM.Web.Server.API.Controllers.StoreController.GetStore(System.String)"/> <code>/store/{dateTime}</code> to get the details of a specific store.</response>
+            <response code="400">If the current app does not support stores.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StoreController.GetCurrentStore">
@@ -577,6 +578,7 @@
             </remarks>
             <returns>The most recent item store</returns>
             <response code="200">The most recent item store.</response>
+            <response code="400">If the current app does not support stores.</response>
             <response code="404">If there are no currently active item stores.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
@@ -591,7 +593,7 @@
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
             <response code="200">The store details.</response>
-            <response code="400">If the store date is invalid or cannot be parsed as a date time.</response>
+            <response code="400">If the store date is invalid or cannot be parsed as a date time or the current app does not support stores.</response>
             <response code="404">If the store cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
@@ -603,7 +605,7 @@
             <remarks>Item sales data is only available for items that have an associated workshop item.</remarks>
             <returns>The item sales chart data</returns>
             <response code="200">The item sales chart data.</response>
-            <response code="400">If the store id is invalid.</response>
+            <response code="400">If the store id is invalid or the current app does not support stores.</response>
             <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
@@ -618,7 +620,7 @@
             </remarks>
             <returns>The item revenue chart data</returns>
             <response code="200">The item revenue chart data.</response>
-            <response code="400">If the store id is invalid.</response>
+            <response code="400">If the store id is invalid or the current app does not support stores.</response>
             <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
@@ -632,7 +634,7 @@
             The item ID and store price (in USD) of the item to be linked to the store
             </param>
             <response code="200">If the item was linked successfully.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="400">If the request data is malformed/invalid or the current app does not support stores.</response>
             <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
             <response code="404">If the store or item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -647,7 +649,7 @@
             The item ID and store price (in USD) of the item to be unlinked from the store
             </param>
             <response code="200">If the item was unlinked successfully.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="400">If the request data is malformed/invalid or the current app does not support stores.</response>
             <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
             <response code="404">If the store or item cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -659,6 +661,7 @@
             <remarks>This is an estimate only and the exact time varies from week to week. Sometimes the store can even be late by a day or two.</remarks>
             <returns>The expected store release date/time</returns>
             <response code="200">The expected date/time of the next item store release.</response>
+            <response code="400">If the current app does not support store rotations.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.SystemController.GetStatus">

@@ -207,164 +207,167 @@
                     </MudSimpleTable>
                 </AnalyticsPanel>
             </MudTabPanel>
-            
-            <MudTabPanel Icon="fas fa-fw fa-hammer mr-2" Text="Crafting" Disabled="State.IsPrerendering">
-                <MudGrid Space="2">
 
-                    <MudItem xs="12">
-                        <AnalyticsPanel Icon="fas fa-fw fa-box" Title="Containers" Subtitle="What is the cheapest way to aquire craftable containers?" Dense="true">
-                            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="flex-grow-1 full-height">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Craft It</th>
-                                        <th>Buy It</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <Virtualize ItemsProvider="LoadMarketCheapestCraftableContainerCosts" Context="item">
-                                        <ItemContent>
-                                            <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
-                                                <td class="align-top">
-                                                    <div class="d-flex flex-row justify-start align-start pa-2">
-                                                        <img src="@item.IconUrl" class="mr-4" style="width:5em; height:5em;" />
-                                                        <div>
-                                                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default"><strong>@item.Name</strong></MudText>
-                                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                                                                @if (item.CraftingPrice >= item.BuyPrice)
-                                                                {
-                                                                    <span>Cheapest to buy directly from @item.BuyFrom.GetDisplayName().</span>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <span>Cheapest if you buy the resources and craft it yourself.</span>
-                                                                }
-                                                            </MudText>
-                                                            <MudSimpleTable Dense="true" Hover="true" Elevation="0">
-                                                                <tbody>
-                                                                    @foreach(var component in item.CraftingComponents)
+            @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemCrafting))
+            {
+                <MudTabPanel Icon="fas fa-fw fa-hammer mr-2" Text="Crafting" Disabled="State.IsPrerendering">
+                    <MudGrid Space="2">
+
+                        <MudItem xs="12">
+                            <AnalyticsPanel Icon="fas fa-fw fa-box" Title="Containers" Subtitle="What is the cheapest way to aquire craftable containers?" Dense="true">
+                                <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="flex-grow-1 full-height">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Craft It</th>
+                                            <th>Buy It</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftableContainerCosts" Context="item">
+                                            <ItemContent>
+                                                <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
+                                                    <td class="align-top">
+                                                        <div class="d-flex flex-row justify-start align-start pa-2">
+                                                            <img src="@item.IconUrl" class="mr-4" style="width:5em; height:5em;" />
+                                                            <div>
+                                                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default"><strong>@item.Name</strong></MudText>
+                                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                                    @if (item.CraftingPrice >= item.BuyPrice)
                                                                     {
-                                                                        <tr @onclick="@((_) => ViewItem(component.Component))" class="clickable table-disable-borders">
-                                                                            <td>
-                                                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@(component.Quantity)x</MudText>
-                                                                            </td>
-                                                                            <td>
-                                                                                <div class="d-flex flex-row justify-start align-center">
-                                                                                    <img src="@component.Component.IconUrl" class="mr-1" style="width:24px; height:24px;" />
-                                                                                    <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Default">
-                                                                                        <span>@component.Component.Name <span class="mud-secondary-text">(@component.Name)</span></span>
-                                                                                    </MudText>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>
-                                                                                <MudText Typo="Typo.subtitle2" Color="@(item.CraftingPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
-                                                                                    <span><span class="mud-text-secondary">@@</span> @State.Currency.ToPriceString(component.Component.BuyNowPrice) each</span>
-                                                                                </MudText>
-                                                                            </td>
-                                                                        </tr>
+                                                                        <span>Cheapest to buy directly from @item.BuyFrom.GetDisplayName().</span>
                                                                     }
-                                                                </tbody>
-                                                            </MudSimpleTable>
+                                                                    else
+                                                                    {
+                                                                        <span>Cheapest if you buy the resources and craft it yourself.</span>
+                                                                    }
+                                                                </MudText>
+                                                                <MudSimpleTable Dense="true" Hover="true" Elevation="0">
+                                                                    <tbody>
+                                                                        @foreach(var component in item.CraftingComponents)
+                                                                        {
+                                                                            <tr @onclick="@((_) => ViewItem(component.Component))" class="clickable table-disable-borders">
+                                                                                <td>
+                                                                                    <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">@(component.Quantity)x</MudText>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <div class="d-flex flex-row justify-start align-center">
+                                                                                        <img src="@component.Component.IconUrl" class="mr-1" style="width:24px; height:24px;" />
+                                                                                        <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Default">
+                                                                                            <span>@component.Component.Name <span class="mud-secondary-text">(@component.Name)</span></span>
+                                                                                        </MudText>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <MudText Typo="Typo.subtitle2" Color="@(item.CraftingPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                                                        <span><span class="mud-text-secondary">@@</span> @State.Currency.ToPriceString(component.Component.BuyNowPrice) each</span>
+                                                                                    </MudText>
+                                                                                </td>
+                                                                            </tr>
+                                                                        }
+                                                                    </tbody>
+                                                                </MudSimpleTable>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td class="align-top pa-4">
-                                                    <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CraftingPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
-                                                        <span>@State.Currency.ToPriceString(item.CraftingPrice)</span>
-                                                    </MudText>
-                                                </td>
-                                                <td class="align-top pa-4">
-                                                    <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CraftingPrice >= item.BuyPrice ? Color.Default : Color.Secondary)">
-                                                        <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                        <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
-                                                    </MudText>
-                                                </td>
-                                            </tr>
-                                        </ItemContent>
-                                        <Placeholder>
-                                            <tr
-                                                <td class="align-top">
-                                                    <div class="d-flex flex-row justify-start align-center pa-2">
-                                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                                    </div>
-                                                </td>
-                                                <td class="align-top pa-4">-</td>
-                                                <td class="align-top pa-4">-</td>
-                                            </tr>
-                                        </Placeholder>
-                                    </Virtualize>
-                                </tbody>
-                            </MudSimpleTable>
-                        </AnalyticsPanel>
-                    </MudItem>
-    
-                    <MudItem xs="12">
-                        <AnalyticsPanel Icon="fas fa-fw fa-shapes" Title="Resources" Subtitle="What is the cheapest way to aquire crafting components?" Dense="true">
-                            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="flex-grow-1 full-height">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Break It</th>
-                                        <th>Buy It</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <Virtualize ItemsProvider="LoadMarketCheapestCraftingResourceCosts" Context="item">
-                                        <ItemContent>
-                                            <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
-                                                <td class="align-top">
-                                                    <div class="d-flex flex-row justify-start align-start pa-2">
-                                                        <img src="@item.IconUrl" class="mr-2" style="width:3em; height:3em;" />
-                                                        <div>
-                                                            <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default"><strong>@item.Name</strong></MudText>
-                                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">
-                                                                @if (item.CheapestItem.BuyNowPrice >= item.BuyPrice)
-                                                                {
-                                                                    <span>Cheapest to buy directly from @item.BuyFrom.GetDisplayName().</span>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <span>Cheapest if you buy <strong>@item.CheapestItem.Name</strong> and break it down using the @State.App.Name in-game workshop.</span>
-                                                                }
-                                                            </MudText>
+                                                    </td>
+                                                    <td class="align-top pa-4">
+                                                        <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CraftingPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                            <span>@State.Currency.ToPriceString(item.CraftingPrice)</span>
+                                                        </MudText>
+                                                    </td>
+                                                    <td class="align-top pa-4">
+                                                        <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CraftingPrice >= item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                            <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                            <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
+                                                        </MudText>
+                                                    </td>
+                                                </tr>
+                                            </ItemContent>
+                                            <Placeholder>
+                                                <tr>
+                                                    <td class="align-top">
+                                                        <div class="d-flex flex-row justify-start align-center pa-2">
+                                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td class="align-top pa-4">
-                                                    <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CheapestItem.BuyNowPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
-                                                        <img src="@item.CheapestItem.IconUrl" class="mr-2" style="width:1.5em; height:1.5em;" />
-                                                        <span>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</span>
-                                                    </MudText>
-                                                </td>
-                                                <td class="align-top pa-4">
-                                                    <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CheapestItem.BuyNowPrice >= item.BuyPrice ? Color.Default : Color.Secondary)">
-                                                        <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
-                                                        <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
-                                                    </MudText>
-                                                </td>
-                                            </tr>
-                                        </ItemContent>
-                                        <Placeholder>
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex flex-row justify-start align-center pa-2">
-                                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                                    </div>
-                                                </td>
-                                                <td class="align-top pa-4">-</td>
-                                                <td class="align-top pa-4">-</td>
-                                            </tr>
-                                        </Placeholder>
-                                    </Virtualize>
-                                </tbody>
-                            </MudSimpleTable>
-                        </AnalyticsPanel>
-                    </MudItem>
+                                                    </td>
+                                                    <td class="align-top pa-4">-</td>
+                                                    <td class="align-top pa-4">-</td>
+                                                </tr>
+                                            </Placeholder>
+                                        </Virtualize>
+                                    </tbody>
+                                </MudSimpleTable>
+                            </AnalyticsPanel>
+                        </MudItem>
     
-                </MudGrid>
-            </MudTabPanel>
+                        <MudItem xs="12">
+                            <AnalyticsPanel Icon="fas fa-fw fa-shapes" Title="Resources" Subtitle="What is the cheapest way to aquire crafting components?" Dense="true">
+                                <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="flex-grow-1 full-height">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Break It</th>
+                                            <th>Buy It</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <Virtualize ItemsProvider="LoadMarketCheapestCraftingResourceCosts" Context="item">
+                                            <ItemContent>
+                                                <tr @onclick="@((_) => BuyItem(item.BuyUrl))" class="clickable">
+                                                    <td class="align-top">
+                                                        <div class="d-flex flex-row justify-start align-start pa-2">
+                                                            <img src="@item.IconUrl" class="mr-2" style="width:3em; height:3em;" />
+                                                            <div>
+                                                                <MudText Typo="Typo.body2" Color="MudBlazor.Color.Default"><strong>@item.Name</strong></MudText>
+                                                                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                                                                    @if (item.CheapestItem.BuyNowPrice >= item.BuyPrice)
+                                                                    {
+                                                                        <span>Cheapest to buy directly from @item.BuyFrom.GetDisplayName().</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span>Cheapest if you buy <strong>@item.CheapestItem.Name</strong> and break it down using the @State.App.Name in-game workshop.</span>
+                                                                    }
+                                                                </MudText>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-top pa-4">
+                                                        <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CheapestItem.BuyNowPrice < item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                            <img src="@item.CheapestItem.IconUrl" class="mr-2" style="width:1.5em; height:1.5em;" />
+                                                            <span>@State.Currency.ToPriceString(item.CheapestItem.BuyNowPrice)</span>
+                                                        </MudText>
+                                                    </td>
+                                                    <td class="align-top pa-4">
+                                                        <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CheapestItem.BuyNowPrice >= item.BuyPrice ? Color.Default : Color.Secondary)">
+                                                            <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                            <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
+                                                        </MudText>
+                                                    </td>
+                                                </tr>
+                                            </ItemContent>
+                                            <Placeholder>
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex flex-row justify-start align-center pa-2">
+                                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-top pa-4">-</td>
+                                                    <td class="align-top pa-4">-</td>
+                                                </tr>
+                                            </Placeholder>
+                                        </Virtualize>
+                                    </tbody>
+                                </MudSimpleTable>
+                            </AnalyticsPanel>
+                        </MudItem>
+    
+                    </MudGrid>
+                </MudTabPanel>
+            }
 
 		</ChildContent>
     </MudTabs>

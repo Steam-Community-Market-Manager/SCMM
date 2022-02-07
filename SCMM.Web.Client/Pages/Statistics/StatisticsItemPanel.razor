@@ -270,40 +270,43 @@
         </StatisticsPanel>
     </MudItem>
     
-    <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-user" Title="Largest Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
-            <MudSimpleTable Dense="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
-                <tbody>
-                    <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item">
-                        <ItemContent>
-                            <tr @onclick="@((_) => ShowProfileItemsDialog(item))" class="clickable">
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <img src="@item.AvatarUrl" class="mr-1" style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2">@item.Name</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">
-                                    <MudText Typo="Typo.body2" Class="no-wrap">@item.Items.ToQuantityString() item(s)</MudText>
-                                </td>
-                            </tr>
-                        </ItemContent>
-                        <Placeholder>
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">—</td>
-                            </tr>
-                        </Placeholder>
-                    </Virtualize>
-                </tbody>
-            </MudSimpleTable>
-        </StatisticsPanel>
-    </MudItem>
+    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop))
+    {
+        <MudItem xs="12" md="6" xl="3">
+            <StatisticsPanel Icon="fas fa-fw fa-user" Title="Largest Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
+                <MudSimpleTable Dense="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ShowProfileItemsDialog(item))" class="clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.AvatarUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">
+                                        <MudText Typo="Typo.body2" Class="no-wrap">@item.Items.ToQuantityString() item(s)</MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
+            </StatisticsPanel>
+        </MudItem>
+    }
     
 </MudGrid>
 

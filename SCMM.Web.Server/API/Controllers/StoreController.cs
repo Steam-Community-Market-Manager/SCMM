@@ -41,17 +41,24 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <returns>List of stores</returns>
         /// <response code="200">List of known item stores. Use <see cref="GetStore(string)"/> <code>/store/{dateTime}</code> to get the details of a specific store.</response>
+        /// <response code="400">If the current app does not support stores.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<StoreIdentifierDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStores()
         {
-            var appId = this.App().Guid;
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             var itemStores = await _db.SteamItemStores
                 .AsNoTracking()
-                .Where(x => x.AppId == appId)
+                .Where(x => x.AppId == app.Guid)
                 .OrderByDescending(x => x.Start == null)
                 .ThenByDescending(x => x.Start)
                 .ToListAsync();
@@ -70,11 +77,13 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <returns>The most recent item store</returns>
         /// <response code="200">The most recent item store.</response>
+        /// <response code="400">If the current app does not support stores.</response>
         /// <response code="404">If there are no currently active item stores.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("current")]
         [ProducesResponseType(typeof(StoreDetailsDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCurrentStore()
@@ -92,7 +101,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <response code="200">The store details.</response>
-        /// <response code="400">If the store date is invalid or cannot be parsed as a date time.</response>
+        /// <response code="400">If the store date is invalid or cannot be parsed as a date time or the current app does not support stores.</response>
         /// <response code="404">If the store cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -103,6 +112,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStore([FromRoute] string id)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             var guid = Guid.Empty;
             var storeStartDate = DateTime.MinValue;
             var storeName = (string)null;
@@ -117,11 +132,10 @@ namespace SCMM.Web.Server.API.Controllers
                 }
             }
 
-            var appId = this.App().Guid;
             var itemStore = await _db.SteamItemStores
                 .AsNoTracking()
                 .OrderByDescending(x => x.Start)
-                .Where(x => x.AppId == appId)
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => (guid != Guid.Empty && guid == x.Id) || (storeStartDate > DateTime.MinValue && storeStartDate >= x.Start) || (!String.IsNullOrEmpty(storeName) && storeName == x.Name))
                 .Take(1)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
@@ -208,7 +222,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>Item sales data is only available for items that have an associated workshop item.</remarks>
         /// <returns>The item sales chart data</returns>
         /// <response code="200">The item sales chart data.</response>
-        /// <response code="400">If the store id is invalid.</response>
+        /// <response code="400">If the store id is invalid or the current app does not support stores.</response>
         /// <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -219,6 +233,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid id)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
@@ -226,6 +246,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var storeItems = await _db.SteamItemStores
                 .AsNoTracking()
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Id == id)
                 .Take(1)
                 .SelectMany(x => x.Items)
@@ -273,7 +294,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <returns>The item revenue chart data</returns>
         /// <response code="200">The item revenue chart data.</response>
-        /// <response code="400">If the store id is invalid.</response>
+        /// <response code="400">If the store id is invalid or the current app does not support stores.</response>
         /// <response code="404">If the store cannot be found, or doesn't contain any workshop items.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
@@ -282,6 +303,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid id)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
@@ -289,6 +316,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var storeItems = await _db.SteamItemStores
                 .AsNoTracking()
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Id == id)
                 .Take(1)
                 .SelectMany(x => x.Items)
@@ -349,7 +377,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The item ID and store price (in USD) of the item to be linked to the store
         /// </param>
         /// <response code="200">If the item was linked successfully.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="400">If the request data is malformed/invalid or the current app does not support stores.</response>
         /// <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
         /// <response code="404">If the store or item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -362,6 +390,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LinkStoreItem([FromRoute] Guid id, [FromBody] LinkStoreItemCommand command)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
@@ -373,7 +407,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             var store = await _db.SteamItemStores
                 .Include(x => x.Items)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.AppId == app.Guid && x.Id == id);
             if (store == null)
             {
                 return NotFound("Store not found");
@@ -389,7 +423,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
-                .FirstOrDefaultAsync(x => x.ClassId == command.AssetDescriptionId);
+                .FirstOrDefaultAsync(x => x.AppId == app.Guid && x.ClassId == command.AssetDescriptionId);
             if (assetDescription == null)
             {
                 return NotFound("Asset description not found");
@@ -472,7 +506,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The item ID and store price (in USD) of the item to be unlinked from the store
         /// </param>
         /// <response code="200">If the item was unlinked successfully.</response>
-        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="400">If the request data is malformed/invalid or the current app does not support stores.</response>
         /// <response code="401">If the request is unauthenticated (login first) or the authenticated user is not a moderator.</response>
         /// <response code="404">If the store or item cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
@@ -485,6 +519,12 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UnlinkStoreItem([FromRoute] Guid id, [FromBody] UnlinkStoreItemCommand command)
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            {
+                return BadRequest("App does not support stores");
+            }
+
             if (Guid.Empty == id)
             {
                 return BadRequest("Store GUID is invalid");
@@ -497,7 +537,7 @@ namespace SCMM.Web.Server.API.Controllers
             var store = await _db.SteamItemStores
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.AppId == app.Guid && x.Id == id);
             if (store == null)
             {
                 return NotFound("Store not found");
@@ -531,16 +571,24 @@ namespace SCMM.Web.Server.API.Controllers
         /// <remarks>This is an estimate only and the exact time varies from week to week. Sometimes the store can even be late by a day or two.</remarks>
         /// <returns>The expected store release date/time</returns>
         /// <response code="200">The expected date/time of the next item store release.</response>
+        /// <response code="400">If the current app does not support store rotations.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("nextUpdateTime")]
         [ProducesResponseType(typeof(DateTimeOffset?), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStoreNextUpdateTime()
         {
+            var app = this.App();
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
+            {
+                return BadRequest("App does not support store rotations");
+            }
+
             var nextUpdateTime = await _queryProcessor.ProcessAsync(new GetStoreNextUpdateTimeRequest()
             {
-                AppId = this.App().Id
+                AppId = app.Id
             });
 
             return Ok(nextUpdateTime?.Timestamp);

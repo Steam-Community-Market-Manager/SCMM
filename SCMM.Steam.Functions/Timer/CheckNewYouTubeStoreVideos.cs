@@ -41,7 +41,7 @@ public class CheckNewYouTubeStoreVideos
         var logger = context.GetLogger("Check-New-YouTube-Store-Videos");
 
         var steamApps = await _db.SteamApps
-            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.StorePersistent | SteamAppFeatureTypes.StoreRotating))
+            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.Store))
             .Where(x => x.IsActive)
             .ToListAsync();
         if (!steamApps.Any())
