@@ -133,9 +133,19 @@ namespace SCMM.Steam.API.Commands
                 var missingAssets = inventory.Assets
                     .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId.ToString()))
                     .ToList();
+                var knownAssets = await _db.SteamAssetDescriptions
+                    .Where(x => x.AppId == app.Id)
+                    .Select(x => new
+                    {
+                        Id = x.Id,
+                        ClassId = x.ClassId,
+                        IsDrop = (x.IsSpecialDrop || x.IsTwitchDrop)
+                    })
+                    .ToListAsync();
+
                 foreach (var asset in missingAssets)
                 {
-                    var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => x.ClassId == asset.ClassId);
+                    var assetDescription = knownAssets.FirstOrDefault(x => x.ClassId == asset.ClassId);
                     if (assetDescription == null)
                     {
                         var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
@@ -145,7 +155,12 @@ namespace SCMM.Steam.API.Commands
                             // TODO: Test this more. It seems there is missing data sometimes so we'll fetch the full details from Steam instead
                             //AssetClass = inventory.Descriptions.FirstOrDefault(x => x.ClassId == asset.ClassId)
                         });
-                        assetDescription = importAssetDescription.AssetDescription;
+                        assetDescription = new
+                        {
+                            Id = importAssetDescription.AssetDescription.Id,
+                            ClassId = importAssetDescription.AssetDescription.ClassId,
+                            IsDrop = (importAssetDescription.AssetDescription.IsSpecialDrop || importAssetDescription.AssetDescription.IsTwitchDrop)
+                        };
                     }
                     if (assetDescription == null)
                     {
@@ -158,13 +173,12 @@ namespace SCMM.Steam.API.Commands
                         ProfileId = profile.Id,
                         App = app,
                         AppId = app.Id,
-                        Description = assetDescription,
                         DescriptionId = assetDescription.Id,
                         Quantity = (int)asset.Amount
                     };
 
                     // If this item is a special/twitch drop, automatically mark it as a drop
-                    if (assetDescription.IsSpecialDrop || assetDescription.IsTwitchDrop)
+                    if (assetDescription.IsDrop)
                     {
                         inventoryItem.AcquiredBy = SteamProfileInventoryItemAcquisitionType.Drop;
                     }
