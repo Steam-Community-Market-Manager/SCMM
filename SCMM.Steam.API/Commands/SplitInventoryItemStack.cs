@@ -94,7 +94,12 @@ namespace SCMM.Steam.API.Commands
                                 AppId = sourceItem.AppId,
                                 Description = sourceItem.Description,
                                 DescriptionId = sourceItem.DescriptionId,
-                                Quantity = (int)item.Quantity
+                                Currency = sourceItem.Currency,
+                                CurrencyId = sourceItem.CurrencyId,
+                                AcquiredBy = sourceItem.AcquiredBy,
+                                BuyPrice = sourceItem.BuyPrice,
+                                Quantity = (int)item.Quantity,
+                                Flags = sourceItem.Flags,
                             });
 
                             _db.SteamProfileInventoryItems.Add(inventoryItem);
