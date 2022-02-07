@@ -133,7 +133,6 @@
         InventoryTotals = RestoreFromStateOrDefault(nameof(InventoryTotals), InventoryTotals);
         PanelIndex = RestoreFromStateOrDefault(nameof(PanelIndex), PanelIndex);
         LoadingMessage = RestoreFromStateOrDefault(nameof(LoadingMessage), LoadingMessage);
-        LoadingError = RestoreFromStateOrDefault(nameof(LoadingError), LoadingError);
     }
 
     protected override Task OnPersistStateAsync()
@@ -142,7 +141,6 @@
         PersistToState(nameof(InventoryTotals), InventoryTotals);
         PersistToState(nameof(PanelIndex), PanelIndex);
         PersistToState(nameof(LoadingMessage), LoadingMessage);
-        PersistToState(nameof(LoadingError), LoadingError);
         return Task.CompletedTask;
     }
 

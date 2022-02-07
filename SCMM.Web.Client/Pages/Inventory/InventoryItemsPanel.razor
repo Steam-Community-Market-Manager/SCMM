@@ -77,14 +77,12 @@ else
             return InventoryItems;
         });
         SelectedInventoryItems = RestoreFromStateOrDefault(nameof(SelectedInventoryItems), SelectedInventoryItems);
-        LoadingError = RestoreFromStateOrDefault(nameof(LoadingError), LoadingError);
     }
 
     protected override Task OnPersistStateAsync()
     {
         PersistToState(nameof(InventoryItems), InventoryItems);
         PersistToState(nameof(SelectedInventoryItems), SelectedInventoryItems);
-        PersistToState(nameof(LoadingError), LoadingError);
         return Task.CompletedTask;
     }
 
