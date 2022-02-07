@@ -208,9 +208,9 @@ namespace SCMM.Steam.API.Commands
             }
 
             // If there are more assets to fetch, make a call to the next page
-            if (inventory?.Assets?.Count > 0 && inventory?.TotalInventoryCount > inventory?.Assets?.Count)
+            if (inventory?.Assets?.Count >= SteamInventoryPaginatedJsonRequest.MaxPageSize)
             {
-                await FetchInventoryRecursive(profile, app, start + count, count);
+                await FetchInventoryRecursive(profile, app, start + count, Math.Max(0, Math.Min(inventory.TotalInventoryCount - (start + count) - 1, SteamInventoryPaginatedJsonRequest.MaxPageSize)));
             }
         }
     }
