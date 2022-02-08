@@ -104,7 +104,7 @@ public class DownloadSteamWorkshopFile
         }
 
         // Update all asset descriptions that reference this workshop file with the blob url
-        var workshopFileUrl = $"{_workshopFilesStorageUrl}/{blob.Uri.PathAndQuery}";
+        var workshopFileUrl = new Uri($"{_workshopFilesStorageUrl}{blob.Uri.AbsolutePath}").ToString();
         var assetDescriptions = new List<SteamAssetDescription>();
         var assetDescriptionCheckStarted = DateTimeOffset.UtcNow;
         do

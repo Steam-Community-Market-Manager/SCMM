@@ -22,18 +22,20 @@ namespace SCMM.Steam.API.Commands
 
     public class GenerateSteamProfileInventoryThumbnailResponse
     {
-        public FileData Image { get; set; }
+        public string ImageUrl { get; set; }
     }
 
     public class GenerateSteamProfileInventoryThumbnail : ICommandHandler<GenerateSteamProfileInventoryThumbnailRequest, GenerateSteamProfileInventoryThumbnailResponse>
     {
         private readonly SteamDbContext _db;
         private readonly IQueryProcessor _queryProcessor;
+        private readonly ICommandProcessor _commandProcessor;
 
-        public GenerateSteamProfileInventoryThumbnail(SteamDbContext db, IQueryProcessor queryProcessor)
+        public GenerateSteamProfileInventoryThumbnail(SteamDbContext db, IQueryProcessor queryProcessor, ICommandProcessor commandProcessor)
         {
             _db = db;
             _queryProcessor = queryProcessor;
+            _commandProcessor = commandProcessor;
         }
 
         public async Task<GenerateSteamProfileInventoryThumbnailResponse> HandleAsync(GenerateSteamProfileInventoryThumbnailRequest request)
@@ -105,18 +107,21 @@ namespace SCMM.Steam.API.Commands
                 return null;
             }
 
-            var imageData = new FileData()
+            var uploadedInventoryImageMosaic = await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
             {
+                Name = $"{request.ProfileId}-inventory-thumbnail-{request.ItemSize}x{request.ItemRows}x{request.ItemColumns}-{DateTime.UtcNow.Ticks}",
                 MimeType = inventoryImageMosaic.MimeType,
                 Data = inventoryImageMosaic.Data,
                 ExpiresOn = request.ExpiresOn
-            };
-
-            _db.FileData.Add(imageData);
+            });
+            if (uploadedInventoryImageMosaic?.ImageUrl == null)
+            {
+                return null;
+            }
 
             return new GenerateSteamProfileInventoryThumbnailResponse()
             {
-                Image = imageData
+                ImageUrl = uploadedInventoryImageMosaic?.ImageUrl
             };
         }
     }

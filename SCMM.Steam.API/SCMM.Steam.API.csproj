@@ -13,6 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<PackageReference Include="Azure.Identity" Version="1.5.0" />
+	<PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="CommandQuery" Version="1.0.0" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
     <PackageReference Include="SteamWebAPI2" Version="4.3.2" />
@@ -22,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
+    <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Client\SCMM.Steam.Client.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Models\SCMM.Steam.Data.Models.csproj" />
     <ProjectReference Include="..\SCMM.Steam.Data.Store\SCMM.Steam.Data.Store.csproj" />

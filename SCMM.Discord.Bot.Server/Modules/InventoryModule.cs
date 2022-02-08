@@ -177,9 +177,9 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             .WithColor(color)
             .WithFooter(x => x.Text = _configuration.GetWebsiteUrl());
 
-        if (inventoryThumbnail?.Image?.Id != null)
+        if (!String.IsNullOrEmpty(inventoryThumbnail?.ImageUrl))
         {
-            embed = embed.WithImageUrl($"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image.Id}.{inventoryThumbnail.Image.MimeType.GetFileExtension()}");
+            embed = embed.WithImageUrl(inventoryThumbnail.ImageUrl);
         }
 
         return InteractionResult.Success(

@@ -9,6 +9,7 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
 using SCMM.Steam.API;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
@@ -110,28 +111,25 @@ public class CheckForNewMarketItemsJob
             _db.SaveChanges();
         }
 
-        var newActiveMarketItems = newMarketItems.Where(x => x.App.IsActive).ToList();
-        if (newActiveMarketItems.Any())
+        var newMarketItemGroups = newMarketItems.GroupBy(x => x.App).Where(x => x.Key.IsActive);
+        foreach (var newMarketItemGroup in newMarketItemGroups)
         {
-            var thumbnailExpiry = DateTimeOffset.Now.AddDays(90);
-            var thumbnail = await GenerateMarketItemsThumbnailImage(logger, newActiveMarketItems, thumbnailExpiry);
-            if (thumbnail != null)
-            {
-                _db.FileData.Add(thumbnail);
-            }
-
-            _db.SaveChanges();
-
-            await BroadcastNewMarketItemsNotification(logger, newActiveMarketItems, thumbnail);
+            await BroadcastNewMarketItemsNotification(logger, newMarketItemGroup.Key, newMarketItemGroup.ToArray());
         }
     }
 
-    private async Task<FileData> GenerateMarketItemsThumbnailImage(ILogger logger, IEnumerable<SteamMarketItem> marketItems, DateTimeOffset expiresOn)
+    private async Task BroadcastNewMarketItemsNotification(ILogger logger, SteamApp app, IEnumerable<SteamMarketItem> newMarketItems)
     {
+        newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name)?.ToArray();
+        if (newMarketItems?.Any() != true)
+        {
+            return;
+        }
+
+        var thumbnailImageUrl = (string)null;
         try
         {
-            var items = marketItems.OrderBy(x => x.Description?.Name);
-            var itemImageSources = items
+            var itemImageSources = newMarketItems
                 .Where(x => x.Description != null)
                 .Select(x => new ImageSource()
                 {
@@ -140,35 +138,31 @@ public class CheckForNewMarketItemsJob
                 })
                 .ToList();
 
-            var thumbnail = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+            var thumbnailImage = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = itemImageSources,
                 ImageSize = 128,
                 ImageColumns = 3
             });
-            if (thumbnail == null)
-            {
-                return null;
-            }
 
-            return new FileData()
+            if (thumbnailImage != null)
             {
-                MimeType = thumbnail.MimeType,
-                Data = thumbnail.Data,
-                ExpiresOn = expiresOn
-            };
+                thumbnailImageUrl = (
+                    await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
+                    {
+                        Name = $"{app.SteamId}-new-market-items-thumbnail-{DateTime.UtcNow.Ticks}",
+                        MimeType = thumbnailImage.MimeType,
+                        Data = thumbnailImage.Data,
+                        ExpiresOn = DateTimeOffset.Now.AddDays(90)
+                    })
+                )?.ImageUrl;
+            }
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to generate market item thumbnail image");
-            return null;
         }
-    }
 
-    private async Task BroadcastNewMarketItemsNotification(ILogger logger, IEnumerable<SteamMarketItem> newMarketItems, FileData thumbnailImage)
-    {
-        newMarketItems = newMarketItems?.OrderBy(x => x.Description.Name);
-        var app = newMarketItems.Where(x => x.App != null).FirstOrDefault()?.App;
         var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
         foreach (var guild in guilds)
         {
@@ -230,7 +224,7 @@ public class CheckForNewMarketItemsJob
                     FieldsInline = true,
                     Url = $"{_configuration.GetWebsiteUrl()}/items",
                     ThumbnailUrl = app?.IconUrl,
-                    ImageUrl = (thumbnailImage != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{thumbnailImage.Id}.{thumbnailImage.MimeType.GetFileExtension()}" : null),
+                    ImageUrl = thumbnailImageUrl,
                     Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
                 });
             }

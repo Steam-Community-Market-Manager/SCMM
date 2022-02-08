@@ -89,7 +89,7 @@
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ImageController.GetImage(System.Guid)">
             <summary>
-            Get a cached image
+            Get a cached image (DEPRECATED)
             </summary>
             <param name="id">Image GUID</param>
             <remarks>Range requests are supported.</remarks>
@@ -302,9 +302,9 @@
             </remarks>
             <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
             <param name="generateInventoryMosaic">If true, a mosaic image of the highest valued items will be generated in the response. If false, the mosaic will be <code>null</code>.</param>
-            <param name="mosaicTileSize">The size (in pixel) to render each item within the mosaic image (if enabled)</param>
-            <param name="mosaicColumns">The number of item columns to render within the mosaic image (if enabled)</param>
-            <param name="mosaicRows">The number of item rows to render within the mosaic image (if enabled)</param>
+            <param name="mosaicTileSize">The size (in pixel) to render each item within the mosaic image (if enabled) (range: 32-128)</param>
+            <param name="mosaicColumns">The number of item columns to render within the mosaic image (if enabled) (range: 1-10)</param>
+            <param name="mosaicRows">The number of item rows to render within the mosaic image (if enabled) (range: 1-10)</param>
             <param name="force">If true, the inventory will always be fetched from Steam. If false, calls to Steam are cached for one hour</param>
             <response code="200">Profile inventory value.</response>
             <response code="400">If the request data is malformed/invalid.</response>

@@ -21,7 +21,6 @@ namespace SCMM.Web.Server.Mappers
             CreateMap<SteamItemStore, StoreDetailsDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id))
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.Start != null ? p.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : p.Name.ToLower()))
-                .ForMember(x => x.ItemsMosaicUrl, o => o.MapFrom(p => p.ItemsThumbnailId != null ? $"{config.GetWebsiteUrl()}/api/image/{p.ItemsThumbnailId}" : null))
                 .ForMember(x => x.IsDraft, o => o.MapFrom(p => p.IsDraft));
 
             CreateMap<SteamStoreItemItemStore, StoreItemDetailsDTO>()

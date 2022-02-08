@@ -9,6 +9,7 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
 using SCMM.Steam.API;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -99,7 +100,6 @@ public class CheckForNewStoreItemsJob
             // If we got here, then then item store has changed (either added or removed items)
             // Load all of our active stores and their items
             var activeItemStores = _db.SteamItemStores
-                .Include(x => x.ItemsThumbnail)
                 .Where(x => x.End == null)
                 .OrderByDescending(x => x.Start)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
@@ -211,12 +211,9 @@ public class CheckForNewStoreItemsJob
                 {
                     _db.SteamItemStores.Add(permanentItemStore);
                 }
-                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, permanentItemStore.Items.Select(x => x.Item));
-                if (thumbnail != null)
+                if (permanentItemStore.Items.Any())
                 {
-                    permanentItemStore.ItemsThumbnail = (permanentItemStore.ItemsThumbnail ?? thumbnail);
-                    permanentItemStore.ItemsThumbnail.MimeType = thumbnail.MimeType;
-                    permanentItemStore.ItemsThumbnail.Data = thumbnail.Data;
+                    await RegenerateStoreItemsThumbnailImage(logger, app, permanentItemStore);
                 }
             }
             if (newLimitedStoreItems.Any())
@@ -225,12 +222,9 @@ public class CheckForNewStoreItemsJob
                 {
                     _db.SteamItemStores.Add(limitedItemStore);
                 }
-                var thumbnail = await GenerateStoreItemsThumbnailImage(logger, limitedItemStore.Items.Select(x => x.Item));
-                if (thumbnail != null)
+                if (limitedItemStore.Items.Any())
                 {
-                    limitedItemStore.ItemsThumbnail = (limitedItemStore.ItemsThumbnail ?? thumbnail);
-                    limitedItemStore.ItemsThumbnail.MimeType = thumbnail.MimeType;
-                    limitedItemStore.ItemsThumbnail.Data = thumbnail.Data;
+                    await RegenerateStoreItemsThumbnailImage(logger, app, limitedItemStore);
                 }
             }
 
@@ -252,14 +246,13 @@ public class CheckForNewStoreItemsJob
         }
     }
 
-    private async Task<FileData> GenerateStoreItemsThumbnailImage(ILogger logger, IEnumerable<SteamStoreItem> storeItems)
+    private async Task<string> RegenerateStoreItemsThumbnailImage(ILogger logger, SteamApp app, SteamItemStore store)
     {
         try
         {
-            // Generate store thumbnail
-            var items = storeItems.OrderBy(x => x.Description?.Name);
-            var itemImageSources = items
-                .Where(x => x.Description != null)
+            var itemImageSources = store.Items
+                .Select(x => x.Item)
+                .Where(x => x?.Description != null)
                 .Select(x => new ImageSource()
                 {
                     ImageUrl = x.Description.IconUrl,
@@ -267,33 +260,43 @@ public class CheckForNewStoreItemsJob
                 })
                 .ToList();
 
-            var thumbnail = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+            var thumbnailImage = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
             {
                 ImageSources = itemImageSources,
                 ImageSize = 128,
                 ImageColumns = 3
             });
-            if (thumbnail == null)
-            {
-                return null;
-            }
 
-            return new FileData()
+            if (thumbnailImage != null)
             {
-                MimeType = thumbnail.MimeType,
-                Data = thumbnail.Data
-            };
+                store.ItemsThumbnailUrl = (
+                    await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
+                    {
+                        Name = $"{app.SteamId}-store-items-thumbnail-{Uri.EscapeDataString(store.Start?.Ticks.ToString() ?? store.Name?.ToLower())}",
+                        MimeType = thumbnailImage.MimeType,
+                        Data = thumbnailImage.Data,
+                        ExpiresOn = null, // never
+                        Overwrite = true
+                    })
+                )?.ImageUrl ?? store.ItemsThumbnailUrl;
+            }
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to generate store item thumbnail image");
-            return null;
         }
+
+        return store.ItemsThumbnailUrl;
     }
 
     private async Task BroadcastNewStoreItemsNotification(ILogger logger, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
     {
         newStoreItems = newStoreItems?.OrderBy(x => x.Item?.Description?.Name);
+        if (newStoreItems?.Any() != true)
+        {
+            return;
+        }
+
         var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
         foreach (var guild in guilds)
         {
@@ -341,7 +344,7 @@ public class CheckForNewStoreItemsJob
                     FieldsInline = true,
                     Url = $"{_configuration.GetWebsiteUrl()}/store/{storeId}",
                     ThumbnailUrl = app.IconUrl,
-                    ImageUrl = (store.ItemsThumbnail != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnail.Id}.{store.ItemsThumbnail.MimeType.GetFileExtension()}" : null),
+                    ImageUrl = store.ItemsThumbnailUrl,
                     Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
                 });
             }

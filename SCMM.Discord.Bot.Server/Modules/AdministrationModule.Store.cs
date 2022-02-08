@@ -151,7 +151,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var itemStores = await _db.SteamItemStores
                 .Where(x => itemStoreIds.Contains(x.Id))
                 .Where(x => x.Items.Any())
-                .Include(x => x.ItemsThumbnail)
+                .Include(x => x.App)
                 .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
                 .ToArrayAsync();
 
@@ -180,26 +180,34 @@ namespace SCMM.Discord.Bot.Server.Modules
                     continue;
                 }
 
-                var itemsMosaic = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
+                var itemsThumbnailImage = await _queryProcessor.ProcessAsync(new GetImageMosaicRequest()
                 {
                     ImageSources = itemImageSources,
                     ImageSize = 128,
                     ImageColumns = 3
                 });
-                if (itemsMosaic == null)
+                if (itemsThumbnailImage == null)
                 {
                     continue;
                 }
 
-                itemStore.ItemsThumbnail = itemStore.ItemsThumbnail ?? new FileData();
-                itemStore.ItemsThumbnail.MimeType = itemsMosaic.MimeType;
-                itemStore.ItemsThumbnail.Data = itemsMosaic.Data;
+                // TODO: Upload to blob storage
+                itemStore.ItemsThumbnailUrl = (
+                    await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
+                    {
+                        Name = $"{itemStore.App.SteamId}-store-items-thumbnail-{Uri.EscapeDataString(itemStore.Start?.Ticks.ToString() ?? itemStore.Name?.ToLower())}",
+                        MimeType = itemsThumbnailImage.MimeType,
+                        Data = itemsThumbnailImage.Data,
+                        ExpiresOn = null, // never
+                        Overwrite = true
+                    })
+                )?.ImageUrl ?? itemStore.ItemsThumbnailUrl;
 
                 await _db.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
-                x => x.Content = $"Rebuilt {itemStores.Where(x => x.ItemsThumbnail != null).Count()}/{itemStores.Length} snapshots item mosaics"
+                x => x.Content = $"Rebuilt {itemStores.Where(x => x.ItemsThumbnailUrl != null).Count()}/{itemStores.Length} snapshots item mosaics"
             );
 
             return CommandResult.Success();

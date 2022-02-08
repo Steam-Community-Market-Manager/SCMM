@@ -14,7 +14,7 @@
 
         public IList<StoreItemDetailsDTO> Items { get; set; }
 
-        public string ItemsMosaicUrl { get; set; }
+        public string ItemsThumbnailUrl { get; set; }
 
         public IList<string> Media { get; set; }
 

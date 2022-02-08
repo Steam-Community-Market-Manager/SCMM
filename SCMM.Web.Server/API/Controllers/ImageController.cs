@@ -8,8 +8,10 @@ using SCMM.Steam.Data.Store;
 
 namespace SCMM.Web.Server.API.Controllers
 {
+    // TODO: Delete this...
     [ApiController]
     [Route("api/image")]
+    [Obsolete("Images are now served from https://data.scmm.app, this API will be removed soon")]
     public class ImageController : ControllerBase
     {
         private readonly ILogger<ImageController> _logger;
@@ -28,7 +30,7 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get a cached image
+        /// Get a cached image (DEPRECATED)
         /// </summary>
         /// <param name="id">Image GUID</param>
         /// <remarks>Range requests are supported.</remarks>
@@ -36,6 +38,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">If the image is valid, the response body will contain the image data. The <code>Content-Type</code> header will contain the image mime-type. The <code>Expires</code> header will contain the image UTC expiry date (if any).</response>
         /// <response code="404">If the image cannot be found or has expired.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [Obsolete("Images are now served from https://data.scmm.app, this API will be removed soon")]
         [AllowAnonymous]
         [HttpGet("{id}")]
         [HttpGet("{id}.{ext}")]

@@ -14,7 +14,7 @@ namespace SCMM.Steam.API.Commands
         public DateTimeOffset? ExpiresOn { get; set; } = null;
 
         /// <summary>
-        /// If true, we'll recycle existing file data the same source url exists in the database already
+        /// If true, we'll recycle existing file data with the same source url if it exists in the database already
         /// </summary>
         public bool UseExisting { get; set; } = true;
 
@@ -72,7 +72,10 @@ namespace SCMM.Steam.API.Commands
             };
 
             // Save the new file data to the database
-            _db.FileData.Add(fileData);
+            if (request.Persist)
+            {
+                _db.FileData.Add(fileData);
+            }
 
             return new ImportFileDataResponse
             {

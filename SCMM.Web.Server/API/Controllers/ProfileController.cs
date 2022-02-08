@@ -344,9 +344,9 @@ namespace SCMM.Web.Server.API.Controllers
         /// </remarks>
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <param name="generateInventoryMosaic">If true, a mosaic image of the highest valued items will be generated in the response. If false, the mosaic will be <code>null</code>.</param>
-        /// <param name="mosaicTileSize">The size (in pixel) to render each item within the mosaic image (if enabled)</param>
-        /// <param name="mosaicColumns">The number of item columns to render within the mosaic image (if enabled)</param>
-        /// <param name="mosaicRows">The number of item rows to render within the mosaic image (if enabled)</param>
+        /// <param name="mosaicTileSize">The size (in pixel) to render each item within the mosaic image (if enabled) (range: 32-128)</param>
+        /// <param name="mosaicColumns">The number of item columns to render within the mosaic image (if enabled) (range: 1-10)</param>
+        /// <param name="mosaicRows">The number of item rows to render within the mosaic image (if enabled) (range: 1-10)</param>
         /// <param name="force">If true, the inventory will always be fetched from Steam. If false, calls to Steam are cached for one hour</param>
         /// <response code="200">Profile inventory value.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
@@ -410,9 +410,9 @@ namespace SCMM.Web.Server.API.Controllers
                 inventoryThumbnail = await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
                 {
                     ProfileId = profile.SteamId,
-                    ItemSize = mosaicTileSize,
-                    ItemColumns = mosaicColumns,
-                    ItemRows = mosaicRows,
+                    ItemSize = Math.Max(32, Math.Min(mosaicTileSize, 128)),
+                    ItemColumns = Math.Max(1, Math.Min(mosaicColumns, 10)),
+                    ItemRows = Math.Max(1, Math.Min(mosaicRows, 10)),
                     ExpiresOn = DateTimeOffset.Now.AddDays(7)
                 });
             }
@@ -425,7 +425,7 @@ namespace SCMM.Web.Server.API.Controllers
                     SteamId = profile.SteamId,
                     Name = profile.Name,
                     AvatarUrl = profile.AvatarUrl,
-                    InventoryMosaicUrl = inventoryThumbnail?.Image?.Id != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{inventoryThumbnail.Image.Id}.{inventoryThumbnail.Image.MimeType.GetFileExtension()}" : null,
+                    InventoryMosaicUrl = inventoryThumbnail?.ImageUrl,
                     Items = inventoryTotals.Items,
                     Invested = inventoryTotals.Invested,
                     InvestmentGains = inventoryTotals.InvestmentGains,

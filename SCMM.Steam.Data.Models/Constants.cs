@@ -78,6 +78,8 @@
         public const string BlobContainerModels = "models";
         public const string BlobContainerImages = "images";
 
+        public const string BlobMetadataAutoDelete = "autodelete";
+        public const string BlobMetadataExpiresOn = "expireson";
         public const string BlobMetadataPublishedFileId = "PublishedFileId";
         public const string BlobMetadataPublishedFileName = "PublishedFileName";
         public const string BlobMetadataIconAnalysed = "IconAnalysed";

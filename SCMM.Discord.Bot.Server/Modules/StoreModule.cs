@@ -78,7 +78,6 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         var appId = _configuration.GetDiscordConfiguration().AppId;
         var store = _db.SteamItemStores
             .Include(x => x.App)
-            .Include(x => x.ItemsThumbnail)
             .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Currency)
             .Include(x => x.Items).ThenInclude(x => x.Item).ThenInclude(x => x.Description)
             .Where(x => x.App.SteamId == appId.ToString())
@@ -155,7 +154,7 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
             .WithDescription(description.ToString())
             .WithUrl($"{_configuration.GetWebsiteUrl()}/store/{(store.Start != null ? store.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : store.Name.ToLower())}")
             .WithThumbnailUrl(store.App.IconUrl)
-            .WithImageUrl((store.ItemsThumbnail != null ? $"{_configuration.GetWebsiteUrl()}/api/image/{store.ItemsThumbnail.Id}.{store.ItemsThumbnail.MimeType.GetFileExtension()}" : null))
+            .WithImageUrl(store.ItemsThumbnailUrl)
             .WithColor(UInt32.Parse(store.App.PrimaryColor.Trim('#'), NumberStyles.HexNumber))
             .WithFooter(x => x.Text = _configuration.GetWebsiteUrl());
 
