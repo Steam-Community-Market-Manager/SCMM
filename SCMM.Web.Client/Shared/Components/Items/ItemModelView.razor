@@ -138,7 +138,8 @@
                     Container,
                     new
                     {
-                        ModelEndpoint = $"https://scmm.blob.core.windows.net/models",
+                        // TODO: Add endpoint url configuration
+                        ModelEndpoint = $"https://data.scmm.app/{Constants.BlobContainerModels}",
                         ModelName = ItemType.ToRustItemShortName(),
                         WorkshopFileUrl = WorkshopFileUrl,
                         AutoRotate = IsRotating,                        Light = IsLightOn

@@ -75,6 +75,7 @@
         public const string SCMMStoreIdDateFormat = "yyyy-MM-dd-HHmm";
 
         public const string BlobContainerWorkshopFiles = "workshop-files";
+        public const string BlobContainerModels = "models";
         public const string BlobContainerImages = "images";
 
         public const string BlobMetadataPublishedFileId = "PublishedFileId";

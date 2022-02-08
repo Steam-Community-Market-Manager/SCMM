@@ -8,5 +8,10 @@ namespace SCMM.Shared.API.Extensions
         {
             return configuration.GetValue<string>("WebsiteUrl");
         }
+
+        public static string GetDataStoreUrl(this IConfiguration configuration)
+        {
+            return configuration.GetValue<string>("DataStoreUrl");
+        }
     }
 }

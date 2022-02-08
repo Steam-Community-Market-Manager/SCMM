@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Shared.API.Extensions;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
@@ -16,6 +17,7 @@ public class DownloadSteamWorkshopFile
     private readonly SteamDbContext _db;
     private readonly SteamWorkshopDownloaderWebClient _workshopDownloaderClient;
     private readonly string _workshopFilesStorageConnectionString;
+    private readonly string _workshopFilesStorageUrl;
 
     private readonly TimeSpan _maxTimeToWaitForAsset = TimeSpan.FromMinutes(1);
 
@@ -24,6 +26,7 @@ public class DownloadSteamWorkshopFile
         _db = db;
         _workshopDownloaderClient = workshopDownloaderClient;
         _workshopFilesStorageConnectionString = configuration.GetConnectionString("WorkshopFilesStorageConnection");
+        _workshopFilesStorageUrl = configuration.GetDataStoreUrl();
     }
 
     [Function("Download-Steam-Workshop-File")]
@@ -32,6 +35,7 @@ public class DownloadSteamWorkshopFile
     {
         var logger = context.GetLogger("Download-Steam-Workshop-File");
 
+        var blobContentsWasModified = false;
         var blobContainer = new BlobContainerClient(_workshopFilesStorageConnectionString, Constants.BlobContainerWorkshopFiles);
         await blobContainer.CreateIfNotExistsAsync();
 
@@ -91,6 +95,7 @@ public class DownloadSteamWorkshopFile
                 { Constants.BlobMetadataPublishedFileName, publishedFileData.Name }
             });
 
+            blobContentsWasModified = true;
             logger.LogTrace($"Upload complete, '{blob.Name}'");
         }
         else
@@ -99,13 +104,13 @@ public class DownloadSteamWorkshopFile
         }
 
         // Update all asset descriptions that reference this workshop file with the blob url
-        var workshopFileUrl = blob.Uri.GetLeftPart(UriPartial.Path);
+        var workshopFileUrl = $"{_workshopFilesStorageUrl}/{blob.Uri.PathAndQuery}";
         var assetDescriptions = new List<SteamAssetDescription>();
         var assetDescriptionCheckStarted = DateTimeOffset.UtcNow;
         do
         {
-            // NOTE: It is possible that the asset doesn't yet exist (i.e. still transient)
-            // TODO: This is a lazy way fix, wait for up to 1min for it to be saved before giving up
+            // NOTE: It is possible that the asset doesn't yet exist (i.e. it's still transient)
+            // TODO: This is a lazy fix, just wait up to 1min for it to be saved before giving up
             Thread.Sleep(TimeSpan.FromSeconds(10));
             assetDescriptions = await _db.SteamAssetDescriptions
                 .Where(x => x.WorkshopFileId == message.PublishedFileId)
@@ -125,7 +130,7 @@ public class DownloadSteamWorkshopFile
         return new AnalyseSteamWorkshopFileMessage()
         {
             BlobName = blob.Name,
-            Force = message.Force
+            Force = (blobContentsWasModified || message.Force)
         };
     }
 }
