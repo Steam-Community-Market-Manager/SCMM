@@ -191,7 +191,6 @@ namespace SCMM.Discord.Bot.Server.Modules
                     continue;
                 }
 
-                // TODO: Upload to blob storage
                 itemStore.ItemsThumbnailUrl = (
                     await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
                     {
