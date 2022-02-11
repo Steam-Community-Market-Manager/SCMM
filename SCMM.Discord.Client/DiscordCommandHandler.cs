@@ -311,7 +311,7 @@ namespace SCMM.Discord.Client
                 var channelName = (message.Channel != null ? message.Channel.Name : "n/a");
                 var content = message.Content;
 
-                var notifyGuild = _client.GetGuild(761035706021314561);
+                var notifyGuild = _client.GetGuild(935704534808920114);
                 if (notifyGuild != null)
                 {
                     var notifyChannel = notifyGuild.TextChannels.FirstOrDefault(x => x.Name == "bot-mentions");
