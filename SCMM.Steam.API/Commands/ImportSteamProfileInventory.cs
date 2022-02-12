@@ -95,6 +95,10 @@ namespace SCMM.Steam.API.Commands
             foreach (var app in apps)
             {
                 var steamInventoryItems = await FetchInventoryRecursive(profile, app);
+                if (steamInventoryItems == null || profile.Privacy == SteamVisibilityType.Private)
+                {
+                    break;
+                }
 
                 // Add assets
                 var missingAssets = steamInventoryItems
@@ -215,6 +219,7 @@ namespace SCMM.Steam.API.Commands
                 if (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
                     profile.Privacy = SteamVisibilityType.Private;
+                    return null;
                 }
                 else
                 {
