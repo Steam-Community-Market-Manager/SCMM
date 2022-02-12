@@ -216,9 +216,9 @@ public class AppState : INotifyPropertyChanged
         }
         set
         {
-            if (value?.Id != AppId)
+            if ((value?.Id ?? 0) != AppId)
             {
-                AppId = value?.Id ?? 0;
+                AppId = (value?.Id ?? 0);
                 NotifyPropertyChanged();
                 if (Profile != null)
                 {
@@ -256,12 +256,19 @@ public class AppState : INotifyPropertyChanged
     {
         try
         {
-            Runtime = await _cookieManager.GetAsync(RuntimeTypeKey, DefaultRuntime);
-            LanguageId = await _cookieManager.GetAsync(LanguageNameKey, DefaultLanguage);
-            CurrencyId = await _cookieManager.GetAsync(CurrencyNameKey, DefaultCurrency);
+            _runtime = await _cookieManager.GetAsync(RuntimeTypeKey, DefaultRuntime);
+            NotifyPropertyChanged(nameof(Runtime));
+
+            _languageId = await _cookieManager.GetAsync(LanguageNameKey, DefaultLanguage);
+            NotifyPropertyChanged(nameof(LanguageId));
+
+            _currencyId = await _cookieManager.GetAsync(CurrencyNameKey, DefaultCurrency);
+            NotifyPropertyChanged(nameof(CurrencyId));
+
             if (UInt64.TryParse(await _cookieManager.GetAsync(AppIdKey, DefaultAppId.ToString()), out ulong appId))
             {
-                AppId = appId;
+                _appId = appId;
+                NotifyPropertyChanged(nameof(AppId));
             }
         }
         catch (Exception ex)
@@ -274,9 +281,11 @@ public class AppState : INotifyPropertyChanged
     {
         try
         {
-            Profile = await http.GetFromJsonWithDefaultsAsync<MyProfileDTO>(
+            _profile = await http.GetFromJsonWithDefaultsAsync<MyProfileDTO>(
                 $"api/profile"
             );
+
+            NotifyPropertyChanged(nameof(Profile));
         }
         catch (Exception ex)
         {
