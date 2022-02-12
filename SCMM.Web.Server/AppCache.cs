@@ -60,10 +60,10 @@ namespace SCMM.Web.Server
                 return null;
             }
 
-            var hostnameParts = hostname?.Split('.');
-            foreach (var part in hostnameParts)
+            var subdomain = hostname?.Split('.')?.FirstOrDefault();
+            if (!string.IsNullOrEmpty(subdomain))
             {
-                if (Cache.TryGetValue(part, out AppDetailedDTO app))
+                if (Cache.TryGetValue(subdomain, out AppDetailedDTO app))
                 {
                     return app;
                 }
