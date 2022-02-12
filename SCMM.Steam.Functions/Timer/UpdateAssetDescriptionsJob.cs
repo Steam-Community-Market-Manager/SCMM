@@ -1,5 +1,6 @@
 ﻿using CommandQuery;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
@@ -24,7 +25,7 @@ public class UpdateAssetDescriptionsJob
         var logger = context.GetLogger("Update-Asset-Descriptions");
 
         var cutoff = DateTimeOffset.Now.Subtract(TimeSpan.FromHours(24));
-        var assetDescriptions = _db.SteamAssetDescriptions
+        var assetDescriptions = await _db.SteamAssetDescriptions
             .Where(x => x.ClassId != null)
             .Where(x => x.TimeRefreshed == null || x.TimeRefreshed <= cutoff)
             .OrderBy(x => x.TimeRefreshed)
@@ -34,7 +35,7 @@ public class UpdateAssetDescriptionsJob
                 x.ClassId
             })
             .Take(10) // batch 10 at a time
-            .ToList();
+            .ToListAsync();
 
         if (!assetDescriptions.Any())
         {
@@ -60,7 +61,8 @@ public class UpdateAssetDescriptionsJob
             }
         }
 
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
+
         logger.LogTrace($"Updated asset description information (id: {id})");
     }
 }

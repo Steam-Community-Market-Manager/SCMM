@@ -65,7 +65,7 @@ public class CheckForNewItemDefinitions
                     app.ItemDefinitionsDigest = itemDefsDigest;
                     app.TimeUpdated = itemDefsLastModified;
 
-                    _db.SaveChanges();
+                    await _db.SaveChangesAsync();
 
                     // Get the new item definition archive
                     var itemDefinitions = await _apiClient.GameInventoryGetItemDefArchive(new GetItemDefArchiveJsonRequest()
@@ -117,7 +117,7 @@ public class CheckForNewItemDefinitions
                         }
                     }
 
-                    _db.SaveChanges();
+                    await _db.SaveChangesAsync();
 
                     if (newItemDefinitions.Any() || updatedAssetDescriptions.Any())
                     {

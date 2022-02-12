@@ -36,8 +36,8 @@ namespace SCMM.Web.Server.Pages
             Host = request.Host.ToUriComponent();
 
             // If the app has a subdomain and it isn't our current host...
-            var isDebugBuild = AppDomain.CurrentDomain.IsDebugBuild();
-            if (!isDebugBuild && !String.IsNullOrEmpty(App.Subdomain) && !request.Host.Host.StartsWith(App.Subdomain, StringComparison.OrdinalIgnoreCase))
+            var isReleaseBuild = AppDomain.CurrentDomain.IsReleaseBuild();
+            if (isReleaseBuild && !String.IsNullOrEmpty(App.Subdomain) && !request.Host.Host.StartsWith(App.Subdomain, StringComparison.OrdinalIgnoreCase))
             {
                 // Redirect to the app subdomain
                 context.Result = RedirectPermanentPreserveMethod(

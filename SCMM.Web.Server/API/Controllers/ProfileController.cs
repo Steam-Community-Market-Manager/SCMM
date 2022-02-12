@@ -276,13 +276,14 @@ namespace SCMM.Web.Server.API.Controllers
                 ProfileId = id
             });
 
+            await _db.SaveChangesAsync();
+
             var profile = importedProfile?.Profile;
             if (profile == null)
             {
                 return NotFound($"Profile not found");
             }
 
-            await _db.SaveChangesAsync();
             return Ok(
                 _mapper.Map<SteamProfile, ProfileDetailedDTO>(
                     profile, this
@@ -321,6 +322,8 @@ namespace SCMM.Web.Server.API.Controllers
                 Force = force
             });
 
+            await _db.SaveChangesAsync();
+
             var profile = importedInventory?.Profile;
             if (profile == null)
             {
@@ -331,7 +334,6 @@ namespace SCMM.Web.Server.API.Controllers
                 return Unauthorized($"Profile inventory is private");
             }
 
-            await _db.SaveChangesAsync();
             return Ok();
         }
 
@@ -373,6 +375,8 @@ namespace SCMM.Web.Server.API.Controllers
                 ProfileId = id
             });
 
+            await _db.SaveChangesAsync();
+
             var profile = importedProfile?.Profile;
             if (profile == null)
             {
@@ -385,12 +389,13 @@ namespace SCMM.Web.Server.API.Controllers
                 ProfileId = profile.Id.ToString(),
                 Force = force
             });
+
+            await _db.SaveChangesAsync();
+
             if (importedInventory?.Profile?.Privacy != SteamVisibilityType.Public)
             {
                 return Unauthorized("Profile inventory is private");
             }
-
-            await _db.SaveChangesAsync();
 
             // Calculate the profiles inventory totals
             var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()

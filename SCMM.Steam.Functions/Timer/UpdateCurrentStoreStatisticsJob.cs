@@ -34,13 +34,13 @@ public class UpdateCurrentStoreStatisticsJob
     {
         var logger = context.GetLogger("Update-Store-Statistics");
 
-        var appItemStores = _db.SteamItemStores
+        var appItemStores = await _db.SteamItemStores
             .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
             .Include(x => x.App)
             .Include(x => x.Items).ThenInclude(x => x.Item)
             .Include(x => x.Items).ThenInclude(x => x.Item.Stores)
             .Include(x => x.Items).ThenInclude(x => x.Item.Description)
-            .ToList();
+            .ToListAsync();
 
         foreach (var appItemStore in appItemStores)
         {
@@ -48,7 +48,7 @@ public class UpdateCurrentStoreStatisticsJob
             await UpdateItemStoreTopSellers(logger, appItemStore);
         }
 
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
     }
 
     private async Task UpdateItemStoreTopSellers(ILogger logger, SteamItemStore itemStore)
@@ -117,7 +117,7 @@ public class UpdateCurrentStoreStatisticsJob
             storeItem.Item.RecalculateTotalSales(itemStore);
         }
 
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
     }
 
     private async Task UpdateItemStoreSubscribers(ILogger logger, SteamItemStore itemStore)

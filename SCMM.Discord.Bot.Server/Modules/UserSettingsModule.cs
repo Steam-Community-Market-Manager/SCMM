@@ -42,6 +42,8 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
             ProfileId = steamId
         });
 
+        await _db.SaveChangesAsync();
+
         var profile = importedProfile?.Profile;
         if (profile == null)
         {

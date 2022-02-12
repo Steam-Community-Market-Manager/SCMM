@@ -60,6 +60,8 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             ProfileId = steamId
         });
 
+        await _db.SaveChangesAsync();
+
         var profile = importedProfile?.Profile;
         if (profile == null)
         {
@@ -111,6 +113,9 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         {
             ProfileId = profile.Id.ToString()
         });
+
+        await _db.SaveChangesAsync();
+
         if (importedInventory?.Profile?.Privacy != Steam.Data.Models.Enums.SteamVisibilityType.Public)
         {
             return InteractionResult.Fail(
@@ -119,8 +124,6 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
                 helpImageUrl: $"{_configuration.GetWebsiteUrl()}/images/discord/steam_privacy_public.png"
             );
         }
-
-        await _db.SaveChangesAsync();
 
         // Calculate the profiles inventory totals
         //await message.LoadingAsync("💱 Calculating inventory value...");
