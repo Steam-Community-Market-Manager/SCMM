@@ -17,13 +17,15 @@ namespace SCMM.Discord.Bot.Server.Modules;
 [Group("inventory", "Steam inventory commands")]
 public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
 {
+    private readonly ILogger<InventoryModule> _logger;
     private readonly IConfiguration _configuration;
     private readonly SteamDbContext _db;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
 
-    public InventoryModule(IConfiguration configuration, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+    public InventoryModule(ILogger<InventoryModule> logger, IConfiguration configuration, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
     {
+        _logger = logger;
         _configuration = configuration;
         _db = db;
         _commandProcessor = commandProcessor;
@@ -142,11 +144,21 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
 
         // Generate the profiles inventory thumbnail
         //await message.LoadingAsync("🎨 Generating inventory thumbnail...");
-        var inventoryThumbnail = await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
+        var inventoryThumbnailImageUrl = (string)null;
+        try
         {
-            ProfileId = profile.SteamId,
-            ExpiresOn = DateTimeOffset.Now.AddDays(7)
-        });
+            inventoryThumbnailImageUrl = (
+                await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
+                {
+                    ProfileId = profile.SteamId,
+                    ExpiresOn = DateTimeOffset.Now.AddDays(7)
+                })
+            )?.ImageUrl;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to generate profile inventory thumbnail");
+        }
 
         await _db.SaveChangesAsync();
 
@@ -180,9 +192,9 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             .WithColor(color)
             .WithFooter(x => x.Text = _configuration.GetWebsiteUrl());
 
-        if (!String.IsNullOrEmpty(inventoryThumbnail?.ImageUrl))
+        if (!String.IsNullOrEmpty(inventoryThumbnailImageUrl))
         {
-            embed = embed.WithImageUrl(inventoryThumbnail.ImageUrl);
+            embed = embed.WithImageUrl(inventoryThumbnailImageUrl);
         }
 
         return InteractionResult.Success(

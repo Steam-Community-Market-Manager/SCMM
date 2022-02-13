@@ -409,17 +409,23 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Generate the profiles inventory thumbnail
-            var inventoryThumbnail = (GenerateSteamProfileInventoryThumbnailResponse)null;
-            if (generateInventoryMosaic)
+            var inventoryThumbnailImageUrl = (string)null;
+            try
             {
-                inventoryThumbnail = await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
-                {
-                    ProfileId = profile.SteamId,
-                    ItemSize = Math.Max(32, Math.Min(mosaicTileSize, 128)),
-                    ItemColumns = Math.Max(1, Math.Min(mosaicColumns, 10)),
-                    ItemRows = Math.Max(1, Math.Min(mosaicRows, 10)),
-                    ExpiresOn = DateTimeOffset.Now.AddDays(7)
-                });
+                inventoryThumbnailImageUrl = (
+                    await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
+                    {
+                        ProfileId = profile.SteamId,
+                        ItemSize = Math.Max(32, Math.Min(mosaicTileSize, 128)),
+                        ItemColumns = Math.Max(1, Math.Min(mosaicColumns, 10)),
+                        ItemRows = Math.Max(1, Math.Min(mosaicRows, 10)),
+                        ExpiresOn = DateTimeOffset.Now.AddDays(7)
+                    })
+                )?.ImageUrl;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to generate profile inventory thumbnail");
             }
 
             await _db.SaveChangesAsync();
@@ -430,7 +436,7 @@ namespace SCMM.Web.Server.API.Controllers
                     SteamId = profile.SteamId,
                     Name = profile.Name,
                     AvatarUrl = profile.AvatarUrl,
-                    InventoryMosaicUrl = inventoryThumbnail?.ImageUrl,
+                    InventoryMosaicUrl = inventoryThumbnailImageUrl,
                     Items = inventoryTotals.Items,
                     Invested = inventoryTotals.Invested,
                     InvestmentGains = inventoryTotals.InvestmentGains,
