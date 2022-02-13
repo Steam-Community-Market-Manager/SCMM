@@ -12,8 +12,8 @@ namespace SCMM.Discord.Bot.Server.Modules
 {
     public partial class AdministrationModule
     {
-        [Command("import-item-definitions")]
-        public async Task<RuntimeResult> ImportAssetDescriptionAsync()
+        [Command("import-rust-item-definitions")]
+        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync()
         {
             var message = await Context.Message.ReplyAsync("Importing latest item definitions...");
             var response = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionsRequest()
@@ -29,8 +29,8 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
-        [Command("import-asset-description")]
-        public async Task<RuntimeResult> ImportAssetDescriptionAsync(params ulong[] classIds)
+        [Command("import-rust-asset-description")]
+        public async Task<RuntimeResult> ImportRustAssetDescriptionAsync(params ulong[] classIds)
         {
             var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
             foreach (var classId in classIds)
@@ -42,6 +42,32 @@ namespace SCMM.Discord.Bot.Server.Modules
                 _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = Constants.RustAppId,
+                    AssetClassId = classId
+                });
+
+                await _db.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Imported {classIds.Length}/{classIds.Length} asset descriptions"
+            );
+
+            return CommandResult.Success();
+        }
+
+        [Command("import-csgo-asset-description")]
+        public async Task<RuntimeResult> ImportCSGOAssetDescriptionAsync(params ulong[] classIds)
+        {
+            var message = await Context.Message.ReplyAsync("Importing asset descriptions...");
+            foreach (var classId in classIds)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing asset description {classId} ({Array.IndexOf(classIds, classId) + 1}/{classIds.Length})..."
+                );
+
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                {
+                    AppId = Constants.CSGOAppId,
                     AssetClassId = classId
                 });
 
