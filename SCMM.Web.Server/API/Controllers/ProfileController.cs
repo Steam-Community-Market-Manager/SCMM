@@ -255,7 +255,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Steam profile information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the profile cannot be found or the profile is private.</response>
+        /// <response code="404">If the profile cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/summary")]
@@ -353,7 +353,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">Profile inventory value.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="401">If the profile inventory is private/empty.</response>
-        /// <response code="404">If the profile cannot be found or the inventory contains no (marketable) items.</response>
+        /// <response code="404">If the profile cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/inventory/value")]
@@ -405,7 +405,7 @@ namespace SCMM.Web.Server.API.Controllers
             });
             if (inventoryTotals == null)
             {
-                return NotFound("Profile inventory is empty (no marketable items)");
+                return NotFound("Profile inventory data is missing");
             }
 
             // Generate the profiles inventory thumbnail
@@ -457,7 +457,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Profile inventory item totals.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
-        /// <response code="404">If the profile cannot be found or if the inventory is private/empty.</response>
+        /// <response code="404">If the profile cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/inventory/total")]
@@ -477,10 +477,6 @@ namespace SCMM.Web.Server.API.Controllers
                 ProfileId = id,
                 CurrencyId = this.Currency().Id.ToString()
             });
-            if (inventoryTotals == null)
-            {
-                return NotFound("Profile inventory is empty (private, or no marketable items)");
-            }
 
             return Ok(
                 _mapper.Map<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>(inventoryTotals, this)
@@ -496,11 +492,13 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Profile inventory item information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the profile cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/inventory/items")]
         [ProducesResponseType(typeof(IList<ProfileInventoryItemDescriptionDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryItems([FromRoute] string id)
         {
@@ -572,11 +570,13 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Profile inventory item collection information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the profile cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/inventory/collections")]
         [ProducesResponseType(typeof(IEnumerable<ProfileInventoryCollectionDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryCollections([FromRoute] string id)
         {
@@ -604,11 +604,7 @@ namespace SCMM.Web.Server.API.Controllers
                     ItemCollection = x.Description.ItemCollection
                 })
                 .ToListAsync();
-            if (profileItemsInCollection?.Any() != true)
-            {
-                return NotFound("No item collections found");
-            }
-
+            
             var showDrops = this.User.Preference(_db, x => x.InventoryShowItemDrops);
             var showUnmarketable = this.User.Preference(_db, x => x.InventoryShowUnmarketableItems);
             var itemCollections = profileItemsInCollection.Select(x => x.ItemCollection).Distinct().ToArray();
@@ -658,11 +654,13 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="id">Valid Steam ID64, Custom URL, or Profile URL</param>
         /// <response code="200">Profile inventory market movement information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="404">If the profile cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/inventory/movement")]
         [ProducesResponseType(typeof(IEnumerable<ProfileInventoryItemMovementDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryMovement([FromRoute] string id)
         {
@@ -694,10 +692,6 @@ namespace SCMM.Web.Server.API.Controllers
                     Quantity = x.Quantity
                 })
                 .ToListAsync();
-            if (profileItemMovements?.Any() != true)
-            {
-                return NotFound("No marketable items found");
-            }
 
             var groupedItemMovement = profileItemMovements
                 .GroupBy(x => x.Description)
@@ -732,12 +726,14 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="200">Profile inventory investment information.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="401">If the request is unauthenticated (login first) or the requested inventory does not belong to the authenticated user.</response>
+        /// <response code="404">If the profile cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(AuthorizationPolicies.User)]
         [HttpGet("{id}/inventory/investment")]
         [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryInvestmentItemDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetInventoryInvestment([FromRoute] string id, [FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending)
         {

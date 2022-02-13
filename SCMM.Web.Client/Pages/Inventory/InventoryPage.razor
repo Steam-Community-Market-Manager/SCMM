@@ -90,11 +90,11 @@
 
     [Parameter]
     public string SteamId { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
-    
+
     [Parameter]
     [SupplyParameterFromQuery]
     public string Panel { get; set; }
@@ -102,15 +102,17 @@
     private ProfileDetailedDTO Profile;
 
     private ProfileInventoryTotalsDTO InventoryTotals;
-    
+
+    private bool InventoryIsPrivate;
+
     private int PanelIndex;
-    
+
     private string LoadingMessage;
 
-    private Exception LoadingError;
-    
-    private HttpStatusCode? LoadingErrorStatusCode => (LoadingError as HttpRequestException)?.StatusCode;
-    
+    private string LoadingError;
+
+    private HttpStatusCode? LoadingErrorStatusCode;
+
     protected override void OnInitialized()
     {
         switch (Panel)
@@ -122,7 +124,7 @@
             case "statistics": PanelIndex = 4; break;
         }
     }
-    
+
     protected override async Task OnLoadStateAsync()
     {
         Profile = await RestoreFromStateOrLoad(nameof(Profile), async () =>
@@ -131,16 +133,26 @@
             return Profile;
         });
         InventoryTotals = RestoreFromStateOrDefault(nameof(InventoryTotals), InventoryTotals);
+        InventoryIsPrivate = RestoreFromStateOrDefault(nameof(InventoryIsPrivate), InventoryIsPrivate);
         PanelIndex = RestoreFromStateOrDefault(nameof(PanelIndex), PanelIndex);
         LoadingMessage = RestoreFromStateOrDefault(nameof(LoadingMessage), LoadingMessage);
+        LoadingError = RestoreFromStateOrDefault(nameof(LoadingError), LoadingError);
+        LoadingErrorStatusCode = RestoreFromStateOrDefault(nameof(LoadingErrorStatusCode), LoadingErrorStatusCode);
+        if (InventoryIsPrivate)
+        {
+            ShowInventoryPrivateNotification();
+        }
     }
 
     protected override Task OnPersistStateAsync()
     {
         PersistToState(nameof(Profile), Profile);
         PersistToState(nameof(InventoryTotals), InventoryTotals);
+        PersistToState(nameof(InventoryIsPrivate), InventoryIsPrivate);
         PersistToState(nameof(PanelIndex), PanelIndex);
         PersistToState(nameof(LoadingMessage), LoadingMessage);
+        PersistToState(nameof(LoadingError), LoadingError);
+        PersistToState(nameof(LoadingErrorStatusCode), LoadingErrorStatusCode);
         return Task.CompletedTask;
     }
 
@@ -154,7 +166,7 @@
             await LoadProfileAndInventory();
         }
     }
-    
+
     private void OnSearch(string text)
     {
         Filter = text;
@@ -178,7 +190,7 @@
             }
         }
     }
-    
+
     private async Task OnSynchroniseInventory()
     {
         Profile = null;
@@ -186,7 +198,7 @@
         await LoadProfileAndInventory(force: true);
         StateHasChanged();
     }
-    
+
     private async Task LoadProfileAndInventory(bool force = false)
     {
         try
@@ -207,14 +219,15 @@
             LoadingMessage = "Calculating inventory value...";
             StateHasChanged();
             await LoadInventoryTotals();
-            
+
             LoadingMessage = null;
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error loading profile inventory '{Uri.EscapeDataString(SteamId)}'");
             LoadingMessage = null;
-            LoadingError = ex;
+            LoadingError = ex.Message;
+            LoadingErrorStatusCode = (ex as HttpRequestException)?.StatusCode;
             throw;
         }
         finally
@@ -239,7 +252,7 @@
             throw;
         }
     }
-    
+
     private async Task SynchroniseInventory(bool force = false)
     {
         try
@@ -256,38 +269,9 @@
             var httpErrorCode = (ex as HttpRequestException)?.StatusCode;
             if (httpErrorCode == HttpStatusCode.Unauthorized)
             {
-                var snackBarMessage = (Profile?.LastUpdatedInventoryOn != null
-                    ? $"<strong>This inventory is currently private.</strong><br/>You are viewing an old snapshot from {Profile.LastUpdatedInventoryOn.Value.ToString("g")} as we are unable to show you the latest information at this time. "
-                    : $"<strong>This inventory is currently private.</strong><br/>We are unable to show you the contents of this inventory. "
-                );
-
-                var thisIsMyInventory = State.Is(Profile?.SteamId);
-                if (thisIsMyInventory)
-                {
-                    snackBarMessage += (
-                        $"To resolve this, click the action button to update your Steam inventory privacy settings to 'Public', then refresh this page after a few minutes. "
-                    );
-                }
-
                 Logger.LogWarning(ex, $"Inventory is currently private for '{Uri.EscapeDataString(SteamId)}', unable to synchronise at this time");
-                Snackbar.Add(
-				    snackBarMessage,
-                    Severity.Warning,
-                    options =>
-                    {
-                        options.Icon = "fas fa-fw fa-eye-slash ma-2";
-                        if (thisIsMyInventory)
-                        {
-                            options.Action = "Privacy Settings";
-                            options.Onclick = async (x) =>
-                            {
-                                ExternalNavigationManager.NavigateToNewTab(
-                                    $"https://steamcommunity.com/profiles/{Profile?.SteamId}/edit/settings"
-                                );
-                            };
-                        }
-                    }
-                );
+                ShowInventoryPrivateNotification();
+                InventoryIsPrivate = true;
             }
             else
             {
@@ -314,4 +298,39 @@
         }
     }
 
+    private void ShowInventoryPrivateNotification()
+    {
+        var thisIsMyInventory = State.Is(Profile?.SteamId);
+        var snackBarMessage = $"<strong>{(thisIsMyInventory ? "Your" : "This")} inventory is currently private.</strong><br/>";
+        snackBarMessage += (Profile?.LastUpdatedInventoryOn != null
+            ? $" You are viewing an old snapshot from {Profile.LastUpdatedInventoryOn.Value.ToString("g")} as we are unable to show you the latest contents of {(thisIsMyInventory ? "your" : "this")} inventory."
+            : $" We are unable to show you the contents of this inventory."
+        );
+
+        if (thisIsMyInventory)
+        {
+            snackBarMessage += (
+                $" To fix this, change your Steam inventory privacy settings to 'Public'."
+            );
+        }
+
+        Snackbar.Add(
+			snackBarMessage,
+            Severity.Warning,
+            options =>
+            {
+                options.Icon = "fas fa-fw fa-eye-slash ma-2";
+                if (thisIsMyInventory)
+                {
+                    options.Action = "Change Privacy Settings";
+                    options.Onclick = async (x) =>
+                    {
+                        ExternalNavigationManager.NavigateToNewTab(
+                            $"https://steamcommunity.com/profiles/{Profile?.SteamId}/edit/settings"
+                        );
+                    };
+                }
+            }
+        );
+    }
 }

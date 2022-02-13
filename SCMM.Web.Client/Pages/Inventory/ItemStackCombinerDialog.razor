@@ -186,7 +186,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error combining items {String.Join(" + ", sourceItems.Keys)} => {destinationItem.Key}");
-            Snackbar.Add($"Failed to combine items. {ex.Message}", MudBlazor.Severity.Error, x => x.RequireInteraction = false);
+            Snackbar.Add($"Unable to combine items. {ex.Message}", MudBlazor.Severity.Error, x => x.RequireInteraction = false);
         }
         finally
         {

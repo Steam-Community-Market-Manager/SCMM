@@ -103,7 +103,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public bool InventoryShowItemDrops
         {
-            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryShowItemDrops), Boolean.TrueString)); }
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryShowItemDrops), Boolean.FalseString)); }
             set { Preferences[nameof(InventoryShowItemDrops)] = value.ToString(); }
         }
 
@@ -111,7 +111,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public bool InventoryShowUnmarketableItems
         {
-            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryShowUnmarketableItems), Boolean.TrueString)); }
+            get { return bool.Parse(Preferences.GetOrDefault(nameof(InventoryShowUnmarketableItems), Boolean.FalseString)); }
             set { Preferences[nameof(InventoryShowUnmarketableItems)] = value.ToString(); }
         }
 

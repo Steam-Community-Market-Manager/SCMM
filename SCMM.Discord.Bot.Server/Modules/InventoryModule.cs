@@ -134,7 +134,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             ProfileId = profile.SteamId,
             CurrencyId = currency.SteamId,
         });
-        if (inventoryTotals == null)
+        if (inventoryTotals?.Items <= 0)
         {
             return InteractionResult.Fail(
                 reason: $"No marketable items found",

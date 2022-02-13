@@ -80,11 +80,6 @@ namespace SCMM.Steam.API.Queries
                 })
                 .ToListAsync();
 
-            if (!profileInventoryItems.Any())
-            {
-                return null;
-            }
-
             var profileInventory = new
             {
                 ItemCount = profileInventoryItems.Count,

@@ -38,8 +38,15 @@
             }
         </MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">
-            <strong>@Exception.GetType().Name: </strong>
-            <span>@Exception.Message</span>
+            @if (Exception is Exception)
+            {
+                <strong>@Exception.GetType().Name: </strong>
+                <span>@Exception.ToString()</span>
+            }
+            else
+            {
+                <span>@(Exception?.ToString())</span>
+            }
         </MudText>
     }
     @ChildContent
@@ -72,7 +79,7 @@
     public string SubTitle { set; get; }
     
     [Parameter]
-    public Exception Exception { set; get; }
+    public object Exception { set; get; }
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }

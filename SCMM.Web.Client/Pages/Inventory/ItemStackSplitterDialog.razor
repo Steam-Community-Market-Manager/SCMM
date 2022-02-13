@@ -175,7 +175,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Error splitting items");
-            Snackbar.Add($"Failed to split items. {ex.Message}", MudBlazor.Severity.Error, x => x.RequireInteraction = false);
+            Snackbar.Add($"Unable to split items. {ex.Message}", MudBlazor.Severity.Error, x => x.RequireInteraction = false);
         }
         finally
         {
