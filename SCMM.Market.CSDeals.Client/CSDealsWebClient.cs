@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.CSDeals.Client
 {
-    public class CSDealsWebClient : MarketWebClient
+    public class CSDealsWebClient : AgentWebClient
     {
         private const string BaseUri = "https://cs.deals/";
         private const string BaseApiUri = "https://cs.deals/API/";

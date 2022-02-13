@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.SwapGG.Client
 {
-    public class SwapGGWebClient : MarketWebClient
+    public class SwapGGWebClient : AgentWebClient
     {
         private const string TradeBaseUri = "https://api.swap.gg/";
         private const string MarketBaseUri = "https://market-api.swap.gg/v1/";

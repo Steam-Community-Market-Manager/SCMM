@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.SkinMarketgg.Client
 {
-    public class SkinMarketGGWebClient : MarketWebClient
+    public class SkinMarketGGWebClient : AgentWebClient
     {
         private const string BaseUri = "https://api.skinmarket.gg/";
 

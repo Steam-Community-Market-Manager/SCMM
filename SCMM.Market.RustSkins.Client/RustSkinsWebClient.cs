@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.RustSkins.Client
 {
-    public class RustSkinsWebClient : MarketWebClient
+    public class RustSkinsWebClient : AgentWebClient
     {
         private const string BaseUri = "https://rustskins.com/api/v1/";
 

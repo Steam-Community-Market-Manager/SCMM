@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.SkinsMonkey.Client
 {
-    public class SkinsMonkeyWebClient : MarketWebClient
+    public class SkinsMonkeyWebClient : AgentWebClient
     {
         private const string BaseUri = "https://skinsmonkey.com/api/";
 

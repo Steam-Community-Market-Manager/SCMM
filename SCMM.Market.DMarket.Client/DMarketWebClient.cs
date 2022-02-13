@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.DMarket.Client
 {
-    public class DMarketWebClient : MarketWebClient
+    public class DMarketWebClient : AgentWebClient
     {
         private const string BaseUri = "https://api.dmarket.com/exchange/v1/";
 

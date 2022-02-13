@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.TradeitGG.Client
 {
-    public class TradeitGGWebClient : MarketWebClient
+    public class TradeitGGWebClient : AgentWebClient
     {
         private const string BaseUri = "https://tradeit.gg/api/v2/";
 

@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.LootFarm.Client
 {
-    public class LootFarmWebClient : MarketWebClient
+    public class LootFarmWebClient : AgentWebClient
     {
         private const string BaseUri = "https://loot.farm/";
 

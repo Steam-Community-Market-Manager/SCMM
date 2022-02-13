@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.CSTrade.Client
 {
-    public class CSTradeWebClient : MarketWebClient
+    public class CSTradeWebClient : AgentWebClient
     {
         private const string BaseUri = "https://cdn.cs.trade:8443/api/";
 

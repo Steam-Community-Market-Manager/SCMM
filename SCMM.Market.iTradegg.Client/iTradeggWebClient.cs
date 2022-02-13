@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace SCMM.Market.iTradegg.Client
 {
-    public class iTradeggWebClient : MarketWebClient
+    public class iTradeggWebClient : AgentWebClient
     {
         private const string BaseUri = "https://itrade.gg/ajax/";
 
