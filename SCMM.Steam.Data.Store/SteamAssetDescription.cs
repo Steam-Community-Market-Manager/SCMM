@@ -202,8 +202,10 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
-        public MarketPrice this[IExchangeableCurrency currency] =>
-            GetBuyPrices(currency).Where(x => x.IsFirstPartyMarket && x.IsAvailable).OrderBy(x => x.Price + x.Fee).FirstOrDefault();
+        public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency)
+        {
+            return GetBuyPrices(currency).Where(x => x.IsFirstPartyMarket && x.IsAvailable).OrderBy(x => x.Price + x.Fee).FirstOrDefault();
+        }
 
         public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency)
         {

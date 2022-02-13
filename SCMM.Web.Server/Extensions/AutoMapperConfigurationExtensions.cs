@@ -191,7 +191,7 @@ namespace SCMM.Web.Server.Extensions
                         return default;
                     }
 
-                    var price = assetDescription[currency];
+                    var price = assetDescription.GetCheapestBuyPrice(currency);
                     if (price == null)
                     {
                         return default;
