@@ -61,17 +61,17 @@ namespace SCMM.Steam.API.Queries
 
             var x = 0;
             var y = 0;
-            var fontFamily = default(FontFamily);
-            if (!SystemFonts.TryGet("Segoe UI", out fontFamily) && 
-                !SystemFonts.TryGet("DejaVu Sans", out fontFamily) &&
-                !SystemFonts.TryGet("Noto Sans", out fontFamily) &&
-                !SystemFonts.TryGet("Liberation Sans", out fontFamily))
+            var fontFamily = (FontFamily)null;
+            if (!SystemFonts.TryFind("Segoe UI", out fontFamily) && 
+                !SystemFonts.TryFind("DejaVu Sans", out fontFamily) &&
+                !SystemFonts.TryFind("Noto Sans", out fontFamily) &&
+                !SystemFonts.TryFind("Liberation Sans", out fontFamily))
             {
                 throw new Exception($"Unable to find a suitable font. Available options are: {String.Join(", ", SystemFonts.Families.Select(x => x.Name))}");
             }
             var badgeFont = new Font(fontFamily, (int)Math.Max(12, Math.Ceiling(20 * ((double)tileSize / 200))), FontStyle.Regular);
             var titleFont = new Font(fontFamily, (int)Math.Max(20, Math.Ceiling(30 * ((double)tileSize / 200))), FontStyle.Regular);
-            var titleLineHeight = (renderTitles ? ((int)titleFont.FontMetrics.LineHeight + (2 * 2)) : 0);
+            var titleLineHeight = (renderTitles ? ((int)titleFont.LineHeight + (2 * 2)) : 0);
             var padding = (int)Math.Ceiling(badgeFont.Size * 0.5f);
             var indicatorSize = (int)Math.Ceiling(tileSize * 0.25f);
 
@@ -134,7 +134,7 @@ namespace SCMM.Steam.API.Queries
                     if (imageSource.Badge > 1)
                     {
                         var badgeText = $"{imageSource.Badge}";
-                        var badgeTextSize = TextMeasurer.Measure(badgeText, new TextOptions(badgeFont));
+                        var badgeTextSize = TextMeasurer.Measure(badgeText, new RendererOptions(badgeFont));
                         var badgeRect = new Rectangle(
                             (int)(x + tileSize - badgeTextSize.Width - (padding * 2)),
                             (int)(y + padding),
@@ -194,16 +194,16 @@ namespace SCMM.Steam.API.Queries
                     if (!string.IsNullOrEmpty(imageSource.Title))
                     {
                         var title = imageSource.Title;
-                        var titleSize = TextMeasurer.Measure(title, new TextOptions(titleFont));
+                        var titleSize = TextMeasurer.Measure(title, new RendererOptions(titleFont));
                         while (titleSize.Width >= (tileSize - (padding * 2)) && title.Length > 0)
                         {
                             title = title.Substring(0, title.Length - 1);
-                            titleSize = TextMeasurer.Measure(title, new TextOptions(titleFont));
+                            titleSize = TextMeasurer.Measure(title, new RendererOptions(titleFont));
                         }
                         if (title.Length != imageSource.Title.Length)
                         {
                             title = (title.Trim() + "…");
-                            titleSize = TextMeasurer.Measure(title, new TextOptions(titleFont));
+                            titleSize = TextMeasurer.Measure(title, new RendererOptions(titleFont));
                         }
                         if (!string.IsNullOrEmpty(title) && titleSize.Width > 0)
                         {
