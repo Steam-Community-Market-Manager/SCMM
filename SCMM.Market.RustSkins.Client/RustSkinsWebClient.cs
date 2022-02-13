@@ -9,7 +9,7 @@ namespace SCMM.Market.RustSkins.Client
 
         public async Task<RustSkinsMarketListingsResponse> GetMarketListingsAsync(int page = 1)
         {
-            using (var client = BuildHttpClient())
+            using (var client = GetHttpClient())
             {
                 var url = $"{BaseUri}market/listings?sort=p-descending&page={page}";
                 var response = await client.GetAsync(url);

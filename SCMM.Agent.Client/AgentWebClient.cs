@@ -21,7 +21,7 @@ public class AgentWebClient : IDisposable
 
     protected CookieContainer Cookies => _cookieContainer;
 
-    protected HttpClient BuildHttpClient(bool disguisedAsWebBrowser = true, Uri referer = null)
+    protected HttpClient GetHttpClient(bool disguisedAsWebBrowser = true, Uri referer = null)
     {
         var httpClient = new HttpClient(_httpHandler, false);
         if (disguisedAsWebBrowser)
@@ -51,7 +51,7 @@ public class AgentWebClient : IDisposable
         return httpClient;
     }
 
-    protected ClientWebSocket BuildWebSocketClient()
+    protected ClientWebSocket GetWebSocketClient()
     {
         var webSocketClient = new ClientWebSocket();
         webSocketClient.Options.Cookies = _cookieContainer;

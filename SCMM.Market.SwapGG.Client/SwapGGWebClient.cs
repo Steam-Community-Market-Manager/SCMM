@@ -10,7 +10,7 @@ namespace SCMM.Market.SwapGG.Client
 
         public async Task<IEnumerable<SwapGGTradeItem>> GetTradeBotInventoryAsync(string appId)
         {
-            using (var client = BuildHttpClient())
+            using (var client = GetHttpClient())
             {
                 var url = $"{TradeBaseUri}inventory/bot/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
@@ -24,7 +24,7 @@ namespace SCMM.Market.SwapGG.Client
 
         public async Task<IDictionary<string, SwapGGMarketItem>> GetMarketPricingLowestAsync(string appId)
         {
-            using (var client = BuildHttpClient())
+            using (var client = GetHttpClient())
             {
                 var url = $"{MarketBaseUri}pricing/lowest?appId={Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);

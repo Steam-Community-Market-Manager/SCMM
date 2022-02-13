@@ -9,7 +9,7 @@ namespace SCMM.Market.CSTrade.Client
 
         public async Task<IEnumerable<CSTradeItem>> GetInventoryAsync()
         {
-            using (var client = BuildHttpClient())
+            using (var client = GetHttpClient())
             {
                 var url = $"{BaseUri}getInventory?order_by=price_desc&bot=all";
                 var response = await client.GetAsync(url);

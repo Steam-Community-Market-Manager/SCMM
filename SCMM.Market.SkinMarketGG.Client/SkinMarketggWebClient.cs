@@ -10,7 +10,7 @@ namespace SCMM.Market.SkinMarketgg.Client
 
         public async Task<IEnumerable<SkinMarketGGItem>> GetTradeSiteInventoryAsync()
         {
-            using (var client = BuildHttpClient())
+            using (var client = GetHttpClient())
             {
                 var url = $"{BaseUri}trade/site-inventory";
                 var response = await client.GetAsync(url);

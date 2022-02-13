@@ -10,7 +10,7 @@ namespace SCMM.Market.SkinBaron.Client
 
         public async Task<SkinBaronFilterOffersResponse> GetBrowsingFilterOffersAsync(string appId, int page = 1)
         {
-            using (var client = BuildHttpClient())
+            using (var client = GetHttpClient())
             {
                 var url = $"{BaseUri}Browsing/FilterOffers?appId={Uri.EscapeDataString(appId)}&sort=EF&language=en&page={page}";
                 var response = await client.GetAsync(url);

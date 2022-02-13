@@ -10,7 +10,7 @@ namespace SCMM.Agent.Server.Handlers
     {
         public async Task HandleAsync(ServiceBusHttpRequestMessage message, MessageContext context)
         {
-            using (var client = BuildHttpClient())
+            using (var client = GetHttpClient())
             {
                 var content = (HttpContent)null;
                 if (message.Content != null)

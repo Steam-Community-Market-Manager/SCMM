@@ -11,7 +11,7 @@ namespace SCMM.Market.SkinsMonkey.Client
 
         public async Task<IEnumerable<SkinsMonkeyItemListing>> GetInventoryAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {
-            using (var client = BuildHttpClient())
+            using (var client = GetHttpClient())
             {
                 var url = $"{BaseUri}inventory?appId={Uri.EscapeDataString(appId)}&offset={offset}&limit={limit}&sort=price-desc&force=true";
                 var response = await client.GetAsync(url);
