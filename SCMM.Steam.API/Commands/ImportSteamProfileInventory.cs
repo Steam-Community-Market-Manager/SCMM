@@ -102,7 +102,7 @@ namespace SCMM.Steam.API.Commands
 
                 // Add assets
                 var missingAssets = steamInventoryItems
-                    .Where(x => !profile.InventoryItems.Any(y => y.SteamId == x.AssetId.ToString()))
+                    .Where(x => !profile.InventoryItems.Any(y => y.AppId == app.Id && y.SteamId == x.AssetId.ToString()))
                     .ToList();
                 var knownAssets = await _db.SteamAssetDescriptions
                     .Where(x => x.AppId == app.Id)
@@ -165,7 +165,7 @@ namespace SCMM.Steam.API.Commands
                 // Update assets
                 foreach (var asset in steamInventoryItems)
                 {
-                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.SteamId == asset.AssetId.ToString());
+                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.AppId == app.Id && x.SteamId == asset.AssetId.ToString());
                     if (existingAsset != null)
                     {
                         existingAsset.Quantity = (int)asset.Amount;
@@ -174,6 +174,7 @@ namespace SCMM.Steam.API.Commands
 
                 // Remove assets
                 var removedAssets = profile.InventoryItems
+                    .Where(x => x.AppId == app.Id)
                     .Where(x => !steamInventoryItems.Any(y => y.AssetId.ToString() == x.SteamId))
                     .ToList();
                 foreach (var asset in removedAssets)
