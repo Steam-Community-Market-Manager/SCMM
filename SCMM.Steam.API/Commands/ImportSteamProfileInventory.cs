@@ -85,7 +85,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Load the apps
-            var apps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
+            var apps = await _db.SteamApps.ToListAsync();
             if (!apps.Any())
             {
                 return null;
@@ -119,19 +119,24 @@ namespace SCMM.Steam.API.Commands
                     var assetDescription = knownAssets.FirstOrDefault(x => x.ClassId == asset.ClassId);
                     if (assetDescription == null)
                     {
-                        var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                        // NOTE: Only import new assets from apps we know are ready
+                        // TODO: Remove this check one day
+                        if (app.IsActive)
                         {
-                            AppId = ulong.Parse(app.SteamId),
-                            AssetClassId = asset.ClassId
-                            // TODO: Test this more. It seems there is missing data sometimes so we'll fetch the full details from Steam instead
-                            //AssetClass = inventory.Descriptions.FirstOrDefault(x => x.ClassId == asset.ClassId)
-                        });
-                        assetDescription = new
-                        {
-                            Id = importAssetDescription.AssetDescription.Id,
-                            ClassId = importAssetDescription.AssetDescription.ClassId,
-                            IsDrop = (importAssetDescription.AssetDescription.IsSpecialDrop || importAssetDescription.AssetDescription.IsTwitchDrop)
-                        };
+                            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                            {
+                                AppId = ulong.Parse(app.SteamId),
+                                AssetClassId = asset.ClassId
+                                // TODO: Test this more. It seems there is missing data sometimes so we'll fetch the full details from Steam instead
+                                //AssetClass = inventory.Descriptions.FirstOrDefault(x => x.ClassId == asset.ClassId)
+                            });
+                            assetDescription = new
+                            {
+                                Id = importAssetDescription.AssetDescription.Id,
+                                ClassId = importAssetDescription.AssetDescription.ClassId,
+                                IsDrop = (importAssetDescription.AssetDescription.IsSpecialDrop || importAssetDescription.AssetDescription.IsTwitchDrop)
+                            };
+                        }
                     }
                     if (assetDescription == null)
                     {
