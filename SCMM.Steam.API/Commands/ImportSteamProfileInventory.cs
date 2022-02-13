@@ -182,9 +182,8 @@ namespace SCMM.Steam.API.Commands
                     profile.InventoryItems.Remove(asset);
                 }
 
-                // Update last inventory update timestamp and privacy state
+                // Update last inventory update timestamp
                 profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
-                profile.Privacy = SteamVisibilityType.Public;
             }
 
             return new ImportSteamProfileInventoryResponse()
@@ -218,6 +217,7 @@ namespace SCMM.Steam.API.Commands
                 if (inventory.Assets?.Any() == true)
                 {
                     inventoryItems.AddRange(inventory.Assets);
+                    profile.Privacy = SteamVisibilityType.Public;
                 }
             }
             catch (SteamRequestException ex)
