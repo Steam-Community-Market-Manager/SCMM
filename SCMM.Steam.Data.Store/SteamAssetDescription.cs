@@ -129,15 +129,7 @@ namespace SCMM.Steam.Data.Store
 
         public string IconLargeUrl { get; set; }
 
-        public Guid? IconLargeId { get; set; }
-
-        public FileData IconLarge { get; set; }
-
         public string PreviewUrl { get; set; }
-
-        public Guid? PreviewId { get; set; }
-
-        public FileData Preview { get; set; }
 
         [Required]
         public PersistableMediaDictionary Previews { get; set; }

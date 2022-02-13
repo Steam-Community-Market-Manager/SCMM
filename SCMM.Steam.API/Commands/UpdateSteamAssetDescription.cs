@@ -327,7 +327,7 @@ namespace SCMM.Steam.API.Commands
                 }
             }
 
-            // Parse asset icon and image data
+            // Parse asset icon image data
             if (assetDescription.IconId == null && !string.IsNullOrEmpty(assetDescription.IconUrl))
             {
                 try
@@ -346,46 +346,6 @@ namespace SCMM.Steam.API.Commands
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, $"Unable to import asset description icon. {ex.Message}");
-                }
-            }
-            if (assetDescription.IconLargeId == null && !string.IsNullOrEmpty(assetDescription.IconLargeUrl))
-            {
-                try
-                {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportFileDataRequest()
-                    {
-                        Url = assetDescription.IconLargeUrl,
-                        UseExisting = true
-                    });
-                    if (importedImage?.File != null)
-                    {
-                        assetDescription.IconLarge = importedImage.File;
-                        assetDescription.IconLargeId = importedImage.File.Id;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Unable to import asset description large icon. {ex.Message}");
-                }
-            }
-            if (assetDescription.PreviewId == null && !string.IsNullOrEmpty(assetDescription.PreviewUrl))
-            {
-                try
-                {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportFileDataRequest()
-                    {
-                        Url = assetDescription.PreviewUrl,
-                        UseExisting = true
-                    });
-                    if (importedImage?.File != null)
-                    {
-                        assetDescription.Preview = importedImage.File;
-                        assetDescription.PreviewId = importedImage.File.Id;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, $"Unable to import asset description preview image. {ex.Message}");
                 }
             }
 

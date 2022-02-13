@@ -361,7 +361,7 @@ namespace SCMM.Web.Server.API.Controllers
                 {
                     CreatorId = (!x.IsSpecialDrop && !x.IsTwitchDrop) ? x.CreatorId : null,
                     Name = x.ItemCollection,
-                    IconUrl = x.IconLargeUrl,
+                    IconUrl = x.IconUrl,
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
                     BuyNowPrice = x.MarketItem != null ? (long?)x.MarketItem.SellOrderLowestPrice : (x.StoreItem != null ? (long?)x.StoreItem.Price : null),
                     Currency = x.MarketItem != null ? x.MarketItem.Currency : (x.StoreItem != null ? x.StoreItem.Currency : null)
