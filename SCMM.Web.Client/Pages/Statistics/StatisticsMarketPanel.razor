@@ -204,7 +204,7 @@
             MarketIndexFundMaxDays = maxDays;
             MarketIndexFundChartData = null;
             StateHasChanged();
-            MarketIndexFundChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<MarketIndexFundChartPointDTO>>($"api/analytics/market/indexFund?maxDays={maxDays}");
+            MarketIndexFundChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<MarketIndexFundChartPointDTO>>($"api/stats/market/indexFund?maxDays={maxDays}");
         }
         catch (Exception ex)
         {
@@ -225,7 +225,7 @@
             MarketSalesMaxDays = maxDays;
             MarketSalesChartData = null;
             StateHasChanged();
-            MarketSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<MarketSalesChartPointDTO>>($"api/analytics/market/sales?maxDays={maxDays}");
+            MarketSalesChartData = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<MarketSalesChartPointDTO>>($"api/stats/market/sales?maxDays={maxDays}");
         }
         catch (Exception ex)
         {

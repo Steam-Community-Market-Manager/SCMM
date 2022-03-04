@@ -464,7 +464,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipAnalyticDTO>>($"api/analytics/market/flips?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&sellNow={SellNow}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipAnalyticDTO>>($"api/stats/market/flips?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&sellNow={SellNow}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemFlipAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -478,7 +478,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemListingAnalyticDTO>>($"api/analytics/market/cheapestListings?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemListingAnalyticDTO>>($"api/stats/market/cheapestListings?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemListingAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -492,7 +492,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketCraftingItemCostAnalyticDTO>>($"api/analytics/market/cheapestCraftingResourceCosts?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketCraftingItemCostAnalyticDTO>>($"api/stats/market/cheapestCraftingResourceCosts?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketCraftingItemCostAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -506,7 +506,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketCraftableItemCostAnalyticDTO>>($"api/analytics/market/cheapestCraftableContainerCosts?start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketCraftableItemCostAnalyticDTO>>($"api/stats/market/cheapestCraftableContainerCosts?start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketCraftableItemCostAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
