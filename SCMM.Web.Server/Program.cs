@@ -204,11 +204,11 @@ public static class WebApplicationExtensions
             }
 
             config.SwaggerDoc(
-                "v1",
+                "preview",
                 new OpenApiInfo
                 {
                     Title = "SCMM",
-                    Version = "v1",
+                    Version = "Preview",
                     Description = (
                         "Steam Community Market Manager (SCMM) API.<br/>" +
                         "These APIs are provided unrestricted, unthrottled, and free of charge in the hopes that they are useful to somebody. If you abuse them or are the cause of significant performance degradation, don't be surprised if you get blocked."
@@ -312,7 +312,7 @@ public static class WebApplicationExtensions
         app.UseSwaggerUI(config =>
         {
             config.RoutePrefix = "docs";
-            config.SwaggerEndpoint("/docs/v1/swagger.json", "SCMM v1");
+            config.SwaggerEndpoint("/docs/preview/swagger.json", "SCMM API (Preview)");
             config.InjectStylesheet("/css/scmm-swagger-theme.css");
             config.OAuth2RedirectUrl("/signin");
         });
