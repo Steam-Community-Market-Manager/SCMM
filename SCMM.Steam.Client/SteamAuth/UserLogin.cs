@@ -46,7 +46,7 @@ namespace SteamAuth
 
             if (cookies.Count == 0)
             {
-                //Generate a SessionID
+                // Generate a SessionID
                 cookies.Add(new Cookie("mobileClientVersion", "0 (2.1.3)", "/", ".steamcommunity.com"));
                 cookies.Add(new Cookie("mobileClient", "android", "/", ".steamcommunity.com"));
                 cookies.Add(new Cookie("Steam_Language", "english", "/", ".steamcommunity.com"));

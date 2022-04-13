@@ -86,12 +86,19 @@ namespace SCMM.Steam.Client
             }
             catch (SteamRequestException ex)
             {
+                // Check if the request failed due to any of the following
+                // 400: BadRequest
+                // 401: Unauthorized
+                // 403: Forbidden
                 if (ex.IsSessionStale && _session != null)
                 {
+                    // Login to steam again, get a new auth token, retry the request again
                     _logger.LogWarning("Steam session is stale, attempting to refresh and try again...");
                     _session.Refresh();
                     return await Get(request);
                 }
+                // Check if the request failed due to any of the following
+                // 429: TooManyRequests
                 else if (ex.IsThrottled)
                 {
                     _logger.LogWarning("Steam session is throttled, need to back off...");
