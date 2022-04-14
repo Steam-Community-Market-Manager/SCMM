@@ -36,30 +36,31 @@ namespace SCMM.Steam.API
 
         public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, DateTimeOffset? timeChecked)
         {
+            // Find the store item by it's id (if it exists)
             var dbItem = await _db.SteamStoreItems
                 .Include(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.Description)
                 .Where(x => x.AppId == app.Id)
                 .FirstOrDefaultAsync(x => x.SteamId == asset.Name);
 
-            if (dbItem != null)
-            {
-                // Item is now available again
-                dbItem.IsAvailable = true;
-                return dbItem;
-            }
-
-            var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
-            {
-                AppId = ulong.Parse(app.SteamId),
-                AssetClassId = asset.ClassId
-            });
-            var assetDescription = importAssetDescription.AssetDescription;
+            // If the asset description is missing, import it now
+            var assetDescription = dbItem?.Description;
             if (assetDescription == null)
             {
-                return null;
+                var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                {
+                    AppId = ulong.Parse(app.SteamId),
+                    AssetClassId = asset.ClassId
+                });
+                assetDescription = importAssetDescription.AssetDescription;
+                if (assetDescription == null)
+                {
+                    // The asset description for this item doesn't exist, bail...
+                    return null;
+                }
             }
 
+            // If the asset is not yet accepted, accept it now
             assetDescription.IsAccepted = true;
             if (assetDescription.TimeAccepted == null)
             {
@@ -73,15 +74,26 @@ namespace SCMM.Steam.API
                 }
             }
 
-            // TODO: This is creating duplicate items, need to find and re-use any existing items before creating new ones
-            app.StoreItems.Add(dbItem = new SteamStoreItem()
+            // If we don't have a store item for this asset, create one now
+            dbItem = await _db.SteamStoreItems
+                .Include(x => x.Stores).ThenInclude(x => x.Store)
+                .Include(x => x.Description)
+                .Where(x => x.AppId == app.Id)
+                .FirstOrDefaultAsync(x => x.DescriptionId == assetDescription.Id);
+            if (dbItem == null)
             {
-                SteamId = asset.Name,
-                AppId = app.Id,
-                Description = assetDescription,
-                IsAvailable = true
-            });
+                app.StoreItems.Add(dbItem = new SteamStoreItem()
+                {
+                    App = app,
+                    AppId = app.Id,
+                    Description = assetDescription,
+                    DescriptionId = assetDescription.Id
+                });
+            }
 
+            // Mark the store item as available
+            dbItem.SteamId = asset.Name;
+            dbItem.IsAvailable = true;
             return dbItem;
         }
 
