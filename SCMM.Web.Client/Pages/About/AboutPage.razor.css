@@ -1,17 +1,17 @@
 ﻿
-.donators li:nth-child(1) {
+.top-donators li:nth-child(1) {
     color: gold;
-    font-size: 1.3em;
+    font-size: 1.4em;
 }
 
-.donators li:nth-child(2) {
+.top-donators li:nth-child(2) {
     color: silver;
     font-size: 1.2em;
 }
 
-.donators li:nth-child(3) {
+.top-donators li:nth-child(3) {
     color: #cd7f32;
-    font-size: 1.1em;
+    font-size: 1.0em;
 }
 
 .donator, .contributor {

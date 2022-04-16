@@ -8,52 +8,52 @@
     <MudPaper Outlined="true" Class="pa-4">
         <MudText Typo="MudBlazor.Typo.h5" Color="MudBlazor.Color.Default" GutterBottom>About</MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-            <span>Steam Community Market Manager (SCMM) aggregates and analyses public data collected from Steam (and other sources) to help better understand market history trends and patterns.</span>
+            <span>Steam Community Market Manager (SCMM) aggregates and analyses public data collected from Steam (and other sources) to help better understand market history patterns and trends.</span>
             <span>SCMM is fanmade and not affilated with Valve Corporation or Facepunch.</span>
         </MudText>
         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-            <span>This website is still under development and may change (or be removed) without notice.</span>
-            <span>I make no claims that the information provided here is accurate; use it at your own risk.</span>
+            <span>SCMM is still under development and may change (or be removed) without notice.</span>
+            <span>No claim is made that the information provided here is accurate; use it at your own risk.</span>
         </MudText>
 
         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>Frequently Asked Questions</MudText>
         <ul class="fa-ul">
             <li>
-                <span class="fa-li"><i class="fas fa-fw fa-question-circle"></i></span>
+                <span class="fa-li">-</span>
                 <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
-                    <span>Why does the website take so long to load? Why is it so slow?</span>
+                    <span>Why does the site take so long to load and why is it so slow?</span>
                 </MudText>
                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                    <span>This website is built using <MudLink Typo="MudBlazor.Typo.body2" Href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor" Target="_blank">Blazor</MudLink> and <MudLink Typo="MudBlazor.Typo.body2" Href="https://webassembly.org/" Target="_blank">WebAssembly (Wasm)</MudLink>, a relatively new web technology that is not as mature and optimised as traditional JavaScript based websites.</span><br/>
-                    <span>Performance will improve over time as the technology (and Wasm itself) matures. The decision to use Azure/Blazor/WebAssembly was for self-learning and educational reasons, I don't care how superior your favourite web framework is, that isn't the point of this project.</span>
+                    <span>The user interface is built using <MudLink Typo="MudBlazor.Typo.body2" Href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor" Target="_blank">Blazor</MudLink> and <MudLink Typo="MudBlazor.Typo.body2" Href="https://webassembly.org/" Target="_blank">WebAssembly (Wasm)</MudLink>, a relatively new web technology that is not as mature and optimised as traditional JavaScript based websites.</span>
+                    <span>Performance will improve over time as the technology matures. The decision to use Blazor/WebAssembly was for self-learning and educational reasons. This is a learning project, not a commerial project.</span>
                 </MudText>
             </li>
             <li>
-                <span class="fa-li"><i class="fas fa-fw fa-question-circle"></i></span>
+                <span class="fa-li">-</span>
                 <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
                     <span>I have an issue or suggestion, where can I get help?</span>
                 </MudText>
                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                    <span>Any feedback is appreciated and bug reports are welcomed, join the Discord and drop me a message.</span>
+                    <span>Any feedback is appreciated and bug reports are welcomed, drop a message in Discord using the pop-out chat in the corner of the page.</span>
                 </MudText>
             </li>
             <li>
-                <span class="fa-li"><i class="fas fa-fw fa-question-circle"></i></span>
+                <span class="fa-li">-</span>
                 <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
                     <span>I want to help with this project, how can I get involved?</span>
                 </MudText>
                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                    <span>At this time I'm not actively looking for any help, the project is still very early days and the development environment isn't geared up for public contributions.</span><br/>
+                    <span>At this time I'm not actively looking for any help, the project is still very early days and the development environment isn't geared up for public contributions.</span>
                     <span>Ideally one day I'd setup something to allow for public contributions, but this is very far down on the todo list right now and I'm more focused on finishing the basic functionality first.</span>
                 </MudText>
             </li>
             <li>
-                <span class="fa-li"><i class="fas fa-fw fa-question-circle"></i></span>
+                <span class="fa-li">-</span>
                 <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">
                     <span>The price for item <code>X</code> is wrong</span>
                 </MudText>
                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                    <span>Item prices/orders/activity are synced with Steam about once every 60 minutes (on average).</span><br/>
+                    <span>Item prices/orders/activity are synced with Steam about once every 60 minutes (on average).</span>
                     <span>Due to Steam request throttling and occasional API down-time, data can lag behind even further than this. Because Steam is a live and high-volume marketplace, real-time updates are not feasible.</span>
                 </MudText>
             </li>
@@ -70,16 +70,60 @@
             </ul>
         </MudText>
         
+        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>Contributors</MudText>
+
+        @if (Donators != null && Donators.Any())
+        {
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                Thank you to the following for their generous support and donations towards this project:
+            </MudText>
+            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
+                <ul class="fa-ul donators top-donators d-flex flex-row flex-wrap my-4">
+                    @foreach (var donator in Donators.Take(3))
+                    {
+                        <li class="donator ma-1 mr-4 no-wrap">
+                            @if (donator != null)
+                            {
+                                <img src="@donator.AvatarUrl" />
+                                <span>@donator.Name</span>
+                                <i class="fas fa-fw fa-trophy"></i>
+                            }
+                            else
+                            {
+                                <MudSkeleton Width="@Skeleton.Width(0.3)" />
+                            }
+                        </li>
+                    }
+                </ul>
+                <ul class="fa-ul donators d-flex flex-row flex-wrap my-4">
+                    @foreach (var donator in Donators.Skip(3))
+                    {
+                        <li class="donator ma-1 no-wrap">
+                            @if (donator != null)
+                            {
+                                <img src="@donator.AvatarUrl" />
+                                <span>@donator.Name</span>
+                            }
+                            else
+                            {
+                                <MudSkeleton Width="@Skeleton.Width(0.3)" />
+                            }
+                        </li>
+                    }
+                </ul>
+            </MudText>
+        }
+        
         @if (Contributors != null && Contributors.Any())
         {
             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                Thank you to the following people for contributing data towards this project:
+                Thank you to the following for contributing data towards this project:
             </MudText>
             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
                 <ul class="fa-ul contributors d-flex flex-row flex-wrap my-4">
                     @foreach (var contributor in Contributors)
                     {
-                        <li class="contributor mx-1">
+                        <li class="contributor ma-1 no-wrap">
                             @if (contributor != null)
                             {
                                 <img src="@contributor.AvatarUrl" />
@@ -95,35 +139,6 @@
             </MudText>
         }
         
-        @if (Donators != null && Donators.Any())
-        {
-            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                An extra special thank you goes out to the following people for their generous support and donations towards this project:
-            </MudText>
-            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom>
-                <ul class="fa-ul donators d-flex flex-row flex-wrap my-4">
-                    @foreach (var donator in Donators)
-                    {
-                        <li class="donator mx-1">
-                            @if (donator != null)
-                            {
-                                <img src="@donator.AvatarUrl" />
-                                <span>@donator.Name</span>
-                                @if (Donators.Take(3).Contains(donator))
-                                {
-                                    <i class="fas fa-fw fa-trophy"></i>
-                                }
-                            }
-                            else
-                            {
-                                <MudSkeleton Width="@Skeleton.Width(0.3)" />
-                            }
-                        </li>
-                    }
-                </ul>
-            </MudText>
-        }
-
     </MudPaper>
 </PageContainer>
 
