@@ -66,19 +66,26 @@ namespace SCMM.Discord.Client
 
                 var globalModules = _interactions.Modules.Where(x => x.Preconditions.OfType<RequireContextAttribute>().All(x => x.Contexts != ContextType.Guild)).ToArray();
                 await _interactions.AddModulesGloballyAsync(deleteMissing: true, modules: globalModules);
-
+                
                 var guildModules = _interactions.Modules.Where(x => x.Preconditions.OfType<RequireContextAttribute>().Any(x => x.Contexts == ContextType.Guild)).ToArray();
                 if (guildModules.Any())
                 {
                     foreach (var guild in _client.Guilds)
                     {
-                        await _interactions.AddModulesToGuildAsync(guild, deleteMissing: true, modules: guildModules);
+                        try
+                        {
+                            await _interactions.AddModulesToGuildAsync(guild, deleteMissing: true, modules: guildModules);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to register guild interaction modules");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialise interaction modules, likely due to invalid dependencies");
+                _logger.LogError(ex, "Failed to initialise interaction modules");
             }
         }
 
@@ -101,7 +108,14 @@ namespace SCMM.Discord.Client
             var guildModules = _interactions.Modules.Where(x => x.Attributes.OfType<RequireContextAttribute>().Any(x => x.Contexts == ContextType.Guild)).ToArray();
             if (guildModules.Any())
             {
-                await _interactions.AddModulesToGuildAsync(guild, deleteMissing: true, modules: guildModules);
+                try
+                {
+                    await _interactions.AddModulesToGuildAsync(guild, deleteMissing: true, modules: guildModules);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to register guild interaction modules");
+                }
             }
         }
 
