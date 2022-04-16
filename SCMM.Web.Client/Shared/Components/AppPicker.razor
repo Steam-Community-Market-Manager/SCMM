@@ -8,8 +8,8 @@
 @if (Apps != null)
 {
     <div @attributes="AdditionalAttributes">
-        <MudMenu Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Disabled="State.IsPrerendering"
-                 AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="false" MaxHeight="500" title="Change game" Class="pa-2 hover-darken">
+        <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" 
+                 Size="MudBlazor.Size.Large" Dense="false" MaxHeight="500" Class="pa-2 hover-darken" Disabled="State.IsPrerendering" title="Change game">
             <ActivatorContent>
                 <MudText Typo="Typo.h4" Class="pt-2">
                     @if (State.AppId > 0)

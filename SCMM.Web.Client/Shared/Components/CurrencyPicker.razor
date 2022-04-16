@@ -8,14 +8,18 @@
 @if (Currencies != null)
 {
     <div @attributes="AdditionalAttributes">
-        <MudMenu StartIcon="fas fa-fw fa-coins" Label="@State.CurrencyId" Size="MudBlazor.Size.Large" Direction="MudBlazor.Direction.Right" Disabled="State.IsPrerendering"
-                 AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" title="Change currency">
-            @foreach (var currency in Currencies)
-            {
-                <MudMenuItem OnClick="@(() => ChangeCurrency(currency))">
-                    @currency.Name
-                </MudMenuItem>
-            }
+        <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering" title="Change currency">
+            <ActivatorContent>
+                <MudButton StartIcon="fas fa-fw fa-coins" Size="MudBlazor.Size.Medium" Disabled="State.IsPrerendering">@State.CurrencyId</MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                @foreach (var currency in Currencies)
+                {
+                    <MudMenuItem OnClick="@(() => ChangeCurrency(currency))">
+                        @currency.Name
+                    </MudMenuItem>
+                }
+            </ChildContent>
         </MudMenu>
     </div>
 }
