@@ -1,12 +1,12 @@
 @page "/inventory"
 @using SCMM.Web.Data.Models.UI.Analytic
 @using SCMM.Web.Data.Models.UI.Statistic
-@inject ILogger<InventoryLeaderboardsPage> Logger
+@inject ILogger<InventoryLeaderboardPage> Logger
 @inject AppState State
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-<PageContainer Title="Inventory Leaderboards">
+<PageContainer Title="Inventory Leaderboard">
     <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
         <MudTextField @bind-Value="SteamId" Variant="Variant.Outlined" FullWidth="true" Immediate="true" AutoFocus="true" Disabled="State.IsPrerendering"
                       Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fab fa-fw fa-steam mr-3" Placeholder="Enter a Steam ID64, Steam URL, or Custom URL" />
@@ -18,7 +18,7 @@
     <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
         <MudGrid Spacing="4">
             <MudItem xs="12" md="6">
-                <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Highest Valued Inventories" Dense="true">
+                <StatisticsPanel Icon="fas fa-fw fa-trophy" Title="Highest Valued Inventories" Dense="true">
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
                         <tbody>
                             <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile">

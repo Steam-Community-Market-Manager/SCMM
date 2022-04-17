@@ -1,13 +1,7 @@
 ﻿@inject IDialogService Dialogs
 @inject AppState State
 
-<MudNavMenu Bordered="true" Class="flex-grow-1">
-    
-    <MudNavLink Href="/inventory" Icon="fas fa-fw fa-crown" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Inventory Leaderboards</span>
-    </MudNavLink>
-
-    <MudDivider />
+<MudNavMenu Color="Color.Primary" Bordered="true" Class="flex-grow-1">
     
     <MudNavLink Href="/items" Icon="fas fa-fw fa-tshirt" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Items</span>
@@ -18,6 +12,9 @@
             <span class="no-wrap">Item Stores</span>
         </MudNavLink>
     }
+
+    <MudDivider />
+    
     <MudNavLink Href="/deals" Icon="fas fa-fw fa-search-dollar" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Market Deals</span>
     </MudNavLink>
@@ -26,6 +23,12 @@
     </MudNavLink>
     <MudNavLink Href="/stats" Icon="fas fa-fw fa-chart-pie" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Market Statistics</span>
+    </MudNavLink>
+
+    <MudDivider />
+    
+    <MudNavLink Href="/inventory" Icon="fas fa-fw fa-trophy" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Inventory Leaderboard</span>
     </MudNavLink>
 
     <MudDivider />

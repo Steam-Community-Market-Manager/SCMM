@@ -53,17 +53,17 @@
                                 <InventoryItemsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-tshirt mr-2" Text="Collections" Disabled="State.IsPrerendering">
+                        <MudTabPanel Icon="fas fa-fw fa-tshirt mr-4" Text="Collections" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
                                 <InventoryCollectionsPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Movement" Disabled="State.IsPrerendering">
+                        <MudTabPanel Icon="fas fa-fw fa-balance-scale-left mr-4" Text="Market Performance" Disabled="State.IsPrerendering">
                             <MudPaper Outlined="true">
                                 <InventoryMarketPanel SteamId="@Profile?.SteamId" Filter="@Filter" InventoryTotals="@InventoryTotals" />
                             </MudPaper>
                         </MudTabPanel>
-                        <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Returns" Disabled="@((!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator)) || State.IsPrerendering)">
+                        <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-3" Text="Investment Performance" Disabled="@((!State.Is(Profile?.SteamId) && !State.IsInRole(Roles.Administrator)) || State.IsPrerendering)">
                             <MudPaper Outlined="true">
                                 <InventoryInvestmentPanel SteamId="@Profile?.SteamId" Filter="@Filter" />
                             </MudPaper>
