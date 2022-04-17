@@ -1,5 +1,7 @@
 ﻿using Microsoft.JSInterop;
 
+namespace SCMM.Web.Client.Shared;
+
 public class DocumentManager
 {
     private readonly IJSRuntime _jsRuntime;

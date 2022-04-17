@@ -1,5 +1,7 @@
 ﻿using Microsoft.JSInterop;
 
+namespace SCMM.Web.Client.Shared.Storage;
+
 public class CookieManager : ICookieManager
 {
     private readonly IJSRuntime _jsRuntime;

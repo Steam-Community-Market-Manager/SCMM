@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
 using SCMM.Shared.Data.Models.Json;
+using SCMM.Web.Client;
+using SCMM.Web.Client.Shared;
+using SCMM.Web.Client.Shared.Navigation;
+using SCMM.Web.Client.Shared.Storage;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
 

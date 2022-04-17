@@ -1,0 +1,164 @@
+﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+@inherits PersistentComponent
+@inject ILogger<AppBarProfileControls> Logger
+@inject IDialogService Dialogs
+@inject NavigationManager NavigationManager
+@inject ExternalNavigationManager ExternalNavigationManager
+@inject HttpClient Http
+@inject AppState State
+
+<div @attributes="AdditionalAttributes">
+    @if (State.IsAuthenticated)
+    {
+        <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering">
+            <ActivatorContent>
+                <div class="d-flex justify-start align-center">
+                    <MudAvatar Image="@State.Profile.AvatarLargeUrl" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" />
+                    @if (InventoryTotals?.MarketValue > 0)
+                    {
+                        <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
+                            <MudText Typo="@MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Default" Class="ml-2">
+                                <span title="Current market value of your inventory">@State.Currency?.ToPriceString(InventoryTotals.MarketValue, dense: true)</span>
+                                <small class="@(InventoryTotals.MarketMovementValue > 0 ? "mud-success-text" : "mud-error-text")" title="Market value movement today">
+                                    <i class="@($"fas fa-fw {(InventoryTotals.MarketMovementValue > 0 ? "fa-arrow-up" : "fa-arrow-down")} ml-1")"></i>
+                                    @switch(@State.Profile.InventoryValueMovementDisplay)
+                                    {
+                                        case InventoryValueMovementDisplayType.Price:
+                                            <span>@State.Currency.ToPriceString(InventoryTotals.MarketMovementValue, dense: true)</span>
+                                            break;
+                                        case InventoryValueMovementDisplayType.Percentage:
+                                            <span>@InventoryTotals.MarketMovementValue.ToPercentageString(InventoryTotals.MarketValue, decimals: 1)</span>
+                                            break;
+                                    }
+                                </small>
+                            </MudText>
+                        </MudHidden>
+                    }
+                </div>
+            </ActivatorContent>
+            <ChildContent>
+                <div class="mx-4">
+                    <MudText Typo="MudBlazor.Typo.h6" Color="@MudBlazor.Color.Default">@State.Profile.Name</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Secondary">@State.Profile.SteamId</MudText>
+                    <RoleBadges Roles="@State.Profile.Roles" class="my-2" />
+                </div>
+                <MudDivider />
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=items")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-th" ></i>
+                    <span>Item Inventory</span>
+                    @if (InventoryTotals?.Items > 0)
+                    {
+                        <span class="mud-secondary-text"> (@InventoryTotals.Items.ToQuantityString())</span>
+                    }
+                </MudMenuItem>
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=collections")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-tshirt" ></i>
+                    <span>Item Collections</span>
+                </MudMenuItem>
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=market")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-balance-scale-left" ></i>
+                    <span>Market Movement</span>
+                </MudMenuItem>
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=investment")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-hand-holding-usd" ></i>
+                    <span>Investment Returns</span>
+                </MudMenuItem>
+                <MudMenuItem Href="@($"/inventory/{State.Profile.SteamId}?panel=statistics")" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-chart-pie" ></i>
+                    <span>Investment Statistics</span>
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem Href="/settings?panel=general" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-user" ></i>
+                    <span>Profile</span>
+                </MudMenuItem>
+                <MudMenuItem Href="/settings?panel=preferences" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-sliders-h" ></i>
+                    <span>Preferences</span>
+                </MudMenuItem>
+                <MudMenuItem Href="/settings?panel=notifications" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-bell" ></i>
+                    <span>Notifications</span>
+                </MudMenuItem>
+                <MudMenuItem Href="/settings?panel=data" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-database" ></i>
+                    <span>Your Data</span>
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem OnClick="NavigateToSignOut" Disabled="State.IsPrerendering">
+                    <i class="fas fa-fw fa-sign-out-alt" ></i>
+                    <span>Sign out</span>
+                </MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    }
+    else
+    {
+        <MudLink Class="signin-button" @onclick="async () => await ShowSignInDialog()" Disabled="State.IsPrerendering">
+            <MudHidden Breakpoint="MudBlazor.Breakpoint.SmAndUp" Invert="true">
+                <img src="/images/sits_01.png" class="mt-2" alt="Sign in through Steam" title="Sign in through Steam" />
+            </MudHidden>
+            <MudHidden Breakpoint="MudBlazor.Breakpoint.Xs" Invert="true">
+                <img src="/images/sits_03.png" class="mt-1" alt="Sign in through Steam" title="Sign in through Steam" />
+            </MudHidden>
+        </MudLink>
+    }
+</div>
+
+@code {
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; }
+    
+    private ProfileInventoryTotalsDTO InventoryTotals;
+    
+    protected override async Task OnLoadStateAsync()
+    {
+        InventoryTotals = await RestoreFromStateOrLoad(nameof(InventoryTotals), async () =>
+        {
+            try
+            {
+                return String.IsNullOrEmpty(State.Profile?.SteamId) ? null :
+                    await Http.GetFromJsonWithDefaultsAsync<ProfileInventoryTotalsDTO>(
+                        $"api/profile/{State.Profile?.SteamId}/inventory/total"
+                    );
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error refreshing inventory totals for '{State.Profile?.SteamId}'");
+                throw;
+            }
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(InventoryTotals), InventoryTotals);
+        return Task.CompletedTask;
+    }
+
+    private async Task ShowSignInDialog()
+    {
+        var result = await Dialogs.Show<SignInDialog>().Result;
+        if (!result.Cancelled && (bool) result.Data == true)
+        {
+            NavigateToSignIn();
+        }
+    }
+    
+    private void NavigateToSettings()
+    {
+        NavigationManager.NavigateTo($"/settings");
+    }
+
+    private void NavigateToSignIn()
+    {
+        ExternalNavigationManager.NavigateTo($"/signin?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+    }
+
+    private void NavigateToSignOut()
+    {
+        ExternalNavigationManager.NavigateTo($"/signout?returnUrl={Uri.EscapeDataString(NavigationManager.Uri)}");
+    }
+
+}

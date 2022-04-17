@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SCMM.Shared.API.Extensions;
+using SCMM.Web.Client;
 using SCMM.Web.Data.Models.UI.App;
 
 namespace SCMM.Web.Server.Pages

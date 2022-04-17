@@ -2,7 +2,6 @@
 using Azure.Identity;
 using CommandQuery;
 using CommandQuery.DependencyInjection;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +19,9 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Web.Client.Shared.Storage;
 using SCMM.Web.Server;
+using SCMM.Web.Server.Shared.Storage;
 using System.Reflection;
 using System.Security.Claims;
 
@@ -82,7 +83,7 @@ public static class WebApplicationExtensions
         builder.Services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
 
         // Authentication
-        builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
                 options.LoginPath = "/signin";

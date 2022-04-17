@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
@@ -20,6 +21,7 @@ using SCMM.Web.Data.Models.UI.Profile.Inventory;
 using SCMM.Web.Server.Extensions;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -200,8 +202,11 @@ namespace SCMM.Web.Server.API.Controllers
                 item.CreatorProfile = null;
             }
 
+            var serialiserOptions = new JsonSerializerOptions().UseDefaults();
+            serialiserOptions.WriteIndented = true;
+
             return File(
-                JsonSerializer.SerializeToUtf8Bytes(profile),
+                JsonSerializer.SerializeToUtf8Bytes(profile, serialiserOptions),
                 "text/json",
                 $"{profileId}.{DateTime.UtcNow.Ticks}.data.json"
             );

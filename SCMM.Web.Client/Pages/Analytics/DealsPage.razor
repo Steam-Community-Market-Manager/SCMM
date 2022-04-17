@@ -437,7 +437,7 @@
     {
         SellNow = sellNow;
         _ = VirtualiseMarketFlips.RefreshDataAsync().ContinueWith(x => {
-            StateHasChanged();
+            InvokeAsync(StateHasChanged);
         });
     }
 

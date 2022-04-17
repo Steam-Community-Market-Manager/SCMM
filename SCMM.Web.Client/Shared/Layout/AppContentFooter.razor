@@ -1,0 +1,51 @@
+﻿@inject IDialogService Dialogs
+@inject AppState State
+
+<div class="pa-4">
+    <MudContainer MaxWidth="MaxWidth.Large">
+        <MudGrid Spacing="2" Class="mt-4">
+            <MudItem sm="12" md="6" Class="d-flex flex-column pr-4">
+                <div class="d-flex flex-row align-center">
+                    <img src="/images/icon-512.png" class="pa-2 mr-2" style="max-width:4rem" />
+                    <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" GutterBottom>Steam Community Market Manager</MudText>
+                </div>
+                <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary">
+                    <span>&copy; 2020-2022, SCMM - All rights reserved.</span><br />
+                    <span><MudLink Href="/about" Typo="MudBlazor.Typo.caption" Disabled="State.IsPrerendering">SCMM is a fanmade project</MudLink> and not affilated with Valve Corporation or Facepunch.</span><br/>
+                    <br/>
+                    <span>Contact: support@scmm.app</span>
+                </MudText>
+            </MudItem>
+            <MudItem sm="6" md="3">
+                <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">About Us</MudText>
+                <MudList Clickable="true" Dense="true">
+                    <MudListItem Icon="fas fa-fw fa-fw fa-donate" Text="Donate" OnClick="ShowDonationDialog" Disabled="State.IsPrerendering" />
+                    <MudListItem Icon="fas fa-fw fa-info-circle" Text="Website" Href="/about" Disabled="State.IsPrerendering" />
+                    <MudListItem Icon="fas fa-fw fa-newspaper" Text="What's New" Href="https://discord.gg/Du42Khqe55" ForceLoad="true" Disabled="State.IsPrerendering" />
+                    <MudListItem Icon="fas fa-fw fa-user-secret" Text="Privacy Policy" Href="/privacy" Disabled="State.IsPrerendering" />
+                    <MudListItem Icon="fas fa-fw fa-handshake" Text="Terms of Service" Href="/tos" Disabled="State.IsPrerendering" />
+                </MudList>
+            </MudItem>
+            <MudItem sm="6" md="3">
+                <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">Technical</MudText>
+                <MudList Clickable="true" Dense="true">
+                    <MudListItem Icon="fas fa-fw fa-book" Text="API Documentation" Href="/docs" ForceLoad="true" Disabled="State.IsPrerendering" />
+                </MudList>
+                <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">Social</MudText>
+                <MudList Clickable="true" Dense="true">
+                    <MudListItem Icon="fab fa-fw fa-discord" Text="Discord Community" Href="https://discord.gg/CRMf95Z" ForceLoad="true" Disabled="State.IsPrerendering" />
+                    <MudListItem Icon="fas fa-fw fa-robot" Text="Discord Bot" Href="https://discord.com/api/oauth2/authorize?client_id=761034518424715264&permissions=274877909056&scope=bot%20applications.commands" ForceLoad="true" Disabled="State.IsPrerendering" />
+                </MudList>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+</div>
+
+@code {
+
+    private void ShowDonationDialog()
+    {
+        Dialogs.Show<DonateDialog>();
+    }
+
+}

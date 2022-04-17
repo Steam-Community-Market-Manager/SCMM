@@ -3,6 +3,8 @@ using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Web.Data.Models.UI;
 
+namespace SCMM.Web.Client.Shared.Navigation;
+
 public class ExternalNavigationManager
 {
     private readonly IJSRuntime _jsRuntime;

@@ -37,6 +37,7 @@ public static class JsonSerializerOptionsExtensions
         options.NumberHandling = JsonNumberHandling.AllowReadingFromString;
         options.PropertyNameCaseInsensitive = true; // because javascript
         options.ReadCommentHandling = JsonCommentHandling.Skip;
+        options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 #if DEBUG
         // TODO: This causes a JSON parsing error in Swagger UI, reenable after they fix it
         //options.WriteIndented = true;

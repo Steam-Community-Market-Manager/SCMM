@@ -1,0 +1,58 @@
+﻿@inject IDialogService Dialogs
+@inject AppState State
+
+<MudNavMenu Bordered="true" Class="flex-grow-1">
+    
+    <MudNavLink Href="/inventory" Icon="fas fa-fw fa-crown" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Inventory Leaderboards</span>
+    </MudNavLink>
+
+    <MudDivider />
+    
+    <MudNavLink Href="/items" Icon="fas fa-fw fa-tshirt" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Items</span>
+    </MudNavLink>
+    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.Store) == true)
+    {
+        <MudNavLink Href="/store" Icon="fas fa-fw fa-shopping-cart" Disabled="@State.IsPrerendering">
+            <span class="no-wrap">Item Stores</span>
+        </MudNavLink>
+    }
+    <MudNavLink Href="/deals" Icon="fas fa-fw fa-search-dollar" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Market Deals</span>
+    </MudNavLink>
+    <MudNavLink Href="/activity" Icon="fas fa-fw fa-exchange-alt" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Market Activity</span>
+    </MudNavLink>
+    <MudNavLink Href="/stats" Icon="fas fa-fw fa-chart-pie" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Market Statistics</span>
+    </MudNavLink>
+
+    <MudDivider />
+    
+    <MudNavLink Href="https://discord.com/api/oauth2/authorize?client_id=761034518424715264&permissions=274877909056&scope=bot%20applications.commands" Icon="fas fa-fw fa-robot" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Discord Bot</span>
+    </MudNavLink>
+    <MudNavLink Href="https://discord.gg/CRMf95Z" Icon="fab fa-fw fa-discord" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Discord Community</span>
+    </MudNavLink>
+
+    <MudDivider />
+
+    <MudNavLink OnClick="ShowDonationDialog" Icon="fas fa-fw fa-fw fa-donate" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Donate</span>
+    </MudNavLink>
+    <MudNavLink Href="/about" Icon="fas fa-fw fa-info" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">About</span>
+    </MudNavLink>
+
+</MudNavMenu>
+
+@code {
+
+    private void ShowDonationDialog()
+    {
+        Dialogs.Show<DonateDialog>();
+    }
+
+}

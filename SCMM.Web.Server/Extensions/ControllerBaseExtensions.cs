@@ -2,6 +2,7 @@
 using SCMM.Web.Data.Models.UI.Currency;
 using SCMM.Web.Data.Models.UI.Language;
 using SCMM.Web.Data.Models.UI.App;
+using SCMM.Web.Client;
 
 namespace SCMM.Web.Server.Extensions
 {

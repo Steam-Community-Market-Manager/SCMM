@@ -7,6 +7,9 @@ using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Data.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SCMM.Web.Client.Shared.Storage;
+
+namespace SCMM.Web.Client;
 
 public class AppState : INotifyPropertyChanged
 {

@@ -1,5 +1,8 @@
 ﻿using Microsoft.JSInterop;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Web.Client.Shared.Storage;
+
+namespace SCMM.Web.Server.Shared.Storage;
 
 public class HttpCookieManager : CookieManager
 {

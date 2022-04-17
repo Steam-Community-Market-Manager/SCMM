@@ -1,5 +1,5 @@
 ﻿@inherits PersistentComponent
-@inject ILogger<CurrencyPicker> Logger
+@inject ILogger<AppBarCurrencyControls> Logger
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject AppState State
@@ -8,14 +8,14 @@
 @if (Currencies != null)
 {
     <div @attributes="AdditionalAttributes">
-        <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering" title="Change currency">
+        <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering" title="Change the currency">
             <ActivatorContent>
                 <MudButton StartIcon="fas fa-fw fa-coins" Size="MudBlazor.Size.Medium" Disabled="State.IsPrerendering">@State.CurrencyId</MudButton>
             </ActivatorContent>
             <ChildContent>
                 @foreach (var currency in Currencies)
                 {
-                    <MudMenuItem OnClick="@(() => ChangeCurrency(currency))">
+                    <MudMenuItem OnClick="@(() => ChangeCurrency(currency))" Disabled="@(State.Currency.Id == currency.Id)" >
                         @currency.Name
                     </MudMenuItem>
                 }

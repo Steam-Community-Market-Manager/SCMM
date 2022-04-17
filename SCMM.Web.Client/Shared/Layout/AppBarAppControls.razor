@@ -1,5 +1,5 @@
 ﻿@inherits PersistentComponent
-@inject ILogger<AppPicker> Logger
+@inject ILogger<AppBarAppControls> Logger
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject AppState State
@@ -9,7 +9,7 @@
 {
     <div @attributes="AdditionalAttributes">
         <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Right" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" 
-                 Size="MudBlazor.Size.Large" Dense="false" MaxHeight="500" Class="pa-2 hover-darken" Disabled="State.IsPrerendering" title="Change game">
+                 Size="MudBlazor.Size.Large" Dense="false" MaxHeight="500" Class="pa-2 hover-darken" Disabled="State.IsPrerendering" title="Change the selected game">
             <ActivatorContent>
                 <MudText Typo="Typo.h4" Class="pt-2">
                     @if (State.AppId > 0)
@@ -19,9 +19,9 @@
                 </MudText>
             </ActivatorContent>
             <ChildContent>
-                <MudMenuItem Disabled="true" Class="py-0 my-0">
-                    <span>Select Game</span>
-                </MudMenuItem>
+                <div class="mx-4">
+                    <MudText Typo="MudBlazor.Typo.body1" Color="@MudBlazor.Color.Secondary">Select a game</MudText>
+                </div>
                 @foreach (var app in Apps)
                 {
                     <MudMenuItem OnClick="@(() => ChangeApp(app))" Disabled="@(app.Id == State.AppId)">
