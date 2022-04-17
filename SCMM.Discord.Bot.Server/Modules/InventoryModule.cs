@@ -129,11 +129,14 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
 
         // Calculate the profiles inventory totals
         //await message.LoadingAsync("💱 Calculating inventory value...");
-        var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
+        var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
         {
             ProfileId = profile.SteamId,
             CurrencyId = currency.SteamId,
         });
+
+        await _db.SaveChangesAsync();
+
         if (inventoryTotals?.Items <= 0)
         {
             return InteractionResult.Fail(

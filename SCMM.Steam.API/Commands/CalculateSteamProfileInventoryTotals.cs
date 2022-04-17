@@ -1,19 +1,20 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 
-namespace SCMM.Steam.API.Queries
+namespace SCMM.Steam.API.Commands
 {
-    public class GetSteamProfileInventoryTotalsRequest : IQuery<GetSteamProfileInventoryTotalsResponse>
+    public class CalculateSteamProfileInventoryTotalsRequest : ICommand<CalculateSteamProfileInventoryTotalsResponse>
     {
         public string ProfileId { get; set; }
 
         public string CurrencyId { get; set; }
     }
 
-    public class GetSteamProfileInventoryTotalsResponse
+    public class CalculateSteamProfileInventoryTotalsResponse
     {
         public int Items { get; set; }
 
@@ -32,18 +33,18 @@ namespace SCMM.Steam.API.Queries
         public DateTimeOffset MarketMovementTime { get; set; }
     }
 
-    public class GetSteamProfileInventoryTotals : IQueryHandler<GetSteamProfileInventoryTotalsRequest, GetSteamProfileInventoryTotalsResponse>
+    public class CalculateSteamProfileInventoryTotals : ICommandHandler<CalculateSteamProfileInventoryTotalsRequest, CalculateSteamProfileInventoryTotalsResponse>
     {
         private readonly SteamDbContext _db;
         private readonly IQueryProcessor _queryProcessor;
 
-        public GetSteamProfileInventoryTotals(SteamDbContext db, IQueryProcessor queryProcessor)
+        public CalculateSteamProfileInventoryTotals(SteamDbContext db, IQueryProcessor queryProcessor)
         {
             _db = db;
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<GetSteamProfileInventoryTotalsResponse> HandleAsync(GetSteamProfileInventoryTotalsRequest request)
+        public async Task<CalculateSteamProfileInventoryTotalsResponse> HandleAsync(CalculateSteamProfileInventoryTotalsRequest request)
         {
             // Resolve the id
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
@@ -69,14 +70,14 @@ namespace SCMM.Steam.API.Queries
                 .Where(x => x.Description != null)
                 .Select(x => new
                 {
-                    Quantity = x.Quantity,
-                    AcquiredBy = x.AcquiredBy,
-                    BuyPrice = x.BuyPrice,
-                    ExchangeRateMultiplier = (x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0),
+                    x.Quantity,
+                    x.AcquiredBy,
+                    x.BuyPrice,
+                    ExchangeRateMultiplier = x.Currency != null ? x.Currency.ExchangeRateMultiplier : 0,
                     // NOTE: This isn't 100% accurate if the store item price is used. Update this to use StoreItem.Prices with the local currency
-                    ItemValue = (x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
-                    ItemValue24hrStable = (x.Description.MarketItem != null ? x.Description.MarketItem.Stable24hrSellOrderLowestPrice : (x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0)),
-                    ItemExchangeRateMultiplier = (x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : (x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0))
+                    ItemValue = x.Description.MarketItem != null ? x.Description.MarketItem.SellOrderLowestPrice : x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0,
+                    ItemValue24hrStable = x.Description.MarketItem != null ? x.Description.MarketItem.Stable24hrSellOrderLowestPrice : x.Description.StoreItem != null ? x.Description.StoreItem.Price ?? 0 : 0,
+                    ItemExchangeRateMultiplier = x.Description.MarketItem != null && x.Description.MarketItem.Currency != null ? x.Description.MarketItem.Currency.ExchangeRateMultiplier : x.Description.StoreItem != null && x.Description.StoreItem.Currency != null ? x.Description.StoreItem.Currency.ExchangeRateMultiplier : 0
                 })
                 .ToListAsync();
 
@@ -91,10 +92,10 @@ namespace SCMM.Steam.API.Queries
                     .Sum(x => currency.CalculateExchange((decimal)x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity),
                 TotalInvestmentGains = profileInventoryItems
                     .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0 && x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => Math.Max(0, (currency.CalculateExchange(((decimal)x.ItemValue / x.ItemExchangeRateMultiplier) - ((decimal)x.BuyPrice / x.ExchangeRateMultiplier)) * x.Quantity))),
+                    .Sum(x => Math.Max(0, currency.CalculateExchange((decimal)x.ItemValue / x.ItemExchangeRateMultiplier - (decimal)x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity)),
                 TotalInvestmentLosses = profileInventoryItems
                     .Where(x => x.BuyPrice != null && x.BuyPrice != 0 && x.ExchangeRateMultiplier != 0 && x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
-                    .Sum(x => Math.Min(0, (currency.CalculateExchange(((decimal)x.ItemValue / x.ItemExchangeRateMultiplier) - ((decimal)x.BuyPrice / x.ExchangeRateMultiplier)) * x.Quantity))),
+                    .Sum(x => Math.Min(0, currency.CalculateExchange((decimal)x.ItemValue / x.ItemExchangeRateMultiplier - (decimal)x.BuyPrice / x.ExchangeRateMultiplier) * x.Quantity)),
                 TotalValue = profileInventoryItems
                     .Where(x => x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
                     .Sum(x => currency.CalculateExchange((decimal)x.ItemValue / x.ItemExchangeRateMultiplier) * x.Quantity),
@@ -104,19 +105,27 @@ namespace SCMM.Steam.API.Queries
             };
 
             // if more than 50% have buy prices set
-            var hasSetupInvestment = (profileInventory.ItemCount > 0 && profileInventory.ItemCountWithBuyPrices > 0)
-                ? ((int)Math.Round((((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount) * 100), 0) > 50)
+            var hasSetupInvestment = profileInventory.ItemCount > 0 && profileInventory.ItemCountWithBuyPrices > 0
+                ? (int)Math.Round((decimal)profileInventory.ItemCountWithBuyPrices / profileInventory.ItemCount * 100, 0) > 50
                 : false;
 
-            return new GetSteamProfileInventoryTotalsResponse()
+            // Update last inventory value snapshot
+            var profile = resolvedId.Profile;
+            if (profile != null)
+            {
+                profile.LastTotalInventoryItems = profileInventory.TotalItems;
+                profile.LastTotalInventoryValue = profileInventory.TotalValue;
+            }
+
+            return new CalculateSteamProfileInventoryTotalsResponse()
             {
                 Items = profileInventory.TotalItems,
-                Invested = (hasSetupInvestment ? profileInventory.TotalInvested : null),
-                InvestmentGains = (hasSetupInvestment ? Math.Abs(profileInventory.TotalInvestmentGains) : null),
-                InvestmentLosses = (hasSetupInvestment ? Math.Abs(profileInventory.TotalInvestmentLosses) : null),
-                InvestmentNetReturn = (hasSetupInvestment ? (profileInventory.TotalInvestmentGains + profileInventory.TotalInvestmentLosses) : null),
+                Invested = hasSetupInvestment ? profileInventory.TotalInvested : null,
+                InvestmentGains = hasSetupInvestment ? Math.Abs(profileInventory.TotalInvestmentGains) : null,
+                InvestmentLosses = hasSetupInvestment ? Math.Abs(profileInventory.TotalInvestmentLosses) : null,
+                InvestmentNetReturn = hasSetupInvestment ? profileInventory.TotalInvestmentGains + profileInventory.TotalInvestmentLosses : null,
                 MarketValue = profileInventory.TotalValue,
-                MarketMovementValue = (profileInventory.TotalValue - profileInventory.TotalValue24hrStable),
+                MarketMovementValue = profileInventory.TotalValue - profileInventory.TotalValue24hrStable,
                 MarketMovementTime = dayOpenTimestamp
             };
         }

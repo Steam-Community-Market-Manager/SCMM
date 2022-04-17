@@ -732,7 +732,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
-        /// <response code="200">Paginated list of items matching the request parameters.</response>
+        /// <response code="200">Paginated list of profiles matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("profiles/largestCreators")]
@@ -759,10 +759,79 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
+        /// List profiles inventory values, sorted by highest value first
+        /// </summary>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of profiles matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("profiles/highestValueInventory")]
+        [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryValueStatisticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProfilesHighestValueInventory([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var query = _db.SteamProfiles
+                .AsNoTracking()
+                .Where(x => x.LastTotalInventoryValue > 0)
+                .OrderByDescending(x => x.LastTotalInventoryValue)
+                .Select(x => new ProfileInventoryValueStatisticDTO()
+                {
+                    SteamId = x.SteamId,
+                    Name = x.Name,
+                    AvatarUrl = x.AvatarUrl,
+                    Items = x.LastTotalInventoryItems,
+                    Value = x.LastTotalInventoryValue,
+                    LastUpdatedOn = x.LastUpdatedInventoryOn
+                });
+
+            var profiles = await query.PaginateAsync(start, count);
+            for(int i = 0; i < profiles.Items.Length; i++)
+            {
+                profiles.Items[i].Rank = (start + i + 1);
+            }
+
+            return Ok(profiles);
+        }
+
+        /// <summary>
+        /// List profiles inventory values, sorted by most recently updated first
+        /// </summary>
+        /// <param name="start">Return items starting at this specific index (pagination)</param>
+        /// <param name="count">Number items to be returned (can be less if not enough data)</param>
+        /// <response code="200">Paginated list of profiles matching the request parameters.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("profiles/mostRecentInventory")]
+        [ProducesResponseType(typeof(PaginatedResult<ProfileInventoryValueStatisticDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProfilesMostRecentInventory([FromQuery] int start = 0, [FromQuery] int count = 10)
+        {
+            var query = _db.SteamProfiles
+                .AsNoTracking()
+                .Where(x => x.LastTotalInventoryValue > 0 && x.LastUpdatedInventoryOn != null)
+                .OrderByDescending(x => x.LastUpdatedInventoryOn)
+                .ThenByDescending(x => x.LastTotalInventoryValue)
+                .Select(x => new ProfileInventoryValueStatisticDTO()
+                {
+                    SteamId = x.SteamId,
+                    Name = x.Name,
+                    AvatarUrl = x.AvatarUrl,
+                    Items = x.LastTotalInventoryItems,
+                    Value = x.LastTotalInventoryValue,
+                    LastUpdatedOn = x.LastUpdatedInventoryOn
+                });
+
+            return Ok(
+                await query.PaginateAsync(start, count)
+            );
+        }
+
+        /// <summary>
         /// List profiles who have the donator role, sorted by highest contribution
         /// </summary>
-        /// <returns>The list of users who have donated</returns>
-        /// <response code="200">The list of users who have donated.</response>
+        /// <returns>The list of profiles who have donated</returns>
+        /// <response code="200">The list of profiles who have donated.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("donators")]
@@ -783,8 +852,8 @@ namespace SCMM.Web.Server.API.Controllers
         /// <summary>
         /// List profiles who have the contributor role
         /// </summary>
-        /// <returns>The list of users who have contributed</returns>
-        /// <response code="200">The list of users who have contributed.</response>
+        /// <returns>The list of profiles who have contributed</returns>
+        /// <response code="200">The list of profiles who have contributed.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("contributors")]

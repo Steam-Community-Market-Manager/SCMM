@@ -403,11 +403,14 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Calculate the profiles inventory totals
-            var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
+            var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = profile.SteamId,
                 CurrencyId = this.Currency().Id.ToString()
             });
+
+            await _db.SaveChangesAsync();
+
             if (inventoryTotals == null)
             {
                 return NotFound("Profile inventory data is missing");
@@ -477,14 +480,16 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("ID is invalid");
             }
 
-            var inventoryTotals = await _queryProcessor.ProcessAsync(new GetSteamProfileInventoryTotalsRequest()
+            var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = id,
                 CurrencyId = this.Currency().Id.ToString()
             });
 
+            await _db.SaveChangesAsync();
+
             return Ok(
-                _mapper.Map<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>(inventoryTotals, this)
+                _mapper.Map<CalculateSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>(inventoryTotals, this)
             );
         }
 

@@ -1,0 +1,150 @@
+@page "/inventory"
+@using SCMM.Web.Data.Models.UI.Analytic
+@using SCMM.Web.Data.Models.UI.Statistic
+@inject ILogger<InventoryLeaderboardsPage> Logger
+@inject AppState State
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageContainer Title="Inventory Leaderboards">
+    <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
+        <MudTextField @bind-Value="SteamId" Variant="Variant.Outlined" FullWidth="true" Immediate="true" AutoFocus="true" Disabled="State.IsPrerendering"
+                      Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fab fa-fw fa-steam mr-3" Placeholder="Enter a Steam ID64, Steam URL, or Custom URL" />
+        <MudButton Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-search-dollar" FullWidth="true" 
+                   Disabled="@(String.IsNullOrEmpty(SteamId) || State.IsPrerendering)" OnClick="@(() => ViewProfileInventory(SteamId))" Class="my-4">
+            <span>Analyse Inventory</span>
+        </MudButton>
+    </MudContainer>
+    <MudContainer MaxWidth="MudBlazor.MaxWidth.Large">
+        <MudGrid Spacing="4">
+            <MudItem xs="12" md="6">
+                <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Highest Valued Inventories" Dense="true">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
+                        <tbody>
+                            <Virtualize ItemsProvider="LoadProfilesHighestValueInventory" Context="profile">
+                                <ItemContent>
+                                    <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="clickable">
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudText Typo="Typo.caption" Class="pr-2">#@profile.Rank.ToQuantityString()</MudText>
+                                                <img src="@profile.AvatarUrl" class="mr-1" style="width:32px; height:32px;" />
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body2">@profile.Name</MudText>
+                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small>@((DateTimeOffset.Now - (profile.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1))</small></MudText>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(profile.Value)</MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@profile.Items.ToQuantityString() items</small></MudText>
+                                        </td>
+                                    </tr>
+                                </ItemContent>
+                                <Placeholder>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">-</MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small></small></MudText>
+                                        </td>
+                                    </tr>
+                                </Placeholder>
+                            </Virtualize>
+                        </tbody>
+                    </MudSimpleTable>
+                </StatisticsPanel>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <StatisticsPanel Icon="fas fa-fw fa-clock" Title="Recently Valued Inventories" Dense="true">
+                    <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:60vh;" Class="flex-grow-1">
+                        <tbody>
+                            <Virtualize ItemsProvider="LoadProfilesMostRecentInventory" Context="profile">
+                                <ItemContent>
+                                    <tr @onclick="@((_) => ViewProfileInventory(profile.SteamId))" class="clickable">
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <img src="@profile.AvatarUrl" class="mr-1" style="width:32px; height:32px;" />
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body2">@profile.Name</MudText>
+                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small>@((DateTimeOffset.Now - (profile.LastUpdatedOn ?? DateTimeOffset.Now)).ToDurationString(suffix: "ago", zero: "just now", maxGranularity: 1))</small></MudText>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">@State.Currency.ToPriceString(profile.Value)</MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small>@profile.Items.ToQuantityString() items</small></MudText>
+                                        </td>
+                                    </tr>
+                                </ItemContent>
+                                <Placeholder>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-row justify-start align-center">
+                                                <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                                <div class="d-flex flex-column">
+                                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                                    <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary"><small></small></MudText>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-right">
+                                            <MudText Typo="Typo.body2" Class="no-wrap">-</MudText>
+                                            <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Secondary" Class="no-wrap"><small></small></MudText>
+                                        </td>
+                                    </tr>
+                                </Placeholder>
+                            </Virtualize>
+                        </tbody>
+                    </MudSimpleTable>
+                </StatisticsPanel>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+</PageContainer>
+
+@code {
+
+    private string SteamId { get; set; }
+
+    private void ViewProfileInventory(string steamId)
+    {
+        NavigationManager.NavigateTo($"/inventory/{Uri.EscapeDataString(steamId)}");
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ProfileInventoryValueStatisticDTO>> LoadProfilesHighestValueInventory(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/highestValueInventory?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ProfileInventoryValueStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'profile highest value inventory' item statistics");
+            throw;
+        }
+    }
+    
+    protected async ValueTask<ItemsProviderResult<ProfileInventoryValueStatisticDTO>> LoadProfilesMostRecentInventory(ItemsProviderRequest request)
+    {
+        try
+        {
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryValueStatisticDTO>>($"api/stats/profiles/mostRecentInventory?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ProfileInventoryValueStatisticDTO>(response.Items, response.Total);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing 'profile most recent inventory' item statistics");
+            throw;
+        }
+    }
+    
+}

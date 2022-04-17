@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Steam.API.Queries;
+using SCMM.Steam.API.Commands;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Profile;
 using SCMM.Web.Data.Models.UI.Profile.Inventory;
@@ -21,7 +21,7 @@ namespace SCMM.Web.Server.Mappers
             CreateMap<SteamProfile, ProfileDetailedDTO>()
                 .ForMember(x => x.Guid, o => o.MapFrom(p => p.Id));
 
-            CreateMap<GetSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>();
+            CreateMap<CalculateSteamProfileInventoryTotalsResponse, ProfileInventoryTotalsDTO>();
 
             CreateMap<SteamProfileInventoryItem, ProfileInventoryInvestmentItemDTO>()
                 .ForMember(x => x.ItemId, o => o.MapFrom(p => p.SteamId))

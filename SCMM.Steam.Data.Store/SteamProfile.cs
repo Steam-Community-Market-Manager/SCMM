@@ -42,6 +42,10 @@ namespace SCMM.Steam.Data.Store
 
         public SteamCurrency Currency { get; set; }
 
+        public int LastTotalInventoryItems { get; set; }
+
+        public long LastTotalInventoryValue { get; set; }
+
         public DateTimeOffset? LastViewedInventoryOn { get; set; }
 
         public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
@@ -140,6 +144,8 @@ namespace SCMM.Steam.Data.Store
             TradeUrl = null;
             LanguageId = null;
             CurrencyId = null;
+            LastTotalInventoryValue = 0;
+            LastTotalInventoryItems = 0;
             LastViewedInventoryOn = null;
             LastUpdatedInventoryOn = null;
             LastSignedInOn = null;
