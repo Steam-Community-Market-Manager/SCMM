@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
@@ -785,7 +786,13 @@ namespace SCMM.Web.Server.API.Controllers
                     LastUpdatedOn = x.LastUpdatedInventoryOn
                 });
 
-            var profiles = await query.PaginateAsync(start, count);
+            var profiles = await query.PaginateAsync(start, count, x =>
+            {
+                x.Value = this.Currency().CalculateExchange(x.Value);
+                return x;
+            });
+
+            // Calculate rank positions
             for(int i = 0; i < profiles.Items.Length; i++)
             {
                 profiles.Items[i].Rank = (start + i + 1);
@@ -823,7 +830,11 @@ namespace SCMM.Web.Server.API.Controllers
                 });
 
             return Ok(
-                await query.PaginateAsync(start, count)
+                await query.PaginateAsync(start, count, x =>
+                {
+                    x.Value = this.Currency().CalculateExchange(x.Value);
+                    return x;
+                })
             );
         }
 

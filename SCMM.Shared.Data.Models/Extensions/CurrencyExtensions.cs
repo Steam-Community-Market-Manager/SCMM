@@ -14,6 +14,11 @@ namespace SCMM.Shared.Data.Models.Extensions
             return CalculateExchange((currency?.ExchangeRateMultiplier ?? 0), value);
         }
 
+        public static long CalculateExchange(this IExchangeableCurrency currency, long value)
+        {
+            return CalculateExchange((currency?.ExchangeRateMultiplier ?? 0), (decimal) value);
+        }
+
         public static long CalculateExchange(this IExchangeableCurrency targetCurrency, long value, IExchangeableCurrency sourceCurrency)
         {
             if (targetCurrency == null || sourceCurrency == null)
