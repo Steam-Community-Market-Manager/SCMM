@@ -8,5 +8,6 @@
         public const string Donator = "Donator";
         public const string VIP = "VIP";
         public const string User = "User";
+        public const string Bot = "Bot";
     }
 }
