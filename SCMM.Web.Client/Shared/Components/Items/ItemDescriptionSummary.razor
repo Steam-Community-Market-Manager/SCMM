@@ -74,12 +74,12 @@
                     </MudText>
                 </MudTooltip>
             }
-            @if (Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).TotalDays > 1 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age)))
+            @if (Item.TimeAccepted != null && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age)))
             {
-                <MudTooltip Text="Age">
+                <MudTooltip Text="Time Accepted">
                     <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
                         <i class="fas fa-fw fa-clock"></i>
-                        <span>@((DateTimeOffset.Now - Item.TimeAccepted.Value).ToDurationString(showHours: false, showMinutes: false, showSeconds: false, maxGranularity: 1, zero: "just accepted", suffix: "old"))</span>
+                        <span>@Item.TimeAccepted.Value.Date.ToShortDateString()</span>
                     </MudText>
                 </MudTooltip>
             }

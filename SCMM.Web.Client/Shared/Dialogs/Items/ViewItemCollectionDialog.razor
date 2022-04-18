@@ -14,7 +14,7 @@
         } 
         else
         {
-            <div class="d-flex">
+            <div class="d-flex mr-4">
                 @if (!String.IsNullOrEmpty(Collection.CreatorAvatarUrl))
                 {
                     <MudTooltip Text="@Collection.CreatorName">
@@ -33,10 +33,29 @@
                         </MudText>
                     }
                 </div>
-                <MudDivider FlexItem="true" />
-                <MudToggleIconButton @bind-Toggled="@UseCollectionLayout" Size="Size.Medium" Class="mr-12"
-                        Icon="fas fa-fw fa-tshirt" Color="@Color.Default" Title="Switch to item layout"
-                        ToggledIcon="fas fa-fw fa-th" ToggledColor="@Color.Default" ToggledTitle="Switch to grid layout" />
+                <MudSpacer />
+                <MudMenu Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" 
+                         Dense="true" Class="hover-darken align-self-start mx-4 " title="Change sort order">
+                    <ActivatorContent>
+                        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">
+                            <i class="fas fa-fw fa-sort-alpha-down" />
+                        </MudText>
+                    </ActivatorContent>
+                    <ChildContent>
+                        @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))
+                        {
+                            <MudMenuItem OnClick="@(() => SetSortOrder("TimeAccepted", MudBlazor.SortDirection.Descending))">Newest</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder("TimeAccepted", MudBlazor.SortDirection.Ascending))">Oldest</MudMenuItem>
+                        }
+                        <MudMenuItem OnClick="@(() => SetSortOrder("BuyNowPrice", MudBlazor.SortDirection.Ascending))">Lowest Price</MudMenuItem>
+                        <MudMenuItem OnClick="@(() => SetSortOrder("BuyNowPrice", MudBlazor.SortDirection.Descending))">Highest Price</MudMenuItem>
+                        @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
+                        {
+                            <MudMenuItem OnClick="@(() => SetSortOrder("Subscriptions", MudBlazor.SortDirection.Ascending))">Lowest Subscriptions</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder("Subscriptions", MudBlazor.SortDirection.Descending))">Highest Subscriptions</MudMenuItem>
+                        }
+                    </ChildContent>
+                </MudMenu>
             </div>
         }
     </TitleContent>
@@ -47,23 +66,16 @@
         } 
         else
         {
-            @if (UseCollectionLayout)
-            {
-                <ItemCollectionLayout Items="@Collection.Items" />
-            }
-            else 
-            {  
-                <div class="py-4">
-                    <MudGrid>
-                        @foreach (var item in Collection.Items)
-                        {
-                            <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
-                                <ItemDescriptionSummary Item="@item" />
-                            </MudItem>
-                        }
-                    </MudGrid>
-                </div>
-            }
+            <div class="py-4">
+                <MudGrid>
+                    @foreach (var item in GetSortedItems(Collection.Items))
+                    {
+                        <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
+                            <ItemDescriptionSummary Item="@item" />
+                        </MudItem>
+                    }
+                </MudGrid>
+            </div>
         }
     </DialogContent>
 </MudDialog>
@@ -75,11 +87,15 @@
     
     [Parameter]
     public string CollectionUrl { get; set; }
+    
+    [Parameter]
+    public string SortBy { get; set; } = "TimeAccepted";
+
+    [Parameter]
+    public MudBlazor.SortDirection SortDirection { get; set; } = MudBlazor.SortDirection.Descending;
 
     private ItemCollectionDTO Collection { get; set; }
     
-    private bool UseCollectionLayout { get; set; } = false;
-
     protected override void OnConfigure(ResponsiveDialogOptions options)
     {
         options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
@@ -103,5 +119,38 @@
             Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
         }
     }
+    
+    private void SetSortOrder(string sortBy, MudBlazor.SortDirection sortDirection)
+    {
+        SortBy = sortBy;
+        SortDirection = sortDirection;
+        StateHasChanged();
+    }
 
+    private IEnumerable<ItemDescriptionWithPriceDTO> GetSortedItems(IEnumerable<ItemDescriptionWithPriceDTO> items)
+    {
+        switch(SortBy)
+        {
+            case "TimeAccepted": 
+                items = (SortDirection == MudBlazor.SortDirection.Descending)
+                    ? items.OrderByDescending(x => x.TimeAccepted)
+                    : items.OrderBy(x => x.TimeAccepted);
+                break;
+                
+            case "BuyNowPrice": 
+                items = (SortDirection == MudBlazor.SortDirection.Descending)
+                    ? items.OrderByDescending(x => x.BuyNowPrice)
+                    : items.OrderBy(x => x.BuyNowPrice);
+                break;
+
+            case "Subscriptions": 
+                items = (SortDirection == MudBlazor.SortDirection.Descending)
+                    ? items.OrderByDescending(x => x.Subscriptions)
+                    : items.OrderBy(x => x.Subscriptions);
+                break;
+
+        }
+
+        return items;
+    }
 }
