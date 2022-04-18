@@ -716,7 +716,8 @@ else
             ["ListName"] = $"Marketable {item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&marketable=true&count=-1",
             ["HighlightedItemId"] = item.AssetDescriptionId,
-            ["SortBy"] = "BuyNowPrice"
+            ["SortBy"] = "BuyNowPrice",
+            ["SortDirection"] = MudBlazor.SortDirection.Ascending
         });
     }
 

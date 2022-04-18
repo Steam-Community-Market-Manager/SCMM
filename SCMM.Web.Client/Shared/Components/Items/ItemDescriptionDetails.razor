@@ -1311,7 +1311,8 @@
             ["ListName"] = $"Marketable {Item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?type={Item.ItemType}&count=-1",
             ["HighlightedItemId"] = Item.Id,
-            ["SortBy"] = "BuyNowPrice"
+            ["SortBy"] = "BuyNowPrice",
+            ["SortDirection"] = MudBlazor.SortDirection.Ascending
         });
     }
 

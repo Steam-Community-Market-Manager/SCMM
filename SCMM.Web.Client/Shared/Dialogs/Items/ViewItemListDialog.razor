@@ -126,6 +126,11 @@
         SortBy = sortBy;
         SortDirection = sortDirection;
         StateHasChanged();
+        
+        if (HighlightedItemId > 0)
+        {
+            Document.ScrollElementIntoView("highlighted", TimeSpan.FromSeconds(1));
+        }
     }
 
     private IEnumerable<ItemDescriptionWithPriceDTO> GetFilteredAndSortedItems(IEnumerable<ItemDescriptionWithPriceDTO> items)
