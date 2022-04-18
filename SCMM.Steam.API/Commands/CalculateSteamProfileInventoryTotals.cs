@@ -110,11 +110,15 @@ namespace SCMM.Steam.API.Commands
                 : false;
 
             // Update last inventory value snapshot
+            // NOTE: Don't use currency conversion, keep it in system currency
             var profile = resolvedId.Profile;
             if (profile != null)
             {
-                profile.LastTotalInventoryItems = profileInventory.TotalItems;
-                profile.LastTotalInventoryValue = profileInventory.TotalValue;
+                profile.LastTotalInventoryItems = profileInventoryItems
+                    .Sum(x => x.Quantity);
+                profile.LastTotalInventoryValue = profileInventoryItems
+                    .Where(x => x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
+                    .Sum(x => x.ItemValue * x.Quantity);
             }
 
             return new CalculateSteamProfileInventoryTotalsResponse()
