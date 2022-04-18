@@ -95,16 +95,16 @@
 
     [Parameter]
     public string ItemType { get; set; }
-    
+
     [Parameter]
     public string WorkshopFileUrl { get; set; }
-    
+
     [Parameter]
     public bool DisableCutoutControls { get; set; }
-    
+
     [Parameter]
     public bool DisableGlowControls { get; set; }
-    
+
     [Parameter]
     public RenderFragment AdditionalTools { get; set; }
 
@@ -114,17 +114,17 @@
     private ElementReference Container { get; set; }
 
     private ThreeJsScene Scene { get; set; }
-    
+
     private bool IsRotating { get; set; } = false;
-    
+
     private bool IsCutoutVisible { get; set; } = false;
-    
+
     private bool IsLightOn { get; set; } = true;
 
-    private bool IsLoading { get; set; }
+    private bool IsLoading { get; set; } = true;
 
     private long? ProgressLoaded { get; set; }
-    
+
     private long? ProgressTotal { get; set; }
 
     private string Error { get; set; }
@@ -135,6 +135,7 @@
         {
             try
             {
+                IsLoading = true;
                 Scene = await CreateSceneFromWorkshopFileAsync(
                     Container,
                     new
@@ -151,6 +152,7 @@
             {
                 Logger.LogError(ex, "Failed to initialise the model viewer");
                 Error = $"Unable to initialise the model viewer. {ex.Message}";
+                IsLoading = false;
                 StateHasChanged();
                 throw ex;
             }
