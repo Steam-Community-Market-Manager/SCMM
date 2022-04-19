@@ -775,12 +775,13 @@ namespace SCMM.Web.Server.API.Controllers
             var query = _db.SteamProfiles
                 .AsNoTracking()
                 .Where(x => x.LastTotalInventoryValue > 0)
+                .Where(x => x.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
                 .OrderByDescending(x => x.LastTotalInventoryValue)
                 .Select(x => new ProfileInventoryValueStatisticDTO()
                 {
-                    SteamId = x.SteamId,
-                    Name = x.Name,
-                    AvatarUrl = x.AvatarUrl,
+                    SteamId = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.SteamId : null,
+                    Name = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Name : null,
+                    AvatarUrl = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.AvatarUrl : null,
                     Items = x.LastTotalInventoryItems,
                     Value = x.LastTotalInventoryValue,
                     LastUpdatedOn = x.LastUpdatedInventoryOn
@@ -817,13 +818,14 @@ namespace SCMM.Web.Server.API.Controllers
             var query = _db.SteamProfiles
                 .AsNoTracking()
                 .Where(x => x.LastTotalInventoryValue > 0 && x.LastUpdatedInventoryOn != null)
+                .Where(x => x.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
                 .OrderByDescending(x => x.LastUpdatedInventoryOn)
                 .ThenByDescending(x => x.LastTotalInventoryValue)
                 .Select(x => new ProfileInventoryValueStatisticDTO()
                 {
-                    SteamId = x.SteamId,
-                    Name = x.Name,
-                    AvatarUrl = x.AvatarUrl,
+                    SteamId = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.SteamId : null,
+                    Name = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Name : null,
+                    AvatarUrl = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.AvatarUrl : null,
                     Items = x.LastTotalInventoryItems,
                     Value = x.LastTotalInventoryValue,
                     LastUpdatedOn = x.LastUpdatedInventoryOn

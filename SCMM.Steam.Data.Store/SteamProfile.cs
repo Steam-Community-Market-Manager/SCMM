@@ -56,9 +56,9 @@ namespace SCMM.Steam.Data.Store
 
         public long GamblingOffset { get; set; }
 
-        public SteamVisibilityType Privacy { get; set; }
+        public SteamVisibilityType Privacy { get; set; } = SteamVisibilityType.Unknown;
 
-        public ItemAnalyticsParticipationType ItemAnalyticsParticipation { get; set; }
+        public ItemAnalyticsParticipationType ItemAnalyticsParticipation { get; set; } = ItemAnalyticsParticipationType.Public;
 
         [Required]
         public PersistableStringDictionary Preferences { get; set; }
