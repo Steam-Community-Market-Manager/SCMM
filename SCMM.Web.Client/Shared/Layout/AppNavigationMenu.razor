@@ -3,6 +3,21 @@
 
 <MudNavMenu Color="Color.Primary" Bordered="true" Class="flex-grow-1">
     
+    @if (!String.IsNullOrEmpty(State.Profile?.SteamId))
+    {
+        <MudNavLink Href="@($"/inventory/{State.Profile.SteamId}")" Match="NavLinkMatch.All" Disabled="@State.IsPrerendering">
+            <div class="d-flex align-center ml-n4">
+                <MudAvatar Image="@State.Profile.AvatarUrl" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" />
+                <span class="px-3 no-wrap">My Inventory</span>
+            </div>
+        </MudNavLink>
+    }
+    <MudNavLink Href="/inventory" Icon="fas fa-fw fa-trophy" Match="NavLinkMatch.All" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">Inventory Leaderboard</span>
+    </MudNavLink>
+    
+    <MudDivider />
+
     <MudNavLink Href="/items" Icon="fas fa-fw fa-tshirt" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Items</span>
     </MudNavLink>
@@ -23,12 +38,6 @@
     </MudNavLink>
     <MudNavLink Href="/stats" Icon="fas fa-fw fa-chart-pie" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Market Statistics</span>
-    </MudNavLink>
-
-    <MudDivider />
-    
-    <MudNavLink Href="/inventory" Icon="fas fa-fw fa-trophy" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">Inventory Leaderboard</span>
     </MudNavLink>
 
     <MudDivider />
