@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Data.Models.UI.Item
 {
-    public class ItemDescriptionWithPriceDTO : ItemDescriptionDTO, ICanBeSubscribed, ICanBePurchased
+    public class ItemDescriptionWithPriceDTO : ItemDescriptionDTO, ICanBeSubscribed, ICanBePurchased, ICanBeInteractedWith
     {
         public long? OriginalPrice { get; set; }
 
@@ -17,5 +17,7 @@ namespace SCMM.Web.Data.Models.UI.Item
         public long? Supply { get; set; }
 
         public long? Demand { get; set; }
+
+        public ItemInteractionDTO[] Actions { get; set; }
     }
 }

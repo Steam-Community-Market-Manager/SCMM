@@ -2,90 +2,105 @@
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject AppState State
-
-<div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
-    @if (PurchasableItem.BuyNowFrom == MarketType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)
-    {
-        <MudBadge Color="MudBlazor.Color.Tertiary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
-            <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
+<MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="full-height d-flex flex-column" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="true" Dense="true" OffsetY Disabled="State.IsPrerendering">
+    <ActivatorContent>
+        <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
+            @if (PurchasableItem.BuyNowFrom == MarketType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)
+            {
+                <MudBadge Color="MudBlazor.Color.Tertiary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
+                    <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
+                        <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
+                    </div>
+                </MudBadge>
+            }
+            else if (PurchasableItem.BuyNowFrom != MarketType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
+            {
+                <MudBadge Color="@((PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice) ? MudBlazor.Color.Success : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? MudBlazor.Color.Error : MudBlazor.Color.Secondary)" 
+                          Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
+                          Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
+                    <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
+                        <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
+                    </div>
+                </MudBadge>
+            }
+            else
+            {
+                <div class="d-flex flex-grow-1 justify-center align-center hover-zoom">
+                    <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
+                </div>
+            }
+            <div class="ma-2 d-flex flex-column justify-center align-center text-centered">
+                <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {Item.ForegroundColour}")">
+                    <span>@Item.Name</span>
+                </MudText>
+                @if (PurchasableItem?.BuyNowPrice != null)
+                {
+                    <MudText Typo="MudBlazor.Typo.body2" Class="d-flex flex-row flex-wrap justify-center align-center">
+                        <img src="@($"/images/market/{PurchasableItem.BuyNowFrom.ToString().ToLower()}.png")" alt="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" title="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" class="mr-1" style="width:1.1em; height:1.1em" />
+                        <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
+                        @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowFrom != MarketType.SteamStore && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
+                        {
+                            <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(PurchasableItem.OriginalPrice.Value, dense: true)</span>
+                        }
+                    </MudText>
+                }
+                @if (!Dense)
+                {
+                    <div class="d-flex flex-row justify-center align-center text-centered">
+                        @if (PurchasableItem?.Supply > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Supply)))
+                        {
+                            <MudTooltip Text="Supply on the market">
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                    <i class="fas fa-fw fa-parachute-box"></i>
+                                    <span>@PurchasableItem.Supply.Value.ToQuantityString()</span>
+                                </MudText>
+                            </MudTooltip>
+                        }
+                        @if (PurchasableItem?.Demand > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Demand)))
+                        {
+                            <MudTooltip Text="Demand from the market in the last 24hrs">
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                    <i class="fas fa-fw fa-exchange-alt ml-1"></i>
+                                    <span>@PurchasableItem.Demand.Value.ToQuantityString()</span>
+                                </MudText>
+                            </MudTooltip>
+                        }
+                    </div>
+                    @if (SubscribableItem?.Subscriptions > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions)))
+                    {
+                        <MudTooltip Text="Subscribers">
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                <i class="fas fa-fw fa-user"></i>
+                                <span>@SubscribableItem.Subscriptions.Value.ToQuantityString()</span>
+                            </MudText>
+                        </MudTooltip>
+                    }
+                    @if (Item.TimeAccepted != null && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age)))
+                    {
+                        <MudTooltip Text="Time Accepted">
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                <i class="fas fa-fw fa-clock"></i>
+                                <span>@Item.TimeAccepted.Value.Date.ToShortDateString()</span>
+                            </MudText>
+                        </MudTooltip>
+                    }
+                }
             </div>
-        </MudBadge>
-    }
-    else if (PurchasableItem.BuyNowFrom != MarketType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
-    {
-        <MudBadge Color="@((PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice) ? MudBlazor.Color.Success : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? MudBlazor.Color.Error : MudBlazor.Color.Secondary)" 
-                  Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
-                  Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
-            <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
-            </div>
-        </MudBadge>
-    }
-    else
-    {
-        <div class="d-flex flex-grow-1 justify-center align-center hover-zoom">
-            <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
         </div>
-    }
-    <div class="ma-2 d-flex flex-column justify-center align-center text-centered">
-        <MudText Typo="MudBlazor.Typo.body1" Style="@($"color: {Item.ForegroundColour}")">
-            <span>@Item.Name</span>
-        </MudText>
-        @if (PurchasableItem?.BuyNowPrice != null)
+    </ActivatorContent>
+    <ChildContent>
+        @if (Interactions != null)
         {
-            <MudText Typo="MudBlazor.Typo.body2" Class="d-flex flex-row flex-wrap justify-center align-center">
-                <img src="@($"/images/market/{PurchasableItem.BuyNowFrom.ToString().ToLower()}.png")" alt="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" title="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" class="mr-1" style="width:1.1em; height:1.1em" />
-                <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
-                @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowFrom != MarketType.SteamStore && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
-                {
-                    <span class="mud-secondary-text text-line-through px-1">@State.Currency.ToPriceString(PurchasableItem.OriginalPrice.Value, dense: true)</span>
-                }
-            </MudText>
-        }
-        @if (!Dense)
-        {
-            <div class="d-flex flex-row justify-center align-center text-centered">
-                @if (PurchasableItem?.Supply > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Supply)))
-                {
-                    <MudTooltip Text="Supply on the market">
-                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                            <i class="fas fa-fw fa-parachute-box"></i>
-                            <span>@PurchasableItem.Supply.Value.ToQuantityString()</span>
-                        </MudText>
-                    </MudTooltip>
-                }
-                @if (PurchasableItem?.Demand > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Demand)))
-                {
-                    <MudTooltip Text="Demand from the market in the last 24hrs">
-                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                            <i class="fas fa-fw fa-exchange-alt ml-1"></i>
-                            <span>@PurchasableItem.Demand.Value.ToQuantityString()</span>
-                        </MudText>
-                    </MudTooltip>
-                }
-            </div>
-            @if (SubscribableItem?.Subscriptions > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions)))
+            @foreach (var interaction in Interactions)
             {
-                <MudTooltip Text="Subscribers">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                        <i class="fas fa-fw fa-user"></i>
-                        <span>@SubscribableItem.Subscriptions.Value.ToQuantityString()</span>
-                    </MudText>
-                </MudTooltip>
-            }
-            @if (Item.TimeAccepted != null && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age)))
-            {
-                <MudTooltip Text="Time Accepted">
-                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                        <i class="fas fa-fw fa-clock"></i>
-                        <span>@Item.TimeAccepted.Value.Date.ToShortDateString()</span>
-                    </MudText>
-                </MudTooltip>
+                <MudMenuItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTab(interaction.Url))">
+                    <i class="@($"fa fa-fw {interaction.Icon} mr-1")"></i>
+                    <span>@interaction.Name</span>
+                </MudMenuItem>
             }
         }
-    </div>
-</div>
+    </ChildContent>
+</MudMenu>
 
 @code {
 
@@ -101,6 +116,8 @@
     private ICanBePurchased PurchasableItem => (Item as ICanBePurchased);
     
     private ICanBeSubscribed SubscribableItem => (Item as ICanBeSubscribed);
+
+    private ItemInteractionDTO[] Interactions => (Item as ICanBeInteractedWith)?.Actions;
     
     [Parameter]
     public Action<IItemDescription> OnClick { get; set; }

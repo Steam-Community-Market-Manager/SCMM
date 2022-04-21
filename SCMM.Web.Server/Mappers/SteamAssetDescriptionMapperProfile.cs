@@ -67,7 +67,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetBuyPrice(p => p, p => p.Url))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions))
                 .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.SellOrderCount : null)))
-                .ForMember(x => x.Demand, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)));
+                .ForMember(x => x.Demand, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)))
+                .ForMember(x => x.Actions, o => o.MapFrom(p => p.GetInteractions()));
 
             CreateMap<SteamAssetDescription, ProfileInventoryItemDescriptionDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))
@@ -89,6 +90,8 @@ namespace SCMM.Web.Server.Mappers
 
             CreateMap<MarketPrice, ItemMarketPriceDTO>()
                 .ForMember(x => x.Price, o => o.MapFromUsingCurrencyExchange(p => p.Price, p => p.Currency));
+
+            CreateMap<ItemInteraction, ItemInteractionDTO>();
         }
     }
 }

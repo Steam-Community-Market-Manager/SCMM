@@ -290,6 +290,62 @@ namespace SCMM.Steam.Data.Store
             }
         }
 
+        public IEnumerable<ItemInteraction> GetInteractions()
+        {
+            if (WorkshopFileId > 0)
+            {
+                yield return new ItemInteraction
+                {
+                    Icon = "fa-tools",
+                    Name = "View Workshop",
+                    Url = new SteamWorkshopFileDetailsPageRequest()
+                    {
+                        Id = WorkshopFileId.Value.ToString()
+                    }
+                };
+            }
+
+            if (MarketItem != null && !String.IsNullOrEmpty(NameHash) && !String.IsNullOrEmpty(MarketItem.SteamId))
+            {
+                yield return new ItemInteraction
+                {
+                    Icon = "fa-balance-scale-left",
+                    Name = "View Market",
+                    Url = new SteamMarketListingPageRequest()
+                    {
+                        AppId = (MarketItem.App?.SteamId ?? App?.SteamId),
+                        MarketHashName = NameHash
+                    }
+                };
+            }
+
+            if (StoreItem != null)
+            {
+                var storeUrl = (string)null;
+                if (!String.IsNullOrEmpty(StoreItem.SteamId) && StoreItem.IsAvailable)
+                {
+                    storeUrl = new SteamItemStoreDetailPageRequest()
+                    {
+                        AppId = (StoreItem.App?.SteamId ?? App?.SteamId),
+                        ItemId = StoreItem.SteamId
+                    };
+                }
+                else if (StoreItem.Stores?.Any(x => x.Store != null) == true)
+                {
+                    storeUrl = $"/store/{StoreItem.Stores.Where(x => x.Store != null).MaxBy(x => x.Store.Start).Store.Id}";
+                }
+                if (!String.IsNullOrEmpty(storeUrl))
+                {
+                    yield return new ItemInteraction
+                    {
+                        Icon = "fa-shopping-cart",
+                        Name = "View Store",
+                        Url = storeUrl
+                    };
+                }
+            }
+        }
+
         #endregion
     }
 }

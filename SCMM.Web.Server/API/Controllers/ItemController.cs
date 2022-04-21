@@ -168,6 +168,7 @@ namespace SCMM.Web.Server.API.Controllers
             query = query
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
 
@@ -506,6 +507,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
+                .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
                 .ToListAsync();
