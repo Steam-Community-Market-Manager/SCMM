@@ -3,6 +3,7 @@ using Microsoft.Net.Http.Headers;
 using SCMM.Shared.Data.Models;
 using System.Collections;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace SCMM.Shared.Web.Formatters
 {
@@ -88,7 +89,9 @@ namespace SCMM.Shared.Web.Formatters
             }
 
             // Prepare the data
-            var dataProperties = dataType?.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
+            var dataProperties = dataType
+                ?.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty)
+                ?.Where(x => x.GetCustomAttribute<JsonIgnoreAttribute>() == null);
             if (dataProperties.Any())
             {
                 // Write header row
