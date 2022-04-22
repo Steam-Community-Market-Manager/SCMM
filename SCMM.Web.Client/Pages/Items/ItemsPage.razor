@@ -19,21 +19,7 @@
                           Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudSelect T="string" Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Label="Item Type" Clearable="true" Disabled="@(ItemTypes == null || !ItemTypes.Any() || State.IsPrerendering)"
-                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0">
-                @if (ItemTypes != null)
-                {
-                    @foreach (var itemType in ItemTypes)
-                    {
-                        <MudSelectItem Value="@itemType">
-                            <div class="d-flex flex-row align-center">
-                                <img src="/images/app/@(State.AppId)/items/@(itemType.ToRustItemShortName()).png" class="mr-2" style="height:2em" />
-                                <span>@itemType</span>
-                            </div>
-                        </MudSelectItem>
-                    }
-                }
-            </MudSelect>
+            <ItemTypeField Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
         </MudItem>
         <MudItem xs="12">
             <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
@@ -145,16 +131,10 @@
     [SupplyParameterFromQuery]
     public Nullable<int> Count { get; set; }
     
-    private string[] ItemTypes;
-
     private PaginatedResult<ItemDescriptionWithPriceDTO> Items;
 
     protected override async Task OnLoadStateAsync()
     {
-        ItemTypes = await RestoreFromStateOrLoad(nameof(ItemTypes), async () =>
-        {
-            return await Http.GetFromJsonWithDefaultsAsync<string[]>($"api/item/types");
-        });
         Items = await RestoreFromStateOrLoad(nameof(Items), async () =>
         {
             await RefreshItems();
@@ -164,7 +144,6 @@
 
     protected override Task OnPersistStateAsync()
     {
-        PersistToState(nameof(ItemTypes), ItemTypes);
         PersistToState(nameof(Items), Items);
         return Task.CompletedTask;
     }
@@ -179,8 +158,6 @@
         if (Filter != text)
         {
             Filter = text;
-            Items = null;
-            StateHasChanged();
             _ = RefreshItems();
         };
     }
@@ -191,8 +168,6 @@
         if (Start != newStart)
         {
             Start = newStart;
-            Items = null;
-            StateHasChanged();
             _ = RefreshItems();
         }
     }
@@ -201,6 +176,9 @@
     {
         try
         {
+            Items = null;
+            StateHasChanged();
+
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
                 $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
             );

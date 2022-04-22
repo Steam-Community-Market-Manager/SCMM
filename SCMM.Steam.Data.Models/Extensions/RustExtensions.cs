@@ -38,6 +38,7 @@
                 case "Garage Door": return "wall.frame.garagedoor";
                 case "Hammer": return "hammer";
                 case "Hatchet": return "hatchet";
+                case "Hazmat Suit": return "hazmatsuit";
                 case "Hide Boots": return "attire.hide.boots";
                 case "Hide Halterneck": return "attire.hide.helterneck";
                 case "Hide Pants": return "attire.hide.pants";
@@ -100,8 +101,45 @@
                 case "Wood Double Door": return "door.double.hinged.wood";
                 case "Wood Storage Box": return "box.wooden"; // texture issues (Heli Cargo)
                 case "Wooden Door": return "door.hinged.wood";
-                default: return null;
+                default: return itemType;
             }
+        }
+
+        public static string ToRustItemGroup(this string itemType)
+        {
+            if (IsRustArmourItem(itemType))
+            {
+                return "Armour";
+            }
+            else if (IsRustClothingItem(itemType))
+            {
+                return "Clothing";
+            }
+            else if (IsRustGunItem(itemType))
+            {
+                return "Guns";
+            }
+            else if (IsRustWeaponItem(itemType))
+            {
+                return "Weapons";
+            }
+            else if (IsRustToolItem(itemType))
+            {
+                return "Tools";
+            }
+            else if (IsRustDoorItem(itemType))
+            {
+                return "Doors";
+            }
+            else if (IsRustDeployableItem(itemType))
+            {
+                return "Deployables";
+            }
+            else if (IsRustFunItem(itemType))
+            {
+                return "Fun";
+            }
+            return null;
         }
 
         public static bool IsRustArmourItem(this string itemType)
@@ -142,6 +180,7 @@
                 case "Improvised Balaclava":
                 case "Tank Top":
                 case "Shorts":
+                case "Hazmat Suit":
                 case "Hide Boots":
                 case "Hide Halterneck":
                 case "Hide Pants":
@@ -253,7 +292,16 @@
             }
         }
 
-        public static bool IsRustUniqueItem(this string itemType)
+        public static bool IsRustFunItem(this string itemType)
+        {
+            switch (itemType)
+            {
+                case "Acoustic Guitar": return true;
+                default: return false;
+            }
+        }
+
+        public static bool IsRustSpecialItem(this string itemType)
         {
             return (
                 !itemType.IsRustArmourItem() &&
@@ -262,7 +310,8 @@
                 !itemType.IsRustWeaponItem() &&
                 !itemType.IsRustToolItem() &&
                 !itemType.IsRustDoorItem() &&
-                !itemType.IsRustDeployableItem()
+                !itemType.IsRustDeployableItem() &&
+                !itemType.IsRustFunItem()
             );
         }
     }

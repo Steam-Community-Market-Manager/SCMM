@@ -310,15 +310,15 @@
             </div>
         }
     
-        @if (Items.Any(x => x.ItemType.IsRustUniqueItem()))
+        @if (Items.Any(x => x.ItemType.IsRustSpecialItem()))
         {
-            <div class="collection pa-3" style="@(Items.Count(x => x.ItemType.IsRustUniqueItem()) > 4 ? "grid-template-columns: auto auto auto auto" : null)">
+            <div class="collection pa-3" style="@(Items.Count(x => x.ItemType.IsRustSpecialItem()) > 4 ? "grid-template-columns: auto auto auto auto" : null)">
     
                 <div class="collection-title mud-paper mud-paper-outlined mud-theme-secondary text-centered pa-1">
-                    <MudText Typo="MudBlazor.Typo.subtitle2">Unique</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2">Special</MudText>
                 </div>
             
-                @foreach (var item in Items.Where(x => x.ItemType.IsRustUniqueItem()).OrderBy(x => x.ItemType).ThenByDescending(x => x.Id))
+                @foreach (var item in Items.Where(x => x.ItemType.IsRustSpecialItem()).OrderBy(x => x.ItemType).ThenByDescending(x => x.Id))
                 {
                     <ItemCollectionLayoutTile Item="@item" ItemIsAcquired="IsItemAquired(item.Id)" class="collection-item" />
                 }
