@@ -50,12 +50,12 @@
     </MudNavLink>
 
     <MudDivider />
-
+    
+    <MudNavLink Href="/about" Icon="fas fa-fw fa-info-circle" Disabled="@State.IsPrerendering">
+        <span class="no-wrap">About</span>
+    </MudNavLink>
     <MudNavLink OnClick="ShowDonationDialog" Icon="fas fa-fw fa-fw fa-donate" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Donate</span>
-    </MudNavLink>
-    <MudNavLink Href="/about" Icon="fas fa-fw fa-info" Disabled="@State.IsPrerendering">
-        <span class="no-wrap">About</span>
     </MudNavLink>
 
 </MudNavMenu>
