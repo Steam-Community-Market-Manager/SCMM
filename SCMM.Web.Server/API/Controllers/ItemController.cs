@@ -7,13 +7,12 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.API;
-using SCMM.Steam.Data.Models;
-using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.UI.Item;
+using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Server.Extensions;
 
 namespace SCMM.Web.Server.API.Controllers
@@ -92,10 +91,12 @@ namespace SCMM.Web.Server.API.Controllers
                 count = int.MaxValue;
             }
 
+            // Filter app
             var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.AppId == appId);
 
+            // Filter search
             filter = Uri.UnescapeDataString(filter?.Trim() ?? string.Empty);
             var filterWords = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             foreach (var filterWord in filterWords)
@@ -113,6 +114,7 @@ namespace SCMM.Web.Server.API.Controllers
                 );
             }
 
+            // Filter toggles
             if (!string.IsNullOrEmpty(type))
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.ItemType == type);
@@ -165,17 +167,25 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 query = query.Where(x => id.Contains(x.ClassId) || x.IsCraftable == true);
             }
-
+            
+            // Join
             query = query
                 .Include(x => x.App)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Stores).ThenInclude(x => x.Store)
-                .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
-                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
+                .Include(x => x.MarketItem).ThenInclude(x => x.Currency);
 
-            // TODO: Sorting...
+            // Sort
+            if (!String.IsNullOrEmpty(sortBy))
+            {
+                query = query.SortBy(sortBy, sortDirection);
+            }
+            else
+            {
+                query = query.OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated);
+            }
 
-            // Paginate and return
+            // Paginate
             return Ok(!detailed
                 ? await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(x, this))
                 : await query.PaginateAsync(start, count, x => _mapper.Map<SteamAssetDescription, ItemDetailedDTO>(x, this))

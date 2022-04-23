@@ -14,26 +14,81 @@
 <PageContainer Title="Items">
 
     <MudGrid Spacing="2">
-        <MudItem xs="12" sm="6">
-            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item..." 
+        <MudItem xs="12" sm="6" md="4" lg="6">
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item, type, collection, author, or tags..." 
                           Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
-        <MudItem xs="12" sm="6">
+        <MudItem xs="12" sm="6" md="4" lg="3">
             <ItemTypeField Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" />
         </MudItem>
+        <MudItem xs="12" sm="12" md="4" lg="3">
+            <MudSelect T="Tuple<string, Data.Models.SortDirection>" Value="@Sort" ValueChanged="SetSortOrder" Label="Sorting" Clearable="false" Disabled="State.IsPrerendering"
+                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fas fa-fw fa-sort-alpha-down mr-1" Class="mud-input-transparent ma-0">
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("TimeAccepted", Data.Models.SortDirection.Descending))">Newest</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("TimeAccepted", Data.Models.SortDirection.Ascending))">Oldest</MudSelectItem>
+                }
+                <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderLowestPrice", Data.Models.SortDirection.Ascending))">Lowest Price</MudSelectItem>
+                <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderLowestPrice", Data.Models.SortDirection.Descending))">Highest Price</MudSelectItem>
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Supply))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderCount", Data.Models.SortDirection.Ascending))">Lowest Supply</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.SellOrderCount", Data.Models.SortDirection.Descending))">Highest Supply</MudSelectItem>
+                }
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Demand))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.Last24hrSales", Data.Models.SortDirection.Ascending))">Lowest Demand</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("MarketItem.Last24hrSales", Data.Models.SortDirection.Descending))">Highest Demand</MudSelectItem>
+                }
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("LifetimeSubscriptions", Data.Models.SortDirection.Ascending))">Lowest Subscriptions</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("LifetimeSubscriptions", Data.Models.SortDirection.Descending))">Highest Subscriptions</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
         <MudItem xs="12">
-            <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Disabled="State.IsPrerendering" />
-                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Disabled="State.IsPrerendering" />
-            </MudPaper>
+            <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
+                <MudExpansionPanels Dense="true" DisableGutters="true">
+                    <MudExpansionPanel Disabled="State.IsPrerendering">
+                        <TitleContent>
+                            <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Default" Class="text-centered my-n3">
+                                <i class="fa fa-fw fa-toggle-off mr-1" />
+                                <span>Toggle Item Features</span>
+                            </MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <div Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
+                                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                            </div>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudHidden>
+            <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
+                <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
+                    <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                </MudPaper>
+            </MudHidden>
         </MudItem>
         @if (Items == null)
         {
@@ -65,7 +120,7 @@
             <MudItem xs="12" Class="d-flex justify-center">
                 <div class="d-flex flex-column justify-center align-center full-height pa-4">
                     <TumbleWeed Light="true" />
-                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">empty, check back later</MudText>
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try searching for something else</MudText>
                 </div>
             </MudItem>
         }
@@ -130,8 +185,25 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public Nullable<int> Count { get; set; }
-    
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortBy { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortDirection { get; set; }
+
+    private Tuple<string, Data.Models.SortDirection> Sort;
+
     private PaginatedResult<ItemDescriptionWithPriceDTO> Items;
+
+    protected override void OnInitialized()
+    {
+        SortBy = nameof(ItemDescriptionWithPriceDTO.TimeAccepted);
+        SortDirection = Data.Models.SortDirection.Descending.ToString();
+        Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Data.Models.SortDirection.Descending);
+    }
 
     protected override async Task OnLoadStateAsync()
     {
@@ -157,9 +229,21 @@
     {
         if (Filter != text)
         {
+            Start = 0;
             Filter = text;
             _ = RefreshItems();
         };
+    }
+
+    private void SetSortOrder(Tuple<string, Data.Models.SortDirection> sort)
+    {
+        Start = 0;
+        Sort = sort;
+        SortBy = sort.Item1;
+        SortDirection = sort.Item2.ToString();
+        StateHasChanged();
+        
+        _ = RefreshItems();
     }
     
     private void OnPageChange(int page)
@@ -171,7 +255,7 @@
             _ = RefreshItems();
         }
     }
-    
+
     private async Task RefreshItems()
     {
         try
@@ -180,7 +264,7 @@
             StateHasChanged();
 
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
             );
         }
         catch (Exception ex)

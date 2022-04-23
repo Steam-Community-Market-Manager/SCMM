@@ -786,26 +786,26 @@ namespace SCMM.Web.Server.API.Controllers
             switch (sortBy)
             {
                 case nameof(ProfileInventoryInvestmentItemDTO.Name):
-                    query = query.OrderBy(x => x.Description.Name, sortDirection);
+                    query = query.SortBy(x => x.Description.Name, sortDirection);
                     break;
                 case nameof(ProfileInventoryInvestmentItemDTO.BuyPrice):
-                    query = query.OrderBy(x => x.BuyPrice, sortDirection);
+                    query = query.SortBy(x => x.BuyPrice, sortDirection);
                     break;
                 case nameof(ProfileInventoryInvestmentItemDTO.SellLaterPrice):
-                    query = query.OrderBy(x => x.Description.MarketItem.SellLaterPrice, sortDirection);
+                    query = query.SortBy(x => x.Description.MarketItem.SellLaterPrice, sortDirection);
                     break;
                 case nameof(ProfileInventoryInvestmentItemDTO.SellLaterFee):
-                    query = query.OrderBy(x => (includeFees ? x.Description.MarketItem.SellLaterFee : 0), sortDirection);
+                    query = query.SortBy(x => (includeFees ? x.Description.MarketItem.SellLaterFee : 0), sortDirection);
                     break;
                 case "SellLaterProfit":
-                    query = query.OrderBy(x =>
+                    query = query.SortBy(x =>
                         ((x.Description.MarketItem.SellLaterPrice - (includeFees ? x.Description.MarketItem.SellLaterFee : 0)) != 0 && x.BuyPrice > 0 && x.Currency != null)
                             ? ((x.Description.MarketItem.SellLaterPrice - (includeFees ? x.Description.MarketItem.SellLaterFee : 0)) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) - (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
                             : 0
                         , sortDirection);
                     break;
                 case "SellLaterRoI":
-                    query = query.OrderBy(x =>
+                    query = query.SortBy(x =>
                         ((x.Description.MarketItem.SellLaterPrice - (includeFees ? x.Description.MarketItem.SellLaterFee : 0)) != 0 && x.BuyPrice > 0 && x.Currency != null)
                             ? ((x.Description.MarketItem.SellLaterPrice - (includeFees ? x.Description.MarketItem.SellLaterFee : 0)) / x.Description.MarketItem.Currency.ExchangeRateMultiplier) / (x.BuyPrice / x.Currency.ExchangeRateMultiplier)
                             : 0

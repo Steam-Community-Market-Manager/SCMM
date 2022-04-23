@@ -44,15 +44,15 @@
                     <ChildContent>
                         @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))
                         {
-                            <MudMenuItem OnClick="@(() => SetSortOrder("TimeAccepted", MudBlazor.SortDirection.Descending))">Newest</MudMenuItem>
-                            <MudMenuItem OnClick="@(() => SetSortOrder("TimeAccepted", MudBlazor.SortDirection.Ascending))">Oldest</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.TimeAccepted), Data.Models.SortDirection.Descending))">Newest</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.TimeAccepted), Data.Models.SortDirection.Ascending))">Oldest</MudMenuItem>
                         }
-                        <MudMenuItem OnClick="@(() => SetSortOrder("BuyNowPrice", MudBlazor.SortDirection.Ascending))">Lowest Price</MudMenuItem>
-                        <MudMenuItem OnClick="@(() => SetSortOrder("BuyNowPrice", MudBlazor.SortDirection.Descending))">Highest Price</MudMenuItem>
+                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.BuyNowPrice), Data.Models.SortDirection.Ascending))">Lowest Price</MudMenuItem>
+                        <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.BuyNowPrice), Data.Models.SortDirection.Descending))">Highest Price</MudMenuItem>
                         @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
                         {
-                            <MudMenuItem OnClick="@(() => SetSortOrder("Subscriptions", MudBlazor.SortDirection.Ascending))">Lowest Subscriptions</MudMenuItem>
-                            <MudMenuItem OnClick="@(() => SetSortOrder("Subscriptions", MudBlazor.SortDirection.Descending))">Highest Subscriptions</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.Subscriptions), Data.Models.SortDirection.Ascending))">Lowest Subscriptions</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.Subscriptions), Data.Models.SortDirection.Descending))">Highest Subscriptions</MudMenuItem>
                         }
                     </ChildContent>
                 </MudMenu>
@@ -89,10 +89,10 @@
     public string CollectionUrl { get; set; }
     
     [Parameter]
-    public string SortBy { get; set; } = "TimeAccepted";
+    public string SortBy { get; set; } = nameof(ItemDescriptionWithPriceDTO.TimeAccepted);
 
     [Parameter]
-    public MudBlazor.SortDirection SortDirection { get; set; } = MudBlazor.SortDirection.Descending;
+    public Data.Models.SortDirection SortDirection { get; set; } = Data.Models.SortDirection.Descending;
 
     private ItemCollectionDTO Collection { get; set; }
     
@@ -120,7 +120,7 @@
         }
     }
     
-    private void SetSortOrder(string sortBy, MudBlazor.SortDirection sortDirection)
+    private void SetSortOrder(string sortBy, Data.Models.SortDirection sortDirection)
     {
         SortBy = sortBy;
         SortDirection = sortDirection;
@@ -129,26 +129,9 @@
 
     private IEnumerable<ItemDescriptionWithPriceDTO> GetSortedItems(IEnumerable<ItemDescriptionWithPriceDTO> items)
     {
-        switch(SortBy)
+        if (!String.IsNullOrEmpty(SortBy))
         {
-            case "TimeAccepted": 
-                items = (SortDirection == MudBlazor.SortDirection.Descending)
-                    ? items.OrderByDescending(x => x.TimeAccepted)
-                    : items.OrderBy(x => x.TimeAccepted);
-                break;
-                
-            case "BuyNowPrice": 
-                items = (SortDirection == MudBlazor.SortDirection.Descending)
-                    ? items.OrderByDescending(x => x.BuyNowPrice)
-                    : items.OrderBy(x => x.BuyNowPrice);
-                break;
-
-            case "Subscriptions": 
-                items = (SortDirection == MudBlazor.SortDirection.Descending)
-                    ? items.OrderByDescending(x => x.Subscriptions)
-                    : items.OrderBy(x => x.Subscriptions);
-                break;
-
+            items = items.AsQueryable().SortBy(SortBy, SortDirection);
         }
 
         return items;

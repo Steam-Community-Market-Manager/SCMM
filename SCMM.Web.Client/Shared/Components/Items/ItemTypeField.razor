@@ -11,7 +11,7 @@
             @if (ItemType != null)
             {
                 <img src="/images/app/@(State.AppId)/items/@(ItemType.Id).png" class="my-n2 mr-2" style="height:2em" />
-                <span class="mud-secondary-text">@ItemType.Name</span>
+                <span>@ItemType.Name</span>
                 <MudSpacer />
                 <MudIconButton Icon="fa fa-fw fa-times" Size="MudBlazor.Size.Small" OnClick="@(() => SetItemType(null))" Class="pa-0 ma-0" title="Clear"></MudIconButton>
             }

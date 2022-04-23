@@ -204,6 +204,7 @@ namespace SCMM.Steam.Data.Store
 
         public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency)
         {
+            // TODO: Include third party markets?
             return GetBuyPrices(currency).Where(x => x.IsFirstPartyMarket && x.IsAvailable).OrderBy(x => x.Price + x.Fee).FirstOrDefault();
         }
 
