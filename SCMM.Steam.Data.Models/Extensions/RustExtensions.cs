@@ -101,7 +101,7 @@
                 case "Wood Double Door": return "door.double.hinged.wood";
                 case "Wood Storage Box": return "box.wooden"; // texture issues (Heli Cargo)
                 case "Wooden Door": return "door.hinged.wood";
-                default: return itemType;
+                default: return itemType?.ToLower();
             }
         }
 
@@ -139,6 +139,7 @@
             {
                 return "Fun";
             }
+
             return null;
         }
 

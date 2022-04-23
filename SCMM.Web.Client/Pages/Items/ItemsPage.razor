@@ -16,10 +16,10 @@
     <MudGrid Spacing="2">
         <MudItem xs="12" sm="6">
             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item..." 
-                          Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
+                          Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
         </MudItem>
         <MudItem xs="12" sm="6">
-            <ItemTypeField Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Class="mud-input-transparent ma-0" />
+            <ItemTypeField Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshItems(); })" Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" />
         </MudItem>
         <MudItem xs="12">
             <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">

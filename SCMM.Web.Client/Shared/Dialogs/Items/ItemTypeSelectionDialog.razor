@@ -1,4 +1,5 @@
-﻿@inherits ResponsiveDialog
+﻿@using SCMM.Web.Data.Models.UI.Item
+@inherits ResponsiveDialog
 @inject AppState State
 
 <MudDialog>
@@ -7,22 +8,22 @@
     </TitleContent>
     <DialogContent>
         <MudGrid Spacing="2" Class="mb-4">
-            @if (ItemTypes != null)
+            @if (ItemTypesGroups != null)
             {
-                @foreach (var itemGroup in ItemTypes.GroupBy(x => x.ToRustItemGroup()).OrderBy(x => x.Key))
+                @foreach (var itemGroup in ItemTypesGroups.OrderBy(x => x.Name))
                 {
-                    @if (!String.IsNullOrEmpty(itemGroup.Key))
+                    @if (!String.IsNullOrEmpty(itemGroup.Name))
                     {
                         <MudItem xs="12" Class="ma-2">
-                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">@itemGroup.Key</MudText>
+                            <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Secondary">@itemGroup.Name</MudText>
                         </MudItem>
                     }
-                    @foreach (var itemType in itemGroup.OrderBy(x => x))
+                    @foreach (var itemType in itemGroup.ItemTypes.OrderBy(x => x.Name))
                     {
                         <MudItem xs="6" sm="4" md="2" Class="d-flex clickable hover-zoom hover-darken pa-1" @onclick="@(() => this.Dialog.Close(itemType))">
                             <div class="d-flex flex-row align-center">
-                                <img src="/images/app/@(State.AppId)/items/@(itemType.ToRustItemShortName()).png" class="mr-2" style="height:3em" />
-                                <span>@itemType</span>
+                                <img src="/images/app/@(State.AppId)/items/@(itemType.Id).png" class="mr-2" style="height:3em" />
+                                <span>@itemType.Name</span>
                             </div>
                         </MudItem>
                     }
@@ -38,7 +39,7 @@
     public string ItemType { get; set; }
 
     [Parameter]
-    public string[] ItemTypes { get; set; }
+    public IEnumerable<ItemTypeGroupDTO> ItemTypesGroups { get; set; }
 
     protected override void OnConfigure(ResponsiveDialogOptions options)
     {

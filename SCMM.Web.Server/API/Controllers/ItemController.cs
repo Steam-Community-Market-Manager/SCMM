@@ -9,6 +9,7 @@ using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Steam.API;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 using SCMM.Web.Data.Models;
@@ -528,18 +529,29 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("types")]
-        [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ItemTypeGroupDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemTypes()
         {
             var appId = this.App().Guid;
+            var itemTypes = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => !String.IsNullOrEmpty(x.ItemType))
+                .GroupBy(x => x.ItemType)
+                .Select(x => x.Key)
+                .ToArrayAsync();
+
+            // TODO: Add support for other apps
             return Ok(
-                await _db.SteamAssetDescriptions.AsNoTracking()
-                    .Where(x => x.AppId == appId)
-                    .Where(x => !String.IsNullOrEmpty(x.ItemType))
-                    .GroupBy(x => x.ItemType)
-                    .Select(x => x.Key)
-                    .ToArrayAsync()
+                itemTypes.GroupBy(x => x.ToRustItemGroup()).OrderBy(x => x.Key).Select(g => new ItemTypeGroupDTO()
+                { 
+                    Name = g.Key,
+                    ItemTypes = g.OrderBy(x => x).Select(i => new ItemTypeDTO()
+                    {
+                        Id = i.ToRustItemShortName(),
+                        Name = i
+                    })
+                })
             );
         }
 
