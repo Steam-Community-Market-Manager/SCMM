@@ -8,26 +8,27 @@
 @inject AppState State
 
 <div class="full-height" @attributes="AdditionalAttributes">
-    @if (State.IsAuthenticated)
-    {
-        <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" Class="full-height hover-darken" Disabled="State.IsPrerendering">
-            <ActivatorContent>
-                <div class="d-flex justify-start align-center px-2">
-                    @if (InventoryTotals?.MarketValue > 0)
-                    {
-                        <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
-                            <div class="d-flex flex-column">
-                                <MudText Typo="@MudBlazor.Typo.caption" Color="@MudBlazor.Color.Secondary" Class="mr-2"><small>Inventory Value</small></MudText>
-                                <MudText Typo="@MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Default" Class="mr-2 mt-n1">
-                                    <span title="Current market value of your inventory">@State.Currency?.ToPriceString(InventoryTotals.MarketValue)</span>
-                                </MudText>
-                            </div>
-                        </MudHidden>
-                    }
-                    <MudAvatar Image="@State.Profile.AvatarUrl" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" title="Your profile" />
-                </div>
-            </ActivatorContent>
-            <ChildContent>
+    <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" Class="full-height hover-darken" Disabled="State.IsPrerendering">
+        <ActivatorContent>
+            <div class="d-flex justify-start align-center px-2">
+                @if (InventoryTotals?.MarketValue > 0)
+                {
+                    <MudHidden Breakpoint="MudBlazor.Breakpoint.MdAndUp" Invert="true">
+                        <div class="d-flex flex-column">
+                            <MudText Typo="@MudBlazor.Typo.caption" Color="@MudBlazor.Color.Secondary" Class="mr-2"><small>Inventory Value</small></MudText>
+                            <MudText Typo="@MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Default" Class="mr-2 mt-n1">
+                                <span title="Current market value of your inventory">@State.Currency?.ToPriceString(InventoryTotals.MarketValue)</span>
+                            </MudText>
+                        </div>
+                    </MudHidden>
+                }
+                <MudAvatar Image="@(State.Profile?.AvatarUrl ?? "/images/steam_default_avatar.png")" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" 
+                           title="@(State.IsAuthenticated ? "Your profile" : "Sign in through Steam")" />
+            </div>
+        </ActivatorContent>
+        <ChildContent>
+            @if (State.IsAuthenticated)
+            {
                 <div class="mx-4">
                     <MudText Typo="MudBlazor.Typo.h6" Color="@MudBlazor.Color.Default">@State.Profile.Name</MudText>
                     <MudText Typo="MudBlazor.Typo.subtitle2" Color="@MudBlazor.Color.Secondary">@State.Profile.SteamId</MudText>
@@ -88,20 +89,15 @@
                     <i class="fas fa-fw fa-sign-out-alt" ></i>
                     <span>Sign out</span>
                 </MudMenuItem>
-            </ChildContent>
-        </MudMenu>
-    }
-    else
-    {
-        <MudLink Class="signin-button" @onclick="async () => await ShowSignInDialog()" Disabled="State.IsPrerendering">
-            <MudHidden Breakpoint="MudBlazor.Breakpoint.SmAndUp" Invert="true">
-                <img src="/images/sits_01.png" class="mt-2" alt="Sign in through Steam" title="Sign in through Steam" />
-            </MudHidden>
-            <MudHidden Breakpoint="MudBlazor.Breakpoint.Xs" Invert="true">
-                <img src="/images/sits_03.png" class="mt-1" alt="Sign in through Steam" title="Sign in through Steam" />
-            </MudHidden>
-        </MudLink>
-    }
+            }
+            else
+            {
+                <div class="signin-button mx-4" @onclick="async () => await ShowSignInDialog()">
+                    <img src="/images/sits_01.png" class="mt-2" alt="Sign in through Steam" title="Sign in through Steam" />
+                </div>
+            }
+        </ChildContent>
+    </MudMenu>
 </div>
 
 @code {
