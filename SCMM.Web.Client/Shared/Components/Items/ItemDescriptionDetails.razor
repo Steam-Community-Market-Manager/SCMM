@@ -967,6 +967,7 @@
                 </MudItem>
             }
             
+            @*
             @if(Item.IsAvailableOnMarket && Item.MarketLastSaleOn != null && (DateTimeOffset.Now - Item.MarketLastSaleOn.Value).TotalDays < 7)
             {
                 <MudItem xs="12">
@@ -1014,7 +1015,8 @@
 				    </MudPaper>
                 </MudItem>
             }
-            
+            *@
+
             @if (!String.IsNullOrEmpty(Item.ItemCollection))
             {
                 <MudItem xs="12">

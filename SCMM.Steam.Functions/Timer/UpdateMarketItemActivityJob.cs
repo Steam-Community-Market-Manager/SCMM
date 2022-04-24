@@ -25,7 +25,8 @@ public class UpdateMarketItemActivityJob
         _steamService = steamService;
     }
 
-    [Function("Update-Market-Item-Activity")]
+    // TODO: This needs to be more efficent, too spammy
+    //[Function("Update-Market-Item-Activity")]
     public async Task Run([TimerTrigger("0 0/5 * * * *")] /* every 5 minutes */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Update-Market-Item-Activity");
