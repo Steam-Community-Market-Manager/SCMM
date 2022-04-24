@@ -60,15 +60,33 @@
                         </TitleContent>
                         <ChildContent>
                             <div Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                                <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                                <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                                <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                                <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                                <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                                <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGlowing))
+                                {
+                                    <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                    <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCutout))
+                                {
+                                    <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCrafting))
+                                {
+                                    <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGameDrops))
+                                {
+                                    <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureTwitchDrops))
+                                {
+                                    <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
                                 <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                                <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                                {
+                                    <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                }
                                 <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                             </div>
                         </ChildContent>
@@ -77,15 +95,33 @@
             </MudHidden>
             <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
                 <MudPaper Outlined="true" Class="d-flex flex-row align-center justify-center flex-wrap pa-2 px-4">
-                    <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                    <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                    <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                    <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                    <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                    <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGlowing))
+                    {
+                        <MudSwitch T="bool" Checked="@Glow" CheckedChanged="@((x) => { Glow = x; _ = RefreshItems(); })" Label="Glow" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                        <MudSwitch T="bool" Checked="@Glowsight" CheckedChanged="@((x) => { Glowsight = x; _ = RefreshItems(); })" Label="Glowsight" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCutout))
+                    {
+                        <MudSwitch T="bool" Checked="@Cutout" CheckedChanged="@((x) => { Cutout = x; _ = RefreshItems(); })" Label="Cutout" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCrafting))
+                    {
+                        <MudSwitch T="bool" Checked="@Craftable" CheckedChanged="@((x) => { Craftable = x; _ = RefreshItems(); })" Label="Craftable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureGameDrops))
+                    {
+                        <MudSwitch T="bool" Checked="@SpecialDrop" CheckedChanged="@((x) => { SpecialDrop = x; _ = RefreshItems(); })" Label="Special Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureTwitchDrops))
+                    {
+                        <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
                     <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
-                    <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    {
+                        <MudSwitch T="bool" Checked="@Returning" CheckedChanged="@((x) => { Returning = x; _ = RefreshItems(); })" Label="Returning" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    }
                     <MudSwitch T="bool" Checked="@Banned" CheckedChanged="@((x) => { Banned = x; _ = RefreshItems(); })" Label="Banned" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                 </MudPaper>
             </MudHidden>

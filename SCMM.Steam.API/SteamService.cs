@@ -8,6 +8,7 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.Steam.Data.Store.Types;
 using Steam.Models.SteamEconomy;
 using System.Globalization;
 using System.Reflection;
@@ -34,17 +35,26 @@ namespace SCMM.Steam.API
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, DateTimeOffset? timeChecked)
+        public async Task<SteamStoreItem> AddOrUpdateStoreItemAndMarkAsAvailable(SteamApp app, AssetModel asset, SteamCurrency currency, DateTimeOffset? timeChecked)
         {
-            // Find the store item by it's id (if it exists)
-            var dbItem = await _db.SteamStoreItems
-                .Include(x => x.Stores).ThenInclude(x => x.Store)
-                .Include(x => x.Description)
-                .Where(x => x.AppId == app.Id)
-                .FirstOrDefaultAsync(x => x.SteamId == asset.Name);
+            // Find the item by it's store id or asset class id (which ever exists first)
+            var dbItem = (
+                await _db.SteamStoreItems
+                    .Include(x => x.Stores).ThenInclude(x => x.Store)
+                    .Include(x => x.Description)
+                    .Where(x => x.AppId == app.Id)
+                    .FirstOrDefaultAsync(x => x.SteamId == asset.Name) ??
+                await _db.SteamStoreItems
+                    .Include(x => x.Stores).ThenInclude(x => x.Store)
+                    .Include(x => x.Description)
+                    .Where(x => x.AppId == app.Id)
+                    .FirstOrDefaultAsync(x => x.Description.ClassId == asset.ClassId)
+            );
 
-            // If the asset description is missing, import it now
-            var assetDescription = dbItem?.Description;
+            // Find the item asset description, or import it if missing
+            var assetDescription = (
+                dbItem?.Description ?? await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => x.AppId == app.Id && x.ClassId == asset.ClassId)
+            );
             if (assetDescription == null)
             {
                 var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
@@ -60,26 +70,7 @@ namespace SCMM.Steam.API
                 }
             }
 
-            // If the asset is not yet accepted, accept it now
-            assetDescription.IsAccepted = true;
-            if (assetDescription.TimeAccepted == null)
-            {
-                if (!String.IsNullOrEmpty(asset.Date) && DateTimeOffset.TryParseExact(asset.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset storeDate))
-                {
-                    assetDescription.TimeAccepted = storeDate;
-                }
-                else
-                {
-                    assetDescription.TimeAccepted = timeChecked;
-                }
-            }
-
-            // If we don't have a store item for this asset, create one now
-            dbItem = await _db.SteamStoreItems
-                .Include(x => x.Stores).ThenInclude(x => x.Store)
-                .Include(x => x.Description)
-                .Where(x => x.AppId == app.Id)
-                .FirstOrDefaultAsync(x => x.DescriptionId == assetDescription.Id);
+            // If the store item doesn't exist yet, create it now
             if (dbItem == null)
             {
                 app.StoreItems.Add(dbItem = new SteamStoreItem()
@@ -89,6 +80,32 @@ namespace SCMM.Steam.API
                     Description = assetDescription,
                     DescriptionId = assetDescription.Id
                 });
+
+                var prices = ParseStoreItemPriceTable(asset.Prices);
+                dbItem.UpdatePrice(
+                    currency,
+                    prices.FirstOrDefault(x => x.Key == currency?.Name).Value,
+                    new PersistablePriceDictionary(prices)
+                );
+            }
+
+            // If the asset item is not yet accepted, accept it now
+            assetDescription.IsAccepted = true;
+            if (assetDescription.TimeAccepted == null)
+            {
+                if (!String.IsNullOrEmpty(asset.Date))
+                {
+                    DateTimeOffset storeDate;
+                    if (DateTimeOffset.TryParseExact(asset.Date, "yyyy-M-d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate) ||
+                        DateTimeOffset.TryParseExact(asset.Date, "yyyy/M/d", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out storeDate))
+                    {
+                        assetDescription.TimeAccepted = storeDate;
+                    }
+                }
+                else
+                {
+                    assetDescription.TimeAccepted = timeChecked;
+                }
             }
 
             // Mark the store item as available

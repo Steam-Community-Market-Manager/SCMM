@@ -36,7 +36,7 @@
                 @if (PurchasableItem?.BuyNowPrice != null)
                 {
                     <MudText Typo="MudBlazor.Typo.body2" Class="d-flex flex-row flex-wrap justify-center align-center">
-                        <img src="@($"/images/market/{PurchasableItem.BuyNowFrom.ToString().ToLower()}.png")" alt="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" title="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" class="mr-1" style="width:1.1em; height:1.1em" />
+                        <img src="@($"/images/app/{State.App.Id}/markets/{PurchasableItem.BuyNowFrom.ToString().ToLower()}.png")" alt="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" title="@PurchasableItem.BuyNowFrom.Value.GetDisplayName()" class="mr-1" style="width:1.1em; height:1.1em" />
                         <span>@State.Currency.ToPriceString(PurchasableItem.BuyNowPrice.Value)</span>
                         @if (PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && PurchasableItem.BuyNowFrom != MarketType.SteamStore && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
                         {

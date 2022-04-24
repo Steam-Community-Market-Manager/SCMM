@@ -46,7 +46,7 @@ public class CheckForNewStoreItemsJob
         var logger = context.GetLogger("Check-New-Store-Items");
 
         var steamApps = await _db.SteamApps
-            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.Store))
+            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || x.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
             .Where(x => x.IsActive)
             .ToListAsync();
         if (!steamApps.Any())
@@ -82,6 +82,7 @@ public class CheckForNewStoreItemsJob
                 .Distinct()
                 .ToList();
             var ourStoreItemIds = _db.SteamItemStores
+                .Where(x => x.AppId == app.Id)
                 .Where(x => x.End == null)
                 .OrderByDescending(x => x.Start)
                 .SelectMany(x => x.Items.Where(i => i.Item.IsAvailable).Select(i => i.Item.SteamId))
@@ -100,6 +101,7 @@ public class CheckForNewStoreItemsJob
             // If we got here, then then item store has changed (either added or removed items)
             // Load all of our active stores and their items
             var activeItemStores = _db.SteamItemStores
+                .Where(x => x.AppId == app.Id)
                 .Where(x => x.End == null)
                 .OrderByDescending(x => x.Start)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
@@ -134,7 +136,7 @@ public class CheckForNewStoreItemsJob
 
             // Ensure that an active "general" and "limited" item store exists
             var permanentItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
-            if (permanentItemStore == null)
+            if (permanentItemStore == null && app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent))
             {
                 permanentItemStore = new SteamItemStore()
                 {
@@ -144,7 +146,7 @@ public class CheckForNewStoreItemsJob
                 };
             }
             var limitedItemStore = activeItemStores.FirstOrDefault(x => x.Start != null);
-            if (limitedItemStore == null || limitedItemsWereRemoved)
+            if ((limitedItemStore == null || limitedItemsWereRemoved) && app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
             {
                 limitedItemStore = new SteamItemStore()
                 {
@@ -161,21 +163,16 @@ public class CheckForNewStoreItemsJob
             {
                 // Ensure that the item is available in the database (create them if missing)
                 var storeItem = await _steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
-                    app, asset, DateTimeOffset.Now
+                    app, asset, usdCurrency, DateTimeOffset.Now
                 );
                 if (storeItem == null)
                 {
                     continue;
                 }
 
-                var itemStore = storeItem.Description.IsPermanent ? permanentItemStore : limitedItemStore;
-                if (itemStore == null)
-                {
-                    continue;
-                }
-
                 // Ensure that the item is linked to the store
-                if (!storeItem.Stores.Any(x => x.StoreId == itemStore.Id))
+                var itemStore = (storeItem.Description.IsPermanent || !app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating)) ? permanentItemStore : limitedItemStore;
+                if (!storeItem.Stores.Any(x => x.StoreId == itemStore.Id) && itemStore != null)
                 {
                     var prices = _steamService.ParseStoreItemPriceTable(asset.Prices);
                     var storeItemLink = new SteamStoreItemItemStore()
@@ -190,11 +187,11 @@ public class CheckForNewStoreItemsJob
                     };
                     storeItem.Stores.Add(storeItemLink);
                     itemStore.Items.Add(storeItemLink);
-                    if (storeItem.Description.IsPermanent)
+                    if (itemStore == permanentItemStore)
                     {
                         newPermanentStoreItems.Add(storeItemLink);
                     }
-                    else
+                    else if (itemStore == limitedItemStore)
                     {
                         newLimitedStoreItems.Add(storeItemLink);
                     }
@@ -205,7 +202,7 @@ public class CheckForNewStoreItemsJob
             }
 
             // Regenerate store thumbnails (if items have changed)
-            if (newPermanentStoreItems.Any())
+            if (newPermanentStoreItems.Any() && permanentItemStore != null)
             {
                 if (permanentItemStore.IsTransient)
                 {
@@ -216,7 +213,7 @@ public class CheckForNewStoreItemsJob
                     await RegenerateStoreItemsThumbnailImage(logger, app, permanentItemStore);
                 }
             }
-            if (newLimitedStoreItems.Any())
+            if (newLimitedStoreItems.Any() && limitedItemStore != null)
             {
                 if (limitedItemStore.IsTransient)
                 {

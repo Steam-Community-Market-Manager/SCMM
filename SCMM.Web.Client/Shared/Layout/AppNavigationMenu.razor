@@ -21,7 +21,7 @@
     <MudNavLink Href="/items" Icon="fas fa-fw fa-tshirt" Disabled="@State.IsPrerendering">
         <span class="no-wrap">Items</span>
     </MudNavLink>
-    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.Store) == true)
+    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) == true || State.App?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) == true)
     {
         <MudNavLink Href="/store" Icon="fas fa-fw fa-shopping-cart" Disabled="@State.IsPrerendering">
             <span class="no-wrap">Stores</span>

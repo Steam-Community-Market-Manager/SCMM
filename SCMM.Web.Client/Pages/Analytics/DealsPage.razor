@@ -48,7 +48,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2" Disabled="State.IsPrerendering">Buy</MudButton>
-                                                <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/app/{State.App.Id}/markets/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
                                                 {
@@ -73,7 +73,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2" Disabled="State.IsPrerendering">View</MudButton>
-                                                <img src="@($"/images/market/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/app/{State.App.Id}/markets/{item.ReferenceFrom.ToString().ToLower()}.png")" alt="@item.ReferenceFrom.GetDisplayName()" title="@item.ReferenceFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.ReferemcePrice)</span>
                                             </MudText>
                                         </td>
@@ -153,7 +153,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Success" Size="Size.Small" OnClick="@((_) => BuyItem(item.BuyUrl))" Class="mr-2" Disabled="State.IsPrerendering">Buy</MudButton>
-                                                <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/app/{State.App.Id}/markets/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span>@State.Currency.ToPriceString(item.BuyTotal)</span>
                                                 @if (State.Profile.ItemIncludeMarketFees && item.BuyFee != 0)
                                                 {
@@ -181,7 +181,7 @@
                                         <td>
                                             <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center">
                                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@((_) => ViewMarketItem(item.AppId, item.Name))" Class="mr-2" Disabled="State.IsPrerendering">Sell</MudButton>
-                                                <img src="@($"/images/market/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                <img src="@($"/images/app/{State.App.Id}/markets/{item.SellTo.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                 <span><span class="mud-secondary-text">at</span> @State.Currency.ToPriceString(item.SellPrice) <span class="mud-secondary-text">for a</span> <span class="mud-success-text">@State.Currency.ToPriceString(item.SellProfit)</span></span>
                                                 <MudChip Variant="Variant.Text" Color="Color.Success" Size="@Size.Small" Text="@($"{item.SellProfit.ToPercentageString(item.BuyTotal) ?? "0%"}")" Class="mx-1" />
                                                 <span><span class="mud-secondary-text">profit @(State.Profile.ItemIncludeMarketFees ? "after" : "before") fees</span></span>
@@ -208,7 +208,7 @@
                 </AnalyticsPanel>
             </MudTabPanel>
 
-            @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemCrafting) == true)
+            @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemFeatureCrafting) == true)
             {
                 <MudTabPanel Icon="fas fa-fw fa-hammer mr-2" Text="Crafting" Disabled="State.IsPrerendering">
                     <MudGrid Space="2">
@@ -277,7 +277,7 @@
                                                     </td>
                                                     <td class="align-top pa-4">
                                                         <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CraftingPrice >= item.BuyPrice ? Color.Default : Color.Secondary)">
-                                                            <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                            <img src="@($"/images/app/{State.App.Id}/markets/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                             <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
                                                         </MudText>
                                                     </td>
@@ -341,7 +341,7 @@
                                                     </td>
                                                     <td class="align-top pa-4">
                                                         <MudText Typo="Typo.body2" Class="no-wrap d-flex align-center" Color="@(item.CheapestItem.BuyNowPrice >= item.BuyPrice ? Color.Default : Color.Secondary)">
-                                                            <img src="@($"/images/market/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
+                                                            <img src="@($"/images/app/{State.App.Id}/markets/{item.BuyFrom.ToString().ToLower()}.png")" alt="@item.BuyFrom.GetDisplayName()" title="@item.BuyFrom.GetDisplayName()" class="mr-2" style="width:1.5em; height:1.5em" />
                                                             <span>@State.Currency.ToPriceString(item.BuyPrice)</span>
                                                         </MudText>
                                                     </td>

@@ -51,7 +51,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStores()
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -113,7 +113,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStore([FromRoute] string id)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -136,7 +136,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .AsNoTracking()
                 .OrderByDescending(x => x.Start)
                 .Where(x => x.AppId == app.Guid)
-                .Where(x => (guid != Guid.Empty && guid == x.Id) || (storeStartDate > DateTime.MinValue && storeStartDate >= x.Start) || (!String.IsNullOrEmpty(storeName) && storeName == x.Name))
+                .Where(x => (guid != Guid.Empty && guid == x.Id) || (storeStartDate > DateTime.MinValue && x.Start != null && storeStartDate >= x.Start) || (!String.IsNullOrEmpty(storeName) && storeName == x.Name) || x.Start == null)
                 .Take(1)
                 .Include(x => x.Items).ThenInclude(x => x.Item)
                 .Include(x => x.Items).ThenInclude(x => x.Item.App)
@@ -234,7 +234,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStoreItemSalesStats([FromRoute] Guid id)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -304,7 +304,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> GetStoreItemRevenueStats([FromRoute] Guid id)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -391,7 +391,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> LinkStoreItem([FromRoute] Guid id, [FromBody] LinkStoreItemCommand command)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
@@ -520,7 +520,7 @@ namespace SCMM.Web.Server.API.Controllers
         public async Task<IActionResult> UnlinkStoreItem([FromRoute] Guid id, [FromBody] UnlinkStoreItemCommand command)
         {
             var app = this.App();
-            if (app?.Features.HasFlag(SteamAppFeatureTypes.Store) != true)
+            if (app?.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) != true && app?.Features.HasFlag(SteamAppFeatureTypes.StoreRotating) != true)
             {
                 return BadRequest("App does not support stores");
             }
