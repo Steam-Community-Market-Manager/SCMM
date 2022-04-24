@@ -15,7 +15,8 @@ public class DeleteExpiredFileData
         _db = db;
     }
 
-    [Function("Delete-Expired-File-Data")]
+    // TODO: No longer required
+    //[Function("Delete-Expired-File-Data")]
     public async Task Run([TimerTrigger("0 0/5 * * * *")] /* every 5mins */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Delete-Expired-File-Data");
