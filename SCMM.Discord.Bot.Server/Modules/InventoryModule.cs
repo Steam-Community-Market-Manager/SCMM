@@ -10,6 +10,7 @@ using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 
 namespace SCMM.Discord.Bot.Server.Modules;
@@ -113,7 +114,8 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         //await message.LoadingAsync("🔄 Fetching inventory details from Steam...");
         var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
         {
-            ProfileId = profile.Id.ToString()
+            ProfileId = profile.Id.ToString(),
+            AppId = Constants.RustAppId.ToString()
         });
 
         await _db.SaveChangesAsync();
@@ -132,6 +134,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
         {
             ProfileId = profile.SteamId,
+            AppId = Constants.RustAppId.ToString(),
             CurrencyId = currency.SteamId,
         });
 

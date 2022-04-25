@@ -324,6 +324,7 @@ namespace SCMM.Web.Server.API.Controllers
             var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = id,
+                AppId = this.App().Id.ToString(),
                 Force = force
             });
 
@@ -392,6 +393,7 @@ namespace SCMM.Web.Server.API.Controllers
             var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString(),
+                AppId = this.App().Id.ToString(),
                 Force = force
             });
 
@@ -406,6 +408,7 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = profile.SteamId,
+                AppId = this.App().Id.ToString(),
                 CurrencyId = this.Currency().Id.ToString()
             });
 
@@ -483,6 +486,7 @@ namespace SCMM.Web.Server.API.Controllers
             var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = id,
+                AppId = this.App().Id.ToString(),
                 CurrencyId = this.Currency().Id.ToString()
             });
 
@@ -526,12 +530,14 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
+            var app = this.App();
             var isMyInventory = (User.SteamId() == resolvedId.Profile?.SteamId);
             var showDrops = this.User.Preference(_db, x => x.InventoryShowItemDrops);
             var showUnmarketable = this.User.Preference(_db, x => x.InventoryShowUnmarketableItems);
             var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Description != null)
                 .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))
                 .Where(x => showUnmarketable || (x.Description.IsMarketable))
@@ -604,8 +610,10 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
+            var app = this.App();
             var profileItemsInCollection = await _db.SteamProfileInventoryItems
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => !String.IsNullOrEmpty(x.Description.ItemCollection))
                 .Select(x => new
                 {
@@ -619,6 +627,7 @@ namespace SCMM.Web.Server.API.Controllers
             var showUnmarketable = this.User.Preference(_db, x => x.InventoryShowUnmarketableItems);
             var itemCollections = profileItemsInCollection.Select(x => x.ItemCollection).Distinct().ToArray();
             var profileCollections = await _db.SteamAssetDescriptions.AsNoTracking()
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => itemCollections.Contains(x.ItemCollection))
                 .Where(x => showDrops || (!x.IsSpecialDrop && !x.IsTwitchDrop))
                 .Where(x => showUnmarketable || (x.IsMarketable))
@@ -688,9 +697,11 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Profile not found");
             }
 
+            var app = this.App();
             var dayOpenTimestamp = new DateTimeOffset(DateTime.UtcNow.Date, TimeZoneInfo.Utc.BaseUtcOffset);
             var profileItemMovements = await _db.SteamProfileInventoryItems
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Description != null && x.Description.MarketItem != null)
                 .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
                 .Select(x => new
@@ -768,9 +779,11 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             filter = Uri.UnescapeDataString(filter?.Trim() ?? string.Empty);
+            var app = this.App();
             var query = _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => x.Description != null)
                 .Where(x => !x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop)
                 .Where(x => string.IsNullOrEmpty(filter) || x.Description.Name.ToLower().Contains(filter.ToLower()))

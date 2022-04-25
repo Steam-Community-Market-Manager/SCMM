@@ -15,6 +15,8 @@ namespace SCMM.Steam.API.Commands
     {
         public string ProfileId { get; set; }
 
+        public string AppId { get; set; }
+
         /// <summary>
         /// If true, inventory will always be fetched. If false, inventory is cached for 1 hour.
         /// </summary>
@@ -85,7 +87,9 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Load the apps
-            var apps = await _db.SteamApps.ToListAsync();
+            var apps = await _db.SteamApps
+                .Where(x => String.IsNullOrEmpty(request.AppId) || x.SteamId == request.AppId)
+                .ToListAsync();
             if (!apps.Any())
             {
                 return null;

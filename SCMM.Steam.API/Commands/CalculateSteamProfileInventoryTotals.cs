@@ -11,6 +11,8 @@ namespace SCMM.Steam.API.Commands
     {
         public string ProfileId { get; set; }
 
+        public string AppId { get; set; }
+
         public string CurrencyId { get; set; }
     }
 
@@ -67,6 +69,7 @@ namespace SCMM.Steam.API.Commands
             var profileInventoryItems = await _db.SteamProfileInventoryItems
                 .AsNoTracking()
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
+                .Where(x => String.IsNullOrEmpty(request.AppId) || x.App.SteamId == request.AppId)
                 .Where(x => x.Description != null)
                 .Select(x => new
                 {
