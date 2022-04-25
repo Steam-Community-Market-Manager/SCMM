@@ -2,16 +2,16 @@
   "version": "2.0",
   "logging": {
     "logLevel": {
-      "Default": "Warning",
-      "Microsoft": "Warning",
-      "Microsoft.Hosting.Lifetime": "Warning",
+      "Default": "Information",
+      "Microsoft": "Information",
+      "Microsoft.Hosting.Lifetime": "Information",
       "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
     },
     "applicationInsights": {
       "logLevel": {
-        "Default": "Warning",
-        "Microsoft": "Warning",
-        "Microsoft.Hosting.Lifetime": "Warning",
+        "Default": "Information",
+        "Microsoft": "Information",
+        "Microsoft.Hosting.Lifetime": "Information",
         "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
       },
       "samplingSettings": {
