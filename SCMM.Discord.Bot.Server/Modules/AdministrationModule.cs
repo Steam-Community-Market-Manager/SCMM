@@ -20,6 +20,7 @@ namespace SCMM.Discord.Bot.Server.Modules
     public partial class AdministrationModule : ModuleBase<ShardedCommandContext>
     {
         private readonly SteamDbContext _db;
+        private readonly SteamCommunityWebClient _communityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly ServiceBusClient _serviceBusClient;
@@ -27,9 +28,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly GoogleClient _googleClient;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, GoogleClient googleClient, CommandService commandService)
+        public AdministrationModule(SteamDbContext db, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, GoogleClient googleClient, CommandService commandService)
         {
             _db = db;
+            _communityClient = communityClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _serviceBusClient = serviceBusClient;

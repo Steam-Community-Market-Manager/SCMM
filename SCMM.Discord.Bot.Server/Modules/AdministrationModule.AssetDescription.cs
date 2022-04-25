@@ -7,6 +7,8 @@ using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Data.Models;
+using SCMM.Steam.Data.Models.Community.Requests.Html;
+using System.Text.RegularExpressions;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -81,6 +83,42 @@ namespace SCMM.Discord.Bot.Server.Modules
             return CommandResult.Success();
         }
 
+        [Command("import-csgo-market-item")]
+        public async Task<RuntimeResult> ImportCSGOMarketItemAsync(params string[] names)
+        {
+            var message = await Context.Message.ReplyAsync("Importing market items...");
+            foreach (var name in names)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing market item '{name}' ({Array.IndexOf(names, name) + 1}/{names.Length})..."
+                );
+
+                var marketListingPageHtml = await _communityClient.GetText(new SteamMarketListingPageRequest()
+                {
+                    AppId = Constants.CSGOAppId.ToString(),
+                    MarketHashName = name,
+                });
+
+                var classIdMatchGroup = Regex.Match(marketListingPageHtml, @"\""classid\"":\""([0-9]+)\""").Groups;
+                var classId = (classIdMatchGroup.Count > 1)
+                    ? classIdMatchGroup[1].Value.Trim()
+                    : null;
+
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
+                {
+                    AppId = Constants.CSGOAppId,
+                    AssetClassId = UInt64.Parse(classId)
+                });
+
+                await _db.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Imported {names.Length}/{names.Length} asset descriptions"
+            );
+
+            return CommandResult.Success();
+        }
         [Command("create-asset-description-collection")]
         public async Task<RuntimeResult> CreateAssetDescriptionCollectionAsync([Remainder] string collectionName)
         {
