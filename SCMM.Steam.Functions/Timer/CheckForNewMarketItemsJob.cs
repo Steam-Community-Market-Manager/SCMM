@@ -47,7 +47,7 @@ public class CheckForNewMarketItemsJob
         var assetDescriptions = _db.SteamAssetDescriptions
             .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0 || (x.IsMarketable && x.MarketableRestrictionDays == null)))
             .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
-            .Where(x => x.TimeAccepted != null)
+            .Where(x => x.IsAccepted)
             .Include(x => x.App)
             .ToList();
         if (!assetDescriptions.Any())
