@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SCMM.Steam.Data.Store;
 
@@ -11,9 +12,10 @@ using SCMM.Steam.Data.Store;
 namespace SCMM.Steam.Data.Store.Migrations
 {
     [DbContext(typeof(SteamDbContext))]
-    partial class SteamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220427105110_AddSteamProfileInventoryValue")]
+    partial class AddSteamProfileInventoryValue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -976,6 +978,9 @@ namespace SCMM.Steam.Data.Store.Migrations
                     b.Property<Guid>("AppId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("CurrencyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Items")
                         .HasColumnType("int");
 
@@ -989,8 +994,9 @@ namespace SCMM.Steam.Data.Store.Migrations
 
                     b.HasIndex("AppId");
 
-                    b.HasIndex("ProfileId", "AppId")
-                        .IsUnique();
+                    b.HasIndex("CurrencyId");
+
+                    b.HasIndex("ProfileId");
 
                     b.ToTable("SteamProfileInventoryValues");
                 });
@@ -1671,6 +1677,12 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SCMM.Steam.Data.Store.SteamCurrency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SCMM.Steam.Data.Store.SteamProfile", "Profile")
                         .WithMany("InventoryValues")
                         .HasForeignKey("ProfileId")
@@ -1678,6 +1690,8 @@ namespace SCMM.Steam.Data.Store.Migrations
                         .IsRequired();
 
                     b.Navigation("App");
+
+                    b.Navigation("Currency");
 
                     b.Navigation("Profile");
                 });

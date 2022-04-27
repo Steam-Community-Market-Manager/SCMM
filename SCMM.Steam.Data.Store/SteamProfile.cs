@@ -16,6 +16,7 @@ namespace SCMM.Steam.Data.Store
             Preferences = new PersistableStringDictionary();
             Roles = new PersistableStringCollection();
             InventoryItems = new Collection<SteamProfileInventoryItem>();
+            InventoryValues = new Collection<SteamProfileInventoryValue>();
             MarketItems = new Collection<SteamProfileMarketItem>();
             AssetDescriptions = new Collection<SteamAssetDescription>();
         }
@@ -41,10 +42,6 @@ namespace SCMM.Steam.Data.Store
         public Guid? CurrencyId { get; set; }
 
         public SteamCurrency Currency { get; set; }
-
-        public int LastTotalInventoryItems { get; set; }
-
-        public long LastTotalInventoryValue { get; set; }
 
         public DateTimeOffset? LastViewedInventoryOn { get; set; }
 
@@ -132,6 +129,8 @@ namespace SCMM.Steam.Data.Store
 
         public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
 
+        public ICollection<SteamProfileInventoryValue> InventoryValues { get; set; }
+
         public ICollection<SteamProfileMarketItem> MarketItems { get; set; }
 
         public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
@@ -144,8 +143,6 @@ namespace SCMM.Steam.Data.Store
             TradeUrl = null;
             LanguageId = null;
             CurrencyId = null;
-            LastTotalInventoryValue = 0;
-            LastTotalInventoryItems = 0;
             LastViewedInventoryOn = null;
             LastUpdatedInventoryOn = null;
             LastSignedInOn = null;
@@ -156,6 +153,7 @@ namespace SCMM.Steam.Data.Store
             Preferences?.Clear();
             Roles?.Clear();
             InventoryItems?.Clear();
+            InventoryValues?.Clear();
             MarketItems?.Clear();
         }
     }

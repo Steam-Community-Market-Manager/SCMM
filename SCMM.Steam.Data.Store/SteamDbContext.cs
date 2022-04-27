@@ -23,6 +23,7 @@ namespace SCMM.Steam.Data.Store
         public DbSet<SteamAssetDescription> SteamAssetDescriptions { get; set; }
         public DbSet<SteamProfile> SteamProfiles { get; set; }
         public DbSet<SteamProfileInventoryItem> SteamProfileInventoryItems { get; set; }
+        public DbSet<SteamProfileInventoryValue> SteamProfileInventoryValues { get; set; }
         public DbSet<SteamProfileMarketItem> SteamProfileMarketItems { get; set; }
 
         public DbSet<FileData> FileData { get; set; }
@@ -226,6 +227,10 @@ namespace SCMM.Steam.Data.Store
                 .WithMany(x => x.InventoryItems);
             builder.Entity<SteamProfileInventoryItem>()
                 .HasOne(x => x.Currency);
+
+            builder.Entity<SteamProfileInventoryValue>()
+                .HasIndex(x => new { x.ProfileId, x.AppId })
+                .IsUnique(true);
 
             builder.Entity<SteamProfileMarketItem>()
                 .HasIndex(x => new { x.SteamId, x.DescriptionId, x.ProfileId })

@@ -115,11 +115,25 @@ namespace SCMM.Steam.API.Commands
             // Update last inventory value snapshot
             // NOTE: Don't use currency conversion, keep it in system currency
             var profile = resolvedId.Profile;
-            if (profile != null)
+            if (profile != null & !String.IsNullOrEmpty(request.AppId))
             {
-                profile.LastTotalInventoryItems = profileInventoryItems
+                var inventoryValue = await _db.SteamProfileInventoryValues
+                    .Where(x => x.ProfileId == resolvedId.ProfileId)
+                    .Where(x => x.App.SteamId == request.AppId)
+                    .FirstOrDefaultAsync();
+                if (inventoryValue == null)
+                {
+                    profile.InventoryValues.Add(
+                        inventoryValue = new SteamProfileInventoryValue()
+                        {
+                            Profile = resolvedId.Profile,
+                            App = _db.SteamApps.FirstOrDefault(x => x.SteamId == request.AppId)
+                        }
+                    );
+                }
+                inventoryValue.Items = profileInventoryItems
                     .Sum(x => x.Quantity);
-                profile.LastTotalInventoryValue = profileInventoryItems
+                inventoryValue.MarketValue = profileInventoryItems
                     .Where(x => x.ItemValue != 0 && x.ItemExchangeRateMultiplier != 0)
                     .Sum(x => x.ItemValue * x.Quantity);
             }

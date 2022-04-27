@@ -772,19 +772,21 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfilesHighestValueInventory([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
-            var query = _db.SteamProfiles
+            var appId = this.App().Guid;
+            var query = _db.SteamProfileInventoryValues
                 .AsNoTracking()
-                .Where(x => x.LastTotalInventoryValue > 0)
-                .Where(x => x.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
-                .OrderByDescending(x => x.LastTotalInventoryValue)
+                .Where(x => x.AppId == appId)
+                .Where(x => x.MarketValue > 0)
+                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .OrderByDescending(x => x.MarketValue)
                 .Select(x => new ProfileInventoryValueStatisticDTO()
                 {
-                    SteamId = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.SteamId : null,
-                    Name = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Name : null,
-                    AvatarUrl = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.AvatarUrl : null,
-                    Items = x.LastTotalInventoryItems,
-                    Value = x.LastTotalInventoryValue,
-                    LastUpdatedOn = x.LastUpdatedInventoryOn
+                    SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
+                    Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
+                    AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
+                    Items = x.Items,
+                    Value = x.MarketValue,
+                    LastUpdatedOn = x.Profile.LastUpdatedInventoryOn
                 });
 
             var profiles = await query.PaginateAsync(start, count, x =>
@@ -815,20 +817,22 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProfilesMostRecentInventory([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
-            var query = _db.SteamProfiles
+            var appId = this.App().Guid;
+            var query = _db.SteamProfileInventoryValues
                 .AsNoTracking()
-                .Where(x => x.LastTotalInventoryValue > 0 && x.LastUpdatedInventoryOn != null)
-                .Where(x => x.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
-                .OrderByDescending(x => x.LastUpdatedInventoryOn)
-                .ThenByDescending(x => x.LastTotalInventoryValue)
+                .Where(x => x.AppId == appId)
+                .Where(x => x.MarketValue > 0 && x.Profile.LastUpdatedInventoryOn != null)
+                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .OrderByDescending(x => x.Profile.LastUpdatedInventoryOn)
+                .ThenByDescending(x => x.MarketValue)
                 .Select(x => new ProfileInventoryValueStatisticDTO()
                 {
-                    SteamId = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.SteamId : null,
-                    Name = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Name : null,
-                    AvatarUrl = (x.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.AvatarUrl : null,
-                    Items = x.LastTotalInventoryItems,
-                    Value = x.LastTotalInventoryValue,
-                    LastUpdatedOn = x.LastUpdatedInventoryOn
+                    SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
+                    Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
+                    AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
+                    Items = x.Items,
+                    Value = x.MarketValue,
+                    LastUpdatedOn = x.Profile.LastUpdatedInventoryOn
                 });
 
             return Ok(
