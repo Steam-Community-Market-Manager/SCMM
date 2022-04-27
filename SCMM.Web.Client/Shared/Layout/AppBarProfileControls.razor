@@ -8,7 +8,7 @@
 @inject AppState State
 
 <div class="full-height" @attributes="AdditionalAttributes">
-    <MudMenu ActivationEvent="@MouseEvent.MouseOver" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" Class="full-height hover-darken" Disabled="State.IsPrerendering">
+    <MudMenu ActivationEvent="@MouseEvent.LeftClick" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true" MaxHeight="500" Class="full-height hover-darken" Disabled="State.IsPrerendering">
         <ActivatorContent>
             <div class="d-flex justify-start align-center px-2">
                 @if (InventoryTotals?.MarketValue > 0)
