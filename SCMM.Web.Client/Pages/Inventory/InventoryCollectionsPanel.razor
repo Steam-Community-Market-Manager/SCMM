@@ -28,28 +28,7 @@ else
     <MudExpansionPanels Dense="true" DisableGutters="true">
         @foreach (var collection in InventoryCollections.FilterBy(Filter))
         {
-            <MudExpansionPanel Class="px-1 pb-1">
-                <TitleContent>
-                    <div class="d-flex flex-row justify-start align-center">
-                        <img src="@collection.Items.FirstOrDefault()?.Item?.IconUrl" class="icon mr-2" />
-                        <div class="d-flex flex-column">
-                            <MudText Typo="Typo.body1" Color="Color.Default">
-                                <span>@collection.Name</span>
-                                <span class="@(collection.Items.All(x => x.IsOwned) ? "mud-success-text" : "mud-warning-text")">(@collection.Items.Count(x => x.IsOwned)/@collection.Items.Count())</span>
-                            </MudText>
-                            @if (collection.Items.Any(x => !x.IsOwned && x.Item.BuyNowPrice != null))
-                            {
-                                <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
-                                    <span>You can buy the remaining @collection.Items.Count(x => !x.IsOwned && x.Item.BuyNowPrice != null) items for <strong>@State.Currency.ToPriceString(collection.Items.Where(x => !x.IsOwned && x.Item.BuyNowPrice != null).Sum(x => x.Item.BuyNowPrice.Value))</strong></span>
-                                </MudText>
-                            }
-                        </div>
-                    </div>
-                </TitleContent>
-                <ChildContent>
-                    <ItemCollectionLayout Items="@collection.Items.Select(x => x.Item)" AcquiredItems="@collection.Items.Where(x => x.IsOwned).Select(x => x.Item)" />
-                </ChildContent>
-            </MudExpansionPanel>
+            <InventoryCollectionExpansionPanel Collection="collection" />
         }
     </MudExpansionPanels>
 }
@@ -71,11 +50,6 @@ else
         await LoadInventoryCollections();
     }
     
-    private void OnItemClicked(ItemDescriptionDTO item)
-    {
-        ExternalNavigationManager.NavigateToItem(item);
-    }
-
     private async Task LoadInventoryCollections()
     {
         try
