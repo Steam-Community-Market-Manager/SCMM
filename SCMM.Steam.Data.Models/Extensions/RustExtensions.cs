@@ -127,9 +127,9 @@
             {
                 return "Tools";
             }
-            else if (IsRustDoorItem(itemType))
+            else if (IsRustConstructionItem(itemType))
             {
-                return "Doors";
+                return "Construction";
             }
             else if (IsRustDeployableItem(itemType))
             {
@@ -255,7 +255,7 @@
             }
         }
 
-        public static bool IsRustDoorItem(this string itemType)
+        public static bool IsRustConstructionItem(this string itemType)
         {
             switch (itemType)
             {
@@ -310,7 +310,7 @@
                 !itemType.IsRustGunItem() &&
                 !itemType.IsRustWeaponItem() &&
                 !itemType.IsRustToolItem() &&
-                !itemType.IsRustDoorItem() &&
+                !itemType.IsRustConstructionItem() &&
                 !itemType.IsRustDeployableItem() &&
                 !itemType.IsRustFunItem()
             );
