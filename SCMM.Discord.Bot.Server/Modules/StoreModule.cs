@@ -152,7 +152,7 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         var embed = new EmbedBuilder()
             .WithTitle($"{(store.Start != null ? store.Start.Value.ToString("yyyy MMMM d") : null)}{(store.Start != null ? store.Start.Value.GetDaySuffix() : null)} - {store.Name}".Trim(' ', '-'))
             .WithDescription(description.ToString())
-            .WithUrl($"{_configuration.GetWebsiteUrl()}/store/{(store.Start != null ? store.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat) : store.Name.ToLower())}")
+            .WithUrl($"{_configuration.GetWebsiteUrl()}/store/{store.StoreId()}")
             .WithThumbnailUrl(store.App.IconUrl)
             .WithImageUrl(store.ItemsThumbnailUrl)
             .WithColor(UInt32.Parse(store.App.PrimaryColor.Trim('#'), NumberStyles.HexNumber))

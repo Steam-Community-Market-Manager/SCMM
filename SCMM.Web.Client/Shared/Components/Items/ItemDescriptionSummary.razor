@@ -89,13 +89,13 @@
         </div>
     </ActivatorContent>
     <ChildContent>
-        @if (Interactions != null)
+        @if (Actions != null)
         {
-            @foreach (var interaction in Interactions)
+            @foreach (var action in Actions)
             {
-                <MudMenuItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTab(interaction.Url))">
-                    <i class="@($"fa fa-fw {interaction.Icon} mr-1")"></i>
-                    <span>@interaction.Name</span>
+                <MudMenuItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTab(action.Url))">
+                    <i class="@($"fa fa-fw {action.Icon} mr-1")"></i>
+                    <span>@action.Name</span>
                 </MudMenuItem>
             }
         }
@@ -117,7 +117,7 @@
     
     private ICanBeSubscribed SubscribableItem => (Item as ICanBeSubscribed);
 
-    private ItemInteractionDTO[] Interactions => (Item as ICanBeInteractedWith)?.Actions;
+    private ItemInteractionDTO[] Actions => (Item as ICanBeInteractedWith)?.Actions;
     
     [Parameter]
     public Action<IItemDescription> OnClick { get; set; }

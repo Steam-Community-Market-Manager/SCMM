@@ -1,5 +1,6 @@
 ﻿using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
+using SCMM.Steam.Data.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -39,5 +40,19 @@ namespace SCMM.Steam.Data.Store
         /// If true, users can submit change requests for this store
         /// </summary>
         public bool IsDraft { get; set; }
+
+        public string StoreId()
+        {
+            if (Start != null)
+            {
+                return Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat);
+            }
+            if (!String.IsNullOrEmpty(Name))
+            {
+                return Name.ToLower();
+            }
+
+            return Id.ToString();
+        }
     }
 }

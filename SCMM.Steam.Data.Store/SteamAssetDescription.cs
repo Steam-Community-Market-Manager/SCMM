@@ -337,7 +337,7 @@ namespace SCMM.Steam.Data.Store
                 }
                 else if (StoreItem.Stores?.Any(x => x.Store != null) == true)
                 {
-                    storeUrl = $"/store/{StoreItem.Stores.Where(x => x.Store != null).MaxBy(x => x.Store.Start).Store.Id}";
+                    storeUrl = $"/store/{StoreItem.Stores.Where(x => x.Store != null).MaxBy(x => x.Store.Start).Store.StoreId()}";
                 }
                 if (!String.IsNullOrEmpty(storeUrl))
                 {

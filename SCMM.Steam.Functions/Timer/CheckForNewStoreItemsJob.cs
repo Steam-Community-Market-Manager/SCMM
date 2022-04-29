@@ -319,10 +319,6 @@ public class CheckForNewStoreItemsJob
                     filteredCurrencies = currencies.Where(x => x.Name == Constants.SteamCurrencyUSD).ToList();
                 }
 
-                var storeId = store.Start != null
-                    ? store.Start.Value.UtcDateTime.AddMinutes(1).ToString(Constants.SCMMStoreIdDateFormat)
-                    : store.Name.ToLower();
-
                 var storeName = store.Start != null
                     ? $"{store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}"
                     : store.Name;
@@ -339,7 +335,7 @@ public class CheckForNewStoreItemsJob
                         x => GetStoreItemPriceList(x, filteredCurrencies)
                     ),
                     FieldsInline = true,
-                    Url = $"{_configuration.GetWebsiteUrl()}/store/{storeId}",
+                    Url = $"{_configuration.GetWebsiteUrl()}/store/{store.StoreId()}",
                     ThumbnailUrl = app.IconUrl,
                     ImageUrl = store.ItemsThumbnailUrl,
                     Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)

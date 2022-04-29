@@ -45,7 +45,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetBuyPrice(p => p, p => p.MarketType))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetBuyPrice(p => p, p => p.Price))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetBuyPrice(p => p, p => p.Url))
-                .ForMember(x => x.BuyPrices, o => o.MapFromAssetBuyPrices(p => p));
+                .ForMember(x => x.BuyPrices, o => o.MapFromAssetBuyPrices(p => p))
+                .ForMember(x => x.Actions, o => o.MapFrom(p => p.GetInteractions()));
 
             CreateMap<List<SteamAssetDescription>, ItemCollectionDTO>()
                 .ForMember(x => x.Name, o => o.MapFrom(p => p.Count > 0 ? p.FirstOrDefault().ItemCollection : null))
@@ -79,7 +80,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetBuyPrice(p => p, p => p.Url))
                 .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.CurrentSubscriptions))
                 .ForMember(x => x.Supply, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.SellOrderCount : null)))
-                .ForMember(x => x.Demand, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)));
+                .ForMember(x => x.Demand, o => o.MapFrom(p => (p.MarketItem != null ? (long?)p.MarketItem.Last24hrSales : null)))
+                .ForMember(x => x.Actions, o => o.MapFrom(p => p.GetInteractions()));
 
             CreateMap<SteamAssetDescription, ItemMarketPricingDTO>()
                 .ForMember(x => x.Id, o => o.MapFrom(p => p.ClassId))

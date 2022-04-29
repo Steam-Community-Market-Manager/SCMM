@@ -202,5 +202,11 @@ namespace SCMM.Web.Data.Models.UI.Item
         // TODO: SellLater
 
         #endregion
+
+        #region Interactions
+
+        public ItemInteractionDTO[] Actions { get; set; }
+
+        #endregion
     }
 }

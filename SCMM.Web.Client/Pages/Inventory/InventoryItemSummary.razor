@@ -17,23 +17,23 @@
             }
         </TooltipContent>
         <ChildContent>
-            @if (State.Is(SteamId))
-            {
-                <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="false" Dense="true" OffsetY Disabled="State.IsPrerendering">
-                    <ActivatorContent>
-                        <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
-                            <div class="hover-zoom">
-                                <img src="@Item.IconUrl" class="ma-1" />
-                            </div>
-                            @if (Item.BuyNowPrice != null)
-                            {
-                                <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
-                                    @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
-                                </MudText>
-                            }
+            <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="false" Dense="true" OffsetY Disabled="State.IsPrerendering">
+                <ActivatorContent>
+                    <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
+                        <div class="hover-zoom">
+                            <img src="@Item.IconUrl" class="ma-1" />
                         </div>
-                    </ActivatorContent>
-                    <ChildContent>
+                        @if (Item.BuyNowPrice != null)
+                        {
+                            <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
+                                @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
+                            </MudText>
+                        }
+                    </div>
+                </ActivatorContent>
+                <ChildContent>
+                    @if (State.Is(SteamId))
+                    {
                         @if (Item.Stacks.Count > 1)
                         {
                             <MudMenuItem OnClick="ShowStackCombinerDialog">
@@ -55,23 +55,19 @@
                                 <span>@(Item.Quantity > 1 ? "Multi-Sell" : "Sell")</span>
                             </MudMenuItem>
                         }
-                    </ChildContent>
-                </MudMenu>
-            }
-            else
-            {
-                <div class="item-summary d-flex flex-wrap flex-column align-center justify-center full-height" @onclick="@((_) => OnItemClicked(Item))">
-                    <div class="hover-zoom">
-                        <img src="@Item.IconUrl" class="ma-1" />
-                    </div>
-                    @if (Item.BuyNowPrice != null)
-                    {
-                        <MudText Typo="MudBlazor.Typo.caption" Class="text-centered no-wrap">
-                            @State.Currency.ToPriceString(Item.BuyNowPrice.Value)
-                        </MudText>
                     }
-                </div>
-            }
+                    @if (Item.Actions != null)
+                    {
+                        @foreach (var action in Item.Actions)
+                        {
+                            <MudMenuItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTab(action.Url))">
+                                <i class="@($"fa fa-fw {action.Icon} mr-1")"></i>
+                                <span>@action.Name</span>
+                            </MudMenuItem>
+                        }
+                    }
+                </ChildContent>
+            </MudMenu>
         </ChildContent>
     </MudTooltip>
 </div>
