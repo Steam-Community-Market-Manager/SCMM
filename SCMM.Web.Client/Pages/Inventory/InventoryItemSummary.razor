@@ -56,6 +56,13 @@
                             </MudMenuItem>
                         }
                     }
+                    @if (Item.Stacks?.Any() == true)
+                    {
+                        <MudMenuItem OnClick="ViewItemOnSteam">
+                            <i class="@($"fab fa-fw fa-steam mr-1")"></i>
+                            <span>View Steam Inventory</span>
+                        </MudMenuItem>
+                    }
                     @if (Item.Actions != null)
                     {
                         @foreach (var action in Item.Actions)
@@ -83,6 +90,16 @@
     private void OnItemClicked(ProfileInventoryItemDescriptionDTO item)
     {
         ExternalNavigationManager.NavigateToItem(item);
+    }
+    
+    private void ViewItemOnSteam()
+    {
+        ExternalNavigationManager.NavigateToNewTab(new SteamProfileInventoryPageRequest()
+        {
+            SteamId = SteamId,
+            AppId = Item.AppId.ToString(),
+            AssetId = Item.Stacks?.MaxBy(x => x.Value).Key
+        });
     }
     
     private void SellItemOnMarket()
