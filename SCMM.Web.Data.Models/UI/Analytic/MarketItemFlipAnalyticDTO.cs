@@ -32,5 +32,7 @@ namespace SCMM.Web.Data.Models.UI.Analytic
 
         [JsonIgnore]
         public long SellProfit => (SellPrice - SellFee - BuyTotal);
+
+        public bool IsBeingManipulated { get; set; }
     }
 }

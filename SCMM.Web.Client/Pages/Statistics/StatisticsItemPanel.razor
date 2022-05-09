@@ -151,42 +151,45 @@
         </StatisticsPanel>
     </MudItem>
     
-    <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Sales" Subtitle="Which items have the highest (estimated) number of sales?" Dense="true">
-            <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
-                <tbody>
-                    <Virtualize ItemsProvider="LoadItemMostSales" Context="item">
-                        <ItemContent>
-                            <tr @onclick="@((_) => ViewItem(item))" class="clickable">
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">
-                                    <MudText Typo="Typo.body2" Class="no-wrap">
-                                        <span>@item.Total.ToQuantityString() or more sold</span>
-                                    </MudText>
-                                </td>
-                            </tr>
-                        </ItemContent>
-                        <Placeholder>
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-row justify-start align-center">
-                                        <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
-                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
-                                    </div>
-                                </td>
-                                <td class="text-right">—</td>
-                            </tr>
-                        </Placeholder>
-                    </Virtualize>
-                </tbody>
-            </MudSimpleTable>
-        </StatisticsPanel>
-    </MudItem>
+    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
+    {
+        <MudItem xs="12" md="6" xl="3">
+            <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Sales" Subtitle="Which items have the highest (estimated) number of sales?" Dense="true">
+                <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
+                    <tbody>
+                        <Virtualize ItemsProvider="LoadItemMostSales" Context="item">
+                            <ItemContent>
+                                <tr @onclick="@((_) => ViewItem(item))" class="clickable">
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Style="@GetItemStyles(item)">@item.Name</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">
+                                        <MudText Typo="Typo.body2" Class="no-wrap">
+                                            <span>@item.Total.ToQuantityString() or more sold</span>
+                                        </MudText>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                            <Placeholder>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-row justify-start align-center">
+                                            <MudProgressCircular Indeterminate="true" Class="mr-1" Style="width:32px; height:32px;" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">Loading...</MudText>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">—</td>
+                                </tr>
+                            </Placeholder>
+                        </Virtualize>
+                    </tbody>
+                </MudSimpleTable>
+            </StatisticsPanel>
+        </MudItem>
+    }
 
     <MudItem xs="12" md="6" xl="3">
         <StatisticsPanel Icon="fas fa-fw fa-balance-scale" Title="Most Saturated" Subtitle="Which items have the largest supply of listings on the market?"Dense="true">

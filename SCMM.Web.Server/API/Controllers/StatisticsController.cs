@@ -173,6 +173,7 @@ namespace SCMM.Web.Server.API.Controllers
                     SellTo = MarketType.SteamCommunityMarket,
                     SellPrice = this.Currency().CalculateExchange(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice, x.Currency),
                     SellFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice), x.Currency) : 0),
+                    IsBeingManipulated = x.IsBeingManipulated
                 })
             );
         }
@@ -219,6 +220,7 @@ namespace SCMM.Web.Server.API.Controllers
                     BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
                     ReferenceFrom = MarketType.SteamCommunityMarket,
                     ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
+                    IsBeingManipulated = x.IsBeingManipulated
                 })
             );
         }
