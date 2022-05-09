@@ -54,7 +54,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
         /// <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
         /// <param name="marketable">If <code>true</code>, only marketable items are returned</param>
-        /// <param name="tradeable">If <code>true</code>, only tradable items are returned</param>
+        /// <param name="tradable">If <code>true</code>, only tradable items are returned</param>
         /// <param name="returning">If <code>true</code>, only items that have been released over multiple stores are returned</param>
         /// <param name="banned">If <code>true</code>, only banned items are returned</param>
         /// <param name="specialDrop">If <code>true</code>, only special drops are returned</param>
@@ -77,7 +77,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItems([FromQuery] ulong?[] id = null, [FromQuery] string filter = null, [FromQuery] string type = null, [FromQuery] string collection = null, [FromQuery] ulong? creatorId = null,
-                                                  [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false, [FromQuery] bool tradeable = false,
+                                                  [FromQuery] bool glow = false, [FromQuery] bool glowsight = false, [FromQuery] bool cutout = false, [FromQuery] bool marketable = false, [FromQuery] bool tradable = false,
                                                   [FromQuery] bool returning = false, [FromQuery] bool banned = false, [FromQuery] bool specialDrop = false, [FromQuery] bool twitchDrop = false, [FromQuery] bool craftable = false,
                                                   [FromQuery] int start = 0, [FromQuery] int count = 10, [FromQuery] string sortBy = null, [FromQuery] SortDirection sortDirection = SortDirection.Ascending, [FromQuery] bool detailed = false)
         {
@@ -143,7 +143,7 @@ namespace SCMM.Web.Server.API.Controllers
             {
                 query = query.Where(x => id.Contains(x.ClassId) || (x.IsMarketable == true || x.MarketableRestrictionDays > 0 || (x.IsMarketable && x.MarketableRestrictionDays == null)));
             }
-            if (tradeable)
+            if (tradable)
             {
                 query = query.Where(x => id.Contains(x.ClassId) || (x.IsTradable == true || x.TradableRestrictionDays > 0 || (x.IsTradable && x.TradableRestrictionDays == null)));
             }

@@ -18,15 +18,15 @@
         </MudAlert>
         <div class="d-flex flex-row flex-wrap align-center justify-center full-width py-4">
             <div class="d-flex flex-wrap flex-row align-start justify-center full-width">
-                @foreach (var stack in SelectedStacks.OrderByDescending(x => Item.Stacks[x.Key]))
+                @foreach (var stack in SelectedStacks.OrderByDescending(x => x.Key.Quantity))
                 {
                     <div class="d-flex flex-row align-center full-width pa-2">
                         <img src="@(Item.IconUrl)" class="icon flex-shrink-1 flex-grow-0 mr-2" />
                         <div class="d-flex flex-column flex-grow-1">
                             <div class="d-flex flex-row justify-space-between">
                                 <MudText Typo="Typo.body2" Class="mx-1 text-left" Style="color: {(Item.ForegroundColour)}">
-                                    @if ((Item.Stacks[stack.Key] - stack.Value) > 1) {
-                                        <span><strong>@((Item.Stacks[stack.Key] - stack.Value).ToQuantityString())</strong> @Item.Name</span>
+                                    @if ((stack.Key.Quantity - stack.Value) > 1) {
+                                        <span><strong>@((stack.Key.Quantity - stack.Value).ToQuantityString())</strong> @Item.Name</span>
                                     }
                                     else
                                     {
@@ -57,7 +57,7 @@
                                     </MudText>
                                 }
                             </div>
-                            <MudSlider T="int" @bind-Value="@SelectedStacks[stack.Key]" Min="0" Max="@(Item.Stacks[stack.Key] - 1)" Step="1" Class="mx-1" />
+                            <MudSlider T="int" @bind-Value="@SelectedStacks[stack.Key]" Min="0" Max="@(stack.Key.Quantity - 1)" Step="1" Class="mx-1" />
                             <div class="d-flex flex-row justify-space-between">
                                 <small class="mx-1 no-wrap mud-secondary-text text-left"> 
                                     <span>@stack.Key</span>
@@ -82,7 +82,7 @@
                       Label="Steam API Key" Placeholder="Paste your Steam API key here..." HelperText="Click on the question mark icon to view and manage your Steam API Key"
                       Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab("https://steamcommunity.com/dev/apikey"))" />
         <div class="mt-2">
-            <MudCheckBox T="bool" @bind-Checked="@RestackNewItems" Color="Color.Primary" Label="Automatically restack newly created items" Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))" />
+            <MudCheckBox T="bool" @bind-Checked="@StackNewItems" Color="Color.Primary" Label="Automatically stack the newly created items after splitting" Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))" />
         </div>
     </DialogContent>
     <DialogActions>
@@ -109,19 +109,19 @@
     [Parameter]
     public ProfileInventoryItemDescriptionDTO Item { get; set; }
 
-    private IDictionary<string, int> SelectedStacks { get; set; }
+    private IDictionary<ProfileInventoryItemDescriptionStackDTO, int> SelectedStacks { get; set; }
 
     private string SteamApiKey { get; set; }
 
-    private bool RestackNewItems { get; set; } = true;
+    private bool StackNewItems { get; set; } = true;
 
     private bool IsSplitting { get; set; }
 
     protected override void OnInitialized()
     {
         SelectedStacks = Item.Stacks
-            .Where(x => x.Value > 1)
-            .ToDictionary(x => x.Key, x => 0);
+            .Where(x => x.Quantity > 1)
+            .ToDictionary(x => x, x => 0);
     }
 
     protected override void OnConfigure(ResponsiveDialogOptions options)
@@ -141,10 +141,10 @@
 
             foreach (var sourceItem in SelectedStacks.Where(x => x.Value > 0))
             {
-                Logger.LogTrace($"Splitting item {sourceItem.Key} in to {sourceItem.Value}");
+                Logger.LogTrace($"Splitting item {sourceItem.Key.SteamId} in to {sourceItem.Value}");
                 var request = new HttpRequestMessage()
                 {
-                    RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{sourceItem.Key}/split?unstackNewItems={!RestackNewItems}"),
+                    RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{sourceItem.Key.SteamId}/split?stackNewItems={StackNewItems}"),
                     Method = HttpMethod.Put,
                     Headers = {
                         { "Steam-Api-Key", SteamApiKey }
@@ -158,13 +158,11 @@
                     throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
                 }
 
-                var updatedItems = await response.Content.ReadFromJsonAsync<IDictionary<ulong, uint>>();
+                var updatedItems = await response.Content.ReadFromJsonAsync<IEnumerable<ProfileInventoryItemDescriptionStackDTO>>();
                 if (updatedItems != null)
                 {
-                    foreach (var updatedItem in updatedItems)
-                    {
-                        Item.Stacks[updatedItem.Key.ToString()] = (int) updatedItem.Value;
-                    }
+                    Item.Stacks.RemoveAll(x => updatedItems.Any(y => y.SteamId == x.SteamId));
+                    Item.Stacks.AddRange(updatedItems);
                 }
             
             }

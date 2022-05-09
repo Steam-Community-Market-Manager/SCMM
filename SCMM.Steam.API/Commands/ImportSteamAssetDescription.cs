@@ -154,7 +154,7 @@ namespace SCMM.Steam.API.Commands
                             })
                         )
                     ),
-                    ClassId = request.AssetClass.ClassId,
+                    ClassId = request.AssetClass.ClassId
                 };
             }
             if (assetClass == null)

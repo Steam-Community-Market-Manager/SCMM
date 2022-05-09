@@ -34,6 +34,9 @@ namespace SCMM.Steam.Data.Models.Community.Models
         [JsonPropertyName("market_tradable_restriction")]
         public string MarketTradableRestriction { get; set; }
 
+        [JsonPropertyName("owner_descriptions")]
+        public List<SteamAssetClassOwnerDescription> OwnerDescriptions { get; set; }
+
         [JsonPropertyName("tradable")]
         public string Tradable { get; set; }
 

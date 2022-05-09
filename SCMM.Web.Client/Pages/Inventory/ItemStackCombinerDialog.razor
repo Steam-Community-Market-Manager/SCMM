@@ -18,11 +18,11 @@
         </MudAlert>
         <div class="d-flex flex-row flex-wrap align-center justify-center pa-4">
             <div class="d-flex flex-wrap flex-row align-start justify-center">
-                @foreach (var stack in Item.Stacks.OrderByDescending(x => x.Value))
+                @foreach (var stack in Item.Stacks.OrderByDescending(x => x.Quantity))
                 {
                     <MudTooltip Text="Click to include/exclude this item from the stack">
                         <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => ToggleItemStackSelection(stack))">
-                            @if (SelectedStacks.ContainsKey(stack.Key))
+                            @if (SelectedStacks.Contains(stack))
                             {
                                 <i class="fa fa-fw fa-minus-circle mud-error-text mx-1" />
                             }
@@ -33,18 +33,18 @@
                             <img src="@(Item.IconUrl)" class="icon mx-1" />
                             <div class="d-flex flex-column ">
                                 <MudText Typo="Typo.body2" 
-                                         Class="@($"mx-1 {(SelectedStacks.ContainsKey(stack.Key) ? "mud-inherit-text" : "mud-text-disabled")}")"
-                                         Style="@(SelectedStacks.ContainsKey(stack.Key) ? $"color: {(Item.ForegroundColour)}" : null)">
-                                    @if (stack.Value > 1) {
-                                        <span><strong>@stack.Value.ToQuantityString()</strong> @Item.Name</span>
+                                         Class="@($"mx-1 {(SelectedStacks.Contains(stack) ? "mud-inherit-text" : "mud-text-disabled")}")"
+                                         Style="@(SelectedStacks.Contains(stack) ? $"color: {(Item.ForegroundColour)}" : null)">
+                                    @if (stack.Quantity > 1) {
+                                        <span><strong>@stack.Quantity.ToQuantityString()</strong> @Item.Name</span>
                                     }
                                     else
                                     {
                                         <span>@Item.Name</span>
                                     }
 					            </MudText>
-                                <small class="@($"mx-1 no-wrap {(SelectedStacks.ContainsKey(stack.Key) ? "mud-secondary-text" : "mud-text-disabled")}")"> 
-                                    <span>@stack.Key</span>
+                                <small class="@($"mx-1 no-wrap {(SelectedStacks.Contains(stack) ? "mud-secondary-text" : "mud-text-disabled")}")"> 
+                                    <span>@stack.SteamId</span>
                                 </small>
 				            </div>
 			            </div>
@@ -69,11 +69,11 @@
                         <img src="@(Item.IconUrl)" class="icon mx-1" />
                         <div class="d-flex flex-column">
                             <MudText Typo="Typo.body2" Class="mx-1" Style="@($"color: {(Item.ForegroundColour)}")">
-                                <strong>@SelectedStacks.Sum(x => x.Value).ToQuantityString()</strong>
+                                <strong>@SelectedStacks.Sum(x => x.Quantity).ToQuantityString()</strong>
                                 <span>@Item.Name</span>
 					        </MudText>
                             <small class="mx-1 no-wrap mud-secondary-text"> 
-                                <span>@(SelectedStacks.MaxBy(x => x.Value).Key)</span>
+                                <span>@(SelectedStacks.MaxBy(x => x.Quantity).SteamId)</span>
                             </small>
 				        </div>
                     </div>
@@ -115,7 +115,7 @@
     [Parameter]
     public ProfileInventoryItemDescriptionDTO Item { get; set; }
 
-    private IDictionary<string, int> SelectedStacks { get; set; }
+    private IList<ProfileInventoryItemDescriptionStackDTO> SelectedStacks { get; set; }
 
     private string SteamApiKey { get; set; }
 
@@ -123,7 +123,7 @@
 
     protected override void OnInitialized()
     {
-        SelectedStacks = new Dictionary<string, int>(Item.Stacks);
+        SelectedStacks = new List<ProfileInventoryItemDescriptionStackDTO>(Item.Stacks);
     }
 
     protected override void OnConfigure(ResponsiveDialogOptions options)
@@ -134,11 +134,11 @@
         options.CloseButton = true;
     }
 
-    private void ToggleItemStackSelection(KeyValuePair<string, int> stack)
+    private void ToggleItemStackSelection(ProfileInventoryItemDescriptionStackDTO stack)
     {
-        if (SelectedStacks.ContainsKey(stack.Key))
+        if (SelectedStacks.Contains(stack))
         {
-            SelectedStacks.Remove(stack.Key);
+            SelectedStacks.Remove(stack);
         }
         else
         {
@@ -149,23 +149,28 @@
 
     private async Task CombineSelectedItemStacks()
     {
-        var destinationItem = SelectedStacks.MaxBy(x => x.Value);
-        var sourceItems = SelectedStacks.Where(x => x.Key != destinationItem.Key).ToDictionary(x => x.Key, x => x.Value);
+        var destinationItem = SelectedStacks.MaxBy(x => x.Quantity);
+        var sourceItems = SelectedStacks.Where(x => x.SteamId != destinationItem.SteamId).ToList();
 
         try 
         {
-            Logger.LogTrace($"Combing items {String.Join(" + ", sourceItems.Keys)} => {destinationItem.Key}");
+            Logger.LogTrace($"Combing items {String.Join(" + ", sourceItems.Select(x => x.SteamId))} => {destinationItem.SteamId}");
             IsCombining = true;
             StateHasChanged();
 
             var request = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{destinationItem.Key}/combine"),
+                RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{destinationItem.SteamId}/combine"),
                 Method = HttpMethod.Put,
                 Headers = {
                     { "Steam-Api-Key", SteamApiKey }
                 },
-                Content = JsonContent.Create(sourceItems)
+                Content = JsonContent.Create(
+                    sourceItems.ToDictionary(
+                        k => k.SteamId,
+                        v => v.Quantity
+                    )
+                )
             };
 
             var response = await Http.SendAsync(request);
@@ -174,10 +179,12 @@
                 throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
             }
 
-            Item.Stacks[destinationItem.Key] = SelectedStacks.Sum(x => x.Value);
+            destinationItem.Quantity = SelectedStacks.Sum(x => x.Quantity);
+            destinationItem.TradableAndMarketable = SelectedStacks.All(x => x.TradableAndMarketable);
+            destinationItem.TradableAndMarketablAfter = SelectedStacks.Max(x => x.TradableAndMarketablAfter);
             foreach (var removedItem in sourceItems)
             {
-                Item.Stacks.Remove(removedItem.Key);
+                Item.Stacks.Remove(removedItem);
             }
 
             Snackbar.Add($"Items were successfully combined.", MudBlazor.Severity.Success, x => x.RequireInteraction = false);
@@ -185,7 +192,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error combining items {String.Join(" + ", sourceItems.Keys)} => {destinationItem.Key}");
+            Logger.LogError(ex, $"Error combining items {String.Join(" + ", sourceItems.Select(x => x.SteamId))} => {destinationItem.SteamId}");
             Snackbar.Add($"Unable to combine items. {ex.Message}", MudBlazor.Severity.Error, x => x.RequireInteraction = false);
         }
         finally

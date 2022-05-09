@@ -19,7 +19,7 @@ namespace SCMM.Steam.API.Commands
 
         public uint Quantity { get; set; }
 
-        public bool UnstackNewItems { get; set; }
+        public bool StackNewItems { get; set; } = true;
     }
 
     public class SplitInventoryItemStackResponse
@@ -65,7 +65,7 @@ namespace SCMM.Steam.API.Commands
             var quantityRemaining = request.Quantity;
             while(quantityRemaining > 0)
             {
-                var quantityToSplit = (request.UnstackNewItems ? 1 : quantityRemaining);
+                var quantityToSplit = (request.StackNewItems ? quantityRemaining : 1);
                 var response = await _steamWebApiClient.InventoryServiceSplitItemStack(new SplitItemStackJsonRequest()
                 {
                     Key = request.ApiKey,
@@ -108,7 +108,7 @@ namespace SCMM.Steam.API.Commands
                 }
                 else
                 {
-                    throw new SteamRequestException($"Steam reported failure, {(request.UnstackNewItems ? "some" : "no")} items were modified", HttpStatusCode.BadRequest);
+                    throw new SteamRequestException($"Steam reported failure, {(request.StackNewItems ? "no" : "some")} items were modified", HttpStatusCode.BadRequest);
                 }
 
                 quantityRemaining -= quantityToSplit;

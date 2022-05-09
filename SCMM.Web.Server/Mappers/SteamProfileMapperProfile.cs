@@ -45,6 +45,8 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.SellLaterTo, o => o.MapFrom(p => p.Description.MarketItem != null ? p.Description.MarketItem.SellLaterTo : Steam.Data.Models.Enums.MarketType.Unknown))
                 .ForMember(x => x.SellLaterPrice, o => o.MapFromUsingCurrencyExchange(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.SellLaterPrice : null, p => p.Description.MarketItem.Currency))
                 .ForMember(x => x.SellLaterFee, o => o.MapFromUsingCurrencyExchange(p => p.Description.MarketItem != null ? (long?)p.Description.MarketItem.SellLaterFee : null, p => p.Description.MarketItem.Currency));
+
+            CreateMap<SteamProfileInventoryItem, ProfileInventoryItemDescriptionStackDTO>();
         }
     }
 }

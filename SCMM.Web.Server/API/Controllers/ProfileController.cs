@@ -561,12 +561,16 @@ namespace SCMM.Web.Server.API.Controllers
                     var itemInventoryInstances = profileInventoryItems
                         .Where(x => x.Description.ClassId == item.Description.ClassId);
 
-                    // Calculate the item's quantity and stack sizes
-                    itemSummary.Stacks = itemInventoryInstances.ToDictionary(x => x.SteamId, x => x.Quantity);
+                    // Calculate the item's quantity and average price
                     itemSummary.Quantity = itemInventoryInstances.Sum(x => x.Quantity);
                     itemSummary.AverageBuyPrice = (isMyInventory && itemInventoryInstances.Any(x => x.BuyPrice > 0))
                         ? (long) Math.Round(itemInventoryInstances.Where(x => x.BuyPrice > 0).Average(x => x.BuyPrice.Value), 0) 
                         : 0;
+
+                    // Calculate the item's stack sizes
+                    itemSummary.Stacks = _mapper.Map<SteamProfileInventoryItem, ProfileInventoryItemDescriptionStackDTO>(
+                        itemInventoryInstances, this
+                    );
 
                     profileInventoryItemsSummaries.Add(itemSummary);
                 }
@@ -1008,27 +1012,27 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="quantity">
         /// The number of items to split out in to a new stack
         /// </param>
-        /// <param name="unstackNewItems">
-        /// If true, new items will be unstacked. If false, new items will be stacked as high as possible
+        /// <param name="stackNewItems">
+        /// If true, new items will be stacked as efficently as possible. If false, items will be created unstack (i.e. as single items)
         /// </param>
         /// <param name="apiKey">
         /// Valid Steam Web API key with permission to modify the source and destination items.
         /// You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
         /// Read https://scmm.app/privacy for more about how your Steam API key is handled.
         /// </param>
-        /// <response code="200">If the inventory items were split successfully, response contains a dictionary of the new item ids (keys) and their quantities (values).</response>
+        /// <response code="200">If the inventory items were split successfully, response contains a list of the new item stacks and quantities.</response>
         /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory item does not belong to the authenticated user.</response>
         /// <response code="404">If the inventory items cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(AuthorizationPolicies.User)]
         [HttpPut("{profileId}/inventory/item/{itemId}/split")]
-        [ProducesResponseType(typeof(IDictionary<ulong, uint>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<ProfileInventoryItemDescriptionStackDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> SplitInventoryItemStacks([FromHeader(Name = "Steam-Api-Key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] uint quantity, [FromQuery] bool unstackNewItems = false)
+        public async Task<IActionResult> SplitInventoryItemStacks([FromHeader(Name = "Steam-Api-Key")] string apiKey, [FromRoute] string profileId, [FromRoute] ulong itemId, [FromBody] uint quantity, [FromQuery] bool stackNewItems = true)
         {
             if (string.IsNullOrEmpty(profileId))
             {
@@ -1067,15 +1071,12 @@ namespace SCMM.Web.Server.API.Controllers
                     ApiKey = apiKey,
                     ItemId = itemId,
                     Quantity = quantity,
-                    UnstackNewItems = unstackNewItems
+                    StackNewItems = stackNewItems
                 });
 
                 await _db.SaveChangesAsync();
                 return Ok(
-                    result.Items.ToDictionary(
-                        x => UInt64.Parse(x.SteamId),
-                        x => (uint) x.Quantity
-                    )
+                    _mapper.Map<SteamProfileInventoryItem, ProfileInventoryItemDescriptionStackDTO>(result.Items, this)
                 );
             }
             catch (SteamRequestException ex)

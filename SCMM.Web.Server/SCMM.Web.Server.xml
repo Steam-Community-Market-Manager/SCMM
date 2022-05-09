@@ -36,7 +36,7 @@
             <param name="glowsight">If <code>true</code>, only items tagged with 'glowsight' are returned</param>
             <param name="cutout">If <code>true</code>, only items tagged with 'cutout' are returned</param>
             <param name="marketable">If <code>true</code>, only marketable items are returned</param>
-            <param name="tradeable">If <code>true</code>, only tradable items are returned</param>
+            <param name="tradable">If <code>true</code>, only tradable items are returned</param>
             <param name="returning">If <code>true</code>, only items that have been released over multiple stores are returned</param>
             <param name="banned">If <code>true</code>, only banned items are returned</param>
             <param name="specialDrop">If <code>true</code>, only special drops are returned</param>
@@ -363,15 +363,15 @@
             <param name="quantity">
             The number of items to split out in to a new stack
             </param>
-            <param name="unstackNewItems">
-            If true, new items will be unstacked. If false, new items will be stacked as high as possible
+            <param name="stackNewItems">
+            If true, new items will be stacked as efficently as possible. If false, items will be created unstack (i.e. as single items)
             </param>
             <param name="apiKey">
             Valid Steam Web API key with permission to modify the source and destination items.
             You can obtain your Steam API key from: https://steamcommunity.com/dev/apikey.
             Read https://scmm.app/privacy for more about how your Steam API key is handled.
             </param>
-            <response code="200">If the inventory items were split successfully, response contains a dictionary of the new item ids (keys) and their quantities (values).</response>
+            <response code="200">If the inventory items were split successfully, response contains a list of the new item stacks and quantities.</response>
             <response code="400">If the request data is malformed/invalid.</response>
             <response code="401">If the request is unauthenticated (login first), Steam API key is invalid, or the requested inventory item does not belong to the authenticated user.</response>
             <response code="404">If the inventory items cannot be found.</response>

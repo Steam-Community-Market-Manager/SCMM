@@ -1,8 +1,10 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Exceptions;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Models.Community.Responses.Json;
@@ -106,7 +108,7 @@ namespace SCMM.Steam.API.Commands
 
                 // Add assets
                 var missingAssets = steamInventoryItems
-                    .Where(x => !profile.InventoryItems.Any(y => y.AppId == app.Id && y.SteamId == x.AssetId.ToString()))
+                    .Where(x => !profile.InventoryItems.Any(y => y.AppId == app.Id && y.SteamId == x.Key.AssetId.ToString()))
                     .ToList();
                 var knownAssets = await _db.SteamAssetDescriptions
                     .Where(x => x.AppId == app.Id)
@@ -120,7 +122,7 @@ namespace SCMM.Steam.API.Commands
 
                 foreach (var asset in missingAssets)
                 {
-                    var assetDescription = knownAssets.FirstOrDefault(x => x.ClassId == asset.ClassId);
+                    var assetDescription = knownAssets.FirstOrDefault(x => x.ClassId == asset.Key.ClassId);
                     if (assetDescription == null)
                     {
                         // NOTE: Only import new assets from apps we know are ready
@@ -130,7 +132,7 @@ namespace SCMM.Steam.API.Commands
                             var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                             {
                                 AppId = ulong.Parse(app.SteamId),
-                                AssetClassId = asset.ClassId
+                                AssetClassId = asset.Key.ClassId
                                 // TODO: Test this more. It seems there is missing data sometimes so we'll fetch the full details from Steam instead
                                 //AssetClass = inventory.Descriptions.FirstOrDefault(x => x.ClassId == asset.ClassId)
                             });
@@ -148,13 +150,15 @@ namespace SCMM.Steam.API.Commands
                     }
                     var inventoryItem = new SteamProfileInventoryItem()
                     {
-                        SteamId = asset.AssetId.ToString(),
+                        SteamId = asset.Key.AssetId.ToString(),
                         Profile = profile,
                         ProfileId = profile.Id,
                         App = app,
                         AppId = app.Id,
                         DescriptionId = assetDescription.Id,
-                        Quantity = (int)asset.Amount
+                        Quantity = (int)asset.Key.Amount,
+                        TradableAndMarketable = (asset.Key.InstanceId == Constants.SteamAssetDefaultInstanceId)
+                        // TODO: TradableAndMarketablAfter = asset.Value.OwnerDescriptions.FirstOrDefault(x => x.Value == Constants.SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex)
                     };
 
                     // If this item is a special/twitch drop, automatically mark it as a drop
@@ -169,17 +173,19 @@ namespace SCMM.Steam.API.Commands
                 // Update assets
                 foreach (var asset in steamInventoryItems)
                 {
-                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.AppId == app.Id && x.SteamId == asset.AssetId.ToString());
+                    var existingAsset = profile.InventoryItems.FirstOrDefault(x => x.AppId == app.Id && x.SteamId == asset.Key.AssetId.ToString());
                     if (existingAsset != null)
                     {
-                        existingAsset.Quantity = (int)asset.Amount;
+                        existingAsset.Quantity = (int)asset.Key.Amount;
+                        existingAsset.TradableAndMarketable = (asset.Key.InstanceId == Constants.SteamAssetDefaultInstanceId);
+                        // TODO: existingAsset.TradableAndMarketablAfter = asset.Value.OwnerDescriptions.FirstOrDefault(x => x.Value == Constants.SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex);
                     }
                 }
 
                 // Remove assets
                 var removedAssets = profile.InventoryItems
                     .Where(x => x.AppId == app.Id)
-                    .Where(x => !steamInventoryItems.Any(y => y.AssetId.ToString() == x.SteamId))
+                    .Where(x => !steamInventoryItems.Any(y => y.Key.AssetId.ToString() == x.SteamId))
                     .ToList();
                 foreach (var asset in removedAssets)
                 {
@@ -196,10 +202,10 @@ namespace SCMM.Steam.API.Commands
             };
         }
 
-        private async Task<IEnumerable<SteamInventoryAsset>> FetchInventoryRecursive(SteamProfile profile, SteamApp app, ulong? startAssetId = null, int count = SteamInventoryPaginatedJsonRequest.MaxPageSize)
+        private async Task<IDictionary<SteamInventoryAsset, SteamAssetClass>> FetchInventoryRecursive(SteamProfile profile, SteamApp app, ulong? startAssetId = null, int count = SteamInventoryPaginatedJsonRequest.MaxPageSize)
         {
             var inventory = (SteamInventoryPaginatedJsonResponse)null;
-            var inventoryItems = new List<SteamInventoryAsset>();
+            var inventoryItems = new Dictionary<SteamInventoryAsset, SteamAssetClass>();
 
             try
             {
@@ -220,7 +226,12 @@ namespace SCMM.Steam.API.Commands
                 }
                 if (inventory.Assets?.Any() == true)
                 {
-                    inventoryItems.AddRange(inventory.Assets);
+                    inventoryItems.AddRange(
+                        inventory.Assets.ToDictionary(
+                            k => k,
+                            v => inventory.Descriptions?.FirstOrDefault(x => x.ClassId == v.ClassId && x.InstanceId == v.InstanceId)
+                        )
+                    );
                     profile.Privacy = SteamVisibilityType.Public;
                 }
             }

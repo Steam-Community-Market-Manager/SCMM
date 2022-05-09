@@ -81,7 +81,7 @@
                                 {
                                     <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 }
-                                <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                                <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                                 @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
                                 {
@@ -116,7 +116,7 @@
                     {
                         <MudSwitch T="bool" Checked="@TwitchDrop" CheckedChanged="@((x) => { TwitchDrop = x; _ = RefreshItems(); })" Label="Twitch Drop" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     }
-                    <MudSwitch T="bool" Checked="@Tradeable" CheckedChanged="@((x) => { Tradeable = x; _ = RefreshItems(); })" Label="Tradeable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
+                    <MudSwitch T="bool" Checked="@Tradable" CheckedChanged="@((x) => { Tradable = x; _ = RefreshItems(); })" Label="Tradable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     <MudSwitch T="bool" Checked="@Marketable" CheckedChanged="@((x) => { Marketable = x; _ = RefreshItems(); })" Label="Marketable" Color="Color.Primary" Class="mr-10" Disabled="State.IsPrerendering" />
                     @if (State.App.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
                     {
@@ -200,7 +200,7 @@
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public bool Tradeable { get; set; }
+    public bool Tradable { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -300,7 +300,7 @@
             StateHasChanged();
 
             Items = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemDescriptionWithPriceDTO>>(
-                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradeable={Tradeable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
+                $"api/item?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}&glow={Glow}&glowsight={Glowsight}&cutout={Cutout}&craftable={Craftable}&specialDrop={SpecialDrop}&twitchDrop={TwitchDrop}&tradable={Tradable}&marketable={Marketable}&returning={Returning}&banned={Banned}"
             );
         }
         catch (Exception ex)

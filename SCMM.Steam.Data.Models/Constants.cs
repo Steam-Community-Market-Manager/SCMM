@@ -34,6 +34,10 @@
         public const string SteamMarketListingItemNameIdRegex = @"Market_LoadOrderSpread\((.*)\);";
         public const string SteamMarketListingAssetJsonRegex = @"g_rgAssets\s*=\s*(.*);";
 
+        public const string SteamInventoryItemMarketableAndTradableAfterOwnerDescriptionRegex = @"Tradable \& Marketable After\: \[date\]([0-9]+)\[\/date\]";
+
+        public const ulong SteamAssetDefaultInstanceId = 0;
+
         public const string SteamAssetClassDescriptionTypeHtml = "html";
         public const string SteamAssetClassDescriptionStripHtmlRegex = @"<[^>]*>";
         public const string SteamAssetClassDescriptionTypeBBCode = "bbcode";

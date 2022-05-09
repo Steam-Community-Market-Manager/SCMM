@@ -98,7 +98,7 @@
         {
             SteamId = SteamId,
             AppId = Item.AppId.ToString(),
-            AssetId = Item.Stacks?.MaxBy(x => x.Value).Key
+            AssetId = Item.Stacks?.MaxBy(x => x.Quantity).SteamId
         });
     }
     
