@@ -52,7 +52,7 @@
                         {
                             <MudMenuItem OnClick="SellItemOnMarket">
                                 <i class="fa fa-fw fa-hand-holding-usd mr-1"></i>
-                                <span>@(Item.Quantity > 1 ? "Multi-Sell" : "Sell")</span>
+                                <span>@(Item.Quantity > 1 ? "Multi-Sell on Steam" : "Sell on Steam")</span>
                             </MudMenuItem>
                         }
                     }
@@ -60,7 +60,7 @@
                     {
                         <MudMenuItem OnClick="ViewItemOnSteam">
                             <i class="@($"fab fa-fw fa-steam mr-1")"></i>
-                            <span>View Steam Inventory</span>
+                            <span>View Inventory Item</span>
                         </MudMenuItem>
                     }
                     @if (Item.Actions != null)

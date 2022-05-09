@@ -13,15 +13,15 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
+        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Elevation="3">
             <span><strong>This action requires your <MudLink Href="https://steamcommunity.com/dev/apikey" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Steam API Key</MudLink> to modify your inventory items.</strong> Make sure you fully understand the implications of sharing your API Key with a 3rd party before proceeding. Read our <MudLink Href="/privacy" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Privacy Policy</MudLink> for more info.</span>
         </MudAlert>
         <div class="d-flex flex-row flex-wrap align-center justify-center pa-4">
             <div class="d-flex flex-wrap flex-row align-start justify-center">
                 @foreach (var stack in Item.Stacks.OrderByDescending(x => x.Quantity))
                 {
-                    <MudTooltip Text="Click to include/exclude this item from the stack">
-                        <div class="d-flex flex-row align-center clickable hover-darken hover-zoom pa-1" @onclick="@(() => ToggleItemStackSelection(stack))">
+                    <MudPaper Outlined="true" Elevation="3" Class="d-flex flex-row align-center clickable hover-darken pa-1 ma-1 mud-elevation-3 " @onclick="@(() => ToggleItemStackSelection(stack))">
+                        <MudTooltip Text="Click to include/exclude this item from the stack">
                             @if (SelectedStacks.Contains(stack))
                             {
                                 <i class="fa fa-fw fa-minus-circle mud-error-text mx-1" />
@@ -30,25 +30,32 @@
                             {
                                 <i class="far fa-fw fa-circle mud-text-disabled mx-1" />
                             }
-                            <img src="@(Item.IconUrl)" class="icon mx-1" />
-                            <div class="d-flex flex-column ">
-                                <MudText Typo="Typo.body2" 
-                                         Class="@($"mx-1 {(SelectedStacks.Contains(stack) ? "mud-inherit-text" : "mud-text-disabled")}")"
-                                         Style="@(SelectedStacks.Contains(stack) ? $"color: {(Item.ForegroundColour)}" : null)">
-                                    @if (stack.Quantity > 1) {
-                                        <span><strong>@stack.Quantity.ToQuantityString()</strong> @Item.Name</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@Item.Name</span>
-                                    }
-					            </MudText>
-                                <small class="@($"mx-1 no-wrap {(SelectedStacks.Contains(stack) ? "mud-secondary-text" : "mud-text-disabled")}")"> 
-                                    <span>@stack.SteamId</span>
-                                </small>
-				            </div>
-			            </div>
-                    </MudTooltip>
+                        </MudTooltip>
+                        <img src="@(Item.IconUrl)" class="icon mx-1" />
+                        <div class="d-flex flex-column">
+                            <MudText Typo="Typo.body2" 
+                                        Class="@($"mx-1 {(SelectedStacks.Contains(stack) ? null : "mud-text-disabled")}")"
+                                        Style="@(SelectedStacks.Contains(stack) ? $"color: {(Item.ForegroundColour)}" : null)">
+                                @if (stack.Quantity > 1) {
+                                    <span><strong>@stack.Quantity.ToQuantityString()</strong> @Item.Name</span>
+                                }
+                                else
+                                {
+                                    <span>@Item.Name</span>
+                                }
+					        </MudText>
+                            <small class="@($"mx-1 no-wrap {(SelectedStacks.Contains(stack) ? "mud-secondary-text" : "mud-text-disabled")}")"> 
+                                <span>@stack.SteamId</span>
+                            </small>
+				        </div>
+                        @if (!stack.TradableAndMarketable)
+                        {
+                            <MudTooltip Text="This item is currently untradeable and unmarketable. If you add this item to the stack, the stack will also become trade locked">
+                                <MudChip Variant="MudBlazor.Variant.Text" Color="@(SelectedStacks.Contains(stack) ? MudBlazor.Color.Warning : MudBlazor.Color.Default)" 
+                                            Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-ban" Text="Trade Locked" Class="ml-2" Disabled="@(!SelectedStacks.Contains(stack))" />
+                            </MudTooltip>
+                        }
+                    </MudPaper>
                 }
             </div>
             <MudText Typo="MudBlazor.Typo.h3" Class="full-width text-centered pa-4">
@@ -64,7 +71,7 @@
             <div class="d-flex flex-wrap flex-row align-start justify-center">
                 @if (SelectedStacks.Count() >= 2)
                 {
-                    <div class="d-flex flex-row align-center hover-zoom pa-1">
+                    <MudPaper Outlined="true" Elevation="3" Class="d-flex flex-row align-center pa-1 ma-1 mud-elevation-3 ">
                         <i class="fa fa-fw fa-plus-circle mud-success-text mx-1" />
                         <img src="@(Item.IconUrl)" class="icon mx-1" />
                         <div class="d-flex flex-column">
@@ -76,7 +83,13 @@
                                 <span>@(SelectedStacks.MaxBy(x => x.Quantity).SteamId)</span>
                             </small>
 				        </div>
-                    </div>
+                        @if (SelectedStacks.Any(x => !x.TradableAndMarketable))
+                        {
+                            <MudTooltip Text="At least one selected item is untradeable and unmarketable in your inventory. The trade lock will be caried over to this combined item stack">
+                                <MudChip Variant="MudBlazor.Variant.Text" Color="MudBlazor.Color.Warning" Size="MudBlazor.Size.Small" Icon="fas fa-fw fa-ban" Text="Trade Locked" Class="ml-2" />
+                            </MudTooltip>
+                        }
+                    </MudPaper>
                 }
                 else
                 {
@@ -92,18 +105,20 @@
                       Adornment="Adornment.End" AdornmentIcon="fa fa-fw fa-question-circle" OnAdornmentClick="@(() => ExternalNavigationManager.NavigateToNewTab("https://steamcommunity.com/dev/apikey"))" />
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
-        <MudButton OnClick="CombineSelectedItemStacks" Color="MudBlazor.Color.Primary" StartIcon="@(IsCombining ? "fas fa-fw fa-cog fa-spin" : "fa fa-fw fa-check")" 
-                   Disabled="@(IsCombining || (SelectedStacks.Count() < 2) || String.IsNullOrEmpty(SteamApiKey))">
-            @if(IsCombining)
-            {
-                <span>Combining...</span>
-            }
-            else
-            {
-                <span>Combine Items</span>
-            }
-        </MudButton>
+        <div class="mx-4 my-2">
+            <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
+            <MudButton OnClick="CombineSelectedItemStacks" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@(IsCombining ? "fas fa-fw fa-cog fa-spin" : "fa fa-fw fa-check")" 
+                       Disabled="@(IsCombining || (SelectedStacks.Count() < 2) || String.IsNullOrEmpty(SteamApiKey))">
+                @if(IsCombining)
+                {
+                    <span>Combining...</span>
+                }
+                else
+                {
+                    <span>Combine Items</span>
+                }
+            </MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 

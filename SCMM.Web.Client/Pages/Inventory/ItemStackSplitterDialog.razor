@@ -13,14 +13,14 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
+        <MudAlert Severity="Severity.Warning" Elevation="3" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning">
             <span><strong>This action requires your <MudLink Href="https://steamcommunity.com/dev/apikey" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Steam API Key</MudLink> to modify your inventory items.</strong> Make sure you fully understand the implications of sharing your API Key with a 3rd party before proceeding. Read our <MudLink Href="/privacy" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Privacy Policy</MudLink> for more info.</span>
         </MudAlert>
         <div class="d-flex flex-row flex-wrap align-center justify-center full-width py-4">
             <div class="d-flex flex-wrap flex-row align-start justify-center full-width">
                 @foreach (var stack in SelectedStacks.OrderByDescending(x => x.Key.Quantity))
                 {
-                    <div class="d-flex flex-row align-center full-width pa-2">
+                    <MudPaper Outlined="true" Elevation="3" Class="d-flex flex-row align-center full-width pa-2 my-2 mud-elevation-3">
                         <img src="@(Item.IconUrl)" class="icon flex-shrink-1 flex-grow-0 mr-2" />
                         <div class="d-flex flex-column flex-grow-1">
                             <div class="d-flex flex-row justify-space-between">
@@ -57,10 +57,10 @@
                                     </MudText>
                                 }
                             </div>
-                            <MudSlider T="int" @bind-Value="@SelectedStacks[stack.Key]" Min="0" Max="@(stack.Key.Quantity - 1)" Step="1" Class="mx-1" />
+                            <MudSlider T="int" @bind-Value="@SelectedStacks[stack.Key]" Min="0" Max="@(stack.Key.Quantity - 1)" Step="1" Class="px-2" />
                             <div class="d-flex flex-row justify-space-between">
                                 <small class="mx-1 no-wrap mud-secondary-text text-left"> 
-                                    <span>@stack.Key</span>
+                                    <span>@stack.Key.SteamId</span>
                                 </small>
                                 @if (stack.Value > 0)
                                 {
@@ -74,7 +74,7 @@
                         {
                             <img src="@(Item.IconUrl)" class="icon flex-shrink-1 flex-grow-0 ml-2" />
                         }
-			        </div>
+			        </MudPaper>
                 }
             </div>
         </div>
@@ -86,18 +86,20 @@
         </div>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
-        <MudButton OnClick="SplitSelectedItemStacks" Color="MudBlazor.Color.Primary" StartIcon="@(IsSplitting ? "fas fa-fw fa-cog fa-spin" : "fa fa-fw fa-check")" 
-                   Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))">
-            @if(IsSplitting)
-            {
-                <span>Splitting...</span>
-            }
-            else
-            {
-                <span>Split Items</span>
-            }
-        </MudButton>
+        <div class="mx-4 my-2">
+            <MudButton OnClick="@(() => Dialog.Cancel())">Cancel</MudButton>
+            <MudButton OnClick="SplitSelectedItemStacks" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@(IsSplitting ? "fas fa-fw fa-cog fa-spin" : "fa fa-fw fa-check")" 
+                       Disabled="@(IsSplitting || SelectedStacks.All(x => x.Value == 0) || String.IsNullOrEmpty(SteamApiKey))">
+                @if(IsSplitting)
+                {
+                    <span>Splitting...</span>
+                }
+                else
+                {
+                    <span>Split Items</span>
+                }
+            </MudButton>
+        </div>
     </DialogActions>
 </MudDialog>
 

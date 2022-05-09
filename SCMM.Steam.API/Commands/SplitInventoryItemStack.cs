@@ -99,6 +99,8 @@ namespace SCMM.Steam.API.Commands
                                 AcquiredBy = sourceItem.AcquiredBy,
                                 BuyPrice = sourceItem.BuyPrice,
                                 Quantity = (int)item.Quantity,
+                                TradableAndMarketable = sourceItem.TradableAndMarketable,
+                                TradableAndMarketablAfter = sourceItem.TradableAndMarketablAfter,
                                 Flags = sourceItem.Flags,
                             });
 
