@@ -942,7 +942,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(AuthorizationPolicies.User)]
         [HttpPut("{profileId}/inventory/item/{itemId}/combine")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProfileInventoryItemDescriptionStackDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -976,7 +976,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             try
             {
-                await _commandProcessor.ProcessWithResultAsync(new CombineInventoryItemStacksRequest()
+                var result = await _commandProcessor.ProcessWithResultAsync(new CombineInventoryItemStacksRequest()
                 {
                     ProfileId = profileId,
                     ApiKey = apiKey,
@@ -985,7 +985,9 @@ namespace SCMM.Web.Server.API.Controllers
                 });
 
                 await _db.SaveChangesAsync();
-                return Ok();
+                return Ok(
+                    _mapper.Map<SteamProfileInventoryItem, ProfileInventoryItemDescriptionStackDTO>(result.Item, this)
+                );
             }
             catch (SteamRequestException ex)
             {
