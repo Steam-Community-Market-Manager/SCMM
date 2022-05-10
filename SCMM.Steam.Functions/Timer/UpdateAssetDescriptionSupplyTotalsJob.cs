@@ -53,8 +53,8 @@ public class UpdateAssetDescriptionSupplyTotalsJob
 	                [SupplyTotalInvestorsKnown] = s.SupplyTotalInvestorsKnown,
 	                [SupplyTotalMarketsKnown] = s.SupplyTotalMarketsKnown,
 	                [SupplyTotalEstimated] = (
-		                (ISNULL(s.SupplyTotalOwnersKnown, 0) + ISNULL(s.SupplyTotalOwnersEstimated - s.SupplyTotalOwnersKnown, 0)) +
-		                (ISNULL(s.SupplyTotalInvestorsKnown, 0) + ISNULL(s.SupplyTotalInvestorsEstimated - s.SupplyTotalInvestorsKnown, 0)) +
+		                (ISNULL(s.SupplyTotalOwnersKnown, 0) + IIF(s.SupplyTotalOwnersKnown > s.SupplyTotalOwnersEstimated, 0, ISNULL((s.SupplyTotalOwnersEstimated - s.SupplyTotalOwnersKnown), 0))) +
+		                (ISNULL(s.SupplyTotalInvestorsKnown, 0) + IIF(s.SupplyTotalInvestorsKnown > s.SupplyTotalInvestorsEstimated, 0, ISNULL((s.SupplyTotalInvestorsEstimated - s.SupplyTotalInvestorsKnown), 0))) +
 		                ISNULL(s.SupplyTotalMarketsKnown, 0)
 	                )
                 FROM AssetDescriptionSupplyTotals s
