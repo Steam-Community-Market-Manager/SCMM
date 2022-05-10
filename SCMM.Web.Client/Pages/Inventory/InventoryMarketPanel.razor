@@ -49,7 +49,7 @@ else
                             }
                         }
                     </style>
-                    <SfChart ID="MarketMovement" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" CustomClass="text-centered"
+                    <SfChart ID="MarketMovement" Theme="Syncfusion.Blazor.Theme.FluentDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" CustomClass="text-centered"
                              Title="Market movement" SubTitle="@((DateTimeOffset.Now - InventoryMovement.Min(x => x.MovementTime)).ToDurationString(prefix: "in the last", maxGranularity: 1))">
                         <ChartTitleStyle Size="1.3em" Color="#eeeeee" />
                         <ChartSubTitleStyle Size="1em" Color="#9b9b9b" />
@@ -95,7 +95,7 @@ else
         {
             <MudItem xs="12" lg="6" xl="4">
                 <div class="pa-4">
-                    <SfAccumulationChart ID="PositiveMovementDistribution" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" CustomClass="text-centered"
+                    <SfAccumulationChart ID="PositiveMovementDistribution" Theme="Syncfusion.Blazor.Theme.FluentDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" CustomClass="text-centered"
                                          Title="Positive movement breakdown" SubTitle="@State.Currency.ToPriceString((decimal)InventoryMovementPositiveDistributionChartData.OfType<ChartData>().Sum(x => x.Value))" EnableSmartLabels="true">
                         <AccumulationChartTitleStyle Size="1.3em" Color="#eeeeee" />
                         <AccumulationChartSubTitleStyle Size="1em" Color="#388e3c" />
@@ -127,7 +127,7 @@ else
         {
             <MudItem xs="12" lg="6" xl="4">
                 <div class="pa-4">
-                    <SfAccumulationChart ID="NegativeMovementDistribution" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" CustomClass="text-centered"
+                    <SfAccumulationChart ID="NegativeMovementDistribution" Theme="Syncfusion.Blazor.Theme.FluentDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" CustomClass="text-centered"
                                          Title="Negative movement breakdown" SubTitle="@State.Currency.ToPriceString((decimal)InventoryMovementNegativeDistributionChartData.OfType<ChartData>().Sum(x => x.Value))" EnableSmartLabels="true" >
                         <AccumulationChartTitleStyle Size="1.3em" Color="#eeeeee" />
                         <AccumulationChartSubTitleStyle Size="1em" Color="#d32f2f" />
