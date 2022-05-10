@@ -20,18 +20,12 @@ public class UpdateProfileInventoryValuesJob
         {
             await _db.Database.ExecuteSqlInterpolatedAsync(@$"
                 UPDATE v 
-                SET
-                    [Items] = ISNULL((
-                        SELECT SUM(i.Quantity)
-                        FROM [SteamProfileInventoryItems] i
-                        WHERE i.ProfileId = v.ProfileId AND i.AppId = v.AppId
-                    ), 0),
-	                [MarketValue] = ISNULL((
-                        SELECT SUM(i.Quantity * ISNULL(m.SellOrderLowestPrice, ISNULL(m.BuyNowPrice, 0)))
-                        FROM [steamprofileinventoryitems] i
-                        LEFT OUTER JOIN [SteamMarketItems] m ON m.DescriptionId = i.DescriptionId
-                        WHERE i.ProfileId = v.ProfileId AND i.AppId = v.AppId
-                    ), 0)
+                SET [MarketValue] = ISNULL((
+                    SELECT SUM(i.Quantity * ISNULL(m.SellOrderLowestPrice, ISNULL(m.BuyNowPrice, 0)))
+                    FROM [SteamProfileInventoryItems] i
+                    LEFT OUTER JOIN [SteamMarketItems] m ON m.DescriptionId = i.DescriptionId
+                    WHERE i.ProfileId = v.ProfileId AND i.AppId = v.AppId
+                ), 0)
                 FROM [SteamProfileInventoryValues] v
             ");
 
