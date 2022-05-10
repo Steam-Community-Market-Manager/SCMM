@@ -32,6 +32,8 @@ namespace SCMM.Steam.Data.Store
         [Required]
         public PersistableMarketPriceDictionary BuyPrices { get; set; }
 
+        public int BuyPricesTotalSupply { get; set; }
+
         public MarketType BuyNowFrom { get; set; }
 
         public long BuyNowPrice { get; set; }
@@ -46,6 +48,8 @@ namespace SCMM.Steam.Data.Store
 
         [Required]
         public PersistableMarketPriceDictionary SellPrices { get; set; }
+
+        public int SellPricesTotalSupply { get; set; }
 
         public MarketType SellNowTo { get; set; }
 
@@ -208,11 +212,14 @@ namespace SCMM.Steam.Data.Store
                 .Select(x => new
                 {
                     Type = x.Key,
+                    Supply = x.Value.Supply,
                     Price = x.Value.Price,
                     BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>(),
                     SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>()
                 })
                 .ToArray();
+
+            BuyPricesTotalSupply = availablePrices.Sum(x => x.Supply) ?? 0;
 
             if (availablePrices.Any(x => x.BuyFrom != null))
             {
@@ -278,11 +285,14 @@ namespace SCMM.Steam.Data.Store
                 .Select(x => new
                 {
                     Type = x.Key,
+                    Supply = x.Value.Supply,
                     Price = x.Value.Price,
                     SellTo = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<SellToAttribute>(),
                     BuyFrom = x.Key.GetType().GetField(x.Key.ToString(), BindingFlags.Public | BindingFlags.Static)?.GetCustomAttribute<BuyFromAttribute>()
                 })
                 .ToArray();
+
+            SellPricesTotalSupply = availablePrices.Sum(x => x.Supply) ?? 0;
 
             if (availablePrices.Any(x => x.SellTo != null))
             {

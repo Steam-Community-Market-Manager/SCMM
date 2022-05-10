@@ -87,7 +87,7 @@ namespace SCMM.Steam.Data.Store
         public PersistableStringDictionary Tags { get; set; }
 
         /// <summary>
-        /// If true, the item is from the "general" (permanent) item store. Otherwise, it is assumed to be a limited time item.
+        /// If true, the item is always available for purchase. Otherwise, it is assumed to be purchasable for a limited time only.
         /// </summary>
         public bool IsPermanent { get; set; }
 
@@ -133,6 +133,18 @@ namespace SCMM.Steam.Data.Store
 
         [Required]
         public PersistableMediaDictionary Previews { get; set; }
+
+        public long? SupplyTotalEstimated { get; set; }
+
+        public long? SupplyTotalMarketsKnown { get; set; }
+
+        public long? SupplyTotalInvestorsKnown { get; set; }
+
+        public long? SupplyTotalInvestorsEstimated { get; set; }
+
+        public long? SupplyTotalOwnersKnown { get; set; }
+
+        public long? SupplyTotalOwnersEstimated { get; set; }
 
         public long? CurrentSubscriptions { get; set; }
 
