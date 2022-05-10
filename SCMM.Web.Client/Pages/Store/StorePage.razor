@@ -510,7 +510,14 @@ else if (StoreList.Any())
                 @foreach (var media in Store.Media)
                 {
                     <MudItem xs="12" sm="6" lg="3">
-                        <YouTubeVideo VideoId="@media" />
+                        @if (Int64.TryParse(media, out _))
+                        {
+                            <TwitchVideo VideoId="@media" />
+                        }
+                        else
+                        {
+                            <YouTubeVideo VideoId="@media" />
+                        }
                     </MudItem>
                 }
 
