@@ -14,6 +14,7 @@ namespace SCMM.Steam.Data.Store
         public DbSet<SteamItemStore> SteamItemStores { get; set; }
         public DbSet<SteamStoreItemItemStore> SteamStoreItemItemStore { get; set; }
         public DbSet<SteamStoreItem> SteamStoreItems { get; set; }
+        public DbSet<SteamStoreItemTopSellerPosition> SteamStoreItemTopSellerPositions { get; set; }
         public DbSet<SteamMarketItem> SteamMarketItems { get; set; }
         public DbSet<SteamMarketItemBuyOrder> SteamMarketItemBuyOrder { get; set; }
         public DbSet<SteamMarketItemSellOrder> SteamMarketItemSellOrder { get; set; }
@@ -262,6 +263,12 @@ namespace SCMM.Steam.Data.Store
                 .HasOne(x => x.Currency);
             builder.Entity<SteamStoreItemItemStore>()
                 .OwnsOne(x => x.Prices);
+
+            builder.Entity<SteamStoreItemTopSellerPosition>()
+                .HasIndex(x => new { x.Timestamp, x.DescriptionId, x.Position, x.Total })
+                .IsUnique(true);
+            builder.Entity<SteamStoreItemTopSellerPosition>()
+                .HasOne(x => x.Description);
         }
     }
 }
