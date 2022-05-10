@@ -251,19 +251,18 @@ namespace SCMM.Web.Server.API.Controllers
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
-                .Where(x => x.Item.Description.SubscriptionsLifetime > 0)
+                .Where(x => x.Item.Description.SupplyTotalEstimated > 0 || x.Item.Description.SubscriptionsLifetime > 0)
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
-                    Subscriptions = x.Item.Description.SubscriptionsLifetime ?? 0,
-                    TotalSalesMin = x.Item.TotalSalesMin ?? 0,
-                    KnownInventoryDuplicates = x.Item.Description.InventoryItems
-                        .GroupBy(y => y.ProfileId)
-                        .Where(y => y.Count() > 1)
-                        .Select(y => y.Sum(z => z.Quantity))
-                        .Sum(x => x)
+                    SupplyTotalEstimated = x.Item.Description.SupplyTotalEstimated ?? x.Item.Description.SubscriptionsLifetime ?? 0,
+                    SupplyTotalMarketsKnown = x.Item.Description.SupplyTotalMarketsKnown ?? 0,
+                    SupplyTotalInvestorsKnown = x.Item.Description.SupplyTotalInvestorsKnown ?? 0,
+                    SupplyTotalInvestorsEstimated = x.Item.Description.SupplyTotalInvestorsEstimated ?? 0,
+                    SupplyTotalOwnersKnown = x.Item.Description.SupplyTotalOwnersKnown ?? 0,
+                    SupplyTotalOwnersEstimated = x.Item.Description.SupplyTotalOwnersEstimated ?? 0,
                 })
-                .OrderBy(x => (x.Subscriptions + x.KnownInventoryDuplicates))
+                .OrderBy(x => x.SupplyTotalEstimated)
                 .ToListAsync();
 
             if (storeItems?.Any() != true)
@@ -275,9 +274,12 @@ namespace SCMM.Web.Server.API.Controllers
                 x => new StoreChartItemSalesDTO
                 {
                     Name = x.Name,
-                    Subscriptions = x.Subscriptions,
-                    KnownInventoryDuplicates = x.KnownInventoryDuplicates,
-                    EstimatedOtherDuplicates = Math.Max(0, x.TotalSalesMin - x.Subscriptions - x.KnownInventoryDuplicates)
+                    SupplyTotalEstimated = x.SupplyTotalEstimated,
+                    SupplyTotalMarketsKnown = x.SupplyTotalMarketsKnown,
+                    SupplyTotalInvestorsKnown = x.SupplyTotalInvestorsKnown,
+                    SupplyTotalInvestorsEstimated = Math.Max(x.SupplyTotalInvestorsEstimated - x.SupplyTotalInvestorsKnown, 0),
+                    SupplyTotalOwnersKnown = x.SupplyTotalOwnersKnown,
+                    SupplyTotalOwnersEstimated = Math.Max(x.SupplyTotalOwnersEstimated - x.SupplyTotalOwnersKnown, 0),
                 }
             );
 
@@ -321,21 +323,16 @@ namespace SCMM.Web.Server.API.Controllers
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
-                .Where(x => x.Item.Description.SubscriptionsLifetime > 0)
+                .Where(x => x.Item.Description.SupplyTotalEstimated > 0 || x.Item.Description.SubscriptionsLifetime > 0)
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
                     Currency = x.Item.Currency,
                     Price = x.Item.Price,
                     Prices = x.Item.Prices,
-                    Subscriptions = x.Item.Description.SubscriptionsLifetime ?? 0,
-                    KnownInventoryDuplicates = x.Item.Description.InventoryItems
-                        .GroupBy(y => y.ProfileId)
-                        .Where(y => y.Count() > 1)
-                        .Select(y => y.Sum(z => z.Quantity))
-                        .Sum(x => x)
+                    SupplyTotalEstimated = x.Item.Description.SupplyTotalEstimated ?? x.Item.Description.SubscriptionsLifetime ?? 0,
                 })
-                .OrderBy(x => (x.Subscriptions + x.KnownInventoryDuplicates) * x.Price)
+                .OrderBy(x => x.SupplyTotalEstimated * x.Price)
                 .ToListAsync();
 
             if (storeItems?.Any() != true)
@@ -347,7 +344,7 @@ namespace SCMM.Web.Server.API.Controllers
             var usdCurrency = await _db.SteamCurrencies.FirstOrDefaultAsync(x => x.Name == Constants.SteamCurrencyUSD);
             var storeItemRevenue = (
                 from storeItem in storeItems
-                let total = ((storeItem.Subscriptions + storeItem.KnownInventoryDuplicates) * (storeItem.Prices.ContainsKey(usdCurrency.Name) ? storeItem.Prices[usdCurrency.Name] : 0))
+                let total = (storeItem.SupplyTotalEstimated * (storeItem.Prices.ContainsKey(usdCurrency.Name) ? storeItem.Prices[usdCurrency.Name] : 0))
                 let salesTax = EconomyExtensions.SteamSaleTaxComponentAsInt(total)
                 let totalAfterTax = (total - salesTax)
                 let authorRevenue = EconomyExtensions.SteamSaleAuthorComponentAsInt(totalAfterTax)

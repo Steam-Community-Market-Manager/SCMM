@@ -138,7 +138,7 @@
                         @if (Item.SupplyTotalEstimated > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                <i class="fas fa-fw fa-user mud-secondary-text"></i>
+                                <i class="fas fa-fw fa-people-carry mud-secondary-text"></i>
                                 <span>
                                     <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ <span class="mud-secondary-text">estimated total</span> supply</span>
                                 </span>
@@ -219,6 +219,15 @@
                                             <span class="mud-secondary-text">, </span>
                                         }
                                     }
+                                </span>
+                            </MudText>
+                        }
+                        @if (Item.SubscriptionsCurrent > 0)
+                        {
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                <i class="fas fa-fw fa-user mud-secondary-text"></i>
+                                <span>
+                                    <span>@Item.SubscriptionsCurrent.Value.ToQuantityString() subscriptions</span>
                                 </span>
                             </MudText>
                         }
@@ -688,11 +697,11 @@
                         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="px-4 text-centered">
                             @if (((Item.SupplyTotalOwnersEstimated ?? 0) + (Item.SupplyTotalInvestorsEstimated ?? 0)) > ((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)))
                             {
-                                <span>We estimate there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in existance, of which <strong>@(((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)).ToQuantityString())</strong> are currently known and tracked by SCMM.</span>
+                                <span>We estimate there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, of which <strong>@(((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)).ToQuantityString())</strong> are currently known and tracked by SCMM.</span>
                             }
                             else
                             {
-                                <span>We known that there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in existance, through supply channels known and tracked by SCMM.</span>
+                                <span>We known that there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in circulation, through supply channels known and tracked by SCMM.</span>
                             }
                             <span> Our database is not comprehensive and there are always more copies that we don't know about. This information should be used a general indication of supply only. </span>
                         </MudText>
@@ -703,8 +712,8 @@
                                     <AccumulationDataLabelSettings Name="Label" Visible="false" />
                                 </AccumulationChartSeries>
                             </AccumulationChartSeriesCollection>
-                            <AccumulationChartLegendSettings Visible="true" />
                             <AccumulationChartTooltipSettings Enable="true" />
+                            <AccumulationChartLegendSettings Visible="true" Position="LegendPosition.Auto" />
                         </SfAccumulationChart>
                     </MudPaper>
 		        </MudItem>
@@ -1169,12 +1178,12 @@
     {
         var itemSupplyDistribution = new List<ChartData>();
 
-        var outstandingEstimatedUniqueOwnerSupply = ((Item.SupplyTotalOwnersEstimated ?? 0) - (Item.SupplyTotalOwnersKnown ?? 0));
+        var outstandingEstimatedUniqueOwnerSupply = Math.Max((Item.SupplyTotalOwnersEstimated ?? 0) - (Item.SupplyTotalOwnersKnown ?? 0), 0);
         if (outstandingEstimatedUniqueOwnerSupply > 0)
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"User probably own this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
+                Name = $"User subscribed to this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
                 Value = (double) outstandingEstimatedUniqueOwnerSupply
             });
         }
@@ -1182,17 +1191,17 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"User definitely own this item ({Item.SupplyTotalOwnersKnown.Value.ToQuantityString()})",
+                Name = $"User currently hold this item ({Item.SupplyTotalOwnersKnown.Value.ToQuantityString()})",
                 Value = (double) Item.SupplyTotalOwnersKnown.Value
             });
         }
         
-        var outstandingEstimatedInvestorsSupply = ((Item.SupplyTotalInvestorsEstimated ?? 0) - (Item.SupplyTotalInvestorsKnown ?? 0));
+        var outstandingEstimatedInvestorsSupply = Math.Max((Item.SupplyTotalInvestorsEstimated ?? 0) - (Item.SupplyTotalInvestorsKnown ?? 0), 0);
         if (outstandingEstimatedInvestorsSupply > 0)
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"Possible bulk inventory stock of this item ({outstandingEstimatedInvestorsSupply.ToQuantityString()})",
+                Name = $"Possible duplicate inventory stock held of this item ({outstandingEstimatedInvestorsSupply.ToQuantityString()})",
                 Value = (double) outstandingEstimatedInvestorsSupply
             });
         }
@@ -1200,7 +1209,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"Bulk inventory stock of this item ({Item.SupplyTotalInvestorsKnown.Value.ToQuantityString()})",
+                Name = $"Duplicate inventory stock held of this item ({Item.SupplyTotalInvestorsKnown.Value.ToQuantityString()})",
                 Value = (double) Item.SupplyTotalInvestorsKnown.Value
             });
         }

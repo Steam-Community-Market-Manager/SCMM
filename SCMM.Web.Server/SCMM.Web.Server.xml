@@ -102,16 +102,6 @@
             <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemDistribution(System.String)">
-            <summary>
-            Get the distribution of known instances for an item
-            </summary>
-            <param name="id">Item GUID, ID64, or name</param>
-            <response code="200">The distribution of known instances for this item.</response>
-            <response code="400">If the request data is malformed/invalid.</response>
-            <response code="404">If the request item cannot be found.</response>
-            <response code="500">If the server encountered a technical issue completing the request.</response>
-        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.ItemController.GetItemsByCollection(System.String,System.Nullable{System.UInt64})">
             <summary>
             Get all items that belong to the specified collection
@@ -511,9 +501,9 @@
             <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostSales(System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostSupply(System.Int32,System.Int32)">
             <summary>
-            List items, sorted by highest number of sales
+            List items, sorted by highest estimated total supply
             </summary>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data)</param>

@@ -46,6 +46,15 @@
                 }
                 @if (!Dense)
                 {
+                    @if (OwnableItem?.SupplyTotalEstimated > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions)))
+                    {
+                        <MudTooltip Text="Estimated total supply">
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                <i class="fas fa-fw fa-people-carry"></i>
+                                <span>@OwnableItem.SupplyTotalEstimated.Value.ToQuantityString()+</span>
+                            </MudText>
+                        </MudTooltip>
+                    }
                     <div class="d-flex flex-row justify-center align-center text-centered">
                         @if (PurchasableItem?.Supply > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Supply)))
                         {
@@ -66,15 +75,6 @@
                             </MudTooltip>
                         }
                     </div>
-                    @if (SubscribableItem?.Subscriptions > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions)))
-                    {
-                        <MudTooltip Text="Subscribers">
-                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
-                                <i class="fas fa-fw fa-user"></i>
-                                <span>@SubscribableItem.Subscriptions.Value.ToQuantityString()</span>
-                            </MudText>
-                        </MudTooltip>
-                    }
                     @if (Item.TimeAccepted != null && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age)))
                     {
                         <MudTooltip Text="Time Accepted">
@@ -115,7 +115,7 @@
 
     private ICanBePurchased PurchasableItem => (Item as ICanBePurchased);
     
-    private ICanBeSubscribed SubscribableItem => (Item as ICanBeSubscribed);
+    private ICanBeOwned OwnableItem => (Item as ICanBeOwned);
 
     private ItemInteractionDTO[] Actions => (Item as ICanBeInteractedWith)?.Actions;
     

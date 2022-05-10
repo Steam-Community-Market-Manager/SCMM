@@ -126,18 +126,14 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         var fields = new List<EmbedFieldBuilder>();
-        var sortedItems = store.Items.OrderByDescending(x => (x.Item.TotalSalesMin ?? 0)).ThenByDescending(x => (x.Item.Description.SubscriptionsLifetime ?? 0));
+        var sortedItems = store.Items.OrderByDescending(x => (x.Item.Description.SupplyTotalEstimated ?? 0)).ThenByDescending(x => (x.Item.Description.SubscriptionsLifetime ?? 0));
         foreach (var item in sortedItems)
         {
             var itemValue = new StringBuilder();
             itemValue.Append($"`{currency.ToPriceString(currency.CalculateExchange(item.Item.Price ?? 0, item.Item.Currency))}`");
-            if (item.Item.Description.SubscriptionsLifetime > 0)
+            if (item.Item.Description.SupplyTotalEstimated > 0)
             {
-                itemValue.Append($" with more than {item.Item.Description.SubscriptionsLifetime.Value.ToQuantityString()} copies sold");
-            }
-            else
-            {
-                itemValue.Append($", unknown number of sales");
+                itemValue.Append($" with {item.Item.Description.SupplyTotalEstimated.Value.ToQuantityString()}+ estimated sales");
             }
             itemValue.Append($" ([view]({_configuration.GetWebsiteUrl()}/item/{Uri.EscapeDataString(item.Item.Description.Name)}))");
 

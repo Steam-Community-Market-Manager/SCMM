@@ -631,48 +631,34 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// List items, sorted by highest number of sales
+        /// List items, sorted by highest estimated total supply
         /// </summary>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
-        [HttpGet("items/mostSales")]
-        [ProducesResponseType(typeof(PaginatedResult<ItemSalesStatisticDTO>), StatusCodes.Status200OK)]
+        [HttpGet("items/mostSupply")]
+        [ProducesResponseType(typeof(PaginatedResult<ItemSupplyStatisticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetItemsMostSales([FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetItemsMostSupply([FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var appId = this.App().Guid;
             var query = _db.SteamAssetDescriptions
                 .AsNoTracking()
                 .Include(x => x.App)
                 .Where(x => x.AppId == appId)
-                .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.SubscriptionsLifetime > 0)
-                .OrderByDescending(x => x.SubscriptionsLifetime)
-                .Select(x => new
+                .Where(x => x.AssetType == SteamAssetDescriptionType.WorkshopItem && x.SupplyTotalEstimated > 0)
+                .OrderByDescending(x => x.SupplyTotalEstimated)
+                .Select(x => new ItemSupplyStatisticDTO()
                 {
-                    Item = x,
-                    // TODO: Snapshot these for faster querying
-                    Subscriptions = (x.SubscriptionsLifetime ?? 0),
-                    TotalSalesMin = (x.StoreItem != null ? (x.StoreItem.TotalSalesMin ?? 0) : 0),
-                    KnownInventoryDuplicates = 0/*x.InventoryItems
-                        .GroupBy(y => y.ProfileId)
-                        .Where(y => y.Count() > 1)
-                        .Select(y => y.Sum(z => z.Quantity))
-                        .Sum(x => x)*/
-                    })
-                .Select(x => new ItemSalesStatisticDTO()
-                {
-                    Id = x.Item.ClassId ?? 0,
-                    AppId = ulong.Parse(x.Item.App.SteamId),
-                    Name = x.Item.Name,
-                    BackgroundColour = x.Item.BackgroundColour,
-                    ForegroundColour = x.Item.ForegroundColour,
-                    IconUrl = x.Item.IconUrl,
-                    Subscriptions = x.Subscriptions,
-                    KnownInventoryDuplicates = x.KnownInventoryDuplicates,
-                    EstimatedOtherDuplicates = Math.Max(0, x.TotalSalesMin - x.Subscriptions - x.KnownInventoryDuplicates)
+                    Id = x.ClassId ?? 0,
+                    AppId = ulong.Parse(x.App.SteamId),
+                    Name = x.Name,
+                    BackgroundColour = x.BackgroundColour,
+                    ForegroundColour = x.ForegroundColour,
+                    IconUrl = x.IconUrl,
+                    SupplyTotalEstimated = x.SupplyTotalEstimated.Value
                 });
 
             return Ok(

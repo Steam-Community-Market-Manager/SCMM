@@ -12,7 +12,7 @@
 <MudGrid Spacing="2">
 
     <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-fire" Title="Hot Right Now" Subtitle="Which items have been bought/sold the most in the past 24hrs?" Dense="true">
+        <StatisticsPanel Icon="fas fa-fw fa-fire mr-1" Title="Hot Right Now" Subtitle="Which items have been bought/sold the most in the past 24hrs?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
                     <Virtualize ItemsProvider="LoadItemsMostDemanded" Context="item">
@@ -47,7 +47,7 @@
     </MudItem>
 
     <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-arrow-up" Title="Stonking" Subtitle="Which items recently reached their all-time highest value?" Dense="true">
+        <StatisticsPanel Icon="fas fa-fw fa-arrow-up mr-1" Title="Stonking" Subtitle="Which items recently reached their all-time highest value?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
                     <Virtualize ItemsProvider="LoadItemsAllTimeHigh" Context="item">
@@ -82,7 +82,7 @@
     </MudItem>
 
     <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-arrow-down" Title="Crashing" Subtitle="Which items recently reached their all-time lowest value?" Dense="true">
+        <StatisticsPanel Icon="fas fa-fw fa-arrow-down mr-1" Title="Crashing" Subtitle="Which items recently reached their all-time lowest value?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
                     <Virtualize ItemsProvider="LoadItemsAllTimeLow" Context="item">
@@ -117,7 +117,7 @@
     </MudItem>
     
     <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-dollar-sign" Title="Most Expensive" Subtitle="Which are the most expensive items on the market?" Dense="true">
+        <StatisticsPanel Icon="fas fa-fw fa-dollar-sign mr-1" Title="Most Expensive" Subtitle="Which are the most expensive items on the market?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
                     <Virtualize ItemsProvider="LoadItemMostExpensive" Context="item">
@@ -154,10 +154,10 @@
     @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
     {
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-crown" Title="Most Sales" Subtitle="Which items have the highest (estimated) number of sales?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-people-carry mr-1" Title="Highest Estimated Supply" Subtitle="Which items have the highest estimated total supply?" Dense="true">
                 <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                     <tbody>
-                        <Virtualize ItemsProvider="LoadItemMostSales" Context="item">
+                        <Virtualize ItemsProvider="LoadItemMostSupply" Context="item">
                             <ItemContent>
                                 <tr @onclick="@((_) => ViewItem(item))" class="clickable">
                                     <td>
@@ -168,7 +168,7 @@
                                     </td>
                                     <td class="text-right">
                                         <MudText Typo="Typo.body2" Class="no-wrap">
-                                            <span>@item.Total.ToQuantityString() or more sold</span>
+                                            <span>@item.SupplyTotalEstimated.ToQuantityString()+ estimated supply</span>
                                         </MudText>
                                     </td>
                                 </tr>
@@ -192,12 +192,12 @@
     }
 
     <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-balance-scale" Title="Most Saturated" Subtitle="Which items have the largest supply of listings on the market?"Dense="true">
+        <StatisticsPanel Icon="fas fa-fw fa-balance-scale mr-1" Title="Most Saturated" Subtitle="Which items have the largest supply of active listings on the market?"Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <thead>
                     <tr>
                         <th></th>
-                        <th class="no-wrap">Supply</th>
+                        <th class="no-wrap">Market Listings</th>
                         <th class="no-wrap text-right">Daily Demand</th>
                     </tr>
                 </thead>
@@ -240,7 +240,7 @@
     </MudItem>
     
     <MudItem xs="12" md="6" xl="3">
-        <StatisticsPanel Icon="fas fa-fw fa-tshirt" Title="Largest Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
+        <StatisticsPanel Icon="fas fa-fw fa-tshirt mr-1" Title="Largest Collections" Subtitle="Which item collections have the most number of items?" Dense="true">
             <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                 <tbody>
                     <Virtualize ItemsProvider="LoadItemsLargestCollections" Context="item">
@@ -277,7 +277,7 @@
     @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
     {
         <MudItem xs="12" md="6" xl="3">
-            <StatisticsPanel Icon="fas fa-fw fa-user" Title="Largest Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
+            <StatisticsPanel Icon="fas fa-fw fa-user mr-1" Title="Largest Creators" Subtitle="Which skin creators have the most accepted in-game items?" Dense="true">
                 <MudSimpleTable Dense="true" FixedHeader="true" Style="height:30vh;" Class="flex-grow-1">
                     <tbody>
                         <Virtualize ItemsProvider="LoadProfilesLargestCreators" Context="item">
@@ -414,16 +414,16 @@
         }
     }
     
-    protected async ValueTask<ItemsProviderResult<ItemSalesStatisticDTO>> LoadItemMostSales(ItemsProviderRequest request)
+    protected async ValueTask<ItemsProviderResult<ItemSupplyStatisticDTO>> LoadItemMostSupply(ItemsProviderRequest request)
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemSalesStatisticDTO>>($"api/stats/items/mostSales?start={request.StartIndex}&count={request.Count}");
-            return new ItemsProviderResult<ItemSalesStatisticDTO>(response.Items, response.Total);
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ItemSupplyStatisticDTO>>($"api/stats/items/mostSupply?start={request.StartIndex}&count={request.Count}");
+            return new ItemsProviderResult<ItemSupplyStatisticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, $"Error listing 'most sales' item statistics");
+            Logger.LogError(ex, $"Error listing 'most supply' item statistics");
             throw;
         }
     }

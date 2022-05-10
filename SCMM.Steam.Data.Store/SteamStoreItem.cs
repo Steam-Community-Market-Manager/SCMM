@@ -156,7 +156,7 @@ namespace SCMM.Steam.Data.Store
                 return;
             }
 
-            // Calculate the different between time in store vs. time in existance to see if there was any period where the item was not available
+            // Calculate the different between time in store vs. time in circulation to see if there was any period where the item was not available
             var firstTimeSeen = limitedStores.Min(x => x.Store.Start.Value);
             var lastTimeSeen = limitedStores.Max(x => (x.Store.End ?? x.Store.Start.Value.AddDays(7)));
             var totalTimeInStore = limitedStores.Select(x => ((x.Store.End ?? x.Store.Start.Value.AddDays(7)) - x.Store.Start.Value)).Aggregate(TimeSpan.Zero, (t1, t2) => t1 + t2);

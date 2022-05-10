@@ -6,14 +6,18 @@ namespace SCMM.Web.Data.Models.UI.Store
     {
         public string Name { get; set; }
 
-        public long? Subscriptions { get; set; }
+        public long SupplyTotalEstimated { get; set; }
 
-        public long? KnownInventoryDuplicates { get; set; }
+        public long SupplyTotalMarketsKnown { get; set; }
 
-        public long? EstimatedOtherDuplicates { get; set; }
+        public long SupplyTotalInvestorsKnown { get; set; }
 
-        public long Total => ((Subscriptions ?? 0) + (KnownInventoryDuplicates ?? 0) + (EstimatedOtherDuplicates ?? 0));
+        public long SupplyTotalInvestorsEstimated { get; set; }
 
-        public string TotalText => $"more than {Total.ToQuantityString()} sold";
+        public long SupplyTotalOwnersKnown { get; set; }
+
+        public long SupplyTotalOwnersEstimated { get; set; }
+
+        public string TotalText => $"{SupplyTotalEstimated.ToQuantityString()}+ estimated sales";
     }
 }

@@ -32,8 +32,8 @@
                             <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.BuyNowPrice), Data.Models.SortDirection.Descending))">Highest Price</MudMenuItem>
                             @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
                             {
-                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.Subscriptions), Data.Models.SortDirection.Ascending))">Lowest Subscriptions</MudMenuItem>
-                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.Subscriptions), Data.Models.SortDirection.Descending))">Highest Subscriptions</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudMenuItem>
+                                <MudMenuItem OnClick="@(() => SetSortOrder(nameof(ItemDescriptionWithPriceDTO.SupplyTotalEstimated), Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudMenuItem>
                             }
                         </ChildContent>
                     </MudMenu>
