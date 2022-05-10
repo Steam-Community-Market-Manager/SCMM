@@ -213,12 +213,12 @@
                                 </span>
                             </MudText>
                         }
-                        @if (Item.CurrentSubscriptions > 0)
+                        @if (Item.SubscriptionsCurrent > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-user mud-secondary-text"></i>
                                 <span>
-                                    <span>@Item.CurrentSubscriptions.Value.ToQuantityString() subscriptions</span>
+                                    <span>@Item.SubscriptionsCurrent.Value.ToQuantityString() subscriptions</span>
                                 </span>
                             </MudText>
                         }
@@ -235,12 +235,12 @@
                                 }
                             </MudText>
                         }
-                        @if (Item.CurrentFavourited > 0)
+                        @if (Item.FavouritedCurrent > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                 <i class="fas fa-fw fa-heart mud-secondary-text"></i>
                                 <span>
-                                    <span>@Item.CurrentFavourited.Value.ToQuantityString() favourited</span>
+                                    <span>@Item.FavouritedCurrent.Value.ToQuantityString() favourited</span>
                                 </span>
                             </MudText>
                         }

@@ -98,7 +98,7 @@ public class UpdateCurrentStoreStatisticsJob
         var storeItems = itemStore.Items.ToArray();
         var missingStoreItems = storeItems
             .Where(x => !storeItemIds.Contains(x.Item.SteamId))
-            .OrderByDescending(x => x.Item.Description?.LifetimeSubscriptions ?? 0);
+            .OrderByDescending(x => x.Item.Description?.SubscriptionsLifetime ?? 0);
         foreach (var storeItem in missingStoreItems)
         {
             storeItemIds.Add(storeItem.Item.SteamId);

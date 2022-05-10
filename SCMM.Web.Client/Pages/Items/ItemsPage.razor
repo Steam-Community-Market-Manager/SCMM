@@ -43,8 +43,8 @@
                 }
                 @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
                 {
-                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("LifetimeSubscriptions", Data.Models.SortDirection.Ascending))">Lowest Subscriptions</MudSelectItem>
-                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("LifetimeSubscriptions", Data.Models.SortDirection.Descending))">Highest Subscriptions</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SubscriptionsLifetime", Data.Models.SortDirection.Ascending))">Lowest Subscriptions</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SubscriptionsLifetime", Data.Models.SortDirection.Descending))">Highest Subscriptions</MudSelectItem>
                 }
             </MudSelect>
         </MudItem>

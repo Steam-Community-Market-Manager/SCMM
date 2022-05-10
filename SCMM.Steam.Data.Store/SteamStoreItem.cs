@@ -79,7 +79,7 @@ namespace SCMM.Steam.Data.Store
             // NOTE: This approach just assumes a 10-20% increase over subscriptions
             var item = orderedStoreItems.FirstOrDefault(x => x.Id == Id);
             var itemIndex = orderedStoreItems.IndexOf(item);
-            var itemUniqueSales = (Description?.LifetimeSubscriptions ?? 0);
+            var itemUniqueSales = (Description?.SubscriptionsLifetime ?? 0);
             var itemDuplicateSales = (long)Math.Floor(itemUniqueSales > 0 ? (itemUniqueSales * (Math.Max(1, 10 - itemIndex) * 0.01m)) : 0);
             var itemTotalSales = (itemUniqueSales + itemDuplicateSales);
             TotalSalesMin = itemTotalSales;

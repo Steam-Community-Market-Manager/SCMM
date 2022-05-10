@@ -465,7 +465,7 @@ namespace SCMM.Web.Server.API.Controllers
                 )
                 .Select(x => new
                 {
-                    Subscriptions = x.LifetimeSubscriptions,
+                    Subscriptions = x.SubscriptionsLifetime,
                     InventoryCount = _db.SteamProfileInventoryItems.Where(y => y.DescriptionId == x.Id).Sum(y => y.Quantity),
                     MarketCounts = x.MarketItem.BuyPrices ?? new PersistableMarketPriceDictionary()
                 })

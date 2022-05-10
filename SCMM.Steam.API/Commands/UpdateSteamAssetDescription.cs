@@ -199,10 +199,10 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.NameWorkshop = publishedFile.Title;
                 assetDescription.DescriptionWorkshop = publishedFile.Description;
                 assetDescription.PreviewUrl = publishedFile.PreviewUrl?.ToString();
-                assetDescription.CurrentSubscriptions = (long?)publishedFile.Subscriptions;
-                assetDescription.LifetimeSubscriptions = (long?)publishedFile.LifetimeSubscriptions;
-                assetDescription.CurrentFavourited = (long?)publishedFile.Favorited;
-                assetDescription.LifetimeFavourited = (long?)publishedFile.LifetimeFavorited;
+                assetDescription.SubscriptionsCurrent = (long?)publishedFile.Subscriptions;
+                assetDescription.SubscriptionsLifetime = (long?)publishedFile.LifetimeSubscriptions;
+                assetDescription.FavouritedCurrent = (long?)publishedFile.Favorited;
+                assetDescription.FavouritedLifetime = (long?)publishedFile.LifetimeFavorited;
                 assetDescription.Views = (long?)publishedFile.Views;
                 assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null);
                 assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null);

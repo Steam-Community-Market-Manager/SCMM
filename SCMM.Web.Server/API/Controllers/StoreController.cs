@@ -251,11 +251,11 @@ namespace SCMM.Web.Server.API.Controllers
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
-                .Where(x => x.Item.Description.LifetimeSubscriptions > 0)
+                .Where(x => x.Item.Description.SubscriptionsLifetime > 0)
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
-                    Subscriptions = x.Item.Description.LifetimeSubscriptions ?? 0,
+                    Subscriptions = x.Item.Description.SubscriptionsLifetime ?? 0,
                     TotalSalesMin = x.Item.TotalSalesMin ?? 0,
                     KnownInventoryDuplicates = x.Item.Description.InventoryItems
                         .GroupBy(y => y.ProfileId)
@@ -321,14 +321,14 @@ namespace SCMM.Web.Server.API.Controllers
                 .Take(1)
                 .SelectMany(x => x.Items)
                 .Where(x => x.Item != null && x.Item.Description != null)
-                .Where(x => x.Item.Description.LifetimeSubscriptions > 0)
+                .Where(x => x.Item.Description.SubscriptionsLifetime > 0)
                 .Select(x => new
                 {
                     Name = x.Item.Description.Name,
                     Currency = x.Item.Currency,
                     Price = x.Item.Price,
                     Prices = x.Item.Prices,
-                    Subscriptions = x.Item.Description.LifetimeSubscriptions ?? 0,
+                    Subscriptions = x.Item.Description.SubscriptionsLifetime ?? 0,
                     KnownInventoryDuplicates = x.Item.Description.InventoryItems
                         .GroupBy(y => y.ProfileId)
                         .Where(y => y.Count() > 1)

@@ -128,9 +128,9 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
             {
                 description.Append($" for **{currency.ToPriceString(steamStorePrice.Price)}**");
             }
-            if (item.LifetimeSubscriptions > 0)
+            if (item.SubscriptionsLifetime > 0)
             {
-                description.Append($" with more than an estimated **{item.LifetimeSubscriptions.Value.ToQuantityString()}** copies sold");
+                description.Append($" with more than an estimated **{item.SubscriptionsLifetime.Value.ToQuantityString()}** copies sold");
             }
             else
             {

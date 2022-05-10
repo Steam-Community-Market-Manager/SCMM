@@ -75,13 +75,13 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public IDictionary<string, SteamMediaType> Previews { get; set; }
 
-        public long? CurrentSubscriptions { get; set; }
+        public long? SubscriptionsCurrent { get; set; }
 
-        public long? LifetimeSubscriptions { get; set; }
+        public long? SubscriptionsLifetime { get; set; }
 
-        public long? CurrentFavourited { get; set; }
+        public long? FavouritedCurrent { get; set; }
 
-        public long? LifetimeFavourited { get; set; }
+        public long? FavouritedLifetime { get; set; }
 
         public long? Views { get; set; }
 
