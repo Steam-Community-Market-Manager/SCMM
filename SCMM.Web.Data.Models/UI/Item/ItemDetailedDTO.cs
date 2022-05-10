@@ -75,6 +75,18 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public IDictionary<string, SteamMediaType> Previews { get; set; }
 
+        public long? SupplyTotalEstimated { get; set; }
+
+        public long? SupplyTotalMarketsKnown { get; set; }
+
+        public long? SupplyTotalInvestorsKnown { get; set; }
+
+        public long? SupplyTotalInvestorsEstimated { get; set; }
+
+        public long? SupplyTotalOwnersKnown { get; set; }
+
+        public long? SupplyTotalOwnersEstimated { get; set; }
+
         public long? SubscriptionsCurrent { get; set; }
 
         public long? SubscriptionsLifetime { get; set; }
