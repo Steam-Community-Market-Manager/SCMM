@@ -98,7 +98,7 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.IsCommodity = itemDefinition.Commodity;
                 assetDescription.IsMarketable = itemDefinition.Marketable;
                 assetDescription.IsTradable = itemDefinition.Tradable;
-                // TODO: Test this properly, might make dates less accurate
+                // NOTE: 'DateCreated' seems to reset in the item defs everytime the item is modified, so we always use the earliest known date.
                 //assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
                 //assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(itemDefinition.Modified.SteamTimestampToDateTimeOffset());
                 //assetDescription.TimeAccepted = assetDescription.TimeAccepted.Earliest(itemDefinition.DateCreated.SteamTimestampToDateTimeOffset());
@@ -139,9 +139,12 @@ namespace SCMM.Steam.API.Commands
                     }
                 }
 
-                // TODO: Promo
-                // TODO: Exchange
-                // TODO: Price Category (https://partner.steamgames.com/doc/features/inventory/schema)
+                // TODO: Store tags "nocrate"
+
+                // TODO: Type ('item' | 'bundle' | 'generator' | 'playtimegenerator' | 'tag_generator')
+                // TODO: Promo (https://partner.steamgames.com/doc/features/inventory/schema#PromoItems)
+                // TODO: Exchange (https://partner.steamgames.com/doc/features/inventory/schema#ExchangeFormat)
+                // TODO: Price Category (https://partner.steamgames.com/doc/features/inventory/schema#SpecifyPrices)
 
             }
 
