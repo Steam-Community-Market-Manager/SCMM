@@ -135,6 +135,15 @@
                                 </span>
                             </MudText>
                         }
+                        @if (Item.SupplyTotalEstimated > 0)
+                        {
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
+                                <i class="fas fa-fw fa-user mud-secondary-text"></i>
+                                <span>
+                                    <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ <span class="mud-secondary-text">estimated total</span> supply</span>
+                                </span>
+                            </MudText>
+                        }
                         @if (Item.MarketRankTotal > 0)
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
@@ -210,15 +219,6 @@
                                             <span class="mud-secondary-text">, </span>
                                         }
                                     }
-                                </span>
-                            </MudText>
-                        }
-                        @if (Item.SubscriptionsCurrent > 0)
-                        {
-                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
-                                <i class="fas fa-fw fa-user mud-secondary-text"></i>
-                                <span>
-                                    <span>@Item.SubscriptionsCurrent.Value.ToQuantityString() subscriptions</span>
                                 </span>
                             </MudText>
                         }
@@ -678,52 +678,32 @@
                 </MudItem>
             }
  
-            @if (MarketItemDistribution != null && MarketItemDistributionChartData?.Any() == true)
+            @if (Item.SupplyTotalEstimated > 0 && ItemSupplyDistributionChartData?.Any() == true)
             {
                 <MudItem xs="12" xl="6">
                     <MudPaper Outlined="true" Class="text-centered full-height">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 text-centered">
-                            <span>Item distribution</span>
+                            <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ estimated total supply</span>
                         </MudText>
                         <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="px-4 text-centered">
-                            @if (MarketItemDistribution.HasUnknownItems)
+                            @if (((Item.SupplyTotalOwnersEstimated ?? 0) + (Item.SupplyTotalInvestorsEstimated ?? 0)) > ((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)))
                             {
-                                <span>There are an estimated <strong>@((MarketItemDistribution.EstimatedItemCount ?? 0).ToQuantityString())</strong> (or more) copies of this item in existance, of which we can only confirm that <strong>@(MarketItemDistribution.KnownItemCount.ToQuantityString())</strong> currently exist. Our database is not comprehensive and there are always more copies that we don't know about.</span>
+                                <span>We estimate there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in existance, of which <strong>@(((Item.SupplyTotalOwnersKnown ?? 0) + (Item.SupplyTotalInvestorsKnown ?? 0) + (Item.SupplyTotalMarketsKnown ?? 0)).ToQuantityString())</strong> are currently known and tracked by SCMM.</span>
                             }
                             else
                             {
-                                <span>There are <strong>@(MarketItemDistribution.KnownItemCount.ToQuantityString())</strong> (or more) confirmed copies of this item currently in existance. Our database is not comprehensive and there are always more copies that we don't know about.</span>
+                                <span>We known that there are at least <strong>@Item.SupplyTotalEstimated.Value.ToQuantityString()</strong> copies of this item in existance, through supply channels known and tracked by SCMM.</span>
                             }
+                            <span> Our database is not comprehensive and there are always more copies that we don't know about. This information should be used a general indication of supply only. </span>
                         </MudText>
                         <SfAccumulationChart ID="MarketItemDistribution" Theme="Syncfusion.Blazor.Theme.MaterialDark" EnableAnimation="false" Background="transparent" Width="100%" Height="100%" EnableSmartLabels="true">
                             <AccumulationChartSeriesCollection>
-                                <AccumulationChartSeries DataSource="@MarketItemDistributionChartData" XName="Name" YName="Value" PointColorMapping="Fill" Radius="80%" StartAngle="315" EndAngle="315" InnerRadius="0%">
+                                <AccumulationChartSeries DataSource="@ItemSupplyDistributionChartData" XName="Name" YName="Value" PointColorMapping="Fill" Radius="80%" StartAngle="315" EndAngle="315" InnerRadius="0%">
                                     <AccumulationChartAnimation Enable="false" />
-                                    <AccumulationDataLabelSettings Name="Label" Visible="true" Position="AccumulationLabelPosition.Outside">
-                                        <AccumulationChartDataLabelFont Color="#eeeeee" />
-                                        <AccumulationChartConnector Type="ConnectorType.Curve" />
-                                    </AccumulationDataLabelSettings>
+                                    <AccumulationDataLabelSettings Name="Label" Visible="false" />
                                 </AccumulationChartSeries>
                             </AccumulationChartSeriesCollection>
-                            <AccumulationChartAnnotations>
-                                @if (MarketItemDistribution.UnknownItemCount > 0 && MarketItemDistribution.HasUnknownItems)
-                                {
-                                    <AccumulationChartAnnotation X="Estimated Unknown Copies" Y="@MarketItemDistribution.UnknownItemCount.Value.ToString()" CoordinateUnits="Units.Point" Region="Regions.Series">
-                                        <ContentTemplate>
-                                            <i class="fa fa-fw fa-question text-outlined" style="@($"font-size: 5em; transform: scale({Math.Min(Math.Round((MarketItemDistribution.UnknownItemCount.Value / (decimal)MarketItemDistribution.TotalItemCount) * 3, 2), 1)})")" />
-                                        </ContentTemplate>
-                                    </AccumulationChartAnnotation>
-                                }
-                                @if (MarketItemDistribution.KnownInventoryItemCount > 0)
-                                {
-                                    <AccumulationChartAnnotation X="Player Inventories" Y="@MarketItemDistribution.KnownInventoryItemCount.ToString()" CoordinateUnits="Units.Point" Region="Regions.Series">
-                                        <ContentTemplate>
-                                            <i class="fa fa-fw fa-users text-outlined" style="@($"font-size: 5em; transform: scale({Math.Min(Math.Round((MarketItemDistribution.KnownInventoryItemCount / (decimal)MarketItemDistribution.TotalItemCount) * 3, 2), 1)})")" />
-                                        </ContentTemplate>
-                                    </AccumulationChartAnnotation>
-                                }
-                            </AccumulationChartAnnotations>
-                            <AccumulationChartLegendSettings Visible="false" />
+                            <AccumulationChartLegendSettings Visible="true" />
                             <AccumulationChartTooltipSettings Enable="true" />
                         </SfAccumulationChart>
                     </MudPaper>
@@ -763,18 +743,12 @@
                                     <ItemContent>
                                         <tr class="hover-darken">
                                             <td class="text-centered">
-                                                <MudText Typo="Typo.body2" Color="@(item.Quantity >= 100 ? Color.Error : item.Quantity >= 50 ? Color.Warning : Color.Secondary)" Class="no-wrap">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">
                                                     <span>@State.Currency.ToPriceString(item.Price)</span>
                                                 </MudText>
                                             </td>
                                             <td class="text-centered">
-                                                <MudText Typo="Typo.body2" Color="@(item.Quantity >= 100 ? Color.Error : item.Quantity >= 50 ? Color.Warning : Color.Secondary)" Class="no-wrap">
-                                                    @if (item.Quantity >= 50)
-                                                    {
-                                                        <MudTooltip Text="High quantity 'sell wall' listings like this often cause the price to drop as people to start undercut eachother">
-                                                            <i class="fas fa-fw fa-exclamation-triangle mr-1" />
-                                                        </MudTooltip>
-                                                    }
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="no-wrap">
                                                     <span>@item.Quantity.ToQuantityString()</span>
                                                 </MudText>
                                             </td>
@@ -1072,9 +1046,7 @@
 
     private ItemCollectionDTO Collection;
 
-    private ItemDistributionDTO MarketItemDistribution;
-
-    private IEnumerable<object> MarketItemDistributionChartData;
+    private IEnumerable<object> ItemSupplyDistributionChartData;
 
     private bool MarketItemSalesAnnotations = true;
 
@@ -1100,22 +1072,9 @@
                 }
             });
         }
-        if (Item.Id > 0)
+        if (Item != null)
         {
-            MarketItemDistribution = await RestoreFromStateOrLoad(nameof(MarketItemDistribution), async () =>
-            {
-                try
-                {
-                    return await Http.GetFromJsonWithDefaultsAsync<ItemDistributionDTO>($"api/item/{Item.Id}/distribution");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"Error loading the item collection");
-                    Snackbar.Add($"Unable to load item collection. {ex.Message}", MudBlazor.Severity.Error);
-                    throw;
-                }
-            });
-            RebuildMarketItemDistributionChartData();
+            RebuildItemSupplyDistributionChartData();
         }
         if (Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
         {
@@ -1134,7 +1093,7 @@
     protected override Task OnPersistStateAsync()
     {
         PersistToState(nameof(Collection), Collection);
-        PersistToState(nameof(MarketItemDistribution), MarketItemDistribution);
+        PersistToState(nameof(ItemSupplyDistributionChartData), ItemSupplyDistributionChartData);
         PersistToState(nameof(MarketItemSalesMaxDays), MarketItemSalesMaxDays);
         PersistToState(nameof(MarketItemSalesChartData), MarketItemSalesChartData);
         return Task.CompletedTask;
@@ -1206,45 +1165,61 @@
         }
     }
 
-    private void RebuildMarketItemDistributionChartData()
+    private void RebuildItemSupplyDistributionChartData()
     {
-        if (MarketItemDistribution == null)
-        {
-            return;
-        }
+        var itemSupplyDistribution = new List<ChartData>();
 
-        var marketItemDistribution = new List<ChartData>();
-        if (MarketItemDistribution.UnknownItemCount > 0 && MarketItemDistribution.HasUnknownItems)
+        var outstandingEstimatedUniqueOwnerSupply = ((Item.SupplyTotalOwnersEstimated ?? 0) - (Item.SupplyTotalOwnersKnown ?? 0));
+        if (outstandingEstimatedUniqueOwnerSupply > 0)
         {
-            marketItemDistribution.Add(new ChartData() 
+            itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = "Estimated Unknown Copies",
-                Value = (double) MarketItemDistribution.UnknownItemCount.Value,
-                Fill = "#616161"
+                Name = $"User probably own this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
+                Value = (double) outstandingEstimatedUniqueOwnerSupply
             });
         }
-        if (MarketItemDistribution.KnownInventoryItemCount > 0)
+        if (Item.SupplyTotalOwnersKnown > 0)
         {
-            marketItemDistribution.Add(new ChartData() 
+            itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = "Player Inventories",
-                Value = (double) MarketItemDistribution.KnownInventoryItemCount,
-                Fill = "#0288d1"
+                Name = $"User definitely own this item ({Item.SupplyTotalOwnersKnown.Value.ToQuantityString()})",
+                Value = (double) Item.SupplyTotalOwnersKnown.Value
             });
         }
-        if (MarketItemDistribution.KnownMarketItemCounts != null)
+        
+        var outstandingEstimatedInvestorsSupply = ((Item.SupplyTotalInvestorsEstimated ?? 0) - (Item.SupplyTotalInvestorsKnown ?? 0));
+        if (outstandingEstimatedInvestorsSupply > 0)
         {
-            foreach (var market in MarketItemDistribution.KnownMarketItemCounts.OrderBy(x => x.Value))
+            itemSupplyDistribution.Add(new ChartData() 
             {
-                marketItemDistribution.Add(new ChartData() 
+                Name = $"Possible bulk inventory stock of this item ({outstandingEstimatedInvestorsSupply.ToQuantityString()})",
+                Value = (double) outstandingEstimatedInvestorsSupply
+            });
+        }
+        if (Item.SupplyTotalInvestorsKnown > 0)
+        {
+            itemSupplyDistribution.Add(new ChartData() 
+            {
+                Name = $"Bulk inventory stock of this item ({Item.SupplyTotalInvestorsKnown.Value.ToQuantityString()})",
+                Value = (double) Item.SupplyTotalInvestorsKnown.Value
+            });
+        }
+        
+        if (Item.BuyPrices?.Any() == true)
+        {
+            foreach (var market in Item.BuyPrices.Where(x => x.IsAvailable && x.Supply > 0))
+            {
+                itemSupplyDistribution.Add(new ChartData() 
                 {
-                    Name = market.Key.GetDisplayName(),
-                    Value = (double) market.Value
+                    Name = $"{market.MarketType.GetDisplayName()} ({market.Supply.Value.ToQuantityString()})",
+                    Value = (double) market.Supply.Value
                 });
             }
         }
 
-        MarketItemDistributionChartData = marketItemDistribution;
+        ItemSupplyDistributionChartData = itemSupplyDistribution
+            .OrderByDescending(x => x.Value)
+            .ToList();
     }
 
     private void BuyItem(ItemMarketPriceDTO price)
