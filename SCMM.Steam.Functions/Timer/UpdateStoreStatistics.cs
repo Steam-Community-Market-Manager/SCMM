@@ -2,7 +2,6 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
@@ -14,14 +13,14 @@ using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateCurrentStoreStatisticsJob
+public class UpdateStoreStatistics
 {
     private readonly SteamConfiguration _steamConfiguration;
     private readonly SteamDbContext _db;
     private readonly ICommandProcessor _commandProcessor;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
 
-    public UpdateCurrentStoreStatisticsJob(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
+    public UpdateStoreStatistics(SteamConfiguration steamConfiguration, ICommandProcessor commandProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient)
     {
         _steamConfiguration = steamConfiguration;
         _commandProcessor = commandProcessor;
@@ -38,7 +37,6 @@ public class UpdateCurrentStoreStatisticsJob
             .Where(x => x.Start == x.App.ItemStores.Max(x => x.Start))
             .Include(x => x.App)
             .Include(x => x.Items).ThenInclude(x => x.Item)
-            .Include(x => x.Items).ThenInclude(x => x.Item.Stores)
             .Include(x => x.Items).ThenInclude(x => x.Item.Description)
             .ToListAsync();
 
@@ -94,20 +92,43 @@ public class UpdateCurrentStoreStatisticsJob
             }
         }
 
-        // The "top sellers" list only shows the top 9 store items, this ensures all items are accounted for
-        var storeItems = itemStore.Items.ToArray();
-        var missingStoreItems = storeItems
-            .Where(x => !storeItemIds.Contains(x.Item.SteamId))
-            .OrderByDescending(x => x.Item.Description?.SubscriptionsLifetime ?? 0);
-        foreach (var storeItem in missingStoreItems)
-        {
-            storeItemIds.Add(storeItem.Item.SteamId);
-        }
+        var items = await _db.SteamStoreItems
+            .Where(x => storeItemIds.Contains(x.SteamId))
+            .Select(x => new
+            {
+                StoreItemId = x.SteamId,
+                DescriptionId = x.DescriptionId,
+                LastPosition = _db.SteamStoreItemTopSellerPositions.FirstOrDefault(
+                    y => x.DescriptionId == y.DescriptionId && x.Description.StoreItemTopSellerPositions.Max(z => z.Timestamp) == y.Timestamp
+                )
+            })
+            .ToListAsync();
 
-        // Update the store item indecies
-        foreach (var storeItem in storeItems)
+        var total = storeItemIds.Count;
+        foreach (var storeItemId in storeItemIds)
         {
-            storeItem.TopSellerIndex = storeItemIds.IndexOf(storeItem.Item.SteamId);
+            var position = (storeItemIds.IndexOf(storeItemId) + 1);
+            var item = items.FirstOrDefault(x => x.StoreItemId == storeItemId);
+            if (item == null)
+            {
+                continue;
+            }
+            if (item.LastPosition != null)
+            {
+                item.LastPosition.Duration = (DateTimeOffset.UtcNow - item.LastPosition.Timestamp);
+            }
+            if (item.LastPosition == null || item.LastPosition.Position != position || item.LastPosition.Total != total)
+            {
+                _db.SteamStoreItemTopSellerPositions.Add(
+                    new SteamStoreItemTopSellerPosition()
+                    {
+                        Timestamp = DateTimeOffset.UtcNow,
+                        DescriptionId = item.DescriptionId,
+                        Position = position,
+                        Total = total
+                    }
+                );
+            }
         }
 
         await _db.SaveChangesAsync();
@@ -160,6 +181,6 @@ public class UpdateCurrentStoreStatisticsJob
             });
         }
 
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
     }
 }

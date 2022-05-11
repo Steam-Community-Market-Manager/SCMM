@@ -20,7 +20,7 @@ using System.Globalization;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class CheckForNewMarketItemsJob
+public class CheckForNewMarketItems
 {
     private readonly IConfiguration _configuration;
     private readonly SteamDbContext _db;
@@ -29,7 +29,7 @@ public class CheckForNewMarketItemsJob
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly SteamService _steamService;
 
-    public CheckForNewMarketItemsJob(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
+    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;

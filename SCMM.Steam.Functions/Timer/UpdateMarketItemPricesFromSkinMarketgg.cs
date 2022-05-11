@@ -10,12 +10,12 @@ using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemPricesFromSkinMarketGGJob
+public class UpdateMarketItemPricesFromSkinMarketgg
 {
     private readonly SteamDbContext _db;
     private readonly SkinMarketGGWebClient _skinMarketggWebClient;
 
-    public UpdateMarketItemPricesFromSkinMarketGGJob(SteamDbContext db, SkinMarketGGWebClient skinMarketggWebClient)
+    public UpdateMarketItemPricesFromSkinMarketgg(SteamDbContext db, SkinMarketGGWebClient skinMarketggWebClient)
     {
         _db = db;
         _skinMarketggWebClient = skinMarketggWebClient;

@@ -23,7 +23,7 @@ using System.Globalization;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class CheckForNewStoreItemsJob
+public class CheckForNewStoreItems
 {
     private readonly IConfiguration _configuration;
     private readonly SteamDbContext _db;
@@ -31,7 +31,7 @@ public class CheckForNewStoreItemsJob
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamService _steamService;
 
-    public CheckForNewStoreItemsJob(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamService steamService)
+    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamService steamService)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;

@@ -12,12 +12,12 @@ using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemPricesFromRustSkinsJob
+public class UpdateMarketItemPricesFromRustSkins
 {
     private readonly SteamDbContext _db;
     private readonly RustSkinsWebClient _rustSkinsWebClient;
 
-    public UpdateMarketItemPricesFromRustSkinsJob(SteamDbContext db, RustSkinsWebClient rustSkinsWebClient)
+    public UpdateMarketItemPricesFromRustSkins(SteamDbContext db, RustSkinsWebClient rustSkinsWebClient)
     {
         _db = db;
         _rustSkinsWebClient = rustSkinsWebClient;

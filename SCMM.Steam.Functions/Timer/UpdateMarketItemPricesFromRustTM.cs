@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Market.Skinport.Client;
+using SCMM.Market.RustTM.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
@@ -11,21 +11,21 @@ using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemPricesFromSkinportJob
+public class UpdateMarketItemPricesFromRustTM
 {
     private readonly SteamDbContext _db;
-    private readonly SkinportWebClient _skinportWebClient;
+    private readonly RustTMWebClient _rustTMWebClient;
 
-    public UpdateMarketItemPricesFromSkinportJob(SteamDbContext db, SkinportWebClient skinportWebClient)
+    public UpdateMarketItemPricesFromRustTM(SteamDbContext db, RustTMWebClient rustTMWebClient)
     {
         _db = db;
-        _skinportWebClient = skinportWebClient;
+        _rustTMWebClient = rustTMWebClient;
     }
 
-    [Function("Update-Market-Item-Prices-From-Skinport")]
-    public async Task Run([TimerTrigger("0 11-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
+    [Function("Update-Market-Item-Prices-From-RustTM")]
+    public async Task Run([TimerTrigger("0 8-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        var logger = context.GetLogger("Update-Market-Item-Prices-From-Skinport");
+        var logger = context.GetLogger("Update-Market-Item-Prices-From-RustTM");
 
         var supportedSteamApps = await _db.SteamApps
             .Where(x => x.SteamId == Constants.CSGOAppId.ToString() || x.SteamId == Constants.RustAppId.ToString())
@@ -44,12 +44,12 @@ public class UpdateMarketItemPricesFromSkinportJob
 
         foreach (var app in supportedSteamApps)
         {
-            logger.LogTrace($"Updating market item price information from Skinport (appId: {app.SteamId})");
+            logger.LogTrace($"Updating item price information from Rust.tm (appId: {app.SteamId})");
            
             try
             {
-                var skinportItems = (await _skinportWebClient.GetItemsAsync(app.SteamId, currency: usdCurrency.Name)) ?? new List<SkinportItem>();
-                
+                var rustTMItems = (await _rustTMWebClient.GetPricesAsync(usdCurrency.Name)) ?? new List<RustTMItem>();
+
                 var items = await _db.SteamMarketItems
                    .Where(x => x.AppId == app.Id)
                    .Select(x => new
@@ -60,30 +60,30 @@ public class UpdateMarketItemPricesFromSkinportJob
                    })
                    .ToListAsync();
 
-                foreach (var skinportItem in skinportItems)
+                foreach (var rustTMItem in rustTMItems)
                 {
-                    var item = items.FirstOrDefault(x => x.Name == skinportItem.MarketHashName)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == rustTMItem.MarketHashName)?.Item;
                     if (item != null)
                     {
-                        item.UpdateBuyPrices(MarketType.Skinport, new PriceWithSupply
+                        item.UpdateBuyPrices(MarketType.RustTM, new PriceWithSupply
                         {
-                            Price = skinportItem.Quantity > 0 ? item.Currency.CalculateExchange((skinportItem.MinPrice ?? skinportItem.SuggestedPrice).ToString().SteamPriceAsInt(), usdCurrency) : 0,
-                            Supply = skinportItem.Quantity
+                            Price = rustTMItem.Volume > 0 ? item.Currency.CalculateExchange(rustTMItem.Price.ToString().SteamPriceAsInt(), usdCurrency) : 0,
+                            Supply = rustTMItem.Volume
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !skinportItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(MarketType.Skinport));
+                var missingItems = items.Where(x => !rustTMItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(MarketType.RustTM));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.Skinport, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.RustTM, null);
                 }
 
                 _db.SaveChanges();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from Skinport (appId: {app.SteamId}). {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item price information from Rust.tm (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
         }

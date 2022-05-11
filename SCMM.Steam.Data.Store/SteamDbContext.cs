@@ -111,6 +111,10 @@ namespace SCMM.Steam.Data.Store
                 .WithOne(x => x.Description)
                 .HasForeignKey(x => x.DescriptionId);
             builder.Entity<SteamAssetDescription>()
+                .HasMany(x => x.StoreItemTopSellerPositions)
+                .WithOne(x => x.Description)
+                .HasForeignKey(x => x.DescriptionId);
+            builder.Entity<SteamAssetDescription>()
                 .HasOne(x => x.StoreItem)
                 .WithOne(x => x.Description)
                 .HasForeignKey<SteamStoreItem>(x => x.DescriptionId);

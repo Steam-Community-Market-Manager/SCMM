@@ -208,6 +208,8 @@ namespace SCMM.Steam.Data.Store
 
         public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
 
+        public ICollection<SteamStoreItemTopSellerPosition> StoreItemTopSellerPositions { get; set; }
+
         #region Pricing
 
         public SteamStoreItem StoreItem { get; set; }

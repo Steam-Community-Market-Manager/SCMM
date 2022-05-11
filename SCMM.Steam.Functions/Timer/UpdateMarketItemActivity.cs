@@ -12,13 +12,13 @@ using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemActivityJob
+public class UpdateMarketItemActivity
 {
     private readonly SteamDbContext _db;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly SteamService _steamService;
 
-    public UpdateMarketItemActivityJob(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
+    public UpdateMarketItemActivity(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;

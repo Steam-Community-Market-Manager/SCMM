@@ -4,11 +4,11 @@ using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateProfileInventoryValuesJob
+public class UpdateProfileInventoryValues
 {
     private readonly SteamDbContext _db;
 
-    public UpdateProfileInventoryValuesJob(SteamDbContext db)
+    public UpdateProfileInventoryValues(SteamDbContext db)
     {
         _db = db;
     }

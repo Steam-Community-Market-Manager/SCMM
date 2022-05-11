@@ -8,12 +8,12 @@ using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateAssetDescriptionsJob
+public class UpdateAssetDescriptions
 {
     private readonly SteamDbContext _db;
     private readonly ICommandProcessor _commandProcessor;
 
-    public UpdateAssetDescriptionsJob(ICommandProcessor commandProcessor, SteamDbContext db)
+    public UpdateAssetDescriptions(ICommandProcessor commandProcessor, SteamDbContext db)
     {
         _commandProcessor = commandProcessor;
         _db = db;

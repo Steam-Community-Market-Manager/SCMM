@@ -4,11 +4,11 @@ using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateAssetDescriptionSupplyTotalsJob
+public class UpdateAssetDescriptionSupplyTotals
 {
     private readonly SteamDbContext _db;
 
-    public UpdateAssetDescriptionSupplyTotalsJob(SteamDbContext db)
+    public UpdateAssetDescriptionSupplyTotals(SteamDbContext db)
     {
         _db = db;
     }

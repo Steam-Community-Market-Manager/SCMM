@@ -11,13 +11,13 @@ using SCMM.Steam.Data.Store;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateCurrencyExchangeRatesJob
+public class UpdateCurrencyExchangeRates
 {
     private readonly SteamDbContext _db;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly ServiceBusClient _serviceBusClient;
 
-    public UpdateCurrencyExchangeRatesJob(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, ServiceBusClient serviceBusClient)
+    public UpdateCurrencyExchangeRates(SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, ServiceBusClient serviceBusClient)
     {
         _db = db;
         _steamCommunityWebClient = steamCommunityWebClient;

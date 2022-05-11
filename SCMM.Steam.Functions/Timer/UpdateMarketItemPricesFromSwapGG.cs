@@ -10,12 +10,12 @@ using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemPricesFromSwapGGJob
+public class UpdateMarketItemPricesFromSwapGG
 {
     private readonly SteamDbContext _db;
     private readonly SwapGGWebClient _swapGGWebClient;
 
-    public UpdateMarketItemPricesFromSwapGGJob(SteamDbContext db, SwapGGWebClient swapGGWebClient)
+    public UpdateMarketItemPricesFromSwapGG(SteamDbContext db, SwapGGWebClient swapGGWebClient)
     {
         _db = db;
         _swapGGWebClient = swapGGWebClient;

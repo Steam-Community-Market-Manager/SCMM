@@ -11,12 +11,12 @@ using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemPricesFromCSDealsJob
+public class UpdateMarketItemPricesFromCSDeals
 {
     private readonly SteamDbContext _db;
     private readonly CSDealsWebClient _csDealsWebClient;
 
-    public UpdateMarketItemPricesFromCSDealsJob(SteamDbContext db, CSDealsWebClient csDealsWebClient)
+    public UpdateMarketItemPricesFromCSDeals(SteamDbContext db, CSDealsWebClient csDealsWebClient)
     {
         _db = db;
         _csDealsWebClient = csDealsWebClient;
