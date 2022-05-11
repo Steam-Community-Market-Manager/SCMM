@@ -180,31 +180,14 @@ public class CheckForNewMarketItemsJob
                 var fields = new Dictionary<string, string>();
                 foreach (var marketItem in newMarketItems)
                 {
-                    var storeItem = _db.SteamStoreItems.FirstOrDefault(x => x.DescriptionId == marketItem.DescriptionId);
                     var description = marketItem.Description?.ItemType;
                     if (string.IsNullOrEmpty(description))
                     {
                         description = marketItem.Description?.Description ?? marketItem.SteamId;
                     }
-                    if (storeItem != null)
+                    if (marketItem.Description?.SupplyTotalEstimated > 0)
                     {
-                        var estimateSales = string.Empty;
-                        if (storeItem.TotalSalesMax == null && storeItem.TotalSalesMin > 0)
-                        {
-                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} or more";
-                        }
-                        else if (storeItem.TotalSalesMin == storeItem.TotalSalesMax && storeItem.TotalSalesMin > 0)
-                        {
-                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()}";
-                        }
-                        else if (storeItem.TotalSalesMin > 0 && storeItem.TotalSalesMax > 0)
-                        {
-                            estimateSales = $"{storeItem.TotalSalesMin.Value.ToQuantityString()} - {storeItem.TotalSalesMax.Value.ToQuantityString()}";
-                        }
-                        if (!string.IsNullOrEmpty(estimateSales))
-                        {
-                            description = $"{estimateSales} estimated sales";
-                        }
+                        description = $"{marketItem.Description?.SupplyTotalEstimated?.ToQuantityString()}+ estimated sales";
                     }
                     fields.Add(marketItem.Description.Name, description);
                 }

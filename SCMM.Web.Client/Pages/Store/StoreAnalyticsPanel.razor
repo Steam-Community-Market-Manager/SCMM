@@ -14,11 +14,11 @@
             @if (IsAnalyticsPanelOpen)
             {
                 <MudTabs Rounded="true" Centered="true" PanelClass="ma-2">
-                    <MudTabPanel Text="Estimated Sales" Disabled="@(Store?.Items?.Any(x => x.Subscriptions > 0) != true)">
-                        @if ((Store?.Items?.Any(x => x.Subscriptions > 0) != true))
+                    <MudTabPanel Text="Estimated Sales" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
+                        @if ((Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true))
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
-                                <span>No data available.</span>
+                                <span>No data available yet.</span>
                             </MudText>
                         }
                         else
@@ -28,6 +28,7 @@
                                 <span>To account for users who buy multiple copies of items, we do two things; Firstly, use the <MudLink Href="https://store.steampowered.com/itemstore/252490/?filter=Featured" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">store top sellers</MudLink> ranking to add a conservative 1-10% buffer in sales depending on how well the item has been selling. Secondly, we scan Steam inventories to identify actual duplicate item purchases. Because only a small fraction of all Steam accounts are scanned, this metric is heavily skewed but does provide a some level of insight in to what items are selling multiple copies.</span>
                             </MudAlert>
                             <SfChart ID="ItemSales" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" Width="100%" Height="100%">
+                                @* TODO: Preload this, web api adapter cause multiple calls on first load *@
                                 <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemSales")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
                                 <ChartArea>
                                     <ChartAreaBorder Width="0"></ChartAreaBorder>
@@ -69,11 +70,11 @@
                             </SfChart>
                         }
                     </MudTabPanel>
-                    <MudTabPanel Text="Estimated Revenue" Disabled="@(Store?.Items?.Any(x => x.Subscriptions > 0) != true)">
-                        @if ((Store?.Items?.Any(x => x.Subscriptions > 0) != true))
+                    <MudTabPanel Text="Estimated Revenue" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
+                        @if ((Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true))
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
-                                <span>No data available.</span>
+                                <span>No data available yet.</span>
                             </MudText>
                         }
                         else
@@ -85,6 +86,7 @@
                                 <span>Finally, all revenue is further subject to local income taxes (for individuals), goods and service taxes (for companies), international banking fees, etc; None of these additional taxes/fees are accounted for in the below estimates, so actual revenue is likley lower.</span>
                             </MudAlert>
                             <SfChart ID="ItemRevenue" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" Width="100%" Height="100%">
+                                @* TODO: Preload this, web api adapter cause multiple calls on first load *@
                                 <SfDataManager Url="@($"api/store/{Store.Guid}/stats/itemRevenue")" Adaptor="Adaptors.WebApiAdaptor"></SfDataManager>
                                 <ChartArea>
                                     <ChartAreaBorder Width="0"></ChartAreaBorder>

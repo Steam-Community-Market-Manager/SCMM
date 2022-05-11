@@ -78,11 +78,9 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public int MarketRankTotal { get; set; }
 
+        public long? SupplyTotalEstimated { get; set; }
+
         public long? Subscriptions { get; set; }
-
-        public long? SalesMinimum { get; set; }
-
-        public long? SalesMaximum { get; set; }
 
         public bool IsMarketable { get; set; }
 

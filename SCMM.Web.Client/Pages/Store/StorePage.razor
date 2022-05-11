@@ -224,25 +224,13 @@ else if (StoreList.Any())
                                                     <span>This item is not from the @State.App.Name workshop, detailed statistics are not available.</span>
                                                 </MudText>
                                             }
-                                            @if (item.SalesMinimum > 0)
+                                            @if (item.SupplyTotalEstimated > 0)
                                             {
                                                 <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Default" Class="no-wrap" GutterBottom>
                                                     <i class="fas fa-fw fa-shopping-cart mud-secondary-text"></i>
                                                     <span>
-                                                        @if (item.SalesMaximum == null)
-                                                        {
-                                                            <span class="mud-secondary-text">More than </span>
-                                                            <span>@item.SalesMinimum.Value.ToQuantityString() sold</span>
-                                                        }
-                                                        else if (item.SalesMinimum == item.SalesMaximum)
-                                                        {
-                                                            <span>@item.SalesMinimum.Value.ToQuantityString() sold</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="mud-secondary-text">Between </span>
-                                                            <span>@item.SalesMinimum.Value.ToQuantityString() - @item.SalesMaximum.Value.ToQuantityString() sold</span>
-                                                        }
+                                                        <span>@item.SupplyTotalEstimated.Value.ToQuantityString()+</span>
+                                                        <span class="mud-secondary-text"> estimated sales </span>
                                                     </span>
                                                     <span>
                                                         <i class="fas fa-fw fa-question-circle" title="Steam doesn't disclose exact sales figures, this is just an estimate. See the store analytics & insights for more details." />
