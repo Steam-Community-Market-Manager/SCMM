@@ -29,7 +29,7 @@ else
             <div class="item">
                 @if (item.Quantity > 1)
                 {
-                    <MudBadge Color="MudBlazor.Color.Dark" Content="@item.Quantity" Max="Int32.MaxValue" Overlap="true" Bordered="true" Class="mud-badge-overlap-extra" BadgeClass="mud-badge-border-inherit">
+                    <MudBadge Color="MudBlazor.Color.Dark" Content="@item.Quantity" Max="9999" Overlap="true" Bordered="true" Class="mud-badge-overlap-extra" BadgeClass="mud-badge-border-inherit">
                         <InventoryItemSummary SteamId="@SteamId" Item="@item" />
                     </MudBadge>
                 }

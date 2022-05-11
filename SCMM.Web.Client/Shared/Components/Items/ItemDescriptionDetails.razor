@@ -689,7 +689,7 @@
  
             @if (Item.SupplyTotalEstimated > 0 && ItemSupplyDistributionChartData?.Any() == true)
             {
-                <MudItem xs="12" xl="6">
+                <MudItem xs="12" xl="@((Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null || Item.MarketSellOrderCount > 0 || Item.MarketBuyOrderCount > 0) ? 6 : 12)">
                     <MudPaper Outlined="true" Class="text-centered full-height">
                         <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="pa-2 text-centered">
                             <span>@Item.SupplyTotalEstimated.Value.ToQuantityString()+ estimated total supply</span>
@@ -828,6 +828,24 @@
                         </MudSimpleTable>
 				    </MudPaper>
                 </MudItem>
+            }
+            
+            @if (Item.IsTradable && ItemHolders?.Any() == true)
+            {
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-2 pt-4 d-flex scroll-x">
+                        @foreach (var itemHolder in ItemHolders)
+                        {
+                            <div @onclick="@((_) => ViewProfileInventory(itemHolder.SteamId))" class="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? "clickable" : null)">
+                                <MudTooltip Text="@($"{itemHolder.Name ?? "Anonymous User"} owns {itemHolder.Items} of these items")" RootClass="mx-2">
+                                    <MudBadge Color="MudBlazor.Color.Dark" Content="@itemHolder.Items" Max="9999" Overlap="true" Bordered="true" Origin="Origin.TopCenter" Class="hover-zoom" BadgeClass="mud-badge-border-inherit">
+                                        <img src="@(!String.IsNullOrEmpty(itemHolder.SteamId) ? itemHolder.AvatarUrl : "/images/steam_default_avatar.png")" class="mr-1" style="width:3rem; height:3rem;" />
+                                    </MudBadge>
+                                </MudTooltip>
+                            </div>
+                        }
+                    </MudPaper>
+		        </MudItem>
             }
             
             @if(Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
@@ -1057,6 +1075,8 @@
 
     private IEnumerable<object> ItemSupplyDistributionChartData;
 
+    private IEnumerable<ItemHoldingUserDTO> ItemHolders;
+
     private bool MarketItemSalesAnnotations = true;
 
     private int MarketItemSalesMaxDays = 30;
@@ -1065,6 +1085,25 @@
 
     protected override async Task OnLoadStateAsync()
     {
+        if (Item.IsTradable && Item.SupplyTotalOwnersKnown > 0)
+        {
+            if ((State.Profile?.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private) || State.IsInRole(Roles.VIP))
+            {
+                ItemHolders = await RestoreFromStateOrLoad(nameof(ItemHolders), async () =>
+                {
+                    try
+                    {
+                        return await Http.GetFromJsonWithDefaultsAsync<IEnumerable<ItemHoldingUserDTO>>($"api/item/{Item.Id}/topHolders?max=30");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, $"Error loading the item holders list");
+                        Snackbar.Add($"Unable to load item holders list. {ex.Message}", MudBlazor.Severity.Error);
+                        throw;
+                    }
+                });
+            }
+        }
         if (!String.IsNullOrEmpty(Item.ItemCollection))
         {
             Collection = await RestoreFromStateOrLoad(nameof(Collection), async () =>
@@ -1103,6 +1142,7 @@
     {
         PersistToState(nameof(Collection), Collection);
         PersistToState(nameof(ItemSupplyDistributionChartData), ItemSupplyDistributionChartData);
+        PersistToState(nameof(ItemHolders), ItemHolders);
         PersistToState(nameof(MarketItemSalesMaxDays), MarketItemSalesMaxDays);
         PersistToState(nameof(MarketItemSalesChartData), MarketItemSalesChartData);
         return Task.CompletedTask;
@@ -1183,7 +1223,7 @@
         {
             itemSupplyDistribution.Add(new ChartData() 
             {
-                Name = $"User subscribed to this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
+                Name = $"Unknown subscribers to this item ({outstandingEstimatedUniqueOwnerSupply.ToQuantityString()})",
                 Value = (double) outstandingEstimatedUniqueOwnerSupply
             });
         }
@@ -1257,6 +1297,14 @@
     private void DownloadItemWorkshopFile()
     {
         ExternalNavigationManager.NavigateTo(Item.WorkshopFileUrl);
+    }
+    
+    private void ViewProfileInventory(string steamId)
+    {
+        if (!String.IsNullOrEmpty(steamId))
+        {
+            ExternalNavigationManager.NavigateToNewTab($"/inventory/{Uri.EscapeDataString(steamId)}");
+        }
     }
     
     private void ShowItemModelDialog()

@@ -19,6 +19,14 @@
     overflow: hidden;
 }
 
+.scroll-x {
+    overflow-x: scroll;
+}
+
+.scroll-y {
+    overflow-y: scroll;
+}
+
 .full-width {
     width: 100% !important;
 }

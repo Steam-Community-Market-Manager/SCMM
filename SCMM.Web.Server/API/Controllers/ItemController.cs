@@ -14,6 +14,7 @@ using SCMM.Web.Data.Models;
 using SCMM.Web.Data.Models.UI.Item;
 using SCMM.Web.Data.Models.Extensions;
 using SCMM.Web.Server.Extensions;
+using SCMM.Steam.Data.Models.Enums;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -371,6 +372,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <param name="id">Item GUID, ID64, or name</param>
         /// <param name="maxDays">The maximum number of days worth of sales history to return. Use <code>-1</code> for all sales history</param>
         /// <response code="200">List of item sales per day grouped/keyed by UTC date.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("{id}/sales")]
@@ -427,6 +429,67 @@ namespace SCMM.Web.Server.API.Controllers
             );
 
             return Ok(sales);
+        }
+
+        /// <summary>
+        /// Get list of top users holding an item
+        /// </summary>
+        /// <param name="id">Item GUID, ID64, or name</param>
+        /// <param name="max">The maximum number of users to return.</param>
+        /// <response code="200">List of top user holding the item.</response>
+        /// <response code="400">If the request data is malformed/invalid.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("{id}/topHolders")]
+        [ProducesResponseType(typeof(IEnumerable<ItemHoldingUserDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetItemTopHolders([FromRoute] string id, int max = 30)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Item id is invalid");
+            }
+
+            max = Math.Max(max, 0);
+            if (max <= 0)
+            {
+                return BadRequest("Max must be greater than zero");
+            }
+
+            var guid = Guid.Empty;
+            var id64 = (ulong)0;
+            Guid.TryParse(id, out guid);
+            ulong.TryParse(id, out id64);
+
+            var appId = this.App().Guid;
+            var topHoldingProfiles = await _db.SteamProfileInventoryItems
+                .AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.Profile.ItemAnalyticsParticipation != ItemAnalyticsParticipationType.Private)
+                .Where(x =>
+                    (guid != Guid.Empty && x.Description.Id == guid) ||
+                    (id64 > 0 && x.Description.ClassId == id64) ||
+                    (x.Description.Name == id)
+                )
+                .GroupBy(x => x.ProfileId)
+                .Select(x => new
+                {
+                    Profile = _db.SteamProfiles.FirstOrDefault(p => p.Id == x.Key),
+                    Items = x.Sum(y => y.Quantity)
+                })
+                .OrderByDescending(x => x.Items)
+                .Take(max)
+                .ToListAsync();
+
+            return Ok(
+                topHoldingProfiles.Select(x => new ItemHoldingUserDTO
+                {
+                    SteamId = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.SteamId : null,
+                    Name = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.Name : null,
+                    AvatarUrl = (x.Profile.ItemAnalyticsParticipation == ItemAnalyticsParticipationType.Public) ? x.Profile.AvatarUrl : null,
+                    Items = x.Items
+                })
+            );
         }
 
         /// <summary>
