@@ -1,5 +1,10 @@
-﻿@using SCMM.Web.Data.Models.UI.Store
+﻿@using SCMM.Web.Data.Models.UI.Statistic
+@using SCMM.Web.Data.Models.UI.Store
 @using Syncfusion.Blazor.Charts
+@inherits PersistentComponent
+@inject ILogger<StoreAnalyticsPanel> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
 @inject AppState State
 
 <MudExpansionPanels Dense="true" DisableGutters="true" >
@@ -7,14 +12,74 @@
         <TitleContent>
             <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default" Class="text-centered my-n4 mx-n2">
                 <i class="fa fa-fw fa-flask mr-1" />
-                <span>View Store Analytics</span>
+                <span>Store Analytics</span>
             </MudText>
         </TitleContent>
         <ChildContent>
             @if (IsAnalyticsPanelOpen)
             {
-                <MudTabs Rounded="true" Centered="true" PanelClass="ma-2">
-                    <MudTabPanel Text="Estimated Sales" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
+                <MudTabs @bind-ActivePanelIndex="AnalyticsPanelIndex" Rounded="true" Centered="true" PanelClass="ma-2">
+                    @if (Store?.Start != null)
+                    {
+                        <MudTabPanel Icon="fas fa-fw fa-trophy mr-2" Text="Top Selling Items" Disabled="@(Store?.Items?.Any() != true || TopSellers?.Any() != true)">
+                            @if (Store?.Items?.Any() != true || TopSellers?.Any() != true)
+                            {
+                                <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
+                                    <span>No data available yet.</span>
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudGrid Spacing="2">
+                                    <MudItem xs="12" md="4" lg="3" xl="2" xxl="2" Class="d-flex align-start justify-center">
+                                        <MudList Clickable="false" Dense="true">
+                                            @foreach(var topSeller in TopSellers.Where(x => x.Position > 0))
+                                            {
+                                                <MudListItem>
+                                                    <div class="d-flex">
+                                                        <div class="d-flex flex-row justify-start align-center">
+                                                            <img src="@topSeller.IconUrl" class="mr-1" style="width:32px; height:32px;" />
+                                                            <MudText Typo="Typo.body1" Style="@($"color: {topSeller.DominantColour}")">@topSeller.Name</MudText>
+                                                        </div>
+                                                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Style="@GetItemTopSellerStyles(topSeller.Position)">
+                                                            <i class="fas fa-fw fa-trophy ml-2 mr-1"/>
+                                                        </MudText>
+                                                        <MudText Typo="MudBlazor.Typo.caption" Color="MudBlazor.Color.Secondary" Style="@GetItemTopSellerStyles(topSeller.Position)">
+                                                            <span>@(topSeller.Position)@(topSeller.Position.GetPositionSuffix())</span>
+                                                        </MudText>
+                                                    </div>
+                                                </MudListItem>
+                                            }
+                                        </MudList>
+                                    </MudItem>
+                                    <MudItem xs="12" md="8" lg="9" xl="10" xxl="10">
+                                        <SfChart ID="TopSellers" Theme="Syncfusion.Blazor.Theme.FluentDark" Background="transparent" Width="100%" Height="100%">
+                                            <ChartArea>
+                                                <ChartAreaBorder Width="0"></ChartAreaBorder>
+                                            </ChartArea>
+                                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" IntervalType="IntervalType.Auto" Format="ddd hh:mm" LabelIntersectAction="LabelIntersectAction.Rotate90" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                            </ChartPrimaryXAxis>
+                                            <ChartPrimaryYAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Double" IntervalType="IntervalType.Auto" Format="\##,##" EdgeLabelPlacement="EdgeLabelPlacement.Shift" OpposedPosition="true" IsInversed="true">
+                                            </ChartPrimaryYAxis>
+                                            <ChartSeriesCollection>
+                                                @foreach(var topSeller in TopSellers)
+                                                {
+                                                    <Syncfusion.Blazor.Charts.ChartSeries DataSource="@topSeller.PositionChanges" Name="@topSeller.Name" XName="Timestamp" YName="Position" Fill="@(topSeller.DominantColour)" Type="ChartSeriesType.Line" LegendShape="LegendShape.Circle">
+                                                        <ChartMarker Visible="true" Shape="ChartShape.Image" ImageUrl="@topSeller.IconUrl" Width="24" Height="24" /> 
+                                                    </Syncfusion.Blazor.Charts.ChartSeries>
+                                                }
+                                            </ChartSeriesCollection>
+                                            <ChartZoomSettings EnableSelectionZooming="true" EnableMouseWheelZooming="false" EnablePinchZooming="true" Mode="ZoomMode.X"></ChartZoomSettings>
+                                            <ChartCrosshairSettings Enable="true" LineType="LineType.Vertical"></ChartCrosshairSettings>
+                                            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+                                            <ChartLegendSettings Visible="true"></ChartLegendSettings>
+                                        </SfChart>
+                                    </MudItem>
+                                </MudGrid>
+                            }
+                        </MudTabPanel>
+                    }
+                    <MudTabPanel Icon="fas fa-fw fa-shopping-cart mr-2" Text="Estimated Sales" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
                         @if ((Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true))
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
@@ -70,7 +135,7 @@
                             </SfChart>
                         }
                     </MudTabPanel>
-                    <MudTabPanel Text="Estimated Revenue" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
+                    <MudTabPanel Icon="fas fa-fw fa-hand-holding-usd mr-2" Text="Estimated Revenue" Disabled="@(Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true)">
                         @if ((Store?.Items?.Any(x => x.SupplyTotalEstimated > 0) != true))
                         {
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="pa-8 text-centered">
@@ -137,4 +202,59 @@
     public StoreDetailsDTO Store { get; set; }
 
     private bool IsAnalyticsPanelOpen;
+
+    private int AnalyticsPanelIndex = 1;
+
+    private IEnumerable<StoreTopSellerItemDTO> TopSellers;
+
+    protected override async Task OnLoadStateAsync()
+    {
+        if (Store?.Start != null)
+        {
+            TopSellers = await RestoreFromStateOrLoad(nameof(TopSellers), async () =>
+            {
+                try
+                {
+                    var topSellers = await Http.GetFromJsonWithDefaultsAsync<IEnumerable<StoreTopSellerItemDTO>>($"api/stats/store/topSellers?start={Store.Start?.Ticks}&end={Store.End?.Ticks}");
+                    foreach (var topSeller in topSellers)
+                    {
+                        if (topSeller.Position > 0)
+                        {
+                            topSeller.PositionChanges.Add(new StoreTopSellerPositionChartPointDTO
+                            {
+                                Timestamp = DateTime.UtcNow,
+                                Position = topSeller.Position,
+                                IsActive = true
+                            });
+                        }
+                    }
+                    return topSellers;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, $"Error loading the store top sellers");
+                    Snackbar.Add($"Unable to load store top sellers. {ex.Message}", MudBlazor.Severity.Error);
+                    throw;
+                }
+            });
+        }
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(TopSellers), TopSellers);
+        return Task.CompletedTask;
+    }
+    
+    private string GetItemTopSellerStyles(int? topSellerPosition)
+    {
+        switch(topSellerPosition)
+        {
+            case 1: return "color: gold !important";
+            case 2: return "color: silver !important";
+            case 3: return "color: #cd7f32 !important";
+            default: return "color: #fff !important";
+        }
+    }
+
 }

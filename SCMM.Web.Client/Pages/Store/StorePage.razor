@@ -358,7 +358,8 @@ else if (StoreList.Any())
                                                         <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsMarketable ? "Marketable" : "Not Marketable")" Disabled="@(!item.IsMarketable)" Class="mud-chip-outlined"
                                                                  Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : ((item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
                                                                  Variant="@(item.IsMarketable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
-                                                                 Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
+                                                                 Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Warning)"
+                                                                 IconColor="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Warning)" />
                                                     </ChildContent>
                                                     <TooltipContent>
                                                         @if (item.IsMarketable)

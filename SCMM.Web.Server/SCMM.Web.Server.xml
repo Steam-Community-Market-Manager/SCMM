@@ -446,7 +446,6 @@
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketActivity(System.String,System.String,System.Int32,System.Int32)">
-            ======================================================================================================= ///
             
             <summary>
             Get marketplace listing activity from the last 24hrs
@@ -456,6 +455,15 @@
             <param name="start">Return activity starting at this specific index (pagination)</param>
             <param name="count">Number activity to be returned (can be less if not enough data)</param>
             <response code="200">Paginated list of activity matching the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetStoreItemTopSellersTimeline(System.Int64,System.Nullable{System.Int64})">
+            <summary>
+            Get store item top seller changes timeline
+            </summary>
+            <param name="start">Starting from date</param>
+            <param name="end">Ending at date</param>
+            <response code="200">The store item top seller changes timeline.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetItemsMostDemanded(System.Int32,System.Int32)">

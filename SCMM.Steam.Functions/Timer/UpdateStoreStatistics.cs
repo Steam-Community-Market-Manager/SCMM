@@ -93,7 +93,7 @@ public class UpdateStoreStatistics
         }
 
         var items = await _db.SteamStoreItems
-            .Where(x => storeItemIds.Contains(x.SteamId))
+            .Where(x => storeItemIds.Contains(x.SteamId) || x.Description.StoreItemTopSellerPositions.Any(y => y.IsActive))
             .Select(x => new
             {
                 StoreItemId = x.SteamId,
@@ -105,29 +105,36 @@ public class UpdateStoreStatistics
             .ToListAsync();
 
         var total = storeItemIds.Count;
-        foreach (var storeItemId in storeItemIds)
+        foreach (var item in items)
         {
-            var position = (storeItemIds.IndexOf(storeItemId) + 1);
-            var item = items.FirstOrDefault(x => x.StoreItemId == storeItemId);
-            if (item == null)
+            var position = (storeItemIds.Contains(item.StoreItemId) ? (storeItemIds.IndexOf(item.StoreItemId) + 1) : 0);
+            if (position > 0)
             {
-                continue;
+                if (item.LastPosition != null)
+                {
+                    item.LastPosition.IsActive = true;
+                    item.LastPosition.Duration = (DateTimeOffset.UtcNow - item.LastPosition.Timestamp);
+                }
+                if (item.LastPosition == null || item.LastPosition.Position != position || item.LastPosition.Total != total)
+                {
+                    _db.SteamStoreItemTopSellerPositions.Add(
+                        new SteamStoreItemTopSellerPosition()
+                        {
+                            Timestamp = DateTimeOffset.UtcNow,
+                            DescriptionId = item.DescriptionId,
+                            Position = position,
+                            Total = total,
+                            IsActive = true
+                        }
+                    );
+                }
             }
-            if (item.LastPosition != null)
+            else
             {
-                item.LastPosition.Duration = (DateTimeOffset.UtcNow - item.LastPosition.Timestamp);
-            }
-            if (item.LastPosition == null || item.LastPosition.Position != position || item.LastPosition.Total != total)
-            {
-                _db.SteamStoreItemTopSellerPositions.Add(
-                    new SteamStoreItemTopSellerPosition()
-                    {
-                        Timestamp = DateTimeOffset.UtcNow,
-                        DescriptionId = item.DescriptionId,
-                        Position = position,
-                        Total = total
-                    }
-                );
+                if (item.LastPosition != null)
+                {
+                    item.LastPosition.IsActive = false;
+                }
             }
         }
 

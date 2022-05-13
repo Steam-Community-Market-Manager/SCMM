@@ -377,7 +377,6 @@ namespace SCMM.Web.Server.API.Controllers
             );
         }
 
-        /// ======================================================================================================= ///
         /// 
         /// <summary>
         /// Get marketplace listing activity from the last 24hrs
@@ -422,6 +421,60 @@ namespace SCMM.Web.Server.API.Controllers
                     BuyerName = x.BuyerName,
                     BuyerAvatarUrl = x.BuyerAvatarUrl
                 })
+            );
+        }
+
+        /// <summary>
+        /// Get store item top seller changes timeline
+        /// </summary>
+        /// <param name="start">Starting from date</param>
+        /// <param name="end">Ending at date</param>
+        /// <response code="200">The store item top seller changes timeline.</response>
+        /// <response code="500">If the server encountered a technical issue completing the request.</response>
+        [AllowAnonymous]
+        [HttpGet("store/topSellers")]
+        [ProducesResponseType(typeof(IEnumerable<StoreTopSellerItemDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetStoreItemTopSellersTimeline([FromQuery] long start, [FromQuery] long? end)
+        {
+            var app = this.App();
+            var startDate = new DateTimeOffset(start, TimeZoneInfo.Utc.BaseUtcOffset);
+            var endDate = (end != null ? new DateTimeOffset(end.Value, TimeZoneInfo.Utc.BaseUtcOffset) : (DateTimeOffset?) null);
+            var topSellerPositions = await _db.SteamStoreItemTopSellerPositions
+                .Where(x => x.Description.AppId == app.Guid)
+                .Where(x => x.Timestamp >= startDate)
+                .Where(x => endDate == null || x.Timestamp <= endDate)
+                .Select(x => new
+                {
+                    Name = x.Description.Name,
+                    IconUrl = x.Description.IconUrl,
+                    DominantColour = x.Description.DominantColour,
+                    Timestamp = x.Timestamp,
+                    Position = x.Position,
+                    Total = x.Total,
+                    IsActive = x.IsActive
+                })
+                .ToListAsync();
+
+            return Ok(
+                topSellerPositions.GroupBy(x => new { x.Name, x.IconUrl, x.DominantColour }).Select(
+                    x => new StoreTopSellerItemDTO
+                    {
+                        Name = x.Key.Name,
+                        IconUrl = x.Key.IconUrl,
+                        DominantColour = x.Key.DominantColour,
+                        Position = x.FirstOrDefault(x => x.IsActive)?.Position ?? 0,
+                        PositionChanges = x.Select(p => new StoreTopSellerPositionChartPointDTO
+                        {
+                            Timestamp = p.Timestamp.UtcDateTime,
+                            Position = p.Position,
+                            Total = p.Total,
+                            IsActive = p.IsActive
+                        }).ToList()
+                    }
+                ).ToList()
             );
         }
 
