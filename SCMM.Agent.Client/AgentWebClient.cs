@@ -21,7 +21,7 @@ public class AgentWebClient : IDisposable
 
     protected CookieContainer Cookies => _cookieContainer;
 
-    protected HttpClient GetHttpClient(bool disguisedAsWebBrowser = true, Uri referer = null)
+    protected HttpClient GetHttpClient(bool disguisedAsWebBrowser = true, Uri referer = null, string apiKey = null)
     {
         var httpClient = new HttpClient(_httpHandler, false);
         if (disguisedAsWebBrowser)
@@ -46,6 +46,11 @@ public class AgentWebClient : IDisposable
         if (referer != null)
         {
             httpClient.DefaultRequestHeaders.Referrer = referer;
+        }
+
+        if (!String.IsNullOrEmpty(apiKey))
+        {
+            httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
         }
 
         return httpClient;

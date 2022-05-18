@@ -4,13 +4,19 @@ namespace SCMM.Market.SkinsMonkey.Client
 {
     public class SkinsMonkeyItem
     {
-        [JsonPropertyName("appId")]
+        [JsonPropertyName("app_id")]
         public ulong AppId { get; set; }
 
-        [JsonPropertyName("marketName")]
-        public string MarketName { get; set; }
+        [JsonPropertyName("market_hash_name")]
+        public string MarketHashName { get; set; }
 
-        [JsonPropertyName("price")]
-        public long Price { get; set; }
+        [JsonPropertyName("price_trade")]
+        public long PriceTrade { get; set; }
+
+        [JsonPropertyName("price_cash")]
+        public long PriceCash { get; set; }
+
+        [JsonPropertyName("stock")]
+        public int Stock { get; set; }
     }
 }

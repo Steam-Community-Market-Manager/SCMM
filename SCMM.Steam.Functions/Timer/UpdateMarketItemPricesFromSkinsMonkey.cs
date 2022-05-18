@@ -47,20 +47,8 @@ public class UpdateMarketItemPricesFromSkinsMonkey
             
             try
             {
-                var skinsMonkeyItems = new List<SkinsMonkeyItemListing>();
-                var inventoryItems = (IEnumerable<SkinsMonkeyItemListing>) null;
-                var inventoryOffset = 0;
-                do
-                {
-                    // NOTE: Items have to be fetched in multiple batches, keep reading until no new items are found
-                    inventoryItems = await _skinsMonkeyWebClient.GetInventoryAsync(app.SteamId, offset: inventoryOffset, limit: SkinsMonkeyWebClient.MaxPageLimit);
-                    if (inventoryItems?.Any() == true)
-                    {
-                        skinsMonkeyItems.AddRange(inventoryItems);
-                        inventoryOffset += SkinsMonkeyWebClient.MaxPageLimit;
-                    }
-                } while (inventoryItems?.Any() == true);
-                
+                var skinsMonkeyItems = await _skinsMonkeyWebClient.GetItemPricesAsync(app.SteamId);
+                    
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
                     .Select(x => new
@@ -71,21 +59,20 @@ public class UpdateMarketItemPricesFromSkinsMonkey
                     })
                     .ToListAsync();
 
-                foreach (var skinsMonkeyItem in skinsMonkeyItems.GroupBy(x => x.Item.MarketName))
+                foreach (var skinsMonkeyItem in skinsMonkeyItems)
                 {
-                    var item = items.FirstOrDefault(x => x.Name == skinsMonkeyItem.Key)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == skinsMonkeyItem.MarketHashName)?.Item;
                     if (item != null)
                     {
-                        var supply = skinsMonkeyItem.Count();
                         item.UpdateBuyPrices(MarketType.SkinsMonkey, new PriceWithSupply
                         {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(skinsMonkeyItem.Min(x => x.Item.Price), usdCurrency) : 0,
-                            Supply = supply
+                            Price = skinsMonkeyItem.Stock > 0 ? item.Currency.CalculateExchange(skinsMonkeyItem.PriceCash, usdCurrency) : 0,
+                            Supply = skinsMonkeyItem.Stock
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !skinsMonkeyItems.Any(y => x.Name == y.Item.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.SkinsMonkey));
+                var missingItems = items.Where(x => !skinsMonkeyItems.Any(y => x.Name == y.MarketHashName) && x.Item.BuyPrices.ContainsKey(MarketType.SkinsMonkey));
                 foreach (var missingItem in missingItems)
                 {
                     missingItem.Item.UpdateBuyPrices(MarketType.SkinsMonkey, null);
