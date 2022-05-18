@@ -113,7 +113,8 @@ public class UpdateStoreStatistics
                 if (item.LastPosition != null)
                 {
                     item.LastPosition.IsActive = true;
-                    item.LastPosition.Duration = (DateTimeOffset.UtcNow - item.LastPosition.Timestamp);
+                    // TODO: System.OverflowException: SqlDbType.Time overflow. Value '1.04:35:01.9954923' is out of range. Must be between 00:00:00.0000000 and 23:59:59.9999999. 
+                    //item.LastPosition.Duration = (DateTimeOffset.UtcNow - item.LastPosition.Timestamp);
                 }
                 if (item.LastPosition == null || item.LastPosition.Position != position || item.LastPosition.Total != total)
                 {
