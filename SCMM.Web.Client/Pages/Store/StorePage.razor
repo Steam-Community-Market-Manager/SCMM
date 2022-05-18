@@ -176,9 +176,11 @@ else if (StoreList.Any())
                                     <MudGrid Spacing="1" Class="flex-grow-1">
 
                                         <MudItem xs="12" xl="5" Class="d-flex flex-column flex-grow-1">
-                                            <div class="d-flex flex-grow-1 align-center justify-center">
-                                                <img src="@item.IconUrl" @onclick="@(() => ViewItemWorkshopPage(item))" class="@($"{GetItemIconClass(item)} icon full-width pa-2")" style="@($"{GetItemIconStyles(item)}")" />
-                                            </div>
+                                            <MudTooltip Text="View more item details" RootClass="d-flex flex-grow-1 align-center justify-center full-width full-height">
+                                                <div class="d-flex flex-grow-1 align-center justify-center hover-zoom hover-zoom-extra ">
+                                                    <img src="@item.IconUrl" @onclick="@(() => ShowItemDetailsDialog(item))" class="@($"{GetItemIconClass(item)} icon full-width pa-2")" style="@($"{GetItemIconStyles(item)}")" />
+                                                </div>
+                                            </MudTooltip>
                                             <div class="d-flex flex-column flex-grow-0 flex-shrink-1 align-center justify-center">
                                                 @if (item.MarketPrice > 0 && !item.IsBanned)
                                                 { 
@@ -683,6 +685,20 @@ else
                 Id = item.WorkshopFileId.ToString()
             });
         }
+    }
+    
+    private void ViewItem(StoreItemDetailsDTO item)
+    {
+        ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");
+    }
+    
+    private void ShowItemDetailsDialog(StoreItemDetailsDTO item)
+    {
+        Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemName"] = item.Name,
+            ["ItemUrl"] = $"/api/item/{item.AssetDescriptionId}",
+        });
     }
 
     private void ShowItemModelDialog(StoreItemDetailsDTO item)
