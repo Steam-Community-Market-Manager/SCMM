@@ -66,7 +66,7 @@ public class UpdateMarketItemPricesFromSkinsMonkey
                     {
                         item.UpdateBuyPrices(MarketType.SkinsMonkey, new PriceWithSupply
                         {
-                            Price = skinsMonkeyItem.Stock > 0 ? item.Currency.CalculateExchange(skinsMonkeyItem.PriceCash, usdCurrency) : 0,
+                            Price = skinsMonkeyItem.Stock > 0 ? item.Currency.CalculateExchange(skinsMonkeyItem.PriceTrade, usdCurrency) : 0,
                             Supply = skinsMonkeyItem.Stock
                         });
                     }

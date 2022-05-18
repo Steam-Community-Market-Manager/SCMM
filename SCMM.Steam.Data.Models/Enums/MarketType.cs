@@ -106,7 +106,7 @@ namespace SCMM.Steam.Data.Models.Enums
         TradeSkinsFast = 24,
 
         [Display(Name = "SkinsMonkey")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade)] // +25% cash deposits
+        [Market(Type = PriceTypes.Trade)]
         [BuyFrom(Url = "https://skinsmonkey.com/trade")] // Unconfirmed
         SkinsMonkey = 25,
 
