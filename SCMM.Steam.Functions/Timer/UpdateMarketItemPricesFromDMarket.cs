@@ -28,6 +28,7 @@ public class UpdateMarketItemPricesFromDMarketJob
         var logger = context.GetLogger("Update-Market-Item-Prices-From-DMarket");
 
         // TODO: Enable CSGO support
+        // TODO: Needs optimisation, too slow
         var supportedSteamApps = await _db.SteamApps
             .Where(x => /*x.SteamId == Constants.CSGOAppId.ToString() || */ x.SteamId == Constants.RustAppId.ToString())
             .ToListAsync();

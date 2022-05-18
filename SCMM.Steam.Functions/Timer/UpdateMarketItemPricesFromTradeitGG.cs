@@ -53,6 +53,7 @@ public class UpdateMarketItemPricesFromTradeitGG
                 do
                 {
                     // NOTE: Items have to be fetched in multiple batches, keep reading until no new items are found
+                    // TODO: Needs optimisation, too slow
                     inventoryDataItems = await _tradeitGGWebClient.GetInventoryDataAsync(app.SteamId, offset: inventoryDataOffset, limit: TradeitGGWebClient.MaxPageLimit);
                     if (inventoryDataItems?.Any() == true)
                     {

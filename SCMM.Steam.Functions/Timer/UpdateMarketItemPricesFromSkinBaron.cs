@@ -54,6 +54,7 @@ public class UpdateMarketItemPricesFromSkinBaron
                 do
                 {
                     // NOTE: Items have to be fetched in multiple pages, keep reading until no new items are found
+                    // TODO: Needs optimisation, too slow, too many requests (429)
                     offersResponse = await _skinBaronWebClient.GetBrowsingFilterOffersAsync(app.SteamId, browsingPage);
                     if (offersResponse?.AggregatedMetaOffers?.Any() == true)
                     {
