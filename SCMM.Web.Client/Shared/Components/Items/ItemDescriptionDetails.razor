@@ -615,12 +615,12 @@
                 </MudItem>
             }
 
-            @if(Item.BuyPrices?.Any(x => x.MarketType == MarketType.SteamStore || (x.IsAvailable && (Item.MarketSellOrderLowestPrice <= 0 || (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0)) <= Item.MarketSellOrderLowestPrice))) == true)
+            @if(Item.BuyPrices?.Any(x => x.MarketType == MarketType.SteamStore || x.IsAvailable) == true)
             {   
                 <MudItem xs="12">
                     <MudPaper Outlined="true">
                         <div class="d-flex flex-row align-stretch justify-center flex-wrap">
-                            @foreach (var price in Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || (x.IsAvailable && (Item.MarketSellOrderLowestPrice <= 0 || (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0)) <= Item.MarketSellOrderLowestPrice))).OrderBy(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
+                            @foreach (var price in Item.BuyPrices.Where(x => x.MarketType == MarketType.SteamStore || x.IsAvailable).OrderBy(x => (x.Price + (State.Profile.ItemIncludeMarketFees ? x.Fee : 0))))
                             {
                                 <MudTooltip Text="@(price.IsAvailable ? $"Buy from {price.MarketType.GetDisplayName()}" : $"Currently unavailable from {price.MarketType.GetDisplayName()}")">
                                     <div @onclick="@(() => BuyItem(price))" class="@($"py-4 px-6 {(price.IsAvailable ? "hover-darken clickable" : null)}")">
