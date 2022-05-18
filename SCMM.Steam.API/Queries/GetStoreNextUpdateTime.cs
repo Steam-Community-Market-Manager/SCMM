@@ -68,7 +68,7 @@ namespace SCMM.Steam.API.Queries
                 Timestamp = nextStoreUpdate,
                 TimeRemaining = nextStoreRemaining.Duration(),
                 TimeDescription = nextStoreRemaining.Duration().ToDurationString(
-                    prefix: (nextStoreIsOverdue ? "overdue by" : "due in"), zero: "due now", showSeconds: false, maxGranularity: 2
+                    prefix: (nextStoreIsOverdue ? "overdue by about" : "expected in roughly"), zero: "expected anytime now", showSeconds: false, maxGranularity: 2
                 ),
                 IsOverdue = nextStoreIsOverdue
             };
