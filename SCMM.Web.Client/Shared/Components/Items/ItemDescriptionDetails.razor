@@ -927,10 +927,13 @@
                                         </Syncfusion.Blazor.Charts.ChartSeries>
                                         <Syncfusion.Blazor.Charts.ChartSeries DataSource="@MarketItemSalesChartData" YAxisName="PriceAxis" Name="Median Price" XName="Date" YName="Median" Volume="Volume" High="High" Low="Low" Open="Open" Close="Close"
                                                                               Fill="#388e3c" BearFillColor="#2ecd71" BullFillColor="#e74c3d" Type="@(MarketItemSalesMaxDays >= 1 && MarketItemSalesMaxDays <= 30 ? ChartSeriesType.Candle : ChartSeriesType.Line)">
-                                            <ChartTrendlines>
-                                                <ChartTrendline Type="TrendlineTypes.Polynomial" Width="3" Name="Median Price Trend" Fill="#ffffff" EnableTooltip="true">
-                                                </ChartTrendline>
-                                            </ChartTrendlines>
+                                            @if (MarketItemSalesAnnotations)
+                                            {
+                                                <ChartTrendlines>
+                                                    <ChartTrendline Type="TrendlineTypes.Polynomial" Width="3" Name="Median Price Trend" Fill="#ffffff" EnableTooltip="true">
+                                                    </ChartTrendline>
+                                                </ChartTrendlines>
+                                            }
                                         </Syncfusion.Blazor.Charts.ChartSeries>
                                     </ChartSeriesCollection>
                                     <ChartAnnotations>
@@ -945,7 +948,7 @@
                                                             {
                                                                 <MudTooltip Text="@($"{item.Name} was accepted")">
                                                                     <MudChip Size="Size.Small" Class="pa-1" Style="height:auto">
-                                                                        <div class="hover-zoom hover-zoom-extreme">
+                                                                        <div class="hover-zoom hover-zoom-extra">
                                                                             <img src="@item.IconUrl" alt="@item.Name" style="width:3em; height:3em" />
                                                                         </div>
                                                                     </MudChip>
@@ -1079,8 +1082,8 @@
 
     private bool MarketItemSalesAnnotations = true;
 
-    private int MarketItemSalesMaxDays = 30;
-    
+    private int MarketItemSalesMaxDays = -1;
+
     private IEnumerable<ItemSalesChartPointDTO> MarketItemSalesChartData;
 
     protected override async Task OnLoadStateAsync()
@@ -1126,10 +1129,7 @@
         }
         if (Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
         {
-            MarketItemSalesMaxDays = await RestoreFromStateOrLoad(nameof(MarketItemSalesMaxDays), async () =>
-            {
-                return (DateTimeOffset.Now - Item.MarketLastSaleOn.Value).TotalDays < 30 ? 30 : -1;
-            });
+            MarketItemSalesMaxDays = -1;
             MarketItemSalesChartData = await RestoreFromStateOrLoad(nameof(MarketItemSalesChartData), async () =>
             {
                 await LoadItemSales(MarketItemSalesMaxDays);
