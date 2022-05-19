@@ -329,7 +329,7 @@
                         </MudTooltip>
                         <MudTooltip>
                             <ChildContent>
-                                <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsMarketable ? "Marketable" : "Not Marketable")" Disabled="@(!Item.IsMarketable)" Class="mud-chip-outlined"
+                                <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsMarketable ? "Marketable" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "Marketable" : "Not Marketable"))" Disabled="@(!Item.IsMarketable)" Class="mud-chip-outlined"
                                          Icon="@(Item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-2" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
                                          Variant="@(Item.IsMarketable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
                                          Color="@(Item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
@@ -350,8 +350,8 @@
                                 {
                                     @if (Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0)
                                     {
-                                        <span>This item <strong>cannot</strong> currently be listed on the Steam Community Market once purchased, but <strong>probably</strong> will be marketable when the next store is released.</span>
-                                        <span>This is a common Steam issue with some store items and it generally fixes itself when the store changes. If you have ever noticed that some items are available on the market early but others are not, this is the reason why.</span>
+                                        <span>This item currently <strong>cannot</strong> be listed on the Steam Community Market once purchased, but <strong>probably</strong> can be when the store is next updated/rotated.</span>
+                                        <span>This is a known issue with store items that follow Steams preset pricing table (i.e. "default pricing").</span>
                                     }
                                     else
                                     {

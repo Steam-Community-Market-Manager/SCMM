@@ -357,7 +357,7 @@ else if (StoreList.Any())
                                                 <MudTooltip>
                                                     <ChildContent>
                                                         @* // TODO: Marketable after store rotation *@
-                                                        <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsMarketable ? "Marketable" : "Not Marketable")" Disabled="@(!item.IsMarketable)" Class="mud-chip-outlined"
+                                                        <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsMarketable ? "Marketable" : ((item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0) ? "Marketable" : "Not Marketable"))" Disabled="@(!item.IsMarketable)" Class="mud-chip-outlined"
                                                                  Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : ((item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
                                                                  Variant="@(item.IsMarketable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
                                                                  Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Warning)"
@@ -379,8 +379,8 @@ else if (StoreList.Any())
                                                         {
                                                             @if (item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0 && Store.Start != null)
                                                             {
-                                                                <span>This item <strong>cannot</strong> currently be listed on the Steam Community Market once purchased, but <strong>probably</strong> will be marketable when the next store is released in about @((Store.Start.Value.AddDays(7) - DateTimeOffset.Now).ToDurationString(showMinutes: false, showSeconds: false, maxGranularity: 2)) from now.</span>
-                                                                <span>This is a common Steam issue with some store items and it generally fixes itself when the store changes. If you have ever noticed that some items are available on the market early but others are not, this is the reason why.</span>
+                                                                <span>This item currently <strong>cannot</strong> be listed on the Steam Community Market once purchased, but <strong>probably</strong> can be when the store is next updated/rotated in @((Store.Start.Value.AddDays(7) - DateTimeOffset.Now).ToDurationString(showMinutes: false, showSeconds: false, maxGranularity: 2)) from now.</span>
+                                                                <span>This is a known issue with store items that follow Steams preset pricing table (i.e. "default pricing").</span>
                                                             }
                                                             else
                                                             {
@@ -467,7 +467,7 @@ else if (StoreList.Any())
                                                         }
                                                     </div>
                                                 }
-                                                @if (item.HasMarketListing && !item.IsBanned)
+                                                @if ((item.HasMarketListing || item.IsMarketable || (item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0 && Store.Start != null)) && !item.IsBanned)
                                                 {
                                                     <MudButton OnClick="@(() => BuyItemFromMarket(item))" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Dark" StartIcon="fab fa-fw fa-steam" Size="@Size.Medium" Class="mb-2" FullWidth Disabled="State.IsPrerendering">
                                                         <strong>Marketplace</strong>
