@@ -232,7 +232,7 @@
 
     protected override async Task OnLoadStateAsync()
     {
-        if (Store?.Start != null)
+        if (Store?.Start != null && Store?.End == null)
         {
             TopSellers = await RestoreFromStateOrLoad(nameof(TopSellers), async () =>
             {
