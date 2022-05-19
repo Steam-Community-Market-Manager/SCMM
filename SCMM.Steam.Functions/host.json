@@ -3,16 +3,16 @@
   "logging": {
     "logLevel": {
       "Default": "Information",
-      "Microsoft": "Information",
-      "Microsoft.Hosting.Lifetime": "Information",
-      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Warning",
+      "Microsoft.EntityFrameworkCore.Database": "Warning"
     },
     "applicationInsights": {
       "logLevel": {
         "Default": "Information",
-        "Microsoft": "Information",
-        "Microsoft.Hosting.Lifetime": "Information",
-        "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Warning",
+        "Microsoft.EntityFrameworkCore.Database": "Warning"
       },
       "samplingSettings": {
         "isEnabled": true,
