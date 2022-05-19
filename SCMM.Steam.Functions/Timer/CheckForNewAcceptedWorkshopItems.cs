@@ -34,7 +34,7 @@ public class CheckForNewAcceptedWorkshopItems
     }
 
     [Function("Check-New-Accepted-Workshop-Items")]
-    public async Task Run([TimerTrigger("0 * * * * *")] /* every minute */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("30 * * * * *")] /* every minute */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Check-New-Accepted-Workshop-Items");
 

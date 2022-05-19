@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
@@ -45,19 +46,29 @@ public class UpdateMarketItemOrders
         logger.LogTrace($"Updating market item orders information (id: {id}, count: {items.Count()})");
         foreach (var item in items)
         {
-            var response = await _steamCommunityWebClient.GetMarketItemOrdersHistogram(
-                new SteamMarketItemOrdersHistogramJsonRequest()
-                {
-                    ItemNameId = item.SteamId,
-                    Language = Constants.SteamDefaultLanguage,
-                    CurrencyId = item.Currency.SteamId,
-                    NoRender = true
-                }
-            );
-
             try
             {
+                var response = await _steamCommunityWebClient.GetMarketItemOrdersHistogram(
+                    new SteamMarketItemOrdersHistogramJsonRequest()
+                    {
+                        ItemNameId = item.SteamId,
+                        Language = Constants.SteamDefaultLanguage,
+                        CurrencyId = item.Currency.SteamId,
+                        NoRender = true
+                    }
+                );
+
                 await _steamService.UpdateMarketItemOrders(item, response);
+                await _db.SaveChangesAsync();
+            }
+            catch (SteamRequestException ex)
+            {
+                // If we're throttled, cool-down and try again later...
+                logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'. {ex.Message}");
+                if (ex.IsThrottled)
+                {
+                    return;
+                }
             }
             catch (Exception ex)
             {
@@ -66,7 +77,6 @@ public class UpdateMarketItemOrders
             }
         }
 
-        _db.SaveChanges();
         logger.LogTrace($"Updated market item orders information (id: {id})");
     }
 }

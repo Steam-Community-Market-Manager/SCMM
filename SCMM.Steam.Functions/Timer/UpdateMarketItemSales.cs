@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
+using SCMM.Steam.Client.Exceptions;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
 using SCMM.Steam.Data.Store;
 
@@ -65,6 +66,16 @@ public class UpdateMarketItemSales
                 // HACK: Our Steam account is locked to NZD, we must convert all prices to the items currency
                 // TODO: Find/buy a Steam account that is locked to USD for better accuracy
                 await _steamService.UpdateMarketItemSalesHistory(item, response, nzdCurrency);
+                await _db.SaveChangesAsync();
+            }
+            catch (SteamRequestException ex)
+            {
+                // If we're throttled, cool-down and try again later...
+                logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'. {ex.Message}");
+                if (ex.IsThrottled)
+                {
+                    return;
+                }
             }
             catch (Exception ex)
             {
@@ -73,7 +84,6 @@ public class UpdateMarketItemSales
             }
         }
 
-        _db.SaveChanges();
         logger.LogTrace($"Updated market item sales information (id: {id})");
     }
 }
