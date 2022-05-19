@@ -332,7 +332,7 @@
                                 <MudChip Size="MudBlazor.Size.Small" Text="@(Item.IsMarketable ? "Marketable" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "Marketable" : "Not Marketable"))" Disabled="@(!Item.IsMarketable)" Class="mud-chip-outlined"
                                          Icon="@(Item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-2" : ((Item.IsAvailableOnStore && Item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
                                          Variant="@(Item.IsMarketable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
-                                         Color="@(Item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Default)" />
+                                         Color="@(Item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" />
                             </ChildContent>
                             <TooltipContent>
                                 @if (Item.IsMarketable)

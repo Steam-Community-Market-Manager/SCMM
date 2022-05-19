@@ -50,6 +50,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.IconUrl, o => o.MapFrom(p => p.Item.Description.IconUrl))
                 .ForMember(x => x.TimeAccepted, o => o.MapFrom(p => p.Item.Description.TimeAccepted))
                 .ForMember(x => x.StorePrice, o => o.MapFromUsingCurrencyTable(p => p.Prices))
+                .ForMember(x => x.StorePriceUsd, o => o.MapFrom(p => p.Price))
                 .ForMember(x => x.TopSellerIndex, o => o.MapFrom(p => p.TopSellerIndex))
                 .ForMember(x => x.IsStillAvailableFromStore, o => o.MapFrom(p => p.Item != null ? p.Item.IsAvailable : false))
                 .ForMember(x => x.HasReturnedToStoreBefore, o => o.MapFrom(p => p.Item != null ? p.Item.HasReturnedToStore : false))

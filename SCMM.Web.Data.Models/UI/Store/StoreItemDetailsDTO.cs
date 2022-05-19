@@ -62,6 +62,8 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public long? StorePrice { get; set; }
 
+        public long? StorePriceUsd { get; set; }
+
         public int? TopSellerIndex { get; set; }
 
         public bool IsStillAvailableFromStore { get; set; }

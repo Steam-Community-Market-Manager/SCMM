@@ -13,14 +13,14 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Elevation="3">
+        <MudAlert Severity="Severity.Warning" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Class="mud-alert-outlined-warning">
             <span><strong>This action requires your <MudLink Href="https://steamcommunity.com/dev/apikey" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Steam API Key</MudLink> to modify your inventory items.</strong> Make sure you fully understand the implications of sharing your API Key with a 3rd party before proceeding. Read our <MudLink Href="/privacy" Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Warning" Underline="Underline.Hover" Target="_blank">Privacy Policy</MudLink> for more info.</span>
         </MudAlert>
         <div class="d-flex flex-row flex-wrap align-center justify-center pa-4">
-            <div class="d-flex flex-wrap flex-row align-start justify-center">
+            <div class="d-flex flex-wrap flex-row align-start justify-center mud-paper-inverted">
                 @foreach (var stack in Item.Stacks.OrderByDescending(x => x.Quantity))
                 {
-                    <MudPaper Outlined="true" Elevation="3" Class="d-flex flex-row align-center clickable hover-darken pa-1 ma-1 mud-elevation-3 " @onclick="@(() => ToggleItemStackSelection(stack))">
+                    <MudPaper Outlined="true" Class="d-flex flex-row align-center clickable hover-darken pa-1 ma-1 " @onclick="@(() => ToggleItemStackSelection(stack))">
                         <MudTooltip Text="Click to include/exclude this item from the stack">
                             @if (SelectedStacks.Contains(stack))
                             {
@@ -68,10 +68,10 @@
                     <i class="fas fa-fw fa-cog fa-spin mud-secondary-text"></i>
                 }
             </MudText>
-            <div class="d-flex flex-wrap flex-row align-start justify-center">
+            <div class="d-flex flex-wrap flex-row align-start justify-center mud-paper-inverted">
                 @if (SelectedStacks.Count() >= 2)
                 {
-                    <MudPaper Outlined="true" Elevation="3" Class="d-flex flex-row align-center pa-1 ma-1 mud-elevation-3 ">
+                    <MudPaper Outlined="true" Class="d-flex flex-row align-center pa-1 ma-1 ">
                         <i class="fa fa-fw fa-plus-circle mud-success-text mx-1" />
                         <img src="@(Item.IconUrl)" class="icon mx-1" />
                         <div class="d-flex flex-column">
@@ -138,7 +138,10 @@
 
     protected override void OnInitialized()
     {
-        SelectedStacks = new List<ProfileInventoryItemDescriptionStackDTO>(Item.Stacks);
+        if (Item != null)
+        {
+            SelectedStacks = new List<ProfileInventoryItemDescriptionStackDTO>(Item.Stacks);
+        }
     }
 
     protected override void OnConfigure(ResponsiveDialogOptions options)

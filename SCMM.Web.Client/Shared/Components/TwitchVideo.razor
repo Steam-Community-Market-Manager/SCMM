@@ -14,7 +14,7 @@
 
     private string Host;
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
         Host = new Uri(NavigationManager.BaseUri).Host;
     }

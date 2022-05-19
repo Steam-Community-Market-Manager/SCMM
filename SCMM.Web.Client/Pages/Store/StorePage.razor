@@ -74,7 +74,9 @@ else if (StoreList.Any())
                     @foreach (var note in Store.Notes)
                     {
                         <MudItem xs="12">
-                            <Alert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Warning" Icon="fas fa-fw fa-info-circle" Title="@note" />
+                            <MudAlert Variant="MudBlazor.Variant.Text" Severity="MudBlazor.Severity.Warning" Icon="fas fa-fw fa-info-circle" Class="mud-alert-outlined-warning">
+                                <MarkdownView Content="@note" />
+                            </MudAlert>
                         </MudItem>
                     }
                 }
@@ -89,7 +91,7 @@ else if (StoreList.Any())
                 @if (State.IsInRole(Roles.Administrator) || (Store.IsDraft && State.IsInRole(Roles.Contributor)))
                 {
                     <MudItem xs="12">
-                        <MudPaper Outlined="true" Class="d-flex flex-row justify-center align-center full-height pa-2">
+                        <MudPaper Outlined="true" Class="d-flex flex-row flex-wrap justify-center align-center full-height pa-2">
                             <MudAutocomplete T="ItemDescriptionWithPriceDTO" @bind-Value="LinkedItem" SearchFunc="@SearchItem" ToStringFunc="@(x => x == null ? null : x.Name)" Variant="Variant.Outlined" Margin="Margin.Dense" 
                                              Placeholder="Add an item to this store..." Class="flex-grow-0 flex-shrink-0 pl-1 pr-2" Disabled="State.IsPrerendering">
                                 <ItemTemplate Context="item">
@@ -360,8 +362,8 @@ else if (StoreList.Any())
                                                         <MudChip Size="MudBlazor.Size.Small" Text="@(item.IsMarketable ? "Marketable" : ((item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0) ? "Marketable" : "Not Marketable"))" Disabled="@(!item.IsMarketable)" Class="mud-chip-outlined"
                                                                  Icon="@(item.IsMarketable ? "fas fa-fw fa-balance-scale-left mr-3" : ((item.IsStillAvailableFromStore && item.MarketableRestrictionDays > 0) ? "fas fa-fw fa-question" : "fas fa-fw fa-times"))" 
                                                                  Variant="@(item.IsMarketable ? MudBlazor.Variant.Text : MudBlazor.Variant.Outlined)" 
-                                                                 Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Warning)"
-                                                                 IconColor="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Warning)" />
+                                                                 Color="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)"
+                                                                 IconColor="@(item.IsMarketable ? MudBlazor.Color.Default : MudBlazor.Color.Secondary)" />
                                                     </ChildContent>
                                                     <TooltipContent>
                                                         @if (item.IsMarketable)

@@ -80,7 +80,7 @@
                             <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0"
                                           Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
 					    </MudHidden>
-                        <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" Dense="true" OffsetY Disabled="State.IsPrerendering">
+                        <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" OffsetY Disabled="State.IsPrerendering">
                             <MudMenuItem OnClick="@ViewProfileOnSteam">
                                 <i class="fab fa-fw fa-steam mr-1"></i>
                                 <span>View on Steam</span>
@@ -124,18 +124,6 @@
 
     private HttpStatusCode? LoadingErrorStatusCode;
 
-    protected override void OnInitialized()
-    {
-        switch (Panel)
-        {
-            case "items": PanelIndex = 0; break;
-            case "collections": PanelIndex = 1; break;
-            case "market": PanelIndex = 2; break;
-            case "investment": PanelIndex = 3; break;
-            case "statistics": PanelIndex = 4; break;
-        }
-    }
-
     protected override async Task OnLoadStateAsync()
     {
         Profile = await RestoreFromStateOrLoad(nameof(Profile), async () =>
@@ -169,6 +157,15 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        switch (Panel)
+        {
+            case "items": PanelIndex = 0; break;
+            case "collections": PanelIndex = 1; break;
+            case "market": PanelIndex = 2; break;
+            case "investment": PanelIndex = 3; break;
+            case "statistics": PanelIndex = 4; break;
+        }
+
         // If we have navigated to a different profile, reload the new profile
         if ((Profile != null) &&
             !String.Equals(SteamId, Profile?.SteamId, StringComparison.InvariantCultureIgnoreCase) &&
