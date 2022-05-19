@@ -8,6 +8,7 @@ namespace SCMM.Steam.Data.Store
         public const string AlertChannel = "Alert-Channel";
         public const string AlertsStore = "Alerts-Store";
         public const string AlertsMarket = "Alerts-Market";
+        public const string AlertsWorkshop = "Alerts-Workshop";
         public const string AlertsItemDefinition = "Alerts-Item-Definition";
 
         public static IEnumerable<ConfigurationDefinition> Definitions => new ConfigurationDefinition[]
@@ -40,6 +41,14 @@ namespace SCMM.Steam.Data.Store
             {
                 Name = AlertsMarket,
                 Description =  "Show a notification when new items are released to the Steam Community Market.",
+                AllowedValues = new [] {
+                    bool.TrueString, bool.FalseString
+                }
+            },
+            new ConfigurationDefinition()
+            {
+                Name = AlertsWorkshop,
+                Description =  "Show a notification when new items are accepted in-game from the Steam Workshop.",
                 AllowedValues = new [] {
                     bool.TrueString, bool.FalseString
                 }

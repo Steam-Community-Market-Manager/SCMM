@@ -45,6 +45,8 @@ namespace SCMM.Steam.Data.Store
 
         public string ItemDefinitionsDigest { get; set; }
 
+        public ulong? MostRecentlyAcceptedWorkshopFileId { get; set; }
+
         public DateTimeOffset? TimeUpdated { get; set; }
 
         public SteamAppFeatureTypes Features { get; set; }
