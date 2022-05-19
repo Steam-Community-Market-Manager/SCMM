@@ -160,7 +160,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var allItemPrices = await _db.SteamAssetDescriptions
                     .AsNoTracking()
                     .Where(x => allItemTypes.Contains(x.ItemType))
-                    .Where(x => x.IsMarketable || x.MarketableRestrictionDays > 0 || (x.IsMarketable && x.MarketableRestrictionDays == null))
+                    .Where(x => x.IsMarketable || x.MarketableRestrictionDays > 0)
                     .Select(x => new
                     {
                         ItemType = x.ItemType,

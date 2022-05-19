@@ -490,7 +490,7 @@ namespace SCMM.Steam.API.Commands
                         // e.g. "Bags contain clothes."
                         // e.g. "Boxes contain deployables,"
                         var isSkinContainer = Regex.IsMatch(assetDescription.Description, @"(.*)s contain (skins|weapons|tools|clothes|deployables)");
-                        if (isSkinContainer && assetDescription.IsMarketable)
+                        if (isSkinContainer && (assetDescription.IsMarketable || assetDescription.MarketableRestrictionDays > 0))
                         {
                             assetDescription.IsCraftable = true;
                         }

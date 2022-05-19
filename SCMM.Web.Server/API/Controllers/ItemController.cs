@@ -142,7 +142,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (marketable)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || (x.IsMarketable == true || x.MarketableRestrictionDays > 0 || (x.IsMarketable && x.MarketableRestrictionDays == null)));
+                query = query.Where(x => id.Contains(x.ClassId) || (x.IsMarketable == true || x.MarketableRestrictionDays > 0));
             }
             if (tradable)
             {
@@ -253,7 +253,7 @@ namespace SCMM.Web.Server.API.Controllers
                 var otherItems = await _db.SteamAssetDescriptions
                     .AsNoTracking()
                     .Where(x => x.ItemType == itemDetails.ItemType)
-                    .Where(x => x.IsMarketable || x.MarketableRestrictionDays > 0 || (x.IsMarketable && x.MarketableRestrictionDays == null))
+                    .Where(x => x.IsMarketable || x.MarketableRestrictionDays > 0)
                     .Select(x => new
                     {
                         MarketPrice = (x.MarketItem != null ? x.MarketItem.SellOrderLowestPrice : 0),

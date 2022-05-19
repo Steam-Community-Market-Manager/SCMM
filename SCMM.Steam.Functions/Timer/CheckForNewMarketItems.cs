@@ -45,7 +45,7 @@ public class CheckForNewMarketItems
         var logger = context.GetLogger("Check-New-Market-Items");
 
         var assetDescriptions = _db.SteamAssetDescriptions
-            .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0 || (x.IsMarketable && x.MarketableRestrictionDays == null)))
+            .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0))
             .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
             .Where(x => x.IsAccepted)
             .Include(x => x.App)

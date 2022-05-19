@@ -54,7 +54,7 @@ namespace SCMM.Steam.API.Commands
                 .Where(x => x.ProfileId == resolvedId.ProfileId)
                 .Where(x => x.Description != null)
                 .Where(x => showDrops || (!x.Description.IsSpecialDrop && !x.Description.IsTwitchDrop))
-                .Where(x => showUnmarketable || (x.Description.IsMarketable))
+                .Where(x => showUnmarketable || (x.Description.IsMarketable || x.Description.MarketableRestrictionDays > 0))
                 .Select(x => new
                 {
                     IconUrl = x.Description.IconUrl,
