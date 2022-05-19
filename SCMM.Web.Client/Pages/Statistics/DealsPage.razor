@@ -19,16 +19,16 @@
 
             <MudTabPanel Icon="fas fa-fw fa-search-dollar mr-2" Text="Cheapest Offers" Disabled="State.IsPrerendering">
                 <AnalyticsPanel>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" GutterBottom="true">
                         <span>Looking to buy a particular item?</span><br/>
                         <span>Find the cheapest offer across all markets here.</span>
                     </MudText>
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                         <thead>
                             <tr>
-                                <th>
-                                    <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketCheapestListings.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0 mt-n4"
-                                                    Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                                <th class="py-0 my-0">
+                                    <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketCheapestListings.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" 
+                                                  Placeholder="Search items..." FullWidth="true" Class="mud-input-full-height ma-0" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
                                 <th>Cheapest market offer</th>
                                 <th>Steam Community Market</th>
@@ -128,9 +128,9 @@
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                         <thead>
                             <tr>
-                                <th>
-                                    <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketFlips.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="ma-0 pa-0 mt-n4"
-                                                    Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
+                                <th class="py-0 my-0">
+                                    <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketFlips.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" 
+                                                  Placeholder="Search items..." FullWidth="true" Class="mud-input-full-height ma-0" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
                                 <th>Buy it now</th>
                                 <th class="pa-0">

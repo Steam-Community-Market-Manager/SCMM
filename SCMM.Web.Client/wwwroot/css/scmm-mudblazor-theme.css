@@ -14,6 +14,12 @@
     margin-right: 8px;
 }
 
+.mud-input-full-height .mud-input-control-input-container,
+.mud-input-full-height .mud-input {
+    height: 100%;
+    margin-top: 0px !important;
+}
+
 .mud-input-transparent .mud-input-label {
     background: black;
 }

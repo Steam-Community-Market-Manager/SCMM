@@ -1,4 +1,5 @@
-﻿@using SCMM.Web.Data.Models.UI.Profile.Inventory
+﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
+@using SCMM.Web.Data.Models.UI.Profile.Inventory
 @page "/inventory/{SteamId}"
 @page "/steam/inventory/{SteamId}"
 @inherits PersistentComponent
@@ -11,7 +12,7 @@
 
 <PageContainer Title="@(Profile != null ? $"Inventory - {Profile.Name}" : "Inventory")">
     <MudGrid Spacing="2">
-        <InventoryHeaderPanel Profile="@Profile" InventoryTotal="@InventoryTotals" SynchroniseInventory="@OnSynchroniseInventory" />
+        <InventoryHeaderPanel Profile="@Profile" InventoryTotal="@InventoryTotals" />
         @if (Profile != null && InventoryTotals != null)
         {
             <MudHidden Breakpoint="Breakpoint.MdAndDown" Invert="true">
@@ -76,9 +77,19 @@
 					</ChildContent>
 	                <Header>
                         <MudHidden Breakpoint="Breakpoint.LgAndUp" Invert="true">
-                            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Search items..." FullWidth="true" Class="mt-0 mr-1"
+                            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Placeholder="Filter items..." FullWidth="true" Class="mud-input-full-height ma-0"
                                           Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
 					    </MudHidden>
+                        <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" Dense="true" OffsetY Disabled="State.IsPrerendering">
+                            <MudMenuItem OnClick="@ViewProfileOnSteam">
+                                <i class="fab fa-fw fa-steam mr-1"></i>
+                                <span>View on Steam</span>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="@SynchroniseProfileWithSteam">
+                                <i class="fa fa-fw fa-sync mr-1"></i>
+                                <span>Synchronise with Steam</span>
+                            </MudMenuItem>
+                        </MudMenu>
 	                </Header>
                 </MudTabs>
             }
@@ -191,7 +202,15 @@
         }
     }
 
-    private async Task OnSynchroniseInventory()
+    private void ViewProfileOnSteam()
+    {
+        ExternalNavigationManager.NavigateToNewTab(new SteamProfilePageRequest()
+        {
+            SteamId = (Profile?.SteamId ?? SteamId)
+        });
+    }
+
+    private async Task SynchroniseProfileWithSteam()
     {
         Profile = null;
         StateHasChanged();
@@ -262,6 +281,11 @@
             if(!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
+            }
+
+            if (Profile != null && force == true)
+            {
+                Profile.LastUpdatedInventoryOn = DateTimeOffset.Now;
             }
         }
         catch (Exception ex)

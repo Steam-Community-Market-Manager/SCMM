@@ -39,8 +39,6 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public string DiscordId { get; set; }
 
-        public string[] Roles { get; set; }
-
         public int DonatorLevel { get; set; }
     }
 }

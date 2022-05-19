@@ -17,5 +17,7 @@ namespace SCMM.Web.Data.Models.UI.Profile
         public SteamVisibilityType Privacy { get; set; }
 
         public DateTimeOffset? LastUpdatedInventoryOn { get; set; }
+
+        public string[] Roles { get; set; }
     }
 }
