@@ -72,6 +72,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rust.tm/?s=price&t=all&search={3}&sd=asc")] // Unconfirmed
         RustTM = 19,
 
+        // NOTE: Dead website, dead
         // TODO: Implement web socket client support
         // wss://rustvendor.com/socket.io/?EIO=4&transport=websocket&sid=xxx
         // => 42["requestInventory"]
@@ -81,6 +82,7 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://rustvendor.com/trade")] // Unconfirmed
         RUSTVendor = 20,
 
+        // NOTE: Very inactive website, remove
         // TODO: Implement web socket client support
         // wss://rustytrade.com/socket.io/?EIO=3&transport=websocket&sid=xxx
         // => 42["get bots inv"]
@@ -134,6 +136,9 @@ namespace SCMM.Steam.Data.Models.Enums
         Buff = 29
 
         /*
+        BUY:  https://www.rustreaper.com/marketplace/RUST
+        BUY:  https://rustysaloon.com/withdraw
+        BUY:  https://bandit.camp/
         BUY:  https://trade.skin/ (looks sus...)
         BUY:  https://rustplus.com/ (looks sus...)
         SELL: https://rustysell.com/
