@@ -1,16 +1,15 @@
 ﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
-using SCMM.Azure.ServiceBus.Http;
-using SCMM.Market.Client;
+using SCMM.Worker.Client.Remote;
 
-namespace SCMM.Agent.Server.Handlers
+namespace SCMM.Worker.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 1)]
-    public class ServiceBusHttpRequestMessageHandler : AgentWebClient, IMessageHandler<ServiceBusHttpRequestMessage>
+    public class RemoteHttpRequestMessageHandler : Worker.Client.WebClient, IMessageHandler<RemoteHttpRequestMessage>
     {
-        public async Task HandleAsync(ServiceBusHttpRequestMessage message, MessageContext context)
+        public async Task HandleAsync(RemoteHttpRequestMessage message, MessageContext context)
         {
-            using (var client = GetHttpClient())
+            using (var client = BuildHttpClient())
             {
                 var content = (HttpContent)null;
                 if (message.Content != null)
@@ -38,20 +37,29 @@ namespace SCMM.Agent.Server.Handlers
                 {
                     foreach (var header in message.Headers)
                     {
-                        message.Headers.TryAdd(header.Key, header.Value);
+                        request.Headers.Add(header.Key, header.Value);
                     }
                 }
+
+                if (message.Cookies != null)
+                {
+                    request.Headers.Add(
+                        "Cookie",
+                        message.Cookies.Select(x => $"{Uri.EscapeDataString(x.Name)}={Uri.EscapeDataString(x.Value)}").ToArray()
+                    );
+                }
+
                 if (message.Options != null)
                 {
                     foreach (var option in message.Options)
                     {
-                        message.Options.TryAdd(option.Key, option.Value);
+                        request.Options.TryAdd(option.Key, option.Value);
                     }
                 }
 
                 var response = await client.SendAsync(request);
                 var binaryContent = await response.Content.ReadAsByteArrayAsync();
-                await context.ReplyAsync(new ServiceBusHttpResponseMessage()
+                await context.ReplyAsync(new RemoteHttpResponseMessage()
                 {
                     Headers = response.Headers?.ToDictionary(x => x.Key, x => x.Value.ToArray()),
                     StatusCode = response.StatusCode,

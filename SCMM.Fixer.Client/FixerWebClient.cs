@@ -2,25 +2,22 @@
 
 namespace SCMM.Fixer.Client
 {
-    public class FixerWebClient : IDisposable
+    public class FixerWebClient : Worker.Client.WebClient
     {
         private const string BaseUri = "https://data.fixer.io/api/";
 
-        private readonly FixerConfiguration _cfg;
-        private readonly HttpClientHandler _httpHandler;
-        private bool _disposedValue;
+        private readonly FixerConfiguration _configuration;
 
-        public FixerWebClient(FixerConfiguration cfg)
+        public FixerWebClient(FixerConfiguration configuration)
         {
-            _cfg = cfg;
-            _httpHandler = new HttpClientHandler();
+            _configuration = configuration;
         }
 
         public async Task<IDictionary<string, decimal>> GetHistoricalRatesAsync(DateTime date, string from, params string[] to)
         {
-            using (var client = new HttpClient(_httpHandler, false))
+            using (var client = BuildHttpClient())
             {
-                var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_cfg.ApiKey}&base={from}&symbols={string.Join(',', to)}";
+                var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_configuration.ApiKey}&base={from}&symbols={string.Join(',', to)}";
                 var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
@@ -28,26 +25,6 @@ namespace SCMM.Fixer.Client
                 var responseJson = JsonSerializer.Deserialize<FixerHistoricalRatesResponseJson>(textJson);
                 return responseJson?.Rates;
             }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _httpHandler.Dispose();
-                }
-
-                _disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

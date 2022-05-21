@@ -1,8 +1,9 @@
-﻿using System.Net;
+﻿using SCMM.Azure.ServiceBus;
+using System.Net;
 
-namespace SCMM.Azure.ServiceBus.Http;
+namespace SCMM.Worker.Client.Remote;
 
-public class ServiceBusHttpResponseMessage : IMessage
+public class RemoteHttpResponseMessage : IMessage
 {
     public IDictionary<string, string[]> Headers { get; set; }
 
@@ -10,7 +11,7 @@ public class ServiceBusHttpResponseMessage : IMessage
 
     public HttpStatusCode StatusCode { get; set; }
 
-    public string? ReasonPhrase { get; set; }
+    public string ReasonPhrase { get; set; }
 
     public byte[] Content { get; set; }
 

@@ -1,15 +1,15 @@
-﻿using SCMM.Market.Client;
+﻿using SCMM.Worker.Client;
 using System.Text.Json;
 
 namespace SCMM.Market.iTradegg.Client
 {
-    public class iTradeggWebClient : AgentWebClient
+    public class iTradeggWebClient : Worker.Client.WebClient
     {
         private const string BaseUri = "https://itrade.gg/ajax/";
 
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {
-            using (var client = GetHttpClient())
+            using (var client = BuildHttpClient())
             {
                 var url = $"{BaseUri}getInventory?game={appId}&type=bot";
                 var response = await client.GetAsync(url);

@@ -1,15 +1,15 @@
-﻿using SCMM.Market.Client;
+﻿using SCMM.Worker.Client;
 using System.Text.Json;
 
 namespace SCMM.Market.TradeSkinsFast.Client
 {
-    public class TradeSkinsFastWebClient : AgentWebClient
+    public class TradeSkinsFastWebClient : Worker.Client.WebClient
     {
         private const string BaseUri = "https://tradeskinsfast.com/";
 
         public async Task<TradeSkinsFastBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
-            using (var client = GetHttpClient(referer: new Uri(BaseUri)))
+            using (var client = BuildHttpClient(referer: new Uri(BaseUri)))
             {
                 var url = $"{BaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {

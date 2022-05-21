@@ -1,9 +1,11 @@
-﻿using SCMM.Azure.ServiceBus.Attributes;
+﻿using SCMM.Azure.ServiceBus;
+using SCMM.Azure.ServiceBus.Attributes;
+using System.Net;
 
-namespace SCMM.Azure.ServiceBus.Http;
+namespace SCMM.Worker.Client.Remote;
 
-[Queue(Name = "Http-Requests")]
-public class ServiceBusHttpRequestMessage : IMessage
+[Queue(Name = "Remote-Http-Requests")]
+public class RemoteHttpRequestMessage : IMessage
 {
     public IDictionary<string, string[]> Headers { get; set; }
 
@@ -15,9 +17,11 @@ public class ServiceBusHttpRequestMessage : IMessage
 
     public HttpRequestOptions Options { get; set; }
 
-    public Uri? RequestUri { get; set; }
+    public Uri RequestUri { get; set; }
 
     public string Version { get; set; }
 
     public HttpVersionPolicy VersionPolicy { get; set; }
+
+    public IEnumerable<Cookie> Cookies { get; set; }
 }

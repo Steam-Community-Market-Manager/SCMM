@@ -1,27 +1,31 @@
-﻿namespace SCMM.Azure.ServiceBus.Http;
+﻿using SCMM.Azure.ServiceBus;
+using System.Net;
 
-public class ServiceBusHttpMessageHandler : HttpMessageHandler
+namespace SCMM.Worker.Client.Remote;
+
+public class DistributedHttpClientHandler : HttpMessageHandler
 {
     private readonly ServiceBusClient _serviceBusClient;
 
-    public ServiceBusHttpMessageHandler(ServiceBusClient serviceBusClient)
+    public DistributedHttpClientHandler(ServiceBusClient serviceBusClient)
     {
         _serviceBusClient = serviceBusClient;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var remoteResponse = await _serviceBusClient.SendMessageAndAwaitReplyAsync<ServiceBusHttpRequestMessage, ServiceBusHttpResponseMessage>(
-            new ServiceBusHttpRequestMessage()
+        var remoteResponse = await _serviceBusClient.SendMessageAndAwaitReplyAsync<RemoteHttpRequestMessage, RemoteHttpResponseMessage>(
+            new RemoteHttpRequestMessage()
             {
                 Headers = request.Headers?.ToDictionary(x => x.Key, x => x.Value.ToArray()),
                 ContentHeaders = request.Content?.Headers?.ToDictionary(x => x.Key, x => x.Value.ToArray()),
                 Method = request.Method.ToString(),
-                Content = (request.Content != null ? await request.Content?.ReadAsByteArrayAsync() : null),
+                Content = request.Content != null ? await request.Content?.ReadAsByteArrayAsync() : null,
                 Options = request.Options,
                 RequestUri = request.RequestUri,
                 Version = request.Version.ToString(),
-                VersionPolicy = request.VersionPolicy
+                VersionPolicy = request.VersionPolicy,
+                Cookies = UseCookies && CookieContainer != null ? CookieContainer.GetAllCookies() : null
             },
             cancellationToken
         );
@@ -54,4 +58,8 @@ public class ServiceBusHttpMessageHandler : HttpMessageHandler
 
         return response;
     }
+
+    public bool UseCookies { get; set; }
+
+    public CookieContainer CookieContainer { get; set; }
 }

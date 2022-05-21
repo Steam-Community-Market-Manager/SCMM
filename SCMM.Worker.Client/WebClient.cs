@@ -1,29 +1,65 @@
-﻿using System.Net;
+﻿using SCMM.Azure.ServiceBus;
+using SCMM.Worker.Client.Remote;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.WebSockets;
 
-namespace SCMM.Market.Client;
+namespace SCMM.Worker.Client;
 
-public class AgentWebClient : IDisposable
+public class WebClient : IDisposable
 {
     private readonly CookieContainer _cookieContainer;
     private readonly HttpMessageHandler _httpHandler;
+    private readonly HttpMessageHandler _distributedHttpHandler;
     private bool _disposedValue;
 
-    public AgentWebClient(CookieContainer cookieContainer = null)
+    public WebClient(CookieContainer cookieContainer = null, ServiceBusClient serviceBusClient = null)
     {
-        _cookieContainer = new CookieContainer();
+        _cookieContainer = cookieContainer;
         _httpHandler = new HttpClientHandler()
         {
-            CookieContainer = _cookieContainer
+            UseCookies = (cookieContainer != null),
+            CookieContainer = (cookieContainer ?? new CookieContainer())
+        };
+        _distributedHttpHandler = new DistributedHttpClientHandler(serviceBusClient)
+        {
+            UseCookies = (cookieContainer != null),
+            CookieContainer = (cookieContainer ?? new CookieContainer())
         };
     }
 
-    protected CookieContainer Cookies => _cookieContainer;
-
-    protected HttpClient GetHttpClient(bool disguisedAsWebBrowser = true, Uri referer = null, string apiKey = null)
+    protected HttpClient BuildHttpClient(bool disguisedAsWebBrowser = true, Uri referer = null, string apiKey = null)
     {
-        var httpClient = new HttpClient(_httpHandler, false);
+        if (_httpHandler == null)
+        {
+            return null;
+        }
+
+        return ApplyHttpClientDefaults(
+            new HttpClient(_httpHandler, false),
+            disguisedAsWebBrowser,
+            referer,
+            apiKey
+        );
+    }
+
+    protected HttpClient BuildDistributedHttpClient(bool disguisedAsWebBrowser = true, Uri referer = null, string apiKey = null)
+    {
+        if (_distributedHttpHandler == null)
+        {
+            return null;
+        }
+
+        return ApplyHttpClientDefaults(
+            new HttpClient(_distributedHttpHandler, false),
+            disguisedAsWebBrowser, 
+            referer, 
+            apiKey
+        );
+    }
+
+    private HttpClient ApplyHttpClientDefaults(HttpClient httpClient, bool disguisedAsWebBrowser, Uri referer, string apiKey)
+    {
         if (disguisedAsWebBrowser)
         {
             // We are a normal looking web browser, honest (helps with WAF rules that block bots)
@@ -42,13 +78,13 @@ public class AgentWebClient : IDisposable
             httpClient.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
         }
 
-        // We made this request from your website, honest
         if (referer != null)
         {
+            // We made this request from your website, honest...
             httpClient.DefaultRequestHeaders.Referrer = referer;
         }
 
-        if (!String.IsNullOrEmpty(apiKey))
+        if (!string.IsNullOrEmpty(apiKey))
         {
             httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
         }
@@ -56,10 +92,13 @@ public class AgentWebClient : IDisposable
         return httpClient;
     }
 
-    protected ClientWebSocket GetWebSocketClient()
+    protected ClientWebSocket BuildWebSocketClient()
     {
         var webSocketClient = new ClientWebSocket();
-        webSocketClient.Options.Cookies = _cookieContainer;
+        if (_cookieContainer != null)
+        {
+            webSocketClient.Options.Cookies = _cookieContainer;
+        }
 
         return webSocketClient;
     }
@@ -83,4 +122,6 @@ public class AgentWebClient : IDisposable
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
+
+    protected CookieContainer Cookies => _cookieContainer;
 }

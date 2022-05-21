@@ -1,4 +1,4 @@
-﻿namespace SCMM.Steam.Data.Store
+﻿namespace SCMM.Steam.Data.Models
 {
     public class ItemInteraction
     {

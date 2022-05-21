@@ -1,18 +1,22 @@
-﻿using SCMM.Market.Client;
+﻿using SCMM.Worker.Client;
 using System.Text.Json;
 
 namespace SCMM.Market.SkinsMonkey.Client
 {
-    public class SkinsMonkeyWebClient : AgentWebClient
+    public class SkinsMonkeyWebClient : Worker.Client.WebClient
     {
         private const string ApiUri = "https://skinsmonkey.com/api/public/v1/";
-        private const string ApiKey = "8Hcug9zVDBecchN82H629CZ3Wqt6YmRc";
 
-        public const int MaxPageLimit = 120;
+        private readonly SkinsMonkeyConfiguration _configuration;
+
+        public SkinsMonkeyWebClient(SkinsMonkeyConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         public async Task<IEnumerable<SkinsMonkeyItem>> GetItemPricesAsync(string appId)
         {
-            using (var client = GetHttpClient(disguisedAsWebBrowser: false, apiKey: ApiKey))
+            using (var client = BuildHttpClient(disguisedAsWebBrowser: false, apiKey: _configuration.ApiKey))
             {
                 var url = $"{ApiUri}price/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);

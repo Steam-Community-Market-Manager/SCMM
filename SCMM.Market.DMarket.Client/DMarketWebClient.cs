@@ -1,11 +1,11 @@
-﻿using SCMM.Market.Client;
+﻿using SCMM.Worker.Client;
 using SCMM.Steam.Data.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace SCMM.Market.DMarket.Client
 {
-    public class DMarketWebClient : AgentWebClient
+    public class DMarketWebClient : Worker.Client.WebClient
     {
         private const string BaseUri = "https://api.dmarket.com/exchange/v1/";
 
@@ -23,7 +23,7 @@ namespace SCMM.Market.DMarket.Client
 
             try
             {
-                using (var client = GetHttpClient())
+                using (var client = BuildHttpClient())
                 {
                     var url = $"{BaseUri}market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
                     var response = await client.GetAsync(url);

@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SCMM.Azure.ServiceBus\SCMM.Azure.ServiceBus.csproj" />
-    <ProjectReference Include="..\SCMM.Agent.Client\SCMM.Agent.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Worker.Client\SCMM.Worker.Client.csproj" />
   </ItemGroup>
 
 </Project>

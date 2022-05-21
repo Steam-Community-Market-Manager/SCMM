@@ -1,15 +1,15 @@
-﻿using SCMM.Market.Client;
+﻿using SCMM.Worker.Client;
 using System.Text.Json;
 
 namespace SCMM.Market.LootFarm.Client
 {
-    public class LootFarmWebClient : AgentWebClient
+    public class LootFarmWebClient : Worker.Client.WebClient
     {
         private const string BaseUri = "https://loot.farm/";
 
         public async Task<IEnumerable<LootFarmItemPrice>> GetItemPricesAsync(string appName)
         {
-            using (var client = GetHttpClient())
+            using (var client = BuildHttpClient())
             {
                 if (String.Equals(appName, "CSGO", StringComparison.InvariantCultureIgnoreCase))
                 {
