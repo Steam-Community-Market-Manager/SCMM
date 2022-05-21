@@ -8,29 +8,50 @@ using System.Text.Json;
 
 namespace SCMM.Steam.Client
 {
-    public class SteamWorkshopDownloaderWebClient : IDisposable
+    public class SteamWorkshopDownloaderWebClient : Worker.Client.WebClient
     {
         private readonly ILogger<SteamWorkshopDownloaderWebClient> _logger;
-        private readonly HttpClientHandler _httpHandler;
-        private readonly string _workshopDownloaderNodeUrl;
-        private bool _disposedValue;
 
-        public SteamWorkshopDownloaderWebClient(ILogger<SteamWorkshopDownloaderWebClient> logger, SteamConfiguration configuration)
+        public SteamWorkshopDownloaderWebClient(ILogger<SteamWorkshopDownloaderWebClient> logger)
         {
             _logger = logger;
-            _httpHandler = new HttpClientHandler();
-            _workshopDownloaderNodeUrl = configuration.WorkshopDownloaderNodeUrl;
         }
 
         public async Task<WebFileData> DownloadWorkshopFile(SteamWorkshopDownloaderJsonRequest request)
         {
-            using (var client = new HttpClient(_httpHandler, false))
+            using (var client = BuildHttpClient())
             {
                 try
                 {
+                    var workshopDownloaderUrl = (string)null;
+                    var workshopDownloaderIsOnline = false;
+                    for(var workshopDownloaderIndex = 1; workshopDownloaderIndex <= 10; workshopDownloaderIndex++)
+                    {
+                        try
+                        {
+                            workshopDownloaderUrl = $"https://node{workshopDownloaderIndex.ToString("00")}.steamworkshopdownloader.io/prod";
+                            var steamOfflineResponse = await client.GetAsync($"{workshopDownloaderUrl}/api/download/steamoffline");
+                            steamOfflineResponse.EnsureSuccessStatusCode();
+                            var steamOffline = await steamOfflineResponse.Content.ReadFromJsonAsync<bool>();
+                            if (!steamOffline)
+                            {
+                                workshopDownloaderIsOnline = true;
+                                break;
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.LogWarning($"Workshop downloader node #{workshopDownloaderIndex} appears to be offline...");
+                        }
+                    }
+                    if (!workshopDownloaderIsOnline)
+                    {
+                        throw new Exception("No available workshop downloader nodes are online, unable to download file");
+                    }
+                    
                     // Request the file
                     request.AutoDownload = true;
-                    var downloadResponse = await client.PostAsJsonAsync($"{_workshopDownloaderNodeUrl}/api/download/request", request);
+                    var downloadResponse = await client.PostAsJsonAsync($"{workshopDownloaderUrl}/api/download/request", request);
                     if (!downloadResponse.IsSuccessStatusCode)
                     {
                         throw new HttpRequestException($"{downloadResponse.StatusCode}: {downloadResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
@@ -59,7 +80,7 @@ namespace SCMM.Steam.Client
                                 downloadId.Uuid
                             }
                         };
-                        var statusResponse = await client.PostAsJsonAsync($"{_workshopDownloaderNodeUrl}/api/download/status", statusRequest);
+                        var statusResponse = await client.PostAsJsonAsync($"{workshopDownloaderUrl}/api/download/status", statusRequest);
                         if (!statusResponse.IsSuccessStatusCode)
                         {
                             throw new HttpRequestException($"{downloadResponse.StatusCode}: {downloadResponse.ReasonPhrase}", null, downloadResponse.StatusCode);
@@ -104,26 +125,6 @@ namespace SCMM.Steam.Client
                     throw new SteamRequestException($"Download workshop file '{request.PublishedFileId}' failed. {ex.Message}", (ex as HttpRequestException)?.StatusCode, ex);
                 }
             }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _httpHandler?.Dispose();
-                }
-
-                _disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }
