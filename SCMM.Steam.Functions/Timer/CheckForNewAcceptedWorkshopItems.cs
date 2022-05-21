@@ -33,7 +33,8 @@ public class CheckForNewAcceptedWorkshopItems
         _apiClient = apiClient;
     }
 
-    [Function("Check-New-Accepted-Workshop-Items")]
+    // TODO: Revisit this. It doesn't provide any extra value when compared to CheckForNewItemDefinitions 
+    // [Function("Check-New-Accepted-Workshop-Items")]
     public async Task Run([TimerTrigger("30 * * * * *")] /* every minute */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Check-New-Accepted-Workshop-Items");
