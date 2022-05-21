@@ -10,35 +10,23 @@ using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class CheckNewYouTubeStoreVideosConfiguration
-{
-    public ChannelExpression[] Channels { get; set; }
-
-    public class ChannelExpression
-    {
-        public string ChannelId { get; set; }
-
-        public string Query { get; set; }
-    }
-}
-
-public class CheckNewYouTubeStoreVideos
+public class CheckNewStoreVideosTwitch
 {
     private readonly SteamDbContext _db;
     private readonly GoogleClient _googleClient;
-    private readonly CheckNewYouTubeStoreVideosConfiguration _configuration;
+    private readonly CheckNewStoreVideosConfiguration _configuration;
 
-    public CheckNewYouTubeStoreVideos(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient)
+    public CheckNewStoreVideosTwitch(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient)
     {
         _db = db;
         _googleClient = googleClient;
-        _configuration = configuration.GetSection("StoreVideos").Get<CheckNewYouTubeStoreVideosConfiguration>();
+        _configuration = configuration.GetSection("StoreVideos").Get<CheckNewStoreVideosConfiguration>();
     }
 
-    [Function("Check-New-YouTube-Store-Videos")]
-    public async Task Run([TimerTrigger("0 0 * * * *")] /* every hour */ TimerInfo timerInfo, FunctionContext context)
+    [Function("Check-New-Store-Videos-Twitch")]
+    public async Task Run([TimerTrigger("0 10 * * * *")] /* every hour, 10 mins past */ TimerInfo timerInfo, FunctionContext context)
     {
-        var logger = context.GetLogger("Check-New-YouTube-Store-Videos");
+        var logger = context.GetLogger("Check-New-Store-Videos-Twitch");
 
         var steamApps = await _db.SteamApps
             .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
@@ -60,11 +48,11 @@ public class CheckNewYouTubeStoreVideos
             foreach (var itemStore in activeItemStores)
             {
                 var media = new Dictionary<DateTimeOffset, string>();
-                foreach (var channel in _configuration.Channels)
+                foreach (var channel in _configuration.Channels.Where(x => x.Type == CheckNewStoreVideosConfiguration.ChannelType.Twitch))
                 {
                     try
                     {
-                        // TODO: If we already have a video for this channel, skip it
+                        // TODO: If we already have a video for this channel, don't waste time checking again
                         // NOTE: We only accept one video per-channel, per-store
                         /*
                         if (itemStore.Media.ContainsKey(channel.ChannelId))
@@ -75,7 +63,10 @@ public class CheckNewYouTubeStoreVideos
 
                         // Find the earliest video that matches our store data period.
                         logger.LogTrace($"Checking channel (id: {channel.ChannelId}) for new store videos since {itemStore.Start.Value.UtcDateTime}...");
-                        var videos = await _googleClient.ListChannelVideosAsync(channel.ChannelId, GoogleClient.PageMaxResults);
+                        // TODO: Implement this...
+                        // https://github.com/TwitchLib/TwitchLib.Api
+                        /*
+                        var videos = await _twitchClient.ListChannelVideosAsync(channel.ChannelId);
                         var firstStoreVideo = videos
                             .Where(x => Regex.IsMatch(x.Title, channel.Query, RegexOptions.IgnoreCase))
                             .Where(x => x.PublishedAt != null && x.PublishedAt.Value.UtcDateTime >= itemStore.Start.Value.UtcDateTime && x.PublishedAt.Value.UtcDateTime <= itemStore.Start.Value.UtcDateTime.AddDays(7))
@@ -85,20 +76,8 @@ public class CheckNewYouTubeStoreVideos
                         if (firstStoreVideo != null)
                         {
                             media[firstStoreVideo.PublishedAt.Value] = firstStoreVideo.Id;
-                            /*
-                            try
-                            {
-                                await googleClient.LikeVideoAsync(storeVideo.Id);
-                                await googleClient.CommentOnVideoAsync(storeVideo.ChannelId, storeVideo.Id,
-                                    $"thank you for showcasing this weeks new skins, your video has been featured on {_configuration.GetWebsiteUrl()}/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
-                                );
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.LogWarning(ex, $"Failed to like and comment on new store video (channelId: {storeVideo.ChannelId}, videoId: {storeVideo.Id}), skipping...");
-                            }
-                            */
                         }
+                        */
                     }
                     catch (Exception ex)
                     {
