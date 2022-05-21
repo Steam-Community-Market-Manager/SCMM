@@ -119,6 +119,7 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             return CommandResult.Success();
         }
+
         [Command("create-asset-description-collection")]
         public async Task<RuntimeResult> CreateAssetDescriptionCollectionAsync([Remainder] string collectionName)
         {
@@ -273,6 +274,29 @@ namespace SCMM.Discord.Bot.Server.Modules
             }
         }
 
+        [Command("download-workshop-files")]
+        public async Task<RuntimeResult> DownloadAssetDescriptionWorkshopFiles(params ulong[] classIds)
+        {
+            var workshopFileIds = await _db.SteamAssetDescriptions
+                .Where(x => x.ClassId != null && (classIds.Length == 0 || classIds.Contains(x.ClassId.Value)))
+                .Where(x => x.WorkshopFileId != null)
+                .Select(x => x.WorkshopFileId.Value)
+                .ToListAsync();
+
+            var messages = new List<DownloadSteamWorkshopFileMessage>();
+            foreach (var workshopFileId in workshopFileIds)
+            {
+                messages.Add(new DownloadSteamWorkshopFileMessage()
+                {
+                    PublishedFileId = workshopFileId,
+                    Force = true
+                });
+            }
+
+            await _serviceBusClient.SendMessagesAsync(messages);
+            return CommandResult.Success();
+        }
+
         [Command("reanalyse-workshop-files")]
         public async Task<RuntimeResult> ReanalyseAssetDescriptionWorkshopFiles(params ulong[] classIds)
         {
@@ -295,6 +319,5 @@ namespace SCMM.Discord.Bot.Server.Modules
             await _serviceBusClient.SendMessagesAsync(messages);
             return CommandResult.Success();
         }
-
     }
 }
