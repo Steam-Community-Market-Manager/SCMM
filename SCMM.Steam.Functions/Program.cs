@@ -13,6 +13,7 @@ using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
 using SCMM.Market.Buff.Client;
+using SCMM.Market.Buff.Client.Extensions;
 using SCMM.Market.CSDeals.Client;
 using SCMM.Market.CSTrade.Client;
 using SCMM.Market.DMarket.Client;
@@ -24,6 +25,7 @@ using SCMM.Market.SkinBaron.Client;
 using SCMM.Market.SkinMarketgg.Client;
 using SCMM.Market.Skinport.Client;
 using SCMM.Market.SkinsMonkey.Client;
+using SCMM.Market.SkinsMonkey.Client.Extensions;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
 using SCMM.Market.TradeSkinsFast.Client;
@@ -137,6 +139,11 @@ public static class HostExtensions
             services.AddSingleton<AzureAiClient>();
             services.AddSingleton<GoogleClient>();
             services.AddSingleton<BuffWebClient>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetBuffConfiguration();
+            });
             services.AddSingleton<CSDealsWebClient>();
             services.AddSingleton<CSTradeWebClient>();
             services.AddSingleton<DMarketWebClient>();
@@ -151,6 +158,11 @@ public static class HostExtensions
             services.AddSingleton<SkinMarketGGWebClient>();
             services.AddSingleton<SkinportWebClient>();
             services.AddSingleton<SkinsMonkeyWebClient>();
+            services.AddSingleton((services) =>
+            {
+                var configuration = services.GetService<IConfiguration>();
+                return configuration.GetSkinsMonkeyConfiguration();
+            });
             services.AddSingleton<SwapGGWebClient>();
             services.AddSingleton<TradeitGGWebClient>();
             services.AddSingleton<TradeSkinsFastWebClient>();

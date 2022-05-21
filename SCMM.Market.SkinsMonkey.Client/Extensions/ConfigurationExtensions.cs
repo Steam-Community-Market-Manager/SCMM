@@ -4,7 +4,7 @@ namespace SCMM.Market.SkinsMonkey.Client.Extensions
 {
     public static class ConfigurationExtensions
     {
-        public static SkinsMonkeyConfiguration GetFixerConfiguration(this IConfiguration configuration)
+        public static SkinsMonkeyConfiguration GetSkinsMonkeyConfiguration(this IConfiguration configuration)
         {
             return configuration
                 .GetSection("Market")

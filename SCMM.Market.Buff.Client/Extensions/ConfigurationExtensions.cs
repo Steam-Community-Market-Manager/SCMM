@@ -4,7 +4,7 @@ namespace SCMM.Market.Buff.Client.Extensions
 {
     public static class ConfigurationExtensions
     {
-        public static BuffConfiguration GetFixerConfiguration(this IConfiguration configuration)
+        public static BuffConfiguration GetBuffConfiguration(this IConfiguration configuration)
         {
             return configuration
                 .GetSection("Market")
