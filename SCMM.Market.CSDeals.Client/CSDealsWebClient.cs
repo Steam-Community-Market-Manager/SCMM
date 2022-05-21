@@ -10,7 +10,7 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<IEnumerable<CSDealsItemPrice>> GetPricingGetLowestPricesAsync(string appId)
         {
-            using (var client = BuildHttpClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
                 var url = $"{BaseApiUri}IPricing/GetLowestPrices/v1?appid={Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);
@@ -24,7 +24,7 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsMarketplaceSearchResults<CSDealsItemListings>> PostMarketplaceSearchAsync(string appId, int page = 0)
         {
-            using (var client = BuildHttpClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
                 var url = $"{BaseUri}ajax/marketplace-search";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {
@@ -43,7 +43,7 @@ namespace SCMM.Market.CSDeals.Client
 
         public async Task<CSDealsBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
-            using (var client = BuildHttpClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
                 var url = $"{BaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {

@@ -12,7 +12,7 @@ namespace SCMM.Market.TradeitGG.Client
 
         public async Task<IDictionary<TradeitGGItem, int>> GetInventoryDataAsync(string appId, int offset = 0, int limit = MaxPageLimit)
         {
-            using (var client = BuildHttpClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
                 try
                 {

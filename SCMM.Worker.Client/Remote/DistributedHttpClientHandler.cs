@@ -12,8 +12,18 @@ public class DistributedHttpClientHandler : HttpMessageHandler
         _serviceBusClient = serviceBusClient;
     }
 
+    protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        throw new NotSupportedException("Distributed http client must be used asynchronously only");
+    }
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        if (_serviceBusClient == null)
+        {
+            return null;
+        }
+
         var remoteResponse = await _serviceBusClient.SendMessageAndAwaitReplyAsync<RemoteHttpRequestMessage, RemoteHttpResponseMessage>(
             new RemoteHttpRequestMessage()
             {

@@ -23,7 +23,7 @@ namespace SCMM.Market.DMarket.Client
 
             try
             {
-                using (var client = BuildHttpClient())
+                using (var client = BuildWebBrowserHttpClient())
                 {
                     var url = $"{BaseUri}market/items?side=market&orderBy=price&orderDir=desc&priceFrom=0&priceTo=0&treeFilters=&gameId={appName.ToLower()}&types={marketType}&cursor={cursor}&limit={limit}&currency={currencyName}&platform=browser&isLoggedIn=true";
                     var response = await client.GetAsync(url);

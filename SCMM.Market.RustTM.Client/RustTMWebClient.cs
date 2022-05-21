@@ -10,7 +10,7 @@ namespace SCMM.Market.RustTM.Client
 
         public async Task<IEnumerable<RustTMItem>> GetPricesAsync(string currencyName = Constants.SteamCurrencyUSD)
         {
-            using (var client = BuildHttpClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
                 var url = $"{BaseUri}prices/{currencyName.ToUpper()}.json";
                 var response = await client.GetAsync(url);

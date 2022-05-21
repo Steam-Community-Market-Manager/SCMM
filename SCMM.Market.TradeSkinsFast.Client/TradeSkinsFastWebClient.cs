@@ -9,7 +9,7 @@ namespace SCMM.Market.TradeSkinsFast.Client
 
         public async Task<TradeSkinsFastBotsInventoryResult> PostBotsInventoryAsync(string appId)
         {
-            using (var client = BuildHttpClient(referer: new Uri(BaseUri)))
+            using (var client = BuildWebBrowserHttpClient(new Uri(BaseUri)))
             {
                 var url = $"{BaseUri}ajax/botsinventory";
                 var payload = new FormUrlEncodedContent(new Dictionary<string, string>() {

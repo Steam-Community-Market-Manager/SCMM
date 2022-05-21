@@ -9,7 +9,7 @@ namespace SCMM.Market.iTradegg.Client
 
         public async Task<IEnumerable<iTradeggItem>> GetInventoryAsync(string appId)
         {
-            using (var client = BuildHttpClient())
+            using (var client = BuildWebBrowserHttpClient())
             {
                 var url = $"{BaseUri}getInventory?game={appId}&type=bot";
                 var response = await client.GetAsync(url);

@@ -16,7 +16,7 @@ namespace SCMM.Market.SkinsMonkey.Client
 
         public async Task<IEnumerable<SkinsMonkeyItem>> GetItemPricesAsync(string appId)
         {
-            using (var client = BuildHttpClient(disguisedAsWebBrowser: false, apiKey: _configuration.ApiKey))
+            using (var client = BuildWebApiHttpClient(_configuration.ApiKey))
             {
                 var url = $"{ApiUri}price/{Uri.EscapeDataString(appId)}";
                 var response = await client.GetAsync(url);

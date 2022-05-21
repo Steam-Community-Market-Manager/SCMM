@@ -15,7 +15,7 @@ namespace SCMM.Fixer.Client
 
         public async Task<IDictionary<string, decimal>> GetHistoricalRatesAsync(DateTime date, string from, params string[] to)
         {
-            using (var client = BuildHttpClient())
+            using (var client = BuildWebApiHttpClient())
             {
                 var url = $"{BaseUri}{date.ToString("yyyy-MM-dd")}?access_key={_configuration.ApiKey}&base={from}&symbols={string.Join(',', to)}";
                 var response = await client.GetAsync(url);

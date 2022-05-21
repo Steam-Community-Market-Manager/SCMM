@@ -13,22 +13,15 @@ using System.Xml.Serialization;
 
 namespace SCMM.Steam.Client
 {
-    public abstract class SteamWebClient : IDisposable
+    public abstract class SteamWebClient : Worker.Client.WebClient
     {
         private readonly ILogger<SteamWebClient> _logger;
-        private readonly HttpClientHandler _httpHandler;
         private readonly SteamSession _session;
-        private bool _disposedValue;
 
-        public SteamWebClient(ILogger<SteamWebClient> logger, SteamSession session)
+        public SteamWebClient(ILogger<SteamWebClient> logger, SteamSession session) : base(cookieContainer: session?.Cookies)
         {
             _logger = logger;
             _session = session;
-            _httpHandler = new HttpClientHandler()
-            {
-                UseCookies = (session?.Cookies != null),
-                CookieContainer = (session?.Cookies ?? new CookieContainer())
-            };
         }
 
         public SteamSession Session => _session;
@@ -36,7 +29,7 @@ namespace SCMM.Steam.Client
         private async Task<HttpResponseMessage> Post<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
-            using (var client = new HttpClient(_httpHandler, false))
+            using (var client = BuildHttpClient())
             {
                 try
                 {
@@ -58,7 +51,7 @@ namespace SCMM.Steam.Client
         private async Task<HttpResponseMessage> Get<TRequest>(TRequest request)
             where TRequest : SteamRequest
         {
-            using (var client = new HttpClient(_httpHandler, false))
+            using (var client = BuildHttpClient())
             {
                 try
                 {
@@ -86,22 +79,22 @@ namespace SCMM.Steam.Client
             }
             catch (SteamRequestException ex)
             {
-                // Check if the request failed due to any of the following
+                // Check if the request might have failed due to missing or expired authentication
                 // 400: BadRequest
                 // 401: Unauthorized
                 // 403: Forbidden
-                if (ex.IsSessionStale && _session != null)
+                if (ex.IsAuthenticiationRequired && _session != null)
                 {
                     // Login to steam again, get a new auth token, retry the request again
-                    _logger.LogWarning("Steam session is stale, attempting to refresh and try again...");
+                    _logger.LogWarning("Steam session authentication is stale, attempting to refresh and try again...");
                     _session.Refresh();
                     return await Get(request);
                 }
-                // Check if the request failed due to any of the following
+                // Check if the request failed due to rate limiting
                 // 429: TooManyRequests
-                else if (ex.IsThrottled)
+                else if (ex.IsRateLimited)
                 {
-                    _logger.LogWarning("Steam session is throttled, need to back off...");
+                    _logger.LogWarning("Steam session has been rate limited, need to back off for a while...");
                 }
 
                 throw;
@@ -210,26 +203,6 @@ namespace SCMM.Steam.Client
             }
 
             return JsonSerializer.Deserialize<TResponse>(json);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _httpHandler?.Dispose();
-                }
-
-                _disposedValue = true;
-            }
-        }
-        
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

@@ -65,7 +65,7 @@ public class UpdateMarketItemOrders
             {
                 // If we're throttled, cool-down and try again later...
                 logger.LogError(ex, $"Failed to update market item sales history for '{item.SteamId}'. {ex.Message}");
-                if (ex.IsThrottled)
+                if (ex.IsRateLimited)
                 {
                     return;
                 }
