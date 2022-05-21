@@ -18,6 +18,7 @@ public class UpdateProfileInventoryValues
     {
         using (var transaction = await _db.Database.BeginTransactionAsync())
         {
+            _db.Database.SetCommandTimeout(180); // 3mins
             await _db.Database.ExecuteSqlInterpolatedAsync(@$"
                 UPDATE v 
                 SET [MarketValue] = ISNULL((

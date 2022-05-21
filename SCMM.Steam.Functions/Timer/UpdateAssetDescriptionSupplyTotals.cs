@@ -18,6 +18,7 @@ public class UpdateAssetDescriptionSupplyTotals
     {
         using (var transaction = await _db.Database.BeginTransactionAsync())
         {
+            _db.Database.SetCommandTimeout(60); // 1min
             await _db.Database.ExecuteSqlInterpolatedAsync(@$"
                 ; WITH AssetDescriptionSupplyTotals ([Id], SupplyTotalOwnersEstimated, SupplyTotalOwnersKnown, SupplyTotalInvestorsEstimated, SupplyTotalInvestorsKnown, SupplyTotalMarketsKnown)
                 AS (
