@@ -231,7 +231,8 @@ namespace SCMM.Steam.Data.Store
             // Store price
             if (StoreItem != null && StoreItem.Currency != null)
             {
-                var appId = (StoreItem.App?.SteamId ?? App?.SteamId);
+                var app = (StoreItem.App ?? App);
+                var appId = (app?.SteamId);
                 var lowestPrice = 0L;
                 if (currency != null)
                 {
@@ -249,6 +250,33 @@ namespace SCMM.Steam.Data.Store
                     currency = StoreItem.Currency;
                     lowestPrice = StoreItem.Price ?? 0;
                 }
+                var buyUrl = (string)null;
+                if (!String.IsNullOrEmpty(StoreItem.SteamId) && app != null)
+                {
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+                    {
+                        buyUrl = new SteamItemStoreDetailPageRequest()
+                        {
+                            AppId = app.SteamId,
+                            ItemId = StoreItem.SteamId
+                        };
+                    }
+                    else
+                    {
+                        buyUrl = new SteamBuyItemPageRequest()
+                        {
+                            AppId = app.SteamId,
+                            ItemId = StoreItem.SteamId
+                        };
+                    }
+                }
+                else
+                {
+                    buyUrl = new SteamItemStorePageRequest() 
+                    { 
+                        AppId = appId 
+                    };
+                }
                 yield return new MarketPrice
                 {
                     Type = PriceTypes.Cash,
@@ -258,9 +286,7 @@ namespace SCMM.Steam.Data.Store
                     Fee = 0,
                     Supply = (!StoreItem.IsAvailable ? 0 : null),
                     IsAvailable = (StoreItem.IsAvailable && lowestPrice > 0),
-                    Url = !string.IsNullOrEmpty(StoreItem.SteamId)
-                        ? new SteamItemStoreDetailPageRequest() { AppId = appId, ItemId = StoreItem.SteamId }
-                        : new SteamItemStorePageRequest() { AppId = appId }
+                    Url = buyUrl
                 };
             }
 
@@ -340,17 +366,33 @@ namespace SCMM.Steam.Data.Store
 
             if (StoreItem != null)
             {
+                var app = (StoreItem.App ?? App);
+                var storeActionName = (string)null;
                 var storeUrl = (string)null;
-                if (!String.IsNullOrEmpty(StoreItem.SteamId) && StoreItem.IsAvailable)
+                if (!String.IsNullOrEmpty(StoreItem.SteamId) && StoreItem.IsAvailable && app != null)
                 {
-                    storeUrl = new SteamItemStoreDetailPageRequest()
+                    if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
                     {
-                        AppId = (StoreItem.App?.SteamId ?? App?.SteamId),
-                        ItemId = StoreItem.SteamId
-                    };
+                        storeActionName = "View Store";
+                        storeUrl = new SteamItemStoreDetailPageRequest()
+                        {
+                            AppId = app.SteamId,
+                            ItemId = StoreItem.SteamId
+                        };
+                    }
+                    else
+                    {
+                        storeActionName = "Buy Now";
+                        storeUrl = new SteamBuyItemPageRequest()
+                        {
+                            AppId = app.SteamId,
+                            ItemId = StoreItem.SteamId
+                        };
+                    }
                 }
                 else if (StoreItem.Stores?.Any(x => x.Store != null) == true)
                 {
+                    storeActionName = "View Store";
                     storeUrl = $"/store/{StoreItem.Stores.Where(x => x.Store != null).MaxBy(x => x.Store.Start).Store.StoreId()}";
                 }
                 if (!String.IsNullOrEmpty(storeUrl))
@@ -358,7 +400,7 @@ namespace SCMM.Steam.Data.Store
                     yield return new ItemInteraction
                     {
                         Icon = "fa-shopping-cart",
-                        Name = "View Store",
+                        Name = storeActionName,
                         Url = storeUrl
                     };
                 }
