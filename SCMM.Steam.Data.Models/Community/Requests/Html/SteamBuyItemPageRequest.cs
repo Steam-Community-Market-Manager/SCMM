@@ -9,7 +9,7 @@
         public string Snr { get; set; }
         
         public override Uri Uri => new Uri(
-            $"{Constants.SteamStoreUrl}/buyitem/{Uri.EscapeDataString(AppId)}/{Uri.EscapeDataString(ItemId)}/1?snr={Uri.EscapeDataString(Snr)}"
+            $"{Constants.SteamStoreUrl}/buyitem/{Uri.EscapeDataString(AppId)}/{Uri.EscapeDataString(ItemId)}/1?snr={Uri.EscapeDataString(Snr ?? String.Empty)}"
         );
     }
 }
