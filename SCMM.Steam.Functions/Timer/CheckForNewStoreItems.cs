@@ -17,6 +17,7 @@ using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
+using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System.Globalization;
@@ -46,7 +47,6 @@ public class CheckForNewStoreItems
         var logger = context.GetLogger("Check-New-Store-Items");
 
         var steamApps = await _db.SteamApps
-            .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || x.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
             .Where(x => x.IsActive)
             .ToListAsync();
         if (!steamApps.Any())
@@ -65,7 +65,6 @@ public class CheckForNewStoreItems
         foreach (var app in steamApps)
         {
             logger.LogTrace($"Checking for new store items (appId: {app.SteamId})");
-            var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
             var response = await steamEconomy.GetAssetPricesAsync(
                 uint.Parse(app.SteamId), string.Empty, Constants.SteamDefaultLanguage
             );
@@ -75,171 +74,238 @@ public class CheckForNewStoreItems
                 continue;
             }
 
-            // We want to compare the Steam item store with our most recent store
-            var theirStoreItemIds = response.Data.Assets
-                .Select(x => x.Name)
-                .OrderBy(x => x)
-                .Distinct()
-                .ToList();
-            var ourStoreItemIds = _db.SteamItemStores
-                .Where(x => x.AppId == app.Id)
-                .Where(x => x.End == null)
-                .OrderByDescending(x => x.Start)
-                .SelectMany(x => x.Items.Where(i => i.Item.IsAvailable).Select(i => i.Item.SteamId))
-                .Distinct()
-                .ToList();
+            if (app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent) || app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+            {
+                // This app does item stores, check and add the items to the appropriate store instance
+                await AddNewItemsToItemStore(logger, app, response, currencies);
+            }
+            else
+            {
+                // This app doesn't have item stores, but still check for and add any missing items
+                await AddMissingStoreItems(logger, app, response, currencies);
+            }
+        }
+    }
 
-            // If both stores contain the same items, then there is no need to update anything
-            var storesAreTheSame = ourStoreItemIds != null && theirStoreItemIds.All(x => ourStoreItemIds.Contains(x)) && ourStoreItemIds.All(x => theirStoreItemIds.Contains(x));
-            if (storesAreTheSame)
+    private async Task AddNewItemsToItemStore(ILogger logger, SteamApp app, ISteamWebResponse<AssetPriceResultModel> assetPrices, IEnumerable<SteamCurrency> currencies)
+    {
+        // We want to compare the Steam item store with our most recent store
+        var theirStoreItemIds = assetPrices.Data.Assets
+            .Select(x => x.Name)
+            .OrderBy(x => x)
+            .Distinct()
+            .ToList();
+        var ourStoreItemIds = _db.SteamItemStores
+            .Where(x => x.AppId == app.Id)
+            .Where(x => x.End == null)
+            .OrderByDescending(x => x.Start)
+            .SelectMany(x => x.Items.Where(i => i.Item.IsAvailable).Select(i => i.Item.SteamId))
+            .Distinct()
+            .ToList();
+
+        // If both stores contain the same items, then there is no need to update anything
+        var storesAreTheSame = ourStoreItemIds != null && theirStoreItemIds.All(x => ourStoreItemIds.Contains(x)) && ourStoreItemIds.All(x => theirStoreItemIds.Contains(x));
+        if (storesAreTheSame)
+        {
+            return;
+        }
+
+        logger.LogInformation($"A store change was detected! (appId: {app.SteamId})");
+
+        // If we got here, then then item store has changed (either added or removed items)
+        // Load all of our active stores and their items
+        var activeItemStores = _db.SteamItemStores
+            .Where(x => x.AppId == app.Id)
+            .Where(x => x.End == null)
+            .OrderByDescending(x => x.Start)
+            .Include(x => x.Items).ThenInclude(x => x.Item)
+            .Include(x => x.Items).ThenInclude(x => x.Item.Description)
+            .ToList();
+        var limitedItemsWereRemoved = false;
+        foreach (var itemStore in activeItemStores.ToList())
+        {
+            var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
+            var missingStoreItemIds = thisStoreItemIds.Where(x => !theirStoreItemIds.Contains(x));
+            if (missingStoreItemIds.Any())
+            {
+                foreach (var missingStoreItemId in missingStoreItemIds)
+                {
+                    var missingStoreItem = itemStore.Items.FirstOrDefault(x => x.Item.SteamId == missingStoreItemId);
+                    if (missingStoreItem != null)
+                    {
+                        missingStoreItem.Item.IsAvailable = false;
+                        if (!missingStoreItem.Item.Description.IsPermanent)
+                        {
+                            limitedItemsWereRemoved = true;
+                        }
+                    }
+                }
+            }
+            if (itemStore.Start != null && itemStore.Items.Any(x => !x.Item.IsAvailable) && limitedItemsWereRemoved)
+            {
+                itemStore.End = DateTimeOffset.UtcNow;
+                activeItemStores.Remove(itemStore);
+            }
+        }
+
+        // Ensure that an active "general" and "limited" item store exists
+        var permanentItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
+        if (permanentItemStore == null && app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent))
+        {
+            permanentItemStore = new SteamItemStore()
+            {
+                App = app,
+                AppId = app.Id,
+                Name = "General"
+            };
+        }
+        var limitedItemStore = activeItemStores.FirstOrDefault(x => x.Start != null);
+        if ((limitedItemStore == null || limitedItemsWereRemoved) && app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+        {
+            limitedItemStore = new SteamItemStore()
+            {
+                App = app,
+                AppId = app.Id,
+                Start = DateTimeOffset.UtcNow
+            };
+        }
+
+        // Check if there are any new items to be added to the stores
+        var newPermanentStoreItems = new List<SteamStoreItemItemStore>();
+        var newLimitedStoreItems = new List<SteamStoreItemItemStore>();
+        var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+        foreach (var asset in assetPrices.Data.Assets)
+        {
+            // Ensure that the item is available in the database (create them if missing)
+            var storeItem = await _steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
+                app, asset, usdCurrency, DateTimeOffset.Now
+            );
+            if (storeItem == null)
             {
                 continue;
             }
 
-            logger.LogInformation($"New store change detected! (appId: {app.SteamId})");
-
-            // If we got here, then then item store has changed (either added or removed items)
-            // Load all of our active stores and their items
-            var activeItemStores = _db.SteamItemStores
-                .Where(x => x.AppId == app.Id)
-                .Where(x => x.End == null)
-                .OrderByDescending(x => x.Start)
-                .Include(x => x.Items).ThenInclude(x => x.Item)
-                .Include(x => x.Items).ThenInclude(x => x.Item.Description)
-                .ToList();
-            var limitedItemsWereRemoved = false;
-            foreach (var itemStore in activeItemStores.ToList())
+            // Ensure that the item is linked to the store
+            var itemStore = (storeItem.Description.IsPermanent || !app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating)) ? permanentItemStore : limitedItemStore;
+            if (!storeItem.Stores.Any(x => x.StoreId == itemStore.Id) && itemStore != null)
             {
-                var thisStoreItemIds = itemStore.Items.Select(x => x.Item.SteamId).ToList();
-                var missingStoreItemIds = thisStoreItemIds.Where(x => !theirStoreItemIds.Contains(x));
-                if (missingStoreItemIds.Any())
+                var prices = _steamService.ParseStoreItemPriceTable(asset.Prices);
+                var storeItemLink = new SteamStoreItemItemStore()
                 {
-                    foreach (var missingStoreItemId in missingStoreItemIds)
-                    {
-                        var missingStoreItem = itemStore.Items.FirstOrDefault(x => x.Item.SteamId == missingStoreItemId);
-                        if (missingStoreItem != null)
-                        {
-                            missingStoreItem.Item.IsAvailable = false;
-                            if (!missingStoreItem.Item.Description.IsPermanent)
-                            {
-                                limitedItemsWereRemoved = true;
-                            }
-                        }
-                    }
-                }
-                if (itemStore.Start != null && itemStore.Items.Any(x => !x.Item.IsAvailable) && limitedItemsWereRemoved)
-                {
-                    itemStore.End = DateTimeOffset.UtcNow;
-                    activeItemStores.Remove(itemStore);
-                }
-            }
-
-            // Ensure that an active "general" and "limited" item store exists
-            var permanentItemStore = activeItemStores.FirstOrDefault(x => x.Start == null);
-            if (permanentItemStore == null && app.Features.HasFlag(SteamAppFeatureTypes.StorePersistent))
-            {
-                permanentItemStore = new SteamItemStore()
-                {
-                    App = app,
-                    AppId = app.Id,
-                    Name = "General"
+                    Store = itemStore,
+                    Item = storeItem,
+                    Currency = usdCurrency,
+                    CurrencyId = usdCurrency.Id,
+                    Price = prices.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
+                    Prices = new PersistablePriceDictionary(prices),
+                    IsPriceVerified = true
                 };
+                storeItem.Stores.Add(storeItemLink);
+                itemStore.Items.Add(storeItemLink);
+                if (itemStore == permanentItemStore)
+                {
+                    newPermanentStoreItems.Add(storeItemLink);
+                }
+                else if (itemStore == limitedItemStore)
+                {
+                    newLimitedStoreItems.Add(storeItemLink);
+                }
             }
-            var limitedItemStore = activeItemStores.FirstOrDefault(x => x.Start != null);
-            if ((limitedItemStore == null || limitedItemsWereRemoved) && app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating))
+
+            // Update the store items "latest price"
+            storeItem.UpdateLatestPrice();
+        }
+
+        // Regenerate store thumbnails (if items have changed)
+        if (newPermanentStoreItems.Any() && permanentItemStore != null)
+        {
+            if (permanentItemStore.IsTransient)
             {
-                limitedItemStore = new SteamItemStore()
-                {
-                    App = app,
-                    AppId = app.Id,
-                    Start = DateTimeOffset.UtcNow
-                };
+                _db.SteamItemStores.Add(permanentItemStore);
             }
-
-            // Check if there are any new items to be added to the stores
-            var newPermanentStoreItems = new List<SteamStoreItemItemStore>();
-            var newLimitedStoreItems = new List<SteamStoreItemItemStore>();
-            foreach (var asset in response.Data.Assets)
+            if (permanentItemStore.Items.Any())
             {
-                // Ensure that the item is available in the database (create them if missing)
-                var storeItem = await _steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
-                    app, asset, usdCurrency, DateTimeOffset.Now
-                );
-                if (storeItem == null)
-                {
-                    continue;
-                }
-
-                // Ensure that the item is linked to the store
-                var itemStore = (storeItem.Description.IsPermanent || !app.Features.HasFlag(SteamAppFeatureTypes.StoreRotating)) ? permanentItemStore : limitedItemStore;
-                if (!storeItem.Stores.Any(x => x.StoreId == itemStore.Id) && itemStore != null)
-                {
-                    var prices = _steamService.ParseStoreItemPriceTable(asset.Prices);
-                    var storeItemLink = new SteamStoreItemItemStore()
-                    {
-                        Store = itemStore,
-                        Item = storeItem,
-                        Currency = usdCurrency,
-                        CurrencyId = usdCurrency.Id,
-                        Price = prices.FirstOrDefault(x => x.Key == usdCurrency.Name).Value,
-                        Prices = new PersistablePriceDictionary(prices),
-                        IsPriceVerified = true
-                    };
-                    storeItem.Stores.Add(storeItemLink);
-                    itemStore.Items.Add(storeItemLink);
-                    if (itemStore == permanentItemStore)
-                    {
-                        newPermanentStoreItems.Add(storeItemLink);
-                    }
-                    else if (itemStore == limitedItemStore)
-                    {
-                        newLimitedStoreItems.Add(storeItemLink);
-                    }
-                }
-
-                // Update the store items "latest price"
-                storeItem.UpdateLatestPrice();
+                await RegenerateStoreItemsThumbnailImage(logger, app, permanentItemStore);
             }
-
-            // Regenerate store thumbnails (if items have changed)
-            if (newPermanentStoreItems.Any() && permanentItemStore != null)
+        }
+        if (newLimitedStoreItems.Any() && limitedItemStore != null)
+        {
+            if (limitedItemStore.IsTransient)
             {
-                if (permanentItemStore.IsTransient)
-                {
-                    _db.SteamItemStores.Add(permanentItemStore);
-                }
-                if (permanentItemStore.Items.Any())
-                {
-                    await RegenerateStoreItemsThumbnailImage(logger, app, permanentItemStore);
-                }
+                _db.SteamItemStores.Add(limitedItemStore);
             }
-            if (newLimitedStoreItems.Any() && limitedItemStore != null)
+            if (limitedItemStore.Items.Any())
             {
-                if (limitedItemStore.IsTransient)
-                {
-                    _db.SteamItemStores.Add(limitedItemStore);
-                }
-                if (limitedItemStore.Items.Any())
-                {
-                    await RegenerateStoreItemsThumbnailImage(logger, app, limitedItemStore);
-                }
+                await RegenerateStoreItemsThumbnailImage(logger, app, limitedItemStore);
+            }
+        }
+
+        _db.SaveChanges();
+
+        // Send out a broadcast about any "new" items that weren't already in our store
+        if (newPermanentStoreItems.Any())
+        {
+            logger.LogInformation($"{newPermanentStoreItems.Count} new permanent store items have been added!");
+            await BroadcastNewStoreItemsNotification(logger, app, permanentItemStore, newPermanentStoreItems, currencies);
+        }
+        if (newLimitedStoreItems.Any())
+        {
+            logger.LogInformation($"{newLimitedStoreItems.Count} new limited store items have been added!");
+            await BroadcastNewStoreItemsNotification(logger, app, limitedItemStore, newLimitedStoreItems, currencies);
+        }
+    }
+
+    private async Task AddMissingStoreItems(ILogger logger, SteamApp app, ISteamWebResponse<AssetPriceResultModel> assetPrices, IEnumerable<SteamCurrency> currencies)
+    {
+        // We want to compare the Steam store items with our known store items
+        var theirStoreItemIds = assetPrices.Data.Assets
+            .Select(x => x.Name)
+            .Distinct()
+            .ToList();
+        var ourStoreItemIds = _db.SteamStoreItems
+            .Where(x => x.AppId == app.Id)
+            .Select(i => i.SteamId)
+            .ToList();
+
+        var missingAssets = assetPrices.Data.Assets
+            .Where(x => !ourStoreItemIds.Contains(x.Name))
+            .ToList();
+        if (!missingAssets.Any())
+        {
+            return;
+        }
+
+        logger.LogInformation($"Missing store items were found! (appId: {app.SteamId})");
+
+        // Add all missing store items
+        var newStoreItems = new List<SteamStoreItem>();
+        var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+        foreach (var asset in missingAssets)
+        {
+            // Ensure that the item is available in the database (create them if missing)
+            var storeItem = await _steamService.AddOrUpdateStoreItemAndMarkAsAvailable(
+                app, asset, usdCurrency, DateTimeOffset.Now
+            );
+            if (storeItem == null)
+            {
+                continue;
+            }
+            if (storeItem.IsTransient)
+            {
+                _db.SteamStoreItems.Add(storeItem);
             }
 
+            newStoreItems.Add(storeItem);
             _db.SaveChanges();
+        }
 
-            // Send out a broadcast about any "new" items that weren't already in our store
-            if (newPermanentStoreItems.Any())
-            {
-                logger.LogInformation($"New permanent store items detected!");
-                await BroadcastNewStoreItemsNotification(logger, app, permanentItemStore, newPermanentStoreItems, currencies);
-            }
-            if (newLimitedStoreItems.Any())
-            {
-                logger.LogInformation($"New limited store items detected!");
-                await BroadcastNewStoreItemsNotification(logger, app, limitedItemStore, newLimitedStoreItems, currencies);
-            }
+        _db.SaveChanges();
 
-            // TODO: Wait 1min, then trigger CheckForNewMarketItemsJob
+        // Send out a broadcast about any "new" items
+        if (newStoreItems.Any())
+        {
+            logger.LogInformation($"{newStoreItems.Count} new store items added!");
+            //await BroadcastNewStoreItemsNotification(logger, app, null, newStoreItems, currencies);
         }
     }
 
