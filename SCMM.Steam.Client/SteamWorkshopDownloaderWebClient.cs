@@ -8,6 +8,11 @@ using System.Text.Json;
 
 namespace SCMM.Steam.Client
 {
+    // NOTE: steamworkshopdownloader.io no longer serves files
+    //       https://www.reddit.com/r/swd_io/comments/uy55qg/we_are_no_longer_serving_any_files_through_our/
+    
+    // TODO: Use http://steamworkshop.download/ instead?
+
     public class SteamWorkshopDownloaderWebClient : Worker.Client.WebClient
     {
         private readonly ILogger<SteamWorkshopDownloaderWebClient> _logger;

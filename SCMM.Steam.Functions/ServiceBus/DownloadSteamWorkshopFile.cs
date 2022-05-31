@@ -9,22 +9,23 @@ using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Workshop.Requests;
 using SCMM.Steam.Data.Store;
+using SCMM.SteamCMD;
 
 namespace SCMM.Steam.Functions.ServiceBus;
 
 public class DownloadSteamWorkshopFile
 {
     private readonly SteamDbContext _db;
-    private readonly SteamWorkshopDownloaderWebClient _workshopDownloaderClient;
+    private readonly SteamCmdWrapper _steamCmd;
     private readonly string _workshopFilesStorageConnectionString;
     private readonly string _workshopFilesStorageUrl;
 
     private readonly TimeSpan _maxTimeToWaitForAsset = TimeSpan.FromMinutes(1);
 
-    public DownloadSteamWorkshopFile(IConfiguration configuration, SteamDbContext db, SteamWorkshopDownloaderWebClient workshopDownloaderClient)
+    public DownloadSteamWorkshopFile(IConfiguration configuration, SteamDbContext db, SteamCmdWrapper steamCmd)
     {
         _db = db;
-        _workshopDownloaderClient = workshopDownloaderClient;
+        _steamCmd = steamCmd;
         _workshopFilesStorageConnectionString = configuration.GetConnectionString("WorkshopFilesStorageConnection");
         _workshopFilesStorageUrl = configuration.GetDataStoreUrl();
     }
@@ -61,11 +62,9 @@ public class DownloadSteamWorkshopFile
         {
             // Download the workshop file from steam
             logger.LogInformation($"Downloading workshop file {message.PublishedFileId} from steam");
-            var publishedFileData = await _workshopDownloaderClient.DownloadWorkshopFile(
-                new SteamWorkshopDownloaderJsonRequest()
-                {
-                    PublishedFileId = message.PublishedFileId
-                }
+            var publishedFileData = await _steamCmd.DownloadWorkshopFile(
+                appId: message.AppId.ToString(),
+                workshopFileId: message.PublishedFileId.ToString()
             );
             if (publishedFileData?.Data == null)
             {

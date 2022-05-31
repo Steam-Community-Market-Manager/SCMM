@@ -309,6 +309,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     await _serviceBusClient.SendMessageAsync(new DownloadSteamWorkshopFileMessage()
                     {
+                        AppId = request.AppId,
                         PublishedFileId = publishedFileId,
                         Force = publishedFileHasChanged
                     });

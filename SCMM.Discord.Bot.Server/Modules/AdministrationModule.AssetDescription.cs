@@ -277,18 +277,23 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("download-workshop-files")]
         public async Task<RuntimeResult> DownloadAssetDescriptionWorkshopFiles(params ulong[] classIds)
         {
-            var workshopFileIds = await _db.SteamAssetDescriptions
+            var workshopFiles = await _db.SteamAssetDescriptions
                 .Where(x => x.ClassId != null && (classIds.Length == 0 || classIds.Contains(x.ClassId.Value)))
                 .Where(x => x.WorkshopFileId != null)
-                .Select(x => x.WorkshopFileId.Value)
+                .Select(x => new
+                {
+                    AppId = x.App.SteamId,
+                    WorkshopFileId = x.WorkshopFileId.Value
+                })
                 .ToListAsync();
 
             var messages = new List<DownloadSteamWorkshopFileMessage>();
-            foreach (var workshopFileId in workshopFileIds)
+            foreach (var workshopFile in workshopFiles)
             {
                 messages.Add(new DownloadSteamWorkshopFileMessage()
                 {
-                    PublishedFileId = workshopFileId,
+                    AppId = UInt64.Parse(workshopFile.AppId),
+                    PublishedFileId = workshopFile.WorkshopFileId,
                     Force = true
                 });
             }
