@@ -86,7 +86,7 @@ public class CheckForNewItemDefinitions
 
                         // TODO: Filter this properly
                         var fileredItemDefinitions = itemDefinitions
-                            .Where(x => x.Name != "DELETED" && x.Type != "None" && x.Type != "generator");
+                            .Where(x => x.Name != "DELETED" && x.Type != "generator");
 
                         foreach (var itemDefinition in fileredItemDefinitions)
                         {
