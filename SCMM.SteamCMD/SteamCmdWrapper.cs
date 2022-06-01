@@ -31,6 +31,7 @@ public class SteamCmdWrapper
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 steamCmdPath = $"Tools{Path.DirectorySeparatorChar}steamcmd.sh";
+                // TODO: $"chmod 755 {steamCmdPath}"
             }
             if (String.IsNullOrEmpty(steamCmdPath))
             {
@@ -76,7 +77,7 @@ public class SteamCmdWrapper
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Failed to download workshop file through SteamCMD (appid: {appId}, workshopfileid: {workshopFileId})");
+            _logger.LogError(ex, $"Failed to download workshop file through SteamCMD (appid: {appId}, workshopfileid: {workshopFileId}). {ex.Message}");
             throw;
         }
         finally

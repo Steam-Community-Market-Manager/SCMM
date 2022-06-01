@@ -35,6 +35,7 @@ using SCMM.Steam.API;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
+using SCMM.SteamCMD;
 using System.Reflection;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
@@ -169,6 +170,7 @@ public static class HostExtensions
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<SteamWorkshopDownloaderWebClient>();
+            services.AddScoped<SteamCmdWrapper>();
 
             // Command/query/message handlers
             services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
