@@ -1086,7 +1086,7 @@
 
     private bool MarketItemSalesAnnotations = true;
 
-    private int MarketItemSalesMaxDays = -1;
+    private int MarketItemSalesMaxDays = 30;
 
     private IEnumerable<ItemSalesChartPointDTO> MarketItemSalesChartData;
 
@@ -1133,7 +1133,7 @@
         }
         if (Item.IsAvailableOnMarket || Item.MarketLastSaleOn != null)
         {
-            MarketItemSalesMaxDays = -1;
+            MarketItemSalesMaxDays = 30;
             MarketItemSalesChartData = await RestoreFromStateOrLoad(nameof(MarketItemSalesChartData), async () =>
             {
                 await LoadItemSales(MarketItemSalesMaxDays);
