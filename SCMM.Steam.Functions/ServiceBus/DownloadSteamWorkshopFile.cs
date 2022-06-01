@@ -26,7 +26,7 @@ public class DownloadSteamWorkshopFile
     {
         _db = db;
         _steamCmd = steamCmd;
-        _workshopFilesStorageConnectionString = configuration.GetConnectionString("WorkshopFilesStorageConnection");
+        _workshopFilesStorageConnectionString = (configuration.GetConnectionString("WorkshopFilesStorageConnection") ?? Environment.GetEnvironmentVariable("WorkshopFilesStorageConnection"));
         _workshopFilesStorageUrl = configuration.GetDataStoreUrl();
     }
 

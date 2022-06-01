@@ -40,7 +40,7 @@ namespace SCMM.Steam.API.Commands
 
         public UploadImageToBlobStorage(IConfiguration configuration)
         {
-            _imagesStorageConnectionString = configuration.GetConnectionString("ImagesStorageConnection");
+            _imagesStorageConnectionString = (configuration.GetConnectionString("ImagesStorageConnection") ?? Environment.GetEnvironmentVariable("ImagesStorageConnection"));
             _imagesStorageUrl = configuration.GetDataStoreUrl();
         }
 

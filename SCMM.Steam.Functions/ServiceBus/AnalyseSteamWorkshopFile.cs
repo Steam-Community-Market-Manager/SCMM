@@ -30,7 +30,7 @@ public class AnalyseSteamWorkshopFile
     {
         _db = db;
         _azureAiClient = azureAiClient;
-        _workshopFilesStorageConnectionString = configuration.GetConnectionString("WorkshopFilesStorageConnection");
+        _workshopFilesStorageConnectionString = (configuration.GetConnectionString("WorkshopFilesStorageConnection") ?? Environment.GetEnvironmentVariable("WorkshopFilesStorageConnection"));
     }
 
     [Function("Analyse-Steam-Workshop-File")]
