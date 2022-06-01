@@ -1,10 +1,12 @@
 ﻿@using SCMM.Steam.Data.Models.Community.Requests.Html
 @using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Analytic
+@using SCMM.Web.Client.Shared.Dialogs.Items
 @page "/deals"
 @page "/deals/{tab}"
 @inherits PersistentComponent
 @inject ILogger<DealsPage> Logger
+@inject IDialogService Dialogs
 @inject NavigationManager NavigationManager
 @inject ExternalNavigationManager ExternalNavigationManager
 @inject HttpClient Http
@@ -39,7 +41,7 @@
                                 <ItemContent>
                                     <tr>
                                         <td>
-                                            <div class="d-flex flex-row justify-start align-center">
+                                            <div class="d-flex flex-row justify-start align-center clickable hover-zoom" @onclick="@(() => ShowItemDetailsDialog(item.Name, item.Id.ToString()))">
                                                 <img src="@item.IconUrl" class="mr-1" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2">@item.Name</MudText>
                                                 @if (item.IsBeingManipulated)
@@ -144,7 +146,7 @@
                                 <ItemContent>
                                     <tr>
                                         <td>
-                                            <div class="d-flex flex-row justify-start align-center">
+                                            <div class="d-flex flex-row justify-start align-center clickable hover-zoom" @onclick="@(() => ShowItemDetailsDialog(item.Name, item.Id.ToString()))">
                                                 <img src="@item.IconUrl" class="mr-2" style="width:32px; height:32px;" />
                                                 <MudText Typo="Typo.body2">@item.Name</MudText>
                                                 @if (item.IsBeingManipulated)
@@ -468,6 +470,15 @@
     private void BuyItem(string buyUrl)
     {
         ExternalNavigationManager.NavigateToNewTab(buyUrl);
+    }
+    
+    private void ShowItemDetailsDialog(string itemName, string itemAssetDescriptionId)
+    {
+        Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
+        {
+            ["ItemName"] = itemName,
+            ["ItemUrl"] = $"/api/item/{itemAssetDescriptionId}",
+        });
     }
 
     protected async ValueTask<ItemsProviderResult<MarketItemFlipAnalyticDTO>> LoadMarketFlips(ItemsProviderRequest request)
