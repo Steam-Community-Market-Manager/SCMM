@@ -84,13 +84,7 @@ namespace SCMM.Steam.Data.Store
                 .OwnsOne(x => x.Options);
 
             builder.Entity<SteamAssetDescription>()
-                .HasIndex(x => x.ClassId)
-                .IsUnique(true);
-            builder.Entity<SteamAssetDescription>()
-                .HasIndex(x => x.WorkshopFileId)
-                .IsUnique(true);
-            builder.Entity<SteamAssetDescription>()
-                .HasIndex(x => x.ItemDefinitionId)
+                .HasIndex(x => new { x.ClassId, x.ItemDefinitionId })
                 .IsUnique(true);
             builder.Entity<SteamAssetDescription>()
                 .OwnsOne(x => x.Notes);

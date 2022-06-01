@@ -29,6 +29,8 @@ namespace SCMM.Steam.API.Commands
 
         public ulong AssetClassId { get; set; }
 
+        public string AssetClassName { get; set; }
+
         /// <summary>
         /// Optional, removes the need to lookup AssetClassId if supplied
         /// </summary>
@@ -71,14 +73,19 @@ namespace SCMM.Steam.API.Commands
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
 
             // Does this asset already exist?
-            var assetDescription = await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ClassId == request.AssetClassId);
+            var assetDescription = (await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ClassId == request.AssetClassId)) ??
+                                   (_db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ClassId == request.AssetClassId));
             if (assetDescription == null)
             {
-                // Doesn't exist in database, double check that it isn't transient (newly created)
-                assetDescription = _db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ClassId == request.AssetClassId);
+                // Does a similiarly named item already exist?
+                assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => 
+                    x.App.SteamId == request.AppId.ToString() && 
+                    x.ClassId == null && 
+                    x.Name == request.AssetClass.Name
+                );
                 if (assetDescription == null)
                 {
-                    // Definitally doesn't exist, create it now...
+                    // Doesn't exist in database, create it now...
                     _db.SteamAssetDescriptions.Add(assetDescription = new SteamAssetDescription()
                     {
                         App = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString()),

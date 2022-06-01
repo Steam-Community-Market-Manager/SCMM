@@ -75,7 +75,7 @@ public class CheckForNewItemDefinitions
                     });
 
                     // Import the item definitions
-                    var newItemDefinitions = new List<ItemDefinition>();
+                    var newAssetDescriptions = new List<SteamAssetDescription>();
                     var updatedAssetDescriptions = new List<SteamAssetDescription>();
                     if (itemDefinitions != null)
                     {
@@ -97,38 +97,50 @@ public class CheckForNewItemDefinitions
                                 x.Name == itemDefinition.MarketName ||
                                 x.Name == itemDefinition.Name
                             );
-                            if (assetDescription != null)
+                            if (assetDescription == null)
                             {
-                                if (assetDescription.ItemDefinitionId == null)
+                                var newAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionRequest()
                                 {
-                                    updatedAssetDescriptions.Add(assetDescription);
-                                    await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
-                                    {
-                                        AssetDescription = assetDescription,
-                                        AssetItemDefinition = itemDefinition
-                                    });
+                                    AppId = UInt64.Parse(app.SteamId),
+                                    ItemDefinitionId = itemDefinition.ItemDefId,
+                                    ItemDefinitionName = itemDefinition.Name,
+                                    ItemDefinition = itemDefinition
+                                });
+                                if (newAssetDescription.AssetDescription != null)
+                                {
+                                    newAssetDescriptions.Add(newAssetDescription.AssetDescription);
                                 }
                             }
                             else
                             {
-                                newItemDefinitions.Add(itemDefinition);
-                                // TODO: Import this as an asset description
+                                if (assetDescription.ItemDefinitionId == null)
+                                {
+                                    var updatedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+                                    {
+                                        AssetDescription = assetDescription,
+                                        AssetItemDefinition = itemDefinition
+                                    });
+                                    if (updatedAssetDescription.AssetDescription != null)
+                                    {
+                                        updatedAssetDescriptions.Add(updatedAssetDescription.AssetDescription);
+                                    }
+                                }
                             }
                         }
                     }
 
                     await _db.SaveChangesAsync();
 
-                    if (newItemDefinitions.Any() || updatedAssetDescriptions.Any())
+                    if (newAssetDescriptions.Any() || updatedAssetDescriptions.Any())
                     {
-                        await BroadcastUpdatedItemDefinitionsNotification(logger, app, newItemDefinitions, updatedAssetDescriptions);
+                        await BroadcastUpdatedItemDefinitionsNotification(logger, app, newAssetDescriptions, updatedAssetDescriptions);
                     }
                 }
             }
         }
     }
 
-    private async Task BroadcastUpdatedItemDefinitionsNotification(ILogger logger, SteamApp app, IEnumerable<ItemDefinition> newItemDefinitions, IEnumerable<SteamAssetDescription> updatedAssetDescriptions)
+    private async Task BroadcastUpdatedItemDefinitionsNotification(ILogger logger, SteamApp app, IEnumerable<SteamAssetDescription> newAssetDescriptions, IEnumerable<SteamAssetDescription> updatedAssetDescriptions)
     {
         var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
         foreach (var guild in guilds)
@@ -148,13 +160,13 @@ public class CheckForNewItemDefinitions
                 var fields = new Dictionary<string, string>();
                 description.AppendLine(app.ItemDefinitionsDigest);
                 description.AppendLine();
-                if (newItemDefinitions.Any())
+                if (newAssetDescriptions.Any())
                 {
-                    description.Append($"{newItemDefinitions.Count()} new item(s) have just appeared in the {app?.Name} item definitions archive.");
-                    foreach (var item in newItemDefinitions.OrderByDescending(x => x.DateCreated.SteamTimestampToDateTimeOffset()))
+                    description.Append($"{newAssetDescriptions.Count()} new item(s) have just appeared in the {app?.Name} item definitions archive.");
+                    foreach (var item in newAssetDescriptions.OrderByDescending(x => x.TimeCreated))
                     {
                         fields.Add(
-                            $"🆕 {item.ItemDefId}",
+                            $"🆕 {item.ItemDefinitionId}",
                             (String.IsNullOrEmpty(item.IconUrl) ? item.Name : $"[{item.Name}]({item.IconUrl})")
                         );
                     }
@@ -170,7 +182,7 @@ public class CheckForNewItemDefinitions
                         );
                     }
                 }
-                if (!newItemDefinitions.Any() && !updatedAssetDescriptions.Any())
+                if (!newAssetDescriptions.Any() && !updatedAssetDescriptions.Any())
                 {
                     description.Append("No significant item additions/removals were detected.");
                 }
@@ -178,7 +190,7 @@ public class CheckForNewItemDefinitions
                 {
                     fields = fields.Take(24).ToDictionary(x => x.Key, x => x.Value);
                     fields.Add(
-                        $"+{newItemDefinitions.Count() + updatedAssetDescriptions.Count() - 24} items",
+                        $"+{newAssetDescriptions.Count() + updatedAssetDescriptions.Count() - 24} items",
                         "View full item list for more details"
                     );
                 }

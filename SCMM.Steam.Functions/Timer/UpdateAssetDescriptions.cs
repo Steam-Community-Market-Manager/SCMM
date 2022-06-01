@@ -32,7 +32,8 @@ public class UpdateAssetDescriptions
             .Select(x => new
             {
                 AppId = x.App.SteamId,
-                x.ClassId
+                ClassId = x.ClassId,
+                Name = x.Name
             })
             .Take(10) // batch 10 at a time
             .ToListAsync();
@@ -51,7 +52,8 @@ public class UpdateAssetDescriptions
                 await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = ulong.Parse(assetDescription.AppId),
-                    AssetClassId = assetDescription.ClassId.Value
+                    AssetClassId = assetDescription.ClassId.Value,
+                    AssetClassName = assetDescription.Name
                 });
             }
             catch (Exception ex)
