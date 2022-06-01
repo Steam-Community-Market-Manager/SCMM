@@ -156,7 +156,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.AppId == appId)
                 .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
                 .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && (sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) > 0)
-                .Where(x => ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 1)
+                .Where(x => ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
                 .OrderByDescending(x => (decimal)((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((decimal)(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)(x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)));
 
             return Ok(
