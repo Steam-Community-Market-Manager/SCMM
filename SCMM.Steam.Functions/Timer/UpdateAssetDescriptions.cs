@@ -52,8 +52,7 @@ public class UpdateAssetDescriptions
                 await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = ulong.Parse(assetDescription.AppId),
-                    AssetClassId = assetDescription.ClassId.Value,
-                    AssetClassName = assetDescription.Name
+                    AssetClassId = assetDescription.ClassId.Value
                 });
             }
             catch (Exception ex)
