@@ -60,8 +60,7 @@ namespace SCMM.Steam.API
                 var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = ulong.Parse(app.SteamId),
-                    AssetClassId = asset.ClassId,
-                    AssetClassName = asset.Name
+                    AssetClassId = asset.ClassId
                 });
                 assetDescription = importAssetDescription.AssetDescription;
                 if (assetDescription == null)
@@ -137,8 +136,7 @@ namespace SCMM.Steam.API
             var importAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
             {
                 AppId = ulong.Parse(app.SteamId),
-                AssetClassId = asset.ClassId.Value,
-                AssetClassName = asset.Name
+                AssetClassId = asset.ClassId.Value
             });
             var assetDescription = importAssetDescription.AssetDescription;
             if (assetDescription == null || assetDescription.NameId == null)

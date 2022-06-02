@@ -91,11 +91,11 @@ public class CheckForNewItemDefinitions
                         foreach (var itemDefinition in fileredItemDefinitions)
                         {
                             var assetDescription = assetDescriptions.FirstOrDefault(x =>
-                                (x.ItemDefinitionId != null && x.ItemDefinitionId == itemDefinition.ItemDefId) ||
-                                (x.WorkshopFileId != null && x.WorkshopFileId == itemDefinition.WorkshopId) ||
-                                x.NameHash == itemDefinition.MarketHashName ||
-                                x.Name == itemDefinition.MarketName ||
-                                x.Name == itemDefinition.Name
+                                (x.ItemDefinitionId > 0 && itemDefinition.ItemDefId > 0 && x.ItemDefinitionId == itemDefinition.ItemDefId) ||
+                                (x.WorkshopFileId > 0 && itemDefinition.WorkshopId > 0 && x.WorkshopFileId == itemDefinition.WorkshopId) ||
+                                (!String.IsNullOrEmpty(x.NameHash) && !String.IsNullOrEmpty(itemDefinition.MarketHashName) && x.NameHash == itemDefinition.MarketHashName) ||
+                                (!String.IsNullOrEmpty(x.Name) && !String.IsNullOrEmpty(itemDefinition.MarketName) && x.Name == itemDefinition.MarketName) ||
+                                (!String.IsNullOrEmpty(x.Name) && !String.IsNullOrEmpty(itemDefinition.Name) && x.Name == itemDefinition.Name)
                             );
                             if (assetDescription == null)
                             {

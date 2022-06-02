@@ -29,8 +29,6 @@ namespace SCMM.Steam.API.Commands
 
         public ulong AssetClassId { get; set; }
 
-        public string AssetClassName { get; set; }
-
         /// <summary>
         /// Optional, removes the need to lookup AssetClassId if supplied
         /// </summary>
@@ -71,28 +69,6 @@ namespace SCMM.Steam.API.Commands
         public async Task<ImportSteamAssetDescriptionResponse> HandleAsync(ImportSteamAssetDescriptionRequest request)
         {
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
-
-            // Does this asset already exist?
-            var assetDescription = (await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ClassId == request.AssetClassId)) ??
-                                   (_db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ClassId == request.AssetClassId));
-            if (assetDescription == null)
-            {
-                // Does a similiarly named item already exist?
-                assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => 
-                    x.App.SteamId == request.AppId.ToString() && 
-                    x.ClassId == null && 
-                    x.Name == request.AssetClass.Name
-                );
-                if (assetDescription == null)
-                {
-                    // Doesn't exist in database, create it now...
-                    _db.SteamAssetDescriptions.Add(assetDescription = new SteamAssetDescription()
-                    {
-                        App = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString()),
-                        ClassId = request.AssetClassId,
-                    });
-                }
-            }
 
             // Get asset class info
             var assetClass = (AssetClassInfoModel)null;
@@ -167,6 +143,28 @@ namespace SCMM.Steam.API.Commands
             if (assetClass == null)
             {
                 throw new Exception($"Failed to get class info for asset {request.AssetClassId}, asset was not found");
+            }
+
+            // Does this asset already exist?
+            var assetDescription = (await _db.SteamAssetDescriptions.Include(x => x.App).FirstOrDefaultAsync(x => x.ClassId == assetClass.ClassId)) ??
+                                   (_db.SteamAssetDescriptions.Local.FirstOrDefault(x => x.ClassId == assetClass.ClassId));
+            if (assetDescription == null)
+            {
+                // Does a similiarly named item already exist?
+                assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x =>
+                    x.App.SteamId == request.AppId.ToString() &&
+                    x.ClassId == null &&
+                    x.Name == assetClass.Name
+                );
+                if (assetDescription == null)
+                {
+                    // Doesn't exist in database, create it now...
+                    _db.SteamAssetDescriptions.Add(assetDescription = new SteamAssetDescription()
+                    {
+                        App = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString()),
+                        ClassId = assetClass.ClassId,
+                    });
+                }
             }
 
             // Get published file details from Steam (if workshopfileid is available)

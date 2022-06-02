@@ -61,9 +61,10 @@ namespace SCMM.Steam.API.Commands
             var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x =>
                 x.App.SteamId == request.AppId.ToString() &&
                 (
-                    (x.ItemDefinitionId != null && x.ItemDefinitionId == request.ItemDefinitionId) ||
-                    x.NameHash == request.ItemDefinitionName ||
-                    x.Name == request.ItemDefinitionName
+                    (x.ItemDefinitionId > 0 && request.ItemDefinitionId > 0 && x.ItemDefinitionId == request.ItemDefinitionId) ||
+                    (!String.IsNullOrEmpty(x.NameHash) && !String.IsNullOrEmpty(request.ItemDefinitionName) && x.NameHash == request.ItemDefinitionName) ||
+                    (!String.IsNullOrEmpty(x.Name) && !String.IsNullOrEmpty(request.ItemDefinitionName) && x.Name == request.ItemDefinitionName) ||
+                    (!String.IsNullOrEmpty(x.Name) && !String.IsNullOrEmpty(request.ItemDefinitionName) && x.Name == request.ItemDefinitionName)
                 )
             );
             if (assetDescription == null)
