@@ -56,7 +56,7 @@ public static class WebAssemblyHostExtensions
 
         services.AddSyncfusionBlazor();
         SyncfusionLicenseProvider.RegisterLicense(
-            "NjQwNjM1QDMyMzAyZTMxMmUzMGdiRmg3NVQ1MEhMb05FcFdRc2JVUWNVNFpGSGZhZlZ5cURyc1dvMmtjZ009"
+            "NjUxNDE0QDMyMzAyZTMxMmUzMGl0S1FjSVFjRm9MMjRvaEpPdFBDZHBnL2Q2Q0pkSU5HU21QYWVCOXZoeUE9"
         );
     }
 }

@@ -31,14 +31,14 @@ namespace SCMM.Steam.Data.Models.Enums
 
         [Display(Name = "Swap.gg")]
         [Market(Type = PriceTypes.Trade, Color = "#15C7AD")]
-        //[BuyFrom(Url = "https://swap.gg?idev_id=326&appId={0}&search={3}")]
-        [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}")]
+        [BuyFrom(Url = "https://swap.gg?idev_id=326&appId={0}&search={3}")]
+        //[BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}")]
         SwapGGTrade = 12,
 
         [Display(Name = "Swap.gg Market")]
         [Market(Type = PriceTypes.Cash, Color = "#15C7AD")]
-        //[BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}")]
-        [BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}")]
+        [BuyFrom(Url = "https://market.swap.gg/browse?idev_id=326&appId={0}&search={3}")]
+        //[BuyFrom(Url = "https://affiliate.swap.gg/idevaffiliate.php?id=326&page=5&search={3}")]
         SwapGGMarket = 13,
 
         [Display(Name = "Tradeit.gg")]
