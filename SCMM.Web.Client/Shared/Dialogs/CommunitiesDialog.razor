@@ -1,0 +1,48 @@
+﻿@inherits ResponsiveDialog
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="MudBlazor.Typo.h6" Color="MudBlazor.Color.Default">Discord Communities</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" GutterBottom="true">
+            <p>We recommend joining these Discord communities if you'd like to discuss the Steam Community Market with other like minded people.</p>
+        </MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <DiscordInvite InviteCode="MZgQ3966Jb" />
+            </MudItem>
+            <MudItem xs="12">
+                <DiscordInvite InviteCode="ecM3FYRJQy" />
+            </MudItem>
+            <MudItem xs="12">
+                <DiscordInvite InviteCode="BEYC3Pt462" />
+            </MudItem>
+            <MudItem xs="12">
+                <DiscordInvite InviteCode="vwRepVrVur" />
+            </MudItem>
+            <MudItem xs="12">
+                <DiscordInvite InviteCode="8zdsZ9Qu3a" />
+            </MudItem>
+            <MudItem xs="12">
+                <DiscordInvite InviteCode="snmMfJDCXH" />
+            </MudItem>
+            <MudItem xs="12">
+                <DiscordInvite InviteCode="CUtPfdwRUP" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+</MudDialog>
+
+@code {
+
+    protected override void OnConfigure(ResponsiveDialogOptions options)
+    {
+        options.FullscreenBreakpoint = MudBlazor.Breakpoint.Sm;
+        options.MaxWidth = MudBlazor.MaxWidth.Small;
+        options.CloseButton = true;
+    }
+    
+    protected override bool ShouldRender() => false;
+
+}

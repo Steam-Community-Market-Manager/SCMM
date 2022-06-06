@@ -1,0 +1,96 @@
+﻿@using System.Text.Json.Serialization
+@inject ILogger<DiscordInvite> Logger
+@inject HttpClient Http
+@inject ExternalNavigationManager ExternalNavigationManager
+
+@if (Invite != null)
+{
+    <div class="discord-invite-container" @attributes="AdditionalAttributes">
+        <MudPaper Outlined="true" Class="pa-4">
+            <div class="d-flex flex-row">
+                <img src="@($"https://cdn.discordapp.com/icons/{Invite.Guild?.Id}/{Invite.Guild?.Icon}.jpg")" class="flex-grow-0" style="height:4rem"/>
+                <div class="flex-grow-1 px-4">
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Default">@Invite.Guild?.Name</MudText>
+                    <MudText Typo="MudBlazor.Typo.subtitle2" Color="MudBlazor.Color.Secondary">
+                        <span> <span class="mud-success-text">⬤</span> @(Invite.ApproximatePresenceCount.ToQuantityString()) Online </span>
+                        <span> ⬤ @(Invite.ApproximateMemberCount.ToQuantityString()) Members </span>
+                    </MudText>
+                    <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary">@Invite.Guild?.WelcomeScreen?.Description</MudText>
+                </div>
+                <MudButton OnClick="JoinGuild" Variant="MudBlazor.Variant.Filled" Color="MudBlazor.Color.Success" Size="MudBlazor.Size.Large" Class="flex-grow-0">Join</MudButton>
+            </div>
+        </MudPaper>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string InviteCode { get; set; }
+
+    private DiscordInviteDTO Invite;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Invite == null || (!String.Equals(InviteCode, Invite?.Code)))
+        {
+            try
+            {
+                Invite = await Http.GetFromJsonWithDefaultsAsync<DiscordInviteDTO>($"https://discordapp.com/api/v6/invite/{InviteCode}?with_counts=true");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Failed to get Discord invite details (code: {InviteCode})");
+            }
+        }
+    }
+
+    public void JoinGuild()
+    {
+        ExternalNavigationManager.NavigateToNewTab(
+            $"https://discord.gg/{InviteCode}"
+        );
+    }
+
+    public class DiscordInviteDTO
+    {
+        [JsonPropertyName("code")]
+        public string Code { get; set; }
+
+        [JsonPropertyName("guild")]
+        public GuildDTO Guild { get; set; }
+
+        public class GuildDTO
+        {
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
+
+            [JsonPropertyName("description")]
+            public string Description { get; set; }
+
+            [JsonPropertyName("icon")]
+            public string Icon { get; set; }
+
+            [JsonPropertyName("welcome_screen")]
+            public WelcomeScreenDTO WelcomeScreen { get; set; }
+
+            public class WelcomeScreenDTO
+            {
+                [JsonPropertyName("description")]
+                public string Description { get; set; }
+            }
+        }
+        
+        [JsonPropertyName("approximate_member_count")]
+        public int ApproximateMemberCount { get; set; }
+        
+        [JsonPropertyName("approximate_presence_count")]
+        public int ApproximatePresenceCount { get; set; }
+    }
+}
