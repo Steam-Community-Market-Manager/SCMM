@@ -1,4 +1,5 @@
-﻿using SCMM.Shared.Data.Models.Extensions;
+﻿using HotChocolate;
+using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.Attributes;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Models.Extensions;
@@ -25,11 +26,13 @@ namespace SCMM.Steam.Data.Store
             SalesPriceRolling24hrs = new PersistablePriceCollection();
         }
 
+        [GraphQLIgnore]
         public Guid? CurrencyId { get; set; }
 
         public SteamCurrency Currency { get; set; }
 
         [Required]
+        [GraphQLIgnore]
         public PersistableMarketPriceDictionary BuyPrices { get; set; }
 
         public int BuyPricesTotalSupply { get; set; }
@@ -47,6 +50,7 @@ namespace SCMM.Steam.Data.Store
         public long BuyLaterFee { get; set; }
 
         [Required]
+        [GraphQLIgnore]
         public PersistableMarketPriceDictionary SellPrices { get; set; }
 
         public int SellPricesTotalSupply { get; set; }
@@ -63,8 +67,10 @@ namespace SCMM.Steam.Data.Store
 
         public long SellLaterFee { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamMarketItemActivity> Activity { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamMarketItemBuyOrder> BuyOrders { get; set; }
 
         // What is the total quantity of all buy orders
@@ -82,6 +88,7 @@ namespace SCMM.Steam.Data.Store
         [Required]
         public PersistablePriceCollection BuyOrderHighestPriceRolling24hrs { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamMarketItemSellOrder> SellOrders { get; set; }
 
         // What is the total quantity of all sell orders
@@ -99,8 +106,10 @@ namespace SCMM.Steam.Data.Store
         [Required]
         public PersistablePriceCollection SellOrderLowestPriceRolling24hrs { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamMarketItemOrderSummary> OrdersHistory { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamMarketItemSale> SalesHistory { get; set; }
 
         [Required]
@@ -195,6 +204,7 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public bool IsBeingManipulated { get; set; }
 
+        [GraphQLIgnore]
         public void UpdateBuyPrices(MarketType type, PriceWithSupply? price)
         {
             BuyPrices = new PersistableMarketPriceDictionary(BuyPrices);
@@ -268,6 +278,7 @@ namespace SCMM.Steam.Data.Store
             RecalulateIsBeingManipulated();
         }
 
+        [GraphQLIgnore]
         public void UpdateSellPrices(MarketType type, PriceWithSupply? price)
         {
             SellPrices = new PersistableMarketPriceDictionary(SellPrices);
@@ -341,6 +352,7 @@ namespace SCMM.Steam.Data.Store
             RecalulateIsBeingManipulated();
         }
 
+        [GraphQLIgnore]
         public void RecalculateOrders(SteamMarketItemBuyOrder[] buyOrders = null, int? buyOrderCount = null, SteamMarketItemSellOrder[] sellOrders = null, int? sellOrderCount = null)
         {
             var now = DateTimeOffset.UtcNow;
@@ -440,6 +452,7 @@ namespace SCMM.Steam.Data.Store
             RecalulateIsBeingManipulated();
         }
 
+        [GraphQLIgnore]
         public void RecalculateSales(SteamMarketItemSale[] newSales = null)
         {
             // Add any new sales we don't already have
@@ -529,6 +542,7 @@ namespace SCMM.Steam.Data.Store
             RecalulateIsBeingManipulated();
         }
 
+        [GraphQLIgnore]
         public void RecalulateIsBeingManipulated()
         {
             var marketAge = (FirstSaleOn != null ? (DateTimeOffset.UtcNow - FirstSaleOn) : TimeSpan.Zero);

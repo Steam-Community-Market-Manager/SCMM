@@ -1,4 +1,5 @@
-﻿using SCMM.Steam.Data.Store.Types;
+﻿using HotChocolate;
+using SCMM.Steam.Data.Store.Types;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,6 +13,7 @@ namespace SCMM.Steam.Data.Store
             Prices = new PersistablePriceDictionary();
         }
 
+        [GraphQLIgnore]
         public Guid? CurrencyId { get; private set; }
 
         public SteamCurrency Currency { get; private set; }
@@ -39,8 +41,10 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public bool HasReturnedToStore { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamStoreItemItemStore> Stores { get; set; }
 
+        [GraphQLIgnore]
         public void UpdatePrice(SteamCurrency currency, long price, PersistablePriceDictionary prices)
         {
             CurrencyId = currency?.Id;
@@ -49,6 +53,7 @@ namespace SCMM.Steam.Data.Store
             Prices = new PersistablePriceDictionary(prices);
         }
 
+        [GraphQLIgnore]
         public void UpdateLatestPrice()
         {
             var latestStore = Stores?.FirstOrDefault(x => x.Store?.Start == Stores?.Max(x => x.Store?.Start));
@@ -63,6 +68,7 @@ namespace SCMM.Steam.Data.Store
             RecalculateHasReturnedToStore();
         }
 
+        [GraphQLIgnore]
         public void RecalculateHasReturnedToStore()
         {
             if (!Stores.Any(x => x.Store != null))

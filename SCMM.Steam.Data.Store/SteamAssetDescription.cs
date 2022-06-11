@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using HotChocolate;
+using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
@@ -26,11 +27,13 @@ namespace SCMM.Steam.Data.Store
             BreaksIntoComponents = new PersistableAssetQuantityDictionary();
         }
 
+        [GraphQLIgnore]
         [Required]
         public Guid AppId { get; set; }
 
         public SteamApp App { get; set; }
 
+        [GraphQLIgnore]
         public ulong? ClassId { get; set; }
 
         /// <summary>
@@ -38,16 +41,21 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public SteamAssetDescriptionType AssetType { get; set; }
 
+        [GraphQLIgnore]
         public ulong? WorkshopFileId { get; set; }
 
         public string WorkshopFileUrl { get; set; }
 
+        [GraphQLIgnore]
         public ulong? CreatorId { get; set; }
 
+        [GraphQLIgnore]
         public Guid? CreatorProfileId { get; set; }
 
+        [GraphQLIgnore]
         public SteamProfile CreatorProfile { get; set; }
 
+        [GraphQLIgnore]
         public ulong? ItemDefinitionId { get; set; }
 
         /// <summary>
@@ -71,6 +79,7 @@ namespace SCMM.Steam.Data.Store
 
         public string NameWorkshop { get; set; }
 
+        [GraphQLIgnore]
         public ulong? NameId { get; set; }
 
         public string Description { get; set; }
@@ -123,8 +132,10 @@ namespace SCMM.Steam.Data.Store
 
         public string IconUrl { get; set; }
 
+        [GraphQLIgnore]
         public Guid? IconId { get; set; }
 
+        [GraphQLIgnore]
         public FileData Icon { get; set; }
 
         public string IconLargeUrl { get; set; }
@@ -156,8 +167,10 @@ namespace SCMM.Steam.Data.Store
 
         public long? Views { get; set; }
 
+        [GraphQLIgnore]
         public uint? VotesUp { get; set; }
 
+        [GraphQLIgnore]
         public uint? VotesDown { get; set; }
 
         public bool IsCommodity { get; set; }
@@ -182,11 +195,13 @@ namespace SCMM.Steam.Data.Store
         public bool IsCraftable { get; set; }
 
         [Required]
+        [GraphQLIgnore]
         public PersistableAssetQuantityDictionary CraftingComponents { get; set; }
 
         public bool IsBreakable { get; set; }
 
         [Required]
+        [GraphQLIgnore]
         public PersistableAssetQuantityDictionary BreaksIntoComponents { get; set; }
 
         public bool IsBanned { get; set; }
@@ -206,8 +221,10 @@ namespace SCMM.Steam.Data.Store
         /// </summary>
         public DateTimeOffset? TimeRefreshed { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamProfileInventoryItem> InventoryItems { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamStoreItemTopSellerPosition> StoreItemTopSellerPositions { get; set; }
 
         #region Pricing
@@ -216,6 +233,7 @@ namespace SCMM.Steam.Data.Store
 
         public SteamMarketItem MarketItem { get; set; }
 
+        [GraphQLIgnore]
         public MarketPrice GetCheapestBuyPrice(IExchangeableCurrency currency)
         {
             // TODO: Currently prioritises first part markets over third party markets, re-think this....
@@ -226,6 +244,7 @@ namespace SCMM.Steam.Data.Store
                 .FirstOrDefault();
         }
 
+        [GraphQLIgnore]
         public IEnumerable<MarketPrice> GetBuyPrices(IExchangeableCurrency currency)
         {
             // Store price

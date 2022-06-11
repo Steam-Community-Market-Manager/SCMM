@@ -171,6 +171,17 @@ public static class WebApplicationExtensions
         builder.Services.AddScoped<CurrencyCache>();
         builder.Services.AddScoped<AppCache>();
 
+        // GraphQL
+        builder.Services.AddScoped<SteamAssetDescriptionQueryResolver>();
+        builder.Services.AddGraphQLServer()
+            .RegisterDbContext<SteamDbContext>()
+            .AddQueryType<SteamAssetDescriptionQueryResolver>()
+            .AddQueryableCursorPagingProvider()
+            .AddProjections()
+            .AddFiltering()
+            .AddSorting()
+            .InitializeOnStartup();
+
         // Controllers
         builder.Services
             .AddControllers(options =>
@@ -330,6 +341,7 @@ public static class WebApplicationExtensions
 
         app.UseEndpoints(endpoints =>
         {
+            endpoints.MapGraphQL();
             endpoints.MapControllers();
             endpoints.MapDefaultControllerRoute();
 

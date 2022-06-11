@@ -24,6 +24,9 @@
     <PackageReference Include="AspNet.Security.OpenId.Steam" Version="6.0.0" />
     <PackageReference Include="Azure.Identity" Version="1.6.0" />
     <PackageReference Include="CommandQuery.DependencyInjection" Version="1.0.0" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="13.0.0-preview.24" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.0.0-preview.24" />
+    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.0.0-preview.24" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.5" />

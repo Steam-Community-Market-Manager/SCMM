@@ -1,4 +1,5 @@
-﻿using SCMM.Shared.Data.Models;
+﻿using HotChocolate;
+using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Store;
 using SCMM.Steam.Data.Models.Enums;
 using System.Collections.ObjectModel;
@@ -45,20 +46,26 @@ namespace SCMM.Steam.Data.Store
 
         public string ItemDefinitionsDigest { get; set; }
 
+        [GraphQLIgnore]
         public ulong? MostRecentlyAcceptedWorkshopFileId { get; set; }
 
         public DateTimeOffset? TimeUpdated { get; set; }
 
         public SteamAppFeatureTypes Features { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamAssetFilter> AssetFilters { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamAssetDescription> AssetDescriptions { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamMarketItem> MarketItems { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamStoreItem> StoreItems { get; set; }
 
+        [GraphQLIgnore]
         public ICollection<SteamItemStore> ItemStores { get; set; }
 
         public bool IsActive { get; set; }
