@@ -77,20 +77,20 @@ namespace SCMM.Steam.Data.Models.Enums
         // wss://rustvendor.com/socket.io/?EIO=4&transport=websocket&sid=xxx
         // => 42["requestInventory"]
         // <= 42["requestInventoryResponse",…]
-        [Display(Name = "RUSTVendor")]
-        [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
-        [BuyFrom(Url = "https://rustvendor.com/trade")] // Unconfirmed
-        RUSTVendor = 20,
+        //[Display(Name = "RUSTVendor")]
+        //[Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
+        //[BuyFrom(Url = "https://rustvendor.com/trade")] // Unconfirmed
+        //RUSTVendor = 20,
 
         // NOTE: Very inactive website, remove
         // TODO: Implement web socket client support
         // wss://rustytrade.com/socket.io/?EIO=3&transport=websocket&sid=xxx
         // => 42["get bots inv"]
         // <= 42["bots inv",…]
-        [Display(Name = "RustyTrade")]
-        [Market(Type = PriceTypes.Trade)]
-        [BuyFrom(Url = "https://rustytrade.com/")] // Unconfirmed
-        RustyTrade = 21,
+        //[Display(Name = "RustyTrade")]
+        //[Market(Type = PriceTypes.Trade)]
+        //[BuyFrom(Url = "https://rustytrade.com/")] // Unconfirmed
+        //RustyTrade = 21,
 
         [Display(Name = "CS.TRADE")]
         [Market(Type = PriceTypes.Trade)]
@@ -118,10 +118,10 @@ namespace SCMM.Steam.Data.Models.Enums
         skinmarketGG = 26,
 
         // TODO: Find workaround for overly agressive CloudFlare policies
-        [Display(Name = "GAMERALL.com")]
-        [Market(Type = PriceTypes.Cash)]
-        [BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed
-        GAMERALL = 27,
+        //[Display(Name = "GAMERALL.com")]
+        //[Market(Type = PriceTypes.Cash)]
+        //[BuyFrom(Url = "https://gamerall.com/rust")] // Unconfirmed
+        //GAMERALL = 27,
 
         // TODO: F2F market support
         [Display(Name = "Dmarket")]

@@ -296,10 +296,7 @@ namespace SCMM.Steam.Data.Store
                 var app = (MarketItem.App ?? App);
                 foreach (var marketPrice in MarketItem.BuyPrices)
                 {
-                    var marketTypeField = marketPrice.Key.GetType().GetField(marketPrice.Key.ToString(), BindingFlags.Public | BindingFlags.Static);
-                    var marketBuyFrom = marketTypeField?.GetCustomAttribute<BuyFromAttribute>();
                     var lowestPrice = 0L;
-                    var lowestPriceFee = 0L;
                     if (currency != null)
                     {
                         lowestPrice = currency.CalculateExchange(marketPrice.Value.Price, MarketItem.Currency);
@@ -309,26 +306,17 @@ namespace SCMM.Steam.Data.Store
                         currency = MarketItem.Currency;
                         lowestPrice = marketPrice.Value.Price;
                     }
-                    if (marketBuyFrom.FeeRate != 0 && lowestPrice > 0)
-                    {
-                        lowestPriceFee += lowestPrice.MarketSaleFeeComponentAsInt(marketBuyFrom.FeeRate);
-                    }
-                    if (marketBuyFrom.FeeSurcharge != 0 && lowestPrice > 0)
-                    {
-                        lowestPriceFee += marketBuyFrom.FeeSurcharge;
-                    }
                     yield return new MarketPrice
                     {
-                        Type = (marketTypeField?.GetCustomAttribute<MarketAttribute>()?.Type ?? PriceTypes.None),
+                        Type = (marketPrice.Key.GetMarketPriceType() ?? PriceTypes.None),
                         MarketType = marketPrice.Key,
                         Currency = currency,
                         Price = lowestPrice,
-                        Fee = lowestPriceFee,
+                        Fee = marketPrice.Key.GetMarketBuyFees(lowestPrice),
                         Supply = marketPrice.Value.Supply,
                         IsAvailable = (!String.IsNullOrEmpty(NameHash) && lowestPrice > 0 && marketPrice.Value.Supply != 0),
-                        Url = String.Format(
-                            (marketBuyFrom?.Url ?? String.Empty),
-                            app?.SteamId, Uri.EscapeDataString(app?.Name?.ToLower()), ClassId, Uri.EscapeDataString(NameHash)
+                        Url = marketPrice.Key.GetMarketBuyUrl(
+                            app?.SteamId, app?.Name?.ToLower(), ClassId, NameHash
                         )
                     };
                 }
