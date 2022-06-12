@@ -400,7 +400,7 @@
             <response code="200">List of market index fund values grouped/keyed per day by UTC date.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketFlips(System.String,System.Boolean,System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketFlips(System.String,System.Nullable{SCMM.Steam.Data.Models.Enums.MarketType},System.Boolean,System.Int32,System.Int32)">
             <summary>
             Get items that can be instantly flipped on to the Steam Community Market for profit
             </summary>
@@ -408,13 +408,14 @@
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
             <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
+            <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
             <param name="sellNow">If true, sell prices are based on highest buy order. If false, sell prices are based on lowest sell order. Default is true.</param>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data)</param>
             <response code="200">Paginated list of items matching the request parameters.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketCheapestListings(System.String,System.Int32,System.Int32)">
+        <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketCheapestListings(System.String,System.Nullable{SCMM.Steam.Data.Models.Enums.MarketType},System.Int32,System.Int32)">
             <summary>
             Get the cheapeast market listing for items
             </summary>
@@ -422,6 +423,7 @@
             The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
             </remarks>
             <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
+            <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
             <param name="start">Return items starting at this specific index (pagination)</param>
             <param name="count">Number items to be returned (can be less if not enough data)</param>
             <response code="200">Paginated list of items matching the request parameters.</response>

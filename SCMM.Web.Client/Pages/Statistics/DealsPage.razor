@@ -14,7 +14,7 @@
 
 <PageContainer Title="Market Deals">
     <MudAlert Icon="fa fa-fw fa-exclamation-triangle" Severity="Severity.Warning" Variant="MudBlazor.Variant.Text" Class="mud-alert-outlined-warning">
-        <span>Always double check prices before buying or selling. Our prices update once every hour, some deals may have been snapped up already.</span>
+        <span>Always double check prices yourself before buying or selling. Prices shown here update once every hour and some deals may no longer be available.</span>
     </MudAlert>
     <MudTabs Elevation="0" ActivePanelIndex="TabIndex" ActivePanelIndexChanged="OnSelectedTabChanged" Class="mud-tabs-transparent">
         <ChildContent>
@@ -32,7 +32,24 @@
                                     <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketCheapestListings.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" 
                                                   Placeholder="Search items..." FullWidth="true" Class="mud-input-full-height ma-0" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
-                                <th>Cheapest market offer</th>
+                                <th>
+                                    <MudSelect T="MarketType?" Value="@MarketType" ValueChanged="async (x) => { MarketType = x; await VirtualiseMarketCheapestListings.RefreshDataAsync(); StateHasChanged(); }" 
+                                               ToStringFunc="@(x => $"Cheapest {(x != null ? $"{x.GetDisplayName()} offer" : "offer from all markets")}")"
+                                               Margin="MudBlazor.Margin.None" Dense="true" FullWidth="true" Class="mud-input-full-height mud-input-transparent ma-0" Disabled="State.IsPrerendering">
+                                        
+                                        <MudSelectItem Value="@((MarketType?)null)">
+                                            <span>Cheapest offer from <strong>all markets</strong></span>
+                                        </MudSelectItem>
+                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => x > SCMM.Steam.Data.Models.Enums.MarketType.SteamCommunityMarket))
+                                        {
+                                            <MudSelectItem Value="@((MarketType?)marketType)" Class="d-flex justify-start align-center">
+                                                <span>Cheapest </span>
+                                                <img src="@($"/images/app/{State.App.Id}/markets/{marketType.ToString().ToLower()}.png")" class="mx-1" style="width:1em; height:1em" />
+                                                <span><strong>@marketType.GetDisplayName()</strong> offer</span>
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </th>
                                 <th>Steam Community Market</th>
                             </tr>
                         </thead>
@@ -114,18 +131,7 @@
                 <AnalyticsPanel>
                     <MudText Typo="Typo.body2" Color="Color.Secondary" GutterBottom="true">
                         <span>Looking to top up your Steam wallet balance?</span><br/>
-                        <span>Buy these undervalued items and flip them on the Steam Community Market for extra balance. Flip instantly to the highest buy order or, if you want to maximize your profit, sell later by listing at the lowest sell order price and hope somebody fulfills it.</span>
-                    </MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="d-flex align-center" GutterBottom="true">
-                        <span class="mr-2">Show me deals that I can</span>
-                        <MudSelect T="bool?" Value="@SellNow" ValueChanged="OnSellNowChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" FullWidth="false" Class="flex-shrink-1 flex-grow-0 ma-0" Disabled="State.IsPrerendering">
-                            <MudSelectItem Value="@((bool?)true)">
-                                <span><strong>sell now</strong> for quick profit</span>
-                            </MudSelectItem>
-                            <MudSelectItem Value="@((bool?)false)">
-                                <span><strong>list now</strong> then <strong>sell later</strong> for maximum profit</span>
-                            </MudSelectItem>
-                        </MudSelect>
+                        <span>Buy these undervalued items from third party markets and flip them on the Steam Community Market for profit. Quick profit can be made by flipping instantly to the highest buy order. Maximum profit can be made by listing a sell order and waiting for somebody to buy it.</span>
                     </MudText>
                     <MudSimpleTable Dense="true" Hover="true" FixedHeader="true" Class="mx-n4 mb-n4" Style="height:70vh;">
                         <thead>
@@ -134,11 +140,37 @@
                                     <MudTextField T="string" Value="Filter" ValueChanged="async (x) => { Filter = x; await VirtualiseMarketFlips.RefreshDataAsync(); StateHasChanged(); }" DebounceInterval="500" 
                                                   Placeholder="Search items..." FullWidth="true" Class="mud-input-full-height ma-0" Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
                                 </th>
-                                <th>Buy it now</th>
+                                <th>
+                                    <MudSelect T="MarketType?" Value="@MarketType" ValueChanged="async (x) => { MarketType = x; await VirtualiseMarketFlips.RefreshDataAsync(); StateHasChanged(); }" 
+                                               ToStringFunc="@(x => $"Buy it {(x != null ? $"from {x.GetDisplayName()}" : "from the cheapest market")}")"
+                                               Margin="MudBlazor.Margin.None" Dense="true" FullWidth="true" Class="mud-input-full-height mud-input-transparent ma-0" Disabled="State.IsPrerendering">
+                                        
+                                        <MudSelectItem Value="@((MarketType?)null)">
+                                            <span>Buy it from the <strong>cheapest market</strong></span>
+                                        </MudSelectItem>
+                                        @foreach (var marketType in Enum.GetValues<MarketType>().Where(x => x > SCMM.Steam.Data.Models.Enums.MarketType.SteamCommunityMarket))
+                                        {
+                                            <MudSelectItem Value="@((MarketType?)marketType)" Class="d-flex justify-start align-center">
+                                                <span>Buy it from </span>
+                                                <img src="@($"/images/app/{State.App.Id}/markets/{marketType.ToString().ToLower()}.png")" class="mx-1" style="width:1em; height:1em" />
+                                                <span><strong>@marketType.GetDisplayName()</strong></span>
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </th>
                                 <th class="pa-0">
                                     <i class="fa fa-fw fa-arrow-right"></i>
                                 </th>
-                                <th>@(SellNow == true ? "Sell it now" : "List it now with a sell order")</th>
+                                <th>
+                                    <MudSelect T="bool?" Value="@SellNow" ValueChanged="OnSellNowChanged" Margin="Margin.None" Dense="true" FullWidth="true" Class="mud-input-full-height mud-input-transparent ma-0" Disabled="State.IsPrerendering">
+                                        <MudSelectItem Value="@((bool?)true)">
+                                            <span><strong>Sell it now</strong> for quick profit</span>
+                                        </MudSelectItem>
+                                        <MudSelectItem Value="@((bool?)false)">
+                                            <span><strong>List it now</strong> and <strong>sell later</strong> for maximum profit</span>
+                                        </MudSelectItem>
+                                    </MudSelect>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -403,6 +435,9 @@
     [Parameter]
     [SupplyParameterFromQuery]
     public string Filter { get; set; }
+    
+    [Parameter]
+    public MarketType? MarketType { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
@@ -485,7 +520,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipAnalyticDTO>>($"api/stats/market/flips?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&sellNow={SellNow}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemFlipAnalyticDTO>>($"api/stats/market/flips?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&market={MarketType}&sellNow={SellNow}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemFlipAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)
@@ -499,7 +534,7 @@
     {
         try
         {
-            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemListingAnalyticDTO>>($"api/stats/market/cheapestListings?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={request.StartIndex}&count={request.Count}");
+            var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<MarketItemListingAnalyticDTO>>($"api/stats/market/cheapestListings?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&market={MarketType}&start={request.StartIndex}&count={request.Count}");
             return new ItemsProviderResult<MarketItemListingAnalyticDTO>(response.Items, response.Total);
         }
         catch (Exception ex)

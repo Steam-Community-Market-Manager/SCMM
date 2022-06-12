@@ -136,6 +136,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
+        /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
         /// <param name="sellNow">If true, sell prices are based on highest buy order. If false, sell prices are based on lowest sell order. Default is true.</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
@@ -144,38 +145,100 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/flips")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemFlipAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketFlips([FromQuery] string filter = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetMarketFlips([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] bool sellNow = true, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
             var appId = this.App().Guid;
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Where(x => x.AppId == appId)
-                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
-                .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && (sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) > 0)
-                .Where(x => ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
-                .OrderByDescending(x => (decimal)((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((decimal)(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)(x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)));
+            if (market == null)
+            {
+                var query = _db.SteamMarketItems
+                    .AsNoTracking()
+                    .Include(x => x.App)
+                    .Include(x => x.Currency)
+                    .Include(x => x.Description)
+                    .Where(x => x.AppId == appId)
+                    .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
+                    .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && (sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) > 0)
+                    .Where(x => ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
+                    .OrderByDescending(x => (decimal)((sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) - ((decimal)(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)(x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)));
 
-            return Ok(
-                await query.PaginateAsync(start, count, x => new MarketItemFlipAnalyticDTO()
-                {
-                    Id = x.Description.ClassId ?? 0,
-                    AppId = ulong.Parse(x.App.SteamId),
-                    IconUrl = x.Description.IconUrl,
-                    Name = x.Description.Name,
-                    BuyFrom = x.BuyNowFrom,
-                    BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
-                    BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
-                    BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
-                    SellTo = MarketType.SteamCommunityMarket,
-                    SellPrice = this.Currency().CalculateExchange(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice, x.Currency),
-                    SellFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice), x.Currency) : 0),
-                    IsBeingManipulated = x.IsBeingManipulated
-                })
-            );
+                return Ok(
+                    await query.PaginateAsync(start, count, x => new MarketItemFlipAnalyticDTO()
+                    {
+                        Id = x.Description.ClassId ?? 0,
+                        AppId = ulong.Parse(x.App.SteamId),
+                        IconUrl = x.Description.IconUrl,
+                        Name = x.Description.Name,
+                        BuyFrom = x.BuyNowFrom,
+                        BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
+                        BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
+                        BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
+                        SellTo = MarketType.SteamCommunityMarket,
+                        SellPrice = this.Currency().CalculateExchange(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice, x.Currency),
+                        SellFee = (includeFees ? this.Currency().CalculateExchange(EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice), x.Currency) : 0),
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                );
+            }
+            else
+            {
+                var query = _db.SteamMarketItems
+                    .AsNoTracking()
+                    .Where(x => x.AppId == appId)
+                    .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
+                    .Where(x => x.BuyPrices.Serialised.Contains(market.ToString()))
+                    .Select(x => new
+                    {
+                        Id = x.Description.ClassId,
+                        AppId = x.App.SteamId,
+                        AppName = x.App.Name,
+                        IconUrl = x.Description.IconUrl,
+                        Name = x.Description.Name,
+                        CurrencyExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                        BuyOrderHighestPrice = x.BuyOrderHighestPrice,
+                        SellOrderLowestPrice = x.SellOrderLowestPrice,
+                        Prices = x.BuyPrices,
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                    .ToList()
+                    .Select(x => new MarketItemFlipAnalyticDTO()
+                    {
+                        Id = x.Id ?? 0,
+                        AppId = ulong.Parse(x.AppId),
+                        IconUrl = x.IconUrl,
+                        Name = x.Name,
+                        BuyFrom = market.Value,
+                        BuyPrice = this.Currency().CalculateExchange(
+                             x.Prices.FirstOrDefault(x => x.Key == market).Value.Price,
+                             x.CurrencyExchangeRateMultiplier
+                        ),
+                        BuyFee = this.Currency().CalculateExchange(
+                            (includeFees ? market.Value.GetMarketBuyFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
+                            x.CurrencyExchangeRateMultiplier
+                        ),
+                        BuyUrl = market.Value.GetMarketBuyUrl(
+                            x.AppId, x.AppName, x.Id, x.Name
+                        ),
+                        SellTo = MarketType.SteamCommunityMarket,
+                        SellPrice = this.Currency().CalculateExchange(
+                            (sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice),
+                            x.CurrencyExchangeRateMultiplier
+                        ),
+                        SellFee = this.Currency().CalculateExchange(
+                            (includeFees ? EconomyExtensions.SteamMarketFeeAsInt(sellNow ? x.BuyOrderHighestPrice : x.SellOrderLowestPrice) : 0),
+                            x.CurrencyExchangeRateMultiplier
+                        ),
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                    .AsQueryable()
+                    .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) > 0 && x.SellPrice > 0)
+                    .Where(x => (x.SellPrice - (x.SellPrice * EconomyExtensions.MarketFeeMultiplier) - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) > 30) // Ignore anything less than 0.30 USD profit, not worth effort
+                    .OrderByDescending(x => (decimal)(x.SellPrice - ((decimal)(x.SellPrice) * EconomyExtensions.MarketFeeMultiplier) - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) / (decimal)(x.BuyPrice + (includeFees ? x.BuyFee : 0)));
+
+                return Ok(
+                    query.Paginate(start, count)
+                );
+            }
         }
 
         /// <summary>
@@ -185,6 +248,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// The currency used to represent monetary values can be changed by defining <code>Currency</code> in the request headers or query string and setting it to a supported three letter ISO 4217 currency code (e.g. 'USD').
         /// </remarks>
         /// <param name="filter">Optional search filter. Matches against item name, type, or collection</param>
+        /// <param name="market">Optional market type filter. If specified, only items from this market will be returned</param>
         /// <param name="start">Return items starting at this specific index (pagination)</param>
         /// <param name="count">Number items to be returned (can be less if not enough data)</param>
         /// <response code="200">Paginated list of items matching the request parameters.</response>
@@ -192,37 +256,91 @@ namespace SCMM.Web.Server.API.Controllers
         [HttpGet("market/cheapestListings")]
         [ProducesResponseType(typeof(PaginatedResult<MarketItemListingAnalyticDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
+        public async Task<IActionResult> GetMarketCheapestListings([FromQuery] string filter = null, [FromQuery] MarketType? market = null, [FromQuery] int start = 0, [FromQuery] int count = 10)
         {
             var includeFees = this.User.Preference(_db, x => x.ItemIncludeMarketFees);
             var appId = this.App().Guid;
-            var query = _db.SteamMarketItems
-                .AsNoTracking()
-                .Include(x => x.App)
-                .Include(x => x.Currency)
-                .Include(x => x.Description)
-                .Where(x => x.AppId == appId)
-                .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
-                .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) <= x.SellOrderLowestPrice)
-                .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.SellOrderLowestPrice > 0)
-                .OrderByDescending(x => (decimal)(x.SellOrderLowestPrice - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)x.SellOrderLowestPrice);
+            if (market == null)
+            {
+                var query = _db.SteamMarketItems
+                    .AsNoTracking()
+                    .Include(x => x.App)
+                    .Include(x => x.Currency)
+                    .Include(x => x.Description)
+                    .Where(x => x.AppId == appId)
+                    .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
+                    .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) <= x.SellOrderLowestPrice)
+                    .Where(x => (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0)) > 0 && x.SellOrderLowestPrice > 0)
+                    .OrderByDescending(x => (decimal)(x.SellOrderLowestPrice - (x.BuyNowPrice + (includeFees ? x.BuyNowFee : 0))) / (decimal)x.SellOrderLowestPrice);
 
-            return Ok(
-                await query.PaginateAsync(start, count, x => new MarketItemListingAnalyticDTO()
-                {
-                    Id = x.Description.ClassId ?? 0,
-                    AppId = ulong.Parse(x.App.SteamId),
-                    IconUrl = x.Description.IconUrl,
-                    Name = x.Description.Name,
-                    BuyFrom = x.BuyNowFrom,
-                    BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
-                    BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
-                    BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
-                    ReferenceFrom = MarketType.SteamCommunityMarket,
-                    ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
-                    IsBeingManipulated = x.IsBeingManipulated
-                })
-            );
+                return Ok(
+                    await query.PaginateAsync(start, count, x => new MarketItemListingAnalyticDTO()
+                    {
+                        Id = x.Description.ClassId ?? 0,
+                        AppId = ulong.Parse(x.App.SteamId),
+                        IconUrl = x.Description.IconUrl,
+                        Name = x.Description.Name,
+                        BuyFrom = x.BuyNowFrom,
+                        BuyPrice = this.Currency().CalculateExchange(x.BuyNowPrice, x.Currency),
+                        BuyFee = (includeFees ? this.Currency().CalculateExchange(x.BuyNowFee, x.Currency) : 0),
+                        BuyUrl = x.Description.GetBuyPrices(x.Currency)?.FirstOrDefault(p => p.MarketType == x.BuyNowFrom)?.Url,
+                        ReferenceFrom = MarketType.SteamCommunityMarket,
+                        ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.Currency),
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                );
+            }
+            else
+            {
+                var query = _db.SteamMarketItems
+                    .AsNoTracking()
+                    .Where(x => x.AppId == appId)
+                    .Where(x => String.IsNullOrEmpty(filter) || x.Description.Name.Contains(filter) || x.Description.ItemType.Contains(filter) || x.Description.ItemCollection.Contains(filter))
+                    .Where(x => x.BuyPrices.Serialised.Contains(market.ToString()))
+                    .Select(x => new
+                    {
+                        Id = x.Description.ClassId,
+                        AppId = x.App.SteamId,
+                        AppName = x.App.Name,
+                        IconUrl = x.Description.IconUrl,
+                        Name = x.Description.Name,
+                        CurrencyExchangeRateMultiplier = x.Currency.ExchangeRateMultiplier,
+                        SellOrderLowestPrice = x.SellOrderLowestPrice,
+                        Prices = x.BuyPrices,
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                    .ToList()
+                    .Select(x => new MarketItemListingAnalyticDTO()
+                    {
+                        Id = x.Id ?? 0,
+                        AppId = ulong.Parse(x.AppId),
+                        IconUrl = x.IconUrl,
+                        Name = x.Name,
+                        BuyFrom = market.Value,
+                        BuyPrice = this.Currency().CalculateExchange(
+                             x.Prices.FirstOrDefault(x => x.Key == market).Value.Price,
+                             x.CurrencyExchangeRateMultiplier
+                        ),
+                        BuyFee = this.Currency().CalculateExchange(
+                            (includeFees ? market.Value.GetMarketBuyFees(x.Prices.FirstOrDefault(x => x.Key == market).Value.Price) : 0),
+                            x.CurrencyExchangeRateMultiplier
+                        ),
+                        BuyUrl = market.Value.GetMarketBuyUrl(
+                            x.AppId, x.AppName, x.Id, x.Name
+                        ),
+                        ReferenceFrom = MarketType.SteamCommunityMarket,
+                        ReferemcePrice = this.Currency().CalculateExchange(x.SellOrderLowestPrice, x.CurrencyExchangeRateMultiplier),
+                        IsBeingManipulated = x.IsBeingManipulated
+                    })
+                    .AsQueryable()
+                    .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) <= x.ReferemcePrice)
+                    .Where(x => (x.BuyPrice + (includeFees ? x.BuyFee : 0)) > 0 && x.ReferemcePrice > 0)
+                    .OrderByDescending(x => (decimal)(x.ReferemcePrice - (x.BuyPrice + (includeFees ? x.BuyFee : 0))) / (decimal)x.ReferemcePrice);
+
+                return Ok(
+                    query.Paginate(start, count)
+                );
+            }
         }
 
         /// <summary>
