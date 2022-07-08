@@ -58,6 +58,10 @@ public class DownloadSteamWorkshopFile
         // Download the workshop file
         var blobName = $"{message.PublishedFileId}.zip";
         var blob = blobContainer.GetBlobClient(blobName);
+        if (blob.Exists()?.Value == true && message.Force)
+        {
+            await blob.DeleteAsync();
+        }
         if (blob.Exists()?.Value != true)
         {
             // Download the workshop file from steam
