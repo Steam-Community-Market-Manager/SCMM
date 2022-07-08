@@ -631,7 +631,7 @@ else
             if (!String.IsNullOrEmpty(StoreId))
             {
                 // Load the new store (if any)
-                Store = await Http.GetFromJsonWithDefaultsAsync<StoreDetailsDTO>($"api/store/{StoreId}");
+                Store = await Http.GetFromJsonWithDefaultsAsync<StoreDetailsDTO>($"api/store/{Uri.EscapeDataString(StoreId)}");
                 StoreId = Store.Id;
 
                 // The selected store should show as the active tab in the store tab list

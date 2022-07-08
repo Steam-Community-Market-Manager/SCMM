@@ -258,7 +258,7 @@
 
     private void OnItemClicked(IItemDescription item)
     {
-        ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");  
+        ExternalNavigationManager.NavigateToNewTab($"/item/{Uri.EscapeDataString(item.Name)}");
     }
 
     private void OnSearch(string text)

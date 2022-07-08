@@ -10,7 +10,7 @@
 @inject HttpClient Http
 @inject AppState State
 
-<PageContainer Title="@(Item != null ? $"Item - {Item.Name}" : Name)" 
+<PageContainer Title="@Uri.EscapeDataString(Item != null ? $"Item - {Item.Name}" : Name)" 
                Description="@(Item?.Description)"
                ImageUrl="@(Item?.PreviewUrl ?? Item?.IconLargeUrl)">
 
@@ -62,7 +62,7 @@
     {
         try
         {
-            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>($"/api/item/{Name}");
+            Item = await Http.GetFromJsonWithDefaultsAsync<ItemDetailedDTO>($"/api/item/{Uri.EscapeDataString(Name)}");
         }
         catch (Exception ex)
         {

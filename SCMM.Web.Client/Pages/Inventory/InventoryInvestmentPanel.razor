@@ -323,7 +323,7 @@ else
         {
             LoadingError = null;
             var response = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<ProfileInventoryInvestmentItemDTO>>(
-                $"api/profile/{SteamId}/inventory/investment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={state.Page * state.PageSize}&count={state.PageSize}&sortBy={state.SortLabel}&sortDirection={state.SortDirection}"
+                $"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/investment?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={state.Page * state.PageSize}&count={state.PageSize}&sortBy={state.SortLabel}&sortDirection={state.SortDirection}"
             );
 
             return new TableData<ProfileInventoryInvestmentItemDTO>() 
@@ -355,7 +355,7 @@ else
             item.BuyPriceLocal = (useStorePrice ? item.BuyPriceStore : item.BuyPrice);
             
             Logger.LogTrace($"Updating buy price for '{item.ItemId}' (aquired: '{item.AcquiredBy}', price: '{item.BuyPrice}', currency: '{item.BuyCurrency?.CultureName}')");
-            var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.ItemId}", new UpdateInventoryItemCommand()
+            var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{item.ItemId}", new UpdateInventoryItemCommand()
             {
                 AcquiredBy = item.AcquiredBy,
                 CurrencyGuid = item.BuyCurrency?.Guid,
@@ -390,7 +390,7 @@ else
                 item.BuyPriceLocal = buyPrice;
 
                 Logger.LogTrace($"Updating buy price for '{item.ItemId}' (raw: '{value}', old: '{oldBuyPrice}', new: '{buyPrice}', currency: '{item.BuyCurrency.CultureName}')");
-                var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile/{SteamId}/inventory/item/{item.ItemId}", new UpdateInventoryItemCommand()
+                var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{item.ItemId}", new UpdateInventoryItemCommand()
                 {
                     CurrencyGuid = State.Currency.Guid,
                     BuyPrice = buyPrice

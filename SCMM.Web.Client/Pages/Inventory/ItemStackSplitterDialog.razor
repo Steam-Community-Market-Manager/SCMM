@@ -149,7 +149,7 @@
                 Logger.LogTrace($"Splitting item {sourceItem.Key.SteamId} in to {sourceItem.Value}");
                 var request = new HttpRequestMessage()
                 {
-                    RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{sourceItem.Key.SteamId}/split?stackNewItems={StackNewItems}"),
+                    RequestUri = new Uri($"{Http.BaseAddress}api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{sourceItem.Key.SteamId}/split?stackNewItems={StackNewItems}"),
                     Method = HttpMethod.Put,
                     Headers = {
                         { "Steam-Api-Key", SteamApiKey }

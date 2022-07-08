@@ -203,7 +203,7 @@
     {
         ExternalNavigationManager.NavigateToNewTab(new SteamProfilePageRequest()
         {
-            SteamId = (Profile?.SteamId ?? SteamId)
+            SteamId = Uri.EscapeDataString(Profile?.SteamId ?? SteamId)
         });
     }
 

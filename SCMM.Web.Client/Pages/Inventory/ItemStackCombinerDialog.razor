@@ -178,7 +178,7 @@
 
             var request = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"{Http.BaseAddress}api/profile/{SteamId}/inventory/item/{destinationItem.SteamId}/combine"),
+                RequestUri = new Uri($"{Http.BaseAddress}api/profile/{Uri.EscapeDataString(SteamId)}/inventory/item/{destinationItem.SteamId}/combine"),
                 Method = HttpMethod.Put,
                 Headers = {
                     { "Steam-Api-Key", SteamApiKey }
