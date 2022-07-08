@@ -24,7 +24,7 @@
                 </div>
                 @foreach (var app in Apps)
                 {
-                    <MudMenuItem OnClick="@(() => ChangeApp(app))" Disabled="@(app.Id == State.AppId)">
+                    <MudMenuItem OnTouch="@(() => ChangeApp(app))" OnClick="@(() => ChangeApp(app))" Disabled="@(app.Id == State.AppId)">
                         <div class="d-flex justify-center" style="@((app.Id == State.AppId) ? "opacity: 0.2" : null)">
                             <img src="/images/app/@(app.Id.ToString())/logo.svg" style="max-height:3em; max-width:6em;" />
                         </div>

@@ -81,11 +81,11 @@
                                           Adornment="Adornment.Start" AdornmentIcon="fas fa-fw fa-filter mr-2" IconSize="MudBlazor.Size.Small" Disabled="State.IsPrerendering" />
 					    </MudHidden>
                         <MudMenu Icon="fas fa-fw fa-ellipsis-v" ListClass="ma-0 pa-0" OffsetY Disabled="State.IsPrerendering">
-                            <MudMenuItem OnClick="@ViewProfileOnSteam">
+                            <MudMenuItem OnTouch="@ViewProfileOnSteam" OnClick="@ViewProfileOnSteam">
                                 <i class="fab fa-fw fa-steam mr-1"></i>
                                 <span>View on Steam</span>
                             </MudMenuItem>
-                            <MudMenuItem OnClick="@SynchroniseProfileWithSteam">
+                            <MudMenuItem OnTouch="@SynchroniseProfileWithSteam" OnClick="@SynchroniseProfileWithSteam">
                                 <i class="fa fa-fw fa-sync mr-1"></i>
                                 <span>Synchronise with Steam</span>
                             </MudMenuItem>

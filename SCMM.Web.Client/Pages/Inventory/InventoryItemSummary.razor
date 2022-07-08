@@ -36,21 +36,21 @@
                     {
                         @if (Item.Stacks.Count > 1)
                         {
-                            <MudMenuItem OnClick="ShowStackCombinerDialog">
+                            <MudMenuItem OnTouch="ShowStackCombinerDialog" OnClick="ShowStackCombinerDialog">
                                 <i class="fa fa-fw fa-object-group mr-1"></i>
                                 <span>Combine Stacks</span>
                             </MudMenuItem>
                         }
                         @if (Item.Quantity > 1 && (Item.Stacks.Count < Item.Quantity))
                         {
-                            <MudMenuItem OnClick="ShowStackSplitterDialog">
+                            <MudMenuItem OnTouch="ShowStackSplitterDialog" OnClick="ShowStackSplitterDialog">
                                 <i class="fa fa-fw fa-object-ungroup mr-1"></i>
                                 <span>Split Stacks</span>
                             </MudMenuItem>
                         }
                         @if (!String.IsNullOrEmpty(Item.BuyNowUrl))
                         {
-                            <MudMenuItem OnClick="SellItemOnMarket">
+                            <MudMenuItem OnTouch="SellItemOnMarket" OnClick="SellItemOnMarket">
                                 <i class="fa fa-fw fa-hand-holding-usd mr-1"></i>
                                 <span>@(Item.Quantity > 1 ? "Multi-Sell on Steam" : "Sell on Steam")</span>
                             </MudMenuItem>
@@ -58,7 +58,7 @@
                     }
                     @if (Item.Stacks?.Any() == true)
                     {
-                        <MudMenuItem OnClick="ViewItemOnSteam">
+                        <MudMenuItem OnTouch="ViewItemOnSteam" OnClick="ViewItemOnSteam">
                             <i class="@($"fab fa-fw fa-steam mr-1")"></i>
                             <span>View on Steam</span>
                         </MudMenuItem>
@@ -67,7 +67,7 @@
                     {
                         @foreach (var action in Item.Actions)
                         {
-                            <MudMenuItem OnClick="@(() => ExternalNavigationManager.NavigateToNewTab(action.Url))">
+                            <MudMenuItem OnTouch="@(() => ExternalNavigationManager.NavigateToNewTab(action.Url))" OnClick="@(() => ExternalNavigationManager.NavigateToNewTab(action.Url))">
                                 <i class="@($"fa fa-fw {action.Icon} mr-1")"></i>
                                 <span>@action.Name</span>
                             </MudMenuItem>
