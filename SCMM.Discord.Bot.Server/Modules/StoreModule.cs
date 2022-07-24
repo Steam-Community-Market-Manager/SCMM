@@ -52,7 +52,7 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
             var guildId = Context.Guild.Id.ToString();
             var guild = await _db.DiscordGuilds
                 .AsNoTracking()
-                .Include(x => x.Configurations)
+                .Include(x => x.Configuration)
                 .FirstOrDefaultAsync(x => x.DiscordId == guildId);
             if (guild != null)
             {

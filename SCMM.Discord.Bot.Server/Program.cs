@@ -1,5 +1,6 @@
 using Azure.Identity;
 using CommandQuery.DependencyInjection;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -16,6 +17,7 @@ using SCMM.Azure.ServiceBus.Middleware;
 using SCMM.Discord.Bot.Server.Middleware;
 using SCMM.Discord.Client;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Discord.Data.Store;
 using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
 using SCMM.Google.Client;
@@ -113,12 +115,26 @@ public static class WebApplicationExtensions
                 });
 
         // Database
-        var dbConnectionString = builder.Configuration.GetConnectionString("SteamDbConnection");
-        if (!String.IsNullOrEmpty(dbConnectionString))
+        var discordDbConnectionString = builder.Configuration.GetConnectionString("DiscordDbConnection");
+        if (!String.IsNullOrEmpty(discordDbConnectionString))
+        {
+            builder.Services.AddDbContextFactory<DiscordDbContext>(options =>
+            {
+                options.UseCosmos(discordDbConnectionString, "SCMM", cosmos =>
+                {
+                    cosmos.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Direct);
+                });
+                options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
+            });
+        }
+
+        var steamDbConnectionString = builder.Configuration.GetConnectionString("SteamDbConnection");
+        if (!String.IsNullOrEmpty(steamDbConnectionString))
         {
             builder.Services.AddDbContext<SteamDbContext>(options =>
             {
-                options.UseSqlServer(dbConnectionString, sql =>
+                options.UseSqlServer(steamDbConnectionString, sql =>
                 {
                     //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     sql.EnableRetryOnFailure();

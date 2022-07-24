@@ -64,7 +64,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
             // Load the discord guild
             var guild = await _db.DiscordGuilds
                 .AsNoTracking()
-                .Include(x => x.Configurations)
+                .Include(x => x.Configuration)
                 .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
 
             // Promote donators from VIP servers to VIP role

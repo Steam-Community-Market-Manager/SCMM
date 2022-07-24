@@ -87,7 +87,7 @@ public class CheckForNewAcceptedWorkshopItems
 
     private async Task BroadcastNewAcceptedWorkshopItemsNotification(ILogger logger, SteamApp app, IEnumerable<PublishedFileDetails> newWorkshopItems)
     {
-        var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
+        var guilds = _db.DiscordGuilds.Include(x => x.Configuration).ToList();
         foreach (var guild in guilds)
         {
             try

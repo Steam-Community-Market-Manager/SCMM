@@ -47,7 +47,7 @@ namespace SCMM.Steam.Data.Store
                 .HasIndex(x => x.DiscordId)
                 .IsUnique(true);
             builder.Entity<DiscordGuild>()
-                .HasMany(x => x.Configurations)
+                .HasMany(x => x.Configuration)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
 

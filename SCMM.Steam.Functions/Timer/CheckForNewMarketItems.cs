@@ -164,7 +164,7 @@ public class CheckForNewMarketItems
             logger.LogError(ex, "Failed to generate market item thumbnail image");
         }
 
-        var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
+        var guilds = _db.DiscordGuilds.Include(x => x.Configuration).ToList();
         foreach (var guild in guilds)
         {
             try

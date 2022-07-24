@@ -25,6 +25,7 @@
     <ProjectReference Include="..\SCMM.Azure.ApplicationInsights\SCMM.Azure.ApplicationInsights.csproj" />
     <ProjectReference Include="..\SCMM.Discord.API\SCMM.Discord.API.csproj" />
     <ProjectReference Include="..\SCMM.Discord.Client\SCMM.Discord.Client.csproj" />
+    <ProjectReference Include="..\SCMM.Discord.Data.Store\SCMM.Discord.Data.Store.csproj" />
     <ProjectReference Include="..\SCMM.Fixer.Client\SCMM.Fixer.Client.csproj" />
     <ProjectReference Include="..\SCMM.Google.Client\SCMM.Google.Client.csproj" />
     <ProjectReference Include="..\SCMM.Shared.API\SCMM.Shared.API.csproj" />

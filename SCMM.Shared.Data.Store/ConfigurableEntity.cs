@@ -10,12 +10,12 @@ namespace SCMM.Shared.Data.Store
 
         public ConfigurableEntity()
         {
-            Configurations = new Collection<T>();
+            Configuration = new Collection<T>();
         }
 
-        protected abstract IEnumerable<ConfigurationDefinition> ConfigurationDefinitions { get; }
+        public ICollection<T> Configuration { get; set; }
 
-        public ICollection<T> Configurations { get; set; }
+        protected abstract IEnumerable<ConfigurationDefinition> ConfigurationDefinitions { get; }
 
         private ConfigurationDefinition AssertValidConfiguration(string name)
         {
@@ -61,7 +61,7 @@ namespace SCMM.Shared.Data.Store
         public KeyValuePair<T, IEnumerable<string>> List(string name)
         {
             var definition = AssertValidConfiguration(name);
-            var config = Configurations.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
+            var config = Configuration.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
             var result = new List<string>();
             if (config?.List?.Any() == true)
             {
@@ -78,7 +78,7 @@ namespace SCMM.Shared.Data.Store
         public KeyValuePair<T, string> Get(string name, string defaultValue = null)
         {
             var definition = AssertValidConfiguration(name);
-            var config = Configurations.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
+            var config = Configuration.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
             var result = defaultValue;
             if (!string.IsNullOrEmpty(config?.Value))
             {
@@ -95,7 +95,7 @@ namespace SCMM.Shared.Data.Store
         public T Set(string name, string value)
         {
             var definition = AssertValidConfiguration(name);
-            var config = Configurations.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
+            var config = Configuration.FirstOrDefault(x => String.Equals(x.Name, definition.Name, StringComparison.OrdinalIgnoreCase));
             var values = AssertValidConfigurationValue(name, value);
 
             if (config != null)
@@ -109,12 +109,12 @@ namespace SCMM.Shared.Data.Store
                 {
                     config.Value = null;
                     config.List = new PersistableStringCollection();
-                    Configurations.Remove(config);
+                    Configuration.Remove(config);
                 }
             }
             else if (values.Any())
             {
-                Configurations.Add(config = new T()
+                Configuration.Add(config = new T()
                 {
                     Name = name,
                     Value = (definition.AllowMultipleValues ? null : values.FirstOrDefault()),

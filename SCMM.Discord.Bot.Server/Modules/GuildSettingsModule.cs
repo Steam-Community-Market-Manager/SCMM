@@ -27,7 +27,7 @@ public class GuildSettingsModule : InteractionModuleBase<ShardedInteractionConte
     private async Task<DiscordGuild> GetOrCreateGuild()
     {
         var guild = await _db.DiscordGuilds
-            .Include(x => x.Configurations)
+            .Include(x => x.Configuration)
             .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
 
         if (guild == null)

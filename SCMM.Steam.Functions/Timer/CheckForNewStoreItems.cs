@@ -360,7 +360,7 @@ public class CheckForNewStoreItems
             return;
         }
 
-        var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
+        var guilds = _db.DiscordGuilds.Include(x => x.Configuration).ToList();
         foreach (var guild in guilds)
         {
             try

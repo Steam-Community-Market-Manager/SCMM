@@ -142,7 +142,7 @@ public class CheckForNewItemDefinitions
 
     private async Task BroadcastUpdatedItemDefinitionsNotification(ILogger logger, SteamApp app, IEnumerable<SteamAssetDescription> newAssetDescriptions, IEnumerable<SteamAssetDescription> updatedAssetDescriptions)
     {
-        var guilds = _db.DiscordGuilds.Include(x => x.Configurations).ToList();
+        var guilds = _db.DiscordGuilds.Include(x => x.Configuration).ToList();
         foreach (var guild in guilds)
         {
             try
