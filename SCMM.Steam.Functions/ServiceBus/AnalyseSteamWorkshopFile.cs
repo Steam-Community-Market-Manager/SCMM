@@ -33,7 +33,8 @@ public class AnalyseSteamWorkshopFile
         _workshopFilesStorageConnectionString = (configuration.GetConnectionString("WorkshopFilesStorageConnection") ?? Environment.GetEnvironmentVariable("WorkshopFilesStorageConnection"));
     }
 
-    [Function("Analyse-Steam-Workshop-File")]
+    // TODO: Move this to a Windows agent
+    //[Function("Analyse-Steam-Workshop-File")]
     public async Task Run([ServiceBusTrigger("steam-workshop-file-analyse", Connection = "ServiceBusConnection")] AnalyseSteamWorkshopFileMessage message, FunctionContext context)
     {
         var logger = context.GetLogger("Analyse-Steam-Workshop-File");

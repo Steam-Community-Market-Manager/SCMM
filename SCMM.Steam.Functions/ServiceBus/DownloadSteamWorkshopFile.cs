@@ -30,7 +30,8 @@ public class DownloadSteamWorkshopFile
         _workshopFilesStorageUrl = configuration.GetDataStoreUrl();
     }
 
-    [Function("Download-Steam-Workshop-File")]
+    // TODO: Move this to a Windows agent
+    //[Function("Download-Steam-Workshop-File")]
     [ServiceBusOutput("steam-workshop-file-analyse", Connection = "ServiceBusConnection")]
     public async Task<AnalyseSteamWorkshopFileMessage> Run([ServiceBusTrigger("steam-workshop-file-downloads", Connection = "ServiceBusConnection")] DownloadSteamWorkshopFileMessage message, FunctionContext context)
     {
