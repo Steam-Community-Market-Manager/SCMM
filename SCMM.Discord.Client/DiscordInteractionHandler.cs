@@ -154,23 +154,35 @@ namespace SCMM.Discord.Client
                 return Task.CompletedTask;
             }
 
-            // Defer the response to show a "is thinking..." placeholder
-            // NOTE: Slash commands need to be acknowledged before this callback ends
-            var deferredReplyTask = cmd.DeferAsync();
-
-            // Execute the command
+            // Start executing the command...
             // NOTE: Interaction service will execute async by default (unless the command is configured otherwise)
             var context = new ShardedInteractionContext(_client, cmd);
             var executeCommandTask = _interactions.ExecuteCommandAsync(
                 context: context,
                 services: _services
             );
-            
-            Task.WaitAll(
-                deferredReplyTask,
-                executeCommandTask
+
+            // Wait for at least one second for the command to finish
+            var delayForOneSecondTask = Task.Delay(TimeSpan.FromSeconds(1));
+            Task.WaitAny(
+                executeCommandTask,
+                delayForOneSecondTask
             );
 
+            // If the command hasn't finished yet...
+            if (!executeCommandTask.IsCompleted)
+            {
+                // Show a "is thinking..." placeholder to signal this might take a while
+                if (!cmd.HasResponded)
+                {
+                    Task.WaitAll(cmd.DeferAsync());
+                }
+
+                // Finish waiting for the command to finish
+                Task.WaitAll(executeCommandTask);
+            }
+
+            // NOTE: Slash commands need to be acknowledged before this callback ends
             return Task.CompletedTask;
         }
 
@@ -182,11 +194,12 @@ namespace SCMM.Discord.Client
                 (context.Guild != null ? $"{context.Guild.Name} #{context.Guild.Id}" : "n/a"),
                 (context.Channel != null ? context.Channel.Name : "n/a"),
                 (result),
+                (modal) => context.Interaction.RespondWithModalAsync(modal: modal),
                 (text, embed, ephemeral) => context.Interaction.FollowupAsync(text: text, embed: embed, ephemeral: ephemeral)
             );
         }
 
-        private async Task RespondToInteractionResult<T>(string interactionName, string userName, string guildName, string channelName, IResult result, Func<string, Embed, bool, Task<T>> replyFunc)
+        private async Task RespondToInteractionResult<T>(string interactionName, string userName, string guildName, string channelName, IResult result, Func<Modal, Task> modalFunc, Func<string, Embed, bool, Task<T>> replyFunc)
             where T : IUserMessage
         {
             if (result == null)
@@ -199,13 +212,22 @@ namespace SCMM.Discord.Client
             // Success
             if (result.IsSuccess)
             {
-                _logger.LogTrace(
-                    $"Interaction '{interactionName}' executed successfully (guild: {guildName}, channel: {channelName}, user: {userName})"
-                );
-
-                if (interactionResult?.Reason != null || interactionResult?.Embed != null)
+                if (interactionResult?.Modal != null)
                 {
-                    await replyFunc(interactionResult.Reason, interactionResult.Embed, interactionResult.Ephemeral);
+                    _logger.LogTrace(
+                        $"Interaction '{interactionName}' triggered modal prompt (guild: {guildName}, channel: {channelName}, user: {userName})"
+                    );
+                    await modalFunc(interactionResult.Modal);
+                }
+                else
+                {
+                    _logger.LogTrace(
+                        $"Interaction '{interactionName}' executed successfully (guild: {guildName}, channel: {channelName}, user: {userName})"
+                    );
+                    if (interactionResult?.Reason != null || interactionResult?.Embed != null)
+                    {
+                        await replyFunc(interactionResult.Reason, interactionResult.Embed, interactionResult.Ephemeral);
+                    }
                 }
             }
 

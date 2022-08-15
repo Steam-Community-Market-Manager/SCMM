@@ -5,6 +5,11 @@ namespace SCMM.Discord.Client.Commands
 {
     public class InteractionResult : RuntimeResult
     {
+        public InteractionResult(Modal modal = null) : base(null, null)
+        {
+            Modal = modal;
+        }
+
         public InteractionResult(InteractionCommandError? error = null, Embed embed = null, string message = null, string explaination = null, string helpUrl = null, string helpImageUrl = null, bool ephemeral = false) : base(error, message)
         {
             Embed = embed;
@@ -16,6 +21,8 @@ namespace SCMM.Discord.Client.Commands
 
         public string Reason => ErrorReason;
 
+        public Modal Modal { get; set; }
+
         public Embed Embed { get; set; }
 
         public string Explaination { get; set; }
@@ -25,6 +32,11 @@ namespace SCMM.Discord.Client.Commands
         public string HelpImageUrl { get; set; }
 
         public bool Ephemeral { get; set; }
+
+        public static InteractionResult Prompt(Modal modal)
+        {
+            return new InteractionResult(modal: modal);
+        }
 
         public static InteractionResult Success(string message = null, Embed embed = null, bool ephemeral = false)
         {
