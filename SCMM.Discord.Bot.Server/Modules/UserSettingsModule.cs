@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Steam.API.Commands;
@@ -16,14 +17,16 @@ namespace SCMM.Discord.Bot.Server.Modules;
 public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContext>
 {
     private readonly IConfiguration _configuration;
-    private readonly SteamDbContext _db;
+    private readonly DiscordDbContext _discordDb;
+    private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
 
-    public UserSettingsModule(IConfiguration configuration, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+    public UserSettingsModule(IConfiguration configuration, DiscordDbContext discordDb, SteamDbContext steamDb, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
     {
         _configuration = configuration;
-        _db = db;
+        _discordDb = discordDb;
+        _steamDb = steamDb;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
     }
@@ -42,7 +45,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
             ProfileId = steamId
         });
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
 
         var profile = importedProfile?.Profile;
         if (profile == null)
@@ -62,7 +65,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         if (Context.Guild != null)
         {
             // Load the discord guild
-            var guild = await _db.DiscordGuilds
+            var guild = await _steamDb.DiscordGuilds
                 .AsNoTracking()
                 .Include(x => x.Configuration)
                 .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
@@ -87,7 +90,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
             }
         }
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
 
         return InteractionResult.Success(
             message: message,
@@ -104,7 +107,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         var discordId = user.GetFullUsername();
 
         // Load the profile
-        var profile = await _db.SteamProfiles
+        var profile = await _steamDb.SteamProfiles
             .FirstOrDefaultAsync(x => x.DiscordId == discordId);
 
         if (profile == null)
@@ -133,7 +136,7 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
 
         // Set the currency
         profile.Currency = currency;
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
 
         return InteractionResult.Success(
             ephemeral: true

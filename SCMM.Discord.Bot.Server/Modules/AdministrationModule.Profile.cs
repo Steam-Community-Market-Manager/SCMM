@@ -10,7 +10,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Alias("role")]
         public async Task<RuntimeResult> ListRoleAsync(string steamId)
         {
-            var profile = await _db.SteamProfiles
+            var profile = await _steamDb.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
                 .FirstOrDefaultAsync();
 
@@ -27,7 +27,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("add-role")]
         public async Task<RuntimeResult> AddRoleAsync(string steamId, params string[] roles)
         {
-            var profile = await _db.SteamProfiles
+            var profile = await _steamDb.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
                 .FirstOrDefaultAsync();
 
@@ -41,7 +41,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success(string.Join(", ", profile.Roles));
             }
             else
@@ -53,7 +53,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("remove-role")]
         public async Task<RuntimeResult> RemoveRoleAsync(string steamId, params string[] roles)
         {
-            var profile = await _db.SteamProfiles
+            var profile = await _steamDb.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
                 .FirstOrDefaultAsync();
 
@@ -67,7 +67,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success(string.Join(", ", profile.Roles));
             }
             else
@@ -79,7 +79,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("donator")]
         public async Task<RuntimeResult> UpdateDonatorAsync(string steamId, [Remainder] int? donatorLevel = null)
         {
-            var profile = await _db.SteamProfiles
+            var profile = await _steamDb.SteamProfiles
                 .Where(x => x.SteamId == steamId || x.ProfileId == steamId)
                 .FirstOrDefaultAsync();
 
@@ -88,7 +88,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 if (donatorLevel != null)
                 {
                     profile.DonatorLevel = donatorLevel.Value;
-                    await _db.SaveChangesAsync();
+                    await _steamDb.SaveChangesAsync();
                 }
 
                 return CommandResult.Success(

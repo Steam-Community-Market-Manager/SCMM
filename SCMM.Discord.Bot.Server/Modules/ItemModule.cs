@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
@@ -18,14 +19,16 @@ namespace SCMM.Discord.Bot.Server.Modules;
 public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
 {
     private readonly IConfiguration _configuration;
-    private readonly SteamDbContext _db;
+    private readonly DiscordDbContext _discordDb;
+    private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
 
-    public ItemModule(IConfiguration configuration, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+    public ItemModule(IConfiguration configuration, DiscordDbContext discordDb, SteamDbContext steamDb, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
     {
         _configuration = configuration;
-        _db = db;
+        _discordDb = discordDb;
+        _steamDb = steamDb;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
     }
@@ -40,7 +43,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         if (string.IsNullOrEmpty(currencyId) && Context.User != null)
         {
             var discordId = Context.User.GetFullUsername();
-            currencyId = await _db.SteamProfiles
+            currencyId = await _steamDb.SteamProfiles
                 .Where(x => x.DiscordId == discordId)
                 .Where(x => x.Currency != null)
                 .Select(x => x.Currency.Name)
@@ -49,13 +52,13 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         if (string.IsNullOrEmpty(currencyId) && Context.Guild != null)
         {
             var guildId = Context.Guild.Id.ToString();
-            var guild = await _db.DiscordGuilds
+            var guild = await _steamDb.DiscordGuilds
                 .AsNoTracking()
                 .Include(x => x.Configuration)
                 .FirstOrDefaultAsync(x => x.DiscordId == guildId);
             if (guild != null)
             {
-                currencyId = guild.Get(Steam.Data.Store.DiscordConfiguration.Currency).Value;
+                currencyId = guild.Get(Discord.Data.Store.DiscordGuild.GuildConfiguration.Currency).Value;
             }
         }
 
@@ -74,7 +77,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
         }
 
         // Find the closest item name to the one specified (accounting for minor typos)
-        var closestItemName = _db.SteamAssetDescriptions
+        var closestItemName = _steamDb.SteamAssetDescriptions
             .Select(x => x.Name)
             .ToList()
             .Closest(x => x, name, maxDistance: 3);
@@ -88,7 +91,7 @@ public class ItemModule : InteractionModuleBase<ShardedInteractionContext>
 
         // Load the item
         var appId = _configuration.GetDiscordConfiguration().AppId;
-        var item = await _db.SteamAssetDescriptions
+        var item = await _steamDb.SteamAssetDescriptions
             .Where(x => x.App.SteamId == appId.ToString())
             .Where(x => x.Name == closestItemName)
             .Include(x => x.App)

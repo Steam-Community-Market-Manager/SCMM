@@ -21,8 +21,8 @@ public class ItemNameAutocompleteHandler : AutocompleteHandler
         using var scope = services.CreateScope();
         {
             var appId = _configuration.AppId;
-            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-            var itemNames = await db.SteamAssetDescriptions
+            var steamDb = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+            var itemNames = await steamDb.SteamAssetDescriptions
                 .Where(x => x.App.SteamId == appId.ToString())
                 .Where(x => x.Name.Contains(value))
                 .Select(x => new AutocompleteResult()

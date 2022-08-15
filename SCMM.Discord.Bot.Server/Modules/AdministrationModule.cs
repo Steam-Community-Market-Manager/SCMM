@@ -3,6 +3,7 @@ using Discord;
 using Discord.Commands;
 using SCMM.Azure.ServiceBus;
 using SCMM.Discord.Client.Commands;
+using SCMM.Discord.Data.Store;
 using SCMM.Fixer.Client;
 using SCMM.Google.Client;
 using SCMM.Steam.Client;
@@ -19,7 +20,8 @@ namespace SCMM.Discord.Bot.Server.Modules
     [Alias("admin")]
     public partial class AdministrationModule : ModuleBase<ShardedCommandContext>
     {
-        private readonly SteamDbContext _db;
+        private readonly DiscordDbContext _discordDb;
+        private readonly SteamDbContext _steamDb;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
@@ -28,9 +30,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly GoogleClient _googleClient;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(SteamDbContext db, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, GoogleClient googleClient, CommandService commandService)
+        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, GoogleClient googleClient, CommandService commandService)
         {
-            _db = db;
+            _discordDb = discordDb;
+            _steamDb = steamDb;
             _communityClient = communityClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;

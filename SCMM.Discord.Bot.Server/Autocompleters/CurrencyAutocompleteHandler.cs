@@ -12,8 +12,8 @@ public class CurrencyAutocompleteHandler : AutocompleteHandler
         var value = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
         using var scope = services.CreateScope();
         {
-            var db = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
-            var currencyNames = await db.SteamCurrencies
+            var steamDb = scope.ServiceProvider.GetRequiredService<SteamDbContext>();
+            var currencyNames = await steamDb.SteamCurrencies
                 .Where(x => x.Name.Contains(value))
                 .Select(x => new AutocompleteResult()
                 {

@@ -19,7 +19,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("set-store-name")]
         public async Task<RuntimeResult> SetStoreNameAsync(string storeId, [Remainder] string storeName)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -27,7 +27,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             if (itemStore != null)
             {
                 itemStore.Name = storeName;
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -39,7 +39,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("add-store-media")]
         public async Task<RuntimeResult> AddStoreMediaAsync(string storeId, params string[] media)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -55,7 +55,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -67,7 +67,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("remove-store-media")]
         public async Task<RuntimeResult> RemoveStoreMediaAsync(string storeId, params string[] media)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -83,7 +83,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -95,7 +95,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("add-store-note")]
         public async Task<RuntimeResult> AddStoreNoteAsync(string storeId, [Remainder] string note)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -107,7 +107,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     note
                 };
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -119,7 +119,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("remove-store-note")]
         public async Task<RuntimeResult> RemoveStoreNoteAsync(string storeId, int index = 0)
         {
-            var itemStore = _db.SteamItemStores.ToList()
+            var itemStore = _steamDb.SteamItemStores.ToList()
                 .Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .FirstOrDefault();
@@ -129,7 +129,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 itemStore.Notes = new PersistableStringCollection(itemStore.Notes);
                 itemStore.Notes.Remove(itemStore.Notes.ElementAt(index));
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -142,13 +142,13 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> RebuildStoreItemMosaicsAsync(string storeId = null)
         {
             var message = await Context.Message.ReplyAsync("Finding stores...");
-            var itemStoreIds = _db.SteamItemStores.ToList()
+            var itemStoreIds = _steamDb.SteamItemStores.ToList()
                 .Where(x => String.IsNullOrEmpty(storeId) || (!String.IsNullOrEmpty(x.Name) && x.Name == storeId) || (x.Start != null && x.Start.Value.ToString("MMMM d yyyy") == storeId))
                 .OrderByDescending(x => x.Start)
                 .Select(x => x.Id)
                 .ToArray();
 
-            var itemStores = await _db.SteamItemStores
+            var itemStores = await _steamDb.SteamItemStores
                 .Where(x => itemStoreIds.Contains(x.Id))
                 .Where(x => x.Items.Any())
                 .Include(x => x.App)
@@ -202,7 +202,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     })
                 )?.ImageUrl ?? itemStore.ItemsThumbnailUrl;
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
@@ -264,7 +264,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                         )
                     });
 
-                    await _db.SaveChangesAsync();
+                    await _steamDb.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -275,7 +275,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             await message.ModifyAsync(
                 x => x.Content = $"Imported {webArchiveSnapshots.Length}/{webArchiveSnapshots.Length} snapshots"
             );
@@ -287,21 +287,21 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> RebuildStoreItemMissingPricesAsync()
         {
             var message = await Context.Message.ReplyAsync("Rebuilding missing store item prices...");
-            var currencies = await _db.SteamCurrencies.ToListAsync();
+            var currencies = await _steamDb.SteamCurrencies.ToListAsync();
             var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
 
-            var currenciesAndStoreItems = await _db.SteamCurrencies
+            var currenciesAndStoreItems = await _steamDb.SteamCurrencies
                 .Select(x => new
                 {
                     Currency = x,
-                    StoreItemsWithMissingPrices = _db.SteamStoreItemItemStore
+                    StoreItemsWithMissingPrices = _steamDb.SteamStoreItemItemStore
                         .Where(y => y.Price != null)
                         .Where(y => !String.IsNullOrEmpty(y.Prices.Serialised) && !y.Prices.Serialised.Contains(x.Name))
                         .Where(y => y.CurrencyId == usdCurrency.Id)
                         .Select(y => new
                         {
                             StoreItemItemStore = y,
-                            ExchangeRate = _db.SteamCurrencyExchangeRates
+                            ExchangeRate = _steamDb.SteamCurrencyExchangeRates
                                 .Where(z => z.CurrencyId == x.Name)
                                 .Where(z => z.Timestamp < (y.Store.Start != null ? y.Store.Start : y.Item.Description.TimeAccepted))
                                 .OrderByDescending(z => z.Timestamp)
@@ -335,7 +335,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
@@ -350,7 +350,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         {
             var message = await Context.Message.ReplyAsync("Rebuilding latest store item prices...");
 
-            var storeItems = await _db.SteamStoreItemItemStore
+            var storeItems = await _steamDb.SteamStoreItemItemStore
                 .Include(x => x.Item)
                 .Include(x => x.Store)
                 .ToListAsync();
@@ -360,7 +360,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 storeItem.Item.UpdateLatestPrice();
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
 
             await message.ModifyAsync(
                 x => x.Content = $"Rebuilt {storeItems.Count} store item prices"

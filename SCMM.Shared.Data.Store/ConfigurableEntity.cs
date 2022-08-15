@@ -4,7 +4,9 @@ using System.Collections.ObjectModel;
 
 namespace SCMM.Shared.Data.Store
 {
-    public abstract class ConfigurableEntity<T> : Entity where T : Configuration, new()
+    public abstract class ConfigurableEntity<T> : ConfigurableEntity<Guid, T> where T : Configuration<Guid>, new() { }
+
+    public abstract class ConfigurableEntity<TId, T> : Entity<TId> where T : IConfigurationOption, new()
     {
         private static readonly char[] ValueSeparators = new[] { ' ', ',', '+', '&', '|', ';' };
 
@@ -103,12 +105,12 @@ namespace SCMM.Shared.Data.Store
                 if (values.Any())
                 {
                     config.Value = (definition.AllowMultipleValues ? null : values.FirstOrDefault());
-                    config.List = new PersistableStringCollection(definition.AllowMultipleValues ? values : null);
+                    config.List = (definition.AllowMultipleValues ? values : null);
                 }
                 else
                 {
                     config.Value = null;
-                    config.List = new PersistableStringCollection();
+                    config.List = null;
                     Configuration.Remove(config);
                 }
             }
@@ -118,7 +120,7 @@ namespace SCMM.Shared.Data.Store
                 {
                     Name = name,
                     Value = (definition.AllowMultipleValues ? null : values.FirstOrDefault()),
-                    List = new PersistableStringCollection(definition.AllowMultipleValues ? values : null)
+                    List = (definition.AllowMultipleValues ? values : null)
                 });
             }
 

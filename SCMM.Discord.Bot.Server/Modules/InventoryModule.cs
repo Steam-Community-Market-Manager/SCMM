@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
+using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -20,15 +21,17 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
 {
     private readonly ILogger<InventoryModule> _logger;
     private readonly IConfiguration _configuration;
-    private readonly SteamDbContext _db;
+    private readonly DiscordDbContext _discordDb;
+    private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
 
-    public InventoryModule(ILogger<InventoryModule> logger, IConfiguration configuration, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+    public InventoryModule(ILogger<InventoryModule> logger, IConfiguration configuration, DiscordDbContext discordDb, SteamDbContext steamDb, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
     {
         _logger = logger;
         _configuration = configuration;
-        _db = db;
+        _discordDb = discordDb;
+        _steamDb = steamDb;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
     }
@@ -43,7 +46,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         if (string.IsNullOrEmpty(steamId) && Context.User != null)
         {
             var discordId = Context.User.GetFullUsername();
-            steamId = await _db.SteamProfiles
+            steamId = await _steamDb.SteamProfiles
                 .Where(x => x.DiscordId == discordId)
                 .Select(x => x.SteamId)
                 .FirstOrDefaultAsync();
@@ -63,7 +66,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             ProfileId = steamId
         });
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
 
         var profile = importedProfile?.Profile;
         if (profile == null)
@@ -78,21 +81,20 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         // If currency was not specified, default to the profile or guild currency (if any)
         if (string.IsNullOrEmpty(currencyId) && profile.CurrencyId != null)
         {
-            currencyId = await _db.SteamCurrencies
+            currencyId = await _steamDb.SteamCurrencies
                 .Where(x => x.Id == profile.CurrencyId)
                 .Select(x => x.Name)
                 .FirstOrDefaultAsync();
         }
         if (string.IsNullOrEmpty(currencyId) && Context.Guild != null)
         {
-            var guildId = Context.Guild.Id.ToString();
-            var guild = await _db.DiscordGuilds
+            var guild = await _discordDb.DiscordGuilds
                 .AsNoTracking()
                 .Include(x => x.Configuration)
-                .FirstOrDefaultAsync(x => x.DiscordId == guildId);
+                .FirstOrDefaultAsync(x => x.Id == Context.Guild.Id);
             if (guild != null)
             {
-                currencyId = guild.Get(Steam.Data.Store.DiscordConfiguration.Currency).Value;
+                currencyId = guild.Get(Discord.Data.Store.DiscordGuild.GuildConfiguration.Currency).Value;
             }
         }
 
@@ -118,7 +120,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             AppId = Constants.RustAppId.ToString()
         });
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
 
         if (importedInventory?.Profile?.Privacy != Steam.Data.Models.Enums.SteamVisibilityType.Public)
         {
@@ -138,7 +140,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             CurrencyId = currency.SteamId,
         });
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
 
         if (inventoryTotals?.Items <= 0)
         {
@@ -166,7 +168,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             _logger.LogError(ex, $"Failed to generate profile inventory thumbnail");
         }
 
-        await _db.SaveChangesAsync();
+        await _steamDb.SaveChangesAsync();
 
         var color = Color.Blue;
         if (profile.Roles.Contains(Roles.VIP))

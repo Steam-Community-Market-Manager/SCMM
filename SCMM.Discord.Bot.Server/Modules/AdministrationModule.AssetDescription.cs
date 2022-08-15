@@ -23,7 +23,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 AppId = Constants.RustAppId
             });
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             await message.ModifyAsync(
                 x => x.Content = $"Imported latest item definitions from digest {response.App.ItemDefinitionsDigest} (modified: {response.App.TimeUpdated})"
             );
@@ -47,7 +47,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     AssetClassId = classId
                 });
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
@@ -73,7 +73,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     AssetClassId = classId
                 });
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
@@ -110,7 +110,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     AssetClassId = UInt64.Parse(classId)
                 });
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             await message.ModifyAsync(
@@ -123,7 +123,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("create-asset-description-collection")]
         public async Task<RuntimeResult> CreateAssetDescriptionCollectionAsync([Remainder] string collectionName)
         {
-            var query = _db.SteamAssetDescriptions.Where(x => x.CreatorId != null);
+            var query = _steamDb.SteamAssetDescriptions.Where(x => x.CreatorId != null);
             foreach (var word in collectionName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 query = query.Where(x => x.Name.Contains(word));
@@ -141,27 +141,27 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
         }
 
         [Command("delete-asset-description-collection")]
         public async Task<RuntimeResult> DeleteAssetDescriptionCollectionAsync([Remainder] string collectionName)
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions.Where(x => x.ItemCollection == collectionName).ToListAsync();
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions.Where(x => x.ItemCollection == collectionName).ToListAsync();
             foreach (var assetDescription in assetDescriptions)
             {
                 assetDescription.ItemCollection = null;
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
         }
 
         [Command("rebuild-asset-description-accepted-times")]
         public async Task<RuntimeResult> RebuildAssetDescriptionAcceptedTimesAsync()
         {
-            var items = await _db.SteamAssetDescriptions
+            var items = await _steamDb.SteamAssetDescriptions
                 .Select(x => new
                 {
                     AssetDescription = x,
@@ -194,7 +194,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             return CommandResult.Success();
@@ -203,7 +203,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("tag-asset-description")]
         public async Task<RuntimeResult> TagAssetDescriptionsAsync(string tagKey, string tagValue, params ulong[] classIds)
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions
                 .Where(x => x.ClassId != null)
                 .Where(x => classIds.Contains(x.ClassId.Value))
                 .ToListAsync();
@@ -215,14 +215,14 @@ namespace SCMM.Discord.Bot.Server.Modules
                 };
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
         }
 
         [Command("untag-asset-description")]
         public async Task<RuntimeResult> UntagAssetDescriptionsAsync(string tagKey, params ulong[] classIds)
         {
-            var assetDescriptions = await _db.SteamAssetDescriptions
+            var assetDescriptions = await _steamDb.SteamAssetDescriptions
                 .Where(x => x.ClassId != null)
                 .Where(x => classIds.Contains(x.ClassId.Value))
                 .ToListAsync();
@@ -232,14 +232,14 @@ namespace SCMM.Discord.Bot.Server.Modules
                 assetDescription.Tags.Remove(tagKey);
             }
 
-            await _db.SaveChangesAsync();
+            await _steamDb.SaveChangesAsync();
             return CommandResult.Success();
         }
 
         [Command("add-asset-description-note")]
         public async Task<RuntimeResult> AddAssetDescriptionNoteAsync(ulong classId, [Remainder] string note)
         {
-            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
+            var assetDescription = await _steamDb.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
             if (assetDescription != null)
             {
                 assetDescription.Notes = new PersistableStringCollection(assetDescription.Notes)
@@ -247,7 +247,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     note
                 };
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -259,13 +259,13 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("remove-asset-description-note")]
         public async Task<RuntimeResult> RemoveAssetDescriptionNoteAsync(ulong classId, int index = 0)
         {
-            var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
+            var assetDescription = await _steamDb.SteamAssetDescriptions.FirstOrDefaultAsync(x => classId == x.ClassId);
             if (assetDescription != null)
             {
                 assetDescription.Notes = new PersistableStringCollection(assetDescription.Notes);
                 assetDescription.Notes.Remove(assetDescription.Notes.ElementAt(index));
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
                 return CommandResult.Success();
             }
             else
@@ -277,7 +277,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("download-workshop-files")]
         public async Task<RuntimeResult> DownloadAssetDescriptionWorkshopFiles(params ulong[] classIds)
         {
-            var workshopFiles = await _db.SteamAssetDescriptions
+            var workshopFiles = await _steamDb.SteamAssetDescriptions
                 .Where(x => x.ClassId != null && (classIds.Length == 0 || classIds.Contains(x.ClassId.Value)))
                 .Where(x => x.WorkshopFileId != null)
                 .Select(x => new
@@ -305,7 +305,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         [Command("reanalyse-workshop-files")]
         public async Task<RuntimeResult> ReanalyseAssetDescriptionWorkshopFiles(params ulong[] classIds)
         {
-            var workshopFileUrls = await _db.SteamAssetDescriptions
+            var workshopFileUrls = await _steamDb.SteamAssetDescriptions
                 .Where(x => x.ClassId != null && (classIds.Length == 0 || classIds.Contains(x.ClassId.Value)))
                 .Where(x => x.WorkshopFileId != null && !string.IsNullOrEmpty(x.WorkshopFileUrl))
                 .Select(x => x.WorkshopFileUrl)

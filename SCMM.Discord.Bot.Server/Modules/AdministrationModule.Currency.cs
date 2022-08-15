@@ -14,15 +14,15 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> RebuildCurrencyExchangeRatesAsync()
         {
             var message = await Context.Message.ReplyAsync("Importing missing currency exchange rates...");
-            var currencies = await _db.SteamCurrencies.ToListAsync();
+            var currencies = await _steamDb.SteamCurrencies.ToListAsync();
             var usdCurrency = currencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
 
             var requiredCurrencyNames = currencies.Select(x => x.Name).ToArray();
-            var requiredDates = await _db.SteamMarketItemSale
+            var requiredDates = await _steamDb.SteamMarketItemSale
                 .Select(x => x.Timestamp.Date)
                 .Distinct()
                 .ToListAsync();
-            var existingDates = await _db.SteamCurrencyExchangeRates
+            var existingDates = await _steamDb.SteamCurrencyExchangeRates
                 .GroupBy(x => x.Timestamp.Date)
                 .Where(x => requiredCurrencyNames.Any(y => !x.Any(z => y == z.CurrencyId)))
                 .Select(x => new
@@ -51,7 +51,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     {
                         foreach (var exchangeRate in exchangeRates)
                         {
-                            _db.SteamCurrencyExchangeRates.Add(
+                            _steamDb.SteamCurrencyExchangeRates.Add(
                                 new SteamCurrencyExchangeRate()
                                 {
                                     CurrencyId = exchangeRate.Key,
@@ -63,7 +63,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             var missingRates = existingDates
@@ -86,7 +86,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     {
                         foreach (var exchangeRate in exchangeRates)
                         {
-                            _db.SteamCurrencyExchangeRates.Add(
+                            _steamDb.SteamCurrencyExchangeRates.Add(
                                 new SteamCurrencyExchangeRate()
                                 {
                                     CurrencyId = exchangeRate.Key,
@@ -98,7 +98,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     }
                 }
 
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
             }
 
             await message.ModifyAsync(

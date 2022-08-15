@@ -24,6 +24,7 @@ using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
+using SCMM.Shared.Data.Store.Extensions;
 using SCMM.Shared.Web.Middleware;
 using SCMM.Steam.API;
 using SCMM.Steam.Client;
@@ -230,6 +231,8 @@ public static class WebApplicationExtensions
         app.UseAzureServiceBusProcessor();
 
         app.UseDiscordClient();
+
+        app.EnsureDatabaseIsInitialised<DiscordDbContext>();
 
         return app;
     }

@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Steam.Data.Store;
+using SCMM.Discord.Data.Store;
 
 namespace SCMM.Discord.Bot.Server.Autocompleters;
 
@@ -10,7 +10,7 @@ public class GuildConfigurationNameAutocompleteHandler : AutocompleteHandler
     public async override Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
         var name = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
-        var configNames = DiscordConfiguration.Definitions
+        var configNames = DiscordGuild.GuildConfiguration.Definitions
             .Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
             .Select(x => new AutocompleteResult()
             {

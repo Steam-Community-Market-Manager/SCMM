@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Steam.Data.Store;
+using SCMM.Discord.Data.Store;
 
 namespace SCMM.Discord.Bot.Server.Autocompleters;
 
@@ -12,7 +12,7 @@ public class GuildConfigurationValueAutocompleteHandler : AutocompleteHandler
         // Auto-complete from known values
         var names = autocompleteInteraction.Data.Options.Where(x => x.Name != parameter.Name).Select(x => x.Value?.ToString()).Where(x => !String.IsNullOrEmpty(x)).ToArray();
         var value = autocompleteInteraction.Data.Options.FirstOrDefault(x => x.Name == parameter.Name)?.Value?.ToString();
-        var configValues = DiscordConfiguration.Definitions
+        var configValues = DiscordGuild.GuildConfiguration.Definitions
             .Where(x => names.Contains(x.Name))
             .Where(x => x.AllowedValues != null)
             .SelectMany(x => x.AllowedValues)

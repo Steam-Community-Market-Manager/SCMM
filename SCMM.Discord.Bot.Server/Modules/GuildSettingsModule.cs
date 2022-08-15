@@ -4,7 +4,7 @@ using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
 using SCMM.Discord.Client.Commands;
-using SCMM.Steam.Data.Store;
+using SCMM.Discord.Data.Store;
 
 namespace SCMM.Discord.Bot.Server.Modules;
 
@@ -13,30 +13,31 @@ namespace SCMM.Discord.Bot.Server.Modules;
 [Group("server", "Server configuration commands")]
 public class GuildSettingsModule : InteractionModuleBase<ShardedInteractionContext>
 {
-    private readonly SteamDbContext _db;
+    private readonly DiscordDbContext _discordDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
 
-    public GuildSettingsModule(SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+    public GuildSettingsModule(DiscordDbContext discordDb, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
     {
-        _db = db;
+        _discordDb = discordDb;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
     }
 
     private async Task<DiscordGuild> GetOrCreateGuild()
     {
-        var guild = await _db.DiscordGuilds
-            .Include(x => x.Configuration)
-            .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+        var guild = await _discordDb.DiscordGuilds
+            .FirstOrDefaultAsync(x => x.Id == Context.Guild.Id);
 
         if (guild == null)
         {
-            _db.DiscordGuilds.Add(guild = new Steam.Data.Store.DiscordGuild()
-            {
-                DiscordId = Context.Guild.Id.ToString(),
-                Name = Context.Guild.Name
-            });
+            _discordDb.DiscordGuilds.Add(
+                guild = new Discord.Data.Store.DiscordGuild()
+                {
+                    Id = Context.Guild.Id,
+                    Name = Context.Guild.Name
+                }
+            );
         }
 
         return guild;
@@ -86,7 +87,7 @@ public class GuildSettingsModule : InteractionModuleBase<ShardedInteractionConte
         try
         {
             guild.Set(name, value);
-            await _db.SaveChangesAsync();
+            await _discordDb.SaveChangesAsync();
 
             var config = guild.Get(name);
             if (!string.IsNullOrEmpty(config.Value))
