@@ -30,8 +30,6 @@ namespace SCMM.Discord.Bot.Server.Middleware
             _client = discordClient;
             _client.Connected += OnConnected;
             _client.Disconnected += OnDisconnected;
-            _client.GuildJoined += OnGuildJoined;
-            _client.GuildLeft += OnGuildLeft;
             _ = _client.ConnectAsync().ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)
@@ -53,8 +51,6 @@ namespace SCMM.Discord.Bot.Server.Middleware
             _ = Task.Run(async () =>
             {
                 var currentGuilds = _client.Guilds.ToArray();
-                await AddGuildsToDatabaseIfMissing(currentGuilds);
-                await RemoveGuildsFromDatabaseIfOrphaned(currentGuilds);
             });
         }
 
@@ -62,19 +58,6 @@ namespace SCMM.Discord.Bot.Server.Middleware
         {
             // Stop the status update timer
             _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.Zero);
-        }
-
-        private void OnGuildJoined(Client.DiscordGuild guild)
-        {
-            // Add new guild to our database
-            _logger.LogInformation($"Guild joined: {guild.Name} #{guild.Id}");
-            _ = AddGuildsToDatabaseIfMissing(guild);
-        }
-
-        private async void OnGuildLeft(Client.DiscordGuild guild)
-        {
-            _logger.LogInformation($"Guild left: {guild.Name} #{guild.Id}");
-            _ = RemoveGuildsFromDatabaseIfExisting(guild.Id);
         }
 
         private async void OnStatusUpdate(object state)
@@ -112,80 +95,6 @@ namespace SCMM.Discord.Bot.Server.Middleware
             if (_client.IsConnected)
             {
                 await _client.SetWatchingStatusAsync($"the store, {nextStoreTimeDescription}");
-            }
-        }
-
-        private async Task AddGuildsToDatabaseIfMissing(params Client.DiscordGuild[] guilds)
-        {
-            using var db = await _discordDbFactory.CreateDbContextAsync();
-            try
-            {
-                var discordGuildIds = await db.DiscordGuilds
-                    .Select(x => x.Id)
-                    .ToListAsync();
-
-                var missingGuilds = guilds.Where(x => !discordGuildIds.Any(y => y == x.Id)).ToList();
-                if (missingGuilds.Any())
-                {
-                    foreach (var guild in missingGuilds)
-                    {
-                        _logger.LogInformation($"New guild was joined: {guild.Name} #{guild.Id}");
-                        db.DiscordGuilds.Add(new Discord.Data.Store.DiscordGuild()
-                        {
-                            Id = guild.Id,
-                            Name = guild.Name
-                        });
-                    }
-
-                    await db.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed to add guilds to persistent storage (count: {guilds.Length})");
-            }
-        }
-
-        private async Task RemoveGuildsFromDatabaseIfOrphaned(params Client.DiscordGuild[] guilds)
-        {
-            using var db = await _discordDbFactory.CreateDbContextAsync();
-            try
-            {
-                var knownGuildIds = await db.DiscordGuilds
-                   .Select(x => x.Id)
-                   .ToListAsync();
-                var orphanedGuildIds = knownGuildIds
-                    .Except(guilds.Select(x => x.Id))
-                    .ToArray();
-                if (orphanedGuildIds.Any())
-                {
-                    await RemoveGuildsFromDatabaseIfExisting(orphanedGuildIds);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed to remove orphaned guilds from persistent storage");
-            }
-        }
-
-        private async Task RemoveGuildsFromDatabaseIfExisting(params ulong[] guildIds)
-        {
-            using var db = await _discordDbFactory.CreateDbContextAsync();
-            try
-            {
-                var guildsToRemove = await db.DiscordGuilds
-                    .Where(x => guildIds.Contains(x.Id))
-                    .ToListAsync();
-
-                if (guildsToRemove.Any())
-                {
-                    db.DiscordGuilds.RemoveRange(guildsToRemove);
-                    await db.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed to remove guilds from persistent storage (count: {guildIds.Length})");
             }
         }
     }
