@@ -181,7 +181,7 @@ namespace SCMM.Discord.Client
                 (context.User.GetFullUsername()),
                 (context.Guild != null ? $"{context.Guild.Name} #{context.Guild.Id}" : "n/a"),
                 (context.Channel != null ? context.Channel.Name : "n/a"),
-                (result as InteractionResult),
+                (result),
                 (text, embed, ephemeral) => context.Interaction.FollowupAsync(text: text, embed: embed, ephemeral: ephemeral)
             );
         }
@@ -245,17 +245,17 @@ namespace SCMM.Discord.Client
 
                     case InteractionCommandError.ParseFailed:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it 😅", null, true);
+                        responseMessage = replyFunc($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it anymore 😅", null, true);
                         break;
 
                     case InteractionCommandError.ConvertFailed:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, your command contains invalid characters or objects that I can't understand 😅", null, true);
+                        responseMessage = replyFunc($"Sorry, that command contains invalid characters or objects that I can't understand 😅", null, true);
                         break;
 
                     case InteractionCommandError.BadArgs:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, your command has an invalid number of parameters 😕", null, true);
+                        responseMessage = replyFunc($"Sorry, that command has an invalid number of parameters 😕. Are you sure you did it correctly?", null, true);
                         break;
 
                     case InteractionCommandError.UnmetPrecondition:
@@ -265,12 +265,12 @@ namespace SCMM.Discord.Client
 
                     case InteractionCommandError.Exception:
                         logLevel = LogLevel.Error;
-                        responseMessage = replyFunc($"Sorry, something terrible went wrong your command cannot be completed right now 😵 try again later", null, true);
+                        responseMessage = replyFunc($"Sorry, this is embrassing, but I've just shit 💩 the bed 🛏 trying to process that command. Technical reason: ```{result.ErrorReason}```", null, true);
                         break;
 
                     case InteractionCommandError.Unsuccessful:
                         logLevel = LogLevel.Error;
-                        responseMessage = replyFunc($"Sorry, your command cannot be completed right now and I'm unsure why 😵 try again later", null, true);
+                        responseMessage = replyFunc($"Sorry, that command cannot be completed right, try again later", null, true);
                         break;
                 }
 
