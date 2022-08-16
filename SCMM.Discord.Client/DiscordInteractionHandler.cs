@@ -172,7 +172,11 @@ namespace SCMM.Discord.Client
                 return Task.CompletedTask;
             }
 
-            // Start executing the interaction...
+            // Defer the response to show a "is thinking..." placeholder
+            // NOTE: Interactions need to be acknowledged before this callback ends
+            var deferredReplyTask = interaction.DeferAsync();
+
+            // Execute the interaction...
             // NOTE: Interaction service will execute async by default (unless the interaction is configured otherwise)
             var context = new ShardedInteractionContext(_client, interaction);
             var executeCommandTask = _interactions.ExecuteCommandAsync(
@@ -180,27 +184,12 @@ namespace SCMM.Discord.Client
                 services: _services
             );
 
-            // Wait for at least one second for the interaction to finish
-            var delayForOneSecondTask = Task.Delay(TimeSpan.FromSeconds(1));
-            Task.WaitAny(
-                executeCommandTask,
-                delayForOneSecondTask
+            // Wait for everything to finish...
+            Task.WaitAll(
+                deferredReplyTask,
+                executeCommandTask
             );
 
-            // If the cominteractionmand hasn't finished yet...
-            if (!executeCommandTask.IsCompleted)
-            {
-                // Show a "is thinking..." placeholder to signal this might take a while
-                if (!interaction.HasResponded)
-                {
-                    Task.WaitAll(interaction.DeferAsync());
-                }
-
-                // Finish waiting for the interaction to finish
-                Task.WaitAll(executeCommandTask);
-            }
-
-            // NOTE: Interactions need to be acknowledged before this callback ends
             return Task.CompletedTask;
         }
 
