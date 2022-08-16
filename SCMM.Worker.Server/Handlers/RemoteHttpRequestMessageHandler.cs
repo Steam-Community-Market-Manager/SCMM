@@ -11,7 +11,7 @@ namespace SCMM.Worker.Server.Handlers
         {
             using (var client = BuildHttpClient())
             {
-                var content = (HttpContent)null;
+                var content = (HttpContent?) null;
                 if (message.Content != null)
                 {
                     content = new ByteArrayContent(message.Content);

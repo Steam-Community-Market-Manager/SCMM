@@ -71,7 +71,7 @@ namespace SCMM.Discord.Client
             return Task.CompletedTask;
         }
 
-        private async Task OnShardConnectedAsync(DiscordSocketClient shard)
+        private Task OnShardConnectedAsync(DiscordSocketClient shard)
         {
             if (IsConnected)
             {
@@ -88,6 +88,8 @@ namespace SCMM.Discord.Client
                 _clientIsConnected.Set();
                 Connected?.Invoke();
             }
+
+            return Task.CompletedTask;
         }
 
         private Task OnShardDisconnectedAsync(Exception ex, DiscordSocketClient shard)

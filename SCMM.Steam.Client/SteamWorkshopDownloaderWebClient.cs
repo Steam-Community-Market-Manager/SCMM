@@ -46,7 +46,7 @@ namespace SCMM.Steam.Client
                         }
                         catch(Exception ex)
                         {
-                            _logger.LogWarning($"Workshop downloader node #{workshopDownloaderIndex} appears to be offline...");
+                            _logger.LogWarning(ex, $"Workshop downloader node #{workshopDownloaderIndex} appears to be offline...");
                         }
                     }
                     if (!workshopDownloaderIsOnline)
