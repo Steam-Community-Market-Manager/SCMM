@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.API.Commands;
+using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
@@ -19,17 +20,19 @@ namespace SCMM.Steam.Functions.Timer;
 public class CheckForNewAcceptedWorkshopItems
 {
     private readonly IConfiguration _configuration;
-    private readonly SteamDbContext _db;
+    private readonly DiscordDbContext _discordDb;
+    private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamWebApiClient _apiClient;
 
-    public CheckForNewAcceptedWorkshopItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamWebApiClient apiClient)
+    public CheckForNewAcceptedWorkshopItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamWebApiClient apiClient)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
-        _db = db;
+        _discordDb = discordDb;
+        _steamDb = steamDb;
         _apiClient = apiClient;
     }
 
@@ -39,7 +42,7 @@ public class CheckForNewAcceptedWorkshopItems
     {
         var logger = context.GetLogger("Check-New-Accepted-Workshop-Items");
 
-        var steamApps = await _db.SteamApps
+        var steamApps = await _steamDb.SteamApps
             .Where(x => x.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop))
             .Where(x => x.MostRecentlyAcceptedWorkshopFileId > 0)
             .Where(x => x.IsActive)
@@ -78,7 +81,7 @@ public class CheckForNewAcceptedWorkshopItems
             if (newlyAcceptedItems.Any())
             {
                 app.MostRecentlyAcceptedWorkshopFileId = newlyAcceptedItems.First().PublishedFileId;
-                await _db.SaveChangesAsync();
+                await _steamDb.SaveChangesAsync();
 
                 await BroadcastNewAcceptedWorkshopItemsNotification(logger, app, newlyAcceptedItems);
             }
@@ -87,17 +90,17 @@ public class CheckForNewAcceptedWorkshopItems
 
     private async Task BroadcastNewAcceptedWorkshopItemsNotification(ILogger logger, SteamApp app, IEnumerable<PublishedFileDetails> newWorkshopItems)
     {
-        var guilds = _db.DiscordGuilds.Include(x => x.Configuration).ToList();
+        var guilds = _discordDb.DiscordGuilds.Include(x => x.Configuration).ToList();
         foreach (var guild in guilds)
         {
             try
             {
-                if (!bool.Parse(guild.Get(DiscordConfiguration.AlertsWorkshop, Boolean.FalseString).Value))
+                if (!bool.Parse(guild.Get(DiscordGuild.GuildConfiguration.AlertsWorkshop, Boolean.FalseString).Value))
                 {
                     continue;
                 }
 
-                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                var guildChannels = guild.List(DiscordGuild.GuildConfiguration.AlertChannel).Value?.Union(new[] {
                     "announcement", "workshop", "skin", app.Name, "general", "chat", "bot"
                 });
 
@@ -128,7 +131,7 @@ public class CheckForNewAcceptedWorkshopItems
 
                 await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
-                    GuidId = ulong.Parse(guild.DiscordId),
+                    GuidId = guild.Id,
                     ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
                     Title = $"{app?.Name} Workshop - New Accepted Items",

@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.API.Commands;
+using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Store;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
@@ -23,18 +23,20 @@ namespace SCMM.Steam.Functions.Timer;
 public class CheckForNewMarketItems
 {
     private readonly IConfiguration _configuration;
-    private readonly SteamDbContext _db;
+    private readonly DiscordDbContext _discordDb;
+    private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly SteamService _steamService;
 
-    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
+    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
-        _db = db;
+        _discordDb = discordDb;
+        _steamDb = steamDb;
         _steamCommunityWebClient = steamCommunityWebClient;
         _steamService = steamService;
     }
@@ -44,7 +46,7 @@ public class CheckForNewMarketItems
     {
         var logger = context.GetLogger("Check-New-Market-Items");
 
-        var assetDescriptions = _db.SteamAssetDescriptions
+        var assetDescriptions = _steamDb.SteamAssetDescriptions
             .Where(x => x.MarketItem == null && (x.IsMarketable || x.MarketableRestrictionDays > 0))
             .Where(x => !String.IsNullOrEmpty(x.NameHash))
             .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
@@ -56,7 +58,7 @@ public class CheckForNewMarketItems
             return;
         }
 
-        var usdCurrency = _db.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
+        var usdCurrency = _steamDb.SteamCurrencies.FirstOrDefault(x => x.Name == Constants.SteamCurrencyUSD);
         if (usdCurrency == null)
         {
             return;
@@ -109,7 +111,7 @@ public class CheckForNewMarketItems
         if (newMarketItems.Any())
         {
             logger.LogInformation($"New market items detected!");
-            _db.SaveChanges();
+            _steamDb.SaveChanges();
         }
 
         var newMarketItemGroups = newMarketItems.GroupBy(x => x.App).Where(x => x.Key.IsActive);
@@ -164,17 +166,17 @@ public class CheckForNewMarketItems
             logger.LogError(ex, "Failed to generate market item thumbnail image");
         }
 
-        var guilds = _db.DiscordGuilds.Include(x => x.Configuration).ToList();
+        var guilds = _discordDb.DiscordGuilds.ToList();
         foreach (var guild in guilds)
         {
             try
             {
-                if (!bool.Parse(guild.Get(DiscordConfiguration.AlertsMarket, Boolean.FalseString).Value))
+                if (!bool.Parse(guild.Get(DiscordGuild.GuildConfiguration.AlertsMarket, Boolean.FalseString).Value))
                 {
                     continue;
                 }
 
-                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                var guildChannels = guild.List(DiscordGuild.GuildConfiguration.AlertChannel).Value?.Union(new[] {
                     "announcement", "market", "skin", app.Name, "general", "chat", "bot"
                 });
 
@@ -199,7 +201,7 @@ public class CheckForNewMarketItems
 
                 await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
-                    GuidId = ulong.Parse(guild.DiscordId),
+                    GuidId = guild.Id,
                     ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
                     Title = $"{app?.Name} Market - New Listings",

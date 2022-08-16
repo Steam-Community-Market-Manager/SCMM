@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.API.Commands;
+using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
@@ -27,17 +28,19 @@ namespace SCMM.Steam.Functions.Timer;
 public class CheckForNewStoreItems
 {
     private readonly IConfiguration _configuration;
-    private readonly SteamDbContext _db;
+    private readonly DiscordDbContext _discordDb;
+    private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamService _steamService;
 
-    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamService steamService)
+    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamService steamService)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
-        _db = db;
+        _discordDb = discordDb;
+        _steamDb = steamDb;
         _steamService = steamService;
     }
 
@@ -46,7 +49,7 @@ public class CheckForNewStoreItems
     {
         var logger = context.GetLogger("Check-New-Store-Items");
 
-        var steamApps = await _db.SteamApps
+        var steamApps = await _steamDb.SteamApps
             .Where(x => x.IsActive)
             .ToListAsync();
         if (!steamApps.Any())
@@ -54,7 +57,7 @@ public class CheckForNewStoreItems
             return;
         }
 
-        var currencies = await _db.SteamCurrencies.ToListAsync();
+        var currencies = await _steamDb.SteamCurrencies.ToListAsync();
         if (currencies == null)
         {
             return;
@@ -95,7 +98,7 @@ public class CheckForNewStoreItems
             .OrderBy(x => x)
             .Distinct()
             .ToList();
-        var ourStoreItemIds = _db.SteamItemStores
+        var ourStoreItemIds = _steamDb.SteamItemStores
             .Where(x => x.AppId == app.Id)
             .Where(x => x.End == null)
             .OrderByDescending(x => x.Start)
@@ -114,7 +117,7 @@ public class CheckForNewStoreItems
 
         // If we got here, then then item store has changed (either added or removed items)
         // Load all of our active stores and their items
-        var activeItemStores = _db.SteamItemStores
+        var activeItemStores = _steamDb.SteamItemStores
             .Where(x => x.AppId == app.Id)
             .Where(x => x.End == null)
             .OrderByDescending(x => x.Start)
@@ -221,7 +224,7 @@ public class CheckForNewStoreItems
         {
             if (permanentItemStore.IsTransient)
             {
-                _db.SteamItemStores.Add(permanentItemStore);
+                _steamDb.SteamItemStores.Add(permanentItemStore);
             }
             if (permanentItemStore.Items.Any())
             {
@@ -232,7 +235,7 @@ public class CheckForNewStoreItems
         {
             if (limitedItemStore.IsTransient)
             {
-                _db.SteamItemStores.Add(limitedItemStore);
+                _steamDb.SteamItemStores.Add(limitedItemStore);
             }
             if (limitedItemStore.Items.Any())
             {
@@ -240,7 +243,7 @@ public class CheckForNewStoreItems
             }
         }
 
-        _db.SaveChanges();
+        _steamDb.SaveChanges();
 
         // Send out a broadcast about any "new" items that weren't already in our store
         if (newPermanentStoreItems.Any())
@@ -262,7 +265,7 @@ public class CheckForNewStoreItems
             .Select(x => x.Name)
             .Distinct()
             .ToList();
-        var ourStoreItemIds = _db.SteamStoreItems
+        var ourStoreItemIds = _steamDb.SteamStoreItems
             .Where(x => x.AppId == app.Id)
             .Select(i => i.SteamId)
             .ToList();
@@ -292,14 +295,14 @@ public class CheckForNewStoreItems
             }
             if (storeItem.IsTransient)
             {
-                _db.SteamStoreItems.Add(storeItem);
+                _steamDb.SteamStoreItems.Add(storeItem);
             }
 
             newStoreItems.Add(storeItem);
-            _db.SaveChanges();
+            _steamDb.SaveChanges();
         }
 
-        _db.SaveChanges();
+        _steamDb.SaveChanges();
 
         // Send out a broadcast about any "new" items
         if (newStoreItems.Any())
@@ -360,22 +363,22 @@ public class CheckForNewStoreItems
             return;
         }
 
-        var guilds = _db.DiscordGuilds.Include(x => x.Configuration).ToList();
+        var guilds = _discordDb.DiscordGuilds.ToList();
         foreach (var guild in guilds)
         {
             try
             {
-                if (!bool.Parse(guild.Get(DiscordConfiguration.AlertsStore, Boolean.TrueString).Value))
+                if (!bool.Parse(guild.Get(DiscordGuild.GuildConfiguration.AlertsStore, Boolean.TrueString).Value))
                 {
                     continue;
                 }
 
-                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                var guildChannels = guild.List(DiscordGuild.GuildConfiguration.AlertChannel).Value?.Union(new[] {
                     "announcement", "store", "skin", app.Name, "general", "chat", "bot"
                 });
 
                 var filteredCurrencies = currencies;
-                var guildCurrencies = guild.List(DiscordConfiguration.Currency).Value;
+                var guildCurrencies = guild.List(DiscordGuild.GuildConfiguration.Currency).Value;
                 if (guildCurrencies?.Any() == true)
                 {
                     filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
@@ -391,7 +394,7 @@ public class CheckForNewStoreItems
 
                 await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
-                    GuidId = ulong.Parse(guild.DiscordId),
+                    GuidId = guild.Id,
                     ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
                     Title = $"{app.Name} Store - {storeName}",

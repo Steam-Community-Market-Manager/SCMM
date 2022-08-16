@@ -65,10 +65,9 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         if (Context.Guild != null)
         {
             // Load the discord guild
-            var guild = await _steamDb.DiscordGuilds
+            var guild = await _discordDb.DiscordGuilds
                 .AsNoTracking()
-                .Include(x => x.Configuration)
-                .FirstOrDefaultAsync(x => x.DiscordId == Context.Guild.Id.ToString());
+                .FirstOrDefaultAsync(x => x.Id == Context.Guild.Id);
 
             // Promote donators from VIP servers to VIP role
             if (guild?.Flags.HasFlag(Steam.Data.Models.Enums.DiscordGuildFlags.VIP) == true)

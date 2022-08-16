@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Discord.API.Commands;
+using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Extensions;
-using SCMM.Steam.Data.Models.WebApi.Models;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Requests.IInventoryService;
 using SCMM.Steam.Data.Store;
@@ -20,17 +20,19 @@ namespace SCMM.Steam.Functions.Timer;
 public class CheckForNewItemDefinitions
 {
     private readonly IConfiguration _configuration;
-    private readonly SteamDbContext _db;
+    private readonly DiscordDbContext _discordDb;
+    private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamWebApiClient _apiClient;
 
-    public CheckForNewItemDefinitions(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext db, SteamWebApiClient apiClient)
+    public CheckForNewItemDefinitions(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamWebApiClient apiClient)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
-        _db = db;
+        _discordDb = discordDb;
+        _steamDb = steamDb;
         _apiClient = apiClient;
     }
 
@@ -39,7 +41,7 @@ public class CheckForNewItemDefinitions
     {
         var logger = context.GetLogger("Check-New-Item-Definitions");
 
-        var steamApps = await _db.SteamApps.Where(x => x.IsActive).ToListAsync();
+        var steamApps = await _steamDb.SteamApps.Where(x => x.IsActive).ToListAsync();
         if (!steamApps.Any())
         {
             return;
@@ -65,7 +67,7 @@ public class CheckForNewItemDefinitions
                     app.ItemDefinitionsDigest = itemDefsDigest;
                     app.TimeUpdated = itemDefsLastModified;
 
-                    await _db.SaveChangesAsync();
+                    await _steamDb.SaveChangesAsync();
 
                     // Get the new item definition archive
                     var itemDefinitions = await _apiClient.GameInventoryGetItemDefArchive(new GetItemDefArchiveJsonRequest()
@@ -79,7 +81,7 @@ public class CheckForNewItemDefinitions
                     var updatedAssetDescriptions = new List<SteamAssetDescription>();
                     if (itemDefinitions != null)
                     {
-                        var assetDescriptions = await _db.SteamAssetDescriptions
+                        var assetDescriptions = await _steamDb.SteamAssetDescriptions
                             .Include(x => x.App)
                             .Where(x => x.AppId == app.Id)
                             .ToListAsync();
@@ -129,7 +131,7 @@ public class CheckForNewItemDefinitions
                         }
                     }
 
-                    await _db.SaveChangesAsync();
+                    await _steamDb.SaveChangesAsync();
 
                     if (newAssetDescriptions.Any() || updatedAssetDescriptions.Any())
                     {
@@ -142,17 +144,17 @@ public class CheckForNewItemDefinitions
 
     private async Task BroadcastUpdatedItemDefinitionsNotification(ILogger logger, SteamApp app, IEnumerable<SteamAssetDescription> newAssetDescriptions, IEnumerable<SteamAssetDescription> updatedAssetDescriptions)
     {
-        var guilds = _db.DiscordGuilds.Include(x => x.Configuration).ToList();
+        var guilds = _discordDb.DiscordGuilds.ToList();
         foreach (var guild in guilds)
         {
             try
             {
-                if (!bool.Parse(guild.Get(DiscordConfiguration.AlertsItemDefinition, Boolean.FalseString).Value))
+                if (!bool.Parse(guild.Get(DiscordGuild.GuildConfiguration.AlertsItemDefinition, Boolean.FalseString).Value))
                 {
                     continue;
                 }
 
-                var guildChannels = guild.List(DiscordConfiguration.AlertChannel).Value?.Union(new[] {
+                var guildChannels = guild.List(DiscordGuild.GuildConfiguration.AlertChannel).Value?.Union(new[] {
                     "announcement", "market", "skin", app.Name, "general", "chat", "bot"
                 });
 
@@ -197,7 +199,7 @@ public class CheckForNewItemDefinitions
 
                 await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
                 {
-                    GuidId = ulong.Parse(guild.DiscordId),
+                    GuidId = guild.Id,
                     ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
                     Title = $"{app?.Name} Item Definitions Updated",

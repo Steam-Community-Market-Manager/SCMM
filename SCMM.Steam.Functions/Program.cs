@@ -10,6 +10,7 @@ using SCMM.Azure.AI;
 using SCMM.Azure.AI.Extensions;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
+using SCMM.Discord.Data.Store;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
 using SCMM.Market.Buff.Client;
@@ -98,12 +99,25 @@ public static class HostExtensions
             services.AddApplicationInsightsTelemetryProcessor<Ignore304NotModifiedResponsesFilter>();
 
             // Database
-            var dbConnectionString = Environment.GetEnvironmentVariable("SteamDbConnection");
-            if (!String.IsNullOrEmpty(dbConnectionString))
+            var discordDbConnectionString = Environment.GetEnvironmentVariable("DiscordDbConnection");
+            if (!String.IsNullOrEmpty(discordDbConnectionString))
+            {
+                services.AddDbContextFactory<DiscordDbContext>(options =>
+                {
+                    options.UseCosmos(discordDbConnectionString, "SCMM", cosmos =>
+                    {
+                        cosmos.ConnectionMode(Microsoft.Azure.Cosmos.ConnectionMode.Direct);
+                    });
+                    options.EnableSensitiveDataLogging(AppDomain.CurrentDomain.IsDebugBuild());
+                    options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
+                });
+            }
+            var steamDbConnectionString = Environment.GetEnvironmentVariable("SteamDbConnection");
+            if (!String.IsNullOrEmpty(steamDbConnectionString))
             {
                 services.AddDbContext<SteamDbContext>(options =>
                 {
-                    options.UseSqlServer(dbConnectionString, sql =>
+                    options.UseSqlServer(steamDbConnectionString, sql =>
                     {
                         //sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                         sql.EnableRetryOnFailure();

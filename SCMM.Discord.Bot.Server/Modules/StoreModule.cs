@@ -52,11 +52,10 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         }
         if (string.IsNullOrEmpty(currencyId) && Context.Guild != null)
         {
-            var guildId = Context.Guild.Id.ToString();
-            var guild = await _steamDb.DiscordGuilds
+            var guildId = Context.Guild.Id;
+            var guild = await _discordDb.DiscordGuilds
                 .AsNoTracking()
-                .Include(x => x.Configuration)
-                .FirstOrDefaultAsync(x => x.DiscordId == guildId);
+                .FirstOrDefaultAsync(x => x.Id == guildId);
             if (guild != null)
             {
                 currencyId = guild.Get(Discord.Data.Store.DiscordGuild.GuildConfiguration.Currency).Value;

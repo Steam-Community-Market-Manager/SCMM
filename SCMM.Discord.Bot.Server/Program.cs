@@ -129,7 +129,6 @@ public static class WebApplicationExtensions
                 options.EnableDetailedErrors(AppDomain.CurrentDomain.IsDebugBuild());
             });
         }
-
         var steamDbConnectionString = builder.Configuration.GetConnectionString("SteamDbConnection");
         if (!String.IsNullOrEmpty(steamDbConnectionString))
         {
