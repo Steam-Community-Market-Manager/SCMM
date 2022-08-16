@@ -14,7 +14,7 @@ public class UpdateAssetDescriptionSupplyTotals
     }
 
     [Function("Update-Asset-Description-Supply-Totals")]
-    public async Task Run([TimerTrigger("0 50 * * * *")] /* every hour, 50 minutes past the hour */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0 20 * * * *")] /* every hour, 20 minutes past the hour */ TimerInfo timerInfo, FunctionContext context)
     {
         using (var transaction = await _db.Database.BeginTransactionAsync())
         {
