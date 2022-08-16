@@ -78,7 +78,14 @@ namespace SCMM.Discord.Client
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Failed to register guild interaction modules");
+                            if (ex.Message?.Contains("Missing Access") == true)
+                            {
+                                _logger.LogWarning($"Unable to register guild interaction modules to '{guild.Id}', missing access");
+                            }
+                            else
+                            {
+                                _logger.LogError(ex, $"Failed to register guild interaction modules to '{guild.Id}'");
+                            }
                         }
                     }
                 }
