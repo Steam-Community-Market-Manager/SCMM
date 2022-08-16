@@ -148,42 +148,7 @@ namespace SCMM.Discord.Client
 
         private Task OnSlashCommandReceivedAsync(SocketInteraction cmd)
         {
-            // Ignore commands from other robots
-            if (cmd.User.IsBot || cmd.User.IsWebhook)
-            {
-                return Task.CompletedTask;
-            }
-
-            // Start executing the command...
-            // NOTE: Interaction service will execute async by default (unless the command is configured otherwise)
-            var context = new ShardedInteractionContext(_client, cmd);
-            var executeCommandTask = _interactions.ExecuteCommandAsync(
-                context: context,
-                services: _services
-            );
-
-            // Wait for at least one second for the command to finish
-            var delayForOneSecondTask = Task.Delay(TimeSpan.FromSeconds(1));
-            Task.WaitAny(
-                executeCommandTask,
-                delayForOneSecondTask
-            );
-
-            // If the command hasn't finished yet...
-            if (!executeCommandTask.IsCompleted)
-            {
-                // Show a "is thinking..." placeholder to signal this might take a while
-                if (!cmd.HasResponded)
-                {
-                    Task.WaitAll(cmd.DeferAsync());
-                }
-
-                // Finish waiting for the command to finish
-                Task.WaitAll(executeCommandTask);
-            }
-
-            // NOTE: Slash commands need to be acknowledged before this callback ends
-            return Task.CompletedTask;
+            return HandleInteractionAsync(cmd);
         }
 
         private Task OnSlashCommandExecutedAsync(SlashCommandInfo command, IInteractionContext context, IResult result)
@@ -197,6 +162,46 @@ namespace SCMM.Discord.Client
                 (modal) => context.Interaction.RespondWithModalAsync(modal: modal),
                 (text, embed, ephemeral) => context.Interaction.FollowupAsync(text: text, embed: embed, ephemeral: ephemeral)
             );
+        }
+
+        private Task HandleInteractionAsync(SocketInteraction interaction)
+        {
+            // Ignore interactions from other robots
+            if (interaction.User.IsBot || interaction.User.IsWebhook)
+            {
+                return Task.CompletedTask;
+            }
+
+            // Start executing the interaction...
+            // NOTE: Interaction service will execute async by default (unless the interaction is configured otherwise)
+            var context = new ShardedInteractionContext(_client, interaction);
+            var executeCommandTask = _interactions.ExecuteCommandAsync(
+                context: context,
+                services: _services
+            );
+
+            // Wait for at least one second for the interaction to finish
+            var delayForOneSecondTask = Task.Delay(TimeSpan.FromSeconds(1));
+            Task.WaitAny(
+                executeCommandTask,
+                delayForOneSecondTask
+            );
+
+            // If the cominteractionmand hasn't finished yet...
+            if (!executeCommandTask.IsCompleted)
+            {
+                // Show a "is thinking..." placeholder to signal this might take a while
+                if (!interaction.HasResponded)
+                {
+                    Task.WaitAll(interaction.DeferAsync());
+                }
+
+                // Finish waiting for the interaction to finish
+                Task.WaitAll(executeCommandTask);
+            }
+
+            // NOTE: Interactions need to be acknowledged before this callback ends
+            return Task.CompletedTask;
         }
 
         private async Task RespondToInteractionResult<T>(string interactionName, string userName, string guildName, string channelName, IResult result, Func<Modal, Task> modalFunc, Func<string, Embed, bool, Task<T>> replyFunc)
