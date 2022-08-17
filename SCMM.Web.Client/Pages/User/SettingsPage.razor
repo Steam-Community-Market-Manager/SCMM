@@ -176,7 +176,7 @@
                                     <MudSelect T="ItemInfoType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true" Disabled="State.IsPrerendering"
                                                @bind-SelectedValues="@Update.ItemInfo" ToStringFunc="@((x) => x.GetDisplayName())" OnInternalInputChanged="@((x) => UpdateProfile())" OnBlur="@(() => UpdateProfile())"
                                                MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No additional info"))">
-                                        @foreach (var value in Enum.GetValues<ItemInfoType>())
+                                        @foreach (var value in Enum.GetValues<ItemInfoType>().OrderBy(x => x.ToString()))
                                         {
                                             <MudSelectItem Value="@value">@value.GetDisplayName()</MudSelectItem>
                                         }

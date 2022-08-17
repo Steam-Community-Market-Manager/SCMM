@@ -12,6 +12,8 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string BuyNowUrl { get; set; }
 
+        public long? Subscriptions { get; set; }
+
         public long? SupplyTotalEstimated { get; set; }
 
         public long? Supply { get; set; }

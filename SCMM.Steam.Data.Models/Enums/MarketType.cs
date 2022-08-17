@@ -136,6 +136,7 @@ namespace SCMM.Steam.Data.Models.Enums
         Buff = 29
 
         /*
+        BUY:  https://skinswap.com/trade/
         BUY:  https://www.rustreaper.com/marketplace/RUST
         BUY:  https://rustysaloon.com/withdraw
         BUY:  https://bandit.camp/

@@ -50,11 +50,14 @@ public enum ItemInfoType
     [Display(Name = "Demand")]
     Demand = 0x04,
 
-    [Display(Name = "Subscriptions")]
+    [Display(Name = "Subscribers")]
     Subscriptions = 0x08,
 
     [Display(Name = "Age")]
-    Age = 0x10
+    Age = 0x10,
+
+    [Display(Name = "Estimated Total Supply")]
+    EstimatedTotalSupply = 0x20,
 }
 
 public enum ItemInfoWebsiteType

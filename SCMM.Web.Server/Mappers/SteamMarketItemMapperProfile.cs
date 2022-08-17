@@ -23,6 +23,7 @@ namespace SCMM.Web.Server.Mappers
                 .ForMember(x => x.BuyNowFrom, o => o.MapFromUsingAssetBuyPrice(p => p.Description, p => p.MarketType))
                 .ForMember(x => x.BuyNowPrice, o => o.MapFromUsingAssetBuyPrice(p => p.Description, p => p.Price))
                 .ForMember(x => x.BuyNowUrl, o => o.MapFromUsingAssetBuyPrice(p => p.Description, p => p.Url))
+                .ForMember(x => x.Subscriptions, o => o.MapFrom(p => p.Description.SubscriptionsCurrent))
                 .ForMember(x => x.SupplyTotalEstimated, o => o.MapFrom(p => p.Description.SupplyTotalEstimated))
                 .ForMember(x => x.Actions, o => o.MapFrom(p => p.Description.GetInteractions()));
 

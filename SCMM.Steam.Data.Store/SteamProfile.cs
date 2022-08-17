@@ -5,6 +5,7 @@ using SCMM.Steam.Data.Models.Enums;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace SCMM.Steam.Data.Store
@@ -80,7 +81,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public IEnumerable<ItemInfoType> ItemInfo
         {
-            get { return Enum.GetValues<ItemInfoType>().Where(x => !Preferences.ContainsKey(nameof(ItemInfo)) || Preferences[nameof(ItemInfo)].Contains(x.ToString())); }
+            get { return Preferences.ContainsKey(nameof(ItemInfo)) ? Enum.GetValues<ItemInfoType>().Where(x => Preferences[nameof(ItemInfo)].Contains(x.ToString())) : Enum.GetValues<ItemInfoType>().Where(x => x != ItemInfoType.EstimatedTotalSupply); }
             set { Preferences[nameof(ItemInfo)] = value.Aggregate((ItemInfoType)0, (a, b) => a |= b).ToString(); }
         }
 

@@ -2,6 +2,8 @@
 {
     public interface ICanBeOwned
     {
+        public long? Subscriptions { get; }
+
         public long? SupplyTotalEstimated { get; }
     }
 }

@@ -43,6 +43,11 @@
                 }
                 @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions))
                 {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SubscriptionsCurrent", Data.Models.SortDirection.Ascending))">Lowest Subscribers</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SubscriptionsCurrent", Data.Models.SortDirection.Descending))">Highest Subscribers</MudSelectItem>
+                }
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply))
+                {
                     <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SupplyTotalEstimated", Data.Models.SortDirection.Ascending))">Lowest Estimated Total Supply</MudSelectItem>
                     <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("SupplyTotalEstimated", Data.Models.SortDirection.Descending))">Highest Estimated Total Supply</MudSelectItem>
                 }

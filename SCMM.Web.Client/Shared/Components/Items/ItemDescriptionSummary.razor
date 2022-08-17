@@ -46,12 +46,21 @@
                 }
                 @if (!Dense)
                 {
-                    @if (OwnableItem?.SupplyTotalEstimated > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions)))
+                    @if (OwnableItem?.SupplyTotalEstimated > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.EstimatedTotalSupply)))
                     {
                         <MudTooltip Text="Estimated total supply">
                             <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
                                 <i class="fas fa-fw fa-people-carry"></i>
                                 <span>@OwnableItem.SupplyTotalEstimated.Value.ToQuantityString()+</span>
+                            </MudText>
+                        </MudTooltip>
+                    }
+                    @if (OwnableItem?.Subscriptions > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.Subscriptions)))
+                    {
+                        <MudTooltip Text="Subscribers">
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                <i class="fas fa-fw fa-user"></i>
+                                <span>@OwnableItem.Subscriptions.Value.ToQuantityString()</span>
                             </MudText>
                         </MudTooltip>
                     }
