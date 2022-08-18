@@ -81,7 +81,7 @@ namespace SCMM.Steam.Data.Store
         [NotMapped]
         public IEnumerable<ItemInfoType> ItemInfo
         {
-            get { return Preferences.ContainsKey(nameof(ItemInfo)) ? Enum.GetValues<ItemInfoType>().Where(x => Preferences[nameof(ItemInfo)].Contains(x.ToString())) : Enum.GetValues<ItemInfoType>().Where(x => x != ItemInfoType.EstimatedTotalSupply); }
+            get { return Preferences.ContainsKey(nameof(ItemInfo)) ? Enum.GetValues<ItemInfoType>().Where(x => Preferences[nameof(ItemInfo)].Contains(x.ToString())) : Enum.GetValues<ItemInfoType>(); }
             set { Preferences[nameof(ItemInfo)] = value.Aggregate((ItemInfoType)0, (a, b) => a |= b).ToString(); }
         }
 
