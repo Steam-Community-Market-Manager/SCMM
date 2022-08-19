@@ -378,6 +378,16 @@
             <response code="404">If the inventory items cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.SearchController.Get(System.String)">
+            <summary>
+            Search the databases for matching objects
+            </summary>
+            <remarks>Searches items and collections</remarks>
+            <param name="query">The search query</param>
+            <returns></returns>
+            <response code="200">The top 10 results that match the search query</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.API.Controllers.StatisticsController.GetMarketSales(System.Int32)">
             <summary>
             Get marketplace sales and revenue chart data, grouped by day (UTC)

@@ -70,7 +70,6 @@ public static class WebApplicationExtensions
                 optional: true
             );
         }
-
         return builder;
     }
 

@@ -20,6 +20,14 @@
     margin-top: 0px !important;
 }
 
+.mud-input-no-frills .mud-input-text {
+    margin: 0px !important;
+}
+
+.mud-input-no-frills .mud-input-underline:before {
+    border: none !important;
+}
+
 .mud-input-transparent .mud-input-label {
     background: black;
 }
