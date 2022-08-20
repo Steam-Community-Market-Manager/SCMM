@@ -48,10 +48,6 @@ namespace SCMM.Discord.Bot.Server.Middleware
         {
             // Start the status update timer
             _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
-            _ = Task.Run(async () =>
-            {
-                var currentGuilds = _client.Guilds.ToArray();
-            });
         }
 
         private void OnDisconnected()

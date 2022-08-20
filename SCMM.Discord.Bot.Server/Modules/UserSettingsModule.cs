@@ -3,10 +3,8 @@ using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Bot.Server.Autocompleters;
 using SCMM.Discord.Client.Commands;
-using SCMM.Discord.Client.Extensions;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
-using SCMM.Shared.Data.Models;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
 using SCMM.Steam.Data.Store;
@@ -31,24 +29,49 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         _queryProcessor = queryProcessor;
     }
 
+    private async Task<DiscordUser> GetOrCreateUser()
+    {
+        var user = await _discordDb.DiscordUsers
+            .FirstOrDefaultAsync(x => x.Id == Context.User.Id);
+
+        if (user == null)
+        {
+            _discordDb.DiscordUsers.Add(
+                user = new Discord.Data.Store.DiscordUser()
+                {
+                    Id = Context.User.Id,
+                    Username = Context.User.Username,
+                    Discriminator = Context.User.Discriminator,
+                }
+            );
+        }
+
+        return user;
+    }
+
     [SlashCommand("steam", "Link your Steam ID so that you don't have to specify it when using other commands")]
     public async Task<RuntimeResult> SetUserSteamIdAsync(
         [Summary("id", "Your SteamID or Steam URL")] string steamId
     )
     {
-        var user = Context.User;
-        var discordId = user.GetFullUsername();
+        var user = await GetOrCreateUser();
+        if (user == null)
+        {
+            return InteractionResult.Fail($"Sorry, I can't find your user record in my database.", ephemeral: true);
+        }
 
-        // Load the profile
+        // Find the profile
         var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
         {
             ProfileId = steamId
         });
 
-        await _steamDb.SaveChangesAsync();
-
         var profile = importedProfile?.Profile;
-        if (profile == null)
+        if (profile != null)
+        {
+            await _steamDb.SaveChangesAsync();
+        }
+        else
         {
             return InteractionResult.Fail(
                 reason: $"Steam profile not found",
@@ -58,41 +81,11 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
             );
         }
 
-        // Set the discord profile
-        profile.DiscordId = discordId;
-
-        var message = (string)null;
-        if (Context.Guild != null)
-        {
-            // Load the discord guild
-            var guild = await _discordDb.DiscordGuilds
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == Context.Guild.Id);
-
-            // Promote donators from VIP servers to VIP role
-            if (guild?.Flags.HasFlag(Steam.Data.Models.Enums.DiscordGuildFlags.VIP) == true)
-            {
-                var guildRoles = Context.Guild.Roles.ToList();
-                var guildUser = await Context.Client.Rest.GetGuildUserAsync(Context.Guild.Id, Context.User.Id);
-                var guildUserRoles = guildRoles.Where(x => guildUser?.RoleIds?.Contains(x.Id) == true).ToList();
-                if (guildUserRoles?.Any(x => x.Name.Contains(Roles.Donator, StringComparison.InvariantCultureIgnoreCase)) == true)
-                {
-                    if (string.Equals(profile.DiscordId, discordId, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        if (!profile.Roles.Any(x => x == Roles.VIP))
-                        {
-                            profile.Roles.Add(Roles.VIP);
-                            message = $"👌 🎁 Thank you for contributing to the SCMM project and/or the {Context.Guild.Name} community. You've been assigned the {Roles.VIP} role as a small token of our appreciation.";
-                        }
-                    }
-                }
-            }
-        }
-
-        await _steamDb.SaveChangesAsync();
+        // Associated the profile to the current user
+        user.SteamId = importedProfile.Profile.SteamId;
+        await _discordDb.SaveChangesAsync();
 
         return InteractionResult.Success(
-            message: message,
             ephemeral: true
         );
     }
@@ -102,29 +95,19 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
         [Summary("name", "Your preferred three-letter currency name (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId
     )
     {
-        var user = Context.User;
-        var discordId = user.GetFullUsername();
-
-        // Load the profile
-        var profile = await _steamDb.SteamProfiles
-            .FirstOrDefaultAsync(x => x.DiscordId == discordId);
-
-        if (profile == null)
+        var user = await GetOrCreateUser();
+        if (user == null)
         {
-            return InteractionResult.Fail(
-                reason: $"Steam account not found",
-                explaination: $"You need to link your Steam account before you can use this command.",
-                ephemeral: true
-            );
+            return InteractionResult.Fail($"Sorry, I can't find your user record in my database.", ephemeral: true);
         }
 
-        // Load the currency
+        // Find the currency
         var getCurrencyByName = await _queryProcessor.ProcessAsync(new GetCurrencyByNameRequest()
         {
             Name = currencyId
         });
 
-        var currency = getCurrencyByName.Currency;
+        var currency = getCurrencyByName?.Currency;
         if (currency == null)
         {
             return InteractionResult.Fail(
@@ -133,9 +116,9 @@ public class UserSettingsModule : InteractionModuleBase<ShardedInteractionContex
             );
         }
 
-        // Set the currency
-        profile.Currency = currency;
-        await _steamDb.SaveChangesAsync();
+        // Associated the currency to the current user
+        user.CurrencyId = currency.Name;
+        await _discordDb.SaveChangesAsync();
 
         return InteractionResult.Success(
             ephemeral: true

@@ -52,7 +52,7 @@ public class GuildSettingsModule : InteractionModuleBase<ShardedInteractionConte
         var guild = await GetOrCreateGuild();
         if (guild == null)
         {
-            return InteractionResult.Fail($"Sorry, I can't find this guild in my database.", ephemeral: true);
+            return InteractionResult.Fail($"Sorry, I can't find your guild record in my database.", ephemeral: true);
         }
 
         try

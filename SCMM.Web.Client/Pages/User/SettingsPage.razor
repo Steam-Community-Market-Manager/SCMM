@@ -292,26 +292,14 @@
                                 </MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
-                        <MudCardContent class="pt-0">
-                            <MudGrid Spacing="4">
-                                <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                    <MudTextField Label="Discord ID" Variant="MudBlazor.Variant.Outlined" FullWidth Disabled="State.IsPrerendering"
-                                                  @bind-Value="@Update.DiscordId" DebounceInterval="1000" OnDebounceIntervalElapsed="UpdateProfile"
-                                                  HelperText="Make sure to include the 4-digit number after your username" />
-                                </MudItem>
-                                @* TODO: Verify ownership
-                                @if (!String.IsNullOrEmpty(Update.DiscordId))
-                                {
-                                    <MudItem xs="12" lg="6" xl="4" xxl="3">
-                                        <MudText Typo="Typo.body1" Color="Color.Warning" GutterBottom Class="mt-2">
-                                            <i class="fas fa-fw fa-exclamation-triangle"></i>
-                                            <span>You have not verified this Discord ID yet.</span>
-                                            <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Disabled="State.IsPrerendering">Verify Now</MudButton>
-                                        </MudText>
-                                    </MudItem>
-                                } *@
-                            </MudGrid>
+                        <MudCardContent class="py-0">
+                            <MudAlert Severity="MudBlazor.Severity.Normal" ContentAlignment="HorizontalAlignment.Center" NoIcon="true" Class="pa-8">Empty</MudAlert>
                         </MudCardContent>
+                        <MudCardActions class="pa-4">
+                            <MudButton Variant="MudBlazor.Variant.Outlined" Color="MudBlazor.Color.Primary" StartIcon="fas fa-fw fa-link" Disabled="State.IsPrerendering || true">
+                                Link Discord
+                            </MudButton>
+                        </MudCardActions>
                     </MudCard>
                 </MudItem>
                 <MudItem xs="12">
@@ -415,8 +403,7 @@
                 ItemIncludeMarketFees = State.Profile.ItemIncludeMarketFees,
                 InventoryShowItemDrops = State.Profile.InventoryShowItemDrops,
                 InventoryShowUnmarketableItems = State.Profile.InventoryShowUnmarketableItems,
-                InventoryValueMovemenDisplay = State.Profile.InventoryValueMovementDisplay,
-                DiscordId = State.Profile.DiscordId,
+                InventoryValueMovemenDisplay = State.Profile.InventoryValueMovementDisplay
             };
         }
     }

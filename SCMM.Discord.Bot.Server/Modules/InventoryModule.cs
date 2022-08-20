@@ -42,14 +42,18 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null
     )
     {
-        // If steam id was not specified, look up the Discord user (if any)
+        var user = (DiscordUser) null;
+
+        // If steam id was not specified, default to the user (if any)
         if (string.IsNullOrEmpty(steamId) && Context.User != null)
         {
-            var discordId = Context.User.GetFullUsername();
-            steamId = await _steamDb.SteamProfiles
-                .Where(x => x.DiscordId == discordId)
-                .Select(x => x.SteamId)
-                .FirstOrDefaultAsync();
+            user = user ?? await _discordDb.DiscordUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == Context.User.Id);
+            if (user != null)
+            {
+                steamId = user.SteamId;
+            }
         }
         if (string.IsNullOrEmpty(steamId))
         {
@@ -78,19 +82,21 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
             );
         }
 
-        // If currency was not specified, default to the profile or guild currency (if any)
-        if (string.IsNullOrEmpty(currencyId) && profile.CurrencyId != null)
+        // If currency was not specified, default to the user or guild currency (if any)
+        if (string.IsNullOrEmpty(currencyId) && Context.User != null)
         {
-            currencyId = await _steamDb.SteamCurrencies
-                .Where(x => x.Id == profile.CurrencyId)
-                .Select(x => x.Name)
-                .FirstOrDefaultAsync();
+            user = user ?? await _discordDb.DiscordUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == Context.User.Id);
+            if (user != null)
+            {
+                currencyId = user.CurrencyId;
+            }
         }
         if (string.IsNullOrEmpty(currencyId) && Context.Guild != null)
         {
             var guild = await _discordDb.DiscordGuilds
                 .AsNoTracking()
-                .Include(x => x.Configuration)
                 .FirstOrDefaultAsync(x => x.Id == Context.Guild.Id);
             if (guild != null)
             {

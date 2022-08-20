@@ -151,12 +151,6 @@ namespace SCMM.Web.Server.API.Controllers
             profile.InventoryShowUnmarketableItems = command.InventoryShowUnmarketableItems;
             profile.InventoryValueMovementDisplay = command.InventoryValueMovemenDisplay;
 
-            // Notifications
-            if (command.DiscordId != null)
-            {
-                profile.DiscordId = command.DiscordId;
-            }
-
             await _db.SaveChangesAsync();
             return Ok();
         }

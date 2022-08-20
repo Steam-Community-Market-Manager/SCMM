@@ -179,9 +179,6 @@ namespace SCMM.Steam.Data.Store
                 .HasIndex(x => x.SteamId)
                 .IsUnique(true);
             builder.Entity<SteamProfile>()
-                .HasIndex(x => x.DiscordId)
-                .IsUnique(true);
-            builder.Entity<SteamProfile>()
                 .HasOne(x => x.Language);
             builder.Entity<SteamProfile>()
                 .HasOne(x => x.Currency);

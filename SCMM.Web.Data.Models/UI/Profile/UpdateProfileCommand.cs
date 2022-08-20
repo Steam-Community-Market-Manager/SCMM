@@ -32,8 +32,6 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public Dictionary<string, HashSet<string>> Notifications { get; set; }
 
-        public string DiscordId { get; set; }
-
         public List<ProfileWebhook> Webhooks { get; set; }
     }
 

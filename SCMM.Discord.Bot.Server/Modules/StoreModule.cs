@@ -40,22 +40,22 @@ public class StoreModule : InteractionModuleBase<ShardedInteractionContext>
         [Summary("currency", "Any supported three-letter currency code (e.g. USD, EUR, AUD)")][Autocomplete(typeof(CurrencyAutocompleteHandler))] string currencyId = null
     )
     {
-        // If currency was not specified, default to the profile or guild currency (if any)
+        // If currency was not specified, default to the user or guild currency (if any)
         if (string.IsNullOrEmpty(currencyId) && Context.User != null)
         {
-            var discordId = Context.User.GetFullUsername();
-            currencyId = await _steamDb.SteamProfiles
-                .Where(x => x.DiscordId == discordId)
-                .Where(x => x.Currency != null)
-                .Select(x => x.Currency.Name)
-                .FirstOrDefaultAsync();
+            var user = await _discordDb.DiscordUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == Context.User.Id);
+            if (user != null)
+            {
+                currencyId = user.CurrencyId;
+            }
         }
         if (string.IsNullOrEmpty(currencyId) && Context.Guild != null)
         {
-            var guildId = Context.Guild.Id;
             var guild = await _discordDb.DiscordGuilds
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == guildId);
+                .FirstOrDefaultAsync(x => x.Id == Context.Guild.Id);
             if (guild != null)
             {
                 currencyId = guild.Get(Discord.Data.Store.DiscordGuild.GuildConfiguration.Currency).Value;

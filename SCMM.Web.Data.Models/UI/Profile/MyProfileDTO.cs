@@ -37,8 +37,6 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public InventoryValueMovementDisplayType InventoryValueMovementDisplay { get; set; }
 
-        public string DiscordId { get; set; }
-
         public int DonatorLevel { get; set; }
     }
 }

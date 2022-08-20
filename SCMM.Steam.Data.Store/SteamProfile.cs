@@ -26,8 +26,6 @@ namespace SCMM.Steam.Data.Store
 
         public string ProfileId { get; set; }
 
-        public string DiscordId { get; set; }
-
         public string Name { get; set; }
 
         public string AvatarUrl { get; set; }
@@ -139,7 +137,6 @@ namespace SCMM.Steam.Data.Store
         public void RemoveNonEssentialData()
         {
             ProfileId = null;
-            DiscordId = null;
             ProfileId = null;
             TradeUrl = null;
             LanguageId = null;
