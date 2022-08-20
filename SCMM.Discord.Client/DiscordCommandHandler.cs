@@ -209,17 +209,17 @@ namespace SCMM.Discord.Client
 
                     case CommandError.ParseFailed:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, your command contains invalid characters or objects that I can't understand 😕", null);
+                        responseMessage = replyFunc($"Sorry, that command contains invalid characters or objects that I can't understand 😕", null);
                         break;
 
                     case CommandError.BadArgCount:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, your command has an invalid number of parameters 😕", null);
+                        responseMessage = replyFunc($"Sorry, that command has an invalid number of parameters 😕", null);
                         break;
 
                     case CommandError.ObjectNotFound:
                         logLevel = LogLevel.Warning;
-                        responseMessage = replyFunc($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it 😅", null);
+                        responseMessage = replyFunc($"Sorry, I'm supposed to be able to understand that command, but I can't find the code that should handle it anymore 😅", null);
                         break;
 
                     case CommandError.MultipleMatches:
@@ -234,13 +234,13 @@ namespace SCMM.Discord.Client
 
                     case CommandError.Exception:
                         logLevel = LogLevel.Error;
-                        responseMessage = replyFunc($"Sorry, something terrible went wrong your command cannot be completed right now 😵 try again later", null);
+                        responseMessage = replyFunc($"Sorry, this is embarrassing, but I've just shit 💩 the bed 🛏 trying to process that command. Technical reason: ```{result.ErrorReason}```", null);
                         reactionEmoji = new Emoji("🐛"); // bug
                         break;
 
                     case CommandError.Unsuccessful:
                         logLevel = LogLevel.Error;
-                        responseMessage = replyFunc($"Sorry, your command cannot be completed right now and I'm unsure why 😵 try again later", null);
+                        responseMessage = replyFunc($"Sorry, that command cannot be completed right, try again later", null);
                         reactionEmoji = new Emoji("🐛"); // bug
                         break;
                 }

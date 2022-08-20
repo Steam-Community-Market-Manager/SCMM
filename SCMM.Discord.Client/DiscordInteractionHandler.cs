@@ -181,20 +181,18 @@ namespace SCMM.Discord.Client
 
             // Defer the response to show a "is thinking..." placeholder
             // NOTE: Interactions need to be acknowledged before this callback ends
-            var deferredReplyTask = interaction.DeferAsync();
+            Task.WaitAll(
+                interaction.DeferAsync()
+            );
 
             // Execute the interaction...
             // NOTE: Interaction service will execute async by default (unless the interaction is configured otherwise)
             var context = new ShardedInteractionContext(_client, interaction);
-            var executeCommandTask = _interactions.ExecuteCommandAsync(
-                context: context,
-                services: _services
-            );
-
-            // Wait for everything to finish...
             Task.WaitAll(
-                deferredReplyTask,
-                executeCommandTask
+                _interactions.ExecuteCommandAsync(
+                    context: context,
+                    services: _services
+                )
             );
 
             return Task.CompletedTask;
@@ -288,7 +286,7 @@ namespace SCMM.Discord.Client
 
                     case InteractionCommandError.Exception:
                         logLevel = LogLevel.Error;
-                        responseMessage = replyFunc($"Sorry, this is embrassing, but I've just shit 💩 the bed 🛏 trying to process that command. Technical reason: ```{result.ErrorReason}```", null, true);
+                        responseMessage = replyFunc($"Sorry, this is embarrassing, but I've just shit 💩 the bed 🛏 trying to process that command. Technical reason: ```{result.ErrorReason}```", null, true);
                         break;
 
                     case InteractionCommandError.Unsuccessful:
