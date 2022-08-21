@@ -29,6 +29,7 @@ public class UpdateMarketItemPricesFromiTradeggJob
 
         var supportedSteamApps = await _db.SteamApps
             .Where(x => x.SteamId == Constants.RustAppId.ToString())
+            .Where(x => x.IsActive)
             .ToListAsync();
         if (!supportedSteamApps.Any())
         {
