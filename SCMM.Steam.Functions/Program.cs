@@ -23,10 +23,11 @@ using SCMM.Market.LootFarm.Client;
 using SCMM.Market.RustSkins.Client;
 using SCMM.Market.RustTM.Client;
 using SCMM.Market.SkinBaron.Client;
-using SCMM.Market.SkinMarketgg.Client;
+using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.Skinport.Client;
 using SCMM.Market.SkinsMonkey.Client;
 using SCMM.Market.SkinsMonkey.Client.Extensions;
+using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
 using SCMM.Market.TradeSkinsFast.Client;
@@ -170,7 +171,7 @@ public static class HostExtensions
             //services.AddSingleton<RUSTVendorWebClient>();
             //services.AddSingleton<RustyTradeWebClient>();
             services.AddSingleton<SkinBaronWebClient>();
-            services.AddSingleton<SkinMarketGGWebClient>();
+            services.AddSingleton<SkinSwapWebClient>();
             services.AddSingleton<SkinportWebClient>();
             services.AddSingleton<SkinsMonkeyWebClient>();
             services.AddSingleton((services) =>

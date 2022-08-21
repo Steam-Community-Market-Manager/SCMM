@@ -112,10 +112,10 @@ namespace SCMM.Steam.Data.Models.Enums
         [BuyFrom(Url = "https://skinsmonkey.com/trade")] // Unconfirmed
         SkinsMonkey = 25,
 
-        [Display(Name = "skinmarket.gg")]
+        [Display(Name = "Skin Swap")]
         [Market(Type = PriceTypes.Cash | PriceTypes.Trade)]
-        [BuyFrom(Url = "https://skinmarket.gg/")] // Unconfirmed
-        skinmarketGG = 26,
+        [BuyFrom(Url = "https://skinswap.com/r/scmm")] // Unconfirmed
+        SkinSwap = 26,
 
         // TODO: Find workaround for overly agressive CloudFlare policies
         //[Display(Name = "GAMERALL.com")]
@@ -136,7 +136,6 @@ namespace SCMM.Steam.Data.Models.Enums
         Buff = 29
 
         /*
-        BUY:  https://skinswap.com/trade/
         BUY:  https://www.rustreaper.com/marketplace/RUST
         BUY:  https://rustysaloon.com/withdraw
         BUY:  https://bandit.camp/

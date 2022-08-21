@@ -1,30 +1,32 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Market.SkinMarketgg.Client;
+using SCMM.Market.CSTrade.Client;
+using SCMM.Market.SkinSwap.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Steam.Data.Store.Types;
 
 namespace SCMM.Steam.Functions.Timer;
 
-public class UpdateMarketItemPricesFromSkinMarketgg
+public class UpdateMarketItemPricesFromSkinSwap
 {
     private readonly SteamDbContext _db;
-    private readonly SkinMarketGGWebClient _skinMarketggWebClient;
+    private readonly SkinSwapWebClient _skinSwapWebClient;
 
-    public UpdateMarketItemPricesFromSkinMarketgg(SteamDbContext db, SkinMarketGGWebClient skinMarketggWebClient)
+    public UpdateMarketItemPricesFromSkinSwap(SteamDbContext db, SkinSwapWebClient skinSwapWebClient)
     {
         _db = db;
-        _skinMarketggWebClient = skinMarketggWebClient;
+        _skinSwapWebClient = skinSwapWebClient;
     }
 
-    [Function("Update-Market-Item-Prices-From-SkinMarketGG")]
+    [Function("Update-Market-Item-Prices-From-SkinSwap")]
     public async Task Run([TimerTrigger("0 10-59/20 * * * *")] /* every 20mins */ TimerInfo timerInfo, FunctionContext context)
     {
-        var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinMarketGG");
+        var logger = context.GetLogger("Update-Market-Item-Prices-From-SkinSwap");
 
         var supportedSteamApps = await _db.SteamApps
             .Where(x => x.SteamId == Constants.RustAppId.ToString())
@@ -41,13 +43,14 @@ public class UpdateMarketItemPricesFromSkinMarketgg
             return;
         }
 
+        var skinSwapItems = (await _skinSwapWebClient.GetSiteInventoryAsync()) ?? new Dictionary<string, SkinSwapItem[]>();
         foreach (var app in supportedSteamApps)
         {
-            logger.LogTrace($"Updating item price information from skinmarket.gg (appId: {app.SteamId})");
+            logger.LogTrace($"Updating item price information from SkinSwap (appId: {app.SteamId})");
          
             try
             {
-                var skinMarketGGItems = (await _skinMarketggWebClient.GetTradeSiteInventoryAsync()) ?? new List<SkinMarketGGItem>();
+                var skinSwapAppItems = skinSwapItems.Where(x => x.Key == app.SteamId).SelectMany(x => x.Value).ToList();
 
                 var items = await _db.SteamMarketItems
                     .Where(x => x.AppId == app.Id)
@@ -59,31 +62,31 @@ public class UpdateMarketItemPricesFromSkinMarketgg
                     })
                     .ToListAsync();
 
-                foreach (var skinMarketGGItemGroup in skinMarketGGItems.GroupBy(x => x.Name))
+                foreach (var skinSwapItemGroup in skinSwapAppItems.GroupBy(x => x.MarketName))
                 {
-                    var item = items.FirstOrDefault(x => x.Name == skinMarketGGItemGroup.Key)?.Item;
+                    var item = items.FirstOrDefault(x => x.Name == skinSwapItemGroup.Key)?.Item;
                     if (item != null)
                     {
-                        var supply = skinMarketGGItemGroup.Sum(x => x.Amount);
-                        item.UpdateBuyPrices(MarketType.skinmarketGG, new PriceWithSupply
+                        var supply = skinSwapItemGroup.Count();
+                        item.UpdateBuyPrices(MarketType.SkinSwap, new PriceWithSupply
                         {
-                            Price = supply > 0 ? item.Currency.CalculateExchange(skinMarketGGItemGroup.Min(x => x.PriceCents), usdCurrency) : 0,
+                            Price = supply > 0 ? item.Currency.CalculateExchange(skinSwapItemGroup.Min(x => x.PriceListed).ToString().SteamPriceAsInt(), usdCurrency) : 0,
                             Supply = supply
                         });
                     }
                 }
 
-                var missingItems = items.Where(x => !skinMarketGGItems.Any(y => x.Name == y.Name) && x.Item.BuyPrices.ContainsKey(MarketType.skinmarketGG));
+                var missingItems = items.Where(x => !skinSwapAppItems.Any(y => x.Name == y.MarketName) && x.Item.BuyPrices.ContainsKey(MarketType.SkinSwap));
                 foreach (var missingItem in missingItems)
                 {
-                    missingItem.Item.UpdateBuyPrices(MarketType.skinmarketGG, null);
+                    missingItem.Item.UpdateBuyPrices(MarketType.SkinSwap, null);
                 }
 
                 _db.SaveChanges();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to update market item price information from skinmarket.gg (appId: {app.SteamId}). {ex.Message}");
+                logger.LogError(ex, $"Failed to update market item price information from SkinSwap (appId: {app.SteamId}). {ex.Message}");
                 continue;
             }
         }
