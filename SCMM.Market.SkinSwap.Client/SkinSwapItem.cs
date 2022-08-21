@@ -8,7 +8,7 @@ namespace SCMM.Market.SkinSwap.Client
         public string AssetId { get; set; }
 
         [JsonPropertyName("classid")]
-        public int ClassId { get; set; }
+        public string ClassId { get; set; }
 
         [JsonPropertyName("market_name")]
         public string MarketName { get; set; }
