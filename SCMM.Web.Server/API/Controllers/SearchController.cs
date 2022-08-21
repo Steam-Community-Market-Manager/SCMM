@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.Search;
+using SCMM.Web.Server.Extensions;
 
 namespace SCMM.Web.Server.API.Controllers
 {
@@ -42,6 +44,7 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get([FromQuery] string query)
         {
+            var app = this.App();
             var words = query?.Split(" ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (words?.Any() != true)
             {
@@ -50,17 +53,15 @@ namespace SCMM.Web.Server.API.Controllers
 
             var results = new List<SearchResultDTO>();
 
-            var itemResults = await _db.SteamAssetDescriptions
-                .Where(x => !String.IsNullOrEmpty(x.Name))
-                .Select(x => new
-                {
-                    ClassId = x.ClassId,
-                    Name = x.Name,
-                    IconUrl = x.IconUrl
-                })
+            var itemTypeResults = await _db.SteamAssetDescriptions
+                .Where(x => x.AppId == app.Guid)
+                .Where(x => !String.IsNullOrEmpty(x.ItemType))
+                .GroupBy(x => x.ItemType)
+                .Select(x => x.Key)
                 .ToListAsync();
 
-            var collectionResults = await _db.SteamAssetDescriptions
+            var itemCollectionResults = await _db.SteamAssetDescriptions
+                .Where(x => x.AppId == app.Guid)
                 .Where(x => !String.IsNullOrEmpty(x.ItemCollection))
                 .GroupBy(x => new
                 {
@@ -75,6 +76,37 @@ namespace SCMM.Web.Server.API.Controllers
                 })
                 .ToListAsync();
 
+            var itemResults = await _db.SteamAssetDescriptions
+                .Where(x => x.AppId == app.Guid)
+                .Where(x => !String.IsNullOrEmpty(x.Name))
+                .Select(x => new
+                {
+                    ClassId = x.ClassId,
+                    Name = x.Name,
+                    IconUrl = x.IconUrl
+                })
+                .ToListAsync();
+
+            results.AddRange(
+                itemTypeResults.Select(x => new SearchResultDTO()
+                {
+                    Type = "Type",
+                    IconUrl = $"/images/app/{app.Id}/items/{x.ToRustItemShortName()}.png",
+                    Description = x,
+                    Url = $"api/item?type={x}&count=-1"
+                })
+            );
+
+            results.AddRange(
+                itemCollectionResults.Select(x => new SearchResultDTO()
+                {
+                    Type = "Collection",
+                    IconUrl = x.ItemIconUrl,
+                    Description = x.ItemCollection,
+                    Url = $"api/item/collection/{x.ItemCollection}?creatorId={x.CreatorId}"
+                })
+            );
+
             results.AddRange(
                 itemResults.Select(x => new SearchResultDTO()
                 {
@@ -82,16 +114,6 @@ namespace SCMM.Web.Server.API.Controllers
                     IconUrl = x.IconUrl,
                     Description = x.Name,
                     Url = $"/api/item/{x.ClassId}"
-                })
-            );
-
-            results.AddRange(
-                collectionResults.Select(x => new SearchResultDTO()
-                {
-                    Type = "Collection",
-                    IconUrl = x.ItemIconUrl,
-                    Description = x.ItemCollection,
-                    Url = $"api/item/collection/{x.ItemCollection}?creatorId={x.CreatorId}"
                 })
             );
 

@@ -326,7 +326,9 @@
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
         {
             ["ListName"] = $"Items by {profile.Name}",
-            ["ListUrl"] = $"api/item?creatorId={profile.SteamId}&count=-1"
+            ["ListUrl"] = $"api/item?creatorId={profile.SteamId}&count=-1",
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+            ["SortDirection"] = MudBlazor.SortDirection.Descending
         });
     }
 

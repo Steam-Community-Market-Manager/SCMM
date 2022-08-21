@@ -1,4 +1,5 @@
 ﻿@using SCMM.Web.Client.Shared.Dialogs.Items
+@using SCMM.Web.Data.Models.UI.Item
 @using SCMM.Web.Data.Models.UI.Search
 @inject ILogger<SearchBar> Logger
 @inject IDialogService Dialogs
@@ -8,7 +9,7 @@
 @inject HttpClient Http
 
 <MudAutocomplete T="SearchResultDTO" Value="@Search" SearchFunc="@SearchAsync" ValueChanged="@OnResultSelected" ToStringFunc="@(x => x.Description)" ResetValueOnEmptyText="true" 
-                 Placeholder="Search for an item or collection..." DebounceInterval="1000" FullWidth="false" Dense="true" Disabled="State.IsPrerendering"
+                 Placeholder="Search for an item, type, or collection..." DebounceInterval="500" FullWidth="false" Dense="true" Disabled="State.IsPrerendering"
                  Variant="MudBlazor.Variant.Text" AdornmentIcon="fas fa-fw fa-search ml-2" IconSize="MudBlazor.Size.Small" Class="mud-input-no-frills ma-0 px-4" Style="max-width: 350px">
     <ItemTemplate Context="item">
         <div class="d-flex algin-center">
@@ -48,11 +49,13 @@
         Search = null;
         switch (result.Type)
         {
-            case "Item":
-                Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
+            case "Type":
+                Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
                 {
-                    ["ItemName"] = result.Description,
-                    ["ItemUrl"] = result.Url
+                    ["ListName"] = $"All {result.Description.Pluralise()}",
+                    ["ListUrl"] = result.Url,
+                    ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+                    ["SortDirection"] = MudBlazor.SortDirection.Descending
                 });
                 break;
 
@@ -61,6 +64,14 @@
                 {
                     ["CollectionName"] = $"{result.Description} Collection",
                     ["CollectionUrl"] = result.Url
+                });
+                break;
+
+            case "Item":
+                Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
+                {
+                    ["ItemName"] = result.Description,
+                    ["ItemUrl"] = result.Url
                 });
                 break;
         }

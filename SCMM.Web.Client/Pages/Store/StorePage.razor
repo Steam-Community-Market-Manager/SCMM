@@ -700,7 +700,9 @@ else
         {
             ["ListName"] = $"Items by {item.CreatorName}",
             ["ListUrl"] = $"api/item?creatorId={item.CreatorId}&count=-1",
-            ["HighlightedItemId"] = item.AssetDescriptionId
+            ["HighlightedItemId"] = item.AssetDescriptionId,
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+            ["SortDirection"] = MudBlazor.SortDirection.Descending
         });
     }
     
@@ -740,7 +742,7 @@ else
             ["ListName"] = $"Marketable {item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?id={item.AssetDescriptionId}&type={item.ItemType}&marketable=true&count=-1",
             ["HighlightedItemId"] = item.AssetDescriptionId,
-            ["SortBy"] = "BuyNowPrice",
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.BuyNowPrice),
             ["SortDirection"] = MudBlazor.SortDirection.Ascending
         });
     }

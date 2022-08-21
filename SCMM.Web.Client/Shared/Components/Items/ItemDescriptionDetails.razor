@@ -1338,7 +1338,9 @@
         {
             ["ListName"] = $"Items by {Item.CreatorName}",
             ["ListUrl"] = $"api/item?creatorId={Item.CreatorId}&count=-1",
-            ["HighlightedItemId"] = Item.Id
+            ["HighlightedItemId"] = Item.Id,
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.TimeAccepted),
+            ["SortDirection"] = MudBlazor.SortDirection.Descending
         });
     }
 
@@ -1349,7 +1351,7 @@
             ["ListName"] = $"Marketable {Item.ItemType.Pluralise()}",
             ["ListUrl"] = $"api/item?type={Item.ItemType}&count=-1",
             ["HighlightedItemId"] = Item.Id,
-            ["SortBy"] = "BuyNowPrice",
+            ["SortBy"] = nameof(ItemDescriptionWithPriceDTO.BuyNowPrice),
             ["SortDirection"] = MudBlazor.SortDirection.Ascending
         });
     }
