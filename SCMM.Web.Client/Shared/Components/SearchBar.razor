@@ -8,7 +8,7 @@
 @inject AppState State
 @inject HttpClient Http
 
-<MudAutocomplete T="SearchResultDTO" Value="@Search" SearchFunc="@SearchAsync" ValueChanged="@OnResultSelected" ToStringFunc="@(x => x.Description)" ResetValueOnEmptyText="true" 
+<MudAutocomplete T="SearchResultDTO" Value="@Search" SearchFunc="@SearchAsync" ValueChanged="@OnResultSelected" ToStringFunc="@(x => x?.Description)" ResetValueOnEmptyText="true" 
                  Placeholder="Search for an item, type, or collection..." DebounceInterval="500" FullWidth="false" Dense="true" Disabled="State.IsPrerendering"
                  Variant="MudBlazor.Variant.Text" AdornmentIcon="fas fa-fw fa-search ml-2" IconSize="MudBlazor.Size.Small" Class="mud-input-no-frills ma-0 px-4" Style="max-width: 350px">
     <ItemTemplate Context="item">
