@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,13 @@ namespace SCMM.Azure.ServiceBus.Middleware
             _serviceBusProcessors = new List<ServiceBusProcessor>();
             _serviceBusAdministrationClient = serviceBusAdministrationClient;
             _serviceBusClient = serviceBusClient;
+            _ = CreateMissingQueues(messageHandlerTypeCollection).ContinueWith(x =>
+            {
+                if (x.IsFaulted && x.Exception != null)
+                {
+                    _logger.LogError(x.Exception, "Failed to create queues, some messages may not get handled");
+                }
+            });
             _ = CreateMissingTopicSubscriptions(messageHandlerTypeCollection).ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)
@@ -68,6 +76,39 @@ namespace SCMM.Azure.ServiceBus.Middleware
         public Task Invoke(HttpContext httpContext)
         {
             return _next(httpContext);
+        }
+
+        private async Task CreateMissingQueues(MessageHandlerTypeCollection messageHandlerTypeCollection)
+        {
+            // Instantiate processors
+            var handlerAssemblies = messageHandlerTypeCollection.Assemblies.ToArray();
+            foreach (var handlerType in handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>)))
+            {
+                foreach (var handlerInterface in handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>)))
+                {
+                    var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
+                    if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)) || messageType.GetCustomAttribute<QueueAttribute>() == null)
+                    {
+                        continue; // not a supported message
+                    }
+
+                    var queueName = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
+                    var queueExists = await _serviceBusAdministrationClient.QueueExistsAsync(queueName.ToLower());
+                    if (!queueExists)
+                    {
+                        await _serviceBusAdministrationClient.CreateQueueAsync(new CreateQueueOptions(queueName)
+                        {
+                            DeadLetteringOnMessageExpiration = true,
+                            DefaultMessageTimeToLive = TimeSpan.FromDays(1),
+                            DuplicateDetectionHistoryTimeWindow = TimeSpan.FromDays(1),
+                            LockDuration = TimeSpan.FromMinutes(1),
+                            MaxDeliveryCount = 3,
+                            MaxSizeInMegabytes = 1024,
+                            RequiresDuplicateDetection = true
+                        });
+                    }
+                }
+            }
         }
 
         private async Task CreateMissingTopicSubscriptions(MessageHandlerTypeCollection messageHandlerTypeCollection)
