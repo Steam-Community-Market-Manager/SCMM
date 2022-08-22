@@ -197,7 +197,7 @@ public class CheckForNewItemDefinitions
                     );
                 }
 
-                await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
+                await _commandProcessor.ProcessAsync(new SendMessageRequest()
                 {
                     GuidId = guild.Id,
                     ChannelPatterns = guildChannels?.ToArray(),

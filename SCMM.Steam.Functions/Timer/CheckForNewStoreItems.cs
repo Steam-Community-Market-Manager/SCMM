@@ -392,7 +392,7 @@ public class CheckForNewStoreItems
                     ? $"{store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}"
                     : store.Name;
 
-                await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
+                await _commandProcessor.ProcessAsync(new SendMessageRequest()
                 {
                     GuidId = guild.Id,
                     ChannelPatterns = guildChannels?.ToArray(),

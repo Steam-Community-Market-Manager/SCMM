@@ -199,7 +199,7 @@ public class CheckForNewMarketItems
                     .Where(x => x.Description?.IconId != null)
                     .Select(x => x.Description.IconId);
 
-                await _commandProcessor.ProcessAsync(new SendDiscordMessageRequest()
+                await _commandProcessor.ProcessAsync(new SendMessageRequest()
                 {
                     GuidId = guild.Id,
                     ChannelPatterns = guildChannels?.ToArray(),

@@ -34,14 +34,14 @@ namespace SCMM.Discord.Bot.Server.Handlers
             var waitForReplySubscription = (IDisposable)null;
             switch (message.Type)
             {
-                case DiscordPromptMessageType.Reply:
+                case DiscordPromptMessage.PromptType.Reply:
                     waitForReplySubscription = _client.SubscribeToReplies(messageId,
                         (msg) => string.Equals(message.Username, msg.Author.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
                         async (msg) =>
                         {
                             waitForReplySubscription?.Dispose();
                             await msg.AddReactionAsync(new Emoji("👌"));
-                            await context.ReplyAsync(new DiscordPromptReplyMessage()
+                            await context.ReplyAsync(new DiscordPromptMessageReply()
                             {
                                 Reply = msg.Content
                             });
@@ -49,7 +49,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     );
                     break;
 
-                case DiscordPromptMessageType.React:
+                case DiscordPromptMessage.PromptType.React:
                     waitForReplySubscription = _client.SubscribeToReactions(messageId,
                         (user, reaction) => string.Equals(message.Username, user.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
                         async (msg, reaction) =>
@@ -59,7 +59,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                             {
                                 await msg.AddReactionAsync(new Emoji("👌"));
                             }
-                            await context.ReplyAsync(new DiscordPromptReplyMessage()
+                            await context.ReplyAsync(new DiscordPromptMessageReply()
                             {
                                 Reply = reaction.Emote?.Name
                             });
