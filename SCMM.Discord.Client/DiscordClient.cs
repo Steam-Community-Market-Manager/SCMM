@@ -169,6 +169,51 @@ namespace SCMM.Discord.Client
             );
         }
 
+        public async Task<IEnumerable<DiscordMessage>> ListMessagesAsync(ulong guildId, ulong channelId, int messageLimit = 100)
+        {
+            WaitUntilClientIsConnected();
+
+            // Find the guild
+            var guild = _client.GetGuild(guildId);
+            if (guild == null)
+            {
+                throw new Exception($"Unable to find guild (id: {guildId})");
+            }
+
+            // Find the channel
+            var channel = guild.GetTextChannel(channelId);
+            if (channel == null)
+            {
+                throw new Exception($"Unable to find guild channel (guildId: {guildId}, channelId: {channelId})");
+            }
+
+            // Get the messages
+            var results = new List<DiscordMessage>();
+            var messages = channel.GetMessagesAsync(limit: messageLimit);
+            await foreach (var message in messages)
+            {
+                results.AddRange(
+                    message.Select(m => new DiscordMessage
+                    {
+                        Id = m.Id,
+                        AuthorId = m.Author.Id,
+                        Content = m.Content,
+                        Attachments = m.Attachments.Select(a => new DiscordMessageAttachment
+                        {
+                            Id = a.Id,
+                            Url = a.Url,
+                            FileName = a.Filename,
+                            ContentType = a.ContentType,
+                            Description = a.Description
+                        }),
+                        Timestamp = m.Timestamp,
+                    })
+                );
+            }
+
+            return results;
+        }
+
         public async Task<ulong> SendMessageAsync(string username, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null, string[] reactions = null)
         {
             WaitUntilClientIsConnected();
