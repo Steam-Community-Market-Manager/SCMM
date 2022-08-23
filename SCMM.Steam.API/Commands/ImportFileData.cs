@@ -40,7 +40,7 @@ namespace SCMM.Steam.API.Commands
             _communityClient = communityClient;
         }
 
-        public async Task<ImportFileDataResponse> HandleAsync(ImportFileDataRequest request)
+        public async Task<ImportFileDataResponse> HandleAsync(ImportFileDataRequest request, CancellationToken cancellationToken)
         {
             // If we have already fetched this file source before, return the existing copy
             if (request.UseExisting)

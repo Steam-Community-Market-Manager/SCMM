@@ -44,7 +44,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<ImportSteamProfileResponse> HandleAsync(ImportSteamProfileRequest request)
+        public async Task<ImportSteamProfileResponse> HandleAsync(ImportSteamProfileRequest request, CancellationToken cancellationToken)
         {
             // Resolve the id
             var profile = (SteamProfile)null;

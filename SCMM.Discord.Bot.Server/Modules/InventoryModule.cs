@@ -65,7 +65,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
 
         // Load the profile
         //await message.LoadingAsync("🔍 Finding Steam profile...");
-        var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+        var importedProfile = await _commandProcessor.ProcessAsync(new ImportSteamProfileRequest()
         {
             ProfileId = steamId
         });
@@ -120,7 +120,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
 
         // Reload the profiles inventory
         //await message.LoadingAsync("🔄 Fetching inventory details from Steam...");
-        var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
+        var importedInventory = await _commandProcessor.ProcessAsync(new ImportSteamProfileInventoryRequest()
         {
             ProfileId = profile.Id.ToString(),
             AppId = Constants.RustAppId.ToString()
@@ -139,7 +139,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
 
         // Calculate the profiles inventory totals
         //await message.LoadingAsync("💱 Calculating inventory value...");
-        var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
+        var inventoryTotals = await _commandProcessor.ProcessAsync(new CalculateSteamProfileInventoryTotalsRequest()
         {
             ProfileId = profile.SteamId,
             AppId = Constants.RustAppId.ToString(),
@@ -162,7 +162,7 @@ public class InventoryModule : InteractionModuleBase<ShardedInteractionContext>
         try
         {
             inventoryThumbnailImageUrl = (
-                await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
+                await _commandProcessor.ProcessAsync(new GenerateSteamProfileInventoryThumbnailRequest()
                 {
                     ProfileId = profile.SteamId,
                     ExpiresOn = DateTimeOffset.Now.AddDays(7)

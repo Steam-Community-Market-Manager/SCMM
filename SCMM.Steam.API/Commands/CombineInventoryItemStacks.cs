@@ -41,7 +41,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<CombineInventoryItemStacksResponse> HandleAsync(CombineInventoryItemStacksRequest request)
+        public async Task<CombineInventoryItemStacksResponse> HandleAsync(CombineInventoryItemStacksRequest request, CancellationToken cancellationToken)
         {
             // Resolve the id
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()

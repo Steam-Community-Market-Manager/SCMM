@@ -270,7 +270,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Load the profile
-            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = id
             });
@@ -315,7 +315,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Reload the profile's inventory
-            var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
+            var importedInventory = await _commandProcessor.ProcessAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = id,
                 AppId = this.App().Id.ToString(),
@@ -370,7 +370,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Load the profile
-            var importedProfile = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileRequest()
+            var importedProfile = await _commandProcessor.ProcessAsync(new ImportSteamProfileRequest()
             {
                 ProfileId = id
             });
@@ -384,7 +384,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Reload the profiles inventory
-            var importedInventory = await _commandProcessor.ProcessWithResultAsync(new ImportSteamProfileInventoryRequest()
+            var importedInventory = await _commandProcessor.ProcessAsync(new ImportSteamProfileInventoryRequest()
             {
                 ProfileId = profile.Id.ToString(),
                 AppId = this.App().Id.ToString(),
@@ -399,7 +399,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
 
             // Calculate the profiles inventory totals
-            var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
+            var inventoryTotals = await _commandProcessor.ProcessAsync(new CalculateSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = profile.SteamId,
                 AppId = this.App().Id.ToString(),
@@ -418,7 +418,7 @@ namespace SCMM.Web.Server.API.Controllers
             try
             {
                 inventoryThumbnailImageUrl = (
-                    await _commandProcessor.ProcessWithResultAsync(new GenerateSteamProfileInventoryThumbnailRequest()
+                    await _commandProcessor.ProcessAsync(new GenerateSteamProfileInventoryThumbnailRequest()
                     {
                         ProfileId = profile.SteamId,
                         ItemSize = Math.Max(32, Math.Min(mosaicTileSize, 128)),
@@ -477,7 +477,7 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("ID is invalid");
             }
 
-            var inventoryTotals = await _commandProcessor.ProcessWithResultAsync(new CalculateSteamProfileInventoryTotalsRequest()
+            var inventoryTotals = await _commandProcessor.ProcessAsync(new CalculateSteamProfileInventoryTotalsRequest()
             {
                 ProfileId = id,
                 AppId = this.App().Id.ToString(),
@@ -970,7 +970,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             try
             {
-                var result = await _commandProcessor.ProcessWithResultAsync(new CombineInventoryItemStacksRequest()
+                var result = await _commandProcessor.ProcessAsync(new CombineInventoryItemStacksRequest()
                 {
                     ProfileId = profileId,
                     ApiKey = apiKey,
@@ -1061,7 +1061,7 @@ namespace SCMM.Web.Server.API.Controllers
 
             try
             {
-                var result = await _commandProcessor.ProcessWithResultAsync(new SplitInventoryItemStackRequest()
+                var result = await _commandProcessor.ProcessAsync(new SplitInventoryItemStackRequest()
                 {
                     ProfileId = profileId,
                     ApiKey = apiKey,

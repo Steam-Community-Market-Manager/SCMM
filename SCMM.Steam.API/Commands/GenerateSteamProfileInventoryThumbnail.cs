@@ -38,7 +38,7 @@ namespace SCMM.Steam.API.Commands
             _commandProcessor = commandProcessor;
         }
 
-        public async Task<GenerateSteamProfileInventoryThumbnailResponse> HandleAsync(GenerateSteamProfileInventoryThumbnailRequest request)
+        public async Task<GenerateSteamProfileInventoryThumbnailResponse> HandleAsync(GenerateSteamProfileInventoryThumbnailRequest request, CancellationToken cancellationToken)
         {
             // Resolve the id
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()
@@ -107,7 +107,7 @@ namespace SCMM.Steam.API.Commands
                 return null;
             }
 
-            var uploadedInventoryImageMosaic = await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
+            var uploadedInventoryImageMosaic = await _commandProcessor.ProcessAsync(new UploadImageToBlobStorageRequest()
             {
                 Name = $"{request.ProfileId}-inventory-thumbnail-{request.ItemSize}x{request.ItemRows}x{request.ItemColumns}-{DateTime.UtcNow.Ticks}",
                 MimeType = inventoryImageMosaic.MimeType,

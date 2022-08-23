@@ -30,7 +30,7 @@ namespace SCMM.Steam.API.Queries
             _db = db;
         }
 
-        public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request)
+        public async Task<GetStoreNextUpdateTimeResponse> HandleAsync(GetStoreNextUpdateTimeRequest request, CancellationToken cancellationToken)
         {
             var recentStoreStarts = await _db.SteamItemStores
                 .Where(x => x.App.SteamId == request.AppId.ToString())

@@ -41,7 +41,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<ImportSteamItemDefinitionsResponse> HandleAsync(ImportSteamItemDefinitionsRequest request)
+        public async Task<ImportSteamItemDefinitionsResponse> HandleAsync(ImportSteamItemDefinitionsRequest request, CancellationToken cancellationToken)
         {
             var app = await _db.SteamApps.FirstOrDefaultAsync(x => x.SteamId == request.AppId.ToString());
             if (app == null)
@@ -99,7 +99,7 @@ namespace SCMM.Steam.API.Commands
                         continue;
                     }
 
-                    await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+                    await _commandProcessor.ProcessAsync(new UpdateSteamAssetDescriptionRequest()
                     {
                         AssetDescription = assetDescription,
                         AssetItemDefinition = itemDefinition

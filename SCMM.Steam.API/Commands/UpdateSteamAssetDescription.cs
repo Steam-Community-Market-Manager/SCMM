@@ -67,7 +67,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<UpdateSteamAssetDescriptionResponse> HandleAsync(UpdateSteamAssetDescriptionRequest request)
+        public async Task<UpdateSteamAssetDescriptionResponse> HandleAsync(UpdateSteamAssetDescriptionRequest request, CancellationToken cancellationToken)
         {
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
             var assetDescription = request.AssetDescription;
@@ -219,7 +219,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     try
                     {
-                        var importedProfile = await _commandProcessor.ProcessWithResultAsync(
+                        var importedProfile = await _commandProcessor.ProcessAsync(
                             new ImportSteamProfileRequest()
                             {
                                 ProfileId = publishedFile.Creator.ToString()
@@ -335,7 +335,7 @@ namespace SCMM.Steam.API.Commands
             {
                 try
                 {
-                    var importedImage = await _commandProcessor.ProcessWithResultAsync(new ImportFileDataRequest()
+                    var importedImage = await _commandProcessor.ProcessAsync(new ImportFileDataRequest()
                     {
                         Url = assetDescription.IconUrl,
                         UseExisting = true

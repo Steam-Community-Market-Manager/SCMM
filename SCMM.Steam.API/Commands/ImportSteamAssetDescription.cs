@@ -66,7 +66,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<ImportSteamAssetDescriptionResponse> HandleAsync(ImportSteamAssetDescriptionRequest request)
+        public async Task<ImportSteamAssetDescriptionResponse> HandleAsync(ImportSteamAssetDescriptionRequest request, CancellationToken cancellationToken)
         {
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
 
@@ -294,7 +294,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Update the asset description
-            var updateAssetDescription = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+            var updateAssetDescription = await _commandProcessor.ProcessAsync(new UpdateSteamAssetDescriptionRequest()
             {
                 AssetDescription = assetDescription,
                 AssetClass = assetClass,

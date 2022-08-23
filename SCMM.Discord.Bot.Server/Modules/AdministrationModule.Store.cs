@@ -192,7 +192,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 }
 
                 itemStore.ItemsThumbnailUrl = (
-                    await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
+                    await _commandProcessor.ProcessAsync(new UploadImageToBlobStorageRequest()
                     {
                         Name = $"{itemStore.App.SteamId}-store-items-thumbnail-{Uri.EscapeDataString(itemStore.Start?.Ticks.ToString() ?? itemStore.Name?.ToLower())}",
                         MimeType = itemsThumbnailImage.MimeType,

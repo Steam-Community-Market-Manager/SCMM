@@ -182,7 +182,7 @@ public class UpdateStoreStatistics
 
         foreach (var item in assetWorkshopJoined)
         {
-            _ = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
+            _ = await _commandProcessor.ProcessAsync(new UpdateSteamAssetDescriptionRequest()
             {
                 AssetDescription = item.AssetDescription,
                 PublishedFile = item.PublishedFile
