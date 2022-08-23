@@ -2,7 +2,7 @@
 
 namespace SCMM.Discord.API.Messages
 {
-    public class DiscordPromptReplyMessage : IMessage
+    public class DiscordPromptMessageReply : IMessage
     {
         public string Reply { get; set; }
     }

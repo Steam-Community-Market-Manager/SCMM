@@ -4,20 +4,20 @@ using SCMM.Discord.API.Messages;
 
 namespace SCMM.Discord.API.Commands
 {
-    public class SendDiscordMessageRequest : DiscordNotificationMessage, ICommand
+    public class SendMessageRequest : DiscordSendMessage, ICommand
     {
     }
 
-    public class SendDiscordMessage : ICommandHandler<SendDiscordMessageRequest>
+    public class SendMessage : ICommandHandler<SendMessageRequest>
     {
         private readonly ServiceBusClient _client;
 
-        public SendDiscordMessage(ServiceBusClient client)
+        public SendMessage(ServiceBusClient client)
         {
             _client = client;
         }
 
-        public async Task HandleAsync(SendDiscordMessageRequest request)
+        public async Task HandleAsync(SendMessageRequest request)
         {
             await _client.SendMessageAsync(request);
         }

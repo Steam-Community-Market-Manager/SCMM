@@ -3,13 +3,23 @@ using SCMM.Azure.ServiceBus.Attributes;
 
 namespace SCMM.Discord.API.Messages
 {
-    [Queue(Name = "Discord-Notifications")]
-    public class DiscordNotificationMessage : IMessage
+    [Queue(Name = "Discord-Send-Messages")]
+    public class DiscordSendMessage : IMessage
     {
+        /// <summary>
+        /// If set, this message will be sent to an individual user
+        /// </summary>
         public string Username { get; set; }
 
+        /// <summary>
+        /// If set, this message will be sent to a guild channel
+        /// </summary>
         public ulong GuidId { get; set; }
 
+        /// <summary>
+        /// List of regex patterns matching channels ids or names this message should be sent to. 
+        /// The message will be sent once, to the first channel found.
+        /// </summary>
         public string[] ChannelPatterns { get; set; }
 
         public string Message { get; set; }
