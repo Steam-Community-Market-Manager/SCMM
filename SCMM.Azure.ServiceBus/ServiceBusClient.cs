@@ -19,23 +19,23 @@ namespace SCMM.Azure.ServiceBus
         {
             await using var sender = _client.CreateSender<T>();
             await sender.SendMessageAsync(
-                new ServiceBusMessage(BinaryData.FromObjectAsJson(message)),
+                new ServiceBusJsonMessage<T>(message),
                 cancellationToken
             );
         }
 
         public async Task SendMessagesAsync<T>(IEnumerable<T> messages, CancellationToken cancellationToken = default) where T : class, IMessage
         {
-            await using var messageSender = _client.CreateSender<T>();
-            using var messageBatch = await messageSender.CreateMessageBatchAsync(cancellationToken);
+            await using var sender = _client.CreateSender<T>();
+            using var batch = await sender.CreateMessageBatchAsync(cancellationToken);
             foreach (var message in messages)
             {
-                messageBatch.TryAddMessage(
-                    new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
+                batch.TryAddMessage(
+                    new ServiceBusJsonMessage<T>(message)
                 );
             }
 
-            await messageSender.SendMessagesAsync(messageBatch, cancellationToken);
+            await sender.SendMessagesAsync(batch, cancellationToken);
         }
 
         public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken = default)
@@ -66,7 +66,7 @@ namespace SCMM.Azure.ServiceBus
                 );
 
                 await requestClient.SendMessageAsync(
-                    new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
+                    new ServiceBusJsonMessage<TRequest>(message)
                     {
                         ReplyTo = replyToQueueName
                     },

@@ -13,6 +13,8 @@ namespace SCMM.Azure.ServiceBus
 
         public string MessageId { get; set; }
 
+        public Type MessageType { get; set; }
+
         public string ReplyTo { get; set; }
 
         public async Task ReplyAsync<T>(T message, CancellationToken cancellationToken = default) where T : class, IMessage
@@ -24,7 +26,7 @@ namespace SCMM.Azure.ServiceBus
 
             await using var sender = _client.CreateSender(ReplyTo);
             await sender.SendMessageAsync(
-                new ServiceBusMessage(BinaryData.FromObjectAsJson(message)),
+                new ServiceBusJsonMessage<T>(message),
                 cancellationToken
             );
         }

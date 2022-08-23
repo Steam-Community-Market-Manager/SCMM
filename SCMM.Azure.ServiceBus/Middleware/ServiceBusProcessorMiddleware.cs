@@ -32,21 +32,35 @@ namespace SCMM.Azure.ServiceBus.Middleware
             _serviceBusProcessors = new List<ServiceBusProcessor>();
             _serviceBusAdministrationClient = serviceBusAdministrationClient;
             _serviceBusClient = serviceBusClient;
-            _ = CreateMissingQueues(messageHandlerTypeCollection).ContinueWith(x =>
+
+            // Build a dictionary of handler interfaces and their associated concrete implementation type
+            var handlerMappings = new Dictionary<Type, Type>();
+            var handlerAssemblies = messageHandlerTypeCollection.Assemblies.ToArray();
+            var handlerTypes = handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>));
+            foreach (var handlerType in handlerTypes)
+            {
+                var handlerInterfaces = handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>));
+                foreach (var handlerInterface in handlerInterfaces)
+                {
+                    handlerMappings[handlerInterface] = handlerType;
+                }
+            }
+
+            _ = CreateMissingQueuesAsync(handlerMappings).ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)
                 {
                     _logger.LogError(x.Exception, "Failed to create queues, some messages may not get handled");
                 }
             });
-            _ = CreateMissingTopicSubscriptions(messageHandlerTypeCollection).ContinueWith(x =>
+            _ = CreateMissingTopicSubscriptionsAsync(handlerMappings).ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)
                 {
                     _logger.LogError(x.Exception, "Failed to create topic subscriptions, some messages may not get handled");
                 }
             });
-            _ = StartMessageProcessors(messageHandlerTypeCollection).ContinueWith(x =>
+            _ = StartMessageProcessorsAsync(handlerMappings).ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)
                 {
@@ -61,7 +75,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
             {
                 if (disposing)
                 {
-                    await StopMessageProcessors();
+                    await StopMessageProcessorsAsync();
                 }
                 disposedValue = true;
             }
@@ -78,110 +92,79 @@ namespace SCMM.Azure.ServiceBus.Middleware
             return _next(httpContext);
         }
 
-        private async Task CreateMissingQueues(MessageHandlerTypeCollection messageHandlerTypeCollection)
+        private async Task CreateMissingQueuesAsync(IDictionary<Type, Type> handlerMappings)
         {
-            // Instantiate processors
-            var handlerAssemblies = messageHandlerTypeCollection.Assemblies.ToArray();
-            foreach (var handlerType in handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>)))
+            foreach (var handlerMapping in handlerMappings)
             {
-                foreach (var handlerInterface in handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>)))
+                var handlerInterface = handlerMapping.Key;
+                var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
+                if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)) || messageType.GetCustomAttribute<QueueAttribute>() == null)
                 {
-                    var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
-                    if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)) || messageType.GetCustomAttribute<QueueAttribute>() == null)
-                    {
-                        continue; // not a supported message
-                    }
-
-                    var queueName = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
-                    var queueExists = await _serviceBusAdministrationClient.QueueExistsAsync(queueName.ToLower());
-                    if (!queueExists)
-                    {
-                        await _serviceBusAdministrationClient.CreateQueueAsync(new CreateQueueOptions(queueName)
-                        {
-                            DeadLetteringOnMessageExpiration = true,
-                            DefaultMessageTimeToLive = TimeSpan.FromDays(1),
-                            DuplicateDetectionHistoryTimeWindow = TimeSpan.FromDays(1),
-                            LockDuration = TimeSpan.FromMinutes(1),
-                            MaxDeliveryCount = 3,
-                            MaxSizeInMegabytes = 1024,
-                            RequiresDuplicateDetection = true
-                        });
-                    }
+                    continue; // this is not a queue message
                 }
-            }
-        }
 
-        private async Task CreateMissingTopicSubscriptions(MessageHandlerTypeCollection messageHandlerTypeCollection)
-        {
-            // Instantiate processors
-            var handlerAssemblies = messageHandlerTypeCollection.Assemblies.ToArray();
-            foreach (var handlerType in handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>)))
-            {
-                foreach (var handlerInterface in handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>)))
+                var queueName = messageType.GetCustomAttribute<QueueAttribute>()?.Name;
+                var queueExists = await _serviceBusAdministrationClient.QueueExistsAsync(queueName.ToLower());
+                if (!queueExists)
                 {
-                    var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
-                    if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)) || messageType.GetCustomAttribute<TopicAttribute>() == null)
+                    await _serviceBusAdministrationClient.CreateQueueAsync(new CreateQueueOptions(queueName)
                     {
-                        continue; // not a supported message subscription
-                    }
-
-                    var topicSubscriptionExists = await _serviceBusAdministrationClient.SubscriptionExistsAsync(messageType);
-                    if (!topicSubscriptionExists)
-                    {
-                        await _serviceBusAdministrationClient.CreateSubscriptionAsync(messageType, options =>
-                        {
-                            options.AutoDeleteOnIdle = TimeSpan.FromDays(7); // auto-delete if no messages for 7 days
-                        });
-                    }
-                }
-            }
-        }
-
-        private async Task StartMessageProcessors(MessageHandlerTypeCollection messageHandlerTypeCollection)
-        {
-            // Instantiate processors
-            var processors = new List<ServiceBusProcessor>();
-            var handlerAssemblies = messageHandlerTypeCollection.Assemblies.ToArray();
-            foreach (var handlerType in handlerAssemblies.GetTypesAssignableTo(typeof(IMessageHandler<>)))
-            {
-                foreach (var handlerInterface in handlerType.GetInterfacesOfGenericType(typeof(IMessageHandler<>)))
-                {
-                    var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
-                    if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)))
-                    {
-                        continue; // not a supported message handler
-                    }
-
-                    var processor = _serviceBusClient.CreateProcessor(messageType, new ServiceBusProcessorOptions()
-                    {
-                        PrefetchCount = handlerType.GetCustomAttribute<PrefetchAttribute>()?.PrefetchCount ?? 0,
-                        MaxConcurrentCalls = handlerType.GetCustomAttribute<ConcurrencyAttribute>()?.MaxConcurrentCalls ?? 1
+                        DeadLetteringOnMessageExpiration = true,
+                        DefaultMessageTimeToLive = TimeSpan.FromDays(1),
+                        DuplicateDetectionHistoryTimeWindow = TimeSpan.FromDays(1),
+                        LockDuration = TimeSpan.FromMinutes(1),
+                        MaxDeliveryCount = 3,
+                        MaxSizeInMegabytes = 1024,
+                        RequiresDuplicateDetection = true
                     });
-
-                    processor.ProcessMessageAsync += async (x) =>
-                    {
-                        using var scope = _scopeFactory.CreateScope();
-                        var message = JsonSerializer.Deserialize(x.Message.Body.ToArray(), messageType);
-                        var context = new MessageContext(_serviceBusClient)
-                        {
-                            MessageId = x.Message.MessageId,
-                            ReplyTo = x.Message.ReplyTo
-                        };
-
-                        var handler = scope.ServiceProvider.GetRequiredService(handlerInterface);
-                        var handleMethod = handler.GetType().GetMethod("HandleAsync");
-                        var task = (Task)handleMethod.Invoke(handler, new object[] { message, context });
-                        await task;
-                    };
-
-                    processor.ProcessErrorAsync += (x) =>
-                    {
-                        _logger.LogError(x.Exception, $"Failed to process service bus message (source: {x.ErrorSource}, queue: {x.EntityPath}, type: {messageType}, handler: {handlerInterface})");
-                        return Task.CompletedTask;
-                    };
-
-                    processors.Add(processor);
                 }
+            }
+        }
+
+        private async Task CreateMissingTopicSubscriptionsAsync(IDictionary<Type, Type> handlerMappings)
+        {
+            foreach (var handlerMapping in handlerMappings)
+            {
+                var handlerInterface = handlerMapping.Key;
+                var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
+                if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)) || messageType.GetCustomAttribute<TopicAttribute>() == null)
+                {
+                    continue; // this is not a topic message
+                }
+
+                var topicSubscriptionExists = await _serviceBusAdministrationClient.SubscriptionExistsAsync(messageType);
+                if (!topicSubscriptionExists)
+                {
+                    await _serviceBusAdministrationClient.CreateSubscriptionAsync(messageType, options =>
+                    {
+                        options.AutoDeleteOnIdle = TimeSpan.FromDays(7); // auto-delete if no messages for 7 days
+                    });
+                }
+            }
+        }
+
+        private async Task StartMessageProcessorsAsync(IDictionary<Type, Type> handlerMappings)
+        {
+            var processors = new List<ServiceBusProcessor>();
+            foreach (var handlerMapping in handlerMappings)
+            {
+                var handlerInterface = handlerMapping.Key;
+                var handlerType = handlerMapping.Value;
+                var messageType = handlerInterface.GenericTypeArguments.FirstOrDefault();
+                if (messageType == null || !messageType.IsAssignableTo(typeof(IMessage)))
+                {
+                    continue; // this is not a valid message handler
+                }
+
+                var processor = _serviceBusClient.CreateProcessor(messageType, new ServiceBusProcessorOptions()
+                {
+                    PrefetchCount = handlerType.GetCustomAttribute<PrefetchAttribute>()?.PrefetchCount ?? 0,
+                    MaxConcurrentCalls = handlerType.GetCustomAttribute<ConcurrencyAttribute>()?.MaxConcurrentCalls ?? 1
+                });
+
+                processor.ProcessMessageAsync += ProcessMessageAsync;
+                processor.ProcessErrorAsync += ProcessErrorAsync;
+                processors.Add(processor);
             }
 
             await Task.WhenAll(processors.Select(x => x.StartProcessingAsync()));
@@ -191,7 +174,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
             }
         }
 
-        private async Task StopMessageProcessors()
+        private async Task StopMessageProcessorsAsync()
         {
             IList<ServiceBusProcessor> processors;
             lock (_serviceBusProcessors)
@@ -201,6 +184,55 @@ namespace SCMM.Azure.ServiceBus.Middleware
             }
 
             await Task.WhenAll(processors.Select(x => x.StopProcessingAsync()));
+        }
+
+        private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
+        {
+            var context = new MessageContext(_serviceBusClient)
+            {
+                MessageId = args.Message.MessageId,
+                MessageType = Type.GetType((string) args.Message.ApplicationProperties.GetValueOrDefault(IMessage.ApplicationPropertyType, typeof(IMessage).AssemblyQualifiedName)),
+                ReplyTo = args.Message.ReplyTo
+            };
+
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var message = JsonSerializer.Deserialize(args.Message.Body.ToArray(), context.MessageType);
+                var handlerType = typeof(IMessageHandler<>).MakeGenericType(context.MessageType);
+                if (handlerType == null)
+                {
+                    throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler type not found ");
+                }
+
+                var handlerInstance = scope.ServiceProvider.GetService(handlerType);
+                if (handlerInstance == null)
+                {
+                    throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler cannot be instantiated");
+                }
+
+                var handlerMethod = handlerInstance.GetType().GetMethod("HandleAsync");
+                if (handlerMethod == null)
+                {
+                    throw new Exception($"Unable to process service bus message (id: {args.Message.MessageId}), handler method not found");
+                }
+
+                var task = (Task)handlerMethod.Invoke(
+                    handlerInstance,
+                    new object[]
+                    {
+                    message,
+                    context
+                    }
+                );
+
+                await task;
+            }
+        }
+
+        private Task ProcessErrorAsync(ProcessErrorEventArgs args)
+        {
+            _logger.LogError(args.Exception, $"Error while processing service bus message (id: {args.Identifier}, namespace: {args.FullyQualifiedNamespace}, entityPath: {args.EntityPath}, source: {args.ErrorSource})");
+            return Task.CompletedTask;
         }
     }
 
