@@ -23,7 +23,7 @@
                     </MudHidden>
                 }
                 <MudAvatar Image="@(State.Profile?.AvatarUrl ?? "/images/steam_default_avatar.png")" Color="@MudBlazor.Color.Secondary" Variant="@MudBlazor.Variant.Outlined" Size="@MudBlazor.Size.Medium" Style="height:2rem; width:2rem;" 
-                           title="@(State.IsAuthenticated ? "Your profile" : "Sign in through Steam")" />
+                           title="@(State.IsAuthenticated ? "Your profile" : "Anonymous user")" />
             </div>
         </ActivatorContent>
         <ChildContent>

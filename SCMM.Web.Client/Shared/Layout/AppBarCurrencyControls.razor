@@ -10,7 +10,7 @@
     <div @attributes="AdditionalAttributes">
         <MudMenu ActivationEvent="@MouseEvent.LeftClick" Direction="MudBlazor.Direction.Bottom" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" MaxHeight="500" Disabled="State.IsPrerendering" title="Change the currency">
             <ActivatorContent>
-                <MudButton StartIcon="fas fa-fw fa-coins" Size="MudBlazor.Size.Medium" Disabled="State.IsPrerendering">@State.CurrencyId</MudButton>
+                <MudButton Size="MudBlazor.Size.Large" Disabled="State.IsPrerendering">@State.CurrencyId</MudButton>
             </ActivatorContent>
             <ChildContent>
                 @foreach (var currency in Currencies)

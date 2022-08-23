@@ -707,6 +707,15 @@
             <response code="404">If the request app cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.SystemController.GetLatestChanges">
+            <summary>
+            Get most recent system change messages
+            </summary>
+            <returns>The most recent system change messages</returns>
+            <response code="200">The most recent system change messages</response>
+            <response code="404">If the request app cannot be found.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.Controllers.AuthenticationController.SignIn(System.String)">
             <summary>
             Sign-in via Steam OpenId

@@ -19,8 +19,9 @@
             <MudProgressCircular Indeterminate="true" Size="Size.Small" class="ml-2" />
         }
         <MudSpacer />
-        <AppBarRuntimeControls class="d-flex mx-1" />
         <AppBarCurrencyControls class="d-flex mx-1" />
+        @*<AppBarRuntimeControls class="d-flex mx-1" />*@
+        <AppBarNotificationControls class="d-flex mx-1" />
         <AppBarProfileControls />
     </MudAppBar>
     <MudDrawer @bind-Open="DrawerIsOpen" @bind-Variant="DrawerVariant" OpenMiniOnHover="true" ClipMode="DrawerClipMode.Always" Breakpoint="Breakpoint.Md" Elevation="2">
