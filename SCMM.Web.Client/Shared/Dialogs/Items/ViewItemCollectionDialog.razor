@@ -24,7 +24,7 @@
                 <div class="ml-4">
                     <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@Collection.Name Collection</MudText>
                     <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
-                        <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
+                        <span>There are <strong>@(Collection.AcceptedItems?.Count ?? 0) accepted items</strong> in this collection.</span>
                     </MudText>
                     @if(Collection.BuyNowPrice > 0)
                     {
@@ -73,11 +73,32 @@
         {
             <div class="py-4">
                 <MudGrid>
-                    @foreach (var item in GetSortedItems(Collection.Items))
+                    @if (Collection.AcceptedItems?.Any() == true)
                     {
-                        <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
-                            <ItemDescriptionSummary Item="@item" />
+                        @foreach (var item in GetSortedItems(Collection.AcceptedItems, SortBy, SortDirection))
+                        {
+                            <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
+                                <ItemDescriptionSummary Item="@item" />
+                            </MudItem>
+                        }
+                    }
+                    @if (Collection.UnacceptedItems?.Any() == true)
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Color="Color.Default">
+                                <span>Workshop submissions from the collection</span>
+                            </MudText>
+                            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                                <span>There are <strong>@(Collection.UnacceptedItems?.Count ?? 0) unaccepted items</strong> from this collection still in the workshop.</span>
+                            </MudText>
+                            <MudDivider />
                         </MudItem>
+                        @foreach (var item in GetSortedItems(Collection.UnacceptedItems, nameof(IItemDescription.TimeCreated), Data.Models.SortDirection.Descending))
+                        {
+                            <MudItem xs="6" sm="4" md="3" lg="2" xl="2">
+                                <ItemDescriptionSummary Item="@item" />
+                            </MudItem>
+                        }
                     }
                 </MudGrid>
             </div>
@@ -132,11 +153,11 @@
         StateHasChanged();
     }
 
-    private IEnumerable<ItemDescriptionWithPriceDTO> GetSortedItems(IEnumerable<ItemDescriptionWithPriceDTO> items)
+    private IEnumerable<T> GetSortedItems<T>(IEnumerable<T> items, string sortBy, Data.Models.SortDirection sortDirection) where T : IItemDescription
     {
-        if (!String.IsNullOrEmpty(SortBy))
+        if (!String.IsNullOrEmpty(sortBy))
         {
-            items = items.AsQueryable().SortBy(SortBy, SortDirection);
+            items = items.AsQueryable().SortBy(sortBy, sortDirection);
         }
 
         return items;

@@ -536,8 +536,30 @@ namespace SCMM.Web.Server.API.Controllers
                 return NotFound("Collection does not exist");
             }
 
-            var assetDetails = _mapper.Map<List<SteamAssetDescription>, ItemCollectionDTO>(assetDescriptions, this);
-            return Ok(assetDetails);
+            var workshopFiles = await _db.SteamWorkshopFiles.AsNoTracking()
+                .Where(x => x.AppId == appId)
+                .Where(x => x.ItemCollection == name)
+                .Where(x => x.DescriptionId == null)
+                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()))
+                .Include(x => x.App)
+                .Include(x => x.CreatorProfile)
+                .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
+                .ToListAsync();
+
+            var creator = assetDescriptions
+                .Where(x => x.CreatorProfile != null)
+                .GroupBy(x => x.CreatorProfile)
+                .FirstOrDefault();
+
+            return Ok(new ItemCollectionDTO()
+            {
+                Name = name,
+                CreatorName = creator?.Key.Name,
+                CreatorAvatarUrl = creator?.Key.AvatarUrl,
+                BuyNowPrice = assetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency()).Price),
+                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(assetDescriptions, this),
+                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWorkshopFileDTO>(workshopFiles, this)
+            });
         }
 
         /// <summary>

@@ -20,6 +20,8 @@
 
         public string IconUrl { get; }
 
+        public DateTimeOffset? TimeCreated { get; set; }
+
         public DateTimeOffset? TimeAccepted { get; set; }
     }
 }

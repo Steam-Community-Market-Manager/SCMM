@@ -941,9 +941,9 @@
                                         </Syncfusion.Blazor.Charts.ChartSeries>
                                     </ChartSeriesCollection>
                                     <ChartAnnotations>
-                                        @if (MarketItemSalesAnnotations && Collection?.Items?.Any() == true)
+                                        @if (MarketItemSalesAnnotations && Collection?.AcceptedItems?.Any() == true)
                                         {
-                                            @foreach (var itemGroup in Collection.Items.Where(x => x.TimeAccepted != null && MarketItemSalesChartData.Any(y => DateTime.Equals(y.Date, x.TimeAccepted.Value.Date))).GroupBy(x => x.TimeAccepted.Value.Date))
+                                            @foreach (var itemGroup in Collection.AcceptedItems.Where(x => x.TimeAccepted != null && MarketItemSalesChartData.Any(y => DateTime.Equals(y.Date, x.TimeAccepted.Value.Date))).GroupBy(x => x.TimeAccepted.Value.Date))
                                             {
                                                 <ChartAnnotation YAxisName="PriceAxis" X="@MarketItemSalesChartData.FirstOrDefault(x => DateTime.Equals(x.Date, itemGroup.Key))?.Date" Y="@MarketItemSalesChartData.FirstOrDefault(x => DateTime.Equals(x.Date, itemGroup.Key))?.Median.ToString()" CoordinateUnits="Units.Point" Region="Regions.Series">
                                                     <ContentTemplate>
@@ -1042,7 +1042,7 @@
                                 <div class="ml-4">
                                     <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@Collection.Name Collection</MudText>
                                     <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
-                                        <span>There are <strong>@(Collection.Items?.Count ?? 0) items</strong> in this collection.</span>
+                                        <span>There are <strong>@(Collection.AcceptedItems?.Count ?? 0) items</strong> in this collection.</span>
                                     </MudText>
                                     @if(Collection.BuyNowPrice > 0)
                                     {
@@ -1053,7 +1053,7 @@
                                 </div>
                             </div>
                             <MudGrid Class="mt-1">
-                                @foreach (var item in Collection.Items)
+                                @foreach (var item in Collection.AcceptedItems)
                                 {
                                     <MudItem xs="6" sm="4" md="3" lg="3" xl="2">
                                         <ItemDescriptionSummary Item="@item" Dense="true" />

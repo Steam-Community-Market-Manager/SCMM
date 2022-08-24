@@ -1,7 +1,110 @@
-﻿namespace SCMM.Steam.Data.Models.Extensions
+﻿
+namespace SCMM.Steam.Data.Models.Extensions
 {
     public static class RustExtensions
     {
+        public static string WorkshopTagToRustItemType(this string workshopTag)
+        {
+            switch (workshopTag)
+            {
+                case "Bandana": return "Bandana Mask";
+                case "Balaclava": return "Improvised Balaclava";
+                case "Beenie Hat": return "Beenie Hat";
+                case "Burlap Shoes": return "Burlap Shoes";
+                case "Burlap Shirt": return "Burlap Shirt";
+                case "Burlap Pants": return "Burlap Trousers";
+                case "Burlap Headwrap": return "Burlap Headwrap";
+                case "Bucket Helmet": return "Bucket Helmet";
+                case "Boonie Hat": return "Boonie Hat";
+                case "Cap": return "Baseball Cap";
+                case "Collared Shirt": return "Shirt";
+                case "Coffee Can Helmet": return "Coffee Can Helmet";
+                case "Deer Skull Mask": return "Bone Helmet";
+                case "Hide Skirt": return "Hide Skirt";
+                case "Hide Shirt": return "Hide Vest";
+                case "Hide Pants": return "Hide Pants";
+                case "Hide Shoes": return "Hide Boots";
+                case "Hide Halterneck": return "Hide Halterneck";
+                case "Hoodie": return "Hoodie";
+                case "Hide Poncho": return "Hide Poncho";
+                case "Leather Gloves": return "Leather Gloves";
+                case "Long TShirt": return "Longsleeve T-Shirt";
+                case "Metal Chest Plate": return "Metal Chest Plate";
+                case "Metal Facemask": return "Metal Facemask";
+                case "Miner Hat": return "Miners Hat";
+                case "Pants": return "Pants";
+                case "Roadsign Vest": return "Road Sign Jacket";
+                case "Roadsign Pants": return "Road Sign Kilt";
+                case "Riot Helmet": return "Riot Helmet";
+                case "Snow Jacket": return "Snow Jacket";
+                case "Shorts": return "Shorts";
+                case "Tank Top": return "Tank Top";
+                case "TShirt": return "T-Shirt";
+                case "Vagabond Jacket": return "Jacket";
+                case "Work Boots": return "Boots";
+                case "AK47": return "Assault Rifle";
+                case "Bolt Rifle": return "Bolt Action Rifle";
+                case "Bone Club": return "Bone Club";
+                case "Bone Knife": return "Bone Knife";
+                case "Crossbow": return "Crossbow";
+                case "Double Barrel Shotgun": return "Double Barrel Shotgun";
+                case "Eoka Pistol": return "Eoka Pistol";
+                case "F1 Grenade": return "F1 Grenade";
+                case "Longsword": return "Longsword";
+                case "Mp5": return "MP5A4";
+                case "Pump Shotgun": return "Pump Shotgun";
+                case "Rock": return "Rock";
+                case "Salvaged Icepick": return "Salvaged Icepick";
+                case "Satchel Charge": return "Satchel Charge";
+                case "Semi - Automatic Pistol": return "Semi-Automatic Pistol";
+                case "Stone Hatchet": return "Stone Hatchet";
+                case "Stone Pick Axe": return "Stone Pickaxe";
+                case "Sword": return "Salvaged Sword";
+                case "Thompson": return "Thompson";
+                case "Hammer": return "Hammer";
+                case "Hatchet": return "Hatchet";
+                case "Pick Axe": return "Pickaxe";
+                case "Revolver": return "Revolver";
+                case "Rocket Launcher": return "Rocket Launcher";
+                case "Semi - Automatic Rifle": return "Semi-Automatic Rifle";
+                case "Waterpipe Shotgun": return "Waterpipe Shotgun";
+                case "Custom SMG": return "Custom SMG";
+                case "Python": return "Python Revolver";
+                case "LR300": return "LR300";
+                case "Combat Knife": return "Combat Knife";
+                case "Concrete Barricade": return "Concrete Barricade";
+                case "Large Wood Box": return "Large Wood Box";
+                case "Reactive Target": return "Reactive Target";
+                case "Sandbag Barricade": return "Sandbag Barricade";
+                case "Sleeping Bag": return "Sleeping Bag";
+                case "Water Purifier": return "Water Purifier";
+                case "Wood Storage Box": return "Wood Storage Box";
+                case "Acoustic Guitar": return "Acoustic Guitar";
+                case "Armored Door": return "Armored Door";
+                case "Armored Double Door": return "Armored Double Door";
+                case "Chair": return "Chair";
+                case "Fridge": return "Fridge";
+                case "Furnace": return "Furnace";
+                case "Garage Door": return "Garage Door";
+                case "Hunting Bow": return "Hunting Bow";
+                case "Jackhammer": return "Jackhammer";
+                case "L96": return "L96 Rifle";
+                case "Locker": return "Locker";
+                case "M249": return "M249";
+                case "M39": return "M39 Rifle";
+                case "Roadsign Gloves": return "Roadsign Gloves";
+                case "Rug": return "Rug";
+                case "Bearskin Rug": return "Rug Bear Skin";
+                case "Sheet Metal Door": return "Sheet Metal Door";
+                case "Sheet Metal Double Door": return "Sheet Metal Double Door";
+                case "Table": return "Table";
+                case "Vending Machine": return "Vending Machine";
+                case "Wood Double Door": return "Wood Double Door";
+                case "Wooden Door": return "Wooden Door";
+                default: return workshopTag;
+            }
+        }
+
         public static string ToRustItemShortName(this string itemType)
         {
             switch (itemType)

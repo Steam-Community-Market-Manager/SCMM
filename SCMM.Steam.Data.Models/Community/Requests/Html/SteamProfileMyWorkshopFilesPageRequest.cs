@@ -6,8 +6,12 @@
 
         public string AppId { get; set; }
 
+        public int Page { get; set; } = 1;
+
+        public int NumberPerPage { get; set; } = 30;
+
         public override Uri Uri => new Uri(
-            $"{Constants.SteamCommunityUrl}/profiles/{Uri.EscapeDataString(SteamId)}/myworkshopfiles/?appid={Uri.EscapeDataString(AppId)}"
+            $"{Constants.SteamCommunityUrl}/profiles/{Uri.EscapeDataString(SteamId)}/myworkshopfiles/?appid={Uri.EscapeDataString(AppId)}&p={Page}&numperpage={NumberPerPage}"
         );
     }
 }

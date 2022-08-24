@@ -5,28 +5,28 @@
 <MudMenu ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="full-height d-flex flex-column" PopoverClass="mud-paper mud-paper-outlined my-1" ListClass="ma-0 pa-0" FullWidth="true" Dense="true" OffsetY Disabled="State.IsPrerendering">
     <ActivatorContent>
         <div class="@($"item {GetDynamicClassNames()} mud-paper full-height d-flex flex-column")" @onclick="@(() => OnItemClicked())" @attributes="@AdditionalAttributes">
-            @if (PurchasableItem.BuyNowFrom == MarketType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)
+            @if (PurchasableItem != null && PurchasableItem.BuyNowFrom == MarketType.SteamStore && Item.TimeAccepted != null && (DateTimeOffset.Now - Item.TimeAccepted.Value).Duration().TotalDays < 7)
             {
                 <MudBadge Color="MudBlazor.Color.Tertiary" Content="@("New")" Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
                     <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                        <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
+                        <img src="@Item.IconUrl" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
                     </div>
                 </MudBadge>
             }
-            else if (PurchasableItem.BuyNowFrom != MarketType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
+            else if (PurchasableItem != null && PurchasableItem.BuyNowFrom != MarketType.SteamStore && PurchasableItem.BuyNowPrice > 0 && PurchasableItem.OriginalPrice > 0 && (State.Profile.ItemInfo == null || State.Profile.ItemInfo.Any(x => x == ItemInfoType.StorePrice)))
             {
                 <MudBadge Color="@((PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice) ? MudBlazor.Color.Success : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? MudBlazor.Color.Error : MudBlazor.Color.Secondary)" 
                           Content="@($"{(PurchasableItem.BuyNowPrice > PurchasableItem.OriginalPrice ? "▲" : PurchasableItem.BuyNowPrice < PurchasableItem.OriginalPrice ? "▼" : String.Empty)} {PurchasableItem.BuyNowPrice.Value.ToMovementString(PurchasableItem.OriginalPrice.Value)}")" 
                           Overlap="true" Bordered="false" Origin="Origin.BottomCenter" Class="d-flex flex-grow-1">
                     <div class="d-flex flex-grow-1 align-center justify-center hover-zoom">
-                        <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
+                        <img src="@Item.IconUrl" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
                     </div>
                 </MudBadge>
             }
             else
             {
                 <div class="d-flex flex-grow-1 justify-center align-center hover-zoom">
-                    <img src="@Item.IconUrl" class="@($"{GetGlowClass()} icon full-width")" style="@GetGlowStyles()" />
+                    <img src="@Item.IconUrl" class="@($"{GetImageClass()} icon full-width")" style="@GetImageStyles()" />
                 </div>
             }
             <div class="ma-2 d-flex flex-column justify-center align-center text-centered">
@@ -93,6 +93,30 @@
                             </MudText>
                         </MudTooltip>
                     }
+                    @if (Item.TimeAccepted == null && Item.TimeCreated != null)
+                    {
+                        <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="d-flex no-wrap">
+                            <img src="@($"/images/app/{State.AppId}/items/{Item.ItemType.ToRustItemShortName()}.png")" class="mr-1" style="width:1.5em;height:1.5em" />
+                            <span>@Item.ItemType</span>
+                        </MudText>
+                        <MudTooltip Text="Time Published">
+                            <MudText Typo="MudBlazor.Typo.body2" Color="MudBlazor.Color.Secondary" Class="no-wrap">
+                                <i class="fas fa-fw fa-clock"></i>
+                                <span>@Item.TimeCreated.Value.Date.ToShortDateString()</span>
+                            </MudText>
+                        </MudTooltip>
+                        <MudChip Variant="Variant.Filled" Color="@((DateTimeOffset.Now - Item.TimeCreated) <= TimeSpan.FromDays(21) ? MudBlazor.Color.Tertiary : MudBlazor.Color.Secondary)" Size="Size.Small">
+                            @if ((DateTimeOffset.Now - Item.TimeCreated) <= TimeSpan.FromDays(21))
+                            {
+                                <i class="fas fa-fw fa-question"></i>
+                                <span>Awaiting Acceptance</span>
+                            }
+                            else
+                            {
+                                <span>Not Accepted</span>
+                            }
+                        </MudChip>
+                    }
                 }
             </div>
         </div>
@@ -113,27 +137,27 @@
 
 @code {
 
-    [Parameter]
-    public bool Highlighted { get; set; }
-    
-    [Parameter]
-    public bool Dense { get; set; }
+        [Parameter]
+        public bool Highlighted { get; set; }
 
-    [Parameter]
-    public IItemDescription Item { get; set; }
+        [Parameter]
+        public bool Dense { get; set; }
+
+        [Parameter]
+        public IItemDescription Item { get; set; }
 
     private ICanBePurchased PurchasableItem => (Item as ICanBePurchased);
-    
+
     private ICanBeOwned OwnableItem => (Item as ICanBeOwned);
 
     private ItemInteractionDTO[] Actions => (Item as ICanBeInteractedWith)?.Actions;
-    
+
     [Parameter]
     public Action<IItemDescription> OnClick { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; }
-    
+
     private string GetDynamicClassNames()
     {
         var classNames = new List<string>();
@@ -147,33 +171,41 @@
         }
         return String.Join(' ', classNames);
     }
-    
-    private string GetGlowClass()
+
+    private string GetImageClass()
     {
+        var classes = new List<string>();
+        if (Item.TimeAccepted == null && Item.TimeCreated != null)
+        {
+            classes.Add("rounded-pill");
+        }
         if (Item.HasGlow == true)
         {
             if (!String.IsNullOrEmpty(Item.DominantColour))
             {
-                return $"glow-transparent";
+                 classes.Add("glow-transparent");
             }
             else
             {
-                return $"glow";
+                classes.Add("glow");
             }
         }
-        return null;
+
+        return String.Join(" ", classes);
     }
 
-    private string GetGlowStyles()
+    private string GetImageStyles()
     {
+        var styles = new List<string>();
         if (Item.HasGlow == true)
         {
             if (!String.IsNullOrEmpty(Item.DominantColour))
             {
-                return $"filter: drop-shadow(0px 0px 16px {Item.DominantColour});";
+                styles.Add($"filter: drop-shadow(0px 0px 16px {Item.DominantColour})");
             }
         }
-        return null;
+
+        return String.Join("; ", styles);
     }
     
     private void OnItemClicked()

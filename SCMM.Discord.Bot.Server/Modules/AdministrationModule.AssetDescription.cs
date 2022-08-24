@@ -8,7 +8,11 @@ using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using SCMM.Steam.Data.Store;
+using SteamWebAPI2.Interfaces;
+using SteamWebAPI2.Utilities;
 using System.Text.RegularExpressions;
+using static Azure.Core.HttpHeader;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {
@@ -115,6 +119,108 @@ namespace SCMM.Discord.Bot.Server.Modules
 
             await message.ModifyAsync(
                 x => x.Content = $"Imported {names.Length}/{names.Length} asset descriptions"
+            );
+
+            return CommandResult.Success();
+        }
+
+        [Command("import-item-collection-workshop-files")]
+        public async Task<RuntimeResult> MissingWorkshopFiles(string name)
+        {
+            var message = await Context.Message.ReplyAsync("Importing item collection workshop files...");
+            var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamCfg.ApplicationKey);
+            var steamRemoteStorage = steamWebInterfaceFactory.CreateSteamWebInterface<SteamRemoteStorage>();
+
+            var apps = await _steamDb.SteamApps.ToListAsync();
+            var itemCollections = await _steamDb.SteamAssetDescriptions
+                .Where(x => !String.IsNullOrEmpty(x.ItemCollection) && x.CreatorId != null)
+                .Where(x => !x.ItemCollection.Contains("Twitch") && !x.ItemCollection.Contains("Charitable Rust"))
+                .Where(x => String.IsNullOrEmpty(name) || x.ItemCollection.Contains(name))
+                .GroupBy(x => new { x.AppId, x.CreatorId, x.ItemCollection })
+                .Select(x => x.Key)
+                .ToArrayAsync();
+
+            foreach (var itemCollection in itemCollections)
+            {
+                await message.ModifyAsync(
+                    x => x.Content = $"Importing workshop files for item collection '{itemCollection.ItemCollection}' ({Array.IndexOf(itemCollections, itemCollection) + 1}/{itemCollections.Length})..."
+                );
+
+                var app = apps.FirstOrDefault(x => x.Id == itemCollection.AppId);
+                var publishedFileIds = new List<ulong>();
+                var workshopHtml = await _communityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                {
+                    SteamId = itemCollection.CreatorId.ToString(),
+                    AppId = app.SteamId
+                });
+
+                // Get workshop file ids
+                var paginingControls = workshopHtml.Descendants("div").FirstOrDefault(x => x.Attribute("class")?.Value == "workshopBrowsePagingControls");
+                var lastPageLink = paginingControls?.Descendants("a").LastOrDefault(x => x.Attribute("class")?.Value == "pagelink");
+                var pages = int.Parse(lastPageLink?.Value ?? "1");
+                for (int page = 1; page <= pages; page++)
+                {
+                    if (page != 1)
+                    {
+                        workshopHtml = await _communityClient.GetHtml(new SteamProfileMyWorkshopFilesPageRequest()
+                        {
+                            SteamId = itemCollection.CreatorId.ToString(),
+                            AppId = app.SteamId,
+                            Page = page
+                        });
+                    }
+
+                    var workshopItems = workshopHtml.Descendants("div").Where(x => x.Attribute("class")?.Value == "workshopItem").ToList();
+                    foreach (var workshopItem in workshopItems)
+                    {
+                        var workshopItemLink = workshopItem.Descendants("a").FirstOrDefault();
+                        publishedFileIds.Add(UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid")?.Value));
+                    }
+                }
+
+                // Get workshop file details
+                var publishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(publishedFileIds);
+                if (publishedFileDetails?.Data != null)
+                {
+                    var itemCollectionWords = itemCollection.ItemCollection.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    var collectionPublishedFiles = publishedFileDetails.Data
+                        .Where(x => itemCollectionWords.All(w => x.Title.Contains(w, StringComparison.InvariantCultureIgnoreCase)))
+                        .ToList();
+
+                    if (collectionPublishedFiles.Any())
+                    {
+                        foreach (var collectionPublishedFile in collectionPublishedFiles)
+                        {
+                            var assetDescription = await _steamDb.SteamAssetDescriptions.FirstOrDefaultAsync(x => x.WorkshopFileId == collectionPublishedFile.PublishedFileId);
+                            var workshopFile = await _steamDb.SteamWorkshopFiles.FirstOrDefaultAsync(x => x.SteamId == collectionPublishedFile.PublishedFileId.ToString());
+                            workshopFile = workshopFile ?? new SteamWorkshopFile()
+                            {
+                                AppId = app.Id,
+                                DescriptionId = assetDescription?.Id,
+                                CreatorId = itemCollection.CreatorId,
+                                ItemCollection = itemCollection.ItemCollection
+                            };
+
+                            var updatedWorkshopItem = await _commandProcessor.ProcessAsync(new UpdateSteamWorkshopFileRequest()
+                            {
+                                WorkshopFile = workshopFile,
+                                PublishedFile = collectionPublishedFile,
+                                AssetDescription = assetDescription
+                            });
+
+                            if (workshopFile.IsTransient)
+                            {
+                                _steamDb.SteamWorkshopFiles.Add(workshopFile);
+                            }
+                        }
+                    }
+                }
+
+                await _steamDb.SaveChangesAsync();
+            }
+
+            await message.ModifyAsync(
+                x => x.Content = $"Imported {itemCollections.Length}/{itemCollections.Length} item collection workshop files"
             );
 
             return CommandResult.Success();

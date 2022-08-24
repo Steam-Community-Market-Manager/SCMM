@@ -22,6 +22,7 @@ namespace SCMM.Discord.Bot.Server.Modules
     {
         private readonly DiscordDbContext _discordDb;
         private readonly SteamDbContext _steamDb;
+        private readonly SteamConfiguration _steamCfg;
         private readonly SteamCommunityWebClient _communityClient;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
@@ -30,10 +31,11 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly GoogleClient _googleClient;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, GoogleClient googleClient, CommandService commandService)
+        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, GoogleClient googleClient, CommandService commandService)
         {
             _discordDb = discordDb;
             _steamDb = steamDb;
+            _steamCfg = steamCfg;
             _communityClient = communityClient;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;

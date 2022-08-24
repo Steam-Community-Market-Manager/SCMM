@@ -204,6 +204,7 @@ namespace SCMM.Steam.API.Commands
                 assetDescription.FavouritedCurrent = (long?)publishedFile.Favorited;
                 assetDescription.FavouritedLifetime = (long?)publishedFile.LifetimeFavorited;
                 assetDescription.Views = (long?)publishedFile.Views;
+                assetDescription.IsAccepted = (assetDescription.IsAccepted | (publishedFile.LifetimeSubscriptions > 0));
                 assetDescription.TimeCreated = assetDescription.TimeCreated.Earliest(publishedFile.TimeCreated > DateTime.MinValue ? publishedFile.TimeCreated : null);
                 assetDescription.TimeUpdated = assetDescription.TimeUpdated.Latest(publishedFile.TimeUpdated > DateTime.MinValue ? publishedFile.TimeUpdated : null);
 

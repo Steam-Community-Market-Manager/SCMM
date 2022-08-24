@@ -10,6 +10,8 @@
 
         public long? BuyNowPrice { get; set; }
 
-        public IList<ItemDescriptionWithPriceDTO> Items { get; set; }
+        public IList<ItemDescriptionWithPriceDTO> AcceptedItems { get; set; }
+
+        public IList<ItemDescriptionWorkshopFileDTO> UnacceptedItems { get; set; }
     }
 }
