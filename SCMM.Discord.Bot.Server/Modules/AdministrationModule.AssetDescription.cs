@@ -125,7 +125,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         }
 
         [Command("import-item-collection-workshop-files")]
-        public async Task<RuntimeResult> MissingWorkshopFiles(string name)
+        public async Task<RuntimeResult> MissingWorkshopFiles([Remainder] string collectionName)
         {
             var message = await Context.Message.ReplyAsync("Importing item collection workshop files...");
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_steamCfg.ApplicationKey);
@@ -135,7 +135,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var itemCollections = await _steamDb.SteamAssetDescriptions
                 .Where(x => !String.IsNullOrEmpty(x.ItemCollection) && x.CreatorId != null)
                 .Where(x => !x.ItemCollection.Contains("Twitch") && !x.ItemCollection.Contains("Charitable Rust"))
-                .Where(x => String.IsNullOrEmpty(name) || x.ItemCollection.Contains(name))
+                .Where(x => String.IsNullOrEmpty(collectionName) || x.ItemCollection.Contains(collectionName))
                 .GroupBy(x => new { x.AppId, x.CreatorId, x.ItemCollection })
                 .Select(x => x.Key)
                 .ToArrayAsync();
@@ -201,6 +201,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                                 ItemCollection = itemCollection.ItemCollection
                             };
 
+                            workshopFile.ItemCollection = itemCollection.ItemCollection;
                             var updatedWorkshopItem = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamWorkshopFileRequest()
                             {
                                 WorkshopFile = workshopFile,
@@ -238,7 +239,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             var assetDescriptions = await query.ToListAsync();
             foreach (var assetDescriptionGroup in assetDescriptions.GroupBy(x => x.CreatorId))
             {
-                if (assetDescriptionGroup.Count() > 1)
+                if (assetDescriptionGroup.All(x => (x.ItemCollection?.Length ?? 0) < collectionName.Length))
                 {
                     foreach (var assetDescription in assetDescriptionGroup)
                     {
