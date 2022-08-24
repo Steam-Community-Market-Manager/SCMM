@@ -44,7 +44,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<UpdateSteamWorkshopFileResponse> HandleAsync(UpdateSteamWorkshopFileRequest request, CancellationToken cancellationToken)
+        public async Task<UpdateSteamWorkshopFileResponse> HandleAsync(UpdateSteamWorkshopFileRequest request)
         {
             var steamWebInterfaceFactory = new SteamWebInterfaceFactory(_cfg.ApplicationKey);
             var workshopFile = request.WorkshopFile;
@@ -76,7 +76,7 @@ namespace SCMM.Steam.API.Commands
                 {
                     try
                     {
-                        var importedProfile = await _commandProcessor.ProcessAsync(
+                        var importedProfile = await _commandProcessor.ProcessWithResultAsync(
                             new ImportSteamProfileRequest()
                             {
                                 ProfileId = publishedFile.Creator.ToString()

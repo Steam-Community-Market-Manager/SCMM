@@ -201,7 +201,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                                 ItemCollection = itemCollection.ItemCollection
                             };
 
-                            var updatedWorkshopItem = await _commandProcessor.ProcessAsync(new UpdateSteamWorkshopFileRequest()
+                            var updatedWorkshopItem = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamWorkshopFileRequest()
                             {
                                 WorkshopFile = workshopFile,
                                 PublishedFile = collectionPublishedFile,
