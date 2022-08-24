@@ -21,7 +21,7 @@ namespace SCMM.Discord.API.Commands
             _client = client;
         }
 
-        public async Task<GetMessagesResponse> HandleAsync(GetMessagesRequest request, CancellationToken cancellationToken)
+        public async Task<GetMessagesResponse> HandleAsync(GetMessagesRequest request)
         {
             return await _client.SendMessageAndAwaitReplyAsync<DiscordGetMessages, GetMessagesResponse>(request);
         }

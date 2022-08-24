@@ -44,7 +44,7 @@ namespace SCMM.Steam.API.Commands
             _imagesStorageUrl = configuration.GetDataStoreUrl();
         }
 
-        public async Task<UploadImageToBlobStorageResponse> HandleAsync(UploadImageToBlobStorageRequest request, CancellationToken cancellationToken)
+        public async Task<UploadImageToBlobStorageResponse> HandleAsync(UploadImageToBlobStorageRequest request)
         {
             if (string.IsNullOrEmpty(request.Name))
             {

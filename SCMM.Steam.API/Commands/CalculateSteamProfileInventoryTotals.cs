@@ -46,7 +46,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<CalculateSteamProfileInventoryTotalsResponse> HandleAsync(CalculateSteamProfileInventoryTotalsRequest request, CancellationToken cancellationToken)
+        public async Task<CalculateSteamProfileInventoryTotalsResponse> HandleAsync(CalculateSteamProfileInventoryTotalsRequest request)
         {
             // Resolve the id
             var resolvedId = await _queryProcessor.ProcessAsync(new ResolveSteamIdRequest()

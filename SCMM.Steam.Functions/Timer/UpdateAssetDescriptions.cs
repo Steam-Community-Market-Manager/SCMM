@@ -49,7 +49,7 @@ public class UpdateAssetDescriptions
         {
             try
             {
-                await _commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
+                await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = ulong.Parse(assetDescription.AppId),
                     AssetClassId = assetDescription.ClassId.Value

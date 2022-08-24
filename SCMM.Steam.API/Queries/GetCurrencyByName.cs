@@ -25,7 +25,7 @@ namespace SCMM.Steam.API.Queries
             _db = db;
         }
 
-        public async Task<GetCurrencyByNameResponse> HandleAsync(GetCurrencyByNameRequest request, CancellationToken cancellationToken)
+        public async Task<GetCurrencyByNameResponse> HandleAsync(GetCurrencyByNameRequest request)
         {
             var currency = (SteamCurrency)null;
             var currencies = await _db.SteamCurrencies.AsNoTracking().ToListAsync();

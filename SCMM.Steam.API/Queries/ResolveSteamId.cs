@@ -32,7 +32,7 @@ namespace SCMM.Steam.API.Queries
             _db = db;
         }
 
-        public async Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request, CancellationToken cancellationToken)
+        public async Task<ResolveSteamIdResponse> HandleAsync(ResolveSteamIdRequest request)
         {
             SteamProfile profile = null;
             var profileId = Guid.Empty;

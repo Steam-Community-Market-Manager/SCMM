@@ -101,7 +101,7 @@ public class CheckForNewItemDefinitions
                             );
                             if (assetDescription == null)
                             {
-                                var newAssetDescription = await _commandProcessor.ProcessAsync(new ImportSteamItemDefinitionRequest()
+                                var newAssetDescription = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionRequest()
                                 {
                                     AppId = UInt64.Parse(app.SteamId),
                                     ItemDefinitionId = itemDefinition.ItemDefId,
@@ -117,7 +117,7 @@ public class CheckForNewItemDefinitions
                             {
                                 if (assetDescription.ItemDefinitionId == null)
                                 {
-                                    var updatedAssetDescription = await _commandProcessor.ProcessAsync(new UpdateSteamAssetDescriptionRequest()
+                                    var updatedAssetDescription = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
                                     {
                                         AssetDescription = assetDescription,
                                         AssetItemDefinition = itemDefinition

@@ -22,7 +22,7 @@ namespace SCMM.Discord.Bot.Server.Modules
         public async Task<RuntimeResult> ImportRustAssetDescriptionAsync()
         {
             var message = await Context.Message.ReplyAsync("Importing latest item definitions...");
-            var response = await _commandProcessor.ProcessAsync(new ImportSteamItemDefinitionsRequest()
+            var response = await _commandProcessor.ProcessWithResultAsync(new ImportSteamItemDefinitionsRequest()
             {
                 AppId = Constants.RustAppId
             });
@@ -45,7 +45,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     x => x.Content = $"Importing asset description {classId} ({Array.IndexOf(classIds, classId) + 1}/{classIds.Length})..."
                 );
 
-                _ = await _commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = Constants.RustAppId,
                     AssetClassId = classId
@@ -71,7 +71,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     x => x.Content = $"Importing asset description {classId} ({Array.IndexOf(classIds, classId) + 1}/{classIds.Length})..."
                 );
 
-                _ = await _commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = Constants.CSGOAppId,
                     AssetClassId = classId
@@ -108,7 +108,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     ? classIdMatchGroup[1].Value.Trim()
                     : null;
 
-                _ = await _commandProcessor.ProcessAsync(new ImportSteamAssetDescriptionRequest()
+                _ = await _commandProcessor.ProcessWithResultAsync(new ImportSteamAssetDescriptionRequest()
                 {
                     AppId = Constants.CSGOAppId,
                     AssetClassId = UInt64.Parse(classId)

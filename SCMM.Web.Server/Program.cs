@@ -108,7 +108,7 @@ public static class WebApplicationExtensions
                     {
                         var db = ctx.HttpContext.RequestServices.GetRequiredService<SteamDbContext>();
                         var commandProcessor = ctx.HttpContext.RequestServices.GetRequiredService<ICommandProcessor>();
-                        var loggedInProfile = await commandProcessor.ProcessAsync(new LoginSteamProfileRequest()
+                        var loggedInProfile = await commandProcessor.ProcessWithResultAsync(new LoginSteamProfileRequest()
                         {
                             Claim = ctx.Principal.FindFirstValue(ClaimTypes.NameIdentifier)
                         });

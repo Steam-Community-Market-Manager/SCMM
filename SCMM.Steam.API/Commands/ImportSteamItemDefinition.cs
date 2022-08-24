@@ -55,7 +55,7 @@ namespace SCMM.Steam.API.Commands
             _queryProcessor = queryProcessor;
         }
 
-        public async Task<ImportSteamItemDefinitionResponse> HandleAsync(ImportSteamItemDefinitionRequest request, CancellationToken cancellationToken)
+        public async Task<ImportSteamItemDefinitionResponse> HandleAsync(ImportSteamItemDefinitionRequest request)
         {
             // Does this asset already exist?
             var assetDescription = await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x =>
@@ -90,7 +90,7 @@ namespace SCMM.Steam.API.Commands
             }
 
             // Update the asset description
-            var updateAssetDescription = await _commandProcessor.ProcessAsync(new UpdateSteamAssetDescriptionRequest()
+            var updateAssetDescription = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamAssetDescriptionRequest()
             {
                 AssetDescription = assetDescription,
                 AssetItemDefinition = itemDefinition,

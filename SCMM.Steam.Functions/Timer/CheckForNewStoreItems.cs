@@ -336,7 +336,7 @@ public class CheckForNewStoreItems
             if (thumbnailImage != null)
             {
                 store.ItemsThumbnailUrl = (
-                    await _commandProcessor.ProcessAsync(new UploadImageToBlobStorageRequest()
+                    await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
                     {
                         Name = $"{app.SteamId}-store-items-thumbnail-{Uri.EscapeDataString(store.Start?.Ticks.ToString() ?? store.Name?.ToLower())}",
                         MimeType = thumbnailImage.MimeType,

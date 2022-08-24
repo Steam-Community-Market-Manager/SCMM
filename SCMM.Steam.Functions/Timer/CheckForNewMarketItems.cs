@@ -151,7 +151,7 @@ public class CheckForNewMarketItems
             if (thumbnailImage != null)
             {
                 thumbnailImageUrl = (
-                    await _commandProcessor.ProcessAsync(new UploadImageToBlobStorageRequest()
+                    await _commandProcessor.ProcessWithResultAsync(new UploadImageToBlobStorageRequest()
                     {
                         Name = $"{app.SteamId}-new-market-items-thumbnail-{DateTime.UtcNow.Ticks}",
                         MimeType = thumbnailImage.MimeType,
