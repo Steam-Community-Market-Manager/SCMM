@@ -35,10 +35,15 @@ public class ExternalNavigationManager
                 break;
 
             case ItemInfoWebsiteType.External:
+                var interactableItem = (item as ICanBeInteractedWith);
                 var purchasableItem = (item as ICanBePurchased);
                 if (purchasableItem != null && !String.IsNullOrEmpty(purchasableItem.BuyNowUrl))
                 {
                     _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", purchasableItem.BuyNowUrl);
+                }
+                else if (interactableItem != null && interactableItem.Actions.Any(x => !String.IsNullOrEmpty(x.Url)))
+                {
+                    _jsRuntime.InvokeVoidAsync("WindowInterop.openInNewTab", interactableItem.Actions.FirstOrDefault(x => !String.IsNullOrEmpty(x.Url)).Url);
                 }
                 else // TODO: if (item.IsMarketable)
                 {
