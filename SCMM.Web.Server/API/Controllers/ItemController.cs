@@ -520,8 +520,9 @@ namespace SCMM.Web.Server.API.Controllers
                 return BadRequest("Collection name is missing");
             }
 
-            var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
+            var acceptedAssetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.AppId == appId)
+                .Where(x => x.IsAccepted == true)
                 .Where(x => x.ItemCollection == name)
                 .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
@@ -531,13 +532,14 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
                 .ToListAsync();
-            if (assetDescriptions?.Any() != true)
+            if (acceptedAssetDescriptions?.Any() != true)
             {
                 return NotFound("Collection does not exist");
             }
 
-            var workshopFiles = await _db.SteamWorkshopFiles.AsNoTracking()
+            var unacceptedWorkshopFiles = await _db.SteamWorkshopFiles.AsNoTracking()
                 .Where(x => x.AppId == appId)
+                .Where(x => x.IsAccepted == false)
                 .Where(x => x.ItemCollection == name)
                 .Where(x => x.DescriptionId == null)
                 .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()))
@@ -546,7 +548,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
                 .ToListAsync();
 
-            var creator = assetDescriptions
+            var creator = acceptedAssetDescriptions
                 .Where(x => x.CreatorProfile != null)
                 .GroupBy(x => x.CreatorProfile)
                 .FirstOrDefault();
@@ -556,9 +558,9 @@ namespace SCMM.Web.Server.API.Controllers
                 Name = name,
                 CreatorName = creator?.Key.Name,
                 CreatorAvatarUrl = creator?.Key.AvatarUrl,
-                BuyNowPrice = assetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency()).Price),
-                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(assetDescriptions, this),
-                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(workshopFiles, this)
+                BuyNowPrice = acceptedAssetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency()).Price),
+                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this),
+                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this)
             });
         }
 

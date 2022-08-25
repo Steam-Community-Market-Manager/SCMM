@@ -177,7 +177,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     continue;
                 }
 
-                // Get workshop file ids
+                // Get latest workshop file ids
                 var paginingControls = workshopHtml.Descendants("div").FirstOrDefault(x => x.Attribute("class")?.Value == "workshopBrowsePagingControls");
                 var lastPageLink = paginingControls?.Descendants("a").LastOrDefault(x => x.Attribute("class")?.Value == "pagelink");
                 var pages = (deepScan ? int.Parse(lastPageLink?.Value ?? "1") : 1);
@@ -216,26 +216,34 @@ namespace SCMM.Discord.Bot.Server.Modules
                     continue;
                 }
 
-                // Get workshop file details
-                var publishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(publishedFileIds.Keys.ToArray());
-                if (publishedFileDetails?.Data == null)
+                // Get existing workshop files
+                var existingWorkshopFileIds = publishedFileIds.Select(x => x.Key);
+                var existingWorkshopFiles = await _steamDb.SteamWorkshopFiles
+                    .Where(x => existingWorkshopFileIds.ToString().Contains(x.SteamId))
+                    .ToListAsync();
+
+                // Get missing workshop files
+                var missingPublishedFileIds = publishedFileIds.Keys.Except(existingWorkshopFileIds).ToArray();
+                if (!missingPublishedFileIds.Any())
+                {
+                    continue;
+                }
+                var missingPublishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(missingPublishedFileIds.ToArray());
+                if (missingPublishedFileDetails?.Data == null)
                 {
                     continue;
                 }
 
-                var existingWorkshopFileIds = publishedFileDetails.Data.Select(x => x.PublishedFileId.ToString());
-                var existingWorkshopFiles = await _steamDb.SteamWorkshopFiles
-                    .Where(x => existingWorkshopFileIds.Contains(x.SteamId))
-                    .ToListAsync();
-
                 // Import missing workshop files
-                foreach (var publishedFile in publishedFileDetails.Data)
+                foreach (var missingPublishedFile in missingPublishedFileDetails.Data)
                 {
-                    var workshopFile = existingWorkshopFiles.FirstOrDefault(x => x.SteamId == publishedFile.PublishedFileId.ToString()) ?? new SteamWorkshopFile();
-                    workshopFile.AppId = app.Id;
-                    workshopFile.CreatorId = creator.CreatorId;
+                    var workshopFile = new SteamWorkshopFile()
+                    {
+                        AppId = app.Id,
+                        CreatorId = creator.CreatorId
+                    };
 
-                    var assetDescription = assetDescriptions.FirstOrDefault(x => x.WorkshopFileId == publishedFile.PublishedFileId);
+                    var assetDescription = assetDescriptions.FirstOrDefault(x => x.WorkshopFileId == missingPublishedFile.PublishedFileId);
                     if (assetDescription != null);
                     {
                         workshopFile.DescriptionId = assetDescription.Id;
@@ -254,7 +262,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     {
                         var isCollectionMatch = existingItemCollection
                             .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                            .All(x => publishedFile.Title.Contains(x));
+                            .All(x => missingPublishedFile.Title.Contains(x));
                         if (isCollectionMatch)
                         {
                             workshopFile.ItemCollection = existingItemCollection;
@@ -262,10 +270,13 @@ namespace SCMM.Discord.Bot.Server.Modules
                         }
                     }
 
+                    // Detect new collections
+                    // TODO: This...
+
                     var updatedWorkshopItem = await _commandProcessor.ProcessWithResultAsync(new UpdateSteamWorkshopFileRequest()
                     {
                         WorkshopFile = workshopFile,
-                        PublishedFile = publishedFile
+                        PublishedFile = missingPublishedFile
                     });
 
                     if (workshopFile.IsTransient)
