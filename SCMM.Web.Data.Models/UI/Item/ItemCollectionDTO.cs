@@ -12,6 +12,6 @@
 
         public IList<ItemDescriptionWithPriceDTO> AcceptedItems { get; set; }
 
-        public IList<ItemDescriptionWorkshopFileDTO> UnacceptedItems { get; set; }
+        public IList<ItemDescriptionWithActionsDTO> UnacceptedItems { get; set; }
     }
 }

@@ -126,7 +126,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (creatorId != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()));
+                query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()));
             }
             if (glow)
             {
@@ -513,16 +513,17 @@ namespace SCMM.Web.Server.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetItemsByCollection([FromRoute] string name, [FromQuery] ulong? creatorId = null)
         {
+            var appId = this.App().Guid;
+
             if (string.IsNullOrEmpty(name))
             {
                 return BadRequest("Collection name is missing");
             }
 
-            var appId = this.App().Guid;
             var assetDescriptions = await _db.SteamAssetDescriptions.AsNoTracking()
                 .Where(x => x.AppId == appId)
                 .Where(x => x.ItemCollection == name)
-                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()))
+                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
@@ -530,7 +531,6 @@ namespace SCMM.Web.Server.API.Controllers
                 .Include(x => x.MarketItem).ThenInclude(x => x.Currency)
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
                 .ToListAsync();
-
             if (assetDescriptions?.Any() != true)
             {
                 return NotFound("Collection does not exist");
@@ -540,7 +540,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.AppId == appId)
                 .Where(x => x.ItemCollection == name)
                 .Where(x => x.DescriptionId == null)
-                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorId == null && x.App.SteamId == creatorId.ToString()))
+                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)
@@ -558,7 +558,7 @@ namespace SCMM.Web.Server.API.Controllers
                 CreatorAvatarUrl = creator?.Key.AvatarUrl,
                 BuyNowPrice = assetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency()).Price),
                 AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(assetDescriptions, this),
-                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWorkshopFileDTO>(workshopFiles, this)
+                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(workshopFiles, this)
             });
         }
 

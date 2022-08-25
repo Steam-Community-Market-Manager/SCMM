@@ -716,6 +716,24 @@
             <response code="404">If the request app cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
+        <member name="M:SCMM.Web.Server.API.Controllers.WorkshopController.GetItems(System.String[],System.String,System.String,System.String,System.Nullable{System.UInt64},System.Int32,System.Int32,System.String,SCMM.Web.Data.Models.SortDirection)">
+            <summary>
+            Search for workshop file submissions
+            </summary>
+            <param name="id">Optional array of ids to be included in the list. Helpful when you want search for items and compare against a known (but unrelated) item</param>
+            <param name="filter">Optional search filter. Matches against item GUID, ID64, name, description, author, type, collection, and tags</param>
+            <param name="type">If specified, only items matching the supplied item type are returned</param>
+            <param name="collection">If specified, only items matching the supplied item collection are returned</param>
+            <param name="creatorId">If specified, only items published by the supplied creator id are returned</param>
+            <param name="start">Return items starting at this specific index (pagination)</param>
+            <param name="count">Number items to be returned (can be less if not enough data). Use -1 to return all items</param>
+            <param name="sortBy">Sort item property name from <see cref="T:SCMM.Web.Data.Models.UI.Item.ItemDetailedDTO"/></param>
+            <param name="sortDirection">Sort item direction</param>
+            <response code="200">Paginated list of workshop files matching the request parameters.</response>
+            <response code="400">If the request data is malformed/invalid.</response>
+            <response code="404">If no items match the request parameters.</response>
+            <response code="500">If the server encountered a technical issue completing the request.</response>
+        </member>
         <member name="M:SCMM.Web.Server.Controllers.AuthenticationController.SignIn(System.String)">
             <summary>
             Sign-in via Steam OpenId

@@ -1,0 +1,172 @@
+﻿@using SCMM.Web.Client.Shared.Components.Items
+@using SCMM.Web.Data.Models.UI.Item
+@using SCMM.Web.Data.Models.UI.Workshop
+@page "/workshop"
+@inherits PersistentComponent
+@inject ILogger<WorkshopPage> Logger
+@inject ISnackbar Snackbar
+@inject HttpClient Http
+@inject AppState State
+
+<PageContainer Title="Workshop">
+
+    <MudGrid Spacing="2">
+        <MudItem xs="12" sm="6" md="4" lg="6">
+            <MudTextField T="string" Value="@Filter" ValueChanged="@OnSearch" DebounceInterval="500" Label="Search" Placeholder="Search for an item, type, collection, author, or tags..." 
+                          Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" Disabled="State.IsPrerendering" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <ItemTypeField Value="@Type" ValueChanged="@((x) => { Type = x; _ = RefreshWorkshopFiles(); })" Variant="MudBlazor.Variant.Outlined" Margin="MudBlazor.Margin.None" FullWidth="true" Class="mud-input-transparent ma-0" />
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4" lg="3">
+            <MudSelect T="Tuple<string, Data.Models.SortDirection>" Value="@Sort" ValueChanged="SetSortOrder" Label="Sorting" Clearable="false" Disabled="State.IsPrerendering"
+                       Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="true" Adornment="MudBlazor.Adornment.Start" AdornmentIcon="fas fa-fw fa-sort-alpha-down mr-1" Class="mud-input-transparent ma-0">
+                @if (State.Profile.ItemInfo.Any(x => x == ItemInfoType.Age))
+                {
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("TimeCreated", Data.Models.SortDirection.Descending))">Newest</MudSelectItem>
+                    <MudSelectItem Value="@(new Tuple<string, Data.Models.SortDirection>("TimeCreated", Data.Models.SortDirection.Ascending))">Oldest</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        @if (WorkshopFiles == null)
+        {
+            <MudItem xs="12">
+                <Loading Message="Finding workshop submissions..." />
+            </MudItem>
+        }
+        else if (WorkshopFiles.Items.Any())
+        {
+            @foreach (var item in WorkshopFiles.Items)
+            {
+                <MudItem xs="6" sm="4" md="3" lg="2" xxl="1">
+                    <WorkshopFileDetails Item="item" />
+                </MudItem>
+            }
+            @if(WorkshopFiles.Total > 0)
+            {
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudPagination SelectedChanged="@OnPageChange" Color="@Color.Primary" ShowFirstButton="true" ShowLastButton="true" 
+                                   Selected="@((int)Math.Floor(Start > 0 ? ((double)Start.Value / Math.Max(Count ?? 100, 1)) + 1 : 1))" 
+                                   Count="@((int)Math.Ceiling((double)WorkshopFiles.Total / Math.Max(Count ?? 100, 1)))" Disabled="State.IsPrerendering" />
+                </MudItem>
+            }
+        }
+        else
+        {
+            <MudItem xs="12" Class="d-flex justify-center">
+                <div class="d-flex flex-column justify-center align-center full-height pa-4">
+                    <TumbleWeed Light="true" />
+                    <MudText Typo="MudBlazor.Typo.body1" Color="MudBlazor.Color.Secondary">Nothing found, try searching for something else</MudText>
+                </div>
+            </MudItem>
+        }
+    </MudGrid>
+
+</PageContainer>
+
+@code {
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Type { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Nullable<int> Start { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Nullable<int> Count { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortBy { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string SortDirection { get; set; }
+
+    private Tuple<string, Data.Models.SortDirection> Sort;
+
+    private PaginatedResult<WorkshopFileDTO> WorkshopFiles;
+
+    protected override void OnInitialized()
+    {
+        SortBy = nameof(WorkshopFileDTO.TimeCreated);
+        SortDirection = Data.Models.SortDirection.Descending.ToString();
+        Sort = new Tuple<string, Data.Models.SortDirection>(SortBy, Data.Models.SortDirection.Descending);
+    }
+
+    protected override async Task OnLoadStateAsync()
+    {
+        WorkshopFiles = await RestoreFromStateOrLoad(nameof(WorkshopFiles), async () =>
+        {
+            await RefreshWorkshopFiles();
+            return WorkshopFiles;
+        });
+    }
+
+    protected override Task OnPersistStateAsync()
+    {
+        PersistToState(nameof(WorkshopFiles), WorkshopFiles);
+        return Task.CompletedTask;
+    }
+
+    private void OnSearch(string text)
+    {
+        if (Filter != text)
+        {
+            Start = 0;
+            Filter = text;
+            _ = RefreshWorkshopFiles();
+        };
+    }
+
+    private void SetSortOrder(Tuple<string, Data.Models.SortDirection> sort)
+    {
+        Start = 0;
+        Sort = sort;
+        SortBy = sort.Item1;
+        SortDirection = sort.Item2.ToString();
+        StateHasChanged();
+        
+        _ = RefreshWorkshopFiles();
+    }
+    
+    private void OnPageChange(int page)
+    {
+        var newStart = (Math.Max(page - 1, 0) * Math.Max(Count ?? 100, 1));
+        if (Start != newStart)
+        {
+            Start = newStart;
+            _ = RefreshWorkshopFiles();
+        }
+    }
+    
+    private async Task RefreshWorkshopFiles()
+    {
+        try
+        {
+            WorkshopFiles = null;
+            StateHasChanged();
+
+            WorkshopFiles = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<WorkshopFileDTO>>(
+                $"api/workshop?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}"
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing workshop files");
+            Snackbar.Add($"Unable to load workshop submissions. {ex.Message}", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+}

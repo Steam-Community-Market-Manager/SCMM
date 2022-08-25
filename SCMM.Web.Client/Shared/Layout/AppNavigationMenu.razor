@@ -27,6 +27,12 @@
             <span class="no-wrap">Stores</span>
         </MudNavLink>
     }
+    @if (State.App?.Features.HasFlag(SteamAppFeatureTypes.ItemWorkshop) == true)
+    {
+        <MudNavLink Href="/workshop" Icon="fas fa-fw fa-tools" Disabled="@State.IsPrerendering">
+            <span class="no-wrap">Workshop</span>
+        </MudNavLink>
+    }
 
     <MudDivider />
     
