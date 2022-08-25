@@ -27,7 +27,6 @@ using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.Skinport.Client;
 using SCMM.Market.SkinsMonkey.Client;
 using SCMM.Market.SkinsMonkey.Client.Extensions;
-using SCMM.Market.SkinSwap.Client;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
 using SCMM.Market.TradeSkinsFast.Client;

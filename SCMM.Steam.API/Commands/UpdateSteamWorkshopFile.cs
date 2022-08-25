@@ -18,8 +18,6 @@ namespace SCMM.Steam.API.Commands
         public SteamWorkshopFile WorkshopFile { get; set; }
 
         public PublishedFileDetailsModel PublishedFile { get; set; }
-
-        public SteamAssetDescription AssetDescription { get; set; }
     }
 
     public class UpdateSteamWorkshopFileResponse
@@ -103,13 +101,6 @@ namespace SCMM.Steam.API.Commands
                 // Parse item type
                 workshopFile.ItemType = workshopFile.Tags.FirstOrDefault(t => !Constants.SteamIgnoredWorkshopTags.Contains(t.Value)).Value.WorkshopTagToRustItemType();
                 workshopFile.ItemShortName = workshopFile.ItemType.ToRustItemShortName();
-            }
-
-            // Parse asset description details
-            if (request.AssetDescription != null)
-            {
-                var assetDescription = request.AssetDescription;
-                workshopFile.DescriptionId = assetDescription.Id;
             }
 
             // Cleanup the description text
