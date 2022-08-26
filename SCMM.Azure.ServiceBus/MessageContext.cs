@@ -26,7 +26,10 @@ namespace SCMM.Azure.ServiceBus
 
             await using var sender = _client.CreateSender(ReplyTo);
             await sender.SendMessageAsync(
-                new ServiceBusJsonMessage<T>(message),
+                new ServiceBusJsonMessage<T>(message)
+                {
+                    CorrelationId = MessageId,
+                },
                 cancellationToken
             );
         }

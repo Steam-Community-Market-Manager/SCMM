@@ -37,7 +37,8 @@ public class DistributedHttpClientHandler : HttpMessageHandler
                 VersionPolicy = request.VersionPolicy,
                 Cookies = UseCookies && CookieContainer != null ? CookieContainer.GetAllCookies() : null
             },
-            cancellationToken
+            maxTimeToWaitSeconds: 300, // 5 minutes
+            cancellationToken: cancellationToken
         );
 
         var content = new ByteArrayContent(remoteResponse.Content);

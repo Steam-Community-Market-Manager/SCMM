@@ -38,20 +38,21 @@ namespace SCMM.Azure.ServiceBus
             await sender.SendMessagesAsync(batch, cancellationToken);
         }
 
-        public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, CancellationToken cancellationToken = default)
+        public async Task<TResponse> SendMessageAndAwaitReplyAsync<TRequest, TResponse>(TRequest message, int maxTimeToWaitSeconds = 30, CancellationToken cancellationToken = default)
             where TRequest : class, IMessage
             where TResponse : class, IMessage
         {
             var correlationId = Guid.NewGuid();
             var replyToQueueName = $"reply-to-{correlationId}";
-            var messageTimeout = TimeSpan.FromMinutes(5); // minimum allowed time for AutoDeleteOnIdle is 5 minutes
+            var queueTimeout = TimeSpan.FromSeconds(Math.Max(maxTimeToWaitSeconds, 300)); // minimum allowed time for AutoDeleteOnIdle is 5 minutes
+            var messageTimeout = TimeSpan.FromSeconds(Math.Max(maxTimeToWaitSeconds, 3)); // less than 3 seconds will likely result in the message expiring before being delivered
 
             try
             {
                 await _administrationClient.CreateQueueAsync(
                     new CreateQueueOptions(replyToQueueName)
                     {
-                        AutoDeleteOnIdle = (messageTimeout * 2)
+                        AutoDeleteOnIdle = queueTimeout
                     },
                     cancellationToken
                 );
@@ -61,20 +62,33 @@ namespace SCMM.Azure.ServiceBus
                     replyToQueueName,
                     new ServiceBusReceiverOptions()
                     {
-                        ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete,
+                        ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
                     }
                 );
 
                 await requestClient.SendMessageAsync(
                     new ServiceBusJsonMessage<TRequest>(message)
                     {
+                        TimeToLive = messageTimeout,
                         ReplyTo = replyToQueueName
                     },
                     cancellationToken
                 );
 
-                var reply = await receiverClient.ReceiveMessageAsync(messageTimeout, cancellationToken);
-                return reply?.Body?.ToObjectFromJson<TResponse>();
+                var receiveMessageTask = receiverClient.ReceiveMessageAsync(queueTimeout, cancellationToken);
+                var waitForTimeoutTask = Task.Delay(messageTimeout);
+                await Task.WhenAny(new[] 
+                {
+                    receiveMessageTask, 
+                    waitForTimeoutTask
+                });
+
+                if (!receiveMessageTask.IsCompleted)
+                {
+                    throw new TimeoutException($"Maximum timeout was reach ({messageTimeout.TotalSeconds}s) while waiting for message reply (correlationId: {correlationId})");
+                }
+
+                return receiveMessageTask.Result?.Body?.ToObjectFromJson<TResponse>();
             }
             finally
             {
