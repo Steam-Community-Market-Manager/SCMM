@@ -698,7 +698,7 @@
             <response code="400">If the current app does not support store rotations.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.SystemController.GetStatus">
+        <member name="M:SCMM.Web.Server.API.Controllers.SystemController.GetSystemAppStatus">
             <summary>
             Get app system status
             </summary>
@@ -707,12 +707,12 @@
             <response code="404">If the request app cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>
-        <member name="M:SCMM.Web.Server.API.Controllers.SystemController.GetLatestChanges">
+        <member name="M:SCMM.Web.Server.API.Controllers.SystemController.GetLatestSystemUpdateMessages">
             <summary>
-            Get most recent system change messages
+            Get most recent system update messages
             </summary>
-            <returns>The most recent system change messages</returns>
-            <response code="200">The most recent system change messages</response>
+            <returns>The most recent system update messages</returns>
+            <response code="200">The most recent system update messages</response>
             <response code="404">If the request app cannot be found.</response>
             <response code="500">If the server encountered a technical issue completing the request.</response>
         </member>

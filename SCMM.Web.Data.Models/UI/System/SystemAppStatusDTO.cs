@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Data.Models.UI.System;
 
-public class AppStatusDTO
+public class SystemAppStatusDTO
 {
     public string SteamId { get; set; }
 

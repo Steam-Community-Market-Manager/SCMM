@@ -18,7 +18,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
         public async Task HandleAsync(DiscordPromptMessage message, MessageContext context)
         {
             var messageId = await _client.SendMessageAsync(
-                username: message.Username,
+                idOrUsername: message.Username,
                 message: message.Message,
                 title: message.Title,
                 description: message.Description,

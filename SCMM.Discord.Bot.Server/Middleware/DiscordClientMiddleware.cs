@@ -1,7 +1,9 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client;
+using SCMM.Discord.Data.Models;
 using SCMM.Discord.Data.Store;
+using SCMM.Redis.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API.Queries;
 using DiscordConfiguration = SCMM.Discord.Client.DiscordConfiguration;
@@ -16,10 +18,11 @@ namespace SCMM.Discord.Bot.Server.Middleware
         private readonly IDbContextFactory<DiscordDbContext> _discordDbFactory;
         private readonly DiscordClient _client;
         private readonly DiscordConfiguration _configuration;
+        private readonly RedisConnection _cache;
         private readonly Timer _statusUpdateTimer;
         private DateTimeOffset _statusNextStoreUpdate = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
 
-        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<DiscordDbContext> discordDbFactory, DiscordConfiguration discordConfiguration, DiscordClient discordClient)
+        public DiscordClientMiddleware(RequestDelegate next, ILogger<DiscordClientMiddleware> logger, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<DiscordDbContext> discordDbFactory, DiscordConfiguration discordConfiguration, DiscordClient discordClient, RedisConnection cache)
         {
             _next = next;
             _logger = logger;
@@ -27,6 +30,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
             _discordDbFactory = discordDbFactory;
             _statusUpdateTimer = new Timer(OnStatusUpdate);
             _configuration = discordConfiguration;
+            _cache = cache;
             _client = discordClient;
             _client.Connected += OnConnected;
             _client.Disconnected += OnDisconnected;
@@ -37,6 +41,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
                     _logger.LogError(x.Exception, "Failed to connect to Discord");
                 }
             });
+            _cache = cache;
         }
 
         public Task Invoke(HttpContext httpContext)
@@ -48,6 +53,8 @@ namespace SCMM.Discord.Bot.Server.Middleware
         {
             // Start the status update timer
             _statusUpdateTimer.Change(TimeSpan.Zero, TimeSpan.FromMinutes(1));
+
+            _ = RepopulateSystemLatestChangeMessagesCache();
         }
 
         private void OnDisconnected()
@@ -92,6 +99,37 @@ namespace SCMM.Discord.Bot.Server.Middleware
             {
                 await _client.SetWatchingStatusAsync($"the store, {nextStoreTimeDescription}");
             }
+        }
+
+        // TODO: Move somewhere else...
+        private async Task RepopulateSystemLatestChangeMessagesCache()
+        {
+            var discordMessages = await _client.ListMessagesAsync(
+                guildId: 935704534808920114, // TODO: Move to config
+                channelId: 935710112063041546, // TODO: Move to config
+                messageLimit: 10
+            );
+
+            var latestSystemChanges = discordMessages.Select(m => new TextMessage()
+            {
+                Id = m.Id,
+                AuthorId = m.AuthorId,
+                Content = m.Content,
+                Attachments = m.Attachments?.Select(a => new MessageAttachment()
+                {
+                    Id = a.Id,
+                    Url = a.Url,
+                    FileName = a.FileName,
+                    ContentType = a.ContentType,
+                    Description = a.Description
+                })?.ToArray(),
+                Timestamp = m.Timestamp
+            });
+
+            await _cache.SetAsync(
+                SCMM.Steam.Data.Models.Constants.LatestSystemUpdatesCacheKey,
+                latestSystemChanges.ToArray()
+            );
         }
     }
 

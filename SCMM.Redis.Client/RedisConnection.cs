@@ -1,7 +1,9 @@
 ﻿using StackExchange.Redis;
 using System.Net.Sockets;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
-namespace SCMM.Redis
+namespace SCMM.Redis.Client
 {
     /// <remarks>
     /// Source: https://github.com/Azure-Samples/azure-cache-redis-samples/blob/main/quickstart/aspnet-core/ContosoTeamStats/RedisConnection.cs
@@ -42,12 +44,36 @@ namespace SCMM.Redis
             return redisConnection;
         }
 
+        public async Task<T> GetAsync<T>(string key)
+        {
+            var redisValue = await BasicRetryAsync(x => x.StringGetAsync(key));
+            if (redisValue.HasValue)
+            {
+                return JsonSerializer.Deserialize<T>(redisValue.ToString());
+            }
+
+            return default;
+        }
+
+        public async Task<bool> SetAsync<T>(string key, T value)
+        {
+            if (!Equals(default(T), value))
+            {
+                var jsonValue = JsonSerializer.Serialize(value);
+                return await BasicRetryAsync(x => x.StringSetAsync(key, jsonValue));
+            }
+            else
+            {
+                return await BasicRetryAsync(x => x.KeyDeleteAsync(key));
+            }
+        }
+
         // In real applications, consider using a framework such as
         // Polly to make it easier to customize the retry approach.
         // For more info, please see: https://github.com/App-vNext/Polly
-        public async Task<T> BasicRetryAsync<T>(Func<IDatabase, Task<T>> func)
+        private async Task<T> BasicRetryAsync<T>(Func<IDatabase, Task<T>> func)
         {
-            int reconnectRetry = 0;
+            var reconnectRetry = 0;
 
             while (true)
             {
@@ -88,9 +114,9 @@ namespace SCMM.Redis
         /// <param name="initializing">Should only be true when ForceReconnect is running at startup.</param>
         private async Task ForceReconnectAsync(bool initializing = false)
         {
-            long previousTicks = Interlocked.Read(ref _lastReconnectTicks);
+            var previousTicks = Interlocked.Read(ref _lastReconnectTicks);
             var previousReconnectTime = new DateTimeOffset(previousTicks, TimeSpan.Zero);
-            TimeSpan elapsedSinceLastReconnect = DateTimeOffset.UtcNow - previousReconnectTime;
+            var elapsedSinceLastReconnect = DateTimeOffset.UtcNow - previousReconnectTime;
 
             // We want to limit how often we perform this top-level reconnect, so we check how long it's been since our last attempt.
             if (elapsedSinceLastReconnect < ReconnectMinInterval)
@@ -127,10 +153,10 @@ namespace SCMM.Redis
                     return; // Some other thread made it through the check and the lock, so nothing to do.
                 }
 
-                TimeSpan elapsedSinceFirstError = utcNow - _firstErrorTime;
-                TimeSpan elapsedSinceMostRecentError = utcNow - _previousErrorTime;
+                var elapsedSinceFirstError = utcNow - _firstErrorTime;
+                var elapsedSinceMostRecentError = utcNow - _previousErrorTime;
 
-                bool shouldReconnect =
+                var shouldReconnect =
                     elapsedSinceFirstError >= ReconnectErrorThreshold // Make sure we gave the multiplexer enough time to reconnect on its own if it could.
                     && elapsedSinceMostRecentError <= ReconnectErrorThreshold; // Make sure we aren't working on stale data (e.g. if there was a gap in errors, don't reconnect yet).
 
@@ -158,11 +184,11 @@ namespace SCMM.Redis
                 }
 
                 Interlocked.Exchange(ref _connection, null);
-                ConnectionMultiplexer newConnection = await ConnectionMultiplexer.ConnectAsync(_connectionString);
+                var newConnection = await ConnectionMultiplexer.ConnectAsync(_connectionString);
                 Interlocked.Exchange(ref _connection, newConnection);
 
                 Interlocked.Exchange(ref _lastReconnectTicks, utcNow.UtcTicks);
-                IDatabase newDatabase = _connection.GetDatabase();
+                var newDatabase = _connection.GetDatabase();
                 Interlocked.Exchange(ref _database, newDatabase);
             }
             finally

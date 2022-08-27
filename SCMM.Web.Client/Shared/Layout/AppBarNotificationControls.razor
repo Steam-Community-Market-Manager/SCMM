@@ -9,33 +9,36 @@
 @inject AppState State
 @inject HttpClient Http
 
-<div @attributes="AdditionalAttributes">
-    <MudToggleIconButton Toggled="@IsOpen" ToggledChanged="OnToggleMenu" Icon="@(NotificationsAreNew ? "fas fa-fw fa-bell bell-ring" : "far fa-fw fa-bell")" Color="@(NotificationsAreNew ? Color.Primary : Color.Secondary)" ToggledIcon="fas fa-fw fa-bell" ToggledColor="@Color.Secondary" Title="View latest notifications" />
-    <MudPopover Open="IsOpen" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Paper="false"  >
-        <MudPaper Outlined="true" Class="pa-4" Style="max-width:500px; width:85vw; max-height:85vh; overflow:auto">
-            <MudStack>
-                @foreach (var message in Notifications)
-                {
-                    <MudStack>
-                        <div class="d-flex align-start">
-                            <MudText Typo="Typo.body1">
-                                <span>@message.Description</span>
-                                <small class="mud-secondary-text no-wrap">(@((DateTimeOffset.Now - message.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago")))</small>
-                            </MudText>
-                        </div>
-                        <div class="d-flex align-start justify-top flex-wrap">
-                            @foreach (var media in message.Media)
-                            {
-                                <MudImage Fluid="true" Src="@media.Key" Class="rounded-lg clickable" onclick="@(() => ViewMedia(media.Key))" title="Click to enlarge" />
-                            }
-                        </div>
-                    </MudStack>
-                    <MudDivider />
-                }
-            </MudStack>
-        </MudPaper>
-    </MudPopover>
-</div>
+@if (Notifications?.Any() == true)
+{
+    <div @attributes="AdditionalAttributes">
+        <MudToggleIconButton Toggled="@IsOpen" ToggledChanged="OnToggleMenu" Icon="@(NotificationsAreNew ? "fas fa-fw fa-bell bell-ring" : "far fa-fw fa-bell")" Color="@(NotificationsAreNew ? Color.Primary : Color.Secondary)" ToggledIcon="fas fa-fw fa-bell" ToggledColor="@Color.Secondary" Title="View latest notifications" />
+        <MudPopover Open="IsOpen" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Paper="false">
+            <MudPaper Outlined="true" Class="pa-4" Style="max-width:500px; width:85vw; max-height:85vh; overflow:auto">
+                <MudStack>
+                    @foreach (var message in Notifications)
+                    {
+                        <MudStack>
+                            <div class="d-flex align-start">
+                                <MudText Typo="Typo.body1">
+                                    <span>@message.Description</span>
+                                    <small class="mud-secondary-text no-wrap">(@((DateTimeOffset.Now - message.Timestamp).ToDurationString(maxGranularity: 1, suffix: "ago")))</small>
+                                </MudText>
+                            </div>
+                            <div class="d-flex align-start justify-top flex-wrap">
+                                @foreach (var media in message.Media)
+                                {
+                                    <MudImage Fluid="true" Src="@media.Key" Class="rounded-lg clickable" onclick="@(() => ViewMedia(media.Key))" title="Click to enlarge" />
+                                }
+                            </div>
+                        </MudStack>
+                        <MudDivider />
+                    }
+                </MudStack>
+            </MudPaper>
+        </MudPopover>
+    </div>
+}
 
 @code
 {
@@ -46,7 +49,7 @@
 
     private bool NotificationsAreNew => (Notifications?.Any() == true && Notifications?.Max(x => x.Timestamp) > NotificationsLastViewedOn);
 
-    private ChangeMessageDTO[] Notifications;
+    private SystemUpdateMessageDTO[] Notifications;
 
     private bool IsOpen;
 
@@ -60,7 +63,7 @@
         {
             try
             {
-                return await Http.GetFromJsonWithDefaultsAsync<ChangeMessageDTO[]>($"api/system/latestUpdates");
+                return await Http.GetFromJsonWithDefaultsAsync<SystemUpdateMessageDTO[]>($"api/system/latestUpdates");
             }
             catch (Exception ex)
             {

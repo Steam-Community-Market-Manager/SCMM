@@ -30,7 +30,10 @@ namespace SCMM.Discord.Client
             _client = new DiscordShardedClient(new DiscordSocketConfig()
             {
                 ShardId = _configuration.ShardId,
-                TotalShards = _configuration.TotalShards
+                TotalShards = _configuration.TotalShards,
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
+                AlwaysDownloadUsers = true,
+                SuppressUnknownDispatchWarnings = true                
             });
             _client.Log += OnClientLogAsync;
             _client.ShardConnected += OnShardConnectedAsync;
@@ -214,25 +217,25 @@ namespace SCMM.Discord.Client
             return results;
         }
 
-        public async Task<ulong> SendMessageAsync(string username, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null, string[] reactions = null)
+        public async Task<ulong> SendMessageAsync(string idOrUsername, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null, string[] reactions = null)
         {
             WaitUntilClientIsConnected();
 
             // Find the user
-            var usernameParts = username.Split("#", StringSplitOptions.TrimEntries);
+            var usernameParts = idOrUsername.Split("#", StringSplitOptions.TrimEntries);
             var user = (usernameParts.Length > 1)
                 ? _client.GetUser(usernameParts.FirstOrDefault(), usernameParts.LastOrDefault())
-                : _client.GetUser(UInt64.Parse(username));
+                : _client.GetUser(UInt64.Parse(idOrUsername));
             if (user == null)
             {
-                throw new Exception($"Unable to find user for message \"{message ?? title}\" (username: {username})");
+                throw new Exception($"Unable to find user for message \"{message ?? title}\" (username: {idOrUsername})");
             }
 
             // Create a DM channel with the user
             var dm = await user.CreateDMChannelAsync();
             if (dm == null)
             {
-                throw new Exception($"Unable to create DM channel for message \"{message ?? title}\" (username: {username})");
+                throw new Exception($"Unable to create DM channel for message \"{message ?? title}\" (username: {idOrUsername})");
             }
 
             // Send the message
@@ -240,7 +243,7 @@ namespace SCMM.Discord.Client
             var msg = await dm.SendMessageAsync(text: message, embed: embed);
             if (msg == null)
             {
-                throw new Exception($"Unable to send message \"{message ?? title}\" (username: {username})");
+                throw new Exception($"Unable to send message \"{message ?? title}\" (username: {idOrUsername})");
             }
 
             if (reactions?.Any() == true)

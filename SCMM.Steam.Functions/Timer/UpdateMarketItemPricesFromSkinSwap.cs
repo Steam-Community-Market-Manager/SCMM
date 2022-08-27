@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SCMM.Market.CSTrade.Client;
 using SCMM.Market.SkinSwap.Client;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.Data.Models;

@@ -38,7 +38,7 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
 using System.Reflection;
-using SCMM.Redis.Extensions;
+using SCMM.Redis.Client.Extensions;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 

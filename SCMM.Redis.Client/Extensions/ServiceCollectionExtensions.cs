@@ -1,13 +1,19 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SCMM.Redis;
+using SCMM.Redis.Client;
 
-namespace SCMM.Redis.Extensions
+namespace SCMM.Redis.Client.Extensions
 {
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddRedis(this IServiceCollection serviceCollection, string connectionString)
         {
-            serviceCollection.AddSingleton(async x => RedisConnection.InitializeAsync(connectionString));
+            serviceCollection.AddTransient<RedisConnection>((x) =>
+            {
+                var connectionTask = RedisConnection.InitializeAsync(connectionString);
+                Task.WaitAll(connectionTask);
+                return connectionTask.Result;
+            });
+
             return serviceCollection;
         }
     }

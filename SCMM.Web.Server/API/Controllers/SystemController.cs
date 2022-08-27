@@ -3,7 +3,9 @@ using CommandQuery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SCMM.Discord.API.Commands;
+using SCMM.Discord.Data.Models;
+using SCMM.Redis.Client;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Store;
 using SCMM.Web.Data.Models.UI.System;
 using SCMM.Web.Server.Extensions;
@@ -16,14 +18,16 @@ namespace SCMM.Web.Server.API.Controllers
     {
         private readonly ILogger<SystemController> _logger;
         private readonly SteamDbContext _db;
+        private readonly RedisConnection _cache;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
         private readonly IMapper _mapper;
 
-        public SystemController(ILogger<SystemController> logger, SteamDbContext db, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
+        public SystemController(ILogger<SystemController> logger, SteamDbContext db, RedisConnection cache, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, IMapper mapper)
         {
             _logger = logger;
             _db = db;
+            _cache = cache;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
             _mapper = mapper;
@@ -38,16 +42,16 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("status")]
-        [ProducesResponseType(typeof(AppStatusDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SystemAppStatusDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetStatus()
+        public async Task<IActionResult> GetSystemAppStatus()
         {
             var appId = this.App().Guid;
             var app = await _db.SteamApps
                 .AsNoTracking()
                 .Where(x => x.Id == appId)
-                .Select(x => new AppStatusDTO()
+                .Select(x => new SystemAppStatusDTO()
                 {
                     SteamId = x.SteamId,
                     Name = x.Name,
@@ -81,32 +85,32 @@ namespace SCMM.Web.Server.API.Controllers
         }
 
         /// <summary>
-        /// Get most recent system change messages
+        /// Get most recent system update messages
         /// </summary>
-        /// <returns>The most recent system change messages</returns>
-        /// <response code="200">The most recent system change messages</response>
+        /// <returns>The most recent system update messages</returns>
+        /// <response code="200">The most recent system update messages</response>
         /// <response code="404">If the request app cannot be found.</response>
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [AllowAnonymous]
         [HttpGet("latestUpdates")]
-        [ProducesResponseType(typeof(IEnumerable<ChangeMessageDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<SystemUpdateMessageDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetLatestChanges()
+        public async Task<IActionResult> GetLatestSystemUpdateMessages()
         {
-            var latestChanges = await _queryProcessor.ProcessAsync<GetMessagesResponse>(new GetMessagesRequest()
+            var latestSystemUpdates = await _cache.GetAsync<TextMessage[]>(Constants.LatestSystemUpdatesCacheKey);
+            if (latestSystemUpdates == null)
             {
-                GuildId = 935704534808920114, // TODO: Move to config
-                ChannelId = 935710112063041546, // TODO: Move to config
-                MessageLimit = 10
-            });
+                return NotFound("No recent system changes found");
+            }
 
-            return Ok(
-                latestChanges?.Messages?.OrderByDescending(x => x.Timestamp).Select(x => new ChangeMessageDTO()
+            return Ok(latestSystemUpdates
+                .OrderByDescending(x => x.Timestamp)
+                .Select(x => new SystemUpdateMessageDTO()
                 { 
                     Timestamp = x.Timestamp,
                     Description = x.Content,
-                    Media = x.Attachments?.ToDictionary(k => k.Url, v => v.ContentType)
+                    Media = x.Attachments.ToDictionary(k => k.Url, v => v.ContentType)
                 })
             );
         }

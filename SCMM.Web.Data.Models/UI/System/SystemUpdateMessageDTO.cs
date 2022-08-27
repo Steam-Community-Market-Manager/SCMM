@@ -2,7 +2,7 @@
 
 namespace SCMM.Web.Data.Models.UI.System;
 
-public class ChangeMessageDTO
+public class SystemUpdateMessageDTO
 {
     public DateTimeOffset Timestamp { get; set; }
 
