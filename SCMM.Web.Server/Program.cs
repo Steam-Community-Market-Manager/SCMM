@@ -10,6 +10,7 @@ using Microsoft.OpenApi.Models;
 using SCMM.Azure.ApplicationInsights.Filters;
 using SCMM.Azure.ServiceBus.Extensions;
 using SCMM.Azure.ServiceBus.Middleware;
+using SCMM.Redis.Extensions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Web.Formatters;
@@ -148,6 +149,13 @@ public static class WebApplicationExtensions
         if (!String.IsNullOrEmpty(serviceBusConnectionString))
         {
             builder.Services.AddAzureServiceBus(serviceBusConnectionString);
+        }
+
+        // Redis cache
+        var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+        if (!String.IsNullOrEmpty(redisConnectionString))
+        {
+            builder.Services.AddRedis(redisConnectionString);
         }
 
         // 3rd party clients

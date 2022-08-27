@@ -22,6 +22,7 @@ using SCMM.Fixer.Client;
 using SCMM.Fixer.Client.Extensions;
 using SCMM.Google.Client;
 using SCMM.Google.Client.Extensions;
+using SCMM.Redis.Extensions;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Shared.Data.Store.Extensions;
@@ -149,6 +150,13 @@ public static class WebApplicationExtensions
         if (!String.IsNullOrEmpty(serviceBusConnectionString))
         {
             builder.Services.AddAzureServiceBus(serviceBusConnectionString);
+        }
+
+        // Redis cache
+        var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection");
+        if (!String.IsNullOrEmpty(redisConnectionString))
+        {
+            builder.Services.AddRedis(redisConnectionString);
         }
 
         // 3rd party clients

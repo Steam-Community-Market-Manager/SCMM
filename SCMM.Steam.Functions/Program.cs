@@ -38,6 +38,7 @@ using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Store;
 using SCMM.SteamCMD;
 using System.Reflection;
+using SCMM.Redis.Extensions;
 
 JsonSerializerOptionsExtensions.SetDefaultOptions();
 
@@ -132,6 +133,13 @@ public static class HostExtensions
             if (!String.IsNullOrEmpty(serviceBusConnectionString))
             {
                 services.AddAzureServiceBus(serviceBusConnectionString);
+            }
+
+            // Redis cache
+            var redisConnectionString = Environment.GetEnvironmentVariable("RedisConnection");
+            if (!String.IsNullOrEmpty(redisConnectionString))
+            {
+                services.AddRedis(redisConnectionString);
             }
 
             // 3rd party clients
