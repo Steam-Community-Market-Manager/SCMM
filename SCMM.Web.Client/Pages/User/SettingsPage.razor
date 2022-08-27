@@ -174,7 +174,7 @@
                                 <Preference Title="Item Summary Information" 
                                             Description="What additional information to show when viewing item summaries.">
                                     <MudSelect T="ItemInfoType" Margin="MudBlazor.Margin.None" Variant="MudBlazor.Variant.Outlined" FullWidth="false" Class="ma-0" OffsetY="true" Disabled="State.IsPrerendering"
-                                               @bind-SelectedValues="@Update.ItemInfo" ToStringFunc="@((x) => x.GetDisplayName())" OnClose="@((x) => UpdateProfile())"
+                                               @bind-SelectedValues="@SelectedItemInfoTypes" ToStringFunc="@((x) => x.GetDisplayName())" OnClose="@((x) => UpdateProfile())"
                                                MultiSelection="true" MultiSelectionTextFunc="@(new Func<List<string>, string>(x => x.Count > 0 ? String.Join(", ", x) : "No additional info"))">
                                         @foreach (var value in Enum.GetValues<ItemInfoType>().OrderBy(x => x.ToString()))
                                         {
@@ -381,6 +381,8 @@
 
     private UpdateProfileCommand Update { get; set; }
 
+    private IEnumerable<ItemInfoType> SelectedItemInfoTypes { get; set; }
+
     private Exception UpdateException { get; set; }
 
     protected override void OnInitialized()
@@ -391,6 +393,7 @@
         }
         else 
         {
+            SelectedItemInfoTypes = State.Profile.ItemInfo;
             Update = new UpdateProfileCommand()
             {
                 TradeUrl = State.Profile.TradeUrl,
@@ -417,6 +420,7 @@
         try 
         {
             IsUpdating = true;
+            Update.ItemInfo = SelectedItemInfoTypes.ToArray();
             StateHasChanged();
 
             var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile", Update);

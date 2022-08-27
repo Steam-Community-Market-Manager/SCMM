@@ -25,7 +25,7 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public MarketValueType MarketValue { get; set; }
 
-        public IEnumerable<ItemInfoType> ItemInfo { get; set; }
+        public ItemInfoType[] ItemInfo { get; set; }
 
         public ItemInfoWebsiteType ItemInfoWebsite { get; set; }
 

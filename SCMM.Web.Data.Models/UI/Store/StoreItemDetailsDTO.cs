@@ -104,7 +104,7 @@ namespace SCMM.Web.Data.Models.UI.Store
 
         public string BanReason { get; set; }
 
-        public IList<string> Notes { get; set; }
+        public string[] Notes { get; set; }
 
         public bool IsDraft { get; set; }
     }

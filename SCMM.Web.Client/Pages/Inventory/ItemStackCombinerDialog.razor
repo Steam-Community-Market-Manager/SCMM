@@ -202,7 +202,7 @@
             destinationItem.TradableAndMarketablAfter = SelectedStacks.Max(x => x.TradableAndMarketablAfter);
             foreach (var removedItem in sourceItems)
             {
-                Item.Stacks.Remove(removedItem);
+                Item.Stacks = Item.Stacks?.Except(new[] { removedItem })?.ToArray();
             }
 
             Snackbar.Add($"Items were successfully combined.", MudBlazor.Severity.Success, x => x.RequireInteraction = false);

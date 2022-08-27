@@ -10,6 +10,6 @@
 
         public string IconUrl { get; set; }
 
-        public IEnumerable<ItemMarketPriceDTO> Prices { get; set; }
+        public ItemMarketPriceDTO[] Prices { get; set; }
     }
 }

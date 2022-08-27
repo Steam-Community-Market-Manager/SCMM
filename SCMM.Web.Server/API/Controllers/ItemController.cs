@@ -559,8 +559,8 @@ namespace SCMM.Web.Server.API.Controllers
                 CreatorName = creator?.Key.Name,
                 CreatorAvatarUrl = creator?.Key.AvatarUrl,
                 BuyNowPrice = acceptedAssetDescriptions.Sum(x => x.GetCheapestBuyPrice(this.Currency())?.Price ?? 0),
-                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this),
-                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this)
+                AcceptedItems = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(acceptedAssetDescriptions, this)?.ToArray(),
+                UnacceptedItems = _mapper.Map<SteamWorkshopFile, ItemDescriptionWithActionsDTO>(unacceptedWorkshopFiles, this)?.ToArray()
             });
         }
 
@@ -592,7 +592,7 @@ namespace SCMM.Web.Server.API.Controllers
                     {
                         Id = i.ToRustItemShortName(),
                         Name = i
-                    })
+                    }).ToArray()
                 })
             );
         }

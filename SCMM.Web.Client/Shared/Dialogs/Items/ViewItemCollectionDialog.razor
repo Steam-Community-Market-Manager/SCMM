@@ -24,7 +24,7 @@
                 <div class="ml-4">
                     <MudText Typo="MudBlazor.Typo.h6" Class="no-wrap">@Collection.Name Collection</MudText>
                     <MudText Typo="MudBlazor.Typo.subtitle1" Color="MudBlazor.Color.Secondary" Class="mt-n1">
-                        <span>There are <strong>@(Collection.AcceptedItems?.Count ?? 0) accepted items</strong> in this collection.</span>
+                        <span>There are <strong>@(Collection.AcceptedItems?.Length ?? 0) accepted items</strong> in this collection.</span>
                     </MudText>
                     @if(Collection.BuyNowPrice > 0)
                     {
@@ -89,7 +89,7 @@
                                 <span>Workshop submissions from the collection</span>
                             </MudText>
                             <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                                <span>There are <strong>@(Collection.UnacceptedItems?.Count ?? 0) unaccepted items</strong> from this collection still in the workshop.</span>
+                                <span>There are <strong>@(Collection.UnacceptedItems?.Length ?? 0) unaccepted items</strong> from this collection still in the workshop.</span>
                             </MudText>
                             <MudDivider />
                         </MudItem>

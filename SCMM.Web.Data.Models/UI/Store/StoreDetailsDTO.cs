@@ -12,13 +12,13 @@
 
         public DateTimeOffset? End { get; set; }
 
-        public IList<StoreItemDetailsDTO> Items { get; set; }
+        public StoreItemDetailsDTO[] Items { get; set; }
 
         public string ItemsThumbnailUrl { get; set; }
 
-        public IList<string> Media { get; set; }
+        public string[] Media { get; set; }
 
-        public IList<string> Notes { get; set; }
+        public string[] Notes { get; set; }
 
         public bool IsDraft { get; set; }
     }

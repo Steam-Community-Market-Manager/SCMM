@@ -166,8 +166,8 @@
                 var updatedItems = await response.Content.ReadFromJsonAsync<IEnumerable<ProfileInventoryItemDescriptionStackDTO>>();
                 if (updatedItems != null)
                 {
-                    Item.Stacks.RemoveAll(x => updatedItems.Any(y => y.SteamId == x.SteamId));
-                    Item.Stacks.AddRange(updatedItems);
+                    Item.Stacks = Item.Stacks?.Except(Item.Stacks?.Where(x => updatedItems.Any(y => y.SteamId == x.SteamId)))?.ToArray();
+                    Item.Stacks = Item.Stacks?.Union(updatedItems)?.ToArray();
                 }
             
             }

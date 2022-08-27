@@ -688,12 +688,12 @@ else
             });
         }
     }
-    
+
     private void ViewItem(StoreItemDetailsDTO item)
     {
         ExternalNavigationManager.NavigateToNewTab($"/item/{item.Name}");
     }
-    
+
     private void ShowCreatorItemsDialog(StoreItemDetailsDTO item)
     {
         Dialogs.Show<ViewItemListDialog>(null, parameters: new DialogParameters()
@@ -705,7 +705,7 @@ else
             ["SortDirection"] = MudBlazor.SortDirection.Descending
         });
     }
-    
+
     private void ShowItemDetailsDialog(StoreItemDetailsDTO item)
     {
         Dialogs.Show<ViewItemDetailsDialog>(null, parameters: new DialogParameters()
@@ -819,7 +819,7 @@ else
 
         return title.ToString().Trim();
     }
-    
+
     private async Task<IEnumerable<ItemDescriptionWithPriceDTO>> SearchItem(string value)
     {
         try
@@ -836,7 +836,7 @@ else
             return null;
         }
     }
-    
+
     private async void LinkItem()
     {
         try
@@ -855,11 +855,11 @@ else
             {
                 throw new HttpRequestException(await response.Content.ReadAsStringAsync(), null, response.StatusCode);
             }
-            
+
             var item = await response.Content.ReadFromJsonWithDefaultsAsync<StoreItemDetailsDTO>();
             if (item != null && !Store.Items.Any(x => x.AssetDescriptionId == item.AssetDescriptionId))
             {
-                Store.Items.Add(item);
+                Store.Items = Store.Items?.Union(new[] { item })?.ToArray();
             }
 
             // Reset the selected item
@@ -894,7 +894,7 @@ else
 
             if (Store.Items.Contains(item))
             {
-                Store.Items.Remove(item);
+                Store.Items = Store.Items?.Except(new[] { item })?.ToArray();
             }
         }
         catch (Exception ex)

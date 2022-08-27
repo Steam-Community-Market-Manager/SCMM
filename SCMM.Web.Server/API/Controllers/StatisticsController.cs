@@ -491,6 +491,7 @@ namespace SCMM.Web.Server.API.Controllers
                                 BuyNowPrice = (y.CheapestItem.GetCheapestBuyPrice(this.Currency())?.Price ?? 0),
                             }
                         })
+                        .ToArray()
                 })
             );
         }

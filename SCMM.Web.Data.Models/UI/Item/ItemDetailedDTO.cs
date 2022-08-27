@@ -43,7 +43,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string DescriptionWorkshop { get; set; }
 
-        public IList<string> Notes { get; set; }
+        public string[] Notes { get; set; }
 
         public IDictionary<long, string> Changes { get; set; }
 
@@ -151,7 +151,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public long? StorePrice { get; set; }
 
-        public IEnumerable<ItemStoreInstanceDTO> Stores { get; set; }
+        public ItemStoreInstanceDTO[] Stores { get; set; }
 
         #endregion
 
@@ -207,7 +207,7 @@ namespace SCMM.Web.Data.Models.UI.Item
 
         public string BuyNowUrl { get; set; }
 
-        public IEnumerable<ItemMarketPriceDTO> BuyPrices { get; set; }
+        public ItemMarketPriceDTO[] BuyPrices { get; set; }
 
         // TODO: BuyLater
         // TODO: SellNow

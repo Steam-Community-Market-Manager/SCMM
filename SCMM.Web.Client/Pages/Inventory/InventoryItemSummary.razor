@@ -34,14 +34,14 @@
                 <ChildContent>
                     @if (State.Is(SteamId))
                     {
-                        @if (Item.Stacks.Count > 1)
+                        @if (Item.Stacks.Length > 1)
                         {
                             <MudMenuItem OnTouch="ShowStackCombinerDialog" OnClick="ShowStackCombinerDialog">
                                 <i class="fa fa-fw fa-object-group mr-1"></i>
                                 <span>Combine Stacks</span>
                             </MudMenuItem>
                         }
-                        @if (Item.Quantity > 1 && (Item.Stacks.Count < Item.Quantity))
+                        @if (Item.Quantity > 1 && (Item.Stacks.Length < Item.Quantity))
                         {
                             <MudMenuItem OnTouch="ShowStackSplitterDialog" OnClick="ShowStackSplitterDialog">
                                 <i class="fa fa-fw fa-object-ungroup mr-1"></i>

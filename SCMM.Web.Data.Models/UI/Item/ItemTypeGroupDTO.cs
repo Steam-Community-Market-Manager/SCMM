@@ -4,6 +4,6 @@
     {
         public string Name { get; set; }
 
-        public IEnumerable<ItemTypeDTO> ItemTypes { get; set; }
+        public ItemTypeDTO[] ItemTypes { get; set; }
     }
 }

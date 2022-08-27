@@ -206,7 +206,7 @@ namespace SCMM.Web.Server.Extensions
             });
         }
 
-        public static void MapFromAssetBuyPrices<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, IEnumerable<ItemMarketPriceDTO>> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression)
+        public static void MapFromAssetBuyPrices<TSource, TDestination>(this IMemberConfigurationExpression<TSource, TDestination, ItemMarketPriceDTO[]> memberOptions, Expression<Func<TSource, SteamAssetDescription>> assetDescriptionExpression)
         {
             memberOptions.MapFrom((src, dst, _, context) =>
             {

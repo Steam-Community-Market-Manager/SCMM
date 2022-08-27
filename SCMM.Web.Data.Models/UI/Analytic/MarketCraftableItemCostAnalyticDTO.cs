@@ -21,7 +21,7 @@ namespace SCMM.Web.Data.Models.UI.Analytic
         [JsonIgnore]
         public long CraftingPrice => CraftingComponents.Sum(x => x.Component.BuyNowPrice * x.Quantity);
 
-        public IEnumerable<ItemCraftingComponentCostDTO> CraftingComponents { get; set; }
+        public ItemCraftingComponentCostDTO[] CraftingComponents { get; set; }
     }
 
     public class ItemCraftingComponentCostDTO

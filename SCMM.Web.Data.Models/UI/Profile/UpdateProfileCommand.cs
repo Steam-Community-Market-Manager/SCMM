@@ -18,7 +18,7 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public MarketValueType MarketValue { get; set; }
 
-        public IEnumerable<ItemInfoType> ItemInfo { get; set; }
+        public ItemInfoType[] ItemInfo { get; set; }
 
         public ItemInfoWebsiteType ItemInfoWebsite { get; set; }
 
@@ -30,9 +30,9 @@ namespace SCMM.Web.Data.Models.UI.Profile
 
         public InventoryValueMovementDisplayType InventoryValueMovemenDisplay { get; set; }
 
-        public Dictionary<string, HashSet<string>> Notifications { get; set; }
+        public IDictionary<string, string[]> Notifications { get; set; }
 
-        public List<ProfileWebhook> Webhooks { get; set; }
+        public ProfileWebhook[] Webhooks { get; set; }
     }
 
     public class ProfileWebhook

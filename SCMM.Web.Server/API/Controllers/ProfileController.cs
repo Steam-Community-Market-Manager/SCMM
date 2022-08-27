@@ -564,7 +564,7 @@ namespace SCMM.Web.Server.API.Controllers
                     // Calculate the item's stack sizes
                     itemSummary.Stacks = _mapper.Map<SteamProfileInventoryItem, ProfileInventoryItemDescriptionStackDTO>(
                         itemInventoryInstances, this
-                    );
+                    )?.ToArray();
 
                     profileInventoryItemsSummaries.Add(itemSummary);
                 }
@@ -651,7 +651,7 @@ namespace SCMM.Web.Server.API.Controllers
                     {
                         Item = _mapper.Map<SteamAssetDescription, ItemDescriptionWithPriceDTO>(y, this),
                         IsOwned = profileItemsInCollection.Any(z => z.ClassId == y.ClassId)
-                    }).ToList()
+                    }).ToArray()
                 })
                 .Where(x => x.Items.Any(y => y.IsOwned))
                 .OrderByDescending(x => x.Items.Where(x => x.IsOwned).Count())

@@ -6,7 +6,7 @@ namespace SCMM.Web.Data.Models.UI.Profile.Inventory
     {
         public int Quantity { get; set; }
 
-        public IList<ProfileInventoryItemDescriptionStackDTO> Stacks { get; set; }
+        public ProfileInventoryItemDescriptionStackDTO[] Stacks { get; set; }
 
         public long? AverageBuyPrice { get; set; }
     }

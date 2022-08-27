@@ -196,19 +196,19 @@ namespace SCMM.Web.Server.API.Controllers
                         .ThenBy(x => x.TopSellerIndex)
                         .ThenByDescending(x => (x.SupplyTotalEstimated ?? 0) * x.StorePrice)
                         .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
-                        .ToList();
+                        .ToArray();
                     break;
                 case StoreTopSellerRankingType.HighestTotalRevenue:
                     itemStoreDetail.Items = itemStoreDetail.Items
                         .OrderByDescending(x => (x.SupplyTotalEstimated ?? 0) * x.StorePrice)
                         .ThenByDescending(x => (x.Subscriptions ?? 0) * x.StorePrice)
-                        .ToList();
+                        .ToArray();
                     break;
                 case StoreTopSellerRankingType.HighestTotalSales:
                     itemStoreDetail.Items = itemStoreDetail.Items
                         .OrderByDescending(x => (x.SupplyTotalEstimated ?? 0))
                         .ThenByDescending(x => (x.Subscriptions ?? 0))
-                        .ToList();
+                        .ToArray();
                     break;
             }
 
@@ -380,7 +380,7 @@ namespace SCMM.Web.Server.API.Controllers
         /// <response code="500">If the server encountered a technical issue completing the request.</response>
         [Authorize(Roles = $"{Roles.Administrator},{Roles.Contributor}")]
         [HttpPost("{id}/linkItem")]
-        [ProducesResponseType(typeof(SteamStoreItemItemStore), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(StoreItemDetailsDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
