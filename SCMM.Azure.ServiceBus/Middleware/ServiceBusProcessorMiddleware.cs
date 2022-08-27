@@ -53,7 +53,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
                     _logger.LogError(x.Exception, "Failed to create queues, some messages may not get handled");
                 }
             });
-            _ = CreateMissingTopicSubscriptionsAsync(handlerMappings).ContinueWith(x =>
+            _ = CreateMissingTopicsAndSubscriptionsAsync(handlerMappings).ContinueWith(x =>
             {
                 if (x.IsFaulted && x.Exception != null)
                 {
@@ -121,7 +121,7 @@ namespace SCMM.Azure.ServiceBus.Middleware
             }
         }
 
-        private async Task CreateMissingTopicSubscriptionsAsync(IDictionary<Type, Type> handlerMappings)
+        private async Task CreateMissingTopicsAndSubscriptionsAsync(IDictionary<Type, Type> handlerMappings)
         {
             foreach (var handlerMapping in handlerMappings)
             {
@@ -132,10 +132,10 @@ namespace SCMM.Azure.ServiceBus.Middleware
                     continue; // this is not a topic message
                 }
 
-                var topicSubscriptionExists = await _serviceBusAdministrationClient.SubscriptionExistsAsync(messageType);
+                var topicSubscriptionExists = await _serviceBusAdministrationClient.TopicSubscriptionExistsAsync(messageType);
                 if (!topicSubscriptionExists)
                 {
-                    await _serviceBusAdministrationClient.CreateSubscriptionAsync(messageType, options =>
+                    await _serviceBusAdministrationClient.CreateTopicSubscriptionAsync(messageType, options =>
                     {
                         options.AutoDeleteOnIdle = TimeSpan.FromDays(7); // auto-delete if no messages for 7 days
                     });

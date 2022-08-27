@@ -1,6 +1,8 @@
 ﻿using CommandQuery;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
@@ -29,14 +31,16 @@ namespace SCMM.Steam.API.Commands
         private readonly ILogger<ImportSteamItemDefinitions> _logger;
         private readonly SteamDbContext _db;
         private readonly SteamWebApiClient _apiClient;
+        private readonly ServiceBusClient _serviceBus;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
 
-        public ImportSteamItemDefinitions(ILogger<ImportSteamItemDefinitions> logger, SteamDbContext db, SteamWebApiClient apiClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public ImportSteamItemDefinitions(ILogger<ImportSteamItemDefinitions> logger, SteamDbContext db, SteamWebApiClient apiClient, ServiceBusClient serviceBus, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
         {
             _logger = logger;
             _db = db;
             _apiClient = apiClient;
+            _serviceBus = serviceBus;
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
         }
@@ -63,6 +67,15 @@ namespace SCMM.Steam.API.Commands
                 {
                     app.ItemDefinitionsDigest = itemDefsDigest;
                     app.TimeUpdated = itemDefsLastModified;
+                    await _serviceBus.SendMessageAsync(new AppItemDefinitionsUpdatedMessage()
+                    {
+                        AppId = app.SteamId,
+                        AppName = app.Name,
+                        AppIconUrl = app.IconUrl,
+                        AppPrimaryColour = app.PrimaryColor,
+                        Digest = itemDefsDigest,
+                        TimeUpdated = itemDefsLastModified
+                    });
                 }
 
                 request.Digest = app.ItemDefinitionsDigest;

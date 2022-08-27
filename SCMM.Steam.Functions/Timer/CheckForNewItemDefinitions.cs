@@ -3,9 +3,11 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Commands;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models.Extensions;
@@ -22,11 +24,12 @@ public class CheckForNewItemDefinitions
     private readonly IConfiguration _configuration;
     private readonly DiscordDbContext _discordDb;
     private readonly SteamDbContext _steamDb;
+    private readonly ServiceBusClient _serviceBus;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamWebApiClient _apiClient;
 
-    public CheckForNewItemDefinitions(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamWebApiClient apiClient)
+    public CheckForNewItemDefinitions(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamWebApiClient apiClient, ServiceBusClient serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
@@ -34,6 +37,7 @@ public class CheckForNewItemDefinitions
         _discordDb = discordDb;
         _steamDb = steamDb;
         _apiClient = apiClient;
+        _serviceBus = serviceBus;
     }
 
     [Function("Check-New-Item-Definitions")]
@@ -68,6 +72,15 @@ public class CheckForNewItemDefinitions
                     app.TimeUpdated = itemDefsLastModified;
 
                     await _steamDb.SaveChangesAsync();
+                    await _serviceBus.SendMessageAsync(new AppItemDefinitionsUpdatedMessage()
+                    {
+                        AppId = app.SteamId,
+                        AppName = app.Name,
+                        AppIconUrl = app.IconUrl,
+                        AppPrimaryColour = app.PrimaryColor,
+                        Digest = itemDefsDigest,
+                        TimeUpdated = itemDefsLastModified
+                    });
 
                     // Get the new item definition archive
                     var itemDefinitions = await _apiClient.GameInventoryGetItemDefArchive(new GetItemDefArchiveJsonRequest()

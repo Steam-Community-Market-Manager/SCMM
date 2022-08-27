@@ -31,7 +31,8 @@ namespace SCMM.Discord.Client
             {
                 ShardId = _configuration.ShardId,
                 TotalShards = _configuration.TotalShards,
-                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
+                // TODO: Apply for guild memebers privileged intent
+                //GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
                 AlwaysDownloadUsers = true,
                 SuppressUnknownDispatchWarnings = true                
             });
