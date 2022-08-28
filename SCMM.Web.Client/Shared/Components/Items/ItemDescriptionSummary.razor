@@ -105,16 +105,8 @@
                                 <span>@Item.TimeCreated.Value.Date.ToShortDateString()</span>
                             </MudText>
                         </MudTooltip>
-                        <MudChip Variant="Variant.Filled" Color="@((DateTimeOffset.Now - Item.TimeCreated) <= TimeSpan.FromDays(21) ? MudBlazor.Color.Tertiary : MudBlazor.Color.Secondary)" Size="Size.Small">
-                            @if ((DateTimeOffset.Now - Item.TimeCreated) <= TimeSpan.FromDays(21))
-                            {
-                                <i class="fas fa-fw fa-question"></i>
-                                <span>Awaiting Acceptance</span>
-                            }
-                            else
-                            {
-                                <span>Not Accepted</span>
-                            }
+                        <MudChip Variant="Variant.Filled" Color="MudBlazor.Color.Secondary" Size="Size.Small">
+                            <span>Not Accepted</span>
                         </MudChip>
                     }
                 }

@@ -36,11 +36,34 @@
         }
         else if (WorkshopFiles.Items.Any())
         {
-            @foreach (var item in WorkshopFiles.Items)
+            @if (String.IsNullOrEmpty(Filter) && String.IsNullOrEmpty(Type) && WorkshopFileGroups != null)
             {
-                <MudItem xs="6" sm="4" md="3" lg="2" xxl="1">
-                    <WorkshopFileDetails Item="item" />
-                </MudItem>
+                @foreach (var group in WorkshopFileGroups)
+                {
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h6" Color="Color.Default">
+                            <span>Week @group.Key <small class="mud-secondary-text">@group.Min(x => x.TimeCreated.Value).Date.ToShortDateString()</small></span>
+                        </MudText>
+                        <MudDivider />
+                    </MudItem>
+                    @foreach (var item in group)
+                    {
+                        <MudItem xs="6" sm="4" md="3" lg="2" xxl="1">
+                            <WorkshopFileDetails Item="item" />
+                        </MudItem>
+                    }
+
+                }
+
+            }
+            else
+            {
+                @foreach (var item in WorkshopFiles.Items)
+                {
+                    <MudItem xs="6" sm="4" md="3" lg="2" xxl="1">
+                        <WorkshopFileDetails Item="item" />
+                    </MudItem>
+                }
             }
             @if(WorkshopFiles.Total > 0)
             {
@@ -94,6 +117,8 @@
 
     private PaginatedResult<WorkshopFileDTO> WorkshopFiles;
 
+    private IEnumerable<IGrouping<int, WorkshopFileDTO>> WorkshopFileGroups;
+
     protected override void OnInitialized()
     {
         SortBy = nameof(WorkshopFileDTO.TimeCreated);
@@ -108,6 +133,10 @@
             await RefreshWorkshopFiles();
             return WorkshopFiles;
         });
+        WorkshopFileGroups =
+            WorkshopFiles?.Items
+                ?.Where(x => x.TimeCreated != null)
+                ?.GroupBy(x => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(x.TimeCreated.Value.Date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Friday));
     }
 
     protected override Task OnPersistStateAsync()
@@ -133,10 +162,10 @@
         SortBy = sort.Item1;
         SortDirection = sort.Item2.ToString();
         StateHasChanged();
-        
+
         _ = RefreshWorkshopFiles();
     }
-    
+
     private void OnPageChange(int page)
     {
         var newStart = (Math.Max(page - 1, 0) * Math.Max(Count ?? 100, 1));
@@ -146,17 +175,22 @@
             _ = RefreshWorkshopFiles();
         }
     }
-    
+
     private async Task RefreshWorkshopFiles()
     {
         try
         {
             WorkshopFiles = null;
+            WorkshopFileGroups = null;
             StateHasChanged();
 
             WorkshopFiles = await Http.GetFromJsonWithDefaultsAsync<PaginatedResult<WorkshopFileDTO>>(
                 $"api/workshop?filter={Uri.EscapeDataString(Filter ?? String.Empty)}&start={Start ?? 0}&count={Math.Max(Count ?? 100, 1)}&sortBy={Uri.EscapeDataString(SortBy ?? String.Empty)}&sortDirection={Uri.EscapeDataString(SortDirection ?? String.Empty)}&type={Uri.EscapeDataString(Type ?? String.Empty)}"
             );
+            WorkshopFileGroups = WorkshopFiles?.Items
+                ?.Where(x => x.TimeCreated != null)
+                ?.GroupBy(x => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(x.TimeCreated.Value.Date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Friday));
+
         }
         catch (Exception ex)
         {
