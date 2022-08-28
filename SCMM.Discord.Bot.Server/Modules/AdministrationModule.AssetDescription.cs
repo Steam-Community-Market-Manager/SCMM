@@ -162,7 +162,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                 );
 
                 var app = apps.FirstOrDefault(x => x.Id == creator.AppId);
-                var publishedFileIds = new Dictionary<ulong, string>();
+                var publishedFiles = new Dictionary<ulong, string>();
                 var workshopHtml = (XElement)null;
                 try
                 {
@@ -207,28 +207,31 @@ namespace SCMM.Discord.Bot.Server.Modules
                         var workshopItemTitle = workshopItem.Descendants("div").FirstOrDefault(x => x.Attribute("class")?.Value?.Contains("workshopItemTitle") == true);
                         if (workshopItemLink != null && workshopItemTitle != null)
                         {
-                            publishedFileIds[UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid").Value)] = workshopItemTitle.Value;
+                            publishedFiles[UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid").Value)] = workshopItemTitle.Value;
                         }
                     }
                 }
-                if (!publishedFileIds.Any())
+                if (!publishedFiles.Any())
                 {
                     continue;
                 }
 
                 // Get existing workshop files
-                var existingWorkshopFileIds = publishedFileIds.Select(x => x.Key);
-                var existingWorkshopFiles = await _steamDb.SteamWorkshopFiles
-                    .Where(x => existingWorkshopFileIds.ToString().Contains(x.SteamId))
+                var publishedFileIds = publishedFiles.Select(x => x.Key.ToString());
+                var existingWorkshopFileIds = await _steamDb.SteamWorkshopFiles
+                    .Where(x => publishedFileIds.Contains(x.SteamId))
+                    .Select(x => x.SteamId)
                     .ToListAsync();
 
                 // Get missing workshop files
-                var missingPublishedFileIds = publishedFileIds.Keys.Except(existingWorkshopFileIds).ToArray();
+                var missingPublishedFileIds = publishedFileIds.Except(existingWorkshopFileIds).ToArray();
                 if (!missingPublishedFileIds.Any())
                 {
                     continue;
                 }
-                var missingPublishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(missingPublishedFileIds.ToArray());
+                var missingPublishedFileDetails = await steamRemoteStorage.GetPublishedFileDetailsAsync(
+                    missingPublishedFileIds.Select(x => UInt64.Parse(x)).ToArray()
+                );
                 if (missingPublishedFileDetails?.Data == null)
                 {
                     continue;
@@ -244,7 +247,7 @@ namespace SCMM.Discord.Bot.Server.Modules
                     };
 
                     var assetDescription = assetDescriptions.FirstOrDefault(x => x.WorkshopFileId == missingPublishedFile.PublishedFileId);
-                    if (assetDescription != null);
+                    if (assetDescription != null)
                     {
                         workshopFile.DescriptionId = assetDescription.Id;
                         workshopFile.TimeAccepted = assetDescription.TimeAccepted;
