@@ -3,8 +3,8 @@ using SCMM.Azure.ServiceBus.Attributes;
 
 namespace SCMM.Discord.API.Messages
 {
-    [Queue(Name = "Discord-Prompt-Messages")]
-    public class DiscordPromptMessage : IMessage
+    [Queue(Name = "Prompt-Discord-Message")]
+    public class PromptDiscordMessage : IMessage
     {
         public enum PromptType
         {
@@ -36,5 +36,9 @@ namespace SCMM.Discord.API.Messages
 
         public uint Colour { get; set; }
 
+        public class Reply : IMessage
+        {
+            public string Content { get; set; }
+        }
     }
 }

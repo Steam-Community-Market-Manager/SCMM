@@ -4,11 +4,11 @@ using SCMM.Discord.API.Messages;
 
 namespace SCMM.Discord.API.Commands
 {
-    public class PromptMessageRequest : DiscordPromptMessage, ICommand<PromptMessageResponse>
+    public class PromptMessageRequest : PromptDiscordMessage, ICommand<PromptMessageResponse>
     {
     }
 
-    public class PromptMessageResponse : DiscordPromptMessageReply
+    public class PromptMessageResponse : PromptDiscordMessage.Reply
     {
     }
 
@@ -23,7 +23,7 @@ namespace SCMM.Discord.API.Commands
 
         public async Task<PromptMessageResponse> HandleAsync(PromptMessageRequest request)
         {
-            return await _client.SendMessageAndAwaitReplyAsync<DiscordPromptMessage, PromptMessageResponse>(request);
+            return await _client.SendMessageAndAwaitReplyAsync<PromptDiscordMessage, PromptMessageResponse>(request);
         }
     }
 }

@@ -195,9 +195,9 @@ public static class HostExtensions
             services.AddScoped<SteamCmdWrapper>();
 
             // Command/query/message handlers
-            services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-            services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
-            services.AddMessages(Assembly.GetEntryAssembly());
+            services.AddCommands(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            services.AddQueries(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
+            services.AddMessages(Assembly.GetEntryAssembly(), Assembly.Load("SCMM.Shared.API"), Assembly.Load("SCMM.Discord.API"), Assembly.Load("SCMM.Steam.API"));
 
             // Services
             services.AddScoped<SteamService>();

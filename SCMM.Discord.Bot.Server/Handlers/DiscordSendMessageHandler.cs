@@ -6,7 +6,7 @@ using SCMM.Discord.Client;
 namespace SCMM.Discord.Bot.Server.Handlers
 {
     [Concurrency(MaxConcurrentCalls = 10)]
-    public class DiscordSendMessageHandler : IMessageHandler<DiscordSendMessage>
+    public class DiscordSendMessageHandler : IMessageHandler<SendDiscordMessage>
     {
         private readonly DiscordClient _client;
 
@@ -15,7 +15,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             _client = client;
         }
 
-        public Task HandleAsync(DiscordSendMessage message, MessageContext context)
+        public Task HandleAsync(SendDiscordMessage message, MessageContext context)
         {
             if (!String.IsNullOrEmpty(message.Username))
             {

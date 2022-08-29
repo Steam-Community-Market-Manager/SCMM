@@ -20,13 +20,13 @@ using System.Text.RegularExpressions;
 
 namespace SCMM.Steam.Functions.ServiceBus;
 
-public class AnalyseSteamWorkshopFile
+public class AnalyseWorkshopFileContents
 {
     private readonly SteamDbContext _db;
     private readonly AzureAiClient _azureAiClient;
     private readonly string _workshopFilesStorageConnectionString;
 
-    public AnalyseSteamWorkshopFile(IConfiguration configuration, SteamDbContext db, AzureAiClient azureAiClient)
+    public AnalyseWorkshopFileContents(IConfiguration configuration, SteamDbContext db, AzureAiClient azureAiClient)
     {
         _db = db;
         _azureAiClient = azureAiClient;
@@ -34,10 +34,10 @@ public class AnalyseSteamWorkshopFile
     }
 
     // TODO: Move this to a Windows agent
-    //[Function("Analyse-Steam-Workshop-File")]
-    public async Task Run([ServiceBusTrigger("steam-workshop-file-analyse", Connection = "ServiceBusConnection")] AnalyseSteamWorkshopFileMessage message, FunctionContext context)
+    //[Function("Analyse-Workshop-File-Contents")]
+    public async Task Run([ServiceBusTrigger("analyse-steam-workshop-file", Connection = "ServiceBusConnection")] AnalyseWorkshopFileContentsMessage message, FunctionContext context)
     {
-        var logger = context.GetLogger("Analyse-Steam-Workshop-File");
+        var logger = context.GetLogger("Analyse-Workshop-File-Contents");
         var hasGlow = (bool?)null;
         var glowRatio = (decimal?)null;
         var hasCutout = (bool?)null;

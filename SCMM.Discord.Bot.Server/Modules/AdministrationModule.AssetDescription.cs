@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using SCMM.Discord.Client.Commands;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.API.Commands;
@@ -465,10 +466,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                 })
                 .ToListAsync();
 
-            var messages = new List<DownloadSteamWorkshopFileMessage>();
+            var messages = new List<DownloadWorkshopFileContentsMessage>();
             foreach (var workshopFile in workshopFiles)
             {
-                messages.Add(new DownloadSteamWorkshopFileMessage()
+                messages.Add(new DownloadWorkshopFileContentsMessage()
                 {
                     AppId = UInt64.Parse(workshopFile.AppId),
                     PublishedFileId = workshopFile.WorkshopFileId,
@@ -489,10 +490,10 @@ namespace SCMM.Discord.Bot.Server.Modules
                 .Select(x => x.WorkshopFileUrl)
                 .ToListAsync();
 
-            var messages = new List<AnalyseSteamWorkshopFileMessage>();
+            var messages = new List<AnalyseWorkshopFileContentsMessage>();
             foreach (var workshopFileUrl in workshopFileUrls)
             {
-                messages.Add(new AnalyseSteamWorkshopFileMessage()
+                messages.Add(new AnalyseWorkshopFileContentsMessage()
                 {
                     BlobName = workshopFileUrl.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault(),
                     Force = true

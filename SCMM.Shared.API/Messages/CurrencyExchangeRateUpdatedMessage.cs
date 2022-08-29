@@ -1,10 +1,10 @@
 ﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
 
-namespace SCMM.Steam.API.Messages
+namespace SCMM.Shared.API.Messages
 {
-    [Topic(Name = "Currency-Exchange-Rates")]
-    public class CurrencyExchangeRateUpdateMessage : IMessage
+    [Topic(Name = "Currency-Exchange-Rate-Updated")]
+    public class CurrencyExchangeRateUpdatedMessage : IMessage
     {
         public DateTime Timestamp { get; set; }
 

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Shared.API.Extensions;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
@@ -13,7 +14,7 @@ using SCMM.SteamCMD;
 
 namespace SCMM.Steam.Functions.ServiceBus;
 
-public class DownloadSteamWorkshopFile
+public class DownloadWorkshopFileContents
 {
     private readonly SteamDbContext _db;
     private readonly SteamCmdWrapper _steamCmd;
@@ -22,7 +23,7 @@ public class DownloadSteamWorkshopFile
 
     private readonly TimeSpan _maxTimeToWaitForAsset = TimeSpan.FromMinutes(1);
 
-    public DownloadSteamWorkshopFile(IConfiguration configuration, SteamDbContext db, SteamCmdWrapper steamCmd)
+    public DownloadWorkshopFileContents(IConfiguration configuration, SteamDbContext db, SteamCmdWrapper steamCmd)
     {
         _db = db;
         _steamCmd = steamCmd;
@@ -31,11 +32,11 @@ public class DownloadSteamWorkshopFile
     }
 
     // TODO: Move this to a Windows agent
-    //[Function("Download-Steam-Workshop-File")]
-    [ServiceBusOutput("steam-workshop-file-analyse", Connection = "ServiceBusConnection")]
-    public async Task<AnalyseSteamWorkshopFileMessage> Run([ServiceBusTrigger("steam-workshop-file-downloads", Connection = "ServiceBusConnection")] DownloadSteamWorkshopFileMessage message, FunctionContext context)
+    //[Function("Download-Workshop-File-Contents")]
+    [ServiceBusOutput("analyse-steam-workshop-file", Connection = "ServiceBusConnection")]
+    public async Task<AnalyseWorkshopFileContentsMessage> Run([ServiceBusTrigger("download-workshop-file-contents", Connection = "ServiceBusConnection")] DownloadWorkshopFileContentsMessage message, FunctionContext context)
     {
-        var logger = context.GetLogger("Download-Steam-Workshop-File");
+        var logger = context.GetLogger("Download-Workshop-File-Contents");
 
         var blobContentsWasModified = false;
         var blobContainer = new BlobContainerClient(_workshopFilesStorageConnectionString, Constants.BlobContainerWorkshopFiles);
@@ -131,7 +132,7 @@ public class DownloadSteamWorkshopFile
         logger.LogTrace($"Asset description workshop data urls updated (count: {assetDescriptions.Count})");
 
         // Queue analyse of the workfshop file
-        return new AnalyseSteamWorkshopFileMessage()
+        return new AnalyseWorkshopFileContentsMessage()
         {
             BlobName = blob.Name,
             Force = (blobContentsWasModified || message.Force)

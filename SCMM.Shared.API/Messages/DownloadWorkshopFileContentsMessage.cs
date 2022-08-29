@@ -1,10 +1,10 @@
 ﻿using SCMM.Azure.ServiceBus;
 using SCMM.Azure.ServiceBus.Attributes;
 
-namespace SCMM.Steam.API.Messages
+namespace SCMM.Shared.API.Messages
 {
-    [Queue(Name = "Steam-Workshop-File-Downloads")]
-    public class DownloadSteamWorkshopFileMessage : IMessage
+    [Queue(Name = "Download-Workshop-File-Contents")]
+    public class DownloadWorkshopFileContentsMessage : IMessage
     {
         public ulong AppId { get; set; }
 

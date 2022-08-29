@@ -6,7 +6,7 @@ using SCMM.Discord.Client.Extensions;
 
 namespace SCMM.Discord.Bot.Server.Handlers
 {
-    public class DiscordPromptMessageHandler : IMessageHandler<DiscordPromptMessage>
+    public class DiscordPromptMessageHandler : IMessageHandler<PromptDiscordMessage>
     {
         private readonly DiscordClient _client;
 
@@ -15,7 +15,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             _client = client;
         }
 
-        public async Task HandleAsync(DiscordPromptMessage message, MessageContext context)
+        public async Task HandleAsync(PromptDiscordMessage message, MessageContext context)
         {
             var messageId = await _client.SendMessageAsync(
                 idOrUsername: message.Username,
@@ -34,22 +34,22 @@ namespace SCMM.Discord.Bot.Server.Handlers
             var waitForReplySubscription = (IDisposable)null;
             switch (message.Type)
             {
-                case DiscordPromptMessage.PromptType.Reply:
+                case PromptDiscordMessage.PromptType.Reply:
                     waitForReplySubscription = _client.SubscribeToReplies(messageId,
                         (msg) => string.Equals(message.Username, msg.Author.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
                         async (msg) =>
                         {
                             waitForReplySubscription?.Dispose();
                             await msg.AddReactionAsync(new Emoji("👌"));
-                            await context.ReplyAsync(new DiscordPromptMessageReply()
+                            await context.ReplyAsync(new PromptDiscordMessage.Reply()
                             {
-                                Reply = msg.Content
+                                Content = msg.Content
                             });
                         }
                     );
                     break;
 
-                case DiscordPromptMessage.PromptType.React:
+                case PromptDiscordMessage.PromptType.React:
                     waitForReplySubscription = _client.SubscribeToReactions(messageId,
                         (user, reaction) => string.Equals(message.Username, user.GetFullUsername(), StringComparison.InvariantCultureIgnoreCase),
                         async (msg, reaction) =>
@@ -59,9 +59,9 @@ namespace SCMM.Discord.Bot.Server.Handlers
                             {
                                 await msg.AddReactionAsync(new Emoji("👌"));
                             }
-                            await context.ReplyAsync(new DiscordPromptMessageReply()
+                            await context.ReplyAsync(new PromptDiscordMessage.Reply()
                             {
-                                Reply = reaction.Emote?.Name
+                                Content = reaction.Emote?.Name
                             });
                         }
                     );

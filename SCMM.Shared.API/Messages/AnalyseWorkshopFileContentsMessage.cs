@@ -3,8 +3,8 @@ using SCMM.Azure.ServiceBus.Attributes;
 
 namespace SCMM.Steam.API.Messages
 {
-    [Queue(Name = "Steam-Workshop-File-Analyse")]
-    public class AnalyseSteamWorkshopFileMessage : IMessage
+    [Queue(Name = "Analyse-Workshop-File-Contents")]
+    public class AnalyseWorkshopFileContentsMessage : IMessage
     {
         public string BlobName { get; set; }
 

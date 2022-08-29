@@ -4,7 +4,7 @@ using SCMM.Discord.API.Messages;
 
 namespace SCMM.Discord.API.Commands
 {
-    public class SendMessageRequest : DiscordSendMessage, ICommand
+    public class SendMessageRequest : SendDiscordMessage, ICommand
     {
     }
 
@@ -19,7 +19,7 @@ namespace SCMM.Discord.API.Commands
 
         public async Task HandleAsync(SendMessageRequest request)
         {
-            await _client.SendMessageAsync<DiscordSendMessage>(request);
+            await _client.SendMessageAsync<SendDiscordMessage>(request);
         }
     }
 }

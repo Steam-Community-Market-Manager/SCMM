@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
@@ -102,7 +103,7 @@ namespace SCMM.Steam.API.Commands
                 // Queue a download of the workshop file data for analyse (if it's missing or has changed since our last check)
                 if (assetDescription.WorkshopFileId > 0 && string.IsNullOrEmpty(assetDescription.WorkshopFileUrl))
                 {
-                    await _serviceBusClient.SendMessageAsync(new DownloadSteamWorkshopFileMessage()
+                    await _serviceBusClient.SendMessageAsync(new DownloadWorkshopFileContentsMessage()
                     {
                         AppId = request.AppId,
                         PublishedFileId = assetDescription.WorkshopFileId.Value,

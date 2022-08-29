@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
-using SCMM.Steam.API.Messages;
+using SCMM.Shared.API.Messages;
 using SCMM.Steam.Client;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Json;
@@ -136,11 +136,11 @@ public class UpdateCurrencyExchangeRates
         _db.SaveChanges();
 
         // Let all other services know the exchange rates have changed (they may have them cached)
-        var currencyExchangeRateUpdatedMessages = new List<CurrencyExchangeRateUpdateMessage>();
+        var currencyExchangeRateUpdatedMessages = new List<CurrencyExchangeRateUpdatedMessage>();
         foreach (var currency in updatedCurrencies)
         {
             currencyExchangeRateUpdatedMessages.Add(
-                new CurrencyExchangeRateUpdateMessage()
+                new CurrencyExchangeRateUpdatedMessage()
                 {
                     Timestamp = DateTime.UtcNow,
                     Currency = currency.Name,

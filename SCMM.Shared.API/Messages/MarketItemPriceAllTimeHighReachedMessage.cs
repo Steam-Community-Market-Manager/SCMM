@@ -3,8 +3,8 @@ using SCMM.Azure.ServiceBus.Attributes;
 
 namespace SCMM.Shared.API.Messages
 {
-    [Topic(Name = "Market-Item-Price-Profitable-Deal")]
-    public class MarketItemPriceProfitableDealMessage : IMessage
+    [Topic(Name = "Market-Item-Price-All-Time-High-Reached")]
+    public class MarketItemPriceAllTimeHighReachedMessage : IMessage
     {
 
     }
