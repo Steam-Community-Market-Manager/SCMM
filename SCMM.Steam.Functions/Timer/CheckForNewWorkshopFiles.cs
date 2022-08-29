@@ -115,7 +115,11 @@ public class CheckForNewWorkshopFiles
                     var workshopItemTitle = workshopItem.Descendants("div").FirstOrDefault(x => x.Attribute("class")?.Value?.Contains("workshopItemTitle") == true);
                     if (workshopItemLink != null && workshopItemTitle != null)
                     {
-                        publishedFiles[UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid").Value)] = workshopItemTitle.Value;
+                        // Ignore items with very short placeholder names, likely the creator "testing" the item
+                        if (workshopItemTitle.Value?.Length >= 5)
+                        {
+                            publishedFiles[UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid").Value)] = workshopItemTitle.Value;
+                        }
                     }
                 }
             }
