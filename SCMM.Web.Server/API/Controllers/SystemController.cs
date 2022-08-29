@@ -112,6 +112,7 @@ namespace SCMM.Web.Server.API.Controllers
                     Description = x.Content,
                     Media = x.Attachments.ToDictionary(k => k.Url, v => v.ContentType)
                 })
+                .ToArray()
             );
         }
     }

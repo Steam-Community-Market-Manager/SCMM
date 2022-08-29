@@ -19,7 +19,7 @@
             }
             return value.First().ToString().ToLower() + value.Substring(1);
         }
-
+        
         public static string Pluralise(this string value, int count = 0)
         {
             if (String.IsNullOrEmpty(value))
@@ -31,6 +31,12 @@
                 return count == 1
                     ? value.TrimEnd('s')
                     : value;
+            }
+            if (value.EndsWith('x'))
+            {
+                return count == 1
+                    ? value
+                    : $"{value}es";
             }
             else
             {
