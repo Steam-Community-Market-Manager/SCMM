@@ -512,7 +512,7 @@ namespace SCMM.Steam.Data.Store
             LastSaleValue = lastSaleValue;
             LastSaleOn = lastSaleOn;
 
-            // The first three days on the market is always overinflated, filter these out before calculating overall averages
+            // The first seven days on the market is always overinflated, filter these out before calculating overall averages
             var salesAfterFirstSevenDays = salesSorted.Where(x => x.Timestamp >= earliestTimestamp.AddDays(7)).ToArray();
             if (salesAfterFirstSevenDays.Any())
             {
