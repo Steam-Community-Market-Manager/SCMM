@@ -173,7 +173,7 @@ namespace SCMM.Discord.Client
             );
         }
 
-        public async Task<IEnumerable<DiscordMessage>> ListMessagesAsync(ulong guildId, ulong channelId, int messageLimit = 100)
+        public async Task<IEnumerable<DiscordMessage>> GetMessagesAsync(ulong guildId, ulong channelId, int messageLimit = 100)
         {
             WaitUntilClientIsConnected();
 
@@ -218,33 +218,41 @@ namespace SCMM.Discord.Client
             return results;
         }
 
-        public async Task<ulong> SendMessageAsync(string idOrUsername, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null, string[] reactions = null)
+        public async Task<ulong> SendMessageAsync(
+            string userIdOrName, string message = null,
+            string authorIconUrl = null, string authorName = null, string authorUrl = null, 
+            string title = null, string url = null, string thumbnailUrl = null, 
+            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, 
+            string imageUrl = null, Color? color = null, string[] reactions = null)
         {
             WaitUntilClientIsConnected();
 
             // Find the user
-            var usernameParts = idOrUsername.Split("#", StringSplitOptions.TrimEntries);
+            var usernameParts = userIdOrName.Split("#", StringSplitOptions.TrimEntries);
             var user = (usernameParts.Length > 1)
                 ? _client.GetUser(usernameParts.FirstOrDefault(), usernameParts.LastOrDefault())
-                : _client.GetUser(UInt64.Parse(idOrUsername));
+                : _client.GetUser(UInt64.Parse(userIdOrName));
             if (user == null)
             {
-                throw new Exception($"Unable to find user for message \"{message ?? title}\" (username: {idOrUsername})");
+                throw new Exception($"Unable to find user for message \"{message ?? title}\" (username: {userIdOrName})");
             }
 
             // Create a DM channel with the user
             var dm = await user.CreateDMChannelAsync();
             if (dm == null)
             {
-                throw new Exception($"Unable to create DM channel for message \"{message ?? title}\" (username: {idOrUsername})");
+                throw new Exception($"Unable to create DM channel for message \"{message ?? title}\" (username: {userIdOrName})");
             }
 
+            var embed = BuildEmbed(
+                authorIconUrl, authorName, authorUrl, title, url, thumbnailUrl, description, fields, fieldsInline, imageUrl, color
+            );
+
             // Send the message
-            var embed = BuildEmbed(title, description, fields, fieldsInline, url, thumbnailUrl, imageUrl, color);
             var msg = await dm.SendMessageAsync(text: message, embed: embed);
             if (msg == null)
             {
-                throw new Exception($"Unable to send message \"{message ?? title}\" (username: {idOrUsername})");
+                throw new Exception($"Unable to send message \"{message ?? title}\" (username: {userIdOrName})");
             }
 
             if (reactions?.Any() == true)
@@ -258,7 +266,13 @@ namespace SCMM.Discord.Client
             return msg.Id;
         }
 
-        public async Task<ulong> SendMessageAsync(ulong guildId, string[] channelPatterns, string message, string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null)
+        // TODO: Replace channelPatterns with channelIdOrName
+        public async Task<ulong> SendMessageAsync(
+            ulong guildId, string[] channelPatterns, string message = null, 
+            string authorIconUrl = null, string authorName = null, string authorUrl = null, 
+            string title = null, string url = null, string thumbnailUrl = null, 
+            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, 
+            string imageUrl = null, Color? color = null, string[] reactions = null, bool crossPost = false)
         {
             WaitUntilClientIsConnected();
 
@@ -285,13 +299,31 @@ namespace SCMM.Discord.Client
 
                 try
                 {
+                    var embed = BuildEmbed(
+                        authorIconUrl, authorName, authorUrl, title, url, thumbnailUrl, description, fields, fieldsInline, imageUrl, color
+                    );
+
                     // Send the message
                     _logger.LogTrace($"Sending messsage \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
-                    var embed = BuildEmbed(title, description, fields, fieldsInline, url, thumbnailUrl, imageUrl, color);
                     var msg = await channel.SendMessageAsync(text: message, embed: embed);
                     if (msg == null)
                     {
                         throw new Exception($"Unable to send message \"{message ?? title}\" (guild: {guild.Name} #{guild.Id}, channel: {channel.Name})");
+                    }
+
+                    // React to the message
+                    if (reactions?.Any() == true)
+                    {
+                        foreach (var reaction in reactions)
+                        {
+                            await msg.TryAddReactionAsync(new Emoji(reaction));
+                        }
+                    }
+
+                    // Cross-post (publish) the message
+                    if (crossPost)
+                    {
+                        await msg.CrosspostAsync();
                     }
 
                     // NOTE: We only want to send one message per guild, so exit after the first one has sent successfully
@@ -354,7 +386,11 @@ namespace SCMM.Discord.Client
             );
         }
 
-        private Embed BuildEmbed(string title = null, string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, string url = null, string thumbnailUrl = null, string imageUrl = null, Color? color = null)
+        private Embed BuildEmbed(
+            string authorIconUrl = null, string authorName = null, string authorUrl = null, 
+            string title = null, string url = null, string thumbnailUrl = null, 
+            string description = null, IDictionary<string, string> fields = null, bool fieldsInline = false, 
+            string imageUrl = null, Color? color = null)
         {
             // Pre-build the embed content (so we can share it across all messages)
             // If the title is not null, we assume the message has emdeded content
@@ -370,16 +406,22 @@ namespace SCMM.Discord.Client
                     ).ToList();
                 }
 
-                return new EmbedBuilder()
+                var embed = new EmbedBuilder()
                     .WithTitle(title)
+                    .WithUrl(url)
+                    .WithThumbnailUrl(thumbnailUrl)
                     .WithDescription(description)
                     .WithFields(fieldBuilders)
-                    .WithUrl(url)
                     .WithImageUrl(imageUrl)
-                    .WithThumbnailUrl(thumbnailUrl)
                     .WithColor((color != null ? color.Value : Color.Default))
-                    .WithFooter(x => x.Text = _websiteUrl)
-                    .Build();
+                    .WithFooter(x => x.Text = _websiteUrl);
+
+                if (!String.IsNullOrEmpty(authorName))
+                {
+                    embed.WithAuthor(authorName, authorIconUrl, authorUrl);
+                }
+
+                return embed.Build();
             }
 
             return null;

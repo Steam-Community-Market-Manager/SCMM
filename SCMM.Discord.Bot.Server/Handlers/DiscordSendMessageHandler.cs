@@ -20,7 +20,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             if (!String.IsNullOrEmpty(message.Username))
             {
                 return _client.SendMessageAsync(
-                    idOrUsername: message.Username,
+                    userIdOrName: message.Username,
                     message: message.Message,
                     title: message.Title,
                     description: message.Description,

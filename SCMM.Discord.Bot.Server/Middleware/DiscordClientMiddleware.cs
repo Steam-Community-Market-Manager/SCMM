@@ -104,7 +104,7 @@ namespace SCMM.Discord.Bot.Server.Middleware
         // TODO: Move this somewhere else and hook in to channel message events so this happens automatically when new messages are sent
         private async Task RepopulateSystemLatestChangeMessagesCache()
         {
-            var messages = await _client.ListMessagesAsync(
+            var messages = await _client.GetMessagesAsync(
                 guildId: 935704534808920114, // TODO: Move to config
                 channelId: 935710112063041546, // TODO: Move to config
                 messageLimit: 10
