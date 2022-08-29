@@ -126,7 +126,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (creatorId != null)
             {
-                query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()));
+                query = query.Where(x => id.Contains(x.ClassId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()));
             }
             if (glow)
             {
@@ -524,7 +524,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.AppId == appId)
                 .Where(x => x.IsAccepted == true)
                 .Where(x => x.ItemCollection == name)
-                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()))
+                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .Include(x => x.StoreItem).ThenInclude(x => x.Currency)
@@ -542,7 +542,7 @@ namespace SCMM.Web.Server.API.Controllers
                 .Where(x => x.IsAccepted == false)
                 .Where(x => x.ItemCollection == name)
                 .Where(x => x.DescriptionId == null)
-                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()))
+                .Where(x => creatorId == null || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()))
                 .Include(x => x.App)
                 .Include(x => x.CreatorProfile)
                 .OrderByDescending(x => x.TimeAccepted ?? x.TimeCreated)

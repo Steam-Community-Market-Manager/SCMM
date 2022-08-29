@@ -102,7 +102,7 @@ namespace SCMM.Web.Server.API.Controllers
             }
             if (creatorId != null)
             {
-                query = query.Where(x => id.Contains(x.SteamId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()));
+                query = query.Where(x => id.Contains(x.SteamId) || x.CreatorId == creatorId || (x.CreatorProfile != null && x.CreatorProfile.SteamId == creatorId.ToString()) || (x.App != null && x.App.SteamId == creatorId.ToString()));
             }
             
             // Join
