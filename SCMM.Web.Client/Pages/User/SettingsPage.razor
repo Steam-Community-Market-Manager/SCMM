@@ -420,7 +420,7 @@
         try 
         {
             IsUpdating = true;
-            Update.ItemInfo = SelectedItemInfoTypes.ToArray();
+            Update.ItemInfo = SelectedItemInfoTypes?.ToArray();
             StateHasChanged();
 
             var response = await Http.PutAsJsonWithDefaultsAsync($"api/profile", Update);
