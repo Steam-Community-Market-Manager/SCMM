@@ -51,7 +51,7 @@ public class CheckNewStoreVideosYouTube
 
             foreach (var itemStore in activeItemStores)
             {
-                var media = new Dictionary<DateTimeOffset, string>();
+                var media = new List<YouTubeVideo>();
                 foreach (var channel in _configuration.Channels.Where(x => x.Type == CheckNewStoreVideosConfiguration.ChannelType.YouTube))
                 {
                     try
@@ -76,32 +76,7 @@ public class CheckNewStoreVideosYouTube
 
                         if (firstStoreVideo != null)
                         {
-                            media[firstStoreVideo.PublishedAt.Value] = firstStoreVideo.Id;
-
-                            await _serviceBus.SendMessageAsync(new StoreMediaAddedMessage()
-                            {
-                                StoreStartedOn = itemStore.Start,
-                                ChannelId = firstStoreVideo.ChannelId,
-                                ChannelTitle = firstStoreVideo.ChannelTitle,
-                                VideoId = firstStoreVideo.Id,
-                                VideoTitle = firstStoreVideo.Title,
-                                VideoThumbnailUrl = firstStoreVideo.Thumbnail.ToString(),
-                                VideoPublishedOn = firstStoreVideo.PublishedAt ?? DateTimeOffset.Now,
-                            });
-
-                            /*
-                            try
-                            {
-                                await googleClient.LikeVideoAsync(storeVideo.Id);
-                                await googleClient.CommentOnVideoAsync(storeVideo.ChannelId, storeVideo.Id,
-                                    $"thank you for showcasing this weeks new skins, your video has been featured on {_configuration.GetWebsiteUrl()}/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
-                                );
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.LogWarning(ex, $"Failed to like and comment on new store video (channelId: {storeVideo.ChannelId}, videoId: {storeVideo.Id}), skipping...");
-                            }
-                            */
+                            media.Add(firstStoreVideo);
                         }
                     }
                     catch (Exception ex)
@@ -111,19 +86,46 @@ public class CheckNewStoreVideosYouTube
                 }
 
                 var newMedia = media
-                    .Where(x => !itemStore.Media.Contains(x.Value))
-                    .OrderBy(x => x.Key)
+                    .Where(x => !itemStore.Media.Contains(x.Id))
+                    .OrderBy(x => x.PublishedAt)
                     .ToList();
 
                 if (newMedia.Any())
                 {
                     logger.LogInformation($"{newMedia.Count} new video(s) were found for store {itemStore.Start.Value.UtcDateTime}");
                     itemStore.Media = new PersistableStringCollection(
-                        itemStore.Media.Union(newMedia.Select(x => x.Value))
+                        itemStore.Media.Union(newMedia.Select(x => x.Id))
                     );
 
-                    _db.SaveChanges();
-                    logger.LogTrace($"{itemStore.Media.Count} total video(s) are now recorded for store {itemStore.Start.Value.UtcDateTime}");
+                    await _db.SaveChangesAsync();
+                    
+                    foreach (var item in newMedia)
+                    {
+                        await _serviceBus.SendMessageAsync(new StoreMediaAddedMessage()
+                        {
+                            StoreStartedOn = itemStore.Start,
+                            ChannelId = item.ChannelId,
+                            ChannelTitle = item.ChannelTitle,
+                            VideoId = item.Id,
+                            VideoTitle = item.Title,
+                            VideoThumbnailUrl = item.Thumbnail.ToString(),
+                            VideoPublishedOn = item.PublishedAt ?? DateTimeOffset.Now,
+                        });
+
+                        /*
+                        try
+                        {
+                            await googleClient.LikeVideoAsync(storeVideo.Id);
+                            await googleClient.CommentOnVideoAsync(storeVideo.ChannelId, storeVideo.Id,
+                                $"thank you for showcasing this weeks new skins, your video has been featured on {_configuration.GetWebsiteUrl()}/store/{itemStore.Start.ToString(Constants.SCMMStoreIdDateFormat)}"
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogWarning(ex, $"Failed to like and comment on new store video (channelId: {storeVideo.ChannelId}, videoId: {storeVideo.Id}), skipping...");
+                        }
+                        */
+                    }
                 }
                 else
                 {
