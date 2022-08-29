@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
 using SCMM.Google.Client;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Enums;
@@ -15,12 +16,14 @@ public class CheckNewStoreVideosTwitch
     private readonly SteamDbContext _db;
     private readonly GoogleClient _googleClient;
     private readonly CheckNewStoreVideosConfiguration _configuration;
+    private readonly ServiceBusClient _serviceBus;
 
-    public CheckNewStoreVideosTwitch(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient)
+    public CheckNewStoreVideosTwitch(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient, ServiceBusClient serviceBus)
     {
         _db = db;
         _googleClient = googleClient;
         _configuration = configuration.GetSection("StoreVideos").Get<CheckNewStoreVideosConfiguration>();
+        _serviceBus = serviceBus;
     }
 
     [Function("Check-New-Store-Videos-Twitch")]
@@ -63,6 +66,7 @@ public class CheckNewStoreVideosTwitch
 
                         // Find the earliest video that matches our store data period.
                         logger.LogTrace($"Checking channel (id: {channel.ChannelId}) for new store videos since {itemStore.Start.Value.UtcDateTime}...");
+
                         // TODO: Implement this...
                         // https://github.com/TwitchLib/TwitchLib.Api
                         /*
@@ -76,6 +80,17 @@ public class CheckNewStoreVideosTwitch
                         if (firstStoreVideo != null)
                         {
                             media[firstStoreVideo.PublishedAt.Value] = firstStoreVideo.Id;
+                        
+                            await _serviceBus.SendMessageAsync(new StoreMediaAddedMessage()
+                            {
+                                StoreStartedOn = itemStore.Start,
+                                ChannelId = firstStoreVideo.ChannelId,
+                                ChannelTitle = firstStoreVideo.ChannelTitle,
+                                VideoId = firstStoreVideo.Id,
+                                VideoTitle = firstStoreVideo.Title,
+                                VideoThumbnailUrl = firstStoreVideo.Thumbnail.ToString(),
+                                VideoPublishedOn = firstStoreVideo.PublishedAt ?? DateTimeOffset.Now,
+                            });
                         }
                         */
                     }

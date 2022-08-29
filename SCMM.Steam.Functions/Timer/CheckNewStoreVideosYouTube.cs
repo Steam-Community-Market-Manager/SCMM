@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
 using SCMM.Google.Client;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models.Enums;
 using SCMM.Steam.Data.Store;
@@ -15,12 +17,14 @@ public class CheckNewStoreVideosYouTube
     private readonly SteamDbContext _db;
     private readonly GoogleClient _googleClient;
     private readonly CheckNewStoreVideosConfiguration _configuration;
+    private readonly ServiceBusClient _serviceBus;
 
-    public CheckNewStoreVideosYouTube(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient)
+    public CheckNewStoreVideosYouTube(IConfiguration configuration, SteamDbContext db, GoogleClient googleClient, ServiceBusClient serviceBus)
     {
         _db = db;
         _googleClient = googleClient;
         _configuration = configuration.GetSection("StoreVideos").Get<CheckNewStoreVideosConfiguration>();
+        _serviceBus = serviceBus;
     }
 
     [Function("Check-New-Store-Videos-YouTube")]
@@ -73,6 +77,18 @@ public class CheckNewStoreVideosYouTube
                         if (firstStoreVideo != null)
                         {
                             media[firstStoreVideo.PublishedAt.Value] = firstStoreVideo.Id;
+
+                            await _serviceBus.SendMessageAsync(new StoreMediaAddedMessage()
+                            {
+                                StoreStartedOn = itemStore.Start,
+                                ChannelId = firstStoreVideo.ChannelId,
+                                ChannelTitle = firstStoreVideo.ChannelTitle,
+                                VideoId = firstStoreVideo.Id,
+                                VideoTitle = firstStoreVideo.Title,
+                                VideoThumbnailUrl = firstStoreVideo.Thumbnail.ToString(),
+                                VideoPublishedOn = firstStoreVideo.PublishedAt ?? DateTimeOffset.Now,
+                            });
+
                             /*
                             try
                             {
