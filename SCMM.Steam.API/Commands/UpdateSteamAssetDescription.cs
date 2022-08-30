@@ -648,7 +648,7 @@ namespace SCMM.Steam.API.Commands
                                     .Where(x => string.IsNullOrEmpty(x.ItemCollection));
                                 foreach (var word in newItemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                                 {
-                                    query = query.Where(x => x.Name.Contains(word, StringComparison.InvariantCultureIgnoreCase));
+                                    query = query.Where(x => x.Name.Contains(word));
                                 }
                                 var collectionItems = await query.ToListAsync();
                                 if (collectionItems.Count > 1)
