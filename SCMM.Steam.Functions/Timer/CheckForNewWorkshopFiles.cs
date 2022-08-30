@@ -177,7 +177,7 @@ public class CheckForNewWorkshopFiles
                 {
                     var isCollectionMatch = existingItemCollection
                         .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .All(x => missingPublishedFile.Title.Contains(x));
+                        .All(x => missingPublishedFile.Title.Contains(x, StringComparison.InvariantCultureIgnoreCase));
                     if (isCollectionMatch)
                     {
                         workshopFile.ItemCollection = existingItemCollection;

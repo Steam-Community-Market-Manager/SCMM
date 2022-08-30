@@ -574,7 +574,7 @@ namespace SCMM.Steam.API.Commands
                             {
                                 var isCollectionMatch = existingItemCollection
                                     .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                    .All(x => assetDescription.Name.Contains(x));
+                                    .All(x => assetDescription.Name.Contains(x, StringComparison.InvariantCultureIgnoreCase));
                                 if (isCollectionMatch)
                                 {
                                     assetDescription.ItemCollection = existingItemCollection;
@@ -620,7 +620,7 @@ namespace SCMM.Steam.API.Commands
                                     .Where(x => string.IsNullOrEmpty(x.ItemCollection));
                                 foreach (var word in newItemCollection.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                                 {
-                                    query = query.Where(x => x.Name.Contains(word));
+                                    query = query.Where(x => x.Name.Contains(word, StringComparison.InvariantCultureIgnoreCase));
                                 }
                                 var collectionItems = await query.ToListAsync();
                                 if (collectionItems.Count > 1)
