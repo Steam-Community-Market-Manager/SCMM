@@ -1,4 +1,5 @@
-﻿using SCMM.Shared.Data.Store;
+﻿using SCMM.Shared.Data.Models.Extensions;
+using SCMM.Shared.Data.Store;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Data.Models;
 using System.Collections.ObjectModel;
@@ -53,6 +54,13 @@ namespace SCMM.Steam.Data.Store
             }
 
             return Id.ToString();
+        }
+
+        public string StoreName()
+        {
+            return Start != null
+                ? $"{Start.Value.ToString("yyyy MMMM d")}{Start.Value.GetDaySuffix()}"
+                : Name;
         }
     }
 }

@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store.Types;
 using SCMM.Steam.Client;
@@ -57,14 +59,16 @@ namespace SCMM.Steam.API.Commands
         private readonly SteamConfiguration _cfg;
         private readonly ICommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
+        private readonly ServiceBusClient _serviceBus;
 
-        public UpdateSteamAssetDescription(ILogger<UpdateSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public UpdateSteamAssetDescription(ILogger<UpdateSteamAssetDescription> logger, SteamDbContext db, IConfiguration cfg, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBus)
         {
             _logger = logger;
             _db = db;
             _cfg = cfg?.GetSteamConfiguration();
             _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
+            _serviceBus = serviceBus;
         }
 
         public async Task<UpdateSteamAssetDescriptionResponse> HandleAsync(UpdateSteamAssetDescriptionRequest request)
@@ -76,6 +80,7 @@ namespace SCMM.Steam.API.Commands
                 throw new ArgumentNullException(nameof(request.AssetDescription));
             }
 
+            var app = (request.AssetDescription.App);
             var appId = (request.AssetDescription.App != null ? (ulong?)UInt64.Parse(request.AssetDescription.App.SteamId) : null) ??
                         (request.AssetItemDefinition != null ? (ulong?)request.AssetItemDefinition.AppId : null) ??
                         (request.PublishedFile != null ? (ulong?)request.PublishedFile.ConsumerAppId : null);
@@ -290,8 +295,8 @@ namespace SCMM.Steam.API.Commands
                         var updateDateTime = (updateDateTimeMatchGroup.Count > 1)
                             ? updateDateTimeMatchGroup[1].Value.Trim()
                             : null;
-                        if (DateTime.TryParseExact(updateDateTime, "d MMM @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp) ||
-                            DateTime.TryParseExact(updateDateTime, "d MMM, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp))
+                        if (DateTime.TryParseExact(updateDateTime, "d MMM, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp) ||
+                            DateTime.TryParseExact(updateDateTime, "d MMM @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out timestamp))
                         {
                             // Only track changes that happened after the item was accepted
                             if (timestamp > assetDescription.TimeAccepted)
@@ -301,6 +306,29 @@ namespace SCMM.Steam.API.Commands
                                     description = assetDescription.Changes[timestamp];
                                 }
                                 assetDescription.Changes[timestamp] = (description ?? string.Empty).FirstCharToUpper();
+                                if (!assetDescription.Changes.ContainsKey(timestamp))
+                                {
+                                    app = app ?? await _db.SteamApps.AsNoTracking().FirstOrDefaultAsync(x => x.SteamId == (appId ?? 0).ToString());
+                                    await _serviceBus.SendMessageAsync(new WorkshopFileUpdatedMessage()
+                                    {
+                                        AppId = UInt64.Parse(app.SteamId),
+                                        AppName = app?.Name,
+                                        AppIconUrl = app?.IconUrl,
+                                        AppColour = app?.PrimaryColor,
+                                        CreatorId = assetDescription.CreatorId ?? 0,
+                                        CreatorName = assetDescription.CreatorProfile?.Name,
+                                        CreatorAvatarUrl = assetDescription.CreatorProfile?.AvatarUrl,
+                                        ItemId = assetDescription.WorkshopFileId ?? 0,
+                                        ItemType = assetDescription.ItemType,
+                                        ItemShortName = assetDescription.ItemShortName,
+                                        ItemName = assetDescription.Name,
+                                        ItemDescription = assetDescription.Description,
+                                        ItemCollection = assetDescription.ItemCollection,
+                                        ItemImageUrl = assetDescription.PreviewUrl,
+                                        ChangeTimestamp = assetDescription.TimeUpdated?.UtcDateTime ?? timestamp,
+                                        ChangeNote = description
+                                    });
+                                }
                             }
                         }
                     }

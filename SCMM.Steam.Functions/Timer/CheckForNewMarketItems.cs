@@ -3,9 +3,11 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Commands;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Steam.API;
@@ -29,8 +31,9 @@ public class CheckForNewMarketItems
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamCommunityWebClient _steamCommunityWebClient;
     private readonly SteamService _steamService;
+    private readonly ServiceBusClient _serviceBus;
 
-    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService)
+    public CheckForNewMarketItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamCommunityWebClient steamCommunityWebClient, SteamService steamService, ServiceBusClient serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
@@ -39,6 +42,7 @@ public class CheckForNewMarketItems
         _steamDb = steamDb;
         _steamCommunityWebClient = steamCommunityWebClient;
         _steamService = steamService;
+        _serviceBus = serviceBus;
     }
 
     [Function("Check-New-Market-Items")]
@@ -52,6 +56,7 @@ public class CheckForNewMarketItems
             .Where(x => !x.IsSpecialDrop && !x.IsTwitchDrop)
             .Where(x => x.IsAccepted)
             .Include(x => x.App)
+            .Include(x => x.CreatorProfile)
             .ToList();
         if (!assetDescriptions.Any())
         {
@@ -128,6 +133,32 @@ public class CheckForNewMarketItems
         {
             return;
         }
+
+        var broadcastTasks = new List<Task>();
+        foreach (var marketItem in newMarketItems)
+        {
+            broadcastTasks.Add(
+                _serviceBus.SendMessageAsync(new MarketItemAddedMessage()
+                {
+                    AppId = UInt64.Parse(app.SteamId),
+                    AppName = app.Name,
+                    AppIconUrl = app.IconUrl,
+                    AppColour = app.PrimaryColor,
+                    CreatorId = marketItem.Description?.CreatorId,
+                    CreatorName = marketItem.Description?.CreatorProfile?.Name,
+                    CreatorAvatarUrl = marketItem.Description?.CreatorProfile?.AvatarUrl,
+                    ItemId = UInt64.Parse(marketItem.SteamId),
+                    ItemType = marketItem.Description?.ItemType,
+                    ItemShortName = marketItem.Description?.ItemShortName,
+                    ItemName = marketItem.Description?.Name,
+                    ItemDescription = marketItem.Description?.Description,
+                    ItemCollection = marketItem.Description?.ItemCollection,
+                    ItemImageUrl = marketItem.Description?.IconLargeUrl ?? marketItem.Description?.IconUrl,
+                })
+            );
+        }
+
+        await Task.WhenAll(broadcastTasks);
 
         var thumbnailImageUrl = (string)null;
         try

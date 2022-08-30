@@ -42,18 +42,25 @@ namespace SCMM.Steam.API
                 await _db.SteamStoreItems
                     .Include(x => x.Stores).ThenInclude(x => x.Store)
                     .Include(x => x.Description)
+                    .Include(x => x.Description.App)
+                    .Include(x => x.Description.CreatorProfile)
                     .Where(x => x.AppId == app.Id)
                     .FirstOrDefaultAsync(x => x.SteamId == asset.Name) ??
                 await _db.SteamStoreItems
                     .Include(x => x.Stores).ThenInclude(x => x.Store)
                     .Include(x => x.Description)
+                    .Include(x => x.Description.App)
+                    .Include(x => x.Description.CreatorProfile)
                     .Where(x => x.AppId == app.Id)
                     .FirstOrDefaultAsync(x => x.Description.ClassId == asset.ClassId)
             );
 
             // Find the item asset description, or import it if missing
-            var assetDescription = (
-                dbItem?.Description ?? await _db.SteamAssetDescriptions.FirstOrDefaultAsync(x => x.AppId == app.Id && x.ClassId == asset.ClassId)
+            var assetDescription = (dbItem?.Description ??
+                await _db.SteamAssetDescriptions
+                    .Include(x => x.App)
+                    .Include(x => x.CreatorProfile)
+                    .FirstOrDefaultAsync(x => x.AppId == app.Id && x.ClassId == asset.ClassId)
             );
             if (assetDescription == null)
             {

@@ -5,6 +5,7 @@ using SCMM.Discord.Client;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
+using System.Globalization;
 using System.Text;
 using DiscordGuild = SCMM.Discord.Data.Store.DiscordGuild;
 
@@ -71,19 +72,18 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                var storeName = (storeMedia.StoreStartedOn != null ? storeMedia.StoreStartedOn.Value.Date.ToString("MMMM d") : "most recent");
-                description.Append($"{storeMedia.ChannelTitle} has uploaded a new video covering the **{storeName}** item store");
+                description.Append($"{storeMedia.ChannelName} has uploaded a new video covering the **{storeMedia.StoreName}** item store");
                 
                 return _client.SendMessageAsync(
                     guild.Id,
                     new[] { channel },
-                    authorName: storeMedia.ChannelTitle,
+                    authorName: storeMedia.ChannelName,
                     authorUrl: $"https://www.youtube.com/channel/{storeMedia.ChannelId}",
-                    title: storeMedia.VideoTitle,
+                    title: storeMedia.VideoName,
                     url: $"https://www.youtube.com/watch?v={storeMedia.VideoId}",
                     description: description.ToString(),
                     imageUrl: storeMedia.VideoThumbnailUrl,
-                    color: Color.Red,
+                    color: new Color(255, 0, 0), // YouTube red
                     crossPost: false
                 );
             });
@@ -94,7 +94,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFilePublished, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"{workshopFile.CreatorName} has just published a new **{workshopFile.ItemType}** workshop submission ");
+                description.Append($"{workshopFile.CreatorName} has published a new **{workshopFile.ItemType}** workshop submission ");
                 if (!String.IsNullOrEmpty(workshopFile.ItemCollection))
                 {
                     description.Append($" in their **{workshopFile.ItemCollection}** collection");
@@ -110,23 +110,54 @@ namespace SCMM.Discord.Bot.Server.Handlers
                         SteamId = workshopFile.CreatorId.ToString(),
                         AppId = workshopFile.AppId.ToString()
                     },
-                    title: workshopFile.Name,
+                    title: workshopFile.ItemName,
                     url: new SteamWorkshopFileDetailsPageRequest()
                     {
-                        Id = workshopFile.Id.ToString()
+                        Id = workshopFile.ItemId.ToString()
                     },
                     thumbnailUrl: $"https://rust.scmm.app/images/app/252490/items/{workshopFile.ItemShortName}.png",
                     description: description.ToString(),
-                    imageUrl: workshopFile.PreviewUrl,
-                    color: Color.Blue,
+                    imageUrl: workshopFile.ItemImageUrl,
+                    color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?)UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
                     crossPost: true
                 );
             });
         }
 
-        public async Task HandleAsync(WorkshopFileUpdatedMessage message, MessageContext context)
+        public async Task HandleAsync(WorkshopFileUpdatedMessage workshopFile, MessageContext context)
         {
-            throw new NotImplementedException();
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFileUpdated, (guild, channel) =>
+            {
+                var description = new StringBuilder();
+                description.Append($"{workshopFile.CreatorName} has updated this accepted workshop item. Depending on the change made, there may be in-game visual changes to the apparence of this item.");
+                if (!String.IsNullOrEmpty(workshopFile.ChangeNote))
+                {
+                    description.AppendLine();
+                    description.Append($"````{workshopFile.ChangeNote}````");
+                }
+
+                return _client.SendMessageAsync(
+                    guild.Id,
+                    new[] { channel },
+                    authorIconUrl: workshopFile.CreatorAvatarUrl,
+                    authorName: workshopFile.CreatorName,
+                    authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
+                    {
+                        SteamId = workshopFile.CreatorId.ToString(),
+                        AppId = workshopFile.AppId.ToString()
+                    },
+                    title: workshopFile.ItemName,
+                    url: new SteamWorkshopFileDetailsPageRequest()
+                    {
+                        Id = workshopFile.ItemId.ToString()
+                    },
+                    thumbnailUrl: $"https://rust.scmm.app/images/app/252490/items/{workshopFile.ItemShortName}.png",
+                    description: description.ToString(),
+                    imageUrl: workshopFile.ItemImageUrl,
+                    color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?) UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    crossPost: false
+                );
+            });
         }
 
         private async Task SendAlertToGuilds(string alertConfigurationName, Func<DiscordGuild, string, Task> alertCallback)

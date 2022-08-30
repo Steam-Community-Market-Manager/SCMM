@@ -74,11 +74,11 @@ public class CheckForNewItemDefinitions
                     await _steamDb.SaveChangesAsync();
                     await _serviceBus.SendMessageAsync(new AppItemDefinitionsUpdatedMessage()
                     {
-                        AppId = app.SteamId,
+                        AppId = UInt64.Parse(app.SteamId),
                         AppName = app.Name,
                         AppIconUrl = app.IconUrl,
-                        AppPrimaryColour = app.PrimaryColor,
-                        Digest = itemDefsDigest,
+                        AppColour = app.PrimaryColor,
+                        ItemDefinitionsDigest = itemDefsDigest,
                         TimeUpdated = itemDefsLastModified
                     });
 

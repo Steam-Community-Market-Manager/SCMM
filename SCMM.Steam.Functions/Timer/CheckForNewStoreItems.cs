@@ -3,9 +3,11 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SCMM.Azure.ServiceBus;
 using SCMM.Discord.API.Commands;
 using SCMM.Discord.Data.Store;
 using SCMM.Shared.API.Extensions;
+using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
 using SCMM.Shared.Data.Store;
@@ -33,8 +35,9 @@ public class CheckForNewStoreItems
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamService _steamService;
+    private readonly ServiceBusClient _serviceBus;
 
-    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamService steamService)
+    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamService steamService, ServiceBusClient serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
@@ -42,6 +45,7 @@ public class CheckForNewStoreItems
         _discordDb = discordDb;
         _steamDb = steamDb;
         _steamService = steamService;
+        _serviceBus = serviceBus;
     }
 
     [Function("Check-New-Store-Items")]
@@ -363,6 +367,34 @@ public class CheckForNewStoreItems
             return;
         }
 
+        var broadcastTasks = new List<Task>();
+        foreach (var storeItem in newStoreItems)
+        {
+            broadcastTasks.Add(
+                _serviceBus.SendMessageAsync(new StoreItemAddedMessage()
+                {
+                    AppId = UInt64.Parse(app.SteamId),
+                    AppName = app.Name,
+                    AppIconUrl = app.IconUrl,
+                    AppColour = app.PrimaryColor,
+                    StoreId = store.StoreId(),
+                    StoreName = store.StoreName(),
+                    CreatorId = storeItem.Item.Description?.CreatorId,
+                    CreatorName = storeItem.Item.Description?.CreatorProfile?.Name,
+                    CreatorAvatarUrl = storeItem.Item.Description?.CreatorProfile?.AvatarUrl,
+                    ItemId = UInt64.Parse(storeItem.Item.SteamId),
+                    ItemType = storeItem.Item.Description?.ItemType,
+                    ItemShortName = storeItem.Item.Description?.ItemShortName,
+                    ItemName = storeItem.Item.Description?.Name,
+                    ItemDescription = storeItem.Item.Description?.Description,
+                    ItemCollection = storeItem.Item.Description?.ItemCollection,
+                    ItemImageUrl = storeItem.Item.Description?.IconLargeUrl ?? storeItem.Item.Description?.IconUrl,
+                })
+            );
+        }
+
+        await Task.WhenAll(broadcastTasks);
+
         var guilds = _discordDb.DiscordGuilds.ToList();
         foreach (var guild in guilds)
         {
@@ -388,16 +420,12 @@ public class CheckForNewStoreItems
                     filteredCurrencies = currencies.Where(x => x.Name == Constants.SteamCurrencyUSD).ToList();
                 }
 
-                var storeName = store.Start != null
-                    ? $"{store.Start.Value.ToString("yyyy MMMM d")}{store.Start.Value.GetDaySuffix()}"
-                    : store.Name;
-
                 await _commandProcessor.ProcessAsync(new SendMessageRequest()
                 {
                     GuidId = guild.Id,
                     ChannelPatterns = guildChannels?.ToArray(),
                     Message = null,
-                    Title = $"{app.Name} Store - {storeName}",
+                    Title = $"{app.Name} Store - {store.StoreName()}",
                     Description = $"{newStoreItems.Count()} new item(s) have been added to the store.",
                     Fields = newStoreItems.ToDictionary(
                         x => x.Item?.Description?.Name,

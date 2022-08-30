@@ -115,8 +115,8 @@ public class CheckForNewWorkshopFiles
                     var workshopItemTitle = workshopItem.Descendants("div").FirstOrDefault(x => x.Attribute("class")?.Value?.Contains("workshopItemTitle") == true);
                     if (workshopItemLink != null && workshopItemTitle != null)
                     {
-                        // Ignore items with very short placeholder names, likely the creator "testing" the item
-                        if (workshopItemTitle.Value?.Length >= 5)
+                        // Ignore items with very short placeholder "test" names where it's likely the creator is just testing items in-game 
+                        if (workshopItemTitle.Value?.Length > 4 && workshopItemTitle.Value?.StartsWith("test", StringComparison.InvariantCultureIgnoreCase) != true)
                         {
                             publishedFiles[UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid").Value)] = workshopItemTitle.Value;
                         }
@@ -199,18 +199,20 @@ public class CheckForNewWorkshopFiles
                     _steamDb.SteamWorkshopFiles.Add(workshopFile);
                     await _serviceBus.SendMessageAsync(new WorkshopFilePublishedMessage()
                     {
-                        Id = UInt64.Parse(workshopFile.SteamId),
                         AppId = UInt64.Parse(app.SteamId),
+                        AppName = app.Name,
+                        AppIconUrl = app.IconUrl,
+                        AppColour = app.PrimaryColor,
                         CreatorId = UInt64.Parse(workshopFile.CreatorProfile?.SteamId ?? "0"),
                         CreatorName = workshopFile.CreatorProfile?.Name,
                         CreatorAvatarUrl = workshopFile.CreatorProfile?.AvatarUrl,
+                        ItemId = UInt64.Parse(workshopFile.SteamId),
                         ItemType = workshopFile.ItemType,
                         ItemShortName = workshopFile.ItemShortName,
+                        ItemName = workshopFile.Name,
+                        ItemDescription = workshopFile.Description,
                         ItemCollection = workshopFile.ItemCollection,
-                        Name = workshopFile.Name,
-                        Description = workshopFile.Description,
-                        PreviewUrl = workshopFile.PreviewUrl,
-                        TimeCreated = workshopFile.TimeCreated ?? DateTimeOffset.Now
+                        ItemImageUrl = workshopFile.PreviewUrl,
                     });
                 }
             }

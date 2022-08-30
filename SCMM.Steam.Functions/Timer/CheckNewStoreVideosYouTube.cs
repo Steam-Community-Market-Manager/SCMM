@@ -103,11 +103,16 @@ public class CheckNewStoreVideosYouTube
                     {
                         await _serviceBus.SendMessageAsync(new StoreMediaAddedMessage()
                         {
-                            StoreStartedOn = itemStore.Start,
+                            AppId = UInt64.Parse(app.SteamId),
+                            AppName = app.Name,
+                            AppIconUrl = app.IconUrl,
+                            AppColour = app.PrimaryColor,
+                            StoreId = itemStore.StoreId(),
+                            StoreName = itemStore.StoreName(),
                             ChannelId = item.ChannelId,
-                            ChannelTitle = item.ChannelTitle,
+                            ChannelName = item.ChannelTitle,
                             VideoId = item.Id,
-                            VideoTitle = item.Title,
+                            VideoName = item.Title,
                             VideoThumbnailUrl = item.Thumbnail.ToString(),
                             VideoPublishedOn = item.PublishedAt ?? DateTimeOffset.Now,
                         });
