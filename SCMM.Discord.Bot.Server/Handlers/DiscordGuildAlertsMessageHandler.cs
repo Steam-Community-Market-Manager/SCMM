@@ -13,6 +13,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
     public class DiscordGuildAlertsMessageHandler :
         IMessageHandler<AppItemDefinitionsUpdatedMessage>,
         IMessageHandler<MarketItemAddedMessage>,
+        IMessageHandler<MarketItemManipulationDetectedMessage>,
         IMessageHandler<MarketItemPriceAllTimeHighReachedMessage>,
         IMessageHandler<MarketItemPriceAllTimeLowReachedMessage>,
         IMessageHandler<MarketItemPriceProfitableDealDetectedMessage>,
@@ -36,6 +37,11 @@ namespace SCMM.Discord.Bot.Server.Handlers
         }
 
         public async Task HandleAsync(MarketItemAddedMessage marketItem, MessageContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task HandleAsync(MarketItemManipulationDetectedMessage marketItem, MessageContext context)
         {
             throw new NotImplementedException();
         }

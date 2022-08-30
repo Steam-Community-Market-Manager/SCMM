@@ -30,6 +30,7 @@ namespace SCMM.Discord.Data.Store
 
             public const string AlertChannelAppItemDefinitionsUpdated = "Alert-Channel-App-Item-Definitions-Updated";
             public const string AlertChannelMarketItemAdded = "Alert-Channel-Market-Item-Added";
+            public const string AlertChannelMarketItemManipulationDetected = "Alert-Channel-Market-Item-Manipulation-Detected";
             public const string AlertChannelMarketItemPriceAllTimeHighReached = "Alert-Channel-Market-Item-Price-All-Time-High-Reached";
             public const string AlertChannelMarketItemPriceAllTimeLowReached = "Alert-Channel-Market-Item-Price-All-Time-Low-Reached";
             public const string AlertChannelMarketItemPriceProfitableDealDetected = "Alert-Channel-Market-Item-Price-Profitable-Deal-Detected";
@@ -86,6 +87,12 @@ namespace SCMM.Discord.Data.Store
                 {
                     Name = AlertChannelMarketItemAdded,
                     Description =  "The channel where alerts will be posted when new items are listed on the community market.",
+                    RequiredFlags = (int) GuildFlags.Alerts
+                },
+                new ConfigurationDefinition()
+                {
+                    Name = AlertChannelMarketItemManipulationDetected,
+                    Description =  "The channel where alerts will be posted when market items appear to be undergoing manipulation on the community market.",
                     RequiredFlags = (int) GuildFlags.Alerts
                 },
                 new ConfigurationDefinition()
