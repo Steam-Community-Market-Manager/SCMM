@@ -12,6 +12,7 @@
         public const string SteamAssetTagWorkshop = "workshop";
         public const string SteamAssetTagStore = "store";
 
+        public static string SteamWorkshopTagSkin = "Skin";
         public static readonly string[] SteamIgnoredWorkshopTags = {
             "Skin", "Version3"
         };

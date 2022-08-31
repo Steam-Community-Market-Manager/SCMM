@@ -6,6 +6,7 @@ using SCMM.Azure.ServiceBus;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
+using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using SCMM.Steam.Data.Store;
 using SteamWebAPI2.Interfaces;
@@ -115,11 +116,7 @@ public class CheckForNewWorkshopFiles
                     var workshopItemTitle = workshopItem.Descendants("div").FirstOrDefault(x => x.Attribute("class")?.Value?.Contains("workshopItemTitle") == true);
                     if (workshopItemLink != null && workshopItemTitle != null)
                     {
-                        // Ignore items with very short placeholder "test" names where it's likely the creator is just testing items in-game 
-                        if (workshopItemTitle.Value?.Length > 4 && workshopItemTitle.Value?.StartsWith("test", StringComparison.InvariantCultureIgnoreCase) != true)
-                        {
-                            publishedFiles[UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid").Value)] = workshopItemTitle.Value;
-                        }
+                        publishedFiles[UInt64.Parse(workshopItemLink?.Attribute("data-publishedfileid").Value)] = workshopItemTitle.Value;
                     }
                 }
             }
@@ -152,6 +149,21 @@ public class CheckForNewWorkshopFiles
             // Import missing workshop files
             foreach (var missingPublishedFile in missingPublishedFileDetails.Data)
             {
+                // Skip items which have very short placeholder sounding names or that have only just been published in the last few minutes.
+                // Creators will often publish items temporarily just to test them in-game and then delete them again, which we don't want to import (yet).
+                // If the item has existed for at least 15 minutes, we assume the creator is happy with the item and plans to keep it published
+                if ((missingPublishedFile.Title.Length < 5) || missingPublishedFile.Title.StartsWith("test", StringComparison.InvariantCultureIgnoreCase) ||
+                    (DateTime.UtcNow - missingPublishedFile.TimeCreated) <= TimeSpan.FromMinutes(15))
+                {
+                    continue;
+                }
+
+                // Skip items which are not skins
+                if (missingPublishedFile.Tags?.Contains(Constants.SteamWorkshopTagSkin) != true)
+                {
+                    continue;
+                }
+
                 var workshopFile = new SteamWorkshopFile()
                 {
                     AppId = app.Id,
