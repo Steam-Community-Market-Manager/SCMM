@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SCMM.Azure.ServiceBus;
 using SCMM.Discord.Client;
 using SCMM.Discord.Data.Store;
+using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.Data.Models.Community.Requests.Html;
 using System.Globalization;
@@ -23,23 +24,71 @@ namespace SCMM.Discord.Bot.Server.Handlers
         IMessageHandler<WorkshopFilePublishedMessage>,
         IMessageHandler<WorkshopFileUpdatedMessage>
     {
+        private readonly IConfiguration _configuration;
         private readonly DiscordDbContext _discordDb;
         private readonly DiscordClient _client;
 
-        public DiscordGuildAlertsMessageHandler(DiscordDbContext discordDb, DiscordClient client)
+        public DiscordGuildAlertsMessageHandler(IConfiguration configuration, DiscordDbContext discordDb, DiscordClient client)
         {
+            _configuration = configuration;
             _discordDb = discordDb;
             _client = client;
         }
 
         public async Task HandleAsync(AppItemDefinitionsUpdatedMessage appItemDefinition, MessageContext context)
         {
-            throw new NotImplementedException();
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guild, channel) =>
+            {
+                var description = new StringBuilder();
+                description.Append($"In-game item definitions for {appItemDefinition.AppName} have just been updated.");
+                var fields = new Dictionary<string, string>()
+                {
+                    { "Digest", $"`{appItemDefinition.ItemDefinitionsDigest}`" }
+                };
+
+                return _client.SendMessageAsync(
+                    guild.Id,
+                    new[] { channel },
+                    title: $"{appItemDefinition.AppName} Item Definitions Updated",
+                    url: $"{_configuration.GetWebsiteUrl()}/items",
+                    thumbnailUrl: !String.IsNullOrEmpty(appItemDefinition.AppIconUrl) ? appItemDefinition.AppIconUrl : null,
+                    description: description.ToString(),
+                    fields: fields,
+                    color: !String.IsNullOrEmpty(appItemDefinition.AppColour) ? (uint?)UInt32.Parse(appItemDefinition.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    crossPost: true
+                );
+            });
         }
 
         public async Task HandleAsync(MarketItemAddedMessage marketItem, MessageContext context)
         {
-            throw new NotImplementedException();
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemAdded, (guild, channel) =>
+            {
+                var description = new StringBuilder();
+                description.Append($"Has just appeared on the Steam Community Market for the first time.");
+                
+                return _client.SendMessageAsync(
+                    guild.Id,
+                    new[] { channel },
+                    authorIconUrl: !String.IsNullOrEmpty(marketItem.CreatorAvatarUrl) ? marketItem.CreatorAvatarUrl : null,
+                    authorName: marketItem.CreatorName,
+                    authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
+                    {
+                        SteamId = marketItem.CreatorId.ToString(),
+                        AppId = marketItem.AppId.ToString()
+                    },
+                    title: marketItem.ItemName,
+                    url: new SteamWorkshopFileDetailsPageRequest()
+                    {
+                        Id = marketItem.ItemId.ToString()
+                    },
+                    thumbnailUrl: !String.IsNullOrEmpty(marketItem.ItemShortName) ? $"{_configuration.GetWebsiteUrl()}/images/app/{marketItem.AppId}/items/{marketItem.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    imageUrl: !String.IsNullOrEmpty(marketItem.ItemImageUrl) ? marketItem.ItemImageUrl : null,
+                    color: !String.IsNullOrEmpty(marketItem.AppColour) ? (uint?)UInt32.Parse(marketItem.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    crossPost: true
+                );
+            });
         }
 
         public async Task HandleAsync(MarketItemManipulationDetectedMessage marketItem, MessageContext context)
@@ -64,7 +113,39 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
         public async Task HandleAsync(StoreItemAddedMessage storeItem, MessageContext context)
         {
-            throw new NotImplementedException();
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guild, channel) =>
+            {
+                var description = new StringBuilder();
+                description.Append($"Has just appeared in the {storeItem} store and is available for purchase.");
+                var fields = new Dictionary<string, string>()
+                {
+                    { "Price", String.Join(" ", storeItem.ItemPrices.Select(x => $"`{x.Description} {x.Currency}`")) }
+                };
+
+                return _client.SendMessageAsync(
+                    guild.Id,
+                    new[] { channel },
+                    authorIconUrl: !String.IsNullOrEmpty(storeItem.CreatorAvatarUrl) ? storeItem.CreatorAvatarUrl : null,
+                    authorName: storeItem.CreatorName,
+                    authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
+                    {
+                        SteamId = storeItem.CreatorId.ToString(),
+                        AppId = storeItem.AppId.ToString()
+                    },
+                    title: storeItem.ItemName,
+                    url: new SteamItemStoreDetailPageRequest()
+                    {
+                        AppId = storeItem.AppId.ToString(),
+                        ItemId = storeItem.ItemId.ToString()
+                    },
+                    thumbnailUrl: !String.IsNullOrEmpty(storeItem.ItemShortName) ? $"{_configuration.GetWebsiteUrl()}/images/app/{storeItem.AppId}/items/{storeItem.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    fields: fields,
+                    imageUrl: !String.IsNullOrEmpty(storeItem.ItemImageUrl) ? storeItem.ItemImageUrl : null,
+                    color: !String.IsNullOrEmpty(storeItem.AppColour) ? (uint?)UInt32.Parse(storeItem.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    crossPost: true
+                );
+            });
         }
 
         public async Task HandleAsync(StoreMediaAddedMessage storeMedia, MessageContext context)
@@ -72,7 +153,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"{storeMedia.ChannelName} has uploaded a new video covering the **{storeMedia.StoreName}** item store");
+                description.Append($"{storeMedia.ChannelName} has uploaded a new video covering the **{storeMedia.StoreName}** {storeMedia.AppName} store.");
                 
                 return _client.SendMessageAsync(
                     guild.Id,
@@ -99,11 +180,12 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 {
                     description.Append($" in their **{workshopFile.ItemCollection}** collection");
                 }
+                description.Append(".");
 
                 return _client.SendMessageAsync(
                     guild.Id,
                     new[] { channel },
-                    authorIconUrl: workshopFile.CreatorAvatarUrl,
+                    authorIconUrl: !String.IsNullOrEmpty(workshopFile.CreatorAvatarUrl) ? workshopFile.CreatorAvatarUrl : null,
                     authorName: workshopFile.CreatorName,
                     authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
                     {
@@ -115,9 +197,9 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     {
                         Id = workshopFile.ItemId.ToString()
                     },
-                    thumbnailUrl: $"https://rust.scmm.app/images/app/252490/items/{workshopFile.ItemShortName}.png",
+                    thumbnailUrl: !String.IsNullOrEmpty(workshopFile.ItemShortName) ? $"{_configuration.GetWebsiteUrl()}/images/app/{workshopFile.AppId}/items/{workshopFile.ItemShortName}.png" : null,
                     description: description.ToString(),
-                    imageUrl: workshopFile.ItemImageUrl,
+                    imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?)UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
                     crossPost: true
                 );
@@ -139,7 +221,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                 return _client.SendMessageAsync(
                     guild.Id,
                     new[] { channel },
-                    authorIconUrl: workshopFile.CreatorAvatarUrl,
+                    authorIconUrl: !String.IsNullOrEmpty(workshopFile.CreatorAvatarUrl) ? workshopFile.CreatorAvatarUrl : null,
                     authorName: workshopFile.CreatorName,
                     authorUrl: new SteamProfileMyWorkshopFilesPageRequest()
                     {
@@ -151,9 +233,9 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     {
                         Id = workshopFile.ItemId.ToString()
                     },
-                    thumbnailUrl: $"https://rust.scmm.app/images/app/252490/items/{workshopFile.ItemShortName}.png",
+                    thumbnailUrl: !String.IsNullOrEmpty(workshopFile.ItemShortName) ? $"{_configuration.GetWebsiteUrl()}/images/app/{workshopFile.AppId}/items/{workshopFile.ItemShortName}.png" : null,
                     description: description.ToString(),
-                    imageUrl: workshopFile.ItemImageUrl,
+                    imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?) UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
                     crossPost: false
                 );

@@ -215,7 +215,7 @@ public class CheckForNewWorkshopFiles
                         AppName = app.Name,
                         AppIconUrl = app.IconUrl,
                         AppColour = app.PrimaryColor,
-                        CreatorId = UInt64.Parse(workshopFile.CreatorProfile?.SteamId ?? "0"),
+                        CreatorId = workshopFile.CreatorId ?? 0,
                         CreatorName = workshopFile.CreatorProfile?.Name,
                         CreatorAvatarUrl = workshopFile.CreatorProfile?.AvatarUrl,
                         ItemId = UInt64.Parse(workshopFile.SteamId),

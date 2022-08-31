@@ -37,5 +37,16 @@ namespace SCMM.Shared.API.Messages
         public string ItemCollection { get; set; }
 
         public string ItemImageUrl { get; set; }
+
+        public Price[] ItemPrices { get; set; }
+
+        public class Price
+        {
+            public string Currency { get; set; }
+
+            public long Value { get; set; }
+
+            public string Description { get; set; }
+        }
     }
 }

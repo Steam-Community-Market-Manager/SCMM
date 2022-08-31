@@ -389,6 +389,12 @@ public class CheckForNewStoreItems
                     ItemDescription = storeItem.Item.Description?.Description,
                     ItemCollection = storeItem.Item.Description?.ItemCollection,
                     ItemImageUrl = storeItem.Item.Description?.IconLargeUrl ?? storeItem.Item.Description?.IconUrl,
+                    ItemPrices = storeItem.Prices.Select(x => new StoreItemAddedMessage.Price()
+                    { 
+                        Currency = x.Key,
+                        Value = x.Value,
+                        Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value)
+                    }).ToArray()
                 })
             );
         }
