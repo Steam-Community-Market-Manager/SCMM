@@ -41,7 +41,7 @@ public class CheckForNewItemDefinitions
     }
 
     [Function("Check-New-Item-Definitions")]
-    public async Task Run([TimerTrigger("30 * * * * *")] /* every minute */ TimerInfo timerInfo, FunctionContext context)
+    public async Task Run([TimerTrigger("0/30 * * * * *")] /* every 30 seconds */ TimerInfo timerInfo, FunctionContext context)
     {
         var logger = context.GetLogger("Check-New-Item-Definitions");
 
