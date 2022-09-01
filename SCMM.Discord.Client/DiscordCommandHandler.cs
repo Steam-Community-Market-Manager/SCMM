@@ -1,10 +1,8 @@
-﻿using Azure.AI.TextAnalytics;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SCMM.Azure.AI;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Client.Extensions;
 using System.Reflection;
@@ -99,14 +97,6 @@ namespace SCMM.Discord.Client
             if (String.IsNullOrEmpty(message.Content))
             {
                 return Task.CompletedTask;
-            }
-
-            // If we are mentioned, react to the message before handling it
-            if (message.Content.Contains(_client.CurrentUser.Username, StringComparison.InvariantCultureIgnoreCase) ||
-                message.MentionedUsers.Contains(_client.CurrentUser))
-            {
-                _ = ReactToMessageSentiment(message);
-                _ = RelayMentionedMessage(message);
             }
 
             // If a command is detected, execute it
@@ -251,92 +241,6 @@ namespace SCMM.Discord.Client
 
                 await addReactionFunc(reactionEmoji);
                 await responseMessage;
-            }
-        }
-
-        private async Task ReactToMessageSentiment(SocketUserMessage message)
-        {
-            try
-            {
-                using var scope = _services.CreateScope();
-                var azureAiClient = _services.GetRequiredService<AzureAiClient>();
-                var sentiment = await azureAiClient.GetTextSentimentAsync(message.Content);
-                var reactions = new List<Emoji>();
-                switch (sentiment)
-                {
-                    case TextSentiment.Positive:
-                        reactions.Add(new Emoji("🥰"));
-                        reactions.Add(new Emoji("😘"));
-                        reactions.Add(new Emoji("💋"));
-                        reactions.Add(new Emoji("❤️"));
-                        break;
-                    case TextSentiment.Neutral:
-                        reactions.Add(new Emoji("👋"));
-                        reactions.Add(new Emoji("👍"));
-                        reactions.Add(new Emoji("👌"));
-                        break;
-                    case TextSentiment.Negative:
-                        reactions.Add(new Emoji("🖕"));
-                        reactions.Add(new Emoji("💩"));
-                        reactions.Add(new Emoji("😠"));
-                        break;
-                    case TextSentiment.Mixed:
-                        reactions.Add(new Emoji("😞"));
-                        reactions.Add(new Emoji("😟"));
-                        reactions.Add(new Emoji("💔"));
-                        break;
-                }
-                _ = message.TryAddReactionAsync(
-                    reactions.ElementAt(Random.Shared.Next(reactions.Count))
-                );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to react to message");
-            }
-        }
-
-        private async Task RelayMentionedMessage(SocketMessage message)
-        {
-            try
-            {
-                var guildChannel = (message.Channel as SocketGuildChannel);
-                if (guildChannel == null)
-                {
-                    return;
-                }
-
-                var userName = message.Author.GetFullUsername();
-                var guildName = (guildChannel.Guild != null ? $"{guildChannel.Guild.Name} #{guildChannel.Guild.Id}" : "n/a");
-                var channelName = (message.Channel != null ? message.Channel.Name : "n/a");
-                var content = message.Content;
-
-                var notifyGuild = _client.GetGuild(935704534808920114);
-                if (notifyGuild != null)
-                {
-                    var notifyChannel = notifyGuild.TextChannels.FirstOrDefault(x => x.Name == "bot-mentions");
-                    if (notifyChannel != null)
-                    {
-                        var embed = new EmbedBuilder()
-                            .WithTitle("SCMM was mentioned somewhere")
-                            .WithFields(new []
-                            {
-                                new EmbedFieldBuilder().WithName("User").WithValue(userName),
-                                new EmbedFieldBuilder().WithName("Guild").WithValue(guildName),
-                                new EmbedFieldBuilder().WithName("Channel").WithValue(channelName),
-                                new EmbedFieldBuilder().WithName("Content").WithValue(content)
-                            })
-                            .WithTimestamp(message.Timestamp);
-
-                        await notifyChannel.SendMessageAsync(
-                            embed: embed.Build()
-                        );
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to relay a mentioned message");
             }
         }
     }
