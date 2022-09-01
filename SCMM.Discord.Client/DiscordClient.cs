@@ -397,7 +397,7 @@ namespace SCMM.Discord.Client
             if (!string.IsNullOrEmpty(title))
             {
                 var fieldBuilders = new List<EmbedFieldBuilder>();
-                if (fields != null)
+                if (fields != null && fields.Any())
                 {
                     fieldBuilders = fields.Select(x => new EmbedFieldBuilder()
                         .WithName(x.Key)

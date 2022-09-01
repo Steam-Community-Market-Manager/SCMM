@@ -14,6 +14,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 {
     public class DiscordGuildAlertsMessageHandler :
         IMessageHandler<AppItemDefinitionsUpdatedMessage>,
+        IMessageHandler<ItemDefinitionAddedMessage>,
         IMessageHandler<MarketItemAddedMessage>,
         IMessageHandler<MarketItemManipulationDetectedMessage>,
         IMessageHandler<MarketItemPriceAllTimeHighReachedMessage>,
@@ -40,10 +41,11 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"In-game item definitions for {appItemDefinition.AppName} have just been updated.");
+                description.Append($"In-game item definitions for {appItemDefinition.AppName} have been updated.");
+
                 var fields = new Dictionary<string, string>()
                 {
-                    { "Digest", $"`{appItemDefinition.ItemDefinitionsDigest}`" }
+                    { "Digest", $"````{appItemDefinition.ItemDefinitionsDigest}````" }
                 };
 
                 return _client.SendMessageAsync(
@@ -60,12 +62,40 @@ namespace SCMM.Discord.Bot.Server.Handlers
             });
         }
 
+        public async Task HandleAsync(ItemDefinitionAddedMessage itemDefinition, MessageContext context)
+        {
+            await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelAppItemDefinitionsUpdated, (guild, channel) =>
+            {
+                var description = new StringBuilder();
+                description.Append($"New {itemDefinition.ItemType} has been added to the {itemDefinition.AppName} in-game item definitions.");
+
+                return _client.SendMessageAsync(
+                    guild.Id,
+                    new[] { channel },
+                    authorIconUrl: !String.IsNullOrEmpty(itemDefinition.CreatorAvatarUrl) ? itemDefinition.CreatorAvatarUrl : null,
+                    authorName: !String.IsNullOrEmpty(itemDefinition.CreatorName) ? itemDefinition.CreatorName : null,
+                    authorUrl: itemDefinition.CreatorId == null ? null : new SteamProfileMyWorkshopFilesPageRequest()
+                    {
+                        SteamId = itemDefinition.CreatorId.ToString(),
+                        AppId = itemDefinition.AppId.ToString()
+                    },
+                    title: itemDefinition.ItemName,
+                    url: $"{_configuration.GetWebsiteUrl()}/item/{itemDefinition.ItemName}",
+                    thumbnailUrl: !String.IsNullOrEmpty(itemDefinition.ItemShortName) ? $"{_configuration.GetWebsiteUrl()}/images/app/{itemDefinition.AppId}/items/{itemDefinition.ItemShortName}.png" : null,
+                    description: description.ToString(),
+                    imageUrl: !String.IsNullOrEmpty(itemDefinition.ItemImageUrl) ? itemDefinition.ItemImageUrl : null,
+                    color: !String.IsNullOrEmpty(itemDefinition.AppColour) ? (uint?)UInt32.Parse(itemDefinition.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
+                    crossPost: true
+                );
+            });
+        }
+
         public async Task HandleAsync(MarketItemAddedMessage marketItem, MessageContext context)
         {
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelMarketItemAdded, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"Has just appeared on the Steam Community Market for the first time.");
+                description.Append($"New {marketItem.ItemType} has been listed on the {marketItem.AppName} community market.");
                 
                 return _client.SendMessageAsync(
                     guild.Id,
@@ -78,9 +108,10 @@ namespace SCMM.Discord.Bot.Server.Handlers
                         AppId = marketItem.AppId.ToString()
                     },
                     title: marketItem.ItemName,
-                    url: new SteamWorkshopFileDetailsPageRequest()
+                    url: new SteamMarketListingPageRequest()
                     {
-                        Id = marketItem.ItemId.ToString()
+                        AppId = marketItem.AppId.ToString(),
+                        MarketHashName = marketItem.ItemName
                     },
                     thumbnailUrl: !String.IsNullOrEmpty(marketItem.ItemShortName) ? $"{_configuration.GetWebsiteUrl()}/images/app/{marketItem.AppId}/items/{marketItem.ItemShortName}.png" : null,
                     description: description.ToString(),
@@ -116,10 +147,11 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreItemAdded, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"Has just appeared in the {storeItem} store and is available for purchase.");
+                description.Append($"New {storeItem.ItemType} can be purchased from the {storeItem.AppName} store.");
+
                 var fields = new Dictionary<string, string>()
                 {
-                    { "Price", String.Join(" ", storeItem.ItemPrices.Select(x => $"`{x.Description} {x.Currency}`")) }
+                    { "Prices", String.Join(" ", storeItem.ItemPrices.Select(x => $"`{x.Description} {x.Currency}`")) }
                 };
 
                 return _client.SendMessageAsync(
@@ -153,8 +185,9 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelStoreMediaAdded, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"{storeMedia.ChannelName} has uploaded a new video covering the **{storeMedia.StoreName}** {storeMedia.AppName} store.");
+                description.Append($"New video discussing the **{storeMedia.StoreName}** {storeMedia.AppName} store.");
                 
+                // TODO: Check if this is actually a YouTube video first
                 return _client.SendMessageAsync(
                     guild.Id,
                     new[] { channel },
@@ -165,7 +198,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     description: description.ToString(),
                     imageUrl: storeMedia.VideoThumbnailUrl,
                     color: new Color(255, 0, 0), // YouTube red
-                    crossPost: false
+                    crossPost: true
                 );
             });
         }
@@ -175,12 +208,13 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFilePublished, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"{workshopFile.CreatorName} has published a new **{workshopFile.ItemType}** workshop submission ");
+                description.Append($"New {workshopFile.ItemType} has been submitted to the {workshopFile.AppName} workshop.");
+
+                var fields = new Dictionary<string, string>();
                 if (!String.IsNullOrEmpty(workshopFile.ItemCollection))
                 {
-                    description.Append($" in their **{workshopFile.ItemCollection}** collection");
+                    fields["Collection"] = workshopFile.ItemCollection;
                 }
-                description.Append(".");
 
                 return _client.SendMessageAsync(
                     guild.Id,
@@ -199,6 +233,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     },
                     thumbnailUrl: !String.IsNullOrEmpty(workshopFile.ItemShortName) ? $"{_configuration.GetWebsiteUrl()}/images/app/{workshopFile.AppId}/items/{workshopFile.ItemShortName}.png" : null,
                     description: description.ToString(),
+                    fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?)UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
                     crossPost: true
@@ -211,12 +246,12 @@ namespace SCMM.Discord.Bot.Server.Handlers
             await SendAlertToGuilds(DiscordGuild.GuildConfiguration.AlertChannelWorkshopFileUpdated, (guild, channel) =>
             {
                 var description = new StringBuilder();
-                description.Append($"{workshopFile.CreatorName} has updated this accepted workshop item. Depending on the change made, there may be in-game visual changes to the apparence of this item.");
-                if (!String.IsNullOrEmpty(workshopFile.ChangeNote))
+                description.Append($"This accepted item has been updated in the {workshopFile.AppName} workshop. Depending on the change made, there may be in-game visual changes to the apparence of the item.");
+
+                var fields = new Dictionary<string, string>()
                 {
-                    description.AppendLine();
-                    description.Append($"````{workshopFile.ChangeNote}````");
-                }
+                    { "Changes", String.IsNullOrEmpty(workshopFile.ChangeNote) ? "Unknown" : workshopFile.ChangeNote }
+                };
 
                 return _client.SendMessageAsync(
                     guild.Id,
@@ -235,9 +270,10 @@ namespace SCMM.Discord.Bot.Server.Handlers
                     },
                     thumbnailUrl: !String.IsNullOrEmpty(workshopFile.ItemShortName) ? $"{_configuration.GetWebsiteUrl()}/images/app/{workshopFile.AppId}/items/{workshopFile.ItemShortName}.png" : null,
                     description: description.ToString(),
+                    fields: fields,
                     imageUrl: !String.IsNullOrEmpty(workshopFile.ItemImageUrl) ? workshopFile.ItemImageUrl : null,
                     color: !String.IsNullOrEmpty(workshopFile.AppColour) ? (uint?) UInt32.Parse(workshopFile.AppColour.Replace("#", ""), NumberStyles.HexNumber) : null,
-                    crossPost: false
+                    crossPost: true
                 );
             });
         }

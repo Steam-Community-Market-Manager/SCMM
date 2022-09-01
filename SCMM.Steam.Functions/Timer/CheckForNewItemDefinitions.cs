@@ -157,6 +157,32 @@ public class CheckForNewItemDefinitions
 
     private async Task BroadcastUpdatedItemDefinitionsNotification(ILogger logger, SteamApp app, IEnumerable<SteamAssetDescription> newAssetDescriptions, IEnumerable<SteamAssetDescription> updatedAssetDescriptions)
     {
+        var broadcastTasks = new List<Task>();
+        foreach (var newAssetDescription in newAssetDescriptions)
+        {
+            broadcastTasks.Add(
+                _serviceBus.SendMessageAsync(new ItemDefinitionAddedMessage()
+                {
+                    AppId = UInt64.Parse(app.SteamId),
+                    AppName = app.Name,
+                    AppIconUrl = app.IconUrl,
+                    AppColour = app.PrimaryColor,
+                    CreatorId = newAssetDescription.CreatorId,
+                    CreatorName = newAssetDescription.CreatorProfile?.Name,
+                    CreatorAvatarUrl = newAssetDescription.CreatorProfile?.AvatarUrl,
+                    ItemId = newAssetDescription.ItemDefinitionId ?? 0,
+                    ItemType = newAssetDescription.ItemType,
+                    ItemShortName = newAssetDescription.ItemShortName,
+                    ItemName = newAssetDescription.Name,
+                    ItemDescription = newAssetDescription.Description,
+                    ItemCollection = newAssetDescription.ItemCollection,
+                    ItemImageUrl = newAssetDescription.IconLargeUrl ?? newAssetDescription.IconUrl,
+                })
+            );
+        }
+
+        await Task.WhenAll(broadcastTasks);
+
         var guilds = _discordDb.DiscordGuilds.ToList();
         foreach (var guild in guilds)
         {
