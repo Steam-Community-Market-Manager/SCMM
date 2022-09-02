@@ -45,7 +45,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
                 var fields = new Dictionary<string, string>()
                 {
-                    { "Digest", $"````{appItemDefinition.ItemDefinitionsDigest}````" }
+                    { "Digest", $"```{appItemDefinition.ItemDefinitionsDigest}```" }
                 };
 
                 return _client.SendMessageAsync(
@@ -151,7 +151,7 @@ namespace SCMM.Discord.Bot.Server.Handlers
 
                 var fields = new Dictionary<string, string>()
                 {
-                    { "Prices", String.Join(" ", storeItem.ItemPrices.Select(x => $"`{x.Description} {x.Currency}`")) }
+                    { "Prices", String.Join(" • ", storeItem.ItemPrices.Select(x => $"`{x.Description} {x.Currency}`")) }
                 };
 
                 return _client.SendMessageAsync(

@@ -393,7 +393,7 @@ public class CheckForNewStoreItems
                     { 
                         Currency = x.Key,
                         Value = x.Value,
-                        Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value)
+                        Description = currencies.FirstOrDefault(c => c.Name == x.Key)?.ToPriceString(x.Value, dense: true)
                     }).ToArray()
                 })
             );
