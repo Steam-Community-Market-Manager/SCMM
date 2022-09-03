@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
-using SCMM.Discord.API.Commands;
-using SCMM.Discord.Data.Store;
-using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.Client;
@@ -14,27 +11,23 @@ using SCMM.Steam.Data.Models.Extensions;
 using SCMM.Steam.Data.Models.WebApi.Requests.IGameInventory;
 using SCMM.Steam.Data.Models.WebApi.Requests.IInventoryService;
 using SCMM.Steam.Data.Store;
-using System.Globalization;
-using System.Text;
 
 namespace SCMM.Steam.Functions.Timer;
 
 public class CheckForNewItemDefinitions
 {
     private readonly IConfiguration _configuration;
-    private readonly DiscordDbContext _discordDb;
     private readonly SteamDbContext _steamDb;
     private readonly ServiceBusClient _serviceBus;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamWebApiClient _apiClient;
 
-    public CheckForNewItemDefinitions(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamWebApiClient apiClient, ServiceBusClient serviceBus)
+    public CheckForNewItemDefinitions(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamWebApiClient apiClient, ServiceBusClient serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
-        _discordDb = discordDb;
         _steamDb = steamDb;
         _apiClient = apiClient;
         _serviceBus = serviceBus;
@@ -148,14 +141,14 @@ public class CheckForNewItemDefinitions
 
                     if (newAssetDescriptions.Any() || updatedAssetDescriptions.Any())
                     {
-                        await BroadcastUpdatedItemDefinitionsNotification(logger, app, newAssetDescriptions, updatedAssetDescriptions);
+                        await BroadcastItemDefinitionAddedMessages(logger, app, newAssetDescriptions, updatedAssetDescriptions);
                     }
                 }
             }
         }
     }
 
-    private async Task BroadcastUpdatedItemDefinitionsNotification(ILogger logger, SteamApp app, IEnumerable<SteamAssetDescription> newAssetDescriptions, IEnumerable<SteamAssetDescription> updatedAssetDescriptions)
+    private async Task BroadcastItemDefinitionAddedMessages(ILogger logger, SteamApp app, IEnumerable<SteamAssetDescription> newAssetDescriptions, IEnumerable<SteamAssetDescription> updatedAssetDescriptions)
     {
         var broadcastTasks = new List<Task>();
         foreach (var newAssetDescription in newAssetDescriptions)
@@ -182,79 +175,5 @@ public class CheckForNewItemDefinitions
         }
 
         await Task.WhenAll(broadcastTasks);
-
-        var guilds = _discordDb.DiscordGuilds.ToList();
-        foreach (var guild in guilds)
-        {
-            try
-            {
-                if (!bool.Parse(guild.Get(DiscordGuild.GuildConfiguration.AlertsItemDefinition, Boolean.FalseString).Value))
-                {
-                    continue;
-                }
-
-                var guildChannels = guild.List(DiscordGuild.GuildConfiguration.AlertChannel).Value?.Union(new[] {
-                    "announcement", "market", "skin", app.Name, "general", "chat", "bot"
-                });
-
-                var description = new StringBuilder();
-                var fields = new Dictionary<string, string>();
-                description.AppendLine(app.ItemDefinitionsDigest);
-                description.AppendLine();
-                if (newAssetDescriptions.Any())
-                {
-                    description.Append($"{newAssetDescriptions.Count()} new item(s) have just appeared in the {app?.Name} item definitions archive.");
-                    foreach (var item in newAssetDescriptions.OrderByDescending(x => x.TimeCreated))
-                    {
-                        fields.Add(
-                            $"🆕 {item.ItemDefinitionId}",
-                            (String.IsNullOrEmpty(item.IconUrl) ? item.Name : $"[{item.Name}]({item.IconUrl})")
-                        );
-                    }
-                }
-                if (updatedAssetDescriptions.Any())
-                {
-                    description.Append($"{updatedAssetDescriptions.Count()} existing item(s) have been updated.");
-                    foreach (var item in updatedAssetDescriptions.OrderByDescending(x => x.ClassId))
-                    {
-                        fields.Add(
-                            $"{item.ClassId}",
-                            $"[{item.Name}]({_configuration.GetWebsiteUrl()}/item/{Uri.EscapeDataString(item.Name)})"
-                        );
-                    }
-                }
-                if (!newAssetDescriptions.Any() && !updatedAssetDescriptions.Any())
-                {
-                    description.Append("No significant item additions/removals were detected.");
-                }
-                if (fields.Count > 24)
-                {
-                    fields = fields.Take(24).ToDictionary(x => x.Key, x => x.Value);
-                    fields.Add(
-                        $"+{newAssetDescriptions.Count() + updatedAssetDescriptions.Count() - 24} items",
-                        "View full item list for more details"
-                    );
-                }
-
-                await _commandProcessor.ProcessAsync(new SendMessageRequest()
-                {
-                    GuidId = guild.Id,
-                    ChannelPatterns = guildChannels?.ToArray(),
-                    Message = null,
-                    Title = $"{app?.Name} Item Definitions Updated",
-                    Description = description.ToString(),
-                    Fields = fields,
-                    FieldsInline = true,
-                    Url = $"{_configuration.GetWebsiteUrl()}/items",
-                    ThumbnailUrl = app?.IconUrl,
-                    Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
-                });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Failed to send new market item notification to guild (id: {guild.Id})");
-                continue;
-            }
-        }
     }
 }

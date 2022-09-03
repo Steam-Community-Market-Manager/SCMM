@@ -45,6 +45,7 @@ namespace SCMM.Steam.Data.Store
 
         public string ItemDefinitionsDigest { get; set; }
 
+        // TODO: Remove this, use item definition digests instead
         public ulong? MostRecentlyAcceptedWorkshopFileId { get; set; }
 
         public DateTimeOffset? TimeUpdated { get; set; }

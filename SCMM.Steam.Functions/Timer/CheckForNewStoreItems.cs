@@ -4,17 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SCMM.Azure.ServiceBus;
-using SCMM.Discord.API.Commands;
-using SCMM.Discord.Data.Store;
-using SCMM.Shared.API.Extensions;
 using SCMM.Shared.API.Messages;
 using SCMM.Shared.Data.Models;
 using SCMM.Shared.Data.Models.Extensions;
-using SCMM.Shared.Data.Store;
 using SCMM.Steam.API;
 using SCMM.Steam.API.Commands;
 using SCMM.Steam.API.Queries;
-using SCMM.Steam.Client;
 using SCMM.Steam.Client.Extensions;
 using SCMM.Steam.Data.Models;
 using SCMM.Steam.Data.Models.Enums;
@@ -23,26 +18,23 @@ using SCMM.Steam.Data.Store.Types;
 using Steam.Models.SteamEconomy;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
-using System.Globalization;
 
 namespace SCMM.Steam.Functions.Timer;
 
 public class CheckForNewStoreItems
 {
     private readonly IConfiguration _configuration;
-    private readonly DiscordDbContext _discordDb;
     private readonly SteamDbContext _steamDb;
     private readonly ICommandProcessor _commandProcessor;
     private readonly IQueryProcessor _queryProcessor;
     private readonly SteamService _steamService;
     private readonly ServiceBusClient _serviceBus;
 
-    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, DiscordDbContext discordDb, SteamDbContext steamDb, SteamService steamService, ServiceBusClient serviceBus)
+    public CheckForNewStoreItems(IConfiguration configuration, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, SteamDbContext steamDb, SteamService steamService, ServiceBusClient serviceBus)
     {
         _configuration = configuration;
         _commandProcessor = commandProcessor;
         _queryProcessor = queryProcessor;
-        _discordDb = discordDb;
         _steamDb = steamDb;
         _steamService = steamService;
         _serviceBus = serviceBus;
@@ -253,12 +245,12 @@ public class CheckForNewStoreItems
         if (newPermanentStoreItems.Any())
         {
             logger.LogInformation($"{newPermanentStoreItems.Count} new permanent store items have been added!");
-            await BroadcastNewStoreItemsNotification(logger, app, permanentItemStore, newPermanentStoreItems, currencies);
+            await BroadcastStoreItemAddedMessages(logger, app, permanentItemStore, newPermanentStoreItems, currencies);
         }
         if (newLimitedStoreItems.Any())
         {
             logger.LogInformation($"{newLimitedStoreItems.Count} new limited store items have been added!");
-            await BroadcastNewStoreItemsNotification(logger, app, limitedItemStore, newLimitedStoreItems, currencies);
+            await BroadcastStoreItemAddedMessages(logger, app, limitedItemStore, newLimitedStoreItems, currencies);
         }
     }
 
@@ -359,7 +351,7 @@ public class CheckForNewStoreItems
         return store.ItemsThumbnailUrl;
     }
 
-    private async Task BroadcastNewStoreItemsNotification(ILogger logger, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
+    private async Task BroadcastStoreItemAddedMessages(ILogger logger, SteamApp app, SteamItemStore store, IEnumerable<SteamStoreItemItemStore> newStoreItems, IEnumerable<SteamCurrency> currencies)
     {
         newStoreItems = newStoreItems?.OrderBy(x => x.Item?.Description?.Name);
         if (newStoreItems?.Any() != true)
@@ -400,74 +392,5 @@ public class CheckForNewStoreItems
         }
 
         await Task.WhenAll(broadcastTasks);
-
-        var guilds = _discordDb.DiscordGuilds.ToList();
-        foreach (var guild in guilds)
-        {
-            try
-            {
-                if (!bool.Parse(guild.Get(DiscordGuild.GuildConfiguration.AlertsStore, Boolean.TrueString).Value))
-                {
-                    continue;
-                }
-
-                var guildChannels = guild.List(DiscordGuild.GuildConfiguration.AlertChannel).Value?.Union(new[] {
-                    "announcement", "store", "skin", app.Name, "general", "chat", "bot"
-                });
-
-                var filteredCurrencies = currencies;
-                var guildCurrencies = guild.List(DiscordGuild.GuildConfiguration.Currency).Value;
-                if (guildCurrencies?.Any() == true)
-                {
-                    filteredCurrencies = currencies.Where(x => guildCurrencies.Contains(x.Name)).ToList();
-                }
-                else
-                {
-                    filteredCurrencies = currencies.Where(x => x.Name == Constants.SteamCurrencyUSD).ToList();
-                }
-
-                await _commandProcessor.ProcessAsync(new SendMessageRequest()
-                {
-                    GuidId = guild.Id,
-                    ChannelPatterns = guildChannels?.ToArray(),
-                    Message = null,
-                    Title = $"{app.Name} Store - {store.StoreName()}",
-                    Description = $"{newStoreItems.Count()} new item(s) have been added to the store.",
-                    Fields = newStoreItems.ToDictionary(
-                        x => x.Item?.Description?.Name,
-                        x => GetStoreItemPriceList(x, filteredCurrencies)
-                    ),
-                    FieldsInline = true,
-                    Url = $"{_configuration.GetWebsiteUrl()}/store/{store.StoreId()}",
-                    ThumbnailUrl = app.IconUrl,
-                    ImageUrl = store.ItemsThumbnailUrl,
-                    Colour = UInt32.Parse(app.PrimaryColor.Replace("#", ""), NumberStyles.HexNumber)
-                });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Failed to send new store item notification to guild (id: {guild.Id})");
-                continue;
-            }
-        }
-    }
-
-    private string GetStoreItemPriceList(SteamStoreItemItemStore storeItem, IEnumerable<SteamCurrency> currencies)
-    {
-        var prices = new List<string>();
-        foreach (var currency in currencies.OrderBy(x => x.Name))
-        {
-            var price = storeItem.Prices.FirstOrDefault(x => x.Key == currency.Name);
-            if (price.Value > 0)
-            {
-                var priceString = currency.ToPriceString(price.Value)?.Trim();
-                if (!string.IsNullOrEmpty(priceString))
-                {
-                    prices.Add(priceString);
-                }
-            }
-        }
-
-        return string.Join("  •  ", prices).Trim(' ', '•');
     }
 }
