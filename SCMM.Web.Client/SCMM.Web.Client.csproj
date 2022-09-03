@@ -18,9 +18,9 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="MudBlazor" Version="6.0.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Syncfusion.Blazor.Charts" Version="20.2.0.43" />
-    <PackageReference Include="Syncfusion.Blazor.Themes" Version="20.2.0.43" />
-    <PackageReference Include="Syncfusion.Blazor.TreeMap" Version="20.2.0.43" />
+    <PackageReference Include="Syncfusion.Blazor.Charts" Version="20.2.0.46" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="20.2.0.46" />
+    <PackageReference Include="Syncfusion.Blazor.TreeMap" Version="20.2.0.46" />
   </ItemGroup>
 
   <ItemGroup>
