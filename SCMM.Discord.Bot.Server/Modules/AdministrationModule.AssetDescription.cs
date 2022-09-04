@@ -14,7 +14,6 @@ using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using static Azure.Core.HttpHeader;
 
 namespace SCMM.Discord.Bot.Server.Modules
 {

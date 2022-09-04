@@ -1,6 +1,7 @@
 ﻿using CommandQuery;
 using Discord;
 using Discord.Commands;
+using SCMM.Azure.AI;
 using SCMM.Azure.ServiceBus;
 using SCMM.Discord.Client.Commands;
 using SCMM.Discord.Data.Store;
@@ -29,9 +30,10 @@ namespace SCMM.Discord.Bot.Server.Modules
         private readonly ServiceBusClient _serviceBusClient;
         private readonly FixerWebClient _fixerWebClient;
         private readonly GoogleClient _googleClient;
+        private readonly AzureAiClient _azureAiClient;
         private readonly CommandService _commandService;
 
-        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, GoogleClient googleClient, CommandService commandService)
+        public AdministrationModule(DiscordDbContext discordDb, SteamDbContext steamDb, SteamConfiguration steamCfg, SteamCommunityWebClient communityClient, ICommandProcessor commandProcessor, IQueryProcessor queryProcessor, ServiceBusClient serviceBusClient, FixerWebClient fixerWebClient, GoogleClient googleClient, AzureAiClient azureAiClient, CommandService commandService)
         {
             _discordDb = discordDb;
             _steamDb = steamDb;
@@ -42,6 +44,7 @@ namespace SCMM.Discord.Bot.Server.Modules
             _serviceBusClient = serviceBusClient;
             _fixerWebClient = fixerWebClient;
             _googleClient = googleClient;
+            _azureAiClient = azureAiClient;
             _commandService = commandService;
         }
 
