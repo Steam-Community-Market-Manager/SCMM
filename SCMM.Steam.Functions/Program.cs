@@ -28,7 +28,6 @@ using SCMM.Market.SkinsMonkey.Client;
 using SCMM.Market.SkinsMonkey.Client.Extensions;
 using SCMM.Market.SwapGG.Client;
 using SCMM.Market.TradeitGG.Client;
-using SCMM.Market.TradeSkinsFast.Client;
 using SCMM.Shared.API.Extensions;
 using SCMM.Shared.Data.Models.Json;
 using SCMM.Steam.API;
@@ -174,7 +173,6 @@ public static class HostExtensions
             });
             services.AddSingleton<SwapGGWebClient>();
             services.AddSingleton<TradeitGGWebClient>();
-            services.AddSingleton<TradeSkinsFastWebClient>();
             services.AddScoped<SteamWebApiClient>();
             services.AddScoped<SteamCommunityWebClient>();
             services.AddScoped<SteamWorkshopDownloaderWebClient>();
