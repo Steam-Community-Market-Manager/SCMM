@@ -2,6 +2,7 @@
 @namespace SCMM.Web.Server.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @using Microsoft.AspNetCore.Components.Web
+@using SCMM.Shared.Web.Extensions
 @using SCMM.Web.Client;
 @using SCMM.Web.Data.Models
 @model IndexModel
@@ -119,7 +120,7 @@
                 <pre id="blazor-load-error-details"></pre>
             </p>
         </div>
-        <script type="text/javascript">
+        <script type="text/javascript" nonce="@HttpContext.GetNonce()">
 
             function wasmIsSupported() {
                 try {
@@ -143,7 +144,7 @@
             }
 
         </script>
-        <script type="text/javascript">
+        <script type="text/javascript" nonce="@HttpContext.GetNonce()">
 
             /* Start Blazor and report loading progress back to the UI */
 
@@ -219,7 +220,7 @@ else
     
 @if (runtime == RuntimeType.WebAssembly)
 {
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="@HttpContext.GetNonce()">
 
         /* Unregister old PWA service worker (if present) */
 
@@ -249,7 +250,7 @@ else
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-226353518-1">
     </script>
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="@HttpContext.GetNonce()">
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());

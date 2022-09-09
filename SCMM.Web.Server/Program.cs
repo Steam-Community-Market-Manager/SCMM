@@ -327,6 +327,17 @@ public static class WebApplicationExtensions
 
         app.UseHttpsRedirection();
 
+        var allowLoopbackConnectHack = app.Environment.IsDevelopment() ? "wss://localhost:44353" : null;
+        app.UseOWASPSecurityHeaders(
+            cspScriptSources: "'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com cdn.jsdelivr.net cdn.skypack.dev www.googletagmanager.com www.google-analytics.com",
+            cspStyleSources: "'self' 'unsafe-inline' cdnjs.cloudflare.com fonts.googleapis.com www.google-analytics.com",
+            cspFontSources: "'self' data: cdnjs.cloudflare.com fonts.gstatic.com",
+            cspImageSources: "'self' *.scmm.app steamcommunity-a.akamaihd.net steamuserimages-a.akamaihd.net steamcdn-a.akamaihd.net avatars.steamstatic.com avatars.akamai.steamstatic.com cdn.discordapp.com www.google-analytics.com",
+            cspFrameSources: "'self' www.youtube.com",
+            cspConnectSources: $"'self' *.scmm.app discordapp.com www.google-analytics.com stats.g.doubleclick.net {allowLoopbackConnectHack}",
+            cspAllowCrossOriginEmbedding: true
+        );
+
         app.UseBlazorFrameworkFiles(); // Wasm
         app.UseStaticFiles();
 
