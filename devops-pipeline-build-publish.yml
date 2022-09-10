@@ -7,6 +7,7 @@ pool:
   vmImage: 'windows-2022' # required to get Visual Studio 2022
 
 variables:
+  appVersion: '1.0.*'
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
@@ -28,6 +29,28 @@ steps:
   displayName: 'Restore NuGet packages'
   inputs:
     restoreSolution: '$(solution)'
+- task: Assembly-Info-NetCore@3
+  displayName: 'Set Assembly Metadata'
+  inputs:
+    Path: '$(Build.SourcesDirectory)'
+    FileNames: '**/*.csproj'
+    InsertAttributes: true
+    IgnoreNetFrameworkProjects: true
+    FileEncoding: 'auto'
+    WriteBOM: false
+    Authors: 'Rhys Koedijk'
+    Product: 'SCMM'
+    Copyright: 'Copyright © 2022-$(date:YYYY) Rhys Koedijk'
+    PackageProjectUrl: 'https://scmm.app'
+    VersionNumber: '$(appVersion)'
+    FileVersionNumber: '$(appVersion)'
+    InformationalVersion: '$(appVersion)'
+    PackageVersion: '$(appVersion)'
+    LogLevel: 'verbose'
+    FailOnWarning: false
+    DisableTelemetry: true
+    UpdateBuildNumber: '$(Build.DefinitionName) - $(appVersion)'
+    AddBuildTag: '$(appVersion)'
 - task: VSBuild@1
   displayName: 'Build Solution'
   inputs:
